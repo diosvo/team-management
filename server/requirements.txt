@@ -1,0 +1,5 @@
+alembic
+bcrypt==4.0.1
+fastapi[all]
+passlib[bcrypt]
+python-jose[cryptography]
