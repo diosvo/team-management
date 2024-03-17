@@ -1,20 +1,54 @@
 from logging.config import fileConfig
 
+from sqlalchemy import engine_from_config, pool, text
+
 from alembic import context
-from sqlalchemy import engine_from_config, pool
+from alembic.runtime.migration import MigrationContext, MigrationInfo
 from src.database import DATABASE_URL, metadata
 
 # Alembic Config object, which provides access to the values within the `.ini` file in use.
 config = context.config
 config.set_main_option(
-    "sqlalchemy.url",
-    f"postgresql+psycopg2://{DATABASE_URL}"
+    name="sqlalchemy.url", value=f"postgresql+psycopg2://{DATABASE_URL}"
 )
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
+
+
+def include_name(name: str, type_: str, **kwargs) -> bool:
+    """Prevent auto generated migrations to delete the newly created table
+
+    Reference:
+    - https://stackoverflow.com/questions/73248731/alembic-store-extra-information-in-alembic-version-table
+    """
+    if type_ == "table" and name == "alembic_version_history":
+        return False
+
+    return True
+
+
+def update_history(ctx: MigrationContext, step: MigrationInfo, **kwargs) -> None:
+    revision_id = step.up_revision_id
+
+    if step.is_upgrade:
+        message = step.up_revision.doc
+        # Ensure that single quotes in the message are escaped properly
+        message = message.replace("'", "''")
+        
+        sql_command = text(
+            "INSERT INTO alembic_version_history (version_num, message, applied_at) VALUES (:revision_id, :message, NOW())"
+        )
+        ctx.connection.execute(
+            sql_command, {"revision_id": revision_id, "message": message}
+        )
+    else:
+        sql_command = text(
+            "DELETE FROM alembic_version_history WHERE version_num = :revision_id"
+        )
+        ctx.connection.execute(sql_command, {"revision_id": revision_id})
 
 
 def run_migrations_offline() -> None:
@@ -35,6 +69,8 @@ def run_migrations_offline() -> None:
         literal_binds=True,
         target_metadata=metadata,
         dialect_opts={"paramstyle": "named"},
+        include_name=include_name,
+        on_version_apply=update_history,
     )
 
     with context.begin_transaction():
@@ -56,7 +92,10 @@ def run_migrations_online() -> None:
 
     with connectable.connect() as connection:
         context.configure(
-            connection=connection, target_metadata=metadata
+            connection=connection,
+            target_metadata=metadata,
+            include_name=include_name,
+            on_version_apply=update_history,
         )
 
         with context.begin_transaction():

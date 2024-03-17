@@ -1,12 +1,13 @@
 """
 The global models.
 """
+
 from datetime import datetime
 from typing import Any
-from zoneinfo import ZoneInfo
 
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel, ConfigDict, model_validator
+from zoneinfo import ZoneInfo
 
 
 def convert_datetime_to_gmt(dt: datetime) -> str:
