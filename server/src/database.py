@@ -13,7 +13,7 @@ POSTGRES_INDEXES_NAMING_CONVENTION = {
     "pk": "%(table_name)s_pkey",
 }
 
-DATABASE_URL = "<username>:<password>@<ip>/<database_name>"
+DATABASE_URL = "diosvo:1234@localhost/sg_rovers"
 SQLALCHEMY_DATABASE_URL = f"postgresql://{DATABASE_URL}"
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)

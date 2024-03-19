@@ -1,4 +1,4 @@
-# TEAM MANAGEMENT
+# TEAM MANAGEMENT 🏀
 
 # Development Instructions
 
@@ -6,16 +6,28 @@
 
 Currently, we have two parts - `client` and `server`. Therefore, the branch name will be followed by the format depending on which part we are working on.
 
-```bash
-<part>/dev_{ticket_number}
+```text
+<part>/dev_{github_issue}
 <part>/prod_{release_version}
 ```
 
-## Commit Message
+## Messages
 
-Follow the format below (GI means "Github Issue"):
+Follow the format message corresponding to each section.
 
-```bash
-<part>/<ticket_number>: <short_description>
-GI: <link>
+### Commit
+
+```text
+<part>/<github_issue>: <short_description>
+```
+
+### Pull Request
+
+```text
+#### New ✨
+-
+#### Improvements 🙌
+-
+#### Bug Fixes 🐛
+-
 ```
