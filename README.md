@@ -26,8 +26,12 @@ Follow the format message corresponding to each section.
 ```text
 #### New ✨
 -
+
 #### Improvements 🙌
 -
+
 #### Bug Fixes 🐛
 -
+
+_Resolve #<github_issue>_
 ```

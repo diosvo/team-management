@@ -6,9 +6,8 @@ Create Date: 2024-03-16 22:53:44.441873
 
 """
 
-from sqlalchemy import Column, DateTime, ForeignKey, String, func
-
 from alembic import op
+from sqlalchemy import Column, DateTime, ForeignKey, String, func
 
 TABLE_NAME = "alembic_version_history"
 
