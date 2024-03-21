@@ -7,9 +7,8 @@ Create Date: ${create_date}
 """
 from typing import Sequence, Union
 
-from sqlalchemy import Column, Integer, String
-
 from alembic import op
+from sqlalchemy import Column, DateTime, Integer, String, func
 ${imports if imports else ""}
 
 revision: str = ${repr(up_revision)}
