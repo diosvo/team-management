@@ -39,6 +39,5 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.drop_constraint("role_values_check", TABLE_NAME, type_="check")
+    op.drop_constraint("role_values", TABLE_NAME, type_="check")
     op.drop_table(TABLE_NAME)
-    pass

@@ -1,9 +1,8 @@
 from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config, pool, text
-
 from alembic import context
 from alembic.runtime.migration import MigrationContext, MigrationInfo
+from sqlalchemy import engine_from_config, pool, text
 from src.database import DATABASE_URL, metadata
 
 # Alembic Config object, which provides access to the values within the `.ini` file in use.
