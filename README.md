@@ -18,20 +18,6 @@ Follow the format message corresponding to each section.
 ### Commit
 
 ```text
-<part>/<github_issue>: <short_description>
+#<github_issue>: <short_description>
 ```
-
-### Pull Request
-
-```text
-#### New ✨
--
-
-#### Improvements 🙌
--
-
-#### Bug Fixes 🐛
--
-
-_Resolve #<github_issue>_
-```
+å
