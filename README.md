@@ -20,4 +20,3 @@ Follow the format message corresponding to each section.
 ```text
 #<github_issue>: <short_description>
 ```
-å
