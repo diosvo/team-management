@@ -22,9 +22,11 @@
 - [Alembic](https://alembic.sqlalchemy.org/en/latest/)
 - [FastAPI](https://fastapi.tiangolo.com/)
 
-## Other Resources
+## Repositories
 
 - [FastAPI Best Practices](https://github.com/zhanymkanov/fastapi-best-practices)
+- [FastAPI Backend Template](https://github.com/Aeternalis-Ingenium/FastAPI-Backend-Template)
+- [FastAPI MongoDB](https://github.com/grillazz/fastapi-mongodb)
 
 ## Helpers
 
