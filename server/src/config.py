@@ -1,16 +1,44 @@
 """
-The global configurations.
+The global configurations. includes:
+
+- External settings or configurations.
+e.g secret keys, database credentials, credentials for email services, etc.
+
+- Most of these settings are variable (can change), like environment mode.
+And many could be sensitive, like secrets.
 """
-from pydantic import AnyUrl, PostgresDsn
-from pydantic_settings import BaseSettings
+
+from functools import lru_cache
+
+from pydantic import AnyUrl, ValidationError
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+from .logging_config import logger
 
 
-class AppSettings(BaseSettings):
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        env_prefix = "app_"
+class Settings(BaseSettings):
+    allowed_cors_origins: set[AnyUrl]
+    database_dsn: str
+    environment: str
+    show_docs_environment: str
 
-    DATABASE_URL: PostgresDsn
-    IS_GOOD_ENV: bool = True
-    ALLOWED_CORS_ORIGINS: set[AnyUrl]
+    model_config = SettingsConfigDict(
+        case_sensitive=True,
+        env_file=".env",
+        env_file_encoding="utf-8",
+    )
+
+
+@lru_cache
+def get_settings() -> Settings:
+    settings = None
+
+    try:
+        settings = Settings()
+
+    except ValidationError as error:
+        logger.error(error)
+
+    else:
+        logger.info("🛠️  Get settings successfully.")
+        return settings

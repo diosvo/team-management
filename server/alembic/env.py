@@ -1,20 +1,11 @@
-from logging.config import fileConfig
-
 from alembic import context
 from alembic.runtime.migration import MigrationContext, MigrationInfo
 from sqlalchemy import engine_from_config, pool, text
-from src.database import DATABASE_URL, metadata
+from src.database import DATABASE_DSN, metadata
 
 # Alembic Config object, which provides access to the values within the `.ini` file in use.
 config = context.config
-config.set_main_option(
-    name="sqlalchemy.url", value=f"postgresql+psycopg2://{DATABASE_URL}"
-)
-
-# Interpret the config file for Python logging.
-# This line sets up loggers basically.
-if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+config.set_main_option(name="sqlalchemy.url", value=DATABASE_DSN)
 
 
 def include_name(name: str, type_: str, **kwargs) -> bool:
@@ -36,7 +27,7 @@ def update_history(ctx: MigrationContext, step: MigrationInfo, **kwargs) -> None
         message = step.up_revision.doc
         # Ensure that single quotes in the message are escaped properly
         message = message.replace("'", "''")
-        
+
         sql_command = text(
             "INSERT INTO alembic_version_history (version_num, message, applied_at) VALUES (:revision_id, :message, NOW())"
         )

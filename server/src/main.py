@@ -2,29 +2,28 @@
 The root of the project, which inits the FastAPI application.
 """
 
-import logging
 from contextlib import asynccontextmanager
 
 from fastapi import APIRouter, FastAPI
-from starlette.config import Config
 
+from .config import get_settings
 from .database import engine, metadata
 from .exceptions import exception_handlers
-from .logging_config import setup_logging
+from .logging_config import logger
 
-# Setup logging configuration at the start
-setup_logging()
+# Read .env values
+settings = get_settings()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     metadata.create_all(bind=engine)
-    logging.info("Connected to database.")
+    logger.info("🛢️  Connected to database.")
 
     try:
         yield
     finally:
-        logging.error("Database connection failed.")
+        logger.error("🛢️  Database connection failed.")
 
 
 """Metadata and Docs URLs
@@ -34,14 +33,13 @@ Hide docs by default. Show it explicitly on the selected envs only.
 References:
 - https://fastapi.tiangolo.com/tutorial/metadata/
 """
-config = Config(".env")
-ENVIRONMENT = config("ENVIRONMENT")
-SHOW_DOCS_ENVIRONMENT = "dev"
 
 TAGS_METADATA = [
     {"name": "<TAG_NAME>", "description": "<description>"},
 ]
-openapi_tags = TAGS_METADATA if ENVIRONMENT in SHOW_DOCS_ENVIRONMENT else None
+openapi_tags = (
+    TAGS_METADATA if settings.environment in settings.show_docs_environment else None
+)
 
 app = FastAPI(
     title="Saigon Rovers Basketball Club",
