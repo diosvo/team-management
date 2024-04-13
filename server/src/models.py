@@ -2,45 +2,66 @@
 The global models.
 """
 
-from datetime import datetime
-from typing import Any
+from copy import deepcopy
+from typing import Any, Callable, Optional, TypeVar
 
-from fastapi.encoders import jsonable_encoder
-from pydantic import BaseModel, ConfigDict, model_validator
-from zoneinfo import ZoneInfo
+from pydantic import BaseModel, ConfigDict, create_model
+from pydantic.fields import FieldInfo
 
-
-def convert_datetime_to_gmt(dt: datetime) -> str:
-    if not dt.tzinfo:
-        dt = dt.replace(tzinfo=ZoneInfo("UTC"))
-
-    return dt.strftime("%Y-%m-%dT%H:%M:%S%z")
+T = TypeVar("T", bound="BaseModel")
 
 
 class CustomModel(BaseModel):
-    """A standard datetime format for all subclasses of the base model.
-
-    - Drops microseconds to 0 in all date formats.
-    - Serializes all datetime fields to standard format with explicit timezone.
-    """
     model_config = ConfigDict(
-        json_encoders={datetime: convert_datetime_to_gmt},
+        from_attributes=True,
         populate_by_name=True,
+        use_attribute_docstrings=True,
+        use_enum_values=True,
     )
 
-    @model_validator(mode="before")
-    @classmethod
-    def set_null_microseconds(cls, data: dict[str, Any]) -> dict[str, Any]:
-        datetime_fields = {
-            key: value.replace(microsecond=0)
-            for key, value in data.items()
-            if isinstance(key, datetime)
-        }
 
-        return {**data, **datetime_fields}
+def optional(
+    include: Optional[list[str]] = None, exclude: Optional[list[str]] = None
+) -> Callable[[type[T]], type[T]]:
+    """Decorator function used to modify Pydantic model's fields.
 
-    def serializable_dict(self, **kwargs) -> Any:
-        """Return a dict which contains only serializable fields."""
-        default_dict = self.model_dump()
+    If no fields are specified, all fields will be optional:
 
-        return jsonable_encoder(default_dict)
+    ```python
+    @optional()
+    class Model(ExtendedModel):
+        pass
+    ```
+    """
+
+    if exclude is None:
+        exclude = []
+
+    def decorator(model: type[T]) -> type[T]:
+        def make_optional(
+            field: FieldInfo, default: Any = None
+        ) -> tuple[Any, FieldInfo]:
+            new = deepcopy(field)
+            new.default = default
+            new.annotation = Optional[field.annotation or Any]
+            return new.annotation, new
+
+        fields = model.model_fields
+
+        if include is None:
+            fields = fields.items()
+        else:
+            fields = ((key, value) for key, value in fields.items() if key in include)
+
+        return create_model(
+            model.__name__,
+            __base__=model,
+            __module__=model.__module__,
+            **{
+                field_name: make_optional(field_info)
+                for field_name, field_info in fields
+                if exclude is None or field_name not in exclude
+            },
+        )
+
+    return decorator
