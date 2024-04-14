@@ -17,9 +17,9 @@ POSTGRES_INDEXES_NAMING_CONVENTION = {
     "pk": "%(table_name)s_pkey",
 }
 
-DATABASE_DSN = settings.database_dsn
+SQLALCHEMY_DATABASE_URI = str(settings.SQLALCHEMY_DATABASE_URI)
 
-engine = create_engine(DATABASE_DSN)
+engine = create_engine(SQLALCHEMY_DATABASE_URI)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 metadata = MetaData(naming_convention=POSTGRES_INDEXES_NAMING_CONVENTION)
 

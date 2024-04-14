@@ -1,11 +1,11 @@
 from alembic import context
 from alembic.runtime.migration import MigrationContext, MigrationInfo
 from sqlalchemy import engine_from_config, pool, text
-from src.database import DATABASE_DSN, metadata
+from src.database import SQLALCHEMY_DATABASE_URI, metadata
 
 # Alembic Config object, which provides access to the values within the `.ini` file in use.
 config = context.config
-config.set_main_option(name="sqlalchemy.url", value=DATABASE_DSN)
+config.set_main_option(name="sqlalchemy.url", value=SQLALCHEMY_DATABASE_URI)
 
 
 def include_name(name: str, type_: str, **kwargs) -> bool:
