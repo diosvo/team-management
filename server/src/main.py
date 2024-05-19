@@ -9,9 +9,10 @@ from fastapi.routing import APIRoute
 from starlette.middleware.cors import CORSMiddleware
 
 from .config import get_settings
-from .database import engine, metadata
+from .database.models import engine, metadata
 from .exceptions import exception_handlers
 from .logging_config import logger
+from .users.router import router as users_router
 
 # Read .env values
 settings = get_settings()
@@ -19,49 +20,50 @@ settings = get_settings()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    logger.info("··· Starting to migrate database ···")
     metadata.create_all(bind=engine)
-    logger.info("🛢️  Connected to database.")
 
     try:
+        logger.info("✅  Database migration done!")
         yield
-    finally:
-        logger.error("🛢️  Database connection failed.")
+
+    except Exception as exc:
+        logger.debug(str(exc))
+        logger.error("❌  Database migration failed.")
 
 
 """Metadata and Docs URLs
 
 Hide docs by default. Show it explicitly on the selected envs only.
 
-References:
+.. seealso::
 - https://fastapi.tiangolo.com/tutorial/metadata/
 - https://fastapi.tiangolo.com/advanced/generate-clients/#custom-generate-unique-id-function
 """
-
-TAGS_METADATA = [
-    {"name": "<TAG_NAME>", "description": "<description>"},
-]
-openapi_tags = (
-    TAGS_METADATA if settings.ENVIRONMENT in settings.SHOW_DOCS_ENVIRONMENT else None
-)
 
 
 def custom_generate_unique_id(route: APIRoute) -> str:
     return f"{route.tags[0]}-{route.name}"
 
 
-app = FastAPI(
-    title=settings.PROJECT_NAME,
-    version="1.0.0",
-    contact={
+app_configs = {
+    "title": settings.PROJECT_NAME,
+    "version": "1.0.0",
+    "contact": {
         "name": "Dios Vo",
         "url": "https://www.linkedin.com/in/diosvo/",
         "email": "vtmn1212@gmail.com",
     },
-    lifespan=lifespan,
-    openapi_tags=openapi_tags,
-    exception_handlers=exception_handlers,
-    generate_unique_id_function=custom_generate_unique_id,
-)
+    "lifespan": lifespan,
+    "exception_handlers": exception_handlers,
+    "generate_unique_id_function": custom_generate_unique_id,
+}
+
+if settings.ENVIRONMENT != settings.SHOW_DOCS_ENVIRONMENT:
+    app_configs["docs_url"] = None
+
+
+app = FastAPI(**app_configs)
 
 """APP ROUTES"""
 
@@ -77,6 +79,6 @@ if settings.BACKEND_CORS_ORIGINS:
         allow_headers=["*"],
     )
 
-APP_ROUTERS: list[APIRouter] = []
+APP_ROUTERS: list[APIRouter] = [users_router]
 for router in APP_ROUTERS:
     app.include_router(router=router, prefix=settings.API_V1_STR)

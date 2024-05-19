@@ -24,6 +24,7 @@
 
 ## Repositories
 
+- [Full Stack FastAPI Template](https://github.com/tiangolo/full-stack-fastapi-template/tree/master)
 - [FastAPI Best Practices](https://github.com/zhanymkanov/fastapi-best-practices)
 - [FastAPI Backend Template](https://github.com/Aeternalis-Ingenium/FastAPI-Backend-Template)
 - [FastAPI MongoDB](https://github.com/grillazz/fastapi-mongodb)

@@ -2,12 +2,18 @@
   "cSpell.words": [
     "autoflush",
     "changethis",
+    "dateutil",
     "Dios",
     "diosvo",
+    "Nhung",
+    "optionalize",
     "pkey",
     "pydantic",
+    "relativedelta",
+    "seealso",
     "sessionmaker",
     "SQLALCHEMY",
+    "Starlette",
     "uvicorn"
   ]
 }

@@ -1,18 +1,27 @@
 from alembic import context
 from alembic.runtime.migration import MigrationContext, MigrationInfo
 from sqlalchemy import engine_from_config, pool, text
-from src.database import SQLALCHEMY_DATABASE_URI, metadata
+from src.database.models import SQLALCHEMY_DATABASE_URI, metadata
 
 # Alembic Config object, which provides access to the values within the `.ini` file in use.
 config = context.config
 config.set_main_option(name="sqlalchemy.url", value=SQLALCHEMY_DATABASE_URI)
 
 
-def include_name(name: str, type_: str, **kwargs) -> bool:
-    """Prevent auto generated migrations to delete the newly created table
+def include_name(name: str, type_: str, *args) -> bool:
+    """Prevent auto generated migrations from deleting or ignoring necessary tables.
 
-    Reference:
-    - https://stackoverflow.com/questions/73248731/alembic-store-extra-information-in-alembic-version-table
+    This function filters objects to include in the migration script based on their type and name.
+
+    :param name: The name of the database object.
+    :param type_ : The type of the database object, e.g., 'table','column'.
+    :param *args: Additional arguments provided by the migration environment.
+
+    :return: True if the object should be included, False otherwise.
+
+    .. seealso::
+
+       :ref: https://stackoverflow.com/questions/73248731/alembic-store-extra-information-in-alembic-version-table
     """
     if type_ == "table" and name == "alembic_version_history":
         return False
