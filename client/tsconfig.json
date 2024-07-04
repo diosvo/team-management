@@ -1,0 +1,49 @@
+{
+  "angularCompilerOptions": {
+    "extendedDiagnostics": {
+      "defaultCategory": "error"
+    },
+    "strictTemplates": true
+  },
+  "compileOnSave": false,
+  "compilerOptions": {
+    "declaration": false,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "lib": [
+      "dom",
+      "ES2022"
+    ],
+    "module": "ES2022",
+    "moduleResolution": "node",
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "outDir": "./dist/out-tsc",
+    "paths": {
+      "@tm/assets/*": [
+        "./assets/*"
+      ],
+      "@tm/common/*": [
+        "./src/app/common/*"
+      ],
+      "@tm/core-ui/*": [
+        "./src/app/core-ui/*"
+      ],
+      "@tm/features/*": [
+        "./src/app/features/*"
+      ],
+      "@tm/layouts/*": [
+        "./src/app/layouts/*"
+      ]
+    },
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "strict": true,
+    "target": "ES2022",
+    "useDefineForClassFields": false
+  }
+}

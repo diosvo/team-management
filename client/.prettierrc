@@ -1,0 +1,17 @@
+{
+  "arrowParens": "avoid",
+  "bracketSpacing": false,
+  "embeddedLanguageFormatting": "off",
+  "overrides": [
+    {
+      "files": "*.html",
+      "options": {
+        "parser": "angular"
+      }
+    }
+  ],
+  "printWidth": 100,
+  "quoteProps": "preserve",
+  "singleQuote": true,
+  "trailingComma": "all"
+}
