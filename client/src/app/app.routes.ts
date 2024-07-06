@@ -1,5 +1,31 @@
 import {Routes} from '@angular/router';
 
+const SECURE_ROUTES: Routes = [
+  {
+    path: 'dashboard',
+    canMatch: [], // PermissionGuard
+    data: {
+      permission: [],
+    },
+    title: 'Dashboard',
+    loadComponent: () =>
+      import('@tm/features/dashboard/dashboard.component').then(
+        ({DashboardComponent}) => DashboardComponent,
+      ),
+  },
+];
+
+const PUBLIC_ROUTES: Routes = [
+  {
+    path: '',
+    loadChildren: undefined, // SecurityModule
+  },
+  {
+    path: 'not-authorized',
+    loadChildren: undefined, // NotAuthorizedModule
+  },
+];
+
 export const routes: Routes = [
   {
     path: '',
@@ -13,20 +39,7 @@ export const routes: Routes = [
       import('@tm/layouts/auth-layout/auth-layout.component').then(
         ({AuthLayoutComponent}) => AuthLayoutComponent,
       ),
-    children: [
-      {
-        path: 'dashboard',
-        canMatch: [], // PermissionGuard
-        data: {
-          permission: [],
-        },
-        title: 'Dashboard',
-        loadComponent: () =>
-          import('@tm/features/dashboard/dashboard.component').then(
-            ({DashboardComponent}) => DashboardComponent,
-          ),
-      },
-    ],
+    children: SECURE_ROUTES,
   },
   // Domain -> check authenticated guard
   // --> Passed: AuthLayout
@@ -37,16 +50,7 @@ export const routes: Routes = [
       import('@tm/layouts/public-layout/public-layout.component').then(
         ({PublicLayoutComponent}) => PublicLayoutComponent,
       ),
-    // children: [
-    //   {
-    //     path: '',
-    //     loadChildren: undefined, // SecurityModule
-    //   },
-    //   {
-    //     path: 'not-authorized',
-    //     loadChildren: undefined, // NotAuthorizedModule
-    //   },
-    // ],
+    // children: PUBLIC_ROUTES
   },
   {
     path: '**',
