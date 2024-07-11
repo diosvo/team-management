@@ -1,7 +1,7 @@
 import logging.config
 from functools import lru_cache
 
-import yaml
+from yaml import safe_load
 
 
 @lru_cache
@@ -18,7 +18,7 @@ def setup_logging() -> logging.Logger:
     """
     with open("logging.yaml", "r") as f:
         # Load the configuration only once using `lru_cache`.
-        log_config = yaml.safe_load(f.read())
+        log_config = safe_load(f.read())
         logging.config.dictConfig(log_config)
 
     logger = logging.getLogger()

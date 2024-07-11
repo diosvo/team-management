@@ -1,4 +1,6 @@
+# Local Development
 __pycache__/
+.venv
 .env
 
 # Test mode

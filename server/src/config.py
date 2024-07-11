@@ -8,8 +8,9 @@ e.g secret keys, database credentials, credentials for email services, etc.
 And many could be sensitive, like secrets.
 """
 
-import secrets
 from functools import lru_cache
+from os import path
+from secrets import token_urlsafe
 from typing import Annotated, Any, Literal
 
 from pydantic import (
@@ -37,9 +38,14 @@ def parse_cors(value: Any) -> list[str] | str:
     raise ValueError(value)
 
 
+# Find an exact path of .env file when we active the virtual env
+ENV = path.join(path.dirname(__file__), ".env")
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        case_sensitive=True, env_file=".env", env_file_encoding="utf-8", extra="ignore"
+        env_file=ENV,
+        env_file_encoding="utf-8",
+        extra="ignore",
     )
 
     # [Global]
@@ -50,7 +56,7 @@ class Settings(BaseSettings):
     SHOW_DOCS_ENVIRONMENT: str = "dev"
 
     # [Authentication & Authorization]
-    SECRET_KEY: str = secrets.token_urlsafe(32)
+    SECRET_KEY: str = token_urlsafe(32)
     # 60 minutes * 24 hours * 7 days = 7 days
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7
 

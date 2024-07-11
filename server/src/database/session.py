@@ -1,5 +1,3 @@
-# Moving database.py into here
-
 """
 Postgres Database Connection with SQLAlchemy:
 
@@ -30,6 +28,7 @@ from collections.abc import Generator
 
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session, sessionmaker
+
 from src.logging_config import logger
 
 from .models import engine
