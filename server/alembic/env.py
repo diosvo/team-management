@@ -1,11 +1,24 @@
+from importlib import import_module
+
+from sqlalchemy import engine_from_config, pool, text
+
 from alembic import context
 from alembic.runtime.migration import MigrationContext, MigrationInfo
-from sqlalchemy import engine_from_config, pool, text
-from src.database.models import SQLALCHEMY_DATABASE_URI, metadata
+from src.database.constants import METADATA, SQLALCHEMY_DATABASE_URI
 
 # Alembic Config object, which provides access to the values within the `.ini` file in use.
 config = context.config
 config.set_main_option(name="sqlalchemy.url", value=SQLALCHEMY_DATABASE_URI)
+
+"""
+🛣️ Get the models paths and import each model dynamically.
+"""
+paths = config.get_main_option("models_paths").split(",")
+
+for path in paths:
+    models_module = import_module(path)
+    # Ensure that the table in each module is registered
+    Base = models_module.Base
 
 
 def include_name(name: str, type_: str, *args) -> bool:
@@ -30,15 +43,16 @@ def include_name(name: str, type_: str, *args) -> bool:
 
 
 def update_history(ctx: MigrationContext, step: MigrationInfo, **kwargs) -> None:
+    # 🏓 Create `history_table` only for the first time
     revision_id = step.up_revision_id
 
     if step.is_upgrade:
         message = step.up_revision.doc
         # Ensure that single quotes in the message are escaped properly
-        message = message.replace("'", "''")
+        message = message.replace("'", "''") or "No message provided!"
 
         sql_command = text(
-            "INSERT INTO alembic_version_history (version_num, message, applied_at) VALUES (:revision_id, :message, NOW())"
+            "INSERT INTO alembic_version_history (version_num, applied_at,message) VALUES (:revision_id, now(), :message)"
         )
         ctx.connection.execute(
             sql_command, {"revision_id": revision_id, "message": message}
@@ -66,7 +80,7 @@ def run_migrations_offline() -> None:
     context.configure(
         url=url,
         literal_binds=True,
-        target_metadata=metadata,
+        target_metadata=METADATA,
         dialect_opts={"paramstyle": "named"},
         include_name=include_name,
         on_version_apply=update_history,
@@ -81,7 +95,6 @@ def run_migrations_online() -> None:
 
     In this scenario we need to create an Engine
     and associate a connection with the context.
-
     """
     connectable = engine_from_config(
         config.get_section(config.config_ini_section, {}),
@@ -92,7 +105,7 @@ def run_migrations_online() -> None:
     with connectable.connect() as connection:
         context.configure(
             connection=connection,
-            target_metadata=metadata,
+            target_metadata=METADATA,
             include_name=include_name,
             on_version_apply=update_history,
         )

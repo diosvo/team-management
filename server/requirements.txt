@@ -1,12 +1,13 @@
+alembic
 bcrypt==4.0.1
 fastapi-slim
-fastapi_storages
 passlib[bcrypt]
 psycopg
 pydantic
 pydantic-settings
 python-dateutil
 python-jose[cryptography]
+python-multipart
 pyyaml
 sqlalchemy
 starlette

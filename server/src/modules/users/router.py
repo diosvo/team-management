@@ -8,18 +8,20 @@ from typing import Annotated, List
 from fastapi import APIRouter, Depends, Query
 from pydantic import UUID4
 from sqlalchemy.sql import and_, or_
-from src.auth.service import get_password_hash
+
+from src.auth.dependencies import rbac
+from src.auth.security import get_password_hash
 from src.database.dependencies import get_repository
 from src.database.repository import DatabaseRepository
 
-from .models import User
-from .schemas import UserCreate, UserPublic, UsersPublic, UserUpdate
+from .models import UserCreate, UserPublic, UsersPublic, UserUpdate, UserUpdateByAdmin
+from .schemas import User
 from .utils import Role, State
 
 KEY = "users"
 
 router = APIRouter(prefix=f"/{KEY}", tags=[KEY])
-Repository = Annotated[DatabaseRepository[User], Depends(get_repository(User))]
+RepositoryDep = Annotated[DatabaseRepository[User], Depends(get_repository(User))]
 
 
 @router.get(
@@ -28,7 +30,7 @@ Repository = Annotated[DatabaseRepository[User], Depends(get_repository(User))]
     description="Filter and retrieve users with allowance parameters.",
 )
 def read_users(
-    repository: Repository,
+    repository: RepositoryDep,
     page: int = 0,
     limit: int = 10,
     state: State = State.ACTIVE,
@@ -36,8 +38,7 @@ def read_users(
     q: Annotated[str | None, Query(max_length=50)] = "",
 ):
     search_conditions = [
-        getattr(User, field).contains(q)
-        for field in ["username", "full_name", "email", "note"]
+        getattr(User, field).contains(q) for field in ["username", "full_name"]
     ]
     roles_conditions = [User.roles.any(role.value) for role in roles]
 
@@ -55,9 +56,9 @@ def read_users(
 @router.get(
     "/{user_id}",
     response_model=UserPublic,
-    description="Return detailed information about a user.",
+    description="Detailed information about a user.",
 )
-def get_user(repository: Repository, user_id: UUID4):
+def get_user(repository: RepositoryDep, user_id: UUID4):
     return repository.get(ident=user_id)
 
 
@@ -66,7 +67,7 @@ def get_user(repository: Repository, user_id: UUID4):
     status_code=HTTPStatus.CREATED,
     description="Create new user without the need to be logged in.",
 )
-def create_user(repository: Repository, user_create: UserCreate) -> str:
+def create_user(repository: RepositoryDep, user_create: UserCreate) -> str:
     user_create.password = get_password_hash(user_create.password)
     repository.create(data=user_create)
 
@@ -74,13 +75,28 @@ def create_user(repository: Repository, user_create: UserCreate) -> str:
 
 
 @router.patch(
-    "/{user_id}", status_code=HTTPStatus.OK, description="Update the details of a user."
+    "/by_admin",
+    status_code=HTTPStatus.OK,
+    description="Update the details of a user by admin.",
+    dependencies=[rbac(Role.ADMIN)],
+)
+def update_user_by_admin(
+    repository: RepositoryDep,
+    user_in: UserUpdateByAdmin,
+) -> str:
+    repository.update(pk="user_id", ident=user_in.user_id, data=user_in)
+
+    return HTTPStatus.OK.phrase
+
+
+@router.patch(
+    "/{user_id}", status_code=HTTPStatus.OK, description="Update the details by user."
 )
 def update_user(
-    repository: Repository,
+    repository: RepositoryDep,
     user_id: UUID4,
     user_in: UserUpdate,
-):
+) -> str:
     repository.update(pk="user_id", ident=user_id, data=user_in)
 
     return HTTPStatus.OK.phrase
@@ -90,6 +106,9 @@ def update_user(
     "/{user_id}",
     status_code=HTTPStatus.NO_CONTENT,
     description="Delete a user (only administrator can do this action!)",
+    dependencies=[rbac(Role.ADMIN)],
 )
-def delete_user(repository: Repository, user_id: UUID4) -> None:
+def delete_user(repository: RepositoryDep, user_id: UUID4) -> None:
     repository.delete(ident=user_id)
+
+    return HTTPStatus.OK.phrase

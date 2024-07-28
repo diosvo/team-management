@@ -4,14 +4,17 @@ Revision ID: ${up_revision}
 Revises: ${down_revision | comma,n}
 Create Date: ${create_date}
 
+✍🏻 Keep Alembic's auto-generated parts as much as possible.
 """
+from typing import Sequence, Union
+
 from alembic import op
-from sqlalchemy import Column, DateTime, Integer, String, func
+import sqlalchemy as sa
 ${imports if imports else ""}
 
-revision = ${repr(up_revision)}
-down_revision = ${repr(down_revision)}
-depends_on = ${repr(depends_on)}
+# Revision Identifiers
+revision: str = ${repr(up_revision)}
+down_revision: str | None = ${repr(down_revision)}
 
 
 def upgrade() -> None:

@@ -29,6 +29,12 @@ class DatabaseRepository(Generic[Model]):
         self.model = model
         self.session = session
 
+    def __enter__(self):
+        return self.session
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.session.close()
+
     def filter(
         self,
         page: int = 0,

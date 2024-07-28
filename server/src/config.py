@@ -1,5 +1,5 @@
 """
-The global configurations. includes:
+The global configurations, includes:
 
 - External settings or configurations.
 e.g secret keys, database credentials, credentials for email services, etc.
@@ -41,10 +41,12 @@ def parse_cors(value: Any) -> list[str] | str:
 # Find an exact path of .env file when we active the virtual env
 ENV = path.join(path.dirname(__file__), ".env")
 
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=ENV,
         env_file_encoding="utf-8",
+        env_ignore_empty=True,
         extra="ignore",
     )
 
@@ -56,9 +58,11 @@ class Settings(BaseSettings):
     SHOW_DOCS_ENVIRONMENT: str = "dev"
 
     # [Authentication & Authorization]
+    ALGORITHM: str = "HS256"
+    TOKEN_TYPE: str = "Bearer"
     SECRET_KEY: str = token_urlsafe(32)
-    # 60 minutes * 24 hours * 7 days = 7 days
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7
+    SESSION_COOKIE_NAME: str = "tm.token"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
 
     # [Server]
     BACKEND_CORS_ORIGINS: Annotated[
@@ -103,7 +107,7 @@ class Settings(BaseSettings):
                 "for security, please change it, at least for deployments."
             )
             if self.ENVIRONMENT == "dev":
-                logger.warn(message, stacklevel=1)
+                logger.warning(message, stacklevel=1)
             else:
                 raise ValueError(message)
 
@@ -128,3 +132,6 @@ def get_settings() -> Settings:
     else:
         logger.info("🛠️  Get settings successfully.")
         return settings
+
+
+settings = get_settings()
