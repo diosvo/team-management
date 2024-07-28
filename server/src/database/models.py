@@ -1,5 +1,6 @@
 from sqlalchemy import MetaData, create_engine
 from sqlalchemy.orm import declarative_base
+
 from src.config import get_settings
 
 settings = get_settings()

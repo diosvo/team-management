@@ -1,6 +1,13 @@
-alembic
 bcrypt==4.0.1
-fastapi[all]
+fastapi-slim
+fastapi_storages
 passlib[bcrypt]
 psycopg
+pydantic
+pydantic-settings
+python-dateutil
 python-jose[cryptography]
+pyyaml
+sqlalchemy
+starlette
+uvicorn

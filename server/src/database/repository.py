@@ -7,6 +7,7 @@ from sqlalchemy import BinaryExpression, exc
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import func, select
 from sqlalchemy.sql.selectable import TypedReturnsRows
+
 from src.models import CustomModel
 
 from .models import Base
@@ -133,6 +134,13 @@ class DatabaseRepository(Generic[Model]):
             )
 
     def delete(self, ident: Identity) -> None:
+        """
+        Delete an existing instance.
+
+        :param `ident`: The primary key value.
+
+        :return: None if deleting successfully.
+        """
         instance = self.get(ident)
 
         self.session.delete(instance)

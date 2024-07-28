@@ -10,13 +10,13 @@ from dateutil.relativedelta import relativedelta
 from pydantic import (
     UUID4,
     AwareDatetime,
-    EmailStr,
     Field,
     StringConstraints,
     field_validator,
 )
-from src.models import CustomModel, optional
 from typing_extensions import Annotated
+
+from src.models import CustomModel, optional
 
 from .utils import Role, State
 
@@ -37,9 +37,8 @@ class UserBase(CustomModel):
         StringConstraints(
             max_length=64,
         ),
-    ] = Field(examples=["Vo Thi My Nhung"])
+    ] = Field(examples=["Dios Vo"])
     dob: str = Field(title="Date of Birth", examples=["12/12/1999"])
-    email: EmailStr = Field(examples=["vtmn1212@gmail.com"])
 
     @field_validator("dob", mode="before")
     def parse_date(cls, value: str) -> date:

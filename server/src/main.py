@@ -3,15 +3,17 @@ The root of the project, which inits the FastAPI application.
 """
 
 from contextlib import asynccontextmanager
+from time import process_time
 
-from fastapi import APIRouter, FastAPI
+from fastapi import APIRouter, FastAPI, Request, Response
 from fastapi.routing import APIRoute
 from starlette.middleware.cors import CORSMiddleware
 
 from .config import get_settings
 from .database.models import engine, metadata
-from .exceptions import exception_handlers
 from .logging_config import logger
+from .middlewares.exception_handler import ExceptionHandlerMiddleware
+from .middlewares.rate_limiting import RateLimitingMiddleware
 from .users.router import router as users_router
 
 # Read .env values
@@ -55,7 +57,6 @@ app_configs = {
         "email": "vtmn1212@gmail.com",
     },
     "lifespan": lifespan,
-    "exception_handlers": exception_handlers,
     "generate_unique_id_function": custom_generate_unique_id,
 }
 
@@ -65,7 +66,17 @@ if settings.ENVIRONMENT != settings.SHOW_DOCS_ENVIRONMENT:
 
 app = FastAPI(**app_configs)
 
-"""APP ROUTES"""
+"""🛡️ Middleware"""
+
+
+@app.middleware("http")
+async def add_process_time_header(request: Request, call_next) -> Response:
+    start = process_time()
+    response = await call_next(request)
+    response.headers["X-Process-Time"] = str(round(process_time() - start, 2))
+
+    return response
+
 
 # Set all CORS enabled origins
 if settings.BACKEND_CORS_ORIGINS:
@@ -78,6 +89,11 @@ if settings.BACKEND_CORS_ORIGINS:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    app.add_middleware(ExceptionHandlerMiddleware)
+    app.add_middleware(RateLimitingMiddleware)
+
+
+"""🚥 Routes"""
 
 APP_ROUTERS: list[APIRouter] = [users_router]
 for router in APP_ROUTERS:
