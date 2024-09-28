@@ -9,6 +9,7 @@ from sqlalchemy.schema import CheckConstraint, Column
 from sqlalchemy.sql.expression import text
 from sqlalchemy.sql.sqltypes import DateTime
 from sqlalchemy.types import ARRAY, Enum, String
+
 from src.database.models import Base
 
 from .utils import Role, State
@@ -23,17 +24,11 @@ class User(Base):
         default=uuid4,
         nullable=False,
     )
-    username = Column(String(length=16), unique=True, nullable=True)
+    username = Column(String(length=16), unique=True, nullable=False)
     full_name = Column(String(length=64), nullable=False)
     dob = Column(
         String,
         comment="Date of birth (The value is handled by Pydantic before adding into the database).",
-        nullable=False,
-    )
-    email = Column(
-        String,
-        unique=True,
-        comment="Validate via pydantic before inserting into the database",
         nullable=False,
     )
     password = Column(
@@ -59,8 +54,4 @@ class User(Base):
         onupdate=text("now()"),
         server_default=text("now()"),
         nullable=False,
-    )
-    note = Column(
-        String(length=128),
-        nullable=True,
     )

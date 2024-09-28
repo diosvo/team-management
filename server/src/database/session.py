@@ -25,7 +25,9 @@ See Also:
 """
 
 from collections.abc import Generator
+from typing import Annotated
 
+from fastapi import Depends
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -38,15 +40,18 @@ def get_db_session() -> Generator[Session, None, None]:
     """
     The session is committed if everything goes well and rolled back if an exception is raised.
     """
-    factory = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    factory = sessionmaker(bind=engine)
+    session = factory()
 
-    with factory() as session:
-        try:
-            yield session
-            session.commit()
+    try:
+        yield session
+        # Commit the session if everything went fine
+        session.commit()
 
-        except SQLAlchemyError as error:
-            session.rollback()
-            logger.exception(error)
+    except (SQLAlchemyError, Exception) as error:
+        session.rollback()
+        logger.error("🚨 Database session rolled back due to an error.")
+        raise error
 
-            raise
+
+SessionDep = Annotated[Session, Depends(get_db_session)]

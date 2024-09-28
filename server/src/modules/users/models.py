@@ -7,23 +7,21 @@ from re import match
 from uuid import uuid4
 
 from dateutil.relativedelta import relativedelta
-from pydantic import (
-    UUID4,
-    AwareDatetime,
-    Field,
-    StringConstraints,
-    field_validator,
-)
+from pydantic import field_validator
+from pydantic.fields import Field
+from pydantic.types import UUID4, AwareDatetime, StringConstraints
 from typing_extensions import Annotated
 
-from src.models import CustomModel, optional
+from src.decorators.optional import optional
+from src.decorators.unset import unset
+from src.models import CustomModel
 
 from .utils import Role, State
 
 
 class UserBase(CustomModel):
     username: Annotated[
-        str | None,
+        str,
         StringConstraints(
             min_length=6,
             max_length=16,
@@ -31,7 +29,7 @@ class UserBase(CustomModel):
             strip_whitespace=True,
             pattern=r"^[a-zA-Z0-9_\.]+$",
         ),
-    ] = Field(default=None, examples=["diosvo"])
+    ] = Field(examples=["diosvo"])
     full_name: Annotated[
         str,
         StringConstraints(
@@ -110,12 +108,12 @@ class UserPublic(UserBase):
         default=State.ACTIVE, validate_default=True
     )
     last_modified: AwareDatetime
-    note: Annotated[
-        str | None,
-        StringConstraints(
-            max_length=128,
-        ),
-    ] = None
+
+
+@unset(["last_modified"])
+@optional(exclude=["user_id"])
+class UserUpdateByAdmin(UserPublic):
+    pass
 
 
 class UsersPublic(CustomModel):

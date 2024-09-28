@@ -1,23 +1,27 @@
 from datetime import datetime, timedelta
+from http import HTTPStatus
 
-from fastapi import Request, Response, status
+from fastapi import Request, Response
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from src.logging_config import logger
+from src.models import ResponseContent
+from src.utils.responses import error_response
 
 
 class RateLimitingMiddleware(BaseHTTPMiddleware):
     # Rate limiting configurations
-    RATE_LIMIT_REQUESTS = 3
-    RATE_LIMIT_DURATION = timedelta(minutes=1)
+    RATE_LIMIT_REQUESTS = 1000
+    RATE_LIMIT_DURATION = timedelta(days=1)
 
     def __init__(self, app) -> None:
         super().__init__(app)
         # Dictionary to store request counts for each IP
         self.request_counts = {}
 
-    async def dispatch(self, request: Request, call_next) -> JSONResponse | Response:
+    async def dispatch(
+        self, request: Request, call_next: Response
+    ) -> JSONResponse | Response:
         # Get the client's IP address
         client_ip = request.client.host
 
@@ -35,12 +39,12 @@ class RateLimitingMiddleware(BaseHTTPMiddleware):
         else:
             if request_count >= self.RATE_LIMIT_REQUESTS:
                 # If the request count exceeds the rate limit, return a JSON response with an error message
-                content = {"message": "Rate limit exceeded. Please try again later."}
-                logger.error(msg=content.get('message'))
-
-                return JSONResponse(
-                    status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                    content=content,
+                return error_response(
+                    status_code=HTTPStatus.TOO_MANY_REQUESTS,
+                    content=ResponseContent(
+                        error=self.__class__.__name__,
+                        detail="Rate limit exceeded. Please try again later.",
+                    ),
                 )
             request_count += 1
 
@@ -48,6 +52,4 @@ class RateLimitingMiddleware(BaseHTTPMiddleware):
         self.request_counts[client_ip] = (request_count, datetime.now())
 
         # Proceed with the request
-        response = await call_next(request)
-
-        return response
+        return await call_next(request)

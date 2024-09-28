@@ -4,4 +4,4 @@ __pycache__/
 .env
 
 # Test mode
-# tmp/
+temp/

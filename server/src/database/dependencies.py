@@ -1,7 +1,7 @@
 from collections.abc import Callable
 
-from fastapi import Depends
 from sqlalchemy.orm import Session
+
 from src.database import models, repository, session
 
 
@@ -14,15 +14,15 @@ def get_repository(
     It first takes the database model then returns the dependency, e.g.
 
     ```python
-    Repository = Annotated[
-        DatabaseRepository[Model], 
+    RepositoryDep = Annotated[
+        DatabaseRepository[Model],
         Depends(get_repository(Model))
     ]
     ```
     """
 
     def func(
-        session: Session = Depends(session.get_db_session),
+        session: session.SessionDep,
     ) -> repository.DatabaseRepository:
         return repository.DatabaseRepository(model, session)
 

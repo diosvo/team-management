@@ -2,13 +2,21 @@
 
 Generic single-database configuration.
 
-# Commands
+# 👣 Steps
 
-Create a new revision:
+<u>Step 1</u>: Auto-generate from SQLAlchemy models
 
 ```bash
-alembic revision -m "<message>"
+alembic revision --autogenerate -m "<message>"
 ```
+
+<u>Step 2</u>: Upgrade the specific revision
+
+```bash
+alembic upgrade {<revision_id>,head}
+```
+
+## 🎮 Commands
 
 Display the current revision for a database:
 
@@ -22,14 +30,10 @@ Show current available heads in the script directory:
 alembic heads
 ```
 
-Upgrade the specific revision:
+## 💡 Trouble Shooting
+
+Target database is not up to date:
 
 ```bash
-alembic upgrade {<revision_id>,head}
-```
-
-Auto-generate from SQLAlchemy models:
-
-```bash
-alembic revision --autogenerate -m "<message>"
+alembic stamp head
 ```
