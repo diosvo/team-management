@@ -12,7 +12,6 @@ import {
 
 const Main = () => {
   const [isSmallScreen] = useMediaQuery(['(max-width: 768px)'], {
-    ssr: false, // Disable server-side rendering
     fallback: [false], // Return false on the server, and re-evaluate on the client side
   });
 
