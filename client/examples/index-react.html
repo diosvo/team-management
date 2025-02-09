@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>React Foundations</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <!-- React packages -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <!-- Transform JSX code into regular JS. -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Declarative -->
+    <script type="text/jsx">
+      const app = document.getElementById("app")
+
+      function Header({ title }) {
+        return <h1>{title}</h1>;
+      }
+
+      function HomePage() {
+        const [likes, setLikes] = React.useState(0);
+        const names = ['Ada Lovelace', 'Grace Hopper', 'Margaret Hamilton'];
+
+        function handleClick() {
+          setLikes(likes + 1);
+        }
+
+        return (
+          <div>
+            {/* Nesting the Header component */}
+            <Header title="React" />
+            <ul>
+              {names.map((name) => (
+                <li key={name}>{name}</li>
+              ))}
+            </ul>
+            <button onClick={handleClick}>Like {likes}</button>
+          </div>
+        );
+      }
+
+      const root = ReactDOM.createRoot(app);
+      // Capitalize the React Component
+      root.render(<HomePage />);
+    </script>
+
+    <!-- Pure JS - Imperative -->
+    <!-- <script type="text/javascript">
+      const app = document.getElementById('app');
+      const header = document.createElement('h1');
+      const text = 'Develop. Preview. Ship.';
+      const headerContent = document.createTextNode(text);
+      header.appendChild(headerContent);
+      app.appendChild(header);
+    </script> -->
+  </body>
+</html>
+
+<!-- Props are read-only information that's passed to components. State is information that can change over time, usually triggered by user interaction. -->
