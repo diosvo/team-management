@@ -31,8 +31,12 @@ export default function RootLayout({
       <body className={inter.className}>
         <Provider>{children}</Provider>
         {/* Vercel plugins */}
-        <Analytics />
-        <SpeedInsights />
+        {process.env.NODE_ENV === 'production' && (
+          <>
+            <Analytics />
+            <SpeedInsights />
+          </>
+        )}
       </body>
     </html>
   );
