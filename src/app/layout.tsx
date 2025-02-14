@@ -1,6 +1,9 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 
+import { Analytics } from '@vercel/analytics/next';
+import { SpeedInsights } from '@vercel/speed-insights/next';
+
 import { Provider } from '@/components/ui/provider';
 import './globals.css';
 
@@ -10,7 +13,10 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'SGR Portal',
+  title: {
+    default: 'SGR Portal',
+    template: '%s | SGR Portal',
+  },
   description: 'Saigon Rovers Basketball Club',
   facebook: { appId: '123456789' },
 };
@@ -24,6 +30,9 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <Provider>{children}</Provider>
+        {/* Vercel plugins */}
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
