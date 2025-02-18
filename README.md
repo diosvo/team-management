@@ -1,30 +1,50 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Saigon Rovers Basketball Club Management
 
-## Getting Started
+## 🧑‍💻 Technology Stack
 
-First, run the development server:
+- 🚀 [Next.js](https://nextjs.org/)
+
+  - 🧰 [Drizzle](https://orm.drizzle.team/) as the ORM for migrations and database access.
+  - 🔍 [Zod](https://zod.dev/) for schema validation.
+  - 💾 [Neon](https://vercel.com/marketplace/neon) for PostgresSQL database interaction.
+  - 🔑 [NextAuth.js](https://next-auth.js.org/) for authentication via GitHub (OAuth).
+  - 💃 Using TypeScript, hooks, [Chakra](https://chakra-ui.com/) and other parts of a modern frontend stack.
+
+- 🔒 Secure password hashing by default.
+- 🚢 [Vercel](http://vercel.com/) for deployment
+- 🏭 CI/CD based on GitHub Actions.
+
+> [!NOTE]  
+> Before you begin, ensure that you have [`pnpm`](https://pnpm.io/) package manager on your system.
+
+## Backend
+
+Ensure that PostgresSQL (latest version) is running on your local machine, start it via Homebrew:
 
 ```bash
-npm run dev
+brew services start postgresql@17
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+View the databases directly in admin panels:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+pnpm db:studio
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Then open your browser at https://local.drizzle.studio/.
 
-## Learn More
+## Frontend
 
-To learn more about Next.js, take a look at the following resources:
+Install necessary npm packages:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+pnpm install
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+And start the live server with the following script:
 
-## Deploy on Vercel
+```bash
+pnpm dev
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Then open your browser at http://localhost:3000/.
