@@ -10,11 +10,13 @@
     "@vercel/speed-insights": "^1.2.0",
     "drizzle-orm": "^0.39.3",
     "next": "15.1.6",
+    "next-auth": "5.0.0-beta.25",
     "next-themes": "^0.4.4",
     "pg": "^8.13.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-icons": "^5.4.0"
+    "react-icons": "^5.4.0",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
@@ -38,5 +40,13 @@
     "dev": "next dev",
     "lint": "next lint"
   },
-  "version": "0.1.0"
+  "version": "0.1.0",
+  "pnpm": {
+    "ignoredBuiltDependencies": [
+      "esbuild"
+    ],
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  }
 }

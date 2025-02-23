@@ -7,17 +7,20 @@ import {
   Heading,
   SimpleGrid,
   Text,
-  useMediaQuery,
 } from '@chakra-ui/react';
 
+import { useResponsive } from '@/contexts/responsive-provider';
+
 const Main = () => {
-  const [isSmallScreen] = useMediaQuery(['(max-width: 768px)'], {
-    fallback: [false], // Return false on the server, and re-evaluate on the client side
-  });
+  const { isMobile, isTablet, isDesktop } = useResponsive();
 
   return (
     <>
-      <Box>{isSmallScreen ? 'A' : 'B'}</Box>
+      <div>
+        {isMobile && 'mobile'}
+        {isTablet && 'tablet'}
+        {isDesktop && 'desktop'}
+      </div>
 
       <Text fontSize={['sm', 'md', 'lg', 'xl']}>
         This text adapts across breakpoints
