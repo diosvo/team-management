@@ -2,6 +2,7 @@
 
 import {
   Box,
+  Button,
   Grid,
   GridItem,
   Heading,
@@ -9,13 +10,17 @@ import {
   Text,
 } from '@chakra-ui/react';
 
+import TextEditor from '@/components/text-editor';
+import { ColorModeButton } from '@/components/ui/color-mode';
 import { useResponsive } from '@/contexts/responsive-provider';
+import { useState } from 'react';
 
 const Main = () => {
   const { isMobile, isTablet, isDesktop } = useResponsive();
 
   return (
     <>
+      <ColorModeButton />
       <div>
         {isMobile && 'mobile'}
         {isTablet && 'tablet'}
@@ -63,6 +68,57 @@ const Main = () => {
           </GridItem>
         ))}
       </SimpleGrid>
+
+      {/* RBAC Content Section */}
+      <Box
+        position="relative"
+        p={4}
+        border="1px solid"
+        borderColor="gray.200"
+        my={4}
+      >
+        {(() => {
+          const [content, setContent] = useState('Hello!');
+          const [userRole, setUserRole] = useState('read'); // For demo
+          const [isEditing, setIsEditing] = useState(false);
+
+          // Toggle role for demo purposes
+          const toggleRole = () =>
+            setUserRole(userRole === 'read' ? 'write' : 'read');
+
+          return (
+            <>
+              <Box mb={2}>
+                <Text>Current Role: {userRole}</Text>
+                <Button onClick={toggleRole} size="sm" mr={2}>
+                  Toggle Role
+                </Button>
+                {userRole === 'write' && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setIsEditing(true)}
+                  >
+                    Edit
+                  </Button>
+                )}
+              </Box>
+
+              <TextEditor
+                editable={userRole === 'write' && isEditing}
+                content={content}
+                onCancel={() => {
+                  setIsEditing(false);
+                }}
+                onSave={(newContent) => {
+                  setContent(newContent);
+                  setIsEditing(false);
+                }}
+              />
+            </>
+          );
+        })()}
+      </Box>
     </>
   );
 };

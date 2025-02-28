@@ -37,3 +37,46 @@ a {
     color-scheme: dark;
   }
 }
+
+/* Tiptap editor styles */
+.custom-link {
+  color: #3182ce;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.ProseMirror ul {
+  list-style-type: disc;
+  padding-left: 1.5em;
+}
+
+.ProseMirror ol {
+  list-style-type: decimal;
+  padding-left: 1.5em;
+}
+
+.ProseMirror li {
+  margin-bottom: 0.5em;
+}
+
+.ProseMirror:focus {
+  outline: none;
+}
+
+/* Text formatting styles */
+.ProseMirror strong {
+  font-weight: bold;
+}
+
+.ProseMirror em {
+  font-style: italic;
+}
+
+.ProseMirror u {
+  text-decoration: underline;
+}
+
+/* Active button state */
+[data-active='true'] {
+  background-color: rgba(0, 0, 0, 0.1);
+}
