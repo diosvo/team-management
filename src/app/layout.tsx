@@ -4,7 +4,9 @@ import { Inter } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 
-import { Provider } from '@/components/ui/provider';
+import { Provider as UiProvider } from '@/components/ui/provider';
+import { ResponsiveProvider } from '@/contexts/responsive-provider';
+
 import './globals.css';
 
 const inter = Inter({
@@ -29,7 +31,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <Provider>{children}</Provider>
+        <UiProvider>
+          <ResponsiveProvider>{children}</ResponsiveProvider>
+        </UiProvider>
         {/* Vercel plugins */}
         {process.env.NODE_ENV === 'production' && (
           <>

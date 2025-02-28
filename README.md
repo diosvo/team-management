@@ -14,6 +14,33 @@
 - 🚢 [Vercel](http://vercel.com/) for deployment
 - 🏭 CI/CD based on GitHub Actions.
 
+## Folder structure
+
+> It could be temporality
+
+```
+├── drizzle
+│   └── migrations
+│       └── meta
+└── src
+    ├── app
+    │   ├── (auth)
+    │   │   ├── sign-in
+    │   │   └── sign-up
+    │   └── api
+    │       └── auth
+    │           └── [...nextauth]
+    ├── components
+    │   └── ui
+    ├── contexts
+    ├── server
+    │   ├── actions
+    │   └── db
+    │       └── schema
+    ├── utils
+    └── vendor
+```
+
 > [!NOTE]  
 > Before you begin, ensure that you have [`pnpm`](https://pnpm.io/) package manager on your system.
 
