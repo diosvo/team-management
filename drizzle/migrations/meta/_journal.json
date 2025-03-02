@@ -8,6 +8,13 @@
       "when": 1740295391813,
       "tag": "0000_zippy_firelord",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1740916825723,
+      "tag": "0001_glossy_namora",
+      "breakpoints": true
     }
   ]
 }
