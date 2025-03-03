@@ -1,7 +1,7 @@
 import { sql } from 'drizzle-orm';
 import { check, integer, pgTable, text, uuid } from 'drizzle-orm/pg-core';
 
-export const team = pgTable(
+export const TeamTable = pgTable(
   'team',
   {
     team_id: uuid('team_id').primaryKey().defaultRandom(),
@@ -18,5 +18,5 @@ export const team = pgTable(
   ]
 );
 
-export type Team = typeof team.$inferSelect;
-export type InsertTeam = typeof team.$inferInsert;
+export type Team = typeof TeamTable.$inferSelect;
+export type InsertTeam = typeof TeamTable.$inferInsert;

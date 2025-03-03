@@ -164,7 +164,33 @@ const TextEditor = ({
                     <PopoverArrow />
                     <PopoverBody>
                       <PopoverTitle fontSize="xs">Link to:</PopoverTitle>
-                      <Input placeholder="Your fav. character" size="xs" />
+                      <HStack mb={2}>
+                        <Input
+                          placeholder="https://example.com"
+                          size="xs"
+                          value={url}
+                          onChange={(e) => setUrl(e.target.value)}
+                        />
+                      </HStack>
+                      <ButtonGroup
+                        size="xs"
+                        gap={2}
+                        display="flex"
+                        justifyContent="flex-end"
+                      >
+                        {editor.isActive('link') && (
+                          <Button
+                            variant="plain"
+                            color="red.500"
+                            onClick={() =>
+                              editor.chain().focus().unsetLink().run()
+                            }
+                          >
+                            Remove
+                          </Button>
+                        )}
+                        <Button onClick={setLink}>OK</Button>
+                      </ButtonGroup>
                     </PopoverBody>
                   </PopoverContent>
                 </PopoverRoot>

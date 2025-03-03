@@ -17,6 +17,9 @@ import { useState } from 'react';
 
 const Main = () => {
   const { isMobile, isTablet, isDesktop } = useResponsive();
+  const [content, setContent] = useState('Hello!');
+  const [userRole, setUserRole] = useState('read'); // For demo
+  const [isEditing, setIsEditing] = useState(false);
 
   return (
     <>
@@ -77,47 +80,41 @@ const Main = () => {
         borderColor="gray.200"
         my={4}
       >
-        {(() => {
-          const [content, setContent] = useState('Hello!');
-          const [userRole, setUserRole] = useState('read'); // For demo
-          const [isEditing, setIsEditing] = useState(false);
+        <>
+          <Box mb={2}>
+            <Text>Current Role: {userRole}</Text>
+            <Button
+              onClick={() =>
+                setUserRole(userRole === 'read' ? 'write' : 'read')
+              }
+              size="sm"
+              mr={2}
+            >
+              Toggle Role
+            </Button>
+            {userRole === 'write' && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setIsEditing(true)}
+              >
+                Edit
+              </Button>
+            )}
+          </Box>
 
-          // Toggle role for demo purposes
-          const toggleRole = () =>
-            setUserRole(userRole === 'read' ? 'write' : 'read');
-
-          return (
-            <>
-              <Box mb={2}>
-                <Text>Current Role: {userRole}</Text>
-                <Button onClick={toggleRole} size="sm" mr={2}>
-                  Toggle Role
-                </Button>
-                {userRole === 'write' && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setIsEditing(true)}
-                  >
-                    Edit
-                  </Button>
-                )}
-              </Box>
-
-              <TextEditor
-                editable={userRole === 'write' && isEditing}
-                content={content}
-                onCancel={() => {
-                  setIsEditing(false);
-                }}
-                onSave={(newContent) => {
-                  setContent(newContent);
-                  setIsEditing(false);
-                }}
-              />
-            </>
-          );
-        })()}
+          <TextEditor
+            editable={userRole === 'write' && isEditing}
+            content={content}
+            onCancel={() => {
+              setIsEditing(false);
+            }}
+            onSave={(newContent) => {
+              setContent(newContent);
+              setIsEditing(false);
+            }}
+          />
+        </>
       </Box>
     </>
   );
