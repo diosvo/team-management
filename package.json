@@ -35,16 +35,6 @@
     "typescript": "^5.7.3"
   },
   "name": "saigon-rovers-basketball-club-portal",
-  "private": true,
-  "scripts": {
-    "build": "next build",
-    "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
-    "db:studio": "drizzle-kit studio",
-    "dev": "next dev",
-    "lint": "next lint"
-  },
-  "version": "0.1.0",
   "pnpm": {
     "ignoredBuiltDependencies": [
       "esbuild"
@@ -52,5 +42,16 @@
     "onlyBuiltDependencies": [
       "esbuild"
     ]
-  }
+  },
+  "private": true,
+  "scripts": {
+    "build": "next build",
+    "db:drop": "drizzle-kit drop",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio",
+    "dev": "next dev",
+    "lint": "next lint"
+  },
+  "version": "0.1.0"
 }

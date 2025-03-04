@@ -28,7 +28,13 @@ const Main = () => {
   const [isEditing, setIsEditing] = useState(false);
 
   async function onSubmit(values: z.infer<typeof ruleSchema>) {
-    return await createRule(values);
+    const { error, message: description } = await createRule(values);
+
+    if (error) {
+      toaster.error({ description });
+    } else {
+      toaster.success({ description });
+    }
   }
 
   return (
@@ -123,30 +129,13 @@ const Main = () => {
               setContent(newContent);
               setIsEditing(false);
               onSubmit({
-                content: newContent,
-                team_id: '567bdc17-e631-421e-82fa-ff77b342bebd',
+                content,
+                team_id: '12eefccc-2bc7-4620-b7eb-6ed7dc6f3f09',
               });
             }}
           />
         </>
       </Box>
-
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() =>
-          toaster.success({
-            title: 'Update successful',
-            description: 'File saved successfully to the server',
-            action: {
-              label: 'Undo',
-              onClick: () => console.log('Undo'),
-            },
-          })
-        }
-      >
-        Click me
-      </Button>
     </>
   );
 };

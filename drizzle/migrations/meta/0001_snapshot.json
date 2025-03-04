@@ -1,6 +1,6 @@
 {
-  "id": "d6e11216-bdd8-4adf-94a8-9b2eb3d07e79",
-  "prevId": "d6cad8d7-38b6-49b4-8e23-d0b44c214478",
+  "id": "0a21d3ac-2225-471c-b28e-5cdf65e8846a",
+  "prevId": "59cfb231-3677-4c52-8c14-e9bc3f7f4e9e",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -28,7 +28,23 @@
           "notNull": true
         }
       },
-      "indexes": {},
+      "indexes": {
+        "team_idx": {
+          "name": "team_idx",
+          "columns": [
+            {
+              "expression": "team_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "rule_team_id_team_team_id_fk": {
           "name": "rule_team_id_team_team_id_fk",
