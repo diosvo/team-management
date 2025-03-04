@@ -1,5 +1,8 @@
 'use client';
 
+import { useState } from 'react';
+import { z } from 'zod';
+
 import {
   Box,
   Button,
@@ -13,13 +16,20 @@ import {
 import TextEditor from '@/components/text-editor';
 import { ColorModeButton } from '@/components/ui/color-mode';
 import { useResponsive } from '@/contexts/responsive-provider';
-import { useState } from 'react';
+
+import { toaster } from '@/components/ui/toaster';
+import { createRule } from '@/features/rule/actions/rule';
+import { ruleSchema } from '@/features/rule/schemas/rule';
 
 const Main = () => {
   const { isMobile, isTablet, isDesktop } = useResponsive();
   const [content, setContent] = useState('Hello!');
   const [userRole, setUserRole] = useState('read'); // For demo
   const [isEditing, setIsEditing] = useState(false);
+
+  async function onSubmit(values: z.infer<typeof ruleSchema>) {
+    return await createRule(values);
+  }
 
   return (
     <>
@@ -112,10 +122,31 @@ const Main = () => {
             onSave={(newContent) => {
               setContent(newContent);
               setIsEditing(false);
+              onSubmit({
+                content: newContent,
+                team_id: '567bdc17-e631-421e-82fa-ff77b342bebd',
+              });
             }}
           />
         </>
       </Box>
+
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() =>
+          toaster.success({
+            title: 'Update successful',
+            description: 'File saved successfully to the server',
+            action: {
+              label: 'Undo',
+              onClick: () => console.log('Undo'),
+            },
+          })
+        }
+      >
+        Click me
+      </Button>
     </>
   );
 };

@@ -5,6 +5,7 @@ import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 
 import { Provider as UiProvider } from '@/components/ui/provider';
+import { Toaster } from '@/components/ui/toaster';
 import { ResponsiveProvider } from '@/contexts/responsive-provider';
 
 import './globals.css';
@@ -32,6 +33,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <UiProvider>
+          <Toaster />
           <ResponsiveProvider>{children}</ResponsiveProvider>
         </UiProvider>
         {/* Vercel plugins */}

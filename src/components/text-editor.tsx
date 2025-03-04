@@ -86,6 +86,7 @@ const TextEditor = ({
   const setLink = () => {
     if (!editor) return;
 
+    // Empty
     if (url === '') {
       editor.chain().focus().extendMarkRange('link').unsetLink().run();
       return;
@@ -149,7 +150,14 @@ const TextEditor = ({
 
               <Tooltip content="Insert Link">
                 <PopoverRoot lazyMount unmountOnExit size="xs">
-                  <PopoverTrigger asChild>
+                  <PopoverTrigger
+                    asChild
+                    onClick={() => {
+                      const currentLink =
+                        editor.getAttributes('link').href || '';
+                      setUrl(currentLink);
+                    }}
+                  >
                     <IconButton
                       size="xs"
                       variant="ghost"
@@ -170,6 +178,11 @@ const TextEditor = ({
                           size="xs"
                           value={url}
                           onChange={(e) => setUrl(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              setLink();
+                            }
+                          }}
                         />
                       </HStack>
                       <ButtonGroup
@@ -182,14 +195,20 @@ const TextEditor = ({
                           <Button
                             variant="plain"
                             color="red.500"
-                            onClick={() =>
-                              editor.chain().focus().unsetLink().run()
-                            }
+                            onClick={() => {
+                              editor.chain().focus().unsetLink().run();
+                              setUrl('');
+                            }}
                           >
                             Remove
                           </Button>
                         )}
-                        <Button onClick={setLink}>OK</Button>
+                        <Button
+                          onClick={setLink}
+                          disabled={!Link.options.shouldAutoLink(url)}
+                        >
+                          OK
+                        </Button>
                       </ButtonGroup>
                     </PopoverBody>
                   </PopoverContent>
