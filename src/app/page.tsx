@@ -15,9 +15,9 @@ import {
 
 import TextEditor from '@/components/text-editor';
 import { ColorModeButton } from '@/components/ui/color-mode';
+import { toaster } from '@/components/ui/toaster';
 import { useResponsive } from '@/contexts/responsive-provider';
 
-import { toaster } from '@/components/ui/toaster';
 import { createRule } from '@/features/rule/actions/rule';
 import { ruleSchema } from '@/features/rule/schemas/rule';
 
@@ -28,8 +28,7 @@ const Main = () => {
   const [isEditing, setIsEditing] = useState(false);
 
   async function onSubmit(values: z.infer<typeof ruleSchema>) {
-    const result = await createRule(values);
-    const { error, message: description } = result;
+    const { error, message: description } = await createRule(values);
 
     if (error) {
       toaster.error({ description });
@@ -38,8 +37,6 @@ const Main = () => {
       setIsEditing(false);
       toaster.success({ description });
     }
-
-    return result;
   }
 
   return (
@@ -131,7 +128,7 @@ const Main = () => {
             onSave={async (newContent) =>
               await onSubmit({
                 content: newContent,
-                team_id: '3234d8a0-dd24-438d-a15e-27c64579eeb1',
+                team_id: '00ea7875-7b90-4c91-9a2c-6ed34a110b52',
               })
             }
           />

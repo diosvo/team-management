@@ -24,7 +24,7 @@
 │       └── meta
 └── src
     ├── app
-    │   ├── (auth) # Authentication-realate routes (Auth.js integration)
+    │   ├── (auth) # Authentication-related routes (Auth.js integration)
     │   │   ├── sign-in
     │   │   └── sign-up
     │   └── api
