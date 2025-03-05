@@ -1,1 +1,0 @@
-CREATE UNIQUE INDEX "team_idx" ON "rule" USING btree ("team_id");

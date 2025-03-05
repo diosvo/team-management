@@ -28,13 +28,18 @@ const Main = () => {
   const [isEditing, setIsEditing] = useState(false);
 
   async function onSubmit(values: z.infer<typeof ruleSchema>) {
-    const { error, message: description } = await createRule(values);
+    const result = await createRule(values);
+    const { error, message: description } = result;
 
     if (error) {
       toaster.error({ description });
     } else {
+      setContent(values.content);
+      setIsEditing(false);
       toaster.success({ description });
     }
+
+    return result;
   }
 
   return (
@@ -122,17 +127,13 @@ const Main = () => {
           <TextEditor
             editable={userRole === 'write' && isEditing}
             content={content}
-            onCancel={() => {
-              setIsEditing(false);
-            }}
-            onSave={(newContent) => {
-              setContent(newContent);
-              setIsEditing(false);
-              onSubmit({
-                content,
-                team_id: '12eefccc-2bc7-4620-b7eb-6ed7dc6f3f09',
-              });
-            }}
+            onCancel={() => setIsEditing(false)}
+            onSave={async (newContent) =>
+              await onSubmit({
+                content: newContent,
+                team_id: '3234d8a0-dd24-438d-a15e-27c64579eeb1',
+              })
+            }
           />
         </>
       </Box>

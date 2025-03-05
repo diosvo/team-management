@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { JSX, useEffect, useState } from 'react';
 
 import {
   Box,
@@ -42,14 +42,9 @@ interface TextEditorProps {
   onSave: (content: string) => void;
 }
 
-const TextEditor = ({
-  editable,
-  content,
-  onCancel,
-  onSave,
-}: TextEditorProps) => {
+const useEditorSetup = (editable: boolean, content: string) => {
   const [url, setUrl] = useState('');
-  const [initialContent] = useState(content); // Store the initial content
+  const [initialContent] = useState(content);
 
   const editor = useEditor({
     editable,
@@ -79,27 +74,56 @@ const TextEditor = ({
     if (editor) {
       editor.commands.setContent(initialContent);
     }
-    onCancel();
   };
 
-  // Use Popover for link insertion
   const setLink = () => {
     if (!editor) return;
-
-    // Empty
     if (url === '') {
       editor.chain().focus().extendMarkRange('link').unsetLink().run();
       return;
     }
-
-    // Update link
     editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
     setUrl('');
   };
 
+  return { editor, url, setUrl, handleCancel, setLink };
+};
+
+const TextEditor = ({
+  editable,
+  content,
+  onCancel,
+  onSave,
+}: TextEditorProps) => {
+  const { editor, url, setUrl, handleCancel, setLink } = useEditorSetup(
+    editable,
+    content
+  );
+
   if (!editor) {
     return null;
   }
+
+  const IButton = (
+    label: string,
+    icon: JSX.Element,
+    isActive: boolean,
+    onClick: () => void,
+    isDisabled?: boolean
+  ) => (
+    <Tooltip content={label}>
+      <IconButton
+        size="xs"
+        variant="ghost"
+        aria-label={label}
+        onClick={onClick}
+        data-active={isActive}
+        disabled={isDisabled}
+      >
+        {icon}
+      </IconButton>
+    </Tooltip>
+  );
 
   return (
     <>
@@ -109,45 +133,21 @@ const TextEditor = ({
           : {})}
       >
         <VStack align="stretch">
-          {/* Text formatting buttons */}
           {editable && (
             <ButtonGroup>
-              <Tooltip content="Bold">
-                <IconButton
-                  size="xs"
-                  variant="ghost"
-                  aria-label="Bold"
-                  onClick={() => editor.chain().focus().toggleBold().run()}
-                  data-active={editor.isActive('bold')}
-                >
-                  <Bold />
-                </IconButton>
-              </Tooltip>
-              <Tooltip content="Italic">
-                <IconButton
-                  size="xs"
-                  variant="ghost"
-                  aria-label="Italic"
-                  onClick={() => editor.chain().focus().toggleItalic().run()}
-                  data-active={editor.isActive('italic')}
-                >
-                  <Italic />
-                </IconButton>
-              </Tooltip>
-              <Tooltip content="Underline">
-                <IconButton
-                  size="xs"
-                  variant="ghost"
-                  aria-label="Underline"
-                  onClick={() => editor.chain().focus().toggleUnderline().run()}
-                  data-active={editor.isActive('underline')}
-                >
-                  <UnderlineIcon />
-                </IconButton>
-              </Tooltip>
-
+              {IButton('Bold', <Bold />, editor.isActive('bold'), () =>
+                editor.chain().focus().toggleBold().run()
+              )}
+              {IButton('Italic', <Italic />, editor.isActive('italic'), () =>
+                editor.chain().focus().toggleItalic().run()
+              )}
+              {IButton(
+                'Underline',
+                <UnderlineIcon />,
+                editor.isActive('underline'),
+                () => editor.chain().focus().toggleUnderline().run()
+              )}
               <Separator orientation="vertical" height="4" />
-
               <Tooltip content="Insert Link">
                 <PopoverRoot lazyMount unmountOnExit size="xs">
                   <PopoverTrigger
@@ -158,15 +158,13 @@ const TextEditor = ({
                       setUrl(currentLink);
                     }}
                   >
-                    <IconButton
-                      size="xs"
-                      variant="ghost"
-                      aria-label="Insert Link"
-                      disabled={editor.state.selection.empty}
-                      data-active={editor.isActive('link')}
-                    >
-                      <Link2 />
-                    </IconButton>
+                    {IButton(
+                      'Insert Link',
+                      <Link2 />,
+                      editor.isActive('link'),
+                      () => editor.chain().focus().toggleUnderline().run(),
+                      editor.state.selection.empty
+                    )}
                   </PopoverTrigger>
                   <PopoverContent>
                     <PopoverArrow />
@@ -214,35 +212,20 @@ const TextEditor = ({
                   </PopoverContent>
                 </PopoverRoot>
               </Tooltip>
-              <Tooltip content="Bullet List">
-                <IconButton
-                  size="xs"
-                  variant="ghost"
-                  aria-label="Bullet List"
-                  onClick={() =>
-                    editor.chain().focus().toggleBulletList().run()
-                  }
-                  data-active={editor.isActive('bulletList')}
-                >
-                  <List />
-                </IconButton>
-              </Tooltip>
-              <Tooltip content="Numbered List">
-                <IconButton
-                  size="xs"
-                  variant="ghost"
-                  aria-label="Numbered List"
-                  onClick={() =>
-                    editor.chain().focus().toggleOrderedList().run()
-                  }
-                  data-active={editor.isActive('orderedList')}
-                >
-                  <ListOrdered />
-                </IconButton>
-              </Tooltip>
+              {IButton(
+                'Bullet List',
+                <List />,
+                editor.isActive('bulletList'),
+                () => editor.chain().focus().toggleBulletList().run()
+              )}
+              {IButton(
+                'Numbered List',
+                <ListOrdered />,
+                editor.isActive('orderedList'),
+                () => editor.chain().focus().toggleOrderedList().run()
+              )}
             </ButtonGroup>
           )}
-
           <Box p={2} borderRadius="md" minH="150px">
             <EditorContent editor={editor} />
           </Box>
@@ -251,7 +234,14 @@ const TextEditor = ({
 
       {editable && (
         <HStack mt={2} gap={2}>
-          <Button variant="outline" size="sm" onClick={handleCancel}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              handleCancel();
+              onCancel();
+            }}
+          >
             Cancel
           </Button>
           <Button size="sm" onClick={() => onSave(editor.getHTML())}>

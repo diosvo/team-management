@@ -1,5 +1,5 @@
 {
-  "id": "59cfb231-3677-4c52-8c14-e9bc3f7f4e9e",
+  "id": "b7887d4d-354b-45ce-8e41-b1cbbbbe3376",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -28,7 +28,23 @@
           "notNull": true
         }
       },
-      "indexes": {},
+      "indexes": {
+        "team_idx": {
+          "name": "team_idx",
+          "columns": [
+            {
+              "expression": "team_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "rule_team_id_team_team_id_fk": {
           "name": "rule_team_id_team_team_id_fk",
@@ -87,144 +103,9 @@
         }
       },
       "isRLSEnabled": false
-    },
-    "public.users": {
-      "name": "users",
-      "schema": "",
-      "columns": {
-        "user_id": {
-          "name": "user_id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "full_name": {
-          "name": "full_name",
-          "type": "varchar(128)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "dob": {
-          "name": "dob",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "username": {
-          "name": "username",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "password": {
-          "name": "password",
-          "type": "varchar(128)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "email": {
-          "name": "email",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "phone_number": {
-          "name": "phone_number",
-          "type": "varchar(15)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "roles": {
-          "name": "roles",
-          "type": "user_roles[]",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "avatar": {
-          "name": "avatar",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "join_date": {
-          "name": "join_date",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "state": {
-          "name": "state",
-          "type": "user_state",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'ACTIVE'"
-        }
-      },
-      "indexes": {
-        "email_idx": {
-          "name": "email_idx",
-          "columns": [
-            {
-              "expression": "email",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "username_idx": {
-          "name": "username_idx",
-          "columns": [
-            {
-              "expression": "username",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
     }
   },
-  "enums": {
-    "public.user_roles": {
-      "name": "user_roles",
-      "schema": "public",
-      "values": [
-        "SUPER_ADMIN",
-        "COACH",
-        "PLAYER",
-        "CAPTAIN"
-      ]
-    },
-    "public.user_state": {
-      "name": "user_state",
-      "schema": "public",
-      "values": [
-        "UNKNOWN",
-        "ACTIVE",
-        "INACTIVE",
-        "TEMPORARILY_ABSENT"
-      ]
-    }
-  },
+  "enums": {},
   "schemas": {},
   "sequences": {},
   "roles": {},
