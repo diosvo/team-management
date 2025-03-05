@@ -1,6 +1,7 @@
 import { relations } from 'drizzle-orm';
 import { pgTable, text, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
 
+import { updated_at } from '../helpers';
 import { TeamTable } from './team';
 
 export const RuleTable = pgTable(
@@ -11,6 +12,7 @@ export const RuleTable = pgTable(
       .notNull()
       .references(() => TeamTable.team_id, { onDelete: 'cascade' }),
     content: text('content').notNull(),
+    updated_at,
   },
   (table) => [uniqueIndex('team_idx').on(table.team_id)]
 );

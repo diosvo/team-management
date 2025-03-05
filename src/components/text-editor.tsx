@@ -49,24 +49,27 @@ const TextEditor = ({
   onSave,
 }: TextEditorProps) => {
   const [url, setUrl] = useState('');
-  const [initialContent] = useState(content); // Store the initial content
+  const [initialContent] = useState(content);
 
-  const editor = useEditor({
-    editable,
-    content,
-    extensions: [
-      StarterKit,
-      Underline,
-      Link.configure({
-        defaultProtocol: 'https',
-        HTMLAttributes: {
-          class: 'custom-link',
-        },
-        shouldAutoLink: (url) => url.startsWith('https://'),
-      }),
-    ],
-    immediatelyRender: false,
-  });
+  const editor = useEditor(
+    {
+      editable,
+      content,
+      extensions: [
+        StarterKit,
+        Underline,
+        Link.configure({
+          defaultProtocol: 'https',
+          HTMLAttributes: {
+            class: 'custom-link',
+          },
+          shouldAutoLink: (url) => url.startsWith('https://'),
+        }),
+      ],
+      immediatelyRender: false,
+    },
+    [content]
+  );
 
   useEffect(() => {
     if (editor) {

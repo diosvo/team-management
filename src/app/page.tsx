@@ -18,17 +18,17 @@ import { ColorModeButton } from '@/components/ui/color-mode';
 import { toaster } from '@/components/ui/toaster';
 import { useResponsive } from '@/contexts/responsive-provider';
 
-import { createRule } from '@/features/rule/actions/rule';
+import { executeRule, getRule } from '@/features/rule/actions/rule';
 import { ruleSchema } from '@/features/rule/schemas/rule';
 
 const Main = () => {
   const { isMobile, isTablet, isDesktop } = useResponsive();
-  const [content, setContent] = useState('Hello!');
+  const [content, setContent] = useState('');
   const [userRole, setUserRole] = useState('read'); // For demo
   const [isEditing, setIsEditing] = useState(false);
 
   async function onSubmit(values: z.infer<typeof ruleSchema>) {
-    const { error, message: description } = await createRule(values);
+    const { error, message: description } = await executeRule(values);
 
     if (error) {
       toaster.error({ description });
@@ -110,6 +110,21 @@ const Main = () => {
             >
               Toggle Role
             </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={async () => {
+                const rule = await getRule(
+                  '8c309243-f194-49df-b00a-5b2fb2bab727'
+                );
+
+                if (rule) {
+                  setContent(rule.content);
+                }
+              }}
+            >
+              Call
+            </Button>
             {userRole === 'write' && (
               <Button
                 size="sm"
@@ -128,7 +143,7 @@ const Main = () => {
             onSave={async (newContent) =>
               await onSubmit({
                 content: newContent,
-                team_id: '00ea7875-7b90-4c91-9a2c-6ed34a110b52',
+                team_id: '8c309243-f194-49df-b00a-5b2fb2bab727',
               })
             }
           />

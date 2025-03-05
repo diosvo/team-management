@@ -2,20 +2,30 @@
 
 import { z } from 'zod';
 
-import { insertRule } from '../db/rule';
-import { canCreateRule } from '../permissions/rule';
+import { fetchRule, insertRule, updateRule } from '../db/rule';
+import { canExecute } from '../permissions/rule';
 import { ruleSchema } from '../schemas/rule';
 
-export async function createRule(unsafeData: z.infer<typeof ruleSchema>) {
+export async function getRule(team_id: string) {
+  return await fetchRule(team_id);
+}
+
+export async function executeRule(unsafeData: z.infer<typeof ruleSchema>) {
   const { success, data } = ruleSchema.safeParse(unsafeData);
 
-  if (!success || !canCreateRule({ role: 'SUPER_ADMIN' })) {
+  if (!success || !canExecute({ role: 'SUPER_ADMIN' })) {
     return { error: true, message: 'There was an error while creating rule' };
   }
 
   try {
-    await insertRule(data);
-    return { error: false, message: 'New rule created successfully' };
+    const existingRule = await fetchRule(data.team_id);
+    if (existingRule) {
+      await updateRule(existingRule.rule_id, data.content);
+      return { error: false, message: 'Rule updated successfully' };
+    } else {
+      await insertRule(data);
+      return { error: false, message: 'New rule created successfully' };
+    }
   } catch (error) {
     return { error: true, message: (error as Error).message };
   }
