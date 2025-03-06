@@ -24,21 +24,28 @@
 │       └── meta
 └── src
     ├── app
-    │   ├── (auth)
+    │   ├── (auth) # Authentication-related routes (Auth.js integration)
     │   │   ├── sign-in
     │   │   └── sign-up
     │   └── api
     │       └── auth
     │           └── [...nextauth]
-    ├── components
-    │   └── ui
+    ├── components # Reuseable UI components
+    │   ├── ui # Common UI elements (buttons, modals, etc)
+    │   └── layout # Layout components
     ├── contexts
-    ├── server
-    │   ├── actions
-    │   └── db
-    │       └── schema
+    ├── db
+    │   ├── schema
+    ├── features # Feature-based modules
+    │   ├── (name)
+    │   │   ├── actions
+    │   │   ├── components
+    │   │   ├── db
+    │   │   ├── permissions
+    │   │   └── schemas
+    ├── lib # Helper utilities (API clients, auth handler)
     ├── utils
-    └── vendor
+    └── vendor # Miscellaneous utilities and helper functions
 ```
 
 > [!NOTE]  

@@ -11,12 +11,10 @@ import {
 
 // Enums
 
-export const userRolesEnum = pgEnum('user_roles', [
-  'SUPER_ADMIN',
-  'COACH',
-  'PLAYER',
-  'CAPTAIN',
-]);
+export const userRoles = ['SUPER_ADMIN', 'COACH', 'PLAYER', 'CAPTAIN'] as const;
+export type UserRole = (typeof userRoles)[number];
+export const userRolesEnum = pgEnum('user_roles', userRoles);
+
 export const userStateEnum = pgEnum('user_state', [
   'UNKNOWN',
   'ACTIVE',
@@ -26,7 +24,7 @@ export const userStateEnum = pgEnum('user_state', [
 
 // Table
 
-export const user = pgTable(
+export const UserTable = pgTable(
   'users',
   {
     user_id: uuid('user_id').primaryKey().defaultRandom(),

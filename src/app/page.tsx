@@ -1,7 +1,11 @@
 'use client';
 
+import { useState } from 'react';
+import { z } from 'zod';
+
 import {
   Box,
+  Button,
   Grid,
   GridItem,
   Heading,
@@ -9,13 +13,35 @@ import {
   Text,
 } from '@chakra-ui/react';
 
+import TextEditor from '@/components/text-editor';
+import { ColorModeButton } from '@/components/ui/color-mode';
+import { toaster } from '@/components/ui/toaster';
 import { useResponsive } from '@/contexts/responsive-provider';
+
+import { executeRule, getRule } from '@/features/rule/actions/rule';
+import { ruleSchema } from '@/features/rule/schemas/rule';
 
 const Main = () => {
   const { isMobile, isTablet, isDesktop } = useResponsive();
+  const [content, setContent] = useState('');
+  const [userRole, setUserRole] = useState('read'); // For demo
+  const [isEditing, setIsEditing] = useState(false);
+
+  async function onSubmit(values: z.infer<typeof ruleSchema>) {
+    const { error, message: description } = await executeRule(values);
+
+    if (error) {
+      toaster.error({ description });
+    } else {
+      setContent(values.content);
+      setIsEditing(false);
+      toaster.success({ description });
+    }
+  }
 
   return (
     <>
+      <ColorModeButton />
       <div>
         {isMobile && 'mobile'}
         {isTablet && 'tablet'}
@@ -63,6 +89,66 @@ const Main = () => {
           </GridItem>
         ))}
       </SimpleGrid>
+
+      {/* RBAC Content Section */}
+      <Box
+        position="relative"
+        p={4}
+        border="1px solid"
+        borderColor="gray.200"
+        my={4}
+      >
+        <>
+          <Box mb={2}>
+            <Text>Current Role: {userRole}</Text>
+            <Button
+              onClick={() =>
+                setUserRole(userRole === 'read' ? 'write' : 'read')
+              }
+              size="sm"
+              mr={2}
+            >
+              Toggle Role
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={async () => {
+                const rule = await getRule(
+                  '8c309243-f194-49df-b00a-5b2fb2bab727'
+                );
+
+                if (rule) {
+                  setContent(rule.content);
+                }
+              }}
+            >
+              Call
+            </Button>
+            {userRole === 'write' && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setIsEditing(true)}
+              >
+                Edit
+              </Button>
+            )}
+          </Box>
+
+          <TextEditor
+            editable={userRole === 'write' && isEditing}
+            content={content}
+            onCancel={() => setIsEditing(false)}
+            onSave={async (newContent) =>
+              await onSubmit({
+                content: newContent,
+                team_id: '8c309243-f194-49df-b00a-5b2fb2bab727',
+              })
+            }
+          />
+        </>
+      </Box>
     </>
   );
 };
