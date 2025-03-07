@@ -21,7 +21,7 @@ import { useResponsive } from '@/contexts/responsive-provider';
 import { executeRule, getRule } from '@/features/rule/actions/rule';
 import { ruleSchema } from '@/features/rule/schemas/rule';
 
-const Main = () => {
+export default function MainPage() {
   const { isMobile, isTablet, isDesktop } = useResponsive();
   const [content, setContent] = useState('');
   const [userRole, setUserRole] = useState('read'); // For demo
@@ -151,6 +151,4 @@ const Main = () => {
       </Box>
     </>
   );
-};
-
-export default Main;
+}
