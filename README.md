@@ -5,7 +5,7 @@
 - 🚀 [Next.js](https://nextjs.org/)
 
   - 🧰 [Drizzle](https://orm.drizzle.team/) as the ORM for migrations and database access.
-  - 🔍 [Zod](https://zod.dev/) for schema validation.
+  - 🔍 [Zod](https://zod.dev/) and [React Hook Form](https://react-hook-form.com/) for schema validation.
   - 💾 [Neon](https://vercel.com/marketplace/neon) for PostgresSQL database interaction.
   - 🔑 [NextAuth.js](https://next-auth.js.org/) for authentication via GitHub (OAuth).
   - 💃 Using TypeScript, hooks, [Chakra](https://chakra-ui.com/) and other parts of a modern frontend stack.

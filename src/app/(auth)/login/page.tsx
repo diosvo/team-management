@@ -1,7 +1,7 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import {
   Alert,
@@ -17,18 +17,33 @@ import {
   Text,
   VStack,
 } from '@chakra-ui/react';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Chrome, CircleX, Facebook } from 'lucide-react';
+import { useForm } from 'react-hook-form';
 
 import { Field } from '@/components/ui/field';
-
-enum PageType {
-  Login = 'login',
-  Register = 'register',
-  ResetPassword = 'reset-password',
-}
+import { LoginSchema, LoginValues } from '../_helpers/schemas';
+import {
+  buttonText,
+  pageTitle,
+  PageType,
+  togglePageText,
+} from '../_helpers/utils';
 
 export default function LoginPage() {
   const searchParams = useSearchParams();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginValues>({
+    resolver: zodResolver(LoginSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
 
   const [page, setPage] = useState(PageType.Login);
   const [email, setEmail] = useState('');
@@ -39,60 +54,49 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (authenticated) {
-      // Redirect to previous page or home page
       const next = searchParams.get('next') || '/';
       window.location.href = next;
     }
   }, [authenticated, searchParams]);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsLoading(true);
-    try {
-      const res = await fetch('/api/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password, type: 'credentials' }),
-      });
-
-      if (res.ok) {
-        setAuthenticated(true);
-      } else {
-        setError('Invalid credentials');
-      }
-    } catch (error) {
-      setError('Internal server error');
-    } finally {
-      setIsLoading(false);
-    }
+  const onSubmit = (data: LoginValues) => {
+    console.log(data);
+    console.log(errors);
   };
+
+  // const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  //   e.preventDefault();
+  //   setIsLoading(true);
+  //   try {
+  //     const res = await fetch('/api/login', {
+  //       method: 'POST',
+  //       headers: { 'Content-Type': 'application/json' },
+  //       body: JSON.stringify({ email, password, type: 'credentials' }),
+  //     });
+  //     res.ok ? setAuthenticated(true) : setError('Invalid credentials');
+  //   } catch {
+  //     setError('Internal server error');
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
+  const handleSocialLogin = useCallback((platform: string) => {
+    setIsLoading(true);
+    console.log(`${platform} login clicked`);
+    setIsLoading(false);
+  }, []);
 
   return (
     <Container maxW="2xl" py="24">
       <VStack mb="6">
         <Heading textAlign="center" size="2xl">
-          {
-            {
-              [PageType.Login]: 'Sign in to your account',
-              [PageType.Register]: 'Create a new account',
-              [PageType.ResetPassword]: 'Reset password',
-            }[page]
-          }
+          {pageTitle[page]}
         </Heading>
         {page !== PageType.ResetPassword && (
           <HStack textAlign="center" fontSize="sm">
-            <Text color="gray.600">
-              {
-                {
-                  [PageType.Login]: "Don't have an account?",
-                  [PageType.Register]: 'Already have an account?',
-                  [PageType.ResetPassword]: '',
-                }[page]
-              }
-            </Text>
-            <Text color="back.900" fontWeight="medium">
+            <Text color="gray.600">{togglePageText[page]}</Text>
+            <Text fontWeight="medium">
               <Link
                 textDecoration="underline"
                 onClick={() =>
@@ -116,32 +120,20 @@ export default function LoginPage() {
                 flex="1"
                 variant="outline"
                 rounded="xl"
-                onClick={() => {
-                  setIsLoading(true);
-                  // Implement Facebook login or API call here
-                  console.log('Facebook login clicked');
-                  setIsLoading(false);
-                }}
+                onClick={() => handleSocialLogin('Facebook')}
               >
                 <Facebook color="#1877F2" /> Continue with Facebook
               </Button>
-
               <Button
                 flex="1"
                 variant="outline"
                 rounded="xl"
-                onClick={() => {
-                  setIsLoading(true);
-                  // Implement Google login or API call here
-                  console.log('Google login clicked');
-                  setIsLoading(false);
-                }}
+                onClick={() => handleSocialLogin('Google')}
               >
                 <Chrome color="#0F9D58" /> Continue with Google
               </Button>
             </Flex>
           </Stack>
-
           <HStack my="6">
             <Separator flex="1" />
             <Text fontSize="sm" flexShrink="0" color="gray.600">
@@ -153,27 +145,39 @@ export default function LoginPage() {
       )}
 
       <Stack>
-        <form onSubmit={handleSubmit}>
-          <Stack gap="5">
-            <Field label="Email" required>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <Stack gap="6">
+            <Field
+              required
+              label="Email"
+              invalid={!!errors.email?.message}
+              errorText={errors.email?.message}
+            >
               <Input
+                type="email"
                 value={email}
+                autoFocus
+                {...register('email')}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   setEmail(e.target.value)
                 }
-                type="email"
-                autoFocus
               />
             </Field>
 
             {page !== PageType.ResetPassword && (
-              <Field label="Password" required>
+              <Field
+                required
+                label="Password"
+                invalid={!!errors.password?.message}
+                errorText={errors.password?.message}
+              >
                 <Input
+                  type="password"
                   value={password}
+                  {...register('password')}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     setPassword(e.target.value)
                   }
-                  type="password"
                 />
               </Field>
             )}
@@ -184,7 +188,6 @@ export default function LoginPage() {
                   fontSize="sm"
                   color="black"
                   textDecoration="underline"
-                  href="#"
                   onClick={() => setPage(PageType.ResetPassword)}
                 >
                   Forgot your password?
@@ -195,28 +198,20 @@ export default function LoginPage() {
             {error && (
               <Alert.Root status="error">
                 <Alert.Indicator>
-                  <CircleX absoluteStrokeWidth />
+                  <CircleX />
                 </Alert.Indicator>
                 <Alert.Title>{error}</Alert.Title>
               </Alert.Root>
             )}
 
             <Button type="submit" loading={isLoading} rounded="full">
-              {
-                {
-                  [PageType.Login]: 'Sign In',
-                  [PageType.Register]: 'Sign Up',
-                  [PageType.ResetPassword]:
-                    'Send request password instructions',
-                }[page]
-              }
+              {buttonText[page]}
             </Button>
 
             {page === PageType.ResetPassword && (
               <Text fontSize="sm" fontWeight="medium" textAlign="center">
                 <Link
                   textDecoration="underline"
-                  href="#"
                   onClick={() => setPage(PageType.Login)}
                 >
                   Go back to sign in
