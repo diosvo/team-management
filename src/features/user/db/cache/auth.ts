@@ -6,7 +6,7 @@ export function getAuthGlobalTag() {
   return getGlobalTag('auth');
 }
 
-export function revalidateRuleCache(rule_id: string) {
+export function revalidateAuthCache() {
   revalidatePath('/dashboard');
   revalidateTag(getAuthGlobalTag());
 }

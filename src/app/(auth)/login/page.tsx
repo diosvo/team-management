@@ -23,8 +23,8 @@ import { Chrome, Facebook } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 
 import { Field } from '@/components/ui/field';
-import { login } from '@/features/auth/actions/login';
-import { LoginSchema, LoginValues } from '@/features/auth/schemas/auth';
+import { login } from '@/features/user/actions/auth';
+import { LoginSchema, LoginValues } from '@/features/user/schemas/auth';
 import { Response } from '@/utils/models';
 import {
   buttonText,
@@ -71,13 +71,13 @@ export default function LoginPage() {
   }, []);
 
   return (
-    <Container maxW="2xl" py="24">
+    <Container maxW="xl" p="8" rounded="lg" backgroundColor="white" shadow="lg">
       <VStack mb="6">
-        <Heading textAlign="center" size="2xl">
+        <Heading textAlign="center" size={{ base: 'xl', md: '2xl' }}>
           {pageTitle[page]}
         </Heading>
         {page !== PageType.ResetPassword && (
-          <HStack textAlign="center" fontSize="sm">
+          <HStack textAlign="center" fontSize={{ base: 'smaller', md: 'md' }}>
             <Text color="gray.600">{togglePageText[page]}</Text>
             <Text fontWeight="medium">
               <Link
@@ -97,26 +97,25 @@ export default function LoginPage() {
 
       {page !== PageType.ResetPassword && (
         <>
-          <Stack>
-            <Flex gap="3">
-              <Button
-                flex="1"
-                variant="outline"
-                rounded="xl"
-                onClick={() => handleSocialLogin('Facebook')}
-              >
-                <Facebook color="#1877F2" /> Continue with Facebook
-              </Button>
-              <Button
-                flex="1"
-                variant="outline"
-                rounded="xl"
-                onClick={() => handleSocialLogin('Google')}
-              >
-                <Chrome color="#0F9D58" /> Continue with Google
-              </Button>
-            </Flex>
-          </Stack>
+          <Flex direction={{ base: 'column', md: 'row' }} gap="3">
+            <Button
+              flex={{ base: 'none', md: '1' }}
+              rounded="xl"
+              variant="outline"
+              onClick={() => handleSocialLogin('Facebook')}
+            >
+              <Facebook color="#1877F2" /> Continue with Facebook
+            </Button>
+            <Button
+              size={{ base: 'sm', md: 'md' }}
+              flex={{ base: 'none', md: '1' }}
+              rounded="xl"
+              variant="outline"
+              onClick={() => handleSocialLogin('Google')}
+            >
+              <Chrome color="#0F9D58" /> Continue with Google
+            </Button>
+          </Flex>
           <HStack my="6">
             <Separator flex="1" />
             <Text fontSize="sm" flexShrink="0" color="gray.600">
@@ -126,7 +125,6 @@ export default function LoginPage() {
           </HStack>
         </>
       )}
-
       <Stack>
         <form onSubmit={handleSubmit(onSubmit)}>
           <Stack gap="6">
@@ -171,7 +169,7 @@ export default function LoginPage() {
               </Alert.Root>
             )}
 
-            <Button type="submit" loading={isPending} rounded="full">
+            <Button type="submit" rounded="full" loading={isPending}>
               {buttonText[page]}
             </Button>
 

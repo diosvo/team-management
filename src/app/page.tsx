@@ -19,6 +19,7 @@ import { useResponsive } from '@/contexts/responsive-provider';
 
 import { executeRule, getRule } from '@/features/rule/actions/rule';
 import { RuleValues } from '@/features/rule/schemas/rule';
+import Link from 'next/link';
 
 export default function MainPage() {
   const { isMobile, isTablet, isDesktop } = useResponsive();
@@ -41,6 +42,12 @@ export default function MainPage() {
   return (
     <>
       <ColorModeButton />
+      <Button variant="outline" asChild>
+        <Link href="/login" color="white">
+          Login
+        </Link>
+      </Button>
+
       <div>
         {isMobile && 'mobile'}
         {isTablet && 'tablet'}
@@ -112,6 +119,7 @@ export default function MainPage() {
             <Button
               size="sm"
               variant="outline"
+              colorScheme="blue"
               onClick={async () => {
                 const rule = await getRule(
                   '8c309243-f194-49df-b00a-5b2fb2bab727'

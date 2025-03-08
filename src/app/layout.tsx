@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import { Suspense } from 'react';
 
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
@@ -34,7 +35,9 @@ export default function RootLayout({
       <body className={inter.className}>
         <UiProvider>
           <Toaster />
-          <ResponsiveProvider>{children}</ResponsiveProvider>
+          <ResponsiveProvider>
+            <Suspense fallback={<>Loading...</>}>{children}</Suspense>
+          </ResponsiveProvider>
         </UiProvider>
         {/* Vercel plugins */}
         {process.env.NODE_ENV === 'production' && (
