@@ -1,5 +1,7 @@
 'use server';
 
+import { Response } from '@/utils/models';
+
 import { fetchRule, insertRule, updateRule } from '../db/rule';
 import { canExecute } from '../permissions/rule';
 import { RuleSchema, RuleValues } from '../schemas/rule';
@@ -8,7 +10,7 @@ export async function getRule(team_id: string) {
   return await fetchRule(team_id);
 }
 
-export async function executeRule(unsafeData: RuleValues) {
+export async function executeRule(unsafeData: RuleValues): Promise<Response> {
   const { success, data } = RuleSchema.safeParse(unsafeData);
 
   if (!success || !canExecute({ role: 'SUPER_ADMIN' })) {

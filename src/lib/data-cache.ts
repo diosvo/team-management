@@ -1,4 +1,4 @@
-type CACHE_TAG = 'rule';
+type CACHE_TAG = 'auth' | 'rule';
 
 export function getGlobalTag(tag: CACHE_TAG) {
   return `global:${tag}` as const;
