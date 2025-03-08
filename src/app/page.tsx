@@ -19,7 +19,7 @@ import { toaster } from '@/components/ui/toaster';
 import { useResponsive } from '@/contexts/responsive-provider';
 
 import { executeRule, getRule } from '@/features/rule/actions/rule';
-import { ruleSchema } from '@/features/rule/schemas/rule';
+import { RuleSchema } from '@/features/rule/schemas/rule';
 
 export default function MainPage() {
   const { isMobile, isTablet, isDesktop } = useResponsive();
@@ -27,7 +27,7 @@ export default function MainPage() {
   const [userRole, setUserRole] = useState('read'); // For demo
   const [isEditing, setIsEditing] = useState(false);
 
-  async function onSubmit(values: z.infer<typeof ruleSchema>) {
+  async function onSubmit(values: z.infer<typeof RuleSchema>) {
     const { error, message: description } = await executeRule(values);
 
     if (error) {

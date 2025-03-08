@@ -4,14 +4,14 @@ import { z } from 'zod';
 
 import { fetchRule, insertRule, updateRule } from '../db/rule';
 import { canExecute } from '../permissions/rule';
-import { ruleSchema } from '../schemas/rule';
+import { RuleSchema } from '../schemas/rule';
 
 export async function getRule(team_id: string) {
   return await fetchRule(team_id);
 }
 
-export async function executeRule(unsafeData: z.infer<typeof ruleSchema>) {
-  const { success, data } = ruleSchema.safeParse(unsafeData);
+export async function executeRule(unsafeData: z.infer<typeof RuleSchema>) {
+  const { success, data } = RuleSchema.safeParse(unsafeData);
 
   if (!success || !canExecute({ role: 'SUPER_ADMIN' })) {
     return { error: true, message: 'There was an error while creating rule' };
