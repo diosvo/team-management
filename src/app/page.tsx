@@ -15,14 +15,12 @@ import {
 import TextEditor from '@/components/text-editor';
 import { ColorModeButton } from '@/components/ui/color-mode';
 import { toaster } from '@/components/ui/toaster';
-import { useResponsive } from '@/contexts/responsive-provider';
 
 import { executeRule, getRule } from '@/features/rule/actions/rule';
 import { RuleValues } from '@/features/rule/schemas/rule';
 import Link from 'next/link';
 
 export default function MainPage() {
-  const { isMobile, isTablet, isDesktop } = useResponsive();
   const [content, setContent] = useState('');
   const [userRole, setUserRole] = useState('read'); // For demo
   const [isEditing, setIsEditing] = useState(false);
@@ -47,12 +45,6 @@ export default function MainPage() {
           Login
         </Link>
       </Button>
-
-      <div>
-        {isMobile && 'mobile'}
-        {isTablet && 'tablet'}
-        {isDesktop && 'desktop'}
-      </div>
 
       <Text fontSize={['sm', 'md', 'lg', 'xl']}>
         This text adapts across breakpoints
