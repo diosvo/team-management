@@ -11,6 +11,8 @@ import {
 } from 'drizzle-orm/pg-core';
 import type { AdapterAccountType } from 'next-auth/adapters';
 
+import { updated_at } from '../helpers';
+
 // Enums
 
 export const userRoles = ['SUPER_ADMIN', 'COACH', 'PLAYER', 'CAPTAIN'] as const;
@@ -25,30 +27,32 @@ export const userStateEnum = pgEnum('user_state', [
 ]);
 
 // Tables
+// Force id and userId by Drizzle ORM Adapter
 
-export const UserTable = pgTable('users', {
-  user_id: uuid('user_id').primaryKey().defaultRandom(),
+export const UserTable = pgTable('user', {
+  id: uuid('id').primaryKey().defaultRandom(),
   name: varchar('name', { length: 128 }).notNull(),
-  dob: date('dob').notNull(),
-  username: varchar('username').notNull(),
-  password: varchar('password', { length: 128 }).notNull(),
+  dob: date('dob'),
+  password: varchar('password', { length: 128 }),
   email: text('email').unique(),
   emailVerified: timestamp('emailVerified', { mode: 'date' }),
   phone_number: varchar('phone_number', { length: 15 }),
-  roles: userRolesEnum('roles').notNull().array().default(['PLAYER']),
+  citizen_identification: varchar('citizen_identification', { length: 12 }),
   image: text('image'),
+  state: userStateEnum('state').default('ACTIVE').notNull(),
+  roles: userRolesEnum('roles').notNull().array().default(['PLAYER']),
   join_date: timestamp('join_date', { withTimezone: true })
     .defaultNow()
     .notNull(),
-  state: userStateEnum('state').default('ACTIVE').notNull(),
+  updated_at,
 });
 
 export const AccountTable = pgTable(
   'account',
   {
-    userId: text('userId')
+    userId: uuid('userId')
       .notNull()
-      .references(() => UserTable.user_id, { onDelete: 'cascade' }),
+      .references(() => UserTable.id, { onDelete: 'cascade' }),
     type: text('type').$type<AdapterAccountType>().notNull(),
     provider: text('provider').notNull(),
     providerAccountId: text('providerAccountId').notNull(),
