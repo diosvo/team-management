@@ -11,7 +11,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import type { AdapterAccountType } from 'next-auth/adapters';
 
-import { updated_at } from '../helpers';
+import { created_at, updated_at } from '../helpers';
 
 // Enums
 
@@ -44,6 +44,7 @@ export const UserTable = pgTable('user', {
   join_date: timestamp('join_date', { withTimezone: true })
     .defaultNow()
     .notNull(),
+  created_at,
   updated_at,
 });
 

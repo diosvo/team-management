@@ -1,34 +1,36 @@
 'use server';
 
-import bcrypt from 'bcryptjs';
-import { eq } from 'drizzle-orm';
-
 import { Response } from '@/utils/models';
 
-import { db } from '@/db';
-import { UserTable } from '@/db/schema';
+import { getUserByEmail, insertUser } from '../db/auth';
 
-import { LoginSchema, LoginValues } from '../schemas/auth';
+import {
+  LoginSchema,
+  LoginValues,
+  RegisterSchema,
+  RegisterValues,
+} from '../schemas/auth';
 
-export async function register(values: LoginValues): Promise<Response> {
-  const { success, data } = LoginSchema.safeParse(values);
+export async function register(values: RegisterValues): Promise<Response> {
+  const { success, data } = RegisterSchema.safeParse(values);
 
   if (!success) {
     return { error: true, message: 'An error occurred' };
   }
 
-  const { email, password } = data;
-  const hashedPassword = await bcrypt.hash(password, 9);
+  const existingUser = await getUserByEmail(data.email);
 
-  const existingUser = await db.query.UserTable.findFirst({
-    where: eq(UserTable.email, email),
-  });
+  if (existingUser) {
+    return { error: true, message: 'Email already in use!' };
+  }
 
   try {
+    await insertUser(data);
     return {
       error: false,
       message: "We've sent an email to with instructions",
     };
+    // TODO: send email verification
   } catch (error) {
     return { error: true, message: (error as Error).message };
   }
@@ -44,7 +46,7 @@ export async function login(values: LoginValues): Promise<Response> {
   try {
     return {
       error: false,
-      message: "We've sent an email to with instructions",
+      message: '',
     };
   } catch (error) {
     return { error: true, message: (error as Error).message };

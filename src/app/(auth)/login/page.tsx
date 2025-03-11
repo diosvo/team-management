@@ -1,6 +1,5 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useState, useTransition } from 'react';
 
 import {
@@ -20,11 +19,19 @@ import {
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Chrome, Facebook } from 'lucide-react';
-import { useForm } from 'react-hook-form';
+import { FieldErrors, useForm } from 'react-hook-form';
 
 import { Field } from '@/components/ui/field';
-import { login } from '@/features/user/actions/auth';
-import { LoginSchema, LoginValues } from '@/features/user/schemas/auth';
+import {
+  login as loginAction,
+  register as registerAction,
+} from '@/features/user/actions/auth';
+import {
+  LoginSchema,
+  LoginValues,
+  RegisterSchema,
+  RegisterValues,
+} from '@/features/user/schemas/auth';
 import { Response } from '@/utils/models';
 import {
   buttonText,
@@ -34,35 +41,37 @@ import {
 } from '../_helpers/utils';
 
 export default function LoginPage() {
-  const searchParams = useSearchParams();
+  const [page, setPage] = useState(PageType.Login);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<LoginValues>({
-    resolver: zodResolver(LoginSchema),
+    reset,
+    clearErrors,
+  } = useForm<RegisterValues | LoginValues>({
+    resolver: zodResolver(
+      page === PageType.Register ? RegisterSchema : LoginSchema
+    ),
     defaultValues: {
       email: '',
       password: '',
+      name: '',
     },
   });
   const [isPending, startTransition] = useTransition();
-
-  const [page, setPage] = useState(PageType.Login);
-  const [authenticated, setAuthenticated] = useState<boolean>(false);
   const [response, setResponse] = useState<Response>();
 
   useEffect(() => {
-    if (authenticated) {
-      const next = searchParams.get('next') || '/';
-      window.location.href = next;
-    }
-  }, [authenticated, searchParams]);
+    reset();
+    clearErrors();
+  }, [page, reset, clearErrors]);
 
-  const onSubmit = (data: LoginValues) => {
+  const onSubmit = (data: RegisterValues | LoginValues) => {
     startTransition(() => {
-      login(data).then(setResponse);
+      page === PageType.Register
+        ? registerAction(data as RegisterValues).then(setResponse)
+        : loginAction(data as LoginValues).then(setResponse);
     });
   };
 
@@ -103,6 +112,7 @@ export default function LoginPage() {
               rounded="xl"
               variant="outline"
               onClick={() => handleSocialLogin('Facebook')}
+              disabled
             >
               <Facebook color="#1877F2" /> Continue with Facebook
             </Button>
@@ -112,6 +122,7 @@ export default function LoginPage() {
               rounded="xl"
               variant="outline"
               onClick={() => handleSocialLogin('Google')}
+              disabled
             >
               <Chrome color="#0F9D58" /> Continue with Google
             </Button>
@@ -119,7 +130,7 @@ export default function LoginPage() {
           <HStack my="6">
             <Separator flex="1" />
             <Text fontSize="sm" flexShrink="0" color="gray.600">
-              Or continue with
+              OR
             </Text>
             <Separator flex="1" />
           </HStack>
@@ -128,6 +139,22 @@ export default function LoginPage() {
       <Stack>
         <form onSubmit={handleSubmit(onSubmit)}>
           <Stack gap="6">
+            {page === PageType.Register && (
+              <Field
+                required
+                label="Full Name"
+                disabled={isPending}
+                invalid={
+                  !!(errors as FieldErrors<RegisterValues>).name?.message
+                }
+                errorText={
+                  (errors as FieldErrors<RegisterValues>).name?.message
+                }
+              >
+                <Input {...register('name')} />
+              </Field>
+            )}
+
             <Field
               required
               label="Email"

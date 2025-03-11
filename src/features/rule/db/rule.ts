@@ -6,10 +6,9 @@ import { InsertRule, RuleTable } from '@/db/schema/rule';
 import { revalidateRuleCache } from './cache';
 
 export async function fetchRule(team_id: string) {
-  const [data] = await db
-    .select()
-    .from(RuleTable)
-    .where(eq(RuleTable.team_id, team_id));
+  const data = await db.query.RuleTable.findFirst({
+    where: eq(RuleTable.team_id, team_id),
+  });
 
   return data;
 }
