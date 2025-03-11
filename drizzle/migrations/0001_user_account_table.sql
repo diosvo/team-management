@@ -27,6 +27,7 @@ CREATE TABLE "user" (
 	"state" "user_state" DEFAULT 'ACTIVE' NOT NULL,
 	"roles" "user_roles"[] DEFAULT '{"PLAYER"}',
 	"join_date" timestamp with time zone DEFAULT now() NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "user_email_unique" UNIQUE("email")
 );
