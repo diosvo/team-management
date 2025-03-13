@@ -1,12 +1,17 @@
-import { auth } from '@/auth';
+'use client';
 
-export default async function DashboardPage() {
-  const session = await auth();
+import { Button } from '@chakra-ui/react';
+
+import { logout } from '@/features/user/actions/auth';
+
+export default function DashboardPage() {
+  // const session = await auth();
 
   return (
     <div>
       <h1>Dashboard</h1>
-      <pre>{JSON.stringify(session)}</pre>
+      <Button onClick={() => logout()}>Logout</Button>
+      {/* <pre>{JSON.stringify(session)}</pre> */}
     </div>
   );
 }

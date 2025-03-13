@@ -5,6 +5,7 @@ import {
   API_AUTH_PREFIX,
   AUTH_ROUTES,
   DEFAULT_LOGIN_REDIRECT,
+  LOGIN_PATH,
   PUBLIC_ROUTES,
 } from '@/routes';
 
@@ -30,8 +31,10 @@ export default auth((req) => {
   }
 
   if (!isLoggedIn && !isPublicRoute) {
-    return Response.redirect(new URL('/login', nextUrl));
+    return Response.redirect(new URL(LOGIN_PATH, nextUrl));
   }
+
+  return;
 });
 
 export const config = {

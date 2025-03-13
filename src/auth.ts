@@ -20,9 +20,5 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     // Use it to limit write operations. Set to 0 to always update the database.
     updateAge: 24 * 60 * 60, // 24 hours
   },
-  pages: {
-    signIn: 'login',
-    signOut: 'logout',
-  },
   ...authConfig,
 });

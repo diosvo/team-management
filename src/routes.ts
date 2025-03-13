@@ -6,10 +6,15 @@
 export const PUBLIC_ROUTES = ['/', '/bg-layer.jpeg'];
 
 /**
+ * The path to the login page.
+ */
+export const LOGIN_PATH = '/login';
+
+/**
  * An array of routes that are used for authentication
  * These routes will redirect logged in in users to '/dashboard'
  */
-export const AUTH_ROUTES = ['/login'];
+export const AUTH_ROUTES = [LOGIN_PATH];
 
 /**
  * The prefix for API authentication routes.
