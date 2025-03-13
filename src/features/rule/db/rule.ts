@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm';
 
-import { db } from '@/db';
-import { InsertRule, RuleTable } from '@/db/schema/rule';
+import { db } from '@/drizzle';
+import { InsertRule, RuleTable } from '@/drizzle/schema/rule';
 
 import { revalidateRuleCache } from './cache';
 

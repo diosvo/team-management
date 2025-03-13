@@ -188,7 +188,7 @@ export default function LoginPage() {
               </Text>
             )}
 
-            {response && (
+            {response?.message && (
               <Alert.Root status={response.error ? 'error' : 'success'}>
                 <Alert.Indicator />
                 <AlertTitle>{response.message}</AlertTitle>

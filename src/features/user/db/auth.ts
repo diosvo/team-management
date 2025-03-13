@@ -1,8 +1,8 @@
 import bcrypt from 'bcryptjs';
 import { eq } from 'drizzle-orm';
 
-import { db } from '@/db';
-import { UserTable } from '@/db/schema';
+import { db } from '@/drizzle';
+import { UserTable } from '@/drizzle/schema';
 
 import { RegisterValues } from '../schemas/auth';
 
