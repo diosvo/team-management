@@ -48,7 +48,6 @@ export default function LoginPage() {
     handleSubmit,
     formState: { errors },
     reset,
-    clearErrors,
   } = useForm<RegisterValues | LoginValues>({
     resolver: zodResolver(
       page === PageType.Register ? RegisterSchema : LoginSchema
@@ -64,8 +63,8 @@ export default function LoginPage() {
 
   useEffect(() => {
     reset();
-    clearErrors();
-  }, [page, reset, clearErrors]);
+    setResponse(undefined);
+  }, [page, reset, setResponse]);
 
   const onSubmit = (data: RegisterValues | LoginValues) => {
     startTransition(() => {
