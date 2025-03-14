@@ -67,11 +67,11 @@ export default function LoginPage() {
   }, [page, reset, setResponse]);
 
   const onSubmit = (data: RegisterValues | LoginValues) => {
-    startTransition(() => {
+    startTransition(() =>
       page === PageType.Register
         ? registerAction(data as RegisterValues).then(setResponse)
-        : loginAction(data as LoginValues).then(setResponse);
-    });
+        : loginAction(data as LoginValues).then(setResponse)
+    );
   };
 
   const handleSocialLogin = useCallback((platform: string) => {

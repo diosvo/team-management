@@ -16,7 +16,7 @@ import { created_at, updated_at } from '../helpers';
 // Enums
 
 export const userRoles = ['SUPER_ADMIN', 'COACH', 'PLAYER', 'CAPTAIN'] as const;
-export type UserRoles = (typeof userRoles)[number];
+export type UserRole = (typeof userRoles)[number];
 export const userRolesEnum = pgEnum('user_roles', userRoles);
 
 export const userStateEnum = pgEnum('user_state', [

@@ -6,13 +6,10 @@ import { UserTable } from '@/drizzle/schema';
 
 import { RegisterValues } from '../schemas/auth';
 
-async function findUserBy<T extends keyof typeof UserTable>(
-  field: T,
-  value: string
-) {
+export async function getUserByEmail(email: string) {
   try {
     const user = await db.query.UserTable.findFirst({
-      where: eq(UserTable[field] as any, value),
+      where: eq(UserTable.email, email),
     });
     return user;
   } catch {
@@ -20,12 +17,15 @@ async function findUserBy<T extends keyof typeof UserTable>(
   }
 }
 
-export async function getUserByEmail(email: string) {
-  return findUserBy('email', email);
-}
-
 export async function getUserById(id: string) {
-  return findUserBy('id', id);
+  try {
+    const user = await db.query.UserTable.findFirst({
+      where: eq(UserTable.id, id),
+    });
+    return user;
+  } catch {
+    return null;
+  }
 }
 
 export async function insertUser(values: RegisterValues) {

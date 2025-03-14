@@ -1,7 +1,7 @@
 import NextAuth from 'next-auth';
 
 import { db } from '@/drizzle';
-import { AccountTable, UserRoles, UserTable } from '@/drizzle/schema/user';
+import { AccountTable, UserRole, UserTable } from '@/drizzle/schema/user';
 import { getUserById } from '@/features/user/db/auth';
 import { DrizzleAdapter } from '@auth/drizzle-adapter';
 
@@ -37,7 +37,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
 
       if (token.roles && session.user) {
-        session.user.roles = token.roles as UserRoles;
+        session.user.roles = token.roles as Array<UserRole>;
       }
 
       return session;

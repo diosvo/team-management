@@ -1,8 +1,8 @@
-import { UserRoles } from '@/drizzle/schema/user';
+import { UserRole } from '@/drizzle/schema/user';
 import { type DefaultSession } from 'next-auth';
 
 export type ExtendedUser = DefaultSession['user'] & {
-  roles: UserRoles;
+  roles: Array<UserRole>;
 };
 
 declare module 'next-auth' {
