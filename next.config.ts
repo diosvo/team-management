@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
     nodeMiddleware: true,
     optimizePackageImports: ['@chakra-ui/react'],
   },
+  serverExternalPackages: ['pg'],
 };
 
 export default nextConfig;

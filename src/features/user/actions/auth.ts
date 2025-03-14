@@ -59,6 +59,9 @@ export async function login(values: LoginValues) {
         case 'CredentialsSignin': {
           return { error: true, message: 'Invalid credentials' };
         }
+        case 'AccessDenied': {
+          return { error: true, message: 'Access Denied' };
+        }
         default: {
           return { error: true, message: 'Something went wrong!' };
         }
