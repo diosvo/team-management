@@ -1,14 +1,15 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import { Suspense } from 'react';
 
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 
 import { Provider as UiProvider } from '@/components/ui/provider';
 import { Toaster } from '@/components/ui/toaster';
-import { ResponsiveProvider } from '@/contexts/responsive-provider';
 
 import './globals.css';
+import Loading from './loading';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -34,7 +35,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <UiProvider>
           <Toaster />
-          <ResponsiveProvider>{children}</ResponsiveProvider>
+          <Suspense fallback={<Loading />}>{children}</Suspense>
         </UiProvider>
         {/* Vercel plugins */}
         {process.env.NODE_ENV === 'production' && (

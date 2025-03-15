@@ -5,7 +5,7 @@
 - 🚀 [Next.js](https://nextjs.org/)
 
   - 🧰 [Drizzle](https://orm.drizzle.team/) as the ORM for migrations and database access.
-  - 🔍 [Zod](https://zod.dev/) for schema validation.
+  - 🔍 [Zod](https://zod.dev/) and [React Hook Form](https://react-hook-form.com/) for schema validation.
   - 💾 [Neon](https://vercel.com/marketplace/neon) for PostgresSQL database interaction.
   - 🔑 [NextAuth.js](https://next-auth.js.org/) for authentication via GitHub (OAuth).
   - 💃 Using TypeScript, hooks, [Chakra](https://chakra-ui.com/) and other parts of a modern frontend stack.
@@ -19,33 +19,39 @@
 > It could be temporality
 
 ```
-├── drizzle
-│   └── migrations
-│       └── meta
+.
+├── public
 └── src
     ├── app
-    │   ├── (auth) # Authentication-related routes (Auth.js integration)
-    │   │   ├── sign-in
-    │   │   └── sign-up
+    │   ├── (auth)  # Authentication-related routes (Auth.js integration)
+    │   │   ├── _components
+    │   │   ├── _helpers
+    │   │   └── login
+    │   ├── (protected)
+    │   │   └── <protected_pages>
     │   └── api
     │       └── auth
     │           └── [...nextauth]
-    ├── components # Reuseable UI components
-    │   ├── ui # Common UI elements (buttons, modals, etc)
-    │   └── layout # Layout components
-    ├── contexts
-    ├── db
-    │   ├── schema
-    ├── features # Feature-based modules
+    ├── components  # Reuseable UI components
+    │   └── ui      # Common UI elements (buttons, modals, etc)
+    ├── drizzle
+    │   ├── migrations
+    │   │   └── meta
+    │   └── schema
+    ├── features    # Feature-based modules
     │   ├── (name)
     │   │   ├── actions
-    │   │   ├── components
     │   │   ├── db
+    │       │   └── cache
     │   │   ├── permissions
     │   │   └── schemas
-    ├── lib # Helper utilities (API clients, auth handler)
-    ├── utils
-    └── vendor # Miscellaneous utilities and helper functions
+    │   └── user
+    │       ├── actions
+    │       ├── db
+    │       │   └── cache
+    │       └── schemas
+    ├── lib         # Helper utilities (data cache)
+    ├── utils       # Reusable models
 ```
 
 > [!NOTE]  

@@ -12,7 +12,12 @@ export interface ColorModeProviderProps extends ThemeProviderProps {}
 
 export function ColorModeProvider(props: ThemeProviderProps) {
   return (
-    <ThemeProvider attribute="class" disableTransitionOnChange {...props} />
+    <ThemeProvider
+      attribute="class"
+      enableSystem={false}
+      disableTransitionOnChange
+      {...props}
+    />
   );
 }
 

@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { z } from 'zod';
 
 import {
   Box,
@@ -16,18 +15,17 @@ import {
 import TextEditor from '@/components/text-editor';
 import { ColorModeButton } from '@/components/ui/color-mode';
 import { toaster } from '@/components/ui/toaster';
-import { useResponsive } from '@/contexts/responsive-provider';
 
 import { executeRule, getRule } from '@/features/rule/actions/rule';
-import { ruleSchema } from '@/features/rule/schemas/rule';
+import { RuleValues } from '@/features/rule/schemas/rule';
+import Link from 'next/link';
 
-const Main = () => {
-  const { isMobile, isTablet, isDesktop } = useResponsive();
+export default function MainPage() {
   const [content, setContent] = useState('');
   const [userRole, setUserRole] = useState('read'); // For demo
   const [isEditing, setIsEditing] = useState(false);
 
-  async function onSubmit(values: z.infer<typeof ruleSchema>) {
+  async function onSubmit(values: RuleValues) {
     const { error, message: description } = await executeRule(values);
 
     if (error) {
@@ -42,11 +40,11 @@ const Main = () => {
   return (
     <>
       <ColorModeButton />
-      <div>
-        {isMobile && 'mobile'}
-        {isTablet && 'tablet'}
-        {isDesktop && 'desktop'}
-      </div>
+      <Button variant="outline" asChild>
+        <Link href="/login" color="white">
+          Login
+        </Link>
+      </Button>
 
       <Text fontSize={['sm', 'md', 'lg', 'xl']}>
         This text adapts across breakpoints
@@ -113,6 +111,7 @@ const Main = () => {
             <Button
               size="sm"
               variant="outline"
+              colorScheme="blue"
               onClick={async () => {
                 const rule = await getRule(
                   '8c309243-f194-49df-b00a-5b2fb2bab727'
@@ -151,6 +150,4 @@ const Main = () => {
       </Box>
     </>
   );
-};
-
-export default Main;
+}
