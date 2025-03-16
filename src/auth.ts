@@ -1,3 +1,4 @@
+import { eq } from 'drizzle-orm';
 import NextAuth from 'next-auth';
 
 import { db } from '@/drizzle';
@@ -21,10 +22,23 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     // Use it to limit write operations. Set to 0 to always update the database.
     updateAge: 24 * 60 * 60, // 24 hours
   },
+  events: {
+    async linkAccount({ user }) {
+      await db
+        .update(UserTable)
+        .set({ emailVerified: new Date() })
+        .where(eq(UserTable.id, user.id as string))
+        .returning();
+    },
+  },
   callbacks: {
-    async signIn({ user }) {
+    async signIn({ user, account }) {
+      // Allow OAuth without email verification
+      if (account?.provider !== 'credentials') return true;
+
       const existingUser = await getUserById(user.id as string);
 
+      // Prevent sign in without email verification
       if (!existingUser || !existingUser.emailVerified) {
         return false;
       }
@@ -57,8 +71,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
   },
   pages: {
-    signIn: 'login',
-    signOut: 'login',
+    signIn: '/login',
+    // error: '/error',
   },
   ...authConfig,
 });

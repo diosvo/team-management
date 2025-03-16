@@ -13,7 +13,6 @@ import {
 } from '@chakra-ui/react';
 
 import TextEditor from '@/components/text-editor';
-import { ColorModeButton } from '@/components/ui/color-mode';
 import { toaster } from '@/components/ui/toaster';
 
 import { executeRule, getRule } from '@/features/rule/actions/rule';
@@ -39,7 +38,6 @@ export default function MainPage() {
 
   return (
     <>
-      <ColorModeButton />
       <Button variant="outline" asChild>
         <Link href="/login" color="white">
           Login

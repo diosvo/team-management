@@ -33,6 +33,9 @@ import {
   RegisterValues,
 } from '@/features/user/schemas/auth';
 import { Response } from '@/utils/models';
+
+import { DEFAULT_LOGIN_REDIRECT } from '@/routes';
+import { signIn } from 'next-auth/react';
 import {
   buttonText,
   pageTitle,
@@ -42,6 +45,7 @@ import {
 
 export default function LoginPage() {
   const [page, setPage] = useState(PageType.Login);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const {
     register,
@@ -74,9 +78,21 @@ export default function LoginPage() {
     );
   };
 
-  const handleSocialLogin = useCallback((platform: string) => {
-    console.log(`${platform} login clicked`);
-  }, []);
+  const handleSocialLogin = useCallback(
+    async (provider: 'google' | 'facebook') => {
+      try {
+        setIsLoading(true);
+        await signIn(provider, {
+          redirectTo: DEFAULT_LOGIN_REDIRECT,
+        });
+      } catch (error) {
+        setIsLoading(false);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    []
+  );
 
   return (
     <Container maxW="xl" p="8" rounded="lg" backgroundColor="white" shadow="lg">
@@ -110,8 +126,8 @@ export default function LoginPage() {
               flex={{ base: 'none', md: '1' }}
               rounded="xl"
               variant="outline"
-              onClick={() => handleSocialLogin('Facebook')}
-              disabled
+              loading={isPending || isLoading}
+              onClick={() => handleSocialLogin('facebook')}
             >
               <Facebook color="#1877F2" /> Continue with Facebook
             </Button>
@@ -120,8 +136,8 @@ export default function LoginPage() {
               flex={{ base: 'none', md: '1' }}
               rounded="xl"
               variant="outline"
-              onClick={() => handleSocialLogin('Google')}
-              disabled
+              loading={isPending || isLoading}
+              onClick={() => handleSocialLogin('google')}
             >
               <Chrome color="#0F9D58" /> Continue with Google
             </Button>
@@ -195,7 +211,11 @@ export default function LoginPage() {
               </Alert.Root>
             )}
 
-            <Button type="submit" rounded="full" loading={isPending}>
+            <Button
+              type="submit"
+              rounded="full"
+              loading={isPending || isLoading}
+            >
               {buttonText[page]}
             </Button>
 

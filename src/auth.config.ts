@@ -1,12 +1,17 @@
-import bcrypt from 'bcryptjs';
+import { compare } from 'bcryptjs';
 import type { NextAuthConfig } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
+import Google from 'next-auth/providers/google';
 
 import { getUserByEmail } from '@/features/user/db/auth';
 import { LoginSchema } from '@/features/user/schemas/auth';
 
 export default {
   providers: [
+    Google({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    }),
     Credentials({
       authorize: async (credentials) => {
         const { success, data } = LoginSchema.safeParse(credentials);
@@ -19,7 +24,7 @@ export default {
           // Password is null in case we use providers like Google.
           if (!user || !user.password) return null;
 
-          const matcher = await bcrypt.compare(password, user.password);
+          const matcher = await compare(password, user.password);
 
           if (matcher) return user;
         }
