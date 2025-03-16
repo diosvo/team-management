@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 
 import {
@@ -17,7 +18,7 @@ import { toaster } from '@/components/ui/toaster';
 
 import { executeRule, getRule } from '@/features/rule/actions/rule';
 import { RuleValues } from '@/features/rule/schemas/rule';
-import Link from 'next/link';
+import { LOGIN_PATH } from '@/routes';
 
 export default function MainPage() {
   const [content, setContent] = useState('');
@@ -39,9 +40,7 @@ export default function MainPage() {
   return (
     <>
       <Button variant="outline" asChild>
-        <Link href="/login" color="white">
-          Login
-        </Link>
+        <Link href={LOGIN_PATH}>Login</Link>
       </Button>
 
       <Text fontSize={['sm', 'md', 'lg', 'xl']}>

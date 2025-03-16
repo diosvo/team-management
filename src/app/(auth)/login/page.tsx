@@ -6,8 +6,6 @@ import {
   Alert,
   AlertTitle,
   Button,
-  Container,
-  Flex,
   Heading,
   HStack,
   Input,
@@ -18,7 +16,7 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Chrome, Facebook } from 'lucide-react';
+import { Chrome } from 'lucide-react';
 import { FieldErrors, useForm } from 'react-hook-form';
 
 import { Field } from '@/components/ui/field';
@@ -46,6 +44,8 @@ import {
 export default function LoginPage() {
   const [page, setPage] = useState(PageType.Login);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isPending, startTransition] = useTransition();
+  const [response, setResponse] = useState<Response>();
 
   const {
     register,
@@ -62,8 +62,6 @@ export default function LoginPage() {
       name: '',
     },
   });
-  const [isPending, startTransition] = useTransition();
-  const [response, setResponse] = useState<Response>();
 
   useEffect(() => {
     reset();
@@ -74,14 +72,19 @@ export default function LoginPage() {
     startTransition(() =>
       page === PageType.Register
         ? registerAction(data as RegisterValues).then(setResponse)
-        : loginAction(data as LoginValues).then(setResponse)
+        : loginAction(data as LoginValues).then((data) => {
+            // TODO: Add when we add 2FA
+            setResponse(data);
+          })
     );
   };
 
   const handleSocialLogin = useCallback(
     async (provider: 'google' | 'facebook') => {
       try {
+        reset();
         setIsLoading(true);
+
         await signIn(provider, {
           redirectTo: DEFAULT_LOGIN_REDIRECT,
         });
@@ -95,7 +98,7 @@ export default function LoginPage() {
   );
 
   return (
-    <Container maxW="xl" p="8" rounded="lg" backgroundColor="white" shadow="lg">
+    <>
       <VStack mb="6">
         <Heading textAlign="center" size={{ base: 'xl', md: '2xl' }}>
           {pageTitle[page]}
@@ -121,27 +124,16 @@ export default function LoginPage() {
 
       {page !== PageType.ResetPassword && (
         <>
-          <Flex direction={{ base: 'column', md: 'row' }} gap="3">
-            <Button
-              flex={{ base: 'none', md: '1' }}
-              rounded="xl"
-              variant="outline"
-              loading={isPending || isLoading}
-              onClick={() => handleSocialLogin('facebook')}
-            >
-              <Facebook color="#1877F2" /> Continue with Facebook
-            </Button>
-            <Button
-              size={{ base: 'sm', md: 'md' }}
-              flex={{ base: 'none', md: '1' }}
-              rounded="xl"
-              variant="outline"
-              loading={isPending || isLoading}
-              onClick={() => handleSocialLogin('google')}
-            >
-              <Chrome color="#0F9D58" /> Continue with Google
-            </Button>
-          </Flex>
+          <Button
+            size={{ base: 'md', md: 'lg' }}
+            width="full"
+            rounded="xl"
+            variant="outline"
+            disabled={isPending || isLoading}
+            onClick={() => handleSocialLogin('google')}
+          >
+            <Chrome color="#0F9D58" /> Continue with Google
+          </Button>
           <HStack my="6">
             <Separator flex="1" />
             <Text fontSize="sm" flexShrink="0" color="gray.600">
@@ -232,6 +224,6 @@ export default function LoginPage() {
           </Stack>
         </form>
       </Stack>
-    </Container>
+    </>
   );
 }

@@ -1,4 +1,4 @@
-import { Center } from '@chakra-ui/react';
+import { Center, Container } from '@chakra-ui/react';
 
 export default function LoginLayout({
   children,
@@ -14,7 +14,15 @@ export default function LoginLayout({
       bgPos="center"
       bgImage="url('/bg-layer.jpeg')"
     >
-      {children}
+      <Container
+        maxW="xl"
+        p="8"
+        rounded="lg"
+        backgroundColor="white"
+        shadow="lg"
+      >
+        {children}
+      </Container>
     </Center>
   );
 }
