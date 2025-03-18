@@ -10,20 +10,22 @@ export default auth((req) => {
   const isLoggedIn = !!req.auth;
   const currentPath = nextUrl.pathname;
 
-  // Helper function to create redirect responses
+  // Helper functions
   const redirectTo = (path: string) =>
     Response.redirect(new URL(path, nextUrl));
 
+  const isPublicRoute = (path: string) => PUBLIC_ROUTES.includes(path);
+
+  const isAuthRoute = (path: string) =>
+    [LOGIN_PATH, '/'].some((route) => route === path);
+
   // Redirect authenticated users trying to access auth routes
-  if (isLoggedIn && LOGIN_PATH === currentPath) {
+  if (isLoggedIn && isAuthRoute(currentPath)) {
     return redirectTo(DEFAULT_LOGIN_REDIRECT);
   }
 
   // Redirect unauthenticated users away from protected routes
-  if (
-    !isLoggedIn &&
-    (!PUBLIC_ROUTES.includes(currentPath) || currentPath === '/')
-  ) {
+  if (!isLoggedIn && !isPublicRoute(currentPath)) {
     return redirectTo(LOGIN_PATH);
   }
 
