@@ -82,13 +82,11 @@ export default function LoginPage() {
   const handleSocialLogin = useCallback(
     async (provider: 'google' | 'facebook') => {
       try {
-        reset();
         setIsLoading(true);
-
         await signIn(provider, {
           redirectTo: DEFAULT_LOGIN_REDIRECT,
         });
-      } catch (error) {
+      } catch {
         setIsLoading(false);
       } finally {
         setIsLoading(false);
