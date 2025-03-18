@@ -39,16 +39,11 @@
     │   │   └── meta
     │   └── schema
     ├── features    # Feature-based modules
-    │   ├── (name)
-    │   │   ├── actions
-    │   │   ├── db
-    │       │   └── cache
-    │   │   ├── permissions
-    │   │   └── schemas
-    │   └── user
+    │   └── (name)
     │       ├── actions
     │       ├── db
     │       │   └── cache
+    │       ├── permissions
     │       └── schemas
     ├── lib         # Helper utilities (data cache)
     ├── utils       # Reusable models

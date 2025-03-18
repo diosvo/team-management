@@ -12,8 +12,7 @@ export function LogoutButton() {
   const handleLogout = () => {
     startTransition(async () => {
       await signOut({
-        callbackUrl: LOGIN_PATH,
-        redirect: true,
+        redirectTo: LOGIN_PATH,
       });
     });
   };
