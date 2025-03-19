@@ -1,10 +1,12 @@
 'use server';
 
+import { AuthError } from 'next-auth';
+
 import { signIn, signOut } from '@/auth';
+import { generateVerificationToken } from '@/lib/token';
 import { DEFAULT_LOGIN_REDIRECT, LOGIN_PATH } from '@/routes';
 import { Response } from '@/utils/models';
 
-import { AuthError } from 'next-auth';
 import { getUserByEmail, insertUser } from '../db/auth';
 import {
   LoginSchema,
@@ -20,19 +22,22 @@ export async function register(values: RegisterValues): Promise<Response> {
     return { error: true, message: 'An error occurred' };
   }
 
-  const existingUser = await getUserByEmail(data.email);
+  const { email } = data;
+  const existingUser = await getUserByEmail(email);
 
   if (existingUser) {
     return { error: true, message: 'Email already in use!' };
   }
 
   try {
-    await insertUser(data);
+    const user = await insertUser(data);
+    // TODO: send email verification
+    const token = await generateVerificationToken(email);
+
     return {
       error: false,
       message: "We've sent an email to with instructions",
     };
-    // TODO: send email verification
   } catch (error) {
     return { error: true, message: (error as Error).message };
   }
@@ -46,6 +51,13 @@ export async function login(values: LoginValues) {
   }
 
   const { email, password } = data;
+
+  const user = await getUserByEmail(email);
+
+  if (!user?.emailVerified) {
+    const token = generateVerificationToken(email);
+    return { error: false, message: 'Confirmation email sent!' };
+  }
 
   try {
     await signIn('credentials', {
@@ -73,6 +85,5 @@ export async function login(values: LoginValues) {
 }
 
 export async function logout() {
-  // Should it be a landing page?
   await signOut({ redirectTo: LOGIN_PATH });
 }
