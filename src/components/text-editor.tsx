@@ -42,12 +42,12 @@ interface TextEditorProps {
   onSave: (content: string) => void;
 }
 
-const TextEditor = ({
+export default function TextEditor({
   editable,
   content,
   onCancel,
   onSave,
-}: TextEditorProps) => {
+}: TextEditorProps) {
   const [url, setUrl] = useState('');
   const [initialContent] = useState(content);
 
@@ -264,6 +264,4 @@ const TextEditor = ({
       )}
     </>
   );
-};
-
-export default TextEditor;
+}

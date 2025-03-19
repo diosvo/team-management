@@ -7,6 +7,7 @@ import { generateVerificationToken } from '@/lib/token';
 import { DEFAULT_LOGIN_REDIRECT, LOGIN_PATH } from '@/routes';
 import { Response } from '@/utils/models';
 
+import { sendVerificationEmail } from '@/lib/mail';
 import { getUserByEmail, insertUser } from '../db/auth';
 import {
   LoginSchema,
@@ -22,17 +23,17 @@ export async function register(values: RegisterValues): Promise<Response> {
     return { error: true, message: 'An error occurred' };
   }
 
-  const { email } = data;
-  const existingUser = await getUserByEmail(email);
+  const existingUser = await getUserByEmail(data.email);
 
   if (existingUser) {
     return { error: true, message: 'Email already in use!' };
   }
 
   try {
-    const user = await insertUser(data);
-    // TODO: send email verification
-    const token = await generateVerificationToken(email);
+    await insertUser(data);
+
+    const { email, token } = await generateVerificationToken(data.email);
+    await sendVerificationEmail(email, token);
 
     return {
       error: false,

@@ -8,6 +8,7 @@
   - 🔍 [Zod](https://zod.dev/) and [React Hook Form](https://react-hook-form.com/) for schema validation.
   - 💾 [Neon](https://vercel.com/marketplace/neon) for PostgresSQL database interaction.
   - 🔑 [NextAuth.js](https://next-auth.js.org/) for authentication via GitHub (OAuth).
+  - 📩 [Resend](https://resend.com/) for email confirmation.
   - 💃 Using TypeScript, hooks, [Chakra](https://chakra-ui.com/) and other parts of a modern frontend stack.
 
 - 🔒 Secure password hashing by default.
