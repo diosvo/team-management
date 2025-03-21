@@ -30,7 +30,7 @@ import {
   RegisterSchema,
   RegisterValues,
 } from '@/features/user/schemas/auth';
-import { Response } from '@/utils/models';
+import { Response } from '@/utils/response';
 
 import { DEFAULT_LOGIN_REDIRECT } from '@/routes';
 import { signIn } from 'next-auth/react';
