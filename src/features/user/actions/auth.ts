@@ -53,7 +53,9 @@ export async function login(values: LoginValues) {
   const user = await getUserByEmail(email);
 
   if (!user?.emailVerified) {
-    const token = generateVerificationToken(email);
+    const { email, token } = await generateVerificationToken(data.email);
+    await sendVerificationEmail(email, token);
+
     return ResponseFactory.success('Confirmation email sent!');
   }
 

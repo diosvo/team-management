@@ -7,7 +7,7 @@ export const sendVerificationEmail = async (
   email: string,
   token: string
 ): Promise<Response> => {
-  const confirmLink = `http://localhost:3000/confirmation-email?token=${token}`;
+  const confirmLink = `http://localhost:3000/email-confirmation?token=${token}`;
 
   try {
     await resend.emails.send({
