@@ -1,12 +1,7 @@
 import { eq } from 'drizzle-orm';
 
 import { db } from '@/drizzle';
-import {
-  Token,
-  User,
-  UserTable,
-  VerificationTokenTable,
-} from '@/drizzle/schema';
+import { UserTable, VerificationTokenTable } from '@/drizzle/schema';
 import { ResponseFactory } from '@/utils/response';
 
 export async function getVerificationTokenByToken(token: string) {
@@ -56,14 +51,21 @@ export async function insertVerificationToken(
   return verificationToken;
 }
 
-export async function verifyUserEmail(user: User, token: Token) {
+export async function updateVerificationDate(user_id: string, email: string) {
   try {
-    await db
+    return await db
       .update(UserTable)
-      .set({ emailVerified: new Date(), email: user.email })
-      .where(eq(UserTable.id, user.id));
+      .set({ emailVerified: new Date(), email })
+      .where(eq(UserTable.id, user_id));
+  } catch {
+    return null;
+  }
+}
 
-    await deleteVerificationTokenByEmail(token.email);
+export async function verifyUserEmail(user_id: string, email: string) {
+  try {
+    await updateVerificationDate(user_id, email);
+    await deleteVerificationTokenByEmail(email);
   } catch {
     return ResponseFactory.error('Failed to verify email!');
   }

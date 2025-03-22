@@ -70,7 +70,6 @@ export default async function DashboardPage() {
               style={{
                 textAlign: 'center',
                 margin: '24px 0',
-                backgroundColor: '#f6f8fa',
                 padding: '16px',
                 borderRadius: '6px',
                 border: '1px dashed #e1e4e8',

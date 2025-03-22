@@ -1,9 +1,9 @@
-import { eq } from 'drizzle-orm';
 import NextAuth from 'next-auth';
 
 import { db } from '@/drizzle';
 import { AccountTable, UserRole, UserTable } from '@/drizzle/schema/user';
 import { getUserById } from '@/features/user/db/auth';
+import { updateVerificationDate } from '@/features/user/db/verification-token';
 import { DrizzleAdapter } from '@auth/drizzle-adapter';
 
 import authConfig from './auth.config';
@@ -24,11 +24,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   events: {
     async linkAccount({ user }) {
-      await db
-        .update(UserTable)
-        .set({ emailVerified: new Date() })
-        .where(eq(UserTable.id, user.id as string))
-        .returning();
+      await updateVerificationDate(user.id as string, user.email as string);
     },
   },
   callbacks: {

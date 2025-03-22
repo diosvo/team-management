@@ -29,7 +29,7 @@ export async function newVerification(token: string) {
     return ResponseFactory.error('Email does not exist!');
   }
 
-  await verifyUserEmail(existingUser, existingToken);
+  await verifyUserEmail(existingUser.id, existingToken.email);
 
   return ResponseFactory.success('Email verified successfully!');
 }

@@ -50,7 +50,7 @@ export async function login(values: LoginValues) {
 
   const user = await getUserByEmail(data.email);
 
-  if (!user?.emailVerified) {
+  if (user && !user.emailVerified) {
     const { email, token } = await generateVerificationToken(data.email);
     await sendVerificationEmail(email, token);
 
