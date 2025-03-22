@@ -3,24 +3,24 @@
 import { AuthError } from 'next-auth';
 
 import { signIn, signOut } from '@/auth';
-import { sendVerificationEmail } from '@/lib/mail';
-import { generateVerificationToken } from '@/lib/token';
 import { DEFAULT_LOGIN_REDIRECT, LOGIN_PATH } from '@/routes';
 import { Response, ResponseFactory } from '@/utils/response';
 
 import { getUserByEmail, insertUser } from '../db/auth';
+import { generateVerificationToken } from '../db/verification-token';
 import {
   LoginSchema,
   LoginValues,
   RegisterSchema,
   RegisterValues,
 } from '../schemas/auth';
+import { sendVerificationEmail } from './verification-token';
 
 export async function register(values: RegisterValues): Promise<Response> {
   const { success, data } = RegisterSchema.safeParse(values);
 
   if (!success) {
-    return ResponseFactory.error('An error occurred');
+    return ResponseFactory.error();
   }
 
   const existingUser = await getUserByEmail(data.email);
@@ -30,14 +30,16 @@ export async function register(values: RegisterValues): Promise<Response> {
   }
 
   try {
-    await insertUser(data);
-
     const { email, token } = await generateVerificationToken(data.email);
+    // Send verification email before inserting user
     await sendVerificationEmail(email, token);
 
+    // Only insert user if email was sent successfully
+    await insertUser(data);
+
     return ResponseFactory.success("We've sent an email to with instructions");
-  } catch (error) {
-    return ResponseFactory.fromError(error as Error);
+  } catch {
+    return ResponseFactory.error();
   }
 }
 
@@ -45,10 +47,14 @@ export async function login(values: LoginValues) {
   const { success, data } = LoginSchema.safeParse(values);
 
   if (!success) {
-    return ResponseFactory.error('An error occurred');
+    return ResponseFactory.error();
   }
 
   const user = await getUserByEmail(data.email);
+
+  if (!user) {
+    return ResponseFactory.error('Cannot find email. Please sign up.');
+  }
 
   if (user && !user.emailVerified) {
     const { email, token } = await generateVerificationToken(data.email);

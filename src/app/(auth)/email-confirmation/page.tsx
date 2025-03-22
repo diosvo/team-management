@@ -52,7 +52,7 @@ export default function EmailConfirmationPage() {
       )}
       <Text fontWeight="medium">
         <Link textDecoration="underline" href="/login">
-          Back to login
+          Go to login
         </Link>
       </Text>
     </VStack>

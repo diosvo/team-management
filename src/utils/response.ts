@@ -24,7 +24,7 @@ export class ResponseFactory {
    * @param message Error message
    * @returns Response object with error: true
    */
-  static error(message: string): Response {
+  static error(message: string = 'Something went wrong.'): Response {
     return {
       error: true,
       message,

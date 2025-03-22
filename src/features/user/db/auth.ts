@@ -27,10 +27,14 @@ export async function getUserById(id: string) {
 }
 
 export async function insertUser(values: RegisterValues) {
-  const hashedPassword = await hash(values.password, 9);
+  try {
+    const hashedPassword = await hash(values.password, 9);
 
-  return await db.insert(UserTable).values({
-    ...values,
-    password: hashedPassword,
-  });
+    return await db.insert(UserTable).values({
+      ...values,
+      password: hashedPassword,
+    });
+  } catch {
+    return null;
+  }
 }

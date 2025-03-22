@@ -1,4 +1,3 @@
-import EmailTemplate from '@/app/(auth)/_components/email-template';
 import { LogoutButton } from '@/app/(auth)/_components/logout-button';
 import { auth } from '@/auth';
 
@@ -10,8 +9,6 @@ export default async function DashboardPage() {
       <h1>Dashboard</h1>
       <LogoutButton />
       <pre>{JSON.stringify(session, null, 2)}</pre>
-
-      <EmailTemplate name="dios" token="aaa" />
     </div>
   );
 }

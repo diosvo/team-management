@@ -10,6 +10,7 @@ export const LOGIN_PATH = '/login';
  */
 export const PUBLIC_ROUTES = [
   LOGIN_PATH,
+  '/logo.png',
   '/bg-layer.jpeg',
   '/email-confirmation',
 ];
