@@ -80,3 +80,6 @@ export const VerificationTokenTable = pgTable('verification_token', {
   token: text('token').unique().notNull(),
   expires_at: timestamp('expires_at', { withTimezone: true }).notNull(),
 });
+
+export type User = typeof UserTable.$inferSelect;
+export type Token = typeof VerificationTokenTable.$inferSelect;

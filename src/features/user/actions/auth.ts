@@ -3,11 +3,11 @@
 import { AuthError } from 'next-auth';
 
 import { signIn, signOut } from '@/auth';
+import { sendVerificationEmail } from '@/lib/mail';
 import { generateVerificationToken } from '@/lib/token';
 import { DEFAULT_LOGIN_REDIRECT, LOGIN_PATH } from '@/routes';
 import { Response, ResponseFactory } from '@/utils/response';
 
-import { sendVerificationEmail } from '@/lib/mail';
 import { getUserByEmail, insertUser } from '../db/auth';
 import {
   LoginSchema,
@@ -48,9 +48,7 @@ export async function login(values: LoginValues) {
     return ResponseFactory.error('An error occurred');
   }
 
-  const { email, password } = data;
-
-  const user = await getUserByEmail(email);
+  const user = await getUserByEmail(data.email);
 
   if (!user?.emailVerified) {
     const { email, token } = await generateVerificationToken(data.email);
@@ -61,8 +59,8 @@ export async function login(values: LoginValues) {
 
   try {
     await signIn('credentials', {
-      email,
-      password,
+      email: data.email,
+      password: data.password,
       redirectTo: DEFAULT_LOGIN_REDIRECT,
     });
   } catch (error) {

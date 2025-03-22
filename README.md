@@ -12,7 +12,7 @@
   - 💃 Using TypeScript, hooks, [Chakra](https://chakra-ui.com/) and other parts of a modern frontend stack.
 
 - 🔒 Secure password hashing by default.
-- 🚢 [Vercel](http://vercel.com/) for deployment
+- 🚢 [Vercel](http://vercel.com/) for deployment.
 - 🏭 CI/CD based on GitHub Actions.
 
 ## Folder structure
