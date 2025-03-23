@@ -7,8 +7,9 @@ import EmailTemplate from '@/app/(auth)/_components/email-template';
 
 import { getUserByEmail } from '../db/auth';
 import {
+  deleteVerificationTokenByEmail,
   getVerificationTokenByToken,
-  verifyUserEmail,
+  updateVerificationDate,
 } from '../db/verification-token';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -34,9 +35,16 @@ export async function newVerification(token: string) {
     return ResponseFactory.error('Email does not exist!');
   }
 
-  await verifyUserEmail(existingUser.id, existingToken.email);
+  const { email } = existingToken;
 
-  return ResponseFactory.success('Email verified successfully!');
+  try {
+    await updateVerificationDate(existingUser.id, email);
+    await deleteVerificationTokenByEmail(email);
+
+    return ResponseFactory.success('Email verified successfully.');
+  } catch {
+    return ResponseFactory.error('Failed to verify email!');
+  }
 }
 
 export async function sendVerificationEmail(email: string, token: string) {

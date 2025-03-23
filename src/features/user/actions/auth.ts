@@ -1,13 +1,18 @@
 'use server';
 
 import { AuthError } from 'next-auth';
+import { v4 as uuidV4 } from 'uuid';
 
 import { signIn, signOut } from '@/auth';
 import { DEFAULT_LOGIN_REDIRECT, LOGIN_PATH } from '@/routes';
 import { Response, ResponseFactory } from '@/utils/response';
 
 import { getUserByEmail, insertUser } from '../db/auth';
-import { generateVerificationToken } from '../db/verification-token';
+import {
+  deleteVerificationTokenByEmail,
+  getVerificationTokenByEmail,
+  insertVerificationToken,
+} from '../db/verification-token';
 import {
   LoginSchema,
   LoginValues,
@@ -90,4 +95,17 @@ export async function login(values: LoginValues) {
 
 export async function logout() {
   await signOut({ redirectTo: LOGIN_PATH });
+}
+
+async function generateVerificationToken(email: string) {
+  const token = uuidV4();
+  const expires_at = new Date(new Date().getTime() + 3600 * 1000); // 1 hour
+
+  const existingToken = await getVerificationTokenByEmail(email);
+
+  if (existingToken) {
+    await deleteVerificationTokenByEmail(email);
+  }
+
+  return await insertVerificationToken(email, token, expires_at);
 }

@@ -24,7 +24,7 @@ export async function executeRule(unsafeData: RuleValues): Promise<Response> {
       return ResponseFactory.error('Rule updated successfully');
     } else {
       await insertRule(data);
-      return ResponseFactory.error('New rule created successful');
+      return ResponseFactory.success('New rule created successful');
     }
   } catch (error) {
     return ResponseFactory.fromError(error as Error);

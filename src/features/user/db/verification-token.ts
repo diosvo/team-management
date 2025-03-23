@@ -1,22 +1,7 @@
 import { eq } from 'drizzle-orm';
-import { v4 as uuidV4 } from 'uuid';
 
 import { db } from '@/drizzle';
 import { UserTable, VerificationTokenTable } from '@/drizzle/schema';
-import { ResponseFactory } from '@/utils/response';
-
-export async function generateVerificationToken(email: string) {
-  const token = uuidV4();
-  const expires_at = new Date(new Date().getTime() + 3600 * 1000); // 1 hour
-
-  const existingToken = await getVerificationTokenByEmail(email);
-
-  if (existingToken) {
-    await deleteVerificationTokenByEmail(email);
-  }
-
-  return await insertVerificationToken(email, token, expires_at);
-}
 
 export async function insertVerificationToken(
   email: string,
@@ -73,14 +58,5 @@ export async function updateVerificationDate(user_id: string, email: string) {
       .where(eq(UserTable.id, user_id));
   } catch {
     return null;
-  }
-}
-
-export async function verifyUserEmail(user_id: string, email: string) {
-  try {
-    await updateVerificationDate(user_id, email);
-    await deleteVerificationTokenByEmail(email);
-  } catch {
-    return ResponseFactory.error('Failed to verify email!');
   }
 }

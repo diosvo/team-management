@@ -24,7 +24,7 @@
 ├── public
 └── src
     ├── app
-    │   ├── (auth)  # Authentication-related routes (Auth.js integration)
+    │   ├── (auth)      # Authentication-related routes (Auth.js integration)
     │   │   ├── _components
     │   │   ├── _helpers
     │   │   └── login
@@ -33,21 +33,21 @@
     │   └── api
     │       └── auth
     │           └── [...nextauth]
-    ├── components  # Reuseable UI components
-    │   └── ui      # Common UI elements (buttons, modals, etc)
+    ├── components      # Reuseable UI components
+    │   └── ui          # Common UI elements (buttons, modals, etc)
     ├── drizzle
     │   ├── migrations
     │   │   └── meta
     │   └── schema
-    ├── features    # Feature-based modules
+    ├── features        # Feature-based modules
     │   └── (name)
-    │       ├── actions
-    │       ├── db
+    │       ├── actions # Server actions
+    │       ├── db      # Database queries
     │       │   └── cache
     │       ├── permissions
     │       └── schemas
-    ├── lib         # Helper utilities (data cache)
-    ├── utils       # Reusable models
+    ├── lib             # Helper utilities (data cache)
+    ├── utils           # Reusable models
 ```
 
 > [!NOTE]  
