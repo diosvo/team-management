@@ -15,6 +15,13 @@
       "when": 1741715505018,
       "tag": "0001_user_account_table",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1742382786190,
+      "tag": "0002_verification_token_table",
+      "breakpoints": true
     }
   ]
 }

@@ -73,3 +73,13 @@ export const AccountTable = pgTable(
     },
   ]
 );
+
+export const VerificationTokenTable = pgTable('verification_token', {
+  id: uuid('id').notNull().unique().defaultRandom(),
+  email: text('email').notNull(),
+  token: text('token').unique().notNull(),
+  expires_at: timestamp('expires_at', { withTimezone: true }).notNull(),
+});
+
+export type User = typeof UserTable.$inferSelect;
+export type Token = typeof VerificationTokenTable.$inferSelect;

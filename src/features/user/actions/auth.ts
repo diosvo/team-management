@@ -1,40 +1,50 @@
 'use server';
 
+import { AuthError } from 'next-auth';
+import { v4 as uuidV4 } from 'uuid';
+
 import { signIn, signOut } from '@/auth';
 import { DEFAULT_LOGIN_REDIRECT, LOGIN_PATH } from '@/routes';
-import { Response } from '@/utils/models';
+import { Response, ResponseFactory } from '@/utils/response';
 
-import { AuthError } from 'next-auth';
 import { getUserByEmail, insertUser } from '../db/auth';
+import {
+  deleteVerificationTokenByEmail,
+  getVerificationTokenByEmail,
+  insertVerificationToken,
+} from '../db/verification-token';
 import {
   LoginSchema,
   LoginValues,
   RegisterSchema,
   RegisterValues,
 } from '../schemas/auth';
+import { sendVerificationEmail } from './verification-token';
 
 export async function register(values: RegisterValues): Promise<Response> {
   const { success, data } = RegisterSchema.safeParse(values);
 
   if (!success) {
-    return { error: true, message: 'An error occurred' };
+    return ResponseFactory.error();
   }
 
   const existingUser = await getUserByEmail(data.email);
 
   if (existingUser) {
-    return { error: true, message: 'Email already in use!' };
+    return ResponseFactory.error('Email already in use!');
   }
 
   try {
+    const { email, token } = await generateVerificationToken(data.email);
+    // Send verification email before inserting user
+    await sendVerificationEmail(email, token);
+
+    // Only insert user if email was sent successfully
     await insertUser(data);
-    return {
-      error: false,
-      message: "We've sent an email to with instructions",
-    };
-    // TODO: send email verification
-  } catch (error) {
-    return { error: true, message: (error as Error).message };
+
+    return ResponseFactory.success("We've sent an email to with instructions");
+  } catch {
+    return ResponseFactory.error();
   }
 }
 
@@ -42,28 +52,39 @@ export async function login(values: LoginValues) {
   const { success, data } = LoginSchema.safeParse(values);
 
   if (!success) {
-    return { error: true, message: 'An error occurred' };
+    return ResponseFactory.error();
   }
 
-  const { email, password } = data;
+  const user = await getUserByEmail(data.email);
+
+  if (!user) {
+    return ResponseFactory.error('Cannot find email. Please sign up.');
+  }
+
+  if (user && !user.emailVerified) {
+    const { email, token } = await generateVerificationToken(data.email);
+    await sendVerificationEmail(email, token);
+
+    return ResponseFactory.success('Confirmation email sent!');
+  }
 
   try {
     await signIn('credentials', {
-      email,
-      password,
+      email: data.email,
+      password: data.password,
       redirectTo: DEFAULT_LOGIN_REDIRECT,
     });
   } catch (error) {
     if (error instanceof AuthError) {
       switch (error.type) {
         case 'CredentialsSignin': {
-          return { error: true, message: 'Invalid credentials' };
+          return ResponseFactory.error('Invalid credentials');
         }
         case 'AccessDenied': {
-          return { error: true, message: 'Access Denied' };
+          return ResponseFactory.error('Access Denied');
         }
         default: {
-          return { error: true, message: 'Something went wrong!' };
+          return ResponseFactory.error('Something went wrong!');
         }
       }
     }
@@ -73,6 +94,18 @@ export async function login(values: LoginValues) {
 }
 
 export async function logout() {
-  // Should it be a landing page?
   await signOut({ redirectTo: LOGIN_PATH });
+}
+
+async function generateVerificationToken(email: string) {
+  const token = uuidV4();
+  const expires_at = new Date(new Date().getTime() + 3600 * 1000); // 1 hour
+
+  const existingToken = await getVerificationTokenByEmail(email);
+
+  if (existingToken) {
+    await deleteVerificationTokenByEmail(email);
+  }
+
+  return await insertVerificationToken(email, token, expires_at);
 }

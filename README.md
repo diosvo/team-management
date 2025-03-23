@@ -8,10 +8,11 @@
   - 🔍 [Zod](https://zod.dev/) and [React Hook Form](https://react-hook-form.com/) for schema validation.
   - 💾 [Neon](https://vercel.com/marketplace/neon) for PostgresSQL database interaction.
   - 🔑 [NextAuth.js](https://next-auth.js.org/) for authentication via GitHub (OAuth).
+  - 📩 [Resend](https://resend.com/) for email confirmation.
   - 💃 Using TypeScript, hooks, [Chakra](https://chakra-ui.com/) and other parts of a modern frontend stack.
 
 - 🔒 Secure password hashing by default.
-- 🚢 [Vercel](http://vercel.com/) for deployment
+- 🚢 [Vercel](http://vercel.com/) for deployment.
 - 🏭 CI/CD based on GitHub Actions.
 
 ## Folder structure
@@ -23,7 +24,7 @@
 ├── public
 └── src
     ├── app
-    │   ├── (auth)  # Authentication-related routes (Auth.js integration)
+    │   ├── (auth)      # Authentication-related routes (Auth.js integration)
     │   │   ├── _components
     │   │   ├── _helpers
     │   │   └── login
@@ -32,21 +33,21 @@
     │   └── api
     │       └── auth
     │           └── [...nextauth]
-    ├── components  # Reuseable UI components
-    │   └── ui      # Common UI elements (buttons, modals, etc)
+    ├── components      # Reuseable UI components
+    │   └── ui          # Common UI elements (buttons, modals, etc)
     ├── drizzle
     │   ├── migrations
     │   │   └── meta
     │   └── schema
-    ├── features    # Feature-based modules
+    ├── features        # Feature-based modules
     │   └── (name)
-    │       ├── actions
-    │       ├── db
+    │       ├── actions # Server actions
+    │       ├── db      # Database queries
     │       │   └── cache
     │       ├── permissions
     │       └── schemas
-    ├── lib         # Helper utilities (data cache)
-    ├── utils       # Reusable models
+    ├── lib             # Helper utilities (data cache)
+    ├── utils           # Reusable models
 ```
 
 > [!NOTE]  

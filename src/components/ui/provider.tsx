@@ -3,7 +3,15 @@
 import { ChakraProvider, createSystem, defaultConfig } from '@chakra-ui/react';
 import { ColorModeProvider, type ColorModeProviderProps } from './color-mode';
 
-const system = createSystem(defaultConfig, {});
+export const system = createSystem(defaultConfig, {
+  theme: {
+    tokens: {
+      colors: {
+        primary: { value: '#8c271e' },
+      },
+    },
+  },
+});
 
 export function Provider(props: ColorModeProviderProps) {
   return (

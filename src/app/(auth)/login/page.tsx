@@ -1,5 +1,7 @@
 'use client';
 
+import { signIn } from 'next-auth/react';
+import { useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useState, useTransition } from 'react';
 
 import {
@@ -30,10 +32,9 @@ import {
   RegisterSchema,
   RegisterValues,
 } from '@/features/user/schemas/auth';
-import { Response } from '@/utils/models';
-
 import { DEFAULT_LOGIN_REDIRECT } from '@/routes';
-import { signIn } from 'next-auth/react';
+import { Response, ResponseFactory } from '@/utils/response';
+
 import {
   buttonText,
   pageTitle,
@@ -46,6 +47,9 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isPending, startTransition] = useTransition();
   const [response, setResponse] = useState<Response>();
+
+  const searchParams = useSearchParams();
+  const error = searchParams.get('error');
 
   const {
     register,
@@ -67,6 +71,16 @@ export default function LoginPage() {
     reset();
     setResponse(undefined);
   }, [page, reset, setResponse]);
+
+  useEffect(() => {
+    if (error) {
+      // Show an error message from AuthError
+      const messages = {
+        OAuthAccountNotLinked: 'Email already in use!',
+      } as Record<string, string>;
+      setResponse(ResponseFactory.error(messages[error]));
+    }
+  }, [error, setResponse]);
 
   const onSubmit = (data: RegisterValues | LoginValues) => {
     startTransition(() =>

@@ -1,10 +1,11 @@
-import { eq } from 'drizzle-orm';
 import NextAuth from 'next-auth';
 
 import { db } from '@/drizzle';
 import { AccountTable, UserRole, UserTable } from '@/drizzle/schema/user';
-import { getUserById } from '@/features/user/db/auth';
 import { DrizzleAdapter } from '@auth/drizzle-adapter';
+
+import { getUserById } from '@/features/user/db/auth';
+import { updateVerificationDate } from '@/features/user/db/verification-token';
 
 import authConfig from './auth.config';
 
@@ -15,20 +16,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   }),
   session: {
     strategy: 'jwt',
-    // How long until an idle session expires and is no longer valid.
-    maxAge: 30 * 24 * 60 * 60, // 30 days
-
-    // Throttle how frequently to write to database to extend a session.
-    // Use it to limit write operations. Set to 0 to always update the database.
-    updateAge: 24 * 60 * 60, // 24 hours
+    maxAge: 60 * 60, // 1 hour
   },
   events: {
     async linkAccount({ user }) {
-      await db
-        .update(UserTable)
-        .set({ emailVerified: new Date() })
-        .where(eq(UserTable.id, user.id as string))
-        .returning();
+      await updateVerificationDate(user.id as string, user.email as string);
     },
   },
   callbacks: {
@@ -39,9 +31,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       const existingUser = await getUserById(user.id as string);
 
       // Prevent sign in without email verification
-      if (!existingUser || !existingUser.emailVerified) {
-        return false;
-      }
+      if (!existingUser || !existingUser.emailVerified) return false;
+
+      // TODO: Add 2FA check
 
       return true;
     },
