@@ -1,3 +1,9 @@
+import {
+  LoginSchema,
+  RegisterSchema,
+  ResetPasswordSchema,
+} from '@/features/user/schemas/auth';
+
 export enum PageType {
   Login = 'login',
   Register = 'register',
@@ -20,3 +26,9 @@ export const buttonText = {
   [PageType.Register]: 'Sign Up',
   [PageType.ResetPassword]: 'Send request password instructions',
 } as const;
+
+export const formSchema = {
+  [PageType.Login]: LoginSchema,
+  [PageType.Register]: RegisterSchema,
+  [PageType.ResetPassword]: ResetPasswordSchema,
+};

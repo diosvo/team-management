@@ -18,6 +18,7 @@ import {
   LoginValues,
   RegisterSchema,
   RegisterValues,
+  ResetPasswordValue,
 } from '../schemas/auth';
 import { sendVerificationEmail } from './verification-token';
 
@@ -91,6 +92,24 @@ export async function login(values: LoginValues) {
 
     throw error;
   }
+}
+
+export async function resetPassword(values: ResetPasswordValue) {
+  const { success, data } = LoginSchema.safeParse(values);
+
+  if (!success) {
+    return ResponseFactory.error('Email is invalid.');
+  }
+
+  const user = await getUserByEmail(data.email);
+
+  if (!user) {
+    return ResponseFactory.error('Cannot find email. Please sign up.');
+  }
+
+  // TODO: generate token and send email
+
+  return ResponseFactory.success('Reset email sent.');
 }
 
 export async function logout() {

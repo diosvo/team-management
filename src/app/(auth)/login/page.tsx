@@ -25,18 +25,20 @@ import { Field } from '@/components/ui/field';
 import {
   login as loginAction,
   register as registerAction,
+  resetPassword as resetPasswordAction,
 } from '@/features/user/actions/auth';
 import {
-  LoginSchema,
+  AuthValues,
   LoginValues,
-  RegisterSchema,
   RegisterValues,
+  ResetPasswordValue,
 } from '@/features/user/schemas/auth';
 import { DEFAULT_LOGIN_REDIRECT } from '@/routes';
 import { Response, ResponseFactory } from '@/utils/response';
 
 import {
   buttonText,
+  formSchema,
   pageTitle,
   PageType,
   togglePageText,
@@ -56,10 +58,8 @@ export default function LoginPage() {
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm<RegisterValues | LoginValues>({
-    resolver: zodResolver(
-      page === PageType.Register ? RegisterSchema : LoginSchema
-    ),
+  } = useForm<AuthValues>({
+    resolver: zodResolver(formSchema[page]),
     defaultValues: {
       email: '',
       password: '',
@@ -82,15 +82,25 @@ export default function LoginPage() {
     }
   }, [error, setResponse]);
 
-  const onSubmit = (data: RegisterValues | LoginValues) => {
-    startTransition(() =>
-      page === PageType.Register
-        ? registerAction(data as RegisterValues).then(setResponse)
-        : loginAction(data as LoginValues).then((data) => {
-            // TODO: Add when we add 2FA
-            setResponse(data);
-          })
-    );
+  const onSubmit = (data: AuthValues) => {
+    startTransition(() => {
+      if (page === PageType.Register) {
+        return registerAction(data as RegisterValues).then(setResponse);
+      }
+
+      if (page === PageType.Login) {
+        loginAction(data as LoginValues).then((data) => {
+          // TODO: Add when we add 2FA
+          setResponse(data);
+        });
+      }
+
+      if (page === PageType.ResetPassword) {
+        return resetPasswordAction(data as ResetPasswordValue).then(
+          setResponse
+        );
+      }
+    });
   };
 
   const handleSocialLogin = useCallback(
@@ -137,7 +147,6 @@ export default function LoginPage() {
       {page !== PageType.ResetPassword && (
         <>
           <Button
-            size={{ base: 'md', md: 'lg' }}
             width="full"
             rounded="xl"
             variant="outline"
@@ -189,8 +198,9 @@ export default function LoginPage() {
                 required
                 label="Password"
                 disabled={isPending}
-                invalid={!!errors.password?.message}
-                errorText={errors.password?.message}
+                // Temporary off due to no validation on password field right now.
+                // invalid={!!errors.password?.message}
+                // errorText={errors.password?.message}
               >
                 <Input type="password" {...register('password')} />
               </Field>
