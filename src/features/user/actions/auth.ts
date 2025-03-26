@@ -129,7 +129,7 @@ export async function changePassword(value: PasswordValue, token?: string) {
   const { success, data } = PasswordSchema.safeParse(value);
 
   if (!success) {
-    return ResponseFactory.error();
+    return ResponseFactory.error('Password validation failed.');
   }
 
   const existingToken = await getPasswordResetTokenByToken(token);
@@ -141,7 +141,7 @@ export async function changePassword(value: PasswordValue, token?: string) {
   const hasExpired = new Date(existingToken.expires_at) < new Date();
 
   if (hasExpired) {
-    return ResponseFactory.error('Token has been expired! ');
+    return ResponseFactory.error('Token has expired! ');
   }
 
   const existingUser = await getUserByEmail(existingToken.email);

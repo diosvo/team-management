@@ -33,7 +33,7 @@ export async function newVerification(token: string) {
 
   if (hasExpired) {
     return ResponseFactory.error(
-      'Token has been expired! Please request a new one.'
+      'Token has expired! Please request a new one.'
     );
   }
 
