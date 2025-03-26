@@ -1,26 +1,23 @@
 'use server';
 
 import { AuthError } from 'next-auth';
-import { v4 as uuidV4 } from 'uuid';
 
 import { signIn, signOut } from '@/auth';
+import { sendPasswordResetEmail, sendVerificationEmail } from '@/lib/mail';
 import { DEFAULT_LOGIN_REDIRECT, LOGIN_PATH } from '@/routes';
 import { Response, ResponseFactory } from '@/utils/response';
 
 import { getUserByEmail, insertUser } from '../db/auth';
 import {
-  deleteVerificationTokenByEmail,
-  getVerificationTokenByEmail,
-  insertVerificationToken,
-} from '../db/verification-token';
-import {
   LoginSchema,
   LoginValues,
   RegisterSchema,
   RegisterValues,
+  ResetPasswordSchema,
   ResetPasswordValue,
 } from '../schemas/auth';
-import { sendVerificationEmail } from './verification-token';
+import { generatePasswordToken } from './password-reset-token';
+import { generateVerificationToken } from './verification-token';
 
 export async function register(values: RegisterValues): Promise<Response> {
   const { success, data } = RegisterSchema.safeParse(values);
@@ -95,7 +92,7 @@ export async function login(values: LoginValues) {
 }
 
 export async function resetPassword(values: ResetPasswordValue) {
-  const { success, data } = LoginSchema.safeParse(values);
+  const { success, data } = ResetPasswordSchema.safeParse(values);
 
   if (!success) {
     return ResponseFactory.error('Email is invalid.');
@@ -107,7 +104,8 @@ export async function resetPassword(values: ResetPasswordValue) {
     return ResponseFactory.error('Cannot find email. Please sign up.');
   }
 
-  // TODO: generate token and send email
+  const { email, token } = await generatePasswordToken(data.email);
+  await sendPasswordResetEmail(email, token);
 
   return ResponseFactory.success('Reset email sent.');
 }
