@@ -1,10 +1,27 @@
 interface EmailTemplateProps {
+  subpath: 'new-password' | 'email-confirmation';
   token: string;
   name: string;
 }
 
-export default function EmailTemplate({ token, name }: EmailTemplateProps) {
-  const confirmLink = `http://localhost:3000/email-confirmation?token=${token}`;
+const message = {
+  'new-password':
+    'You have requested to reset your password. Please click the button below to create a new password',
+  'email-confirmation':
+    'Thank you for registering with Saigon Rovers Basketball Club. Please confirm your email address to complete your registration',
+};
+
+const button = {
+  'new-password': 'Create new password',
+  'email-confirmation': 'Confirm your email',
+};
+
+export default function EmailTemplate({
+  subpath,
+  token,
+  name,
+}: EmailTemplateProps) {
+  const confirmLink = `http://localhost:3000/${subpath}?token=${token}`;
 
   return `<div
       style="
@@ -31,9 +48,7 @@ export default function EmailTemplate({ token, name }: EmailTemplateProps) {
           Hi <strong>${name}</strong>,
         </p>
         <p style="font-size: 14px; margin: 0 0 24px 0">
-          Thank you for registering with Saigon Rovers Basketball Club. Please
-          confirm your email address to complete your registration. If you did
-          not create an account, you can ignore this email.
+          ${message[subpath]}. If you did not request this, you can ignore this email.
         </p>
 
         <table

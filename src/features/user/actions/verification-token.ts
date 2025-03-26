@@ -46,14 +46,3 @@ export async function newVerification(token: string) {
     return ResponseFactory.error('Failed to verify email!');
   }
 }
-
-export async function sendVerificationEmail(email: string, token: string) {
-  const name = email.split('@')[0];
-
-  await resend.emails.send({
-    from: 'Acme <onboarding@resend.dev>',
-    to: email,
-    subject: 'Email Confirmation',
-    html: EmailTemplate({ token, name }),
-  });
-}
