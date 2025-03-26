@@ -5,8 +5,7 @@ interface EmailTemplateProps {
 }
 
 const message = {
-  'new-password':
-    'You have requested to reset your password. Please click the button below to create a new password',
+  'new-password': 'Click the button below to securely reset your password',
   'email-confirmation':
     'Thank you for registering with Saigon Rovers Basketball Club. Please confirm your email address to complete your registration',
 };
@@ -74,7 +73,7 @@ export default function EmailTemplate({
                   text-decoration: none;
                 "
               >
-                Confirm your email
+                ${button[subpath]}
               </a>
               <p
                 style="
@@ -84,7 +83,7 @@ export default function EmailTemplate({
                   color: #718096;
                 "
               >
-                This link will only be valid for the next hour.
+                This link will be valid for only one hour.
               </p>
             </td>
           </tr>

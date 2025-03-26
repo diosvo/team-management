@@ -7,10 +7,21 @@ import { sendPasswordResetEmail, sendVerificationEmail } from '@/lib/mail';
 import { DEFAULT_LOGIN_REDIRECT, LOGIN_PATH } from '@/routes';
 import { Response, ResponseFactory } from '@/utils/response';
 
-import { getUserByEmail, insertUser } from '../db/auth';
+import {
+  getUserByEmail,
+  hashPassword,
+  insertUser,
+  updateUser,
+} from '../db/auth';
+import {
+  deletePasswordResetTokenByEmail,
+  getPasswordResetTokenByToken,
+} from '../db/password-reset-token';
 import {
   LoginSchema,
   LoginValues,
+  PasswordSchema,
+  PasswordValue,
   RegisterSchema,
   RegisterValues,
   ResetPasswordSchema,
@@ -91,7 +102,7 @@ export async function login(values: LoginValues) {
   }
 }
 
-export async function resetPassword(values: ResetPasswordValue) {
+export async function requestResetPassword(values: ResetPasswordValue) {
   const { success, data } = ResetPasswordSchema.safeParse(values);
 
   if (!success) {
@@ -110,6 +121,48 @@ export async function resetPassword(values: ResetPasswordValue) {
   return ResponseFactory.success('Reset email sent.');
 }
 
+export async function changePassword(value: PasswordValue, token?: string) {
+  if (!token) {
+    return ResponseFactory.error('Missing token to verify.');
+  }
+
+  const { success, data } = PasswordSchema.safeParse(value);
+
+  if (!success) {
+    return ResponseFactory.error();
+  }
+
+  const existingToken = await getPasswordResetTokenByToken(token);
+
+  if (!existingToken) {
+    return ResponseFactory.error('Token is invalid!');
+  }
+
+  const hasExpired = new Date(existingToken.expires_at) < new Date();
+
+  if (hasExpired) {
+    return ResponseFactory.error('Token has been expired! ');
+  }
+
+  const existingUser = await getUserByEmail(existingToken.email);
+
+  if (!existingUser) {
+    return ResponseFactory.error('Email does not exist!');
+  }
+
+  try {
+    await updateUser({
+      ...existingUser,
+      password: await hashPassword(data.password),
+    });
+    await deletePasswordResetTokenByEmail(existingToken.email);
+
+    return ResponseFactory.success('Password update successfully.');
+  } catch {
+    return ResponseFactory.error('Failed to reset password!');
+  }
+}
+
 export async function logout() {
-  await signOut({ redirectTo: LOGIN_PATH });
+  await signOut({ redirectTo: LOGIN_PATH, redirect: true });
 }

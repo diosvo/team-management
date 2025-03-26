@@ -20,7 +20,7 @@ export async function insertPasswordResetToken(
   return resetToken;
 }
 
-export const getPasswordResetToken = async (token: string) => {
+export const getPasswordResetTokenByToken = async (token: string) => {
   try {
     return await db.query.PasswordResetTokenTable.findFirst({
       where: eq(PasswordResetTokenTable.token, token),
