@@ -40,7 +40,7 @@ export async function getVerificationTokenByEmail(email: string) {
   }
 }
 
-export async function deleteVerificationTokenByEmail(email: string) {
+export async function deleteVerificationToken(email: string) {
   try {
     return await db
       .delete(VerificationTokenTable)

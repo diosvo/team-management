@@ -11,7 +11,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import type { AdapterAccountType } from 'next-auth/adapters';
 
-import { created_at, updated_at } from '../helpers';
+import { created_at, expires_at, updated_at } from '../helpers';
 
 // Enums
 
@@ -76,9 +76,16 @@ export const AccountTable = pgTable(
 
 export const VerificationTokenTable = pgTable('verification_token', {
   id: uuid('id').notNull().unique().defaultRandom(),
-  email: text('email').notNull(),
+  email: text('email').unique().notNull(),
   token: text('token').unique().notNull(),
-  expires_at: timestamp('expires_at', { withTimezone: true }).notNull(),
+  expires_at,
+});
+
+export const PasswordResetTokenTable = pgTable('password_reset_token', {
+  id: uuid('id').notNull().unique().defaultRandom(),
+  email: text('email').unique().notNull(),
+  token: text('token').unique().notNull(),
+  expires_at,
 });
 
 export type User = typeof UserTable.$inferSelect;

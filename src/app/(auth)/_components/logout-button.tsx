@@ -1,21 +1,17 @@
 'use client';
 
-import { signOut } from 'next-auth/react';
 import { useTransition } from 'react';
 
 import { Button } from '@chakra-ui/react';
 
-import { LOGIN_PATH } from '@/routes';
+import { logout } from '@/features/user/actions/auth';
 
 export function LogoutButton() {
   const [isPending, startTransition] = useTransition();
 
   const handleLogout = () => {
     startTransition(async () => {
-      await signOut({
-        redirectTo: LOGIN_PATH,
-        redirect: true, // Reload the login page
-      });
+      await logout();
     });
   };
 

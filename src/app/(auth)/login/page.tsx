@@ -25,11 +25,12 @@ import { Field } from '@/components/ui/field';
 import {
   login as loginAction,
   register as registerAction,
+  requestResetPassword,
 } from '@/features/user/actions/auth';
 import {
-  LoginSchema,
+  AuthValues,
+  EmailValue,
   LoginValues,
-  RegisterSchema,
   RegisterValues,
 } from '@/features/user/schemas/auth';
 import { DEFAULT_LOGIN_REDIRECT } from '@/routes';
@@ -37,13 +38,14 @@ import { Response, ResponseFactory } from '@/utils/response';
 
 import {
   buttonText,
+  FormValues,
+  Page,
   pageTitle,
-  PageType,
   togglePageText,
 } from '../_helpers/utils';
 
 export default function LoginPage() {
-  const [page, setPage] = useState(PageType.Login);
+  const [page, setPage] = useState(Page.Login);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isPending, startTransition] = useTransition();
   const [response, setResponse] = useState<Response>();
@@ -56,10 +58,8 @@ export default function LoginPage() {
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm<RegisterValues | LoginValues>({
-    resolver: zodResolver(
-      page === PageType.Register ? RegisterSchema : LoginSchema
-    ),
+  } = useForm<AuthValues>({
+    resolver: zodResolver(FormValues[page]),
     defaultValues: {
       email: '',
       password: '',
@@ -82,15 +82,23 @@ export default function LoginPage() {
     }
   }, [error, setResponse]);
 
-  const onSubmit = (data: RegisterValues | LoginValues) => {
-    startTransition(() =>
-      page === PageType.Register
-        ? registerAction(data as RegisterValues).then(setResponse)
-        : loginAction(data as LoginValues).then((data) => {
-            // TODO: Add when we add 2FA
-            setResponse(data);
-          })
-    );
+  const onSubmit = (data: AuthValues) => {
+    startTransition(() => {
+      if (page === Page.Register) {
+        return registerAction(data as RegisterValues).then(setResponse);
+      }
+
+      if (page === Page.Login) {
+        loginAction(data as LoginValues).then((data) => {
+          // TODO: Add when we add 2FA
+          setResponse(data);
+        });
+      }
+
+      if (page === Page.ResetPassword) {
+        return requestResetPassword(data as EmailValue).then(setResponse);
+      }
+    });
   };
 
   const handleSocialLogin = useCallback(
@@ -115,29 +123,26 @@ export default function LoginPage() {
         <Heading textAlign="center" size={{ base: 'xl', md: '2xl' }}>
           {pageTitle[page]}
         </Heading>
-        {page !== PageType.ResetPassword && (
+        {page !== Page.ResetPassword && (
           <HStack textAlign="center" fontSize={{ base: 'smaller', md: 'md' }}>
             <Text color="gray.600">{togglePageText[page]}</Text>
             <Text fontWeight="medium">
               <Link
                 textDecoration="underline"
                 onClick={() =>
-                  setPage(
-                    page === PageType.Login ? PageType.Register : PageType.Login
-                  )
+                  setPage(page === Page.Login ? Page.Register : Page.Login)
                 }
               >
-                Sign {page === PageType.Login ? 'Up' : 'In'}
+                Sign {page === Page.Login ? 'Up' : 'In'}
               </Link>
             </Text>
           </HStack>
         )}
       </VStack>
 
-      {page !== PageType.ResetPassword && (
+      {page !== Page.ResetPassword && (
         <>
           <Button
-            size={{ base: 'md', md: 'lg' }}
             width="full"
             rounded="xl"
             variant="outline"
@@ -155,87 +160,86 @@ export default function LoginPage() {
           </HStack>
         </>
       )}
-      <Stack>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <Stack gap="6">
-            {page === PageType.Register && (
-              <Field
-                required
-                label="Full Name"
-                disabled={isPending}
-                invalid={
-                  !!(errors as FieldErrors<RegisterValues>).name?.message
-                }
-                errorText={
-                  (errors as FieldErrors<RegisterValues>).name?.message
-                }
-              >
-                <Input {...register('name')} />
-              </Field>
-            )}
 
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <Stack gap="6">
+          {page === Page.Register && (
             <Field
               required
-              label="Email"
+              label="Full Name"
               disabled={isPending}
-              invalid={!!errors.email?.message}
-              errorText={errors.email?.message}
+              invalid={!!(errors as FieldErrors<RegisterValues>).name?.message}
+              errorText={(errors as FieldErrors<RegisterValues>).name?.message}
             >
-              <Input type="email" autoFocus {...register('email')} />
+              <Input {...register('name')} />
             </Field>
+          )}
 
-            {page !== PageType.ResetPassword && (
-              <Field
-                required
-                label="Password"
-                disabled={isPending}
-                invalid={!!errors.password?.message}
-                errorText={errors.password?.message}
-              >
-                <Input type="password" {...register('password')} />
-              </Field>
-            )}
+          <Field
+            required
+            label="Email"
+            disabled={isPending}
+            invalid={!!errors.email?.message}
+            errorText={errors.email?.message}
+          >
+            <Input type="email" autoFocus {...register('email')} />
+          </Field>
 
-            {page === PageType.Login && (
-              <Text fontWeight="medium">
-                <Link
-                  fontSize="sm"
-                  textDecoration="underline"
-                  onClick={() => setPage(PageType.ResetPassword)}
-                >
-                  Forgot your password?
-                </Link>
-              </Text>
-            )}
-
-            {response?.message && (
-              <Alert.Root status={response.error ? 'error' : 'success'}>
-                <Alert.Indicator />
-                <AlertTitle>{response.message}</AlertTitle>
-              </Alert.Root>
-            )}
-
-            <Button
-              type="submit"
-              rounded="full"
-              loading={isPending || isLoading}
+          {page !== Page.ResetPassword && (
+            <Field
+              required
+              label="Password"
+              disabled={isPending}
+              invalid={
+                !!(errors as FieldErrors<RegisterValues>).password?.message
+              }
+              errorText={
+                (errors as FieldErrors<RegisterValues>).password?.message
+              }
             >
-              {buttonText[page]}
-            </Button>
+              <Input
+                type="password"
+                placeholder="******"
+                {...register('password')}
+              />
+            </Field>
+          )}
 
-            {page === PageType.ResetPassword && (
-              <Text fontSize="sm" fontWeight="medium" textAlign="center">
-                <Link
-                  textDecoration="underline"
-                  onClick={() => setPage(PageType.Login)}
-                >
-                  Go back to sign in
-                </Link>
-              </Text>
-            )}
-          </Stack>
-        </form>
-      </Stack>
+          {page === Page.Login && (
+            <Text fontWeight="medium">
+              <Link
+                fontSize="sm"
+                textDecoration="underline"
+                onClick={() => setPage(Page.ResetPassword)}
+              >
+                Forgot your password?
+              </Link>
+            </Text>
+          )}
+
+          {response?.message && (
+            <Alert.Root status={response.error ? 'error' : 'success'}>
+              <Alert.Indicator />
+              <AlertTitle>{response.message}</AlertTitle>
+            </Alert.Root>
+          )}
+
+          <Button type="submit" rounded="full" loading={isPending || isLoading}>
+            {buttonText[page]}
+          </Button>
+
+          {page === Page.ResetPassword && (
+            <Text fontSize="sm" fontWeight="medium" textAlign="center">
+              <Link
+                textDecoration="underline"
+                onClick={() => setPage(Page.Login)}
+              >
+                Go back to sign in
+              </Link>
+            </Text>
+          )}
+        </Stack>
+      </form>
     </>
   );
 }

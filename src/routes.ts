@@ -4,16 +4,17 @@
 export const LOGIN_PATH = '/login';
 
 /**
+ * These routes are used for authentication purposes.
+ * @type {Array<string>}
+ */
+const AUTH_ROUTES = [LOGIN_PATH, '/new-password', '/email-confirmation'];
+
+/**
  * An array of routes that are accessible to the public.
  * These routes do not require authentication
  * @type {Array<string>}
  */
-export const PUBLIC_ROUTES = [
-  LOGIN_PATH,
-  '/logo.png',
-  '/bg-layer.jpeg',
-  '/email-confirmation',
-];
+export const PUBLIC_ROUTES = [...AUTH_ROUTES, '/logo.png', '/bg-layer.jpeg'];
 
 /**
  * The prefix for API authentication routes.

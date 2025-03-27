@@ -7,3 +7,6 @@ export const updated_at = timestamp({ withTimezone: true })
   .notNull()
   .defaultNow()
   .$onUpdate(() => new Date());
+export const expires_at = timestamp({
+  withTimezone: true,
+}).notNull();

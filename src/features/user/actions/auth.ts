@@ -1,25 +1,34 @@
 'use server';
 
 import { AuthError } from 'next-auth';
-import { v4 as uuidV4 } from 'uuid';
 
 import { signIn, signOut } from '@/auth';
+import { sendPasswordResetEmail, sendVerificationEmail } from '@/lib/mail';
 import { DEFAULT_LOGIN_REDIRECT, LOGIN_PATH } from '@/routes';
 import { Response, ResponseFactory } from '@/utils/response';
 
-import { getUserByEmail, insertUser } from '../db/auth';
 import {
-  deleteVerificationTokenByEmail,
-  getVerificationTokenByEmail,
-  insertVerificationToken,
-} from '../db/verification-token';
+  getUserByEmail,
+  hashPassword,
+  insertUser,
+  updateUser,
+} from '../db/auth';
 import {
+  deletePasswordResetTokenByEmail,
+  getPasswordResetTokenByToken,
+} from '../db/password-reset-token';
+import {
+  EmailSchema,
+  EmailValue,
   LoginSchema,
   LoginValues,
+  PasswordSchema,
+  PasswordValue,
   RegisterSchema,
   RegisterValues,
 } from '../schemas/auth';
-import { sendVerificationEmail } from './verification-token';
+import { generatePasswordToken } from './password-reset-token';
+import { generateVerificationToken } from './verification-token';
 
 export async function register(values: RegisterValues): Promise<Response> {
   const { success, data } = RegisterSchema.safeParse(values);
@@ -93,19 +102,67 @@ export async function login(values: LoginValues) {
   }
 }
 
-export async function logout() {
-  await signOut({ redirectTo: LOGIN_PATH });
-}
+export async function requestResetPassword(values: EmailValue) {
+  const { success, data } = EmailSchema.safeParse(values);
 
-async function generateVerificationToken(email: string) {
-  const token = uuidV4();
-  const expires_at = new Date(new Date().getTime() + 3600 * 1000); // 1 hour
-
-  const existingToken = await getVerificationTokenByEmail(email);
-
-  if (existingToken) {
-    await deleteVerificationTokenByEmail(email);
+  if (!success) {
+    return ResponseFactory.error('Email is invalid.');
   }
 
-  return await insertVerificationToken(email, token, expires_at);
+  const user = await getUserByEmail(data.email);
+
+  if (!user) {
+    return ResponseFactory.error('Cannot find email. Please sign up.');
+  }
+
+  const { email, token } = await generatePasswordToken(data.email);
+  await sendPasswordResetEmail(email, token);
+
+  return ResponseFactory.success('Reset email sent.');
+}
+
+export async function changePassword(value: PasswordValue, token?: string) {
+  if (!token) {
+    return ResponseFactory.error('Missing token to verify.');
+  }
+
+  const { success, data } = PasswordSchema.safeParse(value);
+
+  if (!success) {
+    return ResponseFactory.error('Password validation failed.');
+  }
+
+  const existingToken = await getPasswordResetTokenByToken(token);
+
+  if (!existingToken) {
+    return ResponseFactory.error('Token is invalid!');
+  }
+
+  const hasExpired = new Date(existingToken.expires_at) < new Date();
+
+  if (hasExpired) {
+    return ResponseFactory.error('Token has expired! ');
+  }
+
+  const existingUser = await getUserByEmail(existingToken.email);
+
+  if (!existingUser) {
+    return ResponseFactory.error('Email does not exist!');
+  }
+
+  try {
+    await updateUser({
+      ...existingUser,
+      password: await hashPassword(data.password),
+    });
+    await deletePasswordResetTokenByEmail(existingToken.email);
+
+    return ResponseFactory.success('Password update successfully.');
+  } catch {
+    return ResponseFactory.error('Failed to reset password!');
+  }
+}
+
+export async function logout() {
+  await signOut({ redirectTo: LOGIN_PATH, redirect: true });
 }

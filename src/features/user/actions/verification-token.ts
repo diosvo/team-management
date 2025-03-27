@@ -1,21 +1,29 @@
 'use server';
 
+import { EXPIRES_AT, UUID } from '@/utils/constant';
 import { ResponseFactory } from '@/utils/response';
-import { Resend } from 'resend';
-
-import EmailTemplate from '@/app/(auth)/_components/email-template';
 
 import { getUserByEmail } from '../db/auth';
 import {
-  deleteVerificationTokenByEmail,
-  getVerificationTokenByToken,
-  updateVerificationDate,
+  deleteVerificationToken as deleteAction,
+  getVerificationTokenByEmail as getByEmailAction,
+  getVerificationTokenByToken as getByTokenAction,
+  insertVerificationToken as insertAction,
+  updateVerificationDate as updateDateAction,
 } from '../db/verification-token';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+export async function generateVerificationToken(email: string) {
+  const existingToken = await getByEmailAction(email);
+
+  if (existingToken) {
+    await deleteAction(email);
+  }
+
+  return await insertAction(email, UUID, EXPIRES_AT);
+}
 
 export async function newVerification(token: string) {
-  const existingToken = await getVerificationTokenByToken(token);
+  const existingToken = await getByTokenAction(token);
 
   if (!existingToken) {
     return ResponseFactory.error('Invalid token!');
@@ -25,7 +33,7 @@ export async function newVerification(token: string) {
 
   if (hasExpired) {
     return ResponseFactory.error(
-      'Token has been expired! Please request a new one.'
+      'Token has expired! Please request a new one.'
     );
   }
 
@@ -38,22 +46,11 @@ export async function newVerification(token: string) {
   const { email } = existingToken;
 
   try {
-    await updateVerificationDate(existingUser.id, email);
-    await deleteVerificationTokenByEmail(email);
+    await updateDateAction(existingUser.id, email);
+    await deleteAction(email);
 
     return ResponseFactory.success('Email verified successfully.');
   } catch {
     return ResponseFactory.error('Failed to verify email!');
   }
-}
-
-export async function sendVerificationEmail(email: string, token: string) {
-  const name = email.split('@')[0];
-
-  await resend.emails.send({
-    from: 'Acme <onboarding@resend.dev>',
-    to: email,
-    subject: 'Email Confirmation',
-    html: EmailTemplate({ token, name }),
-  });
 }

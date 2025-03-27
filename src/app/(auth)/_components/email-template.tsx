@@ -1,10 +1,26 @@
 interface EmailTemplateProps {
+  subpath: 'new-password' | 'email-confirmation';
   token: string;
   name: string;
 }
 
-export default function EmailTemplate({ token, name }: EmailTemplateProps) {
-  const confirmLink = `http://localhost:3000/email-confirmation?token=${token}`;
+const message = {
+  'new-password': 'Click the button below to securely reset your password',
+  'email-confirmation':
+    'Thank you for registering with Saigon Rovers Basketball Club. Please confirm your email address to complete your registration',
+};
+
+const button = {
+  'new-password': 'Create new password',
+  'email-confirmation': 'Confirm your email',
+};
+
+export default function EmailTemplate({
+  subpath,
+  token,
+  name,
+}: EmailTemplateProps) {
+  const confirmLink = `http://localhost:3000/${subpath}?token=${token}`;
 
   return `<div
       style="
@@ -31,9 +47,7 @@ export default function EmailTemplate({ token, name }: EmailTemplateProps) {
           Hi <strong>${name}</strong>,
         </p>
         <p style="font-size: 14px; margin: 0 0 24px 0">
-          Thank you for registering with Saigon Rovers Basketball Club. Please
-          confirm your email address to complete your registration. If you did
-          not create an account, you can ignore this email.
+          ${message[subpath]}. If you did not request this, you can ignore this email.
         </p>
 
         <table
@@ -59,7 +73,7 @@ export default function EmailTemplate({ token, name }: EmailTemplateProps) {
                   text-decoration: none;
                 "
               >
-                Confirm your email
+                ${button[subpath]}
               </a>
               <p
                 style="
@@ -69,7 +83,7 @@ export default function EmailTemplate({ token, name }: EmailTemplateProps) {
                   color: #718096;
                 "
               >
-                This link will only be valid for the next hour.
+                This link will be valid for only one hour.
               </p>
             </td>
           </tr>

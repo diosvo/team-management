@@ -13,6 +13,7 @@ import {
 } from '@chakra-ui/react';
 
 import { newVerification } from '@/features/user/actions/verification-token';
+import { LOGIN_PATH } from '@/routes';
 import { Response, ResponseFactory } from '@/utils/response';
 
 export default function EmailConfirmationPage() {
@@ -35,7 +36,7 @@ export default function EmailConfirmationPage() {
   }, [onSubmit]);
 
   return (
-    <VStack gap="6" alignItems="center" justifyContent="center">
+    <VStack gap="6" alignItems="center">
       {response == null ? (
         <>
           <Text color="gray.600">Confirming your email address...</Text>
@@ -51,7 +52,7 @@ export default function EmailConfirmationPage() {
         </>
       )}
       <Text fontWeight="medium">
-        <Link textDecoration="underline" href="/login">
+        <Link textDecoration="underline" href={LOGIN_PATH}>
           Go to login
         </Link>
       </Text>
