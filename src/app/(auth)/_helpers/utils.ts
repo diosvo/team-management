@@ -1,34 +1,34 @@
 import {
+  EmailSchema,
   LoginSchema,
   RegisterSchema,
-  ResetPasswordSchema,
 } from '@/features/user/schemas/auth';
 
-export enum PageType {
+export enum Page {
   Login = 'login',
   Register = 'register',
   ResetPassword = 'reset-password',
 }
 
 export const pageTitle = {
-  [PageType.Login]: 'Sign in to your account',
-  [PageType.Register]: 'Create a new account',
-  [PageType.ResetPassword]: 'Reset password',
+  [Page.Login]: 'Sign in to your account',
+  [Page.Register]: 'Create a new account',
+  [Page.ResetPassword]: 'Reset password',
 } as const;
 
 export const togglePageText = {
-  [PageType.Login]: "Don't have an account?",
-  [PageType.Register]: 'Already have an account?',
+  [Page.Login]: "Don't have an account?",
+  [Page.Register]: 'Already have an account?',
 } as const;
 
 export const buttonText = {
-  [PageType.Login]: 'Sign In',
-  [PageType.Register]: 'Sign Up',
-  [PageType.ResetPassword]: 'Send request password instructions',
+  [Page.Login]: 'Sign In',
+  [Page.Register]: 'Sign Up',
+  [Page.ResetPassword]: 'Send request password instructions',
 } as const;
 
-export const formSchema = {
-  [PageType.Login]: LoginSchema,
-  [PageType.Register]: RegisterSchema,
-  [PageType.ResetPassword]: ResetPasswordSchema,
+export const FormValues = {
+  [Page.Login]: LoginSchema,
+  [Page.Register]: RegisterSchema,
+  [Page.ResetPassword]: EmailSchema,
 };

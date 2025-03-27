@@ -18,14 +18,14 @@ import {
   getPasswordResetTokenByToken,
 } from '../db/password-reset-token';
 import {
+  EmailSchema,
+  EmailValue,
   LoginSchema,
   LoginValues,
   PasswordSchema,
   PasswordValue,
   RegisterSchema,
   RegisterValues,
-  ResetPasswordSchema,
-  ResetPasswordValue,
 } from '../schemas/auth';
 import { generatePasswordToken } from './password-reset-token';
 import { generateVerificationToken } from './verification-token';
@@ -102,8 +102,8 @@ export async function login(values: LoginValues) {
   }
 }
 
-export async function requestResetPassword(values: ResetPasswordValue) {
-  const { success, data } = ResetPasswordSchema.safeParse(values);
+export async function requestResetPassword(values: EmailValue) {
+  const { success, data } = EmailSchema.safeParse(values);
 
   if (!success) {
     return ResponseFactory.error('Email is invalid.');

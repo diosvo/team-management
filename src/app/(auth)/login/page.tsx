@@ -29,23 +29,23 @@ import {
 } from '@/features/user/actions/auth';
 import {
   AuthValues,
+  EmailValue,
   LoginValues,
   RegisterValues,
-  ResetPasswordValue,
 } from '@/features/user/schemas/auth';
 import { DEFAULT_LOGIN_REDIRECT } from '@/routes';
 import { Response, ResponseFactory } from '@/utils/response';
 
 import {
   buttonText,
-  formSchema,
+  FormValues,
+  Page,
   pageTitle,
-  PageType,
   togglePageText,
 } from '../_helpers/utils';
 
 export default function LoginPage() {
-  const [page, setPage] = useState(PageType.Login);
+  const [page, setPage] = useState(Page.Login);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isPending, startTransition] = useTransition();
   const [response, setResponse] = useState<Response>();
@@ -59,7 +59,7 @@ export default function LoginPage() {
     formState: { errors },
     reset,
   } = useForm<AuthValues>({
-    resolver: zodResolver(formSchema[page]),
+    resolver: zodResolver(FormValues[page]),
     defaultValues: {
       email: '',
       password: '',
@@ -84,21 +84,19 @@ export default function LoginPage() {
 
   const onSubmit = (data: AuthValues) => {
     startTransition(() => {
-      if (page === PageType.Register) {
+      if (page === Page.Register) {
         return registerAction(data as RegisterValues).then(setResponse);
       }
 
-      if (page === PageType.Login) {
+      if (page === Page.Login) {
         loginAction(data as LoginValues).then((data) => {
           // TODO: Add when we add 2FA
           setResponse(data);
         });
       }
 
-      if (page === PageType.ResetPassword) {
-        return requestResetPassword(data as ResetPasswordValue).then(
-          setResponse
-        );
+      if (page === Page.ResetPassword) {
+        return requestResetPassword(data as EmailValue).then(setResponse);
       }
     });
   };
@@ -125,26 +123,24 @@ export default function LoginPage() {
         <Heading textAlign="center" size={{ base: 'xl', md: '2xl' }}>
           {pageTitle[page]}
         </Heading>
-        {page !== PageType.ResetPassword && (
+        {page !== Page.ResetPassword && (
           <HStack textAlign="center" fontSize={{ base: 'smaller', md: 'md' }}>
             <Text color="gray.600">{togglePageText[page]}</Text>
             <Text fontWeight="medium">
               <Link
                 textDecoration="underline"
                 onClick={() =>
-                  setPage(
-                    page === PageType.Login ? PageType.Register : PageType.Login
-                  )
+                  setPage(page === Page.Login ? Page.Register : Page.Login)
                 }
               >
-                Sign {page === PageType.Login ? 'Up' : 'In'}
+                Sign {page === Page.Login ? 'Up' : 'In'}
               </Link>
             </Text>
           </HStack>
         )}
       </VStack>
 
-      {page !== PageType.ResetPassword && (
+      {page !== Page.ResetPassword && (
         <>
           <Button
             width="full"
@@ -167,7 +163,7 @@ export default function LoginPage() {
 
       <form onSubmit={handleSubmit(onSubmit)}>
         <Stack gap="6">
-          {page === PageType.Register && (
+          {page === Page.Register && (
             <Field
               required
               label="Full Name"
@@ -189,14 +185,17 @@ export default function LoginPage() {
             <Input type="email" autoFocus {...register('email')} />
           </Field>
 
-          {page !== PageType.ResetPassword && (
+          {page !== Page.ResetPassword && (
             <Field
               required
               label="Password"
               disabled={isPending}
-              // Temporary off due to no validation on password field right now.
-              // invalid={!!errors.password?.message}
-              // errorText={errors.password?.message}
+              invalid={
+                !!(errors as FieldErrors<RegisterValues>).password?.message
+              }
+              errorText={
+                (errors as FieldErrors<RegisterValues>).password?.message
+              }
             >
               <Input
                 type="password"
@@ -206,12 +205,12 @@ export default function LoginPage() {
             </Field>
           )}
 
-          {page === PageType.Login && (
+          {page === Page.Login && (
             <Text fontWeight="medium">
               <Link
                 fontSize="sm"
                 textDecoration="underline"
-                onClick={() => setPage(PageType.ResetPassword)}
+                onClick={() => setPage(Page.ResetPassword)}
               >
                 Forgot your password?
               </Link>
@@ -229,11 +228,11 @@ export default function LoginPage() {
             {buttonText[page]}
           </Button>
 
-          {page === PageType.ResetPassword && (
+          {page === Page.ResetPassword && (
             <Text fontSize="sm" fontWeight="medium" textAlign="center">
               <Link
                 textDecoration="underline"
-                onClick={() => setPage(PageType.Login)}
+                onClick={() => setPage(Page.Login)}
               >
                 Go back to sign in
               </Link>
