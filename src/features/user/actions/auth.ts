@@ -53,7 +53,9 @@ export async function register(values: RegisterValues): Promise<Response> {
 
     return ResponseFactory.success("We've sent an email to with instructions");
   } catch {
-    return ResponseFactory.error();
+    return ResponseFactory.error(
+      'An error occurred while creating your account.'
+    );
   }
 }
 

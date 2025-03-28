@@ -1,4 +1,11 @@
+import { Metadata } from 'next';
+
 import { Center, Container } from '@chakra-ui/react';
+
+export const metadata: Metadata = {
+  title: 'Auth',
+  description: 'Authentication',
+};
 
 export default function LoginLayout({
   children,
