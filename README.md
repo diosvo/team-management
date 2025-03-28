@@ -46,6 +46,7 @@
     │       │   └── cache
     │       ├── permissions
     │       └── schemas
+    ├── hooks
     ├── lib             # Helper utilities (data cache)
     ├── utils           # Reusable models
 ```

@@ -1,14 +1,16 @@
-import { LogoutButton } from '@/app/(auth)/_components/logout-button';
-import { auth } from '@/auth';
+'use client';
 
-export default async function DashboardPage() {
-  const session = await auth();
+import { LogoutButton } from '@/app/(auth)/_components/logout-button';
+import useCurrentUser from '@/hooks/use-current-user';
+
+export default function DashboardPage() {
+  const user = useCurrentUser();
 
   return (
     <div>
       <h1>Dashboard</h1>
       <LogoutButton />
-      <pre>{JSON.stringify(session, null, 2)}</pre>
+      <pre>{JSON.stringify(user, null, 2)}</pre>
     </div>
   );
 }

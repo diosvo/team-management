@@ -1,7 +1,9 @@
 import NextAuth from 'next-auth';
-import authConfig from './auth.config';
+import { NextResponse } from 'next/server';
 
 import { DEFAULT_LOGIN_REDIRECT, LOGIN_PATH, PUBLIC_ROUTES } from '@/routes';
+
+import authConfig from './auth.config';
 
 const { auth } = NextAuth(authConfig);
 
@@ -12,7 +14,7 @@ export default auth((req) => {
 
   // Helper functions
   const redirectTo = (path: string) =>
-    Response.redirect(new URL(path, nextUrl));
+    NextResponse.redirect(new URL(path, nextUrl));
 
   const isPublicRoute = (path: string) => PUBLIC_ROUTES.includes(path);
 
@@ -30,9 +32,11 @@ export default auth((req) => {
   }
 
   // Allow all other requests to proceed
+  return NextResponse.next();
 });
 
+// Routes Middleware should not run on
 export const config = {
   runtime: 'nodejs',
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
+  matcher: ['/((?!api|_next/static|_next/image|.*\\.png$).*)'],
 };

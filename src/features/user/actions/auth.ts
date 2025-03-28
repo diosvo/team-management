@@ -166,5 +166,6 @@ export async function changePassword(value: PasswordValue, token?: string) {
 }
 
 export async function logout() {
+  // Some server stuff if needed
   await signOut({ redirectTo: LOGIN_PATH, redirect: true });
 }
