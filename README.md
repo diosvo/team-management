@@ -46,7 +46,7 @@
     │       │   └── cache
     │       ├── permissions
     │       └── schemas
-    ├── hooks
+    ├── hooks           # React hooks in client components
     ├── lib             # Helper utilities (data cache)
     ├── utils           # Reusable models
 ```

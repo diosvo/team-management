@@ -2,7 +2,7 @@
 
 import { AuthError } from 'next-auth';
 
-import { signIn, signOut } from '@/auth';
+import { auth, signIn, signOut } from '@/auth';
 import { sendPasswordResetEmail, sendVerificationEmail } from '@/lib/mail';
 import { DEFAULT_LOGIN_REDIRECT, LOGIN_PATH } from '@/routes';
 import { Response, ResponseFactory } from '@/utils/response';
@@ -168,4 +168,14 @@ export async function changePassword(value: PasswordValue, token?: string) {
 export async function logout() {
   // Some server stuff if needed
   await signOut({ redirectTo: LOGIN_PATH, redirect: true });
+}
+
+export async function currentUser() {
+  const session = await auth();
+  return session?.user;
+}
+
+export async function currentRoles() {
+  const user = await currentUser();
+  return user?.roles;
 }
