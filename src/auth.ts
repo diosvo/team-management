@@ -4,7 +4,7 @@ import { db } from '@/drizzle';
 import { AccountTable, UserRole, UserTable } from '@/drizzle/schema/user';
 import { DrizzleAdapter } from '@auth/drizzle-adapter';
 
-import { getUserById } from '@/features/user/db/auth';
+import { getAccountById, getUserById } from '@/features/user/db/auth';
 import { updateVerificationDate } from '@/features/user/db/verification-token';
 
 import authConfig from './auth.config';
@@ -33,8 +33,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       // Prevent sign in without email verification
       if (!existingUser || !existingUser.emailVerified) return false;
 
-      // TODO: Add 2FA check
-
       return true;
     },
     async session({ session, token }) {
@@ -46,6 +44,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.roles = token.roles as Array<UserRole>;
       }
 
+      if (session.user) {
+        session.user.name = token.name;
+        session.user.email = token.email as string;
+        session.user.image = token.image as string;
+        session.user.isOAuth = token.isOAuth as boolean;
+      }
+
       return session;
     },
     async jwt({ token }) {
@@ -54,10 +59,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (!user_id) return token;
 
       const existingUser = await getUserById(user_id);
-
       if (!existingUser) return token;
 
-      token.roles = existingUser.roles;
+      const existingAccount = await getAccountById(existingUser.id);
+
+      token.name = existingUser.name;
+      token.email = existingUser.email;
+      token.roles = existingUser.roles as Array<UserRole>;
+      token.image = existingUser.image;
+      token.isOAuth = !!existingAccount;
 
       return token;
     },
