@@ -2,10 +2,7 @@ import { z } from 'zod';
 
 // Field schemas - reusable components
 const fields = {
-  name: z
-    .string()
-    .min(2, { message: 'Name must be at least 2 characters long.' })
-    .trim(),
+  name: z.string().min(6, { message: 'Be at least 6 characters long.' }).trim(),
   email: z.string().email({ message: 'Please enter a valid email.' }).trim(),
   password: z
     .string()

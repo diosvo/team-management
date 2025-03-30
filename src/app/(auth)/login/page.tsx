@@ -168,7 +168,7 @@ export default function LoginPage() {
               required
               label="Full Name"
               disabled={isPending}
-              invalid={!!(errors as FieldErrors<RegisterValues>).name?.message}
+              invalid={!!(errors as FieldErrors<RegisterValues>).name}
               errorText={(errors as FieldErrors<RegisterValues>).name?.message}
             >
               <Input {...register('name')} />
@@ -179,7 +179,7 @@ export default function LoginPage() {
             required
             label="Email"
             disabled={isPending}
-            invalid={!!errors.email?.message}
+            invalid={!!errors.email}
             errorText={errors.email?.message}
           >
             <Input type="email" autoFocus {...register('email')} />
@@ -190,9 +190,7 @@ export default function LoginPage() {
               required
               label="Password"
               disabled={isPending}
-              invalid={
-                !!(errors as FieldErrors<RegisterValues>).password?.message
-              }
+              invalid={!!(errors as FieldErrors<RegisterValues>).password}
               errorText={
                 (errors as FieldErrors<RegisterValues>).password?.message
               }

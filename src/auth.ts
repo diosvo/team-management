@@ -46,7 +46,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
       if (session.user) {
         session.user.name = token.name;
-        session.user.email = token.email as string;
+        // session.user.email = token.email as string; # Temporarily disabled
         session.user.image = token.image as string;
         session.user.isOAuth = token.isOAuth as boolean;
       }
@@ -64,7 +64,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       const existingAccount = await getAccountById(existingUser.id);
 
       token.name = existingUser.name;
-      token.email = existingUser.email;
+      // token.email = existingUser.email;
       token.roles = existingUser.roles as Array<UserRole>;
       token.image = existingUser.image;
       token.isOAuth = !!existingAccount;

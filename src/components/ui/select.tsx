@@ -16,18 +16,13 @@ export const Select = (props: SelectProps) => {
   const dataset = createListCollection({ items: collection });
 
   return (
-    <ChakraSelect.Root
-      {...rest}
-      collection={dataset}
-      // onValueChange={({ value }) => field.onChange(value)}
-      // onInteractOutside={() => field.onBlur()}
-    >
+    <ChakraSelect.Root {...rest} collection={dataset}>
       <ChakraSelect.HiddenSelect />
       <ChakraSelect.Label />
 
       <ChakraSelect.Control>
         <ChakraSelect.Trigger>
-          <ChakraSelect.ValueText defaultValue="a" />
+          <ChakraSelect.ValueText placeholder="Select" />
         </ChakraSelect.Trigger>
         <ChakraSelect.IndicatorGroup>
           <ChakraSelect.Indicator />
