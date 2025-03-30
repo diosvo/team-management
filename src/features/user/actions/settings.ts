@@ -13,10 +13,17 @@ export async function settings(values: Partial<User>) {
     return ResponseFactory.error('Unauthorized');
   }
 
-  const dbUser = await getUserById(user.id!);
+  const { id, isOAuth } = user;
+
+  const dbUser = await getUserById(id!);
 
   if (!dbUser) {
     return ResponseFactory.error('User not found');
+  }
+
+  if (isOAuth) {
+    values.email = undefined;
+    // values.password = undefined;
   }
 
   await updateUser({

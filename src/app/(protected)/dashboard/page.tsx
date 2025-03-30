@@ -5,32 +5,28 @@ import { useState, useTransition } from 'react';
 
 import { Avatar, Button, Card, Text } from '@chakra-ui/react';
 
-import { Checkbox } from '@/components/ui/checkbox';
 import { Select } from '@/components/ui/select';
 import { toaster } from '@/components/ui/toaster';
+import Visibility from '@/components/visibility';
 
 import LogoutButton from '@/app/(auth)/_components/logout-button';
-import { settings } from '@/features/user/actions/settings';
+import { UserRole } from '@/drizzle/schema';
 import useCurrentUser from '@/hooks/use-current-user';
 
-const roles = [
-  { label: 'Coach', value: 'a' },
-  { label: 'Captain', value: 'b' },
-  { label: 'Player', value: 'c' },
-  { label: 'Guest', value: 'd' },
-];
+import { settings } from '@/features/user/actions/settings';
 
 export default function DashboardPage() {
   const user = useCurrentUser();
   const { update } = useSession();
-
   const [isPending, startTransition] = useTransition();
-  const [checked, setChecked] = useState(false);
+
+  const [roles, setRoles] = useState<Array<UserRole>>(user.roles);
 
   const onSettings = () => {
     startTransition(() => {
       settings({
-        name: 'Dios Vo!',
+        name: 'Dios Vo',
+        roles,
       }).then(({ error, message }) => {
         toaster.create({
           description: message,
@@ -57,7 +53,7 @@ export default function DashboardPage() {
         </Card.Body>
         <Card.Footer justifyContent="flex-end">
           <Button onClick={onSettings} loading={isPending}>
-            Settings
+            Update Settings
           </Button>
         </Card.Footer>
       </Card.Root>
@@ -66,16 +62,22 @@ export default function DashboardPage() {
         Admin Only
       </Text>
 
-      <Select multiple collection={roles} width="320px" />
-      {/* value={['a']} */}
-
-      <Checkbox
-        mt="4"
-        checked={checked}
-        onCheckedChange={(e) => setChecked(!!e.checked)}
-      >
-        Block
-      </Checkbox>
+      <Visibility isVisible={user.roles.includes('PLAYER')}>
+        <Select
+          multiple
+          collection={[
+            { label: 'Super Admin', value: 'SUPER_ADMIN' },
+            { label: 'Coach', value: 'COACH' },
+            { label: 'Player', value: 'PLAYER' },
+            { label: 'Guest', value: 'GUEST' },
+          ]}
+          width="300px"
+          value={roles}
+          onValueChange={({ value }) => {
+            setRoles(value as Array<UserRole>);
+          }}
+        />
+      </Visibility>
     </div>
   );
 }
