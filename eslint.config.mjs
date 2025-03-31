@@ -1,4 +1,5 @@
 import { FlatCompat } from '@eslint/eslintrc';
+import pluginSecurity from 'eslint-plugin-security';
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -11,6 +12,7 @@ const compat = new FlatCompat({
 
 const eslintConfig = [
   ...compat.extends('next/core-web-vitals', 'next/typescript'),
+  pluginSecurity.configs.recommended,
 ];
 
 export default eslintConfig;
