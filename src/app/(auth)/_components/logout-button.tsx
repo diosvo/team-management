@@ -6,7 +6,7 @@ import { Button } from '@chakra-ui/react';
 
 import { logout } from '@/features/user/actions/auth';
 
-export function LogoutButton() {
+export default function LogoutButton() {
   const [isPending, startTransition] = useTransition();
 
   const handleLogout = () => {
