@@ -144,7 +144,7 @@ export default function LoginPage() {
         <>
           <Button
             width="full"
-            rounded="xl"
+            rounded="lg"
             variant="outline"
             disabled={isPending || isLoading}
             onClick={() => handleSocialLogin('google')}

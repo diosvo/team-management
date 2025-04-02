@@ -16,7 +16,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   }),
   session: {
     strategy: 'jwt',
+    // Expiration time
     maxAge: 60 * 60, // 1 hour
+    // Refresh frequency
+    updateAge: 30 * 60, // 30 minutes
   },
   events: {
     async linkAccount({ user }) {
