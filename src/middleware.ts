@@ -15,13 +15,6 @@ export default middleware((req) => {
       '[Middleware] Session expires at:',
       new Date(req.auth.expires).toLocaleString()
     );
-    console.log(
-      '[Middleware] Time remaining:',
-      Math.round(
-        (new Date(req.auth.expires).getTime() - Date.now()) / 1000 / 60
-      ),
-      'minutes'
-    );
   }
 
   // Helper functions
