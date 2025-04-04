@@ -1,6 +1,8 @@
 import { Metadata } from 'next';
+import Image from 'next/image';
 
-import { Center, Container } from '@chakra-ui/react';
+import BackgroundLayer from '@assets/images/bg-layer.jpeg';
+import { Box, Center, Container } from '@chakra-ui/react';
 
 export const metadata: Metadata = {
   title: 'Auth',
@@ -13,23 +15,27 @@ export default function LoginLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <Center
-      p="2rem"
-      w="100vw"
-      h="100vh"
-      bgSize="cover"
-      bgPos="center"
-      bgImage="url('/bg-layer.jpeg')"
-    >
-      <Container
-        maxW="xl"
-        p="8"
-        rounded="lg"
-        backgroundColor="white"
-        shadow="lg"
-      >
-        {children}
-      </Container>
-    </Center>
+    <Box position="relative" w="100vw" h="100vh">
+      <Image
+        fill
+        priority
+        quality={100}
+        placeholder="blur"
+        src={BackgroundLayer}
+        style={{ objectFit: 'cover' }}
+        alt="Saigon Rovers Basketball Club Background Layer"
+      />
+      <Center p="2rem" w="100%" h="100%">
+        <Container
+          p="8"
+          maxW="xl"
+          shadow="lg"
+          rounded="lg"
+          backgroundColor="white"
+        >
+          {children}
+        </Container>
+      </Center>
+    </Box>
   );
 }
