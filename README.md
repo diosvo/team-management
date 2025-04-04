@@ -7,7 +7,7 @@
   - 🧰 [Drizzle](https://orm.drizzle.team/) as the ORM for migrations and database access.
   - 🔍 [Zod](https://zod.dev/) and [React Hook Form](https://react-hook-form.com/) for schema validation.
   - 💾 [Neon](https://vercel.com/marketplace/neon) for PostgresSQL database interaction.
-  - 🔑 [NextAuth.js](https://next-auth.js.org/) for authentication via GitHub (OAuth).
+  - 🔑 [Auth.js](https://authjs.dev/) enables authentication using Credentials and Google (OAuth) through session strategies based on JWT.
   - 📩 [Resend](https://resend.com/) for email confirmation.
   - 💃 Using TypeScript, hooks, [Chakra](https://chakra-ui.com/) and other parts of a modern frontend stack.
 

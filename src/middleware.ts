@@ -1,16 +1,21 @@
-import NextAuth from 'next-auth';
 import { NextResponse } from 'next/server';
 
 import { DEFAULT_LOGIN_REDIRECT, LOGIN_PATH, PUBLIC_ROUTES } from '@/routes';
 
-import authConfig from './auth.config';
+import { auth as middleware } from '@/auth';
 
-const { auth } = NextAuth(authConfig);
-
-export default auth((req) => {
+export default middleware((req) => {
   const { nextUrl } = req;
   const isLoggedIn = !!req.auth;
   const currentPath = nextUrl.pathname;
+
+  // Improved logging to check session expiration
+  if (req.auth?.expires) {
+    console.log(
+      '[Middleware] Session expires at:',
+      new Date(req.auth.expires).toLocaleString()
+    );
+  }
 
   // Helper functions
   const redirectTo = (path: string) =>

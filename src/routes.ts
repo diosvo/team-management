@@ -14,7 +14,7 @@ const AUTH_ROUTES = [LOGIN_PATH, '/new-password', '/email-confirmation'];
  * These routes do not require authentication
  * @type {Array<string>}
  */
-export const PUBLIC_ROUTES = [...AUTH_ROUTES, '/logo.png', '/bg-layer.jpeg'];
+export const PUBLIC_ROUTES = [...AUTH_ROUTES, '/logo.png'];
 
 /**
  * The prefix for API authentication routes.
