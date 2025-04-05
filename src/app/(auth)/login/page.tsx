@@ -51,7 +51,7 @@ export default function LoginPage() {
   const [response, setResponse] = useState<Response>();
 
   const searchParams = useSearchParams();
-  const error = searchParams.get('error');
+  const error = searchParams?.get('error');
 
   const {
     register,

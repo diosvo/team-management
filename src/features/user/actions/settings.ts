@@ -10,6 +10,7 @@ export async function settings(values: Partial<User>) {
   const user = await currentUser();
 
   if (!user) {
+    // logger.warn('Session expired, redirecting to login...');
     return ResponseFactory.error('Unauthorized');
   }
 

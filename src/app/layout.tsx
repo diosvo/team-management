@@ -22,7 +22,6 @@ export const metadata: Metadata = {
     template: '%s | SGR Portal',
   },
   description: 'Saigon Rovers Basketball Club',
-  facebook: { appId: '123456789' },
 };
 
 export default function RootLayout({
