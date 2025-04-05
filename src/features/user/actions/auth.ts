@@ -3,6 +3,7 @@
 import { AuthError } from 'next-auth';
 
 import { auth, signIn, signOut } from '@/auth';
+import logger from '@/lib/logger';
 import { sendPasswordResetEmail, sendVerificationEmail } from '@/lib/mail';
 import { DEFAULT_LOGIN_REDIRECT, LOGIN_PATH } from '@/routes';
 import { Response, ResponseFactory } from '@/utils/response';
@@ -100,7 +101,7 @@ export async function login(values: LoginValues) {
       }
     }
 
-    throw error;
+    logger.error(error);
   }
 }
 

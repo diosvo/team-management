@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { DEFAULT_LOGIN_REDIRECT, LOGIN_PATH, PUBLIC_ROUTES } from '@/routes';
 
 import { auth as middleware } from '@/auth';
+import logger from '@/lib/logger';
 
 export default middleware((req) => {
   const { nextUrl } = req;
@@ -11,8 +12,8 @@ export default middleware((req) => {
 
   // Improved logging to check session expiration
   if (req.auth?.expires) {
-    console.log(
-      '[Middleware] Session expires at:',
+    logger.info(
+      'Session expires at %s',
       new Date(req.auth.expires).toLocaleString()
     );
   }
