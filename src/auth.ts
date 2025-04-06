@@ -5,7 +5,6 @@ import { AccountTable, UserRole, UserTable } from '@/drizzle/schema/user';
 import { DrizzleAdapter } from '@auth/drizzle-adapter';
 
 import { getAccountById, getUserById } from '@/features/user/db/auth';
-import { updateVerificationDate } from '@/features/user/db/verification-token';
 
 import authConfig from './auth.config';
 
@@ -18,11 +17,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     strategy: 'jwt',
     // Expiration time
     maxAge: 60 * 60, // 1 hour
-  },
-  events: {
-    async linkAccount({ user }) {
-      await updateVerificationDate(user.id as string, user.email as string);
-    },
   },
   callbacks: {
     async signIn({ user, account }) {

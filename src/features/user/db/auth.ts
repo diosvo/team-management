@@ -4,8 +4,6 @@ import { eq } from 'drizzle-orm';
 import { db } from '@/drizzle';
 import { AccountTable, User, UserTable } from '@/drizzle/schema';
 
-import { RegisterValues } from '../schemas/auth';
-
 export async function getUserByEmail(email: string) {
   try {
     return await db.query.UserTable.findFirst({
@@ -38,19 +36,6 @@ export async function getAccountById(user_id: string) {
 
 export function hashPassword(password: string) {
   return hash(password, 9);
-}
-
-export async function insertUser(values: RegisterValues) {
-  try {
-    const hashedPassword = await hashPassword(values.password);
-
-    return await db.insert(UserTable).values({
-      ...values,
-      password: hashedPassword,
-    });
-  } catch {
-    return null;
-  }
 }
 
 export async function updateUser(user: User) {

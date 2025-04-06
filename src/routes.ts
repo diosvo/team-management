@@ -7,7 +7,7 @@ export const LOGIN_PATH = '/login';
  * These routes are used for authentication purposes.
  * @type {Array<string>}
  */
-const AUTH_ROUTES = [LOGIN_PATH, '/new-password', '/email-confirmation'];
+const AUTH_ROUTES = [LOGIN_PATH, '/new-password'];
 
 /**
  * An array of routes that are accessible to the public.

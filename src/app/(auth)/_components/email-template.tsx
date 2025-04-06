@@ -1,18 +1,15 @@
 interface EmailTemplateProps {
-  subpath: 'new-password' | 'email-confirmation';
+  subpath: 'new-password';
   token: string;
   name: string;
 }
 
 const message = {
   'new-password': 'Click the button below to securely reset your password',
-  'email-confirmation':
-    'Thank you for registering with Saigon Rovers Basketball Club. Please confirm your email address to complete your registration',
 };
 
 const button = {
   'new-password': 'Create new password',
-  'email-confirmation': 'Confirm your email',
 };
 
 export default function EmailTemplate({
@@ -83,7 +80,7 @@ export default function EmailTemplate({
                   color: #718096;
                 "
               >
-                This link will be valid for only one hour.
+                This link will be valid for 24-hour.
               </p>
             </td>
           </tr>

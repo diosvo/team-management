@@ -22,15 +22,9 @@ export const LoginSchema = z.object({
   email: fields.email,
   password: z.string(),
 });
-export const RegisterSchema = z.object({
-  name: fields.name,
-  email: fields.email,
-  password: fields.password,
-});
 
 // Types
 export type EmailValue = z.infer<typeof EmailSchema>;
 export type PasswordValue = z.infer<typeof PasswordSchema>;
 export type LoginValues = z.infer<typeof LoginSchema>;
-export type RegisterValues = z.infer<typeof RegisterSchema>;
-export type AuthValues = EmailValue | LoginValues | RegisterValues;
+export type AuthValues = EmailValue | LoginValues;
