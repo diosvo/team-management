@@ -1,9 +1,18 @@
 'use server';
 
+import { cache } from 'react';
+
+import { User } from '@/drizzle/schema';
 import { sendPasswordResetEmail } from '@/lib/mail';
+import { createSession, deleteSession, verifySession } from '@/lib/session';
 import { ResponseFactory } from '@/utils/response';
 
-import { getUserByEmail, hashPassword, updateUser } from '../db/auth';
+import {
+  getUserByEmail,
+  getUserById,
+  hashPassword,
+  updateUser,
+} from '../db/auth';
 import {
   deletePasswordResetTokenByEmail,
   getPasswordResetTokenByToken,
@@ -28,23 +37,36 @@ export async function login(values: LoginValues) {
   const user = await getUserByEmail(data.email);
 
   if (!user) {
-    return ResponseFactory.error('Cannot find email. Please sign up.');
+    return ResponseFactory.error(
+      'Cannot find email. Please contact the administrator to register.'
+    );
   }
 
-  if (user && !user.password) {
+  if (!user?.password) {
     return ResponseFactory.error('Please create your password first.');
   }
 
   try {
-    // await signIn('credentials', {
-    //   email: data.email,
-    //   password: data.password,
-    //   redirectTo: DEFAULT_LOGIN_REDIRECT,
-    // });
-  } catch {
+    await createSession(user.id);
+    // redirect(DEFAULT_LOGIN_REDIRECT);
+  } catch (error) {
+    console.error('Failed to create session', error);
     return ResponseFactory.error('Something went wrong!');
   }
 }
+
+export const getUser = cache(async () => {
+  // Verify user's session
+  const session = await verifySession();
+  if (!session) return null;
+
+  // Get user from database
+  const user = await getUserById(session?.user_id);
+
+  if (!user) return null;
+
+  return useDTO(user);
+});
 
 export async function requestResetPassword(values: EmailValue) {
   const { success, data } = EmailSchema.safeParse(values);
@@ -108,5 +130,16 @@ export async function changePassword(value: PasswordValue, token?: string) {
 }
 
 export async function logout() {
-  // Some server stuff if needed
+  deleteSession();
+}
+
+function useDTO(user: User) {
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    image: user.image,
+    roles: user.roles,
+    state: user.state,
+  };
 }

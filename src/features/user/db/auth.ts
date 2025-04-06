@@ -3,6 +3,7 @@ import { eq } from 'drizzle-orm';
 
 import { db } from '@/drizzle';
 import { User, UserTable } from '@/drizzle/schema';
+import logger from '@/lib/logger';
 
 export async function getUserByEmail(email: string) {
   try {
@@ -20,6 +21,7 @@ export async function getUserById(user_id: string) {
       where: eq(UserTable.id, user_id),
     });
   } catch {
+    logger.error('Failed to fetch user');
     return null;
   }
 }

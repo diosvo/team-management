@@ -1,40 +1,30 @@
-'use client';
+// 'use client';
 
-import { useState, useTransition } from 'react';
-
-import { Avatar, Button, Card, Text } from '@chakra-ui/react';
-
-import { Select } from '@/components/ui/select';
-import { toaster } from '@/components/ui/toaster';
-import Visibility from '@/components/visibility';
+import { Avatar, Card, Text } from '@chakra-ui/react';
 
 import LogoutButton from '@/app/(auth)/_components/logout-button';
-import { UserRole } from '@/drizzle/schema';
-import useCurrentUser from '@/hooks/use-current-user';
 
-import { settings } from '@/features/user/actions/settings';
+import { getUser } from '@/features/user/actions/auth';
 
-export default function DashboardPage() {
-  const user = useCurrentUser();
-  // const { update } = useSession();
-  const [isPending, startTransition] = useTransition();
+export default async function DashboardPage() {
+  const user = await getUser();
+  // const [isPending, startTransition] = useTransition();
 
-  const [roles, setRoles] = useState<Array<UserRole>>(user.roles);
+  // const [roles, setRoles] = useState<Array<UserRole>>(user?.roles);
 
   const onSettings = () => {
-    startTransition(() => {
-      settings({
-        name: 'Dios Vo',
-        roles,
-      }).then(({ error, message }) => {
-        toaster.create({
-          description: message,
-          type: error ? 'error' : 'info',
-        });
-
-        // if (!error) update();
-      });
-    });
+    // startTransition(() => {
+    //   settings({
+    //     name: 'Dios Vo',
+    //     roles,
+    //   }).then(({ error, message }) => {
+    //     toaster.create({
+    //       description: message,
+    //       type: error ? 'error' : 'info',
+    //     });
+    //     // if (!error) update();
+    //   });
+    // });
   };
 
   return (
@@ -47,13 +37,13 @@ export default function DashboardPage() {
             <Avatar.Image src="https://picsum.photos/200" />
             <Avatar.Fallback name="SGR" />
           </Avatar.Root>
-          <Card.Title mt="2">{user.name}</Card.Title>
-          <Card.Description>{user.id}</Card.Description>
+          <Card.Title mt="2">{user?.name}</Card.Title>
+          <Card.Description>{user?.id}</Card.Description>
         </Card.Body>
         <Card.Footer justifyContent="flex-end">
-          <Button onClick={onSettings} loading={isPending}>
+          {/* <Button onClick={onSettings} loading={isPending}>
             Update Settings
-          </Button>
+          </Button> */}
         </Card.Footer>
       </Card.Root>
 
@@ -61,7 +51,7 @@ export default function DashboardPage() {
         Admin Only
       </Text>
 
-      <Visibility isVisible={user.roles.includes('PLAYER')}>
+      {/* <Visibility isVisible={user.roles.includes('PLAYER')}>
         <Select
           multiple
           collection={[
@@ -76,7 +66,7 @@ export default function DashboardPage() {
             setRoles(value as Array<UserRole>);
           }}
         />
-      </Visibility>
+      </Visibility> */}
     </div>
   );
 }
