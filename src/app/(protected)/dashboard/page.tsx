@@ -1,6 +1,5 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
 import { useState, useTransition } from 'react';
 
 import { Avatar, Button, Card, Text } from '@chakra-ui/react';
@@ -17,7 +16,7 @@ import { settings } from '@/features/user/actions/settings';
 
 export default function DashboardPage() {
   const user = useCurrentUser();
-  const { update } = useSession();
+  // const { update } = useSession();
   const [isPending, startTransition] = useTransition();
 
   const [roles, setRoles] = useState<Array<UserRole>>(user.roles);
@@ -33,7 +32,7 @@ export default function DashboardPage() {
           type: error ? 'error' : 'info',
         });
 
-        if (!error) update();
+        // if (!error) update();
       });
     });
   };

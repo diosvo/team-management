@@ -1,8 +1,6 @@
 'use server';
 
-import { auth, signIn, signOut } from '@/auth';
 import { sendPasswordResetEmail } from '@/lib/mail';
-import { DEFAULT_LOGIN_REDIRECT, LOGIN_PATH } from '@/routes';
 import { ResponseFactory } from '@/utils/response';
 
 import { getUserByEmail, hashPassword, updateUser } from '../db/auth';
@@ -38,11 +36,11 @@ export async function login(values: LoginValues) {
   }
 
   try {
-    await signIn('credentials', {
-      email: data.email,
-      password: data.password,
-      redirectTo: DEFAULT_LOGIN_REDIRECT,
-    });
+    // await signIn('credentials', {
+    //   email: data.email,
+    //   password: data.password,
+    //   redirectTo: DEFAULT_LOGIN_REDIRECT,
+    // });
   } catch {
     return ResponseFactory.error('Something went wrong!');
   }
@@ -111,15 +109,4 @@ export async function changePassword(value: PasswordValue, token?: string) {
 
 export async function logout() {
   // Some server stuff if needed
-  await signOut({ redirectTo: LOGIN_PATH, redirect: true });
-}
-
-export async function currentUser() {
-  const session = await auth();
-  return session?.user;
-}
-
-export async function currentRoles() {
-  const user = await currentUser();
-  return user?.roles;
 }

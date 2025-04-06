@@ -4,10 +4,13 @@ import { User } from '@/drizzle/schema';
 import { ResponseFactory } from '@/utils/response';
 
 import { getUserById, updateUser } from '../db/auth';
-import { currentUser } from './auth';
 
 export async function settings(values: Partial<User>) {
-  const user = await currentUser();
+  // const user = await currentUser();
+  const user = {
+    id: '',
+    isOAuth: false,
+  };
 
   if (!user) {
     // logger.warn('Session expired, redirecting to login...');

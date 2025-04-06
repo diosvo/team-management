@@ -2,7 +2,7 @@ import { hash } from 'bcryptjs';
 import { eq } from 'drizzle-orm';
 
 import { db } from '@/drizzle';
-import { AccountTable, User, UserTable } from '@/drizzle/schema';
+import { User, UserTable } from '@/drizzle/schema';
 
 export async function getUserByEmail(email: string) {
   try {
@@ -18,16 +18,6 @@ export async function getUserById(user_id: string) {
   try {
     return await db.query.UserTable.findFirst({
       where: eq(UserTable.id, user_id),
-    });
-  } catch {
-    return null;
-  }
-}
-
-export async function getAccountById(user_id: string) {
-  try {
-    return await db.query.AccountTable.findFirst({
-      where: eq(AccountTable.userId, user_id),
     });
   } catch {
     return null;

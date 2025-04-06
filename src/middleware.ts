@@ -1,26 +1,22 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 import { DEFAULT_LOGIN_REDIRECT, LOGIN_PATH, PUBLIC_ROUTES } from '@/routes';
 
-import { auth as middleware } from '@/auth';
-import logger from '@/lib/logger';
-
-export default middleware((req) => {
-  const { nextUrl } = req;
-  const isLoggedIn = !!req.auth;
-  const currentPath = nextUrl.pathname;
+export default async function middleware(req: NextRequest) {
+  const currentPath = req.nextUrl.pathname;
+  const isLoggedIn = false;
 
   // Improved logging to check session expiration
-  if (req.auth?.expires) {
-    logger.info(
-      'Session expires at %s',
-      new Date(req.auth.expires).toLocaleString()
-    );
-  }
+  // if (req.auth?.expires) {
+  //   logger.info(
+  //     'Session expires at %s',
+  //     new Date(req.auth.expires).toLocaleString()
+  //   );
+  // }
 
   // Helper functions
   const redirectTo = (path: string) =>
-    NextResponse.redirect(new URL(path, nextUrl));
+    NextResponse.redirect(new URL(path, req.nextUrl));
 
   const isPublicRoute = (path: string) => PUBLIC_ROUTES.includes(path);
 
@@ -39,7 +35,7 @@ export default middleware((req) => {
 
   // Allow all other requests to proceed
   return NextResponse.next();
-});
+}
 
 // Routes Middleware should not run on
 export const config = {

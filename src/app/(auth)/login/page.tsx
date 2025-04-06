@@ -55,16 +55,12 @@ export default function LoginPage() {
 
   const onSubmit = (data: AuthValues) => {
     startTransition(() => {
-      if (page === Page.Login) {
-        loginAction(data as LoginValues).then((data) => {
-          // TODO: Add when we add 2FA
-          setResponse(data);
-        });
-      }
+      const action =
+        page === Page.Login
+          ? loginAction(data as LoginValues)
+          : requestResetPassword(data as EmailValue);
 
-      if (page === Page.ResetPassword) {
-        return requestResetPassword(data as EmailValue).then(setResponse);
-      }
+      return action.then(setResponse);
     });
   };
 
