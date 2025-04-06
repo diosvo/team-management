@@ -5,11 +5,11 @@ import { Suspense } from 'react';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 
+import Loading from '@/components/loading';
 import { Provider as UiProvider } from '@/components/ui/provider';
 import { Toaster } from '@/components/ui/toaster';
 
 import './globals.css';
-import Loading from './loading';
 
 const inter = Inter({
   subsets: ['latin'],
