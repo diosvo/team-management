@@ -1,18 +1,15 @@
 'use server';
 
-import { cache } from 'react';
+import { redirect } from 'next/navigation';
 
 import { User } from '@/drizzle/schema';
+import logger from '@/lib/logger';
 import { sendPasswordResetEmail } from '@/lib/mail';
-import { createSession, deleteSession, verifySession } from '@/lib/session';
+import { createSession, deleteSession } from '@/lib/session';
+import { DEFAULT_LOGIN_REDIRECT, LOGIN_PATH } from '@/routes';
 import { ResponseFactory } from '@/utils/response';
 
-import {
-  getUserByEmail,
-  getUserById,
-  hashPassword,
-  updateUser,
-} from '../db/auth';
+import { getUserByEmail, hashPassword, updateUser } from '../db/auth';
 import {
   deletePasswordResetTokenByEmail,
   getPasswordResetTokenByToken,
@@ -48,25 +45,13 @@ export async function login(values: LoginValues) {
 
   try {
     await createSession(user.id);
-    // redirect(DEFAULT_LOGIN_REDIRECT);
   } catch (error) {
-    console.error('Failed to create session', error);
+    logger.error('Failed to create session', error);
     return ResponseFactory.error('Something went wrong!');
   }
+
+  redirect(DEFAULT_LOGIN_REDIRECT);
 }
-
-export const getUser = cache(async () => {
-  // Verify user's session
-  const session = await verifySession();
-  if (!session) return null;
-
-  // Get user from database
-  const user = await getUserById(session?.user_id);
-
-  if (!user) return null;
-
-  return useDTO(user);
-});
 
 export async function requestResetPassword(values: EmailValue) {
   const { success, data } = EmailSchema.safeParse(values);
@@ -131,6 +116,7 @@ export async function changePassword(value: PasswordValue, token?: string) {
 
 export async function logout() {
   deleteSession();
+  redirect(LOGIN_PATH);
 }
 
 function useDTO(user: User) {

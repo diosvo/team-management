@@ -67,9 +67,11 @@ export default function ProtectedLayout({
         <SidebarContent />
       </GridItem>
 
-      <GridItem p="4" overflow="auto">
-        <Suspense fallback={<Loading />}>{children}</Suspense>
-      </GridItem>
+      <Suspense fallback={<Loading />}>
+        <GridItem p="4" overflow="auto">
+          {children}
+        </GridItem>
+      </Suspense>
     </Grid>
   );
 }

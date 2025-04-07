@@ -3,8 +3,7 @@
 import { Avatar, Card, Text } from '@chakra-ui/react';
 
 import LogoutButton from '@/app/(auth)/_components/logout-button';
-
-import { getUser } from '@/features/user/actions/auth';
+import { getUser } from '@/lib/dal';
 
 export default async function DashboardPage() {
   const user = await getUser();

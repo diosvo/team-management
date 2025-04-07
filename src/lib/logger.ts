@@ -21,7 +21,7 @@ const createDevLogger = (): Logger => {
           }
         }
 
-        return `[${level}] ${message}${metadataStr}`;
+        return `${level} ${message}${metadataStr}`;
       })
     ),
     transports: [new transports.Console()],

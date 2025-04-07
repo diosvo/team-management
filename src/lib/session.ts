@@ -1,14 +1,9 @@
-'server-only';
-
 import 'server-only';
 
 import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
-import { cache } from 'react';
 
 import { SignJWT, jwtVerify } from 'jose';
 
-import { DEFAULT_LOGIN_REDIRECT, LOGIN_PATH } from '@/routes';
 import logger from './logger';
 
 type SessionPayload = {
@@ -40,7 +35,8 @@ export async function decrypt(session: string | undefined = '') {
     });
     return payload;
   } catch {
-    logger.error('Failed to verify session');
+    logger.warn('User session is invalid or expired.');
+    return null;
   }
 }
 
@@ -60,27 +56,9 @@ export async function createSession(user_id: string) {
     path: '/',
     expires,
   });
-
-  redirect(DEFAULT_LOGIN_REDIRECT);
 }
-
-export const verifySession = cache(async () => {
-  const cookieStore = await cookies();
-  const token = cookieStore.get(COOKIE.name)?.value;
-  const session = await decrypt(token);
-
-  const user_id = String(session?.user_id);
-
-  if (!user_id) {
-    redirect(LOGIN_PATH);
-  }
-
-  return { user_id };
-});
 
 export async function deleteSession() {
   const cookieStore = await cookies();
   cookieStore.delete(COOKIE.name);
-
-  redirect(LOGIN_PATH);
 }
