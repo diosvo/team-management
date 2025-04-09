@@ -5,8 +5,20 @@ import { usePathname } from 'next/navigation';
 import { Suspense } from 'react';
 
 import Loading from '@/components/loading';
-import { Button, Grid, GridItem, Icon, Text, VStack } from '@chakra-ui/react';
+import {
+  Avatar,
+  Button,
+  Grid,
+  GridItem,
+  Highlight,
+  HStack,
+  Icon,
+  Separator,
+  Text,
+  VStack,
+} from '@chakra-ui/react';
 
+import { Book } from 'lucide-react';
 import { hrefPath, SIDEBAR_GROUP } from './_helpers/utils';
 
 const SidebarContent = () => {
@@ -61,8 +73,9 @@ export default function ProtectedLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <Grid h="100vh" templateColumns="256px 1fr">
+    <Grid h="100vh" templateColumns="256px 1fr" templateRows="auto 1fr">
       <GridItem
+        rowSpan={2}
         w="256px"
         bg="white"
         borderRightWidth="1px"
@@ -72,11 +85,32 @@ export default function ProtectedLayout({
         <SidebarContent />
       </GridItem>
 
-      <Suspense fallback={<Loading />}>
-        <GridItem p="4" overflow="auto">
-          {children}
-        </GridItem>
-      </Suspense>
+      <GridItem bg="white">
+        <HStack align="center" py="2" px="4">
+          <Button size="sm" variant="ghost">
+            <Book /> Team Rules
+          </Button>
+
+          <HStack ml="auto">
+            <Highlight
+              query="Teamwork"
+              styles={{ px: '0.5', bg: 'orange.subtle', color: 'orange.fg' }}
+            >
+              Teamwork makes the dream work
+            </Highlight>
+
+            <Avatar.Root variant="subtle" size="sm">
+              <Avatar.Fallback name="Diosvo" />
+              <Avatar.Image src="https://picsum.photos/200" />
+            </Avatar.Root>
+          </HStack>
+        </HStack>
+        <Separator />
+      </GridItem>
+
+      <GridItem p="4" overflow="auto">
+        <Suspense fallback={<Loading />}>{children}</Suspense>
+      </GridItem>
     </Grid>
   );
 }
