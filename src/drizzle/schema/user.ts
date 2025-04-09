@@ -42,6 +42,7 @@ export const UserTable = pgTable('user', {
   phone_number: varchar('phone_number', { length: 15 }),
   citizen_identification: varchar('citizen_identification', { length: 12 }),
   image: text('image'),
+  // jersey_number: integer('jersey_number'),
   state: userStateEnum('state').default('ACTIVE').notNull(),
   roles: userRolesEnum('roles').notNull().array().default(['PLAYER']),
   join_date: timestamp('join_date', { withTimezone: true })

@@ -4,7 +4,7 @@ import {
   ChartArea,
   FileText,
   Home,
-  Settings,
+  UserCheck,
   Users,
 } from 'lucide-react';
 
@@ -33,6 +33,6 @@ export const SIDEBAR_GROUP = [
   },
   {
     title: 'Administration',
-    items: [{ icon: Settings, text: 'Settings', disabled: false }],
+    items: [{ icon: UserCheck, text: 'User Management', disabled: false }],
   },
 ];

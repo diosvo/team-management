@@ -27,7 +27,6 @@ const SidebarContent = () => {
             return (
               <Button
                 key={item.text}
-                as={Link}
                 w="full"
                 size="sm"
                 borderRadius="md"
@@ -38,9 +37,15 @@ const SidebarContent = () => {
                 color={isActive ? 'inherit' : 'gray.500'}
                 asChild
               >
-                <Link href={path}>
-                  <Icon as={item.icon} size="sm" /> {item.text}
-                </Link>
+                {item.disabled ? (
+                  <div>
+                    <Icon as={item.icon} size="sm" /> {item.text}
+                  </div>
+                ) : (
+                  <Link href={path}>
+                    <Icon as={item.icon} size="sm" /> {item.text}
+                  </Link>
+                )}
               </Button>
             );
           })}
