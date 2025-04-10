@@ -1,6 +1,5 @@
 import { Avatar, Card } from '@chakra-ui/react';
 
-import LogoutButton from '@/app/(auth)/_components/logout-button';
 import { getUser } from '@/lib/dal';
 
 export default async function DashboardPage() {
@@ -9,7 +8,7 @@ export default async function DashboardPage() {
   return (
     <div>
       <h1>Dashboard</h1>
-      <LogoutButton />
+      {/* <LogoutButton /> */}
       <Card.Root width="320px">
         <Card.Body gap="2">
           <Avatar.Root size="lg" shape="rounded">

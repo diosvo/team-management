@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Geist } from 'next/font/google';
 import { Suspense } from 'react';
 
 import { Analytics } from '@vercel/analytics/next';
@@ -11,9 +11,9 @@ import { Toaster } from '@/components/ui/toaster';
 
 import './globals.css';
 
-const inter = Inter({
+const geist = Geist({
   subsets: ['latin'],
-  variable: '--font-inter',
+  variable: '--font-geist',
 });
 
 export const metadata: Metadata = {
@@ -31,7 +31,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body className={geist.className}>
         <UiProvider>
           <Toaster />
           <Suspense fallback={<Loading />}>{children}</Suspense>
