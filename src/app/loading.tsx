@@ -1,5 +1,5 @@
 import Loading from '@/components/loading';
 
-export default function ProtectedLoading() {
+export default function RootLoading() {
   return <Loading />;
 }

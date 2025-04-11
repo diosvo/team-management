@@ -9,6 +9,7 @@
   - 💾 [Neon](https://vercel.com/marketplace/neon) for PostgresSQL database interaction.
   - 🔑 Authentication using email/password with [Jose](https://www.npmjs.com/package/jose) stateless session.
   - 📩 [Resend](https://resend.com/) for email confirmation.
+  - 🌊 [Winston](https://github.com/winstonjs/winston) for server logging.
   - 💃 Using TypeScript, hooks, [Chakra](https://chakra-ui.com/) and other parts of a modern frontend stack.
 
 - 🔒 Secure password hashing by default.
@@ -16,8 +17,6 @@
 - 🏭 CI/CD based on GitHub Actions.
 
 ## Folder structure
-
-> It could be temporality
 
 ```
 .
@@ -30,9 +29,6 @@
     │   │   └── login
     │   ├── (protected)
     │   │   └── <protected_pages>
-    │   └── api
-    │       └── auth
-    │           └── [...nextauth]
     ├── components      # Reuseable UI components
     │   └── ui          # Common UI elements (buttons, modals, etc)
     ├── drizzle

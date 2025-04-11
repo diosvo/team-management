@@ -27,7 +27,7 @@ export async function getUserById(user_id: string) {
 }
 
 export function hashPassword(password: string) {
-  return hash(password, 9);
+  return hash(password, 10);
 }
 
 export async function updateUser(user: User) {

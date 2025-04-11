@@ -1,5 +1,8 @@
+import { Suspense } from 'react';
+
 import { Grid, GridItem, Separator } from '@chakra-ui/react';
 
+import Loading from '@/components/loading';
 import Header from './_components/header';
 import Sidebar from './_components/sidebar';
 
@@ -8,8 +11,6 @@ export default function ProtectedLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // await logout();
-
   return (
     <Grid
       h="100vh"
@@ -40,7 +41,7 @@ export default function ProtectedLayout({
 
       {/* Main Content */}
       <GridItem gridArea="main" p="4" overflow="auto">
-        {children}
+        <Suspense fallback={<Loading />}>{children}</Suspense>
       </GridItem>
     </Grid>
   );

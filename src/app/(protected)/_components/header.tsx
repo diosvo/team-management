@@ -1,11 +1,18 @@
+'use client';
+
 import Image from 'next/image';
+import { use } from 'react';
 
 import { Avatar, HStack, Menu } from '@chakra-ui/react';
 
+import { useUser } from '@/hooks/use-user';
 import HeaderLogo from '@assets/images/header-logo.png';
 import { LogOut, User } from 'lucide-react';
 
 export default function Header() {
+  const { userPromise } = useUser();
+  const user = use(userPromise);
+
   return (
     <HStack align="center" justify="space-between" py="2" px="4">
       <Image
@@ -20,8 +27,8 @@ export default function Header() {
       <Menu.Root>
         <Menu.Trigger>
           <Avatar.Root variant="subtle" size="sm">
-            <Avatar.Fallback name="Diosvo" />
-            <Avatar.Image src="https://picsum.photos/200" />
+            <Avatar.Fallback name={user?.name} />
+            <Avatar.Image src={user?.image as string} />
           </Avatar.Root>
         </Menu.Trigger>
         <Menu.Positioner>

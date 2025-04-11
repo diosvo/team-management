@@ -1,13 +1,13 @@
 import type { Metadata } from 'next';
 import { Geist } from 'next/font/google';
-import { Suspense } from 'react';
 
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 
-import Loading from '@/components/loading';
 import { Provider as UiProvider } from '@/components/ui/provider';
 import { Toaster } from '@/components/ui/toaster';
+import { getUser } from '@/features/user/actions/auth';
+import { UserProvider } from '@/hooks/use-user';
 
 import './globals.css';
 
@@ -29,12 +29,14 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const userPromise = getUser();
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={geist.className}>
         <UiProvider>
           <Toaster />
-          <Suspense fallback={<Loading />}>{children}</Suspense>
+          <UserProvider userPromise={userPromise}>{children}</UserProvider>
         </UiProvider>
         {/* Vercel plugins */}
         {process.env.NODE_ENV === 'production' && (

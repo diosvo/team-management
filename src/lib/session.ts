@@ -1,12 +1,13 @@
 import 'server-only';
 
 import { cookies } from 'next/headers';
+import { cache } from 'react';
 
 import { SignJWT, jwtVerify } from 'jose';
 
 import logger from './logger';
 
-type SessionPayload = {
+type SessionData = {
   user_id: string;
   expires: Date;
 };
@@ -20,7 +21,7 @@ export const COOKIE = {
   duration: 24 * 60 * 60 * 1000, // 1 day
 };
 
-export async function encrypt(payload: SessionPayload) {
+async function encrypt(payload: SessionData) {
   return new SignJWT(payload)
     .setProtectedHeader({ alg })
     .setIssuedAt()
@@ -28,16 +29,11 @@ export async function encrypt(payload: SessionPayload) {
     .sign(key);
 }
 
-export async function decrypt(session: string | undefined = '') {
-  try {
-    const { payload } = await jwtVerify(session, key, {
-      algorithms: [alg],
-    });
-    return payload;
-  } catch {
-    logger.warn('User session is invalid or expired.');
-    return null;
-  }
+async function decrypt(session: string | undefined = '') {
+  const { payload } = await jwtVerify(session, key, {
+    algorithms: [alg],
+  });
+  return payload as SessionData;
 }
 
 export async function createSession(user_id: string) {
@@ -57,6 +53,27 @@ export async function createSession(user_id: string) {
     expires,
   });
 }
+
+export const verifySession = cache(async () => {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(COOKIE.name)?.value;
+  const session = await decrypt(token);
+
+  if (!session) {
+    return null;
+  }
+
+  const user_id = session.user_id;
+  const expired = session.expires < new Date();
+
+  // Logout if session has been expired
+  if (!user_id || expired) {
+    logger.warn('Session is invalid or expired.');
+    return null;
+  }
+
+  return session as SessionData;
+});
 
 export async function deleteSession() {
   const cookieStore = await cookies();

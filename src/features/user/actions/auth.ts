@@ -2,14 +2,18 @@
 
 import { redirect } from 'next/navigation';
 
-import { User } from '@/drizzle/schema';
 import logger from '@/lib/logger';
 import { sendPasswordResetEmail } from '@/lib/mail';
-import { createSession, deleteSession } from '@/lib/session';
+import { createSession, deleteSession, verifySession } from '@/lib/session';
 import { DEFAULT_LOGIN_REDIRECT, LOGIN_PATH } from '@/routes';
 import { ResponseFactory } from '@/utils/response';
 
-import { getUserByEmail, hashPassword, updateUser } from '../db/auth';
+import {
+  getUserByEmail,
+  getUserById,
+  hashPassword,
+  updateUser,
+} from '../db/auth';
 import {
   deletePasswordResetTokenByEmail,
   getPasswordResetTokenByToken,
@@ -51,6 +55,17 @@ export async function login(values: LoginValues) {
   }
 
   redirect(DEFAULT_LOGIN_REDIRECT);
+}
+
+export async function getUser() {
+  // Verify user's session
+  const session = await verifySession();
+  if (!session) return null;
+
+  const user = await getUserById(session.user_id);
+  if (!user) return null;
+
+  return user;
 }
 
 export async function requestResetPassword(values: EmailValue) {
@@ -117,15 +132,4 @@ export async function changePassword(value: PasswordValue, token?: string) {
 export async function logout() {
   deleteSession();
   redirect(LOGIN_PATH);
-}
-
-function useDTO(user: User) {
-  return {
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    image: user.image,
-    roles: user.roles,
-    state: user.state,
-  };
 }
