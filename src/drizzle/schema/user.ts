@@ -20,7 +20,7 @@ export const userRoles = [
   'GUEST',
 ] as const;
 export type UserRole = (typeof userRoles)[number];
-export const userRolesEnum = pgEnum('user_roles', userRoles);
+const userRolesEnum = pgEnum('user_roles', userRoles);
 
 export const userStateEnum = pgEnum('user_state', [
   'UNKNOWN',

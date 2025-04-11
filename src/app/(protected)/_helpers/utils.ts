@@ -1,3 +1,4 @@
+import { userRoles } from '@/drizzle/schema';
 import {
   BadgeCheck,
   CalendarDays,
@@ -33,6 +34,7 @@ export const SIDEBAR_GROUP = [
   },
   {
     title: 'Administration',
+    perssmision: userRoles[0],
     items: [{ icon: UserCheck, text: 'User Management', disabled: false }],
   },
 ];
