@@ -60,7 +60,12 @@ export async function login(values: LoginValues) {
 export async function getUser() {
   // Verify user's session
   const session = await verifySession();
-  if (!session) return null;
+
+  // Logout if session has been expired
+  if (!session) {
+    logger.info('Session has been expired. Redirecting to login page...');
+    redirect(LOGIN_PATH);
+  }
 
   const user = await getUserById(session.user_id);
   if (!user) return null;

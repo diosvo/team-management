@@ -2,11 +2,12 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { use, useMemo } from 'react';
+import { use } from 'react';
 
 import { Button, Icon, Text, VStack } from '@chakra-ui/react';
-import { Crown } from 'lucide-react';
+import { Crown, ShieldUser } from 'lucide-react';
 
+import { userRoles } from '@/drizzle/schema';
 import { useUser } from '@/hooks/use-user';
 import { hrefPath, SIDEBAR_GROUP } from '../_helpers/utils';
 
@@ -15,16 +16,9 @@ export default function Sidebar() {
   const { userPromise } = useUser();
   const user = use(userPromise);
 
-  // Filter out Administrator group if user doesn't have SUPER_ADMIN role
-  const sidebar = useMemo(() => {
-    return SIDEBAR_GROUP.filter(({ perssmision }) => {
-      return perssmision ? user?.roles?.includes(perssmision) : true;
-    });
-  }, [user]);
-
   return (
     <VStack align="stretch" py="4" px="2" gap={6} height="full">
-      {sidebar.map(({ title, items }) => (
+      {SIDEBAR_GROUP.map(({ title, items }) => (
         <VStack key={title} align="stretch">
           <Text fontSize="xs" marginLeft="4">
             {title}
@@ -39,7 +33,7 @@ export default function Sidebar() {
                 key={item.text}
                 w="full"
                 size="sm"
-                borderRadius="md"
+                borderRadius="sm"
                 justifyContent="flex-start"
                 disabled={item.disabled}
                 variant={isActive ? 'subtle' : 'ghost'}
@@ -49,11 +43,11 @@ export default function Sidebar() {
               >
                 {item.disabled ? (
                   <div>
-                    <Icon as={item.icon} size="sm" /> {item.text}
+                    <Icon as={item.icon} /> {item.text}
                   </div>
                 ) : (
                   <Link href={path}>
-                    <Icon as={item.icon} size="sm" /> {item.text}
+                    <Icon as={item.icon} /> {item.text}
                   </Link>
                 )}
               </Button>
@@ -62,9 +56,18 @@ export default function Sidebar() {
         </VStack>
       ))}
 
-      <Button mt="auto" justifyContent="flex-start" size="sm" variant="ghost">
-        <Crown /> Team Rules
-      </Button>
+      <VStack align="stretch" mt="auto">
+        <Button size="sm" justifyContent="flex-start" variant="ghost">
+          <Crown /> Team Rules
+        </Button>
+        {user?.roles?.includes(userRoles[0]) && (
+          <Button size="sm" justifyContent="flex-start" variant="ghost" asChild>
+            <Link href="admin">
+              <ShieldUser /> Administration
+            </Link>
+          </Button>
+        )}
+      </VStack>
     </VStack>
   );
 }

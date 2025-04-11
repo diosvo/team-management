@@ -3,6 +3,7 @@ import { Suspense } from 'react';
 import { Grid, GridItem, Separator } from '@chakra-ui/react';
 
 import Loading from '@/components/loading';
+
 import Header from './_components/header';
 import Sidebar from './_components/sidebar';
 

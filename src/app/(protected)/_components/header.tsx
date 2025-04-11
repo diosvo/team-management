@@ -34,7 +34,7 @@ export default function Header() {
         <Menu.Positioner>
           <Menu.Content>
             <Menu.Item value="user">
-              <User size={16} /> User
+              <User size={16} /> {user?.name}
             </Menu.Item>
 
             <Menu.Separator />

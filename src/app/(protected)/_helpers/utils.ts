@@ -1,11 +1,9 @@
-import { userRoles } from '@/drizzle/schema';
 import {
   BadgeCheck,
   CalendarDays,
   ChartArea,
   FileText,
   Home,
-  UserCheck,
   Users,
 } from 'lucide-react';
 
@@ -31,10 +29,5 @@ export const SIDEBAR_GROUP = [
       { icon: BadgeCheck, text: 'Attendance', disabled: true },
       { icon: FileText, text: 'Registration', disabled: true },
     ],
-  },
-  {
-    title: 'Administration',
-    perssmision: userRoles[0],
-    items: [{ icon: UserCheck, text: 'User Management', disabled: false }],
   },
 ];

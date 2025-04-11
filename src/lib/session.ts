@@ -29,11 +29,15 @@ async function encrypt(payload: SessionData) {
     .sign(key);
 }
 
-async function decrypt(session: string | undefined = '') {
-  const { payload } = await jwtVerify(session, key, {
-    algorithms: [alg],
-  });
-  return payload as SessionData;
+export async function decrypt(session: string | undefined = '') {
+  try {
+    const { payload } = await jwtVerify(session, key, {
+      algorithms: [alg],
+    });
+    return payload as SessionData;
+  } catch {
+    return null;
+  }
 }
 
 export async function createSession(user_id: string) {
@@ -60,17 +64,14 @@ export const verifySession = cache(async () => {
   const session = await decrypt(token);
 
   if (!session) {
+    logger.warn('Session is invalid or expired.');
     return null;
   }
 
   const user_id = session.user_id;
   const expired = session.expires < new Date();
 
-  // Logout if session has been expired
-  if (!user_id || expired) {
-    logger.warn('Session is invalid or expired.');
-    return null;
-  }
+  if (!user_id || expired) return null;
 
   return session as SessionData;
 });
