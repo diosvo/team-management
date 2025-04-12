@@ -1,8 +1,7 @@
 'use client';
 
 import { DataTable, TableColumn } from '@/components/data-table';
-import { Box, Button, Container, Flex, Heading } from '@chakra-ui/react';
-import { Download, Filter } from 'lucide-react';
+import { Box, Heading } from '@chakra-ui/react';
 
 interface TeamMember {
   id: string;
@@ -58,7 +57,6 @@ export default function RosterPage() {
     {
       header: 'Jersey #',
       accessor: 'jerseyNumber',
-      width: '100px',
     },
     {
       header: 'Position',
@@ -90,30 +88,12 @@ export default function RosterPage() {
   ];
 
   return (
-    <Container maxW="container.xl" py={6}>
-      <Heading as="h1" size="lg" mb={6}>
+    <Box>
+      <Heading as="h1" size="xl" mb={4}>
         Team Roster
       </Heading>
 
-      <Flex justifyContent="flex-end" mb={4}>
-        <Button mr={2}>
-          <Filter size={16} /> Filter
-        </Button>
-        <Button>
-          <Download size={16} />
-          Export
-        </Button>
-      </Flex>
-
-      <DataTable
-        columns={columns}
-        data={teamMembers}
-        emptyState={
-          <Box textAlign="center" py={8}>
-            No team members found
-          </Box>
-        }
-      />
-    </Container>
+      <DataTable columns={columns} data={teamMembers} showPagination />
+    </Box>
   );
 }

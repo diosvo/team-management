@@ -197,7 +197,6 @@ export default function AddUsers() {
     {
       header: 'Roles',
       accessor: 'roles',
-      width: '200px',
       render: (_, row, index) => (
         <Select
           invalid={!!errors[index]?.roles}

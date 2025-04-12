@@ -42,7 +42,7 @@ function NavButton({
       variant={isActive ? 'subtle' : 'ghost'}
       colorScheme={isActive ? 'blue' : 'gray'}
       color={isActive ? 'inherit' : 'gray.500'}
-      asChild={!disabled}
+      asChild
     >
       {disabled ? (
         <div>
@@ -86,7 +86,7 @@ export default function Sidebar() {
       ))}
 
       <VStack align="stretch" mt="auto">
-        <NavButton href="/rules" icon={Crown}>
+        <NavButton href="/rules" icon={Crown} disabled>
           Team Rules
         </NavButton>
         {user?.roles?.includes(userRoles[0]) && (
