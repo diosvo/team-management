@@ -93,7 +93,7 @@ export function DataTable<T extends object>({
                           )
                         : typeof column.accessor === 'function'
                         ? column.accessor(row)
-                        : String(row[column.accessor])}
+                        : String(row[column.accessor] || '-')}
                     </Table.Cell>
                   ))}
                   {actions && (

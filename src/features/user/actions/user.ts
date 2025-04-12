@@ -4,6 +4,11 @@ import { User } from '@/drizzle/schema';
 import { ResponseFactory } from '@/utils/response';
 
 import { getUserById, updateUser } from '../db/auth';
+import { getUsers } from '../db/user';
+
+export async function getRoster() {
+  return await getUsers();
+}
 
 export async function settings(values: Partial<User>) {
   // const user = await currentUser();
