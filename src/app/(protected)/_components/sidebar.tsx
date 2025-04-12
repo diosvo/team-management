@@ -2,17 +2,62 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { use } from 'react';
+import {
+  ForwardRefExoticComponent,
+  ReactNode,
+  RefAttributes,
+  use,
+} from 'react';
 
 import { Button, Icon, Text, VStack } from '@chakra-ui/react';
-import { Crown, ShieldUser } from 'lucide-react';
+import { Crown, LucideProps, ShieldUser } from 'lucide-react';
 
 import { userRoles } from '@/drizzle/schema';
 import { useUser } from '@/hooks/use-user';
 import { hrefPath, SIDEBAR_GROUP } from '../_helpers/utils';
 
-export default function Sidebar() {
+function NavButton({
+  href,
+  icon,
+  disabled = false,
+  children,
+}: {
+  href: string;
+  icon: ForwardRefExoticComponent<
+    Omit<LucideProps, 'ref'> & RefAttributes<SVGSVGElement>
+  >;
+  disabled?: boolean;
+  children: ReactNode;
+}) {
   const pathname = usePathname();
+  const isActive = pathname === href;
+
+  return (
+    <Button
+      w="full"
+      size="sm"
+      borderRadius="sm"
+      justifyContent="flex-start"
+      disabled={disabled}
+      variant={isActive ? 'subtle' : 'ghost'}
+      colorScheme={isActive ? 'blue' : 'gray'}
+      color={isActive ? 'inherit' : 'gray.500'}
+      asChild={!disabled}
+    >
+      {disabled ? (
+        <div>
+          {icon && <Icon as={icon} />} {children}
+        </div>
+      ) : (
+        <Link href={href}>
+          {icon && <Icon as={icon} />} {children}
+        </Link>
+      )}
+    </Button>
+  );
+}
+
+export default function Sidebar() {
   const { userPromise } = useUser();
   const user = use(userPromise);
 
@@ -26,46 +71,28 @@ export default function Sidebar() {
 
           {items.map((item) => {
             const path = hrefPath(item.text);
-            const isActive = pathname === path;
-
             return (
-              <Button
+              <NavButton
                 key={item.text}
-                w="full"
-                size="sm"
-                borderRadius="sm"
-                justifyContent="flex-start"
+                href={path}
+                icon={item.icon}
                 disabled={item.disabled}
-                variant={isActive ? 'subtle' : 'ghost'}
-                colorScheme={isActive ? 'blue' : 'gray'}
-                color={isActive ? 'inherit' : 'gray.500'}
-                asChild
               >
-                {item.disabled ? (
-                  <div>
-                    <Icon as={item.icon} /> {item.text}
-                  </div>
-                ) : (
-                  <Link href={path}>
-                    <Icon as={item.icon} /> {item.text}
-                  </Link>
-                )}
-              </Button>
+                {item.text}
+              </NavButton>
             );
           })}
         </VStack>
       ))}
 
       <VStack align="stretch" mt="auto">
-        <Button size="sm" justifyContent="flex-start" variant="ghost">
-          <Crown /> Team Rules
-        </Button>
+        <NavButton href="/rules" icon={Crown}>
+          Team Rules
+        </NavButton>
         {user?.roles?.includes(userRoles[0]) && (
-          <Button size="sm" justifyContent="flex-start" variant="ghost" asChild>
-            <Link href="admin">
-              <ShieldUser /> Administration
-            </Link>
-          </Button>
+          <NavButton href="/admin" icon={ShieldUser}>
+            Administration
+          </NavButton>
         )}
       </VStack>
     </VStack>
