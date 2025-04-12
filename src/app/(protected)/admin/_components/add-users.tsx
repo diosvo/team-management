@@ -1,10 +1,11 @@
 'use client';
 
+import { DataTable, TableColumn } from '@/components/data-table';
 import { Field } from '@/components/ui/field';
 import { Select } from '@/components/ui/select';
 import { toaster } from '@/components/ui/toaster';
 import { UserRole, userRoles } from '@/drizzle/schema/user';
-import { Box, Button, Flex, Input, NumberInput, Table } from '@chakra-ui/react';
+import { Box, Button, Flex, Input, NumberInput } from '@chakra-ui/react';
 import { Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -28,7 +29,7 @@ const emptyUser: UserFormData = {
 
 // Filter out SUPER_ADMIN from available roles
 const availableRoles = userRoles
-  .filter((role) => role !== 'SUPER_ADMIN')
+  .filter((role) => role !== userRoles[0])
   .map((role) => ({
     label: role.replace('_', ' '),
     value: role,
@@ -116,6 +117,101 @@ export default function AddUsers() {
     }
   };
 
+  const columns: TableColumn<UserFormData>[] = [
+    {
+      header: 'Name',
+      accessor: 'name',
+      render: (_, row, index) => (
+        <Field required invalid={!!errors[index]?.name}>
+          <Input
+            variant="flushed"
+            value={row.name}
+            placeholder="Fullname"
+            onChange={(e) => updateUser(index, 'name', e.target.value)}
+          />
+        </Field>
+      ),
+    },
+    {
+      header: 'Email',
+      accessor: 'email',
+      render: (_, row, index) => (
+        <Field required invalid={!!errors[index]?.email}>
+          <Input
+            variant="flushed"
+            type="email"
+            placeholder="abc@gmail.com"
+            value={row.email}
+            onChange={(e) => updateUser(index, 'email', e.target.value)}
+          />
+        </Field>
+      ),
+    },
+    {
+      header: 'Jersey No.',
+      accessor: 'jerseyNumber',
+      width: '200px',
+      render: (_, row, index) => (
+        <Field width="100%">
+          <NumberInput.Root variant="flushed" min={0} max={99}>
+            <NumberInput.Control />
+            <NumberInput.Input
+              value={row.jerseyNumber}
+              onChange={(e) => {
+                const val = e.target.value;
+                updateUser(index, 'jerseyNumber', val);
+              }}
+            />
+          </NumberInput.Root>
+        </Field>
+      ),
+    },
+    {
+      header: 'DOB',
+      accessor: 'dob',
+      render: (_, row, index) => (
+        <Field>
+          <Input
+            variant="flushed"
+            type="date"
+            value={row.dob}
+            onChange={(e) => updateUser(index, 'dob', e.target.value)}
+          />
+        </Field>
+      ),
+    },
+    {
+      header: 'Join Date',
+      accessor: 'joinDate',
+      render: (_, row, index) => (
+        <Field>
+          <Input
+            variant="flushed"
+            type="date"
+            value={row.joinDate}
+            onChange={(e) => updateUser(index, 'joinDate', e.target.value)}
+          />
+        </Field>
+      ),
+    },
+    {
+      header: 'Roles',
+      accessor: 'roles',
+      width: '200px',
+      render: (_, row, index) => (
+        <Select
+          invalid={!!errors[index]?.roles}
+          multiple
+          collection={availableRoles}
+          value={row.roles}
+          onValueChange={({ value }) => {
+            updateUser(index, 'roles', value);
+          }}
+        />
+      ),
+    },
+  ];
+
   return (
     <Box as="form" onSubmit={handleSubmit} w="full">
       <Flex justifyContent="flex-end" mb={4}>
@@ -127,99 +223,20 @@ export default function AddUsers() {
         </Button>
       </Flex>
 
-      <Table.Root variant="outline">
-        <Table.Header>
-          <Table.Row>
-            <Table.ColumnHeader>Name</Table.ColumnHeader>
-            <Table.ColumnHeader>Email</Table.ColumnHeader>
-            <Table.ColumnHeader width="200px">Jersey No.</Table.ColumnHeader>
-            <Table.ColumnHeader>DOB</Table.ColumnHeader>
-            <Table.ColumnHeader>Join Date</Table.ColumnHeader>
-            <Table.ColumnHeader width="200px">Roles</Table.ColumnHeader>
-            <Table.ColumnHeader></Table.ColumnHeader>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {users.map((user, index) => (
-            <Table.Row key={index}>
-              <Table.Cell>
-                <Field required invalid={!!errors[index]?.name}>
-                  <Input
-                    variant="flushed"
-                    value={user.name}
-                    placeholder="Fullname"
-                    onChange={(e) => updateUser(index, 'name', e.target.value)}
-                  />
-                </Field>
-              </Table.Cell>
-              <Table.Cell>
-                <Field required invalid={!!errors[index]?.email}>
-                  <Input
-                    variant="flushed"
-                    type="email"
-                    placeholder="abc@gmail.com"
-                    value={user.email}
-                    onChange={(e) => updateUser(index, 'email', e.target.value)}
-                  />
-                </Field>
-              </Table.Cell>
-
-              <Table.Cell>
-                <Field width="100%">
-                  <NumberInput.Root variant="flushed" min={0} max={99}>
-                    <NumberInput.Control />
-                    <NumberInput.Input />
-                  </NumberInput.Root>
-                </Field>
-              </Table.Cell>
-              <Table.Cell>
-                <Field>
-                  <Input
-                    variant="flushed"
-                    type="date"
-                    value={user.joinDate}
-                    onChange={(e) =>
-                      updateUser(index, 'joinDate', e.target.value)
-                    }
-                  />
-                </Field>
-              </Table.Cell>
-              <Table.Cell>
-                <Field>
-                  <Input
-                    variant="flushed"
-                    type="date"
-                    value={user.dob}
-                    onChange={(e) => updateUser(index, 'dob', e.target.value)}
-                  />
-                </Field>
-              </Table.Cell>
-
-              <Table.Cell>
-                <Select
-                  invalid={!!errors[index]?.roles}
-                  multiple
-                  collection={availableRoles}
-                  value={user.roles}
-                  onValueChange={({ value }) => {
-                    updateUser(index, 'roles', value);
-                  }}
-                />
-              </Table.Cell>
-              <Table.Cell>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => removeUser(index)}
-                  disabled={users.length === 1}
-                >
-                  <Trash2 size={12} />
-                </Button>
-              </Table.Cell>
-            </Table.Row>
-          ))}
-        </Table.Body>
-      </Table.Root>
+      <DataTable
+        columns={columns}
+        data={users}
+        actions={(_, index) => (
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => removeUser(index)}
+            disabled={users.length === 1}
+          >
+            <Trash2 size={12} />
+          </Button>
+        )}
+      />
     </Box>
   );
 }

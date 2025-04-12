@@ -24,7 +24,7 @@ export const SIDEBAR_GROUP = [
   {
     title: 'Team Management',
     items: [
-      { icon: Users, text: 'Roster', disabled: true },
+      { icon: Users, text: 'Roster', disabled: false },
       { icon: CalendarDays, text: 'Schedule', disabled: true },
       { icon: BadgeCheck, text: 'Attendance', disabled: true },
       { icon: FileText, text: 'Registration', disabled: true },
