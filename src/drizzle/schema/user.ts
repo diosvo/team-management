@@ -1,4 +1,6 @@
+import { sql } from 'drizzle-orm';
 import {
+  check,
   date,
   pgEnum,
   pgTable,
@@ -20,7 +22,7 @@ export const userRoles = [
   'GUEST',
 ] as const;
 export type UserRole = (typeof userRoles)[number];
-const userRolesEnum = pgEnum('user_roles', userRoles);
+export const userRolesEnum = pgEnum('user_roles', userRoles);
 
 export const userStateEnum = pgEnum('user_state', [
   'UNKNOWN',
@@ -32,34 +34,31 @@ export const userStateEnum = pgEnum('user_state', [
 // Tables
 // Force id and userId by Drizzle ORM Adapter
 
-export const UserTable = pgTable('user', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  name: varchar('name', { length: 128 }).notNull(),
-  dob: date('dob'),
-  password: varchar('password', { length: 128 }),
-  email: text('email').unique(),
-  emailVerified: timestamp('emailVerified', { mode: 'date' }),
-  phone_number: varchar('phone_number', { length: 15 }),
-  citizen_identification: varchar('citizen_identification', { length: 12 }),
-  image: text('image'),
-  // jersey_number: integer('jersey_number'),
-  state: userStateEnum('state').default('ACTIVE').notNull(),
-  roles: userRolesEnum('roles').notNull().array().default(['PLAYER']),
-  join_date: timestamp('join_date', { withTimezone: true })
-    .defaultNow()
-    .notNull(),
-  created_at,
-  updated_at,
-});
+export const UserTable = pgTable(
+  'user',
+  {
+    user_id: uuid('user_id').primaryKey().defaultRandom(),
+    name: varchar('name', { length: 128 }).notNull(),
+    dob: date('dob'),
+    password: varchar('password', { length: 128 }),
+    email: text('email').unique().notNull(),
+    phone_number: varchar('phone_number', { length: 15 }),
+    citizen_identification: varchar('citizen_identification', { length: 12 }),
+    image: text('image'),
+    state: userStateEnum('state').default('ACTIVE').notNull(),
+    roles: userRolesEnum('roles').array().default(['PLAYER']).notNull(),
+    join_date: timestamp('join_date', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    created_at,
+    updated_at,
+  },
+  (table) => [
+    check('roles_length', sql`array_length(${table.roles}, 1) BETWEEN 1 AND 2`),
+  ]
+);
 
-export const VerificationTokenTable = pgTable('verification_token', {
-  id: uuid('id').notNull().unique().defaultRandom(),
-  email: text('email').unique().notNull(),
-  token: text('token').unique().notNull(),
-  expires_at,
-});
-
-export const PasswordResetTokenTable = pgTable('password_reset_token', {
+export const PasswordTokenTable = pgTable('password_token', {
   id: uuid('id').notNull().unique().defaultRandom(),
   email: text('email').unique().notNull(),
   token: text('token').unique().notNull(),
@@ -67,4 +66,3 @@ export const PasswordResetTokenTable = pgTable('password_reset_token', {
 });
 
 export type User = typeof UserTable.$inferSelect;
-export type Token = typeof VerificationTokenTable.$inferSelect;

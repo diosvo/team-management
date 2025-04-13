@@ -18,7 +18,7 @@ const secretKey = process.env.SESSION_SECRET!;
 const key = new TextEncoder().encode(secretKey);
 export const COOKIE = {
   name: 'sgr-session',
-  duration: 24 * 60 * 60 * 1000, // 1 day
+  duration: 60 * 60 * 1000, // 1 hour
 };
 
 async function encrypt(payload: SessionData) {

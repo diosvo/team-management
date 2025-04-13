@@ -29,7 +29,7 @@ const emptyUser: UserFormData = {
 
 // Filter out SUPER_ADMIN from available roles
 const availableRoles = userRoles
-  .filter((role) => role !== userRoles[0])
+  .filter((role) => role !== 'SUPER_ADMIN')
   .map((role) => ({
     label: role.replace('_', ' '),
     value: role,
@@ -56,7 +56,11 @@ export default function AddUsers() {
     }
   };
 
-  const updateUser = (index: number, field: keyof UserFormData, value: any) => {
+  const updateUser = (
+    index: number,
+    field: keyof UserFormData,
+    value: string | string[]
+  ) => {
     const newUsers = [...users];
     newUsers[index] = { ...newUsers[index], [field]: value };
     setUsers(newUsers);
@@ -109,7 +113,7 @@ export default function AddUsers() {
       // Reset form after successful submission
       setUsers([{ ...emptyUser }]);
       setErrors([{}]);
-    } catch (error) {
+    } catch {
       toaster.error({
         title: 'Error',
         description: 'Failed to add users',

@@ -1,15 +1,17 @@
 interface EmailTemplateProps {
-  subpath: 'new-password';
+  subpath: 'new-password' | 'reset-password';
   token: string;
   name: string;
 }
 
 const message = {
-  'new-password': 'Click the button below to securely reset your password',
+  'new-password': 'Click the button below to create a new password',
+  'reset-password': 'Click the button below to securely reset your password',
 };
 
 const button = {
   'new-password': 'Create new password',
+  'reset-password': 'Reset password',
 };
 
 export default function EmailTemplate({

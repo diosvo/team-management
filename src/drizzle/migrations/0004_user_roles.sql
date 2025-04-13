@@ -1,1 +1,0 @@
-ALTER TYPE "public"."user_roles" ADD VALUE 'GUEST';

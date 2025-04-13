@@ -2,6 +2,8 @@
 
 import { redirect } from 'next/navigation';
 
+import { hash } from 'bcryptjs';
+
 import logger from '@/lib/logger';
 import { sendPasswordResetEmail } from '@/lib/mail';
 import { createSession, deleteSession, verifySession } from '@/lib/session';
@@ -9,15 +11,10 @@ import { DEFAULT_LOGIN_REDIRECT, LOGIN_PATH } from '@/routes';
 import { ResponseFactory } from '@/utils/response';
 
 import {
-  getUserByEmail,
-  getUserById,
-  hashPassword,
-  updateUser,
-} from '../db/auth';
-import {
   deletePasswordResetTokenByEmail,
   getPasswordResetTokenByToken,
 } from '../db/password-reset-token';
+import { getUserByEmail, getUserById, updateUser } from '../db/user';
 import {
   EmailSchema,
   EmailValue,
@@ -48,7 +45,7 @@ export async function login(values: LoginValues) {
   }
 
   try {
-    await createSession(user.id);
+    await createSession(user.user_id);
   } catch (error) {
     logger.error('Failed to create session', error);
     return ResponseFactory.error('Something went wrong!');
@@ -124,7 +121,7 @@ export async function changePassword(value: PasswordValue, token?: string) {
   try {
     await updateUser({
       ...existingUser,
-      password: await hashPassword(data.password),
+      password: await hash(data.password, 10),
     });
     await deletePasswordResetTokenByEmail(existingToken.email);
 

@@ -12,7 +12,6 @@ import {
 import { Button, Icon, Text, VStack } from '@chakra-ui/react';
 import { Crown, LucideProps, ShieldUser } from 'lucide-react';
 
-import { userRoles } from '@/drizzle/schema';
 import { useUser } from '@/hooks/use-user';
 import { hrefPath, SIDEBAR_GROUP } from '../_helpers/utils';
 
@@ -89,7 +88,7 @@ export default function Sidebar() {
         <NavButton href="/rules" icon={Crown} disabled>
           Team Rules
         </NavButton>
-        {user?.roles?.includes(userRoles[0]) && (
+        {user?.roles?.includes('SUPER_ADMIN') && (
           <NavButton href="/admin" icon={ShieldUser}>
             Administration
           </NavButton>

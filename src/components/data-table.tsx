@@ -12,7 +12,7 @@ import { ReactNode, useState } from 'react';
 
 export interface TableColumn<T> {
   header: string;
-  accessor: keyof T | ((row: T) => ReactNode);
+  accessor: keyof T;
   width?: string;
   flex?: number;
   render?: (value: any, row: T, rowIndex: number) => ReactNode;
@@ -84,15 +84,7 @@ export function DataTable<T extends object>({
                       textOverflow="ellipsis"
                     >
                       {column.render
-                        ? column.render(
-                            typeof column.accessor === 'function'
-                              ? column.accessor(row)
-                              : row[column.accessor],
-                            row,
-                            rowIndex
-                          )
-                        : typeof column.accessor === 'function'
-                        ? column.accessor(row)
+                        ? column.render(row[column.accessor], row, rowIndex)
                         : String(row[column.accessor] || '-')}
                     </Table.Cell>
                   ))}
