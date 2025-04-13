@@ -3,8 +3,6 @@
 import { useEffect, useState, useTransition } from 'react';
 
 import {
-  Alert,
-  AlertTitle,
   Button,
   Heading,
   Input,
@@ -28,6 +26,7 @@ import {
 } from '@/features/user/schemas/auth';
 import { Response } from '@/utils/response';
 
+import { Alert } from '@/components/ui/alert';
 import { buttonText, FormValues, Page, pageTitle } from '../_helpers/utils';
 
 export default function LoginPage() {
@@ -114,11 +113,11 @@ export default function LoginPage() {
             </>
           )}
 
-          {response?.message && (
-            <Alert.Root status={response.error ? 'error' : 'success'}>
-              <Alert.Indicator />
-              <AlertTitle>{response.message}</AlertTitle>
-            </Alert.Root>
+          {response && (
+            <Alert
+              status={response.error ? 'error' : 'success'}
+              title={response.message}
+            />
           )}
 
           <Button type="submit" rounded="full" loading={isPending}>

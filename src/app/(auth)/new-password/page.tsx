@@ -2,11 +2,8 @@
 
 import { useSearchParams } from 'next/navigation';
 import { useState, useTransition } from 'react';
-import { useForm } from 'react-hook-form';
 
 import {
-  Alert,
-  AlertTitle,
   Button,
   Heading,
   Input,
@@ -16,7 +13,9 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
 
+import { Alert } from '@/components/ui/alert';
 import { Field } from '@/components/ui/field';
 import { changePassword } from '@/features/user/actions/auth';
 import { PasswordSchema, PasswordValue } from '@/features/user/schemas/auth';
@@ -70,10 +69,10 @@ export default function NewPasswordPage() {
               />
             </Field>
             {response && (
-              <Alert.Root status={response?.error ? 'error' : 'success'}>
-                <Alert.Indicator />
-                <AlertTitle>{response?.message}</AlertTitle>
-              </Alert.Root>
+              <Alert
+                status={response.error ? 'error' : 'success'}
+                title={response.message}
+              />
             )}
             <Button
               type="submit"

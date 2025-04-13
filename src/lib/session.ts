@@ -5,8 +5,6 @@ import { cache } from 'react';
 
 import { SignJWT, jwtVerify } from 'jose';
 
-import logger from './logger';
-
 type SessionData = {
   user_id: string;
   expires: Date;
@@ -63,10 +61,7 @@ export const verifySession = cache(async () => {
   const token = cookieStore.get(COOKIE.name)?.value;
   const session = await decrypt(token);
 
-  if (!session) {
-    logger.warn('Session is invalid or expired.');
-    return null;
-  }
+  if (!session) return null;
 
   const user_id = session.user_id;
   const expired = session.expires < new Date();

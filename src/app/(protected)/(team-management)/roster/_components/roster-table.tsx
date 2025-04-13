@@ -1,6 +1,6 @@
 'use client';
 
-import { Box } from 'lucide-react';
+import { Badge } from '@chakra-ui/react';
 
 import { DataTable, TableColumn } from '@/components/data-table';
 import { User } from '@/drizzle/schema';
@@ -11,8 +11,8 @@ const columns: TableColumn<User>[] = [
     accessor: 'name',
   },
   {
-    header: 'Jersey #',
-    accessor: 'jersey_number',
+    header: 'Email',
+    accessor: 'email',
   },
   {
     header: 'DOB',
@@ -24,20 +24,20 @@ const columns: TableColumn<User>[] = [
     render: (value: string) => new Date(value).toLocaleDateString(),
   },
   {
-    header: 'Status',
+    header: 'State',
     accessor: 'state',
     render: (value: string) => {
       const color =
         value === 'ACTIVE'
-          ? 'green.500'
+          ? 'green'
           : value === 'TEMPORARILY_ABSENT'
-          ? 'orange.500'
-          : 'red.500';
+          ? 'orange'
+          : 'red';
 
       return (
-        <Box color={color} fontWeight="medium">
+        <Badge variant="surface" colorPalette={color}>
           {value}
-        </Box>
+        </Badge>
       );
     },
   },

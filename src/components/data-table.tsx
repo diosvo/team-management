@@ -98,7 +98,7 @@ export function DataTable<T extends object>({
             ) : (
               <Table.Row>
                 <Table.Cell colSpan={columns.length + (actions ? 1 : 0)}>
-                  {'No data found.'}
+                  No data found.
                 </Table.Cell>
               </Table.Row>
             )}

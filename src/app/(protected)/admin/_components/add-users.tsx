@@ -1,30 +1,26 @@
 'use client';
 
+import { useState } from 'react';
+
+import { Box, Button, HStack, Input, Text } from '@chakra-ui/react';
+import { Plus, Trash2 } from 'lucide-react';
+
 import { DataTable, TableColumn } from '@/components/data-table';
 import { Field } from '@/components/ui/field';
 import { Select } from '@/components/ui/select';
 import { toaster } from '@/components/ui/toaster';
-import { UserRole, userRoles } from '@/drizzle/schema/user';
-import { Box, Button, Flex, Input, NumberInput } from '@chakra-ui/react';
-import { Plus, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { User, UserRole, userRoles } from '@/drizzle/schema/user';
 
-interface UserFormData {
+interface AddUser {
   name: string;
   email: string;
-  jerseyNumber: string;
-  roles: UserRole[];
-  dob: string;
-  joinDate: string;
+  roles: Array<UserRole>;
 }
 
-const emptyUser: UserFormData = {
+const emptyUser: AddUser = {
   name: '',
   email: '',
-  jerseyNumber: '',
   roles: ['PLAYER'],
-  dob: '',
-  joinDate: '',
 };
 
 // Filter out SUPER_ADMIN from available roles
@@ -35,8 +31,8 @@ const availableRoles = userRoles
     value: role,
   }));
 
-export default function AddUsers() {
-  const [users, setUsers] = useState<UserFormData[]>([{ ...emptyUser }]);
+export default function AddUsers({ roster }: { roster: Array<User> }) {
+  const [users, setUsers] = useState<AddUser[]>([{ ...emptyUser }]);
   const [errors, setErrors] = useState<Record<string, string>[]>([{}]);
 
   const addUser = () => {
@@ -58,7 +54,7 @@ export default function AddUsers() {
 
   const updateUser = (
     index: number,
-    field: keyof UserFormData,
+    field: keyof AddUser,
     value: string | string[]
   ) => {
     const newUsers = [...users];
@@ -121,7 +117,7 @@ export default function AddUsers() {
     }
   };
 
-  const columns: TableColumn<UserFormData>[] = [
+  const columns: Array<TableColumn<AddUser>> = [
     {
       header: 'Name',
       accessor: 'name',
@@ -152,55 +148,9 @@ export default function AddUsers() {
       ),
     },
     {
-      header: 'Jersey No.',
-      accessor: 'jerseyNumber',
-      width: '200px',
-      render: (_, row, index) => (
-        <Field width="100%">
-          <NumberInput.Root variant="flushed" min={0} max={99}>
-            <NumberInput.Control />
-            <NumberInput.Input
-              value={row.jerseyNumber}
-              onChange={(e) => {
-                const val = e.target.value;
-                updateUser(index, 'jerseyNumber', val);
-              }}
-            />
-          </NumberInput.Root>
-        </Field>
-      ),
-    },
-    {
-      header: 'DOB',
-      accessor: 'dob',
-      render: (_, row, index) => (
-        <Field>
-          <Input
-            variant="flushed"
-            type="date"
-            value={row.dob}
-            onChange={(e) => updateUser(index, 'dob', e.target.value)}
-          />
-        </Field>
-      ),
-    },
-    {
-      header: 'Join Date',
-      accessor: 'joinDate',
-      render: (_, row, index) => (
-        <Field>
-          <Input
-            variant="flushed"
-            type="date"
-            value={row.joinDate}
-            onChange={(e) => updateUser(index, 'joinDate', e.target.value)}
-          />
-        </Field>
-      ),
-    },
-    {
       header: 'Roles',
       accessor: 'roles',
+      width: '250px',
       render: (_, row, index) => (
         <Select
           invalid={!!errors[index]?.roles}
@@ -217,14 +167,19 @@ export default function AddUsers() {
 
   return (
     <Box as="form" onSubmit={handleSubmit} w="full">
-      <Flex justifyContent="flex-end" mb={4}>
-        <Button onClick={addUser} mr={2}>
-          <Plus size={16} /> Add Row
-        </Button>
-        <Button type="submit" colorScheme="blue">
-          Submit
-        </Button>
-      </Flex>
+      <HStack alignItems="flex-start" mb={4}>
+        <Text textStyle="md" fontWeight="semibold" mr="auto">
+          Add Users
+        </Text>
+        <>
+          <Button size="sm" variant="subtle" mr={2} onClick={addUser}>
+            <Plus size={16} /> Add Row
+          </Button>
+          <Button type="submit" size="sm">
+            Submit
+          </Button>
+        </>
+      </HStack>
 
       <DataTable
         columns={columns}
