@@ -1,29 +1,26 @@
 import { Resend } from 'resend';
 
 import EmailTemplate from '@/app/(auth)/_components/email-template';
+import logger from './logger';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-export async function sendPasswordResetEmail(email: string, token: string) {
+export async function sendPasswordInstructionEmail(
+  type: 'new' | 'reset',
+  email: string,
+  token: string
+) {
   const name = email.split('@')[0];
-  const subpath = 'new-password';
+  const subject = type === 'new' ? 'Create new password' : 'Reset password';
 
-  await resend.emails.send({
-    from: 'Acme <onboarding@resend.dev>',
-    to: email,
-    subject: 'Reset Password',
-    html: EmailTemplate({ subpath, token, name }),
-  });
-}
-
-export async function sendVerificationEmail(email: string, token: string) {
-  const name = email.split('@')[0];
-  const subpath = 'email-confirmation';
-
-  await resend.emails.send({
-    from: 'Acme <onboarding@resend.dev>',
-    to: email,
-    subject: 'Email Confirmation',
-    html: EmailTemplate({ subpath, token, name }),
-  });
+  try {
+    await resend.emails.send({
+      from: 'Acme <onboarding@resend.dev>',
+      to: email,
+      subject,
+      html: EmailTemplate({ type, token, name }),
+    });
+  } catch (error) {
+    logger.error('[resent] %s', error);
+  }
 }

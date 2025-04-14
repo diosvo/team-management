@@ -7,8 +7,9 @@
   - 🧰 [Drizzle](https://orm.drizzle.team/) as the ORM for migrations and database access.
   - 🔍 [Zod](https://zod.dev/) and [React Hook Form](https://react-hook-form.com/) for schema validation.
   - 💾 [Neon](https://vercel.com/marketplace/neon) for PostgresSQL database interaction.
-  - 🔑 [Auth.js](https://authjs.dev/) enables authentication using Credentials and Google (OAuth) through session strategies based on JWT.
+  - 🔑 Authentication using email/password with [Jose](https://www.npmjs.com/package/jose) stateless session.
   - 📩 [Resend](https://resend.com/) for email confirmation.
+  - 🌊 [Winston](https://github.com/winstonjs/winston) for server logging.
   - 💃 Using TypeScript, hooks, [Chakra](https://chakra-ui.com/) and other parts of a modern frontend stack.
 
 - 🔒 Secure password hashing by default.
@@ -17,38 +18,48 @@
 
 ## Folder structure
 
-> It could be temporality
-
 ```
 .
+├── assets
+│   └── images
 ├── public
 └── src
     ├── app
-    │   ├── (auth)      # Authentication-related routes (Auth.js integration)
+    │   ├── (auth)
     │   │   ├── _components
     │   │   ├── _helpers
-    │   │   └── login
-    │   ├── (protected)
-    │   │   └── <protected_pages>
-    │   └── api
-    │       └── auth
-    │           └── [...nextauth]
-    ├── components      # Reuseable UI components
-    │   └── ui          # Common UI elements (buttons, modals, etc)
+    │   │   ├── login
+    │   │   └── new-password
+    │   └── (protected)
+    │       ├── (overview)
+    │       │   └── dashboard
+    │       ├── (team-management)
+    │       │   └── roster
+    │       │       └── _components
+    │       ├── _components
+    │       ├── _helpers
+    │       └── admin
+    │           └── _components
+    ├── components
+    │   └── ui
     ├── drizzle
     │   ├── migrations
     │   │   └── meta
-    │   └── schema
-    ├── features        # Feature-based modules
-    │   └── (name)
-    │       ├── actions # Server actions
-    │       ├── db      # Database queries
-    │       │   └── cache
-    │       ├── permissions
+    │   ├── schema
+    │   └── sql
+    ├── features
+    │   ├── rule
+    │   │   ├── actions
+    │   │   ├── db
+    │   │   ├── permissions
+    │   │   └── schemas
+    │   └── user
+    │       ├── actions
+    │       ├── db
     │       └── schemas
-    ├── hooks           # React hooks in client components
-    ├── lib             # Helper utilities (data cache)
-    ├── utils           # Reusable models
+    ├── hooks
+    ├── lib
+    └── utils
 ```
 
 > [!NOTE]  

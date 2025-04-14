@@ -1,7 +1,12 @@
+import { hash } from 'bcryptjs';
 import { eq } from 'drizzle-orm';
 
 import { db } from '@/drizzle';
-import { PasswordResetTokenTable } from '@/drizzle/schema';
+import { PasswordTokenTable } from '@/drizzle/schema';
+
+export function hashPassword(password: string) {
+  return hash(password, 10);
+}
 
 export async function insertPasswordResetToken(
   email: string,
@@ -9,7 +14,7 @@ export async function insertPasswordResetToken(
   expires_at: Date
 ) {
   const [resetToken] = await db
-    .insert(PasswordResetTokenTable)
+    .insert(PasswordTokenTable)
     .values({
       email,
       token,
@@ -22,8 +27,8 @@ export async function insertPasswordResetToken(
 
 export const getPasswordResetTokenByToken = async (token: string) => {
   try {
-    return await db.query.PasswordResetTokenTable.findFirst({
-      where: eq(PasswordResetTokenTable.token, token),
+    return await db.query.PasswordTokenTable.findFirst({
+      where: eq(PasswordTokenTable.token, token),
     });
   } catch {
     return null;
@@ -32,8 +37,8 @@ export const getPasswordResetTokenByToken = async (token: string) => {
 
 export const getPasswordResetTokenByEmail = async (email: string) => {
   try {
-    return await db.query.PasswordResetTokenTable.findFirst({
-      where: eq(PasswordResetTokenTable.email, email),
+    return await db.query.PasswordTokenTable.findFirst({
+      where: eq(PasswordTokenTable.email, email),
     });
   } catch {
     return null;
@@ -43,8 +48,8 @@ export const getPasswordResetTokenByEmail = async (email: string) => {
 export async function deletePasswordResetTokenByEmail(email: string) {
   try {
     return await db
-      .delete(PasswordResetTokenTable)
-      .where(eq(PasswordResetTokenTable.email, email));
+      .delete(PasswordTokenTable)
+      .where(eq(PasswordTokenTable.email, email));
   } catch {
     return null;
   }

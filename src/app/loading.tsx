@@ -1,11 +1,5 @@
-import { Progress } from '@chakra-ui/react';
+import Loading from '@/components/loading';
 
-export default function Loading() {
-  return (
-    <Progress.Root size="xs" value={null} variant="outline" animated striped>
-      <Progress.Track>
-        <Progress.Range />
-      </Progress.Track>
-    </Progress.Root>
-  );
+export default function RootLoading() {
+  return <Loading />;
 }

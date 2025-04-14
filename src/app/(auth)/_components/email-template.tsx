@@ -1,26 +1,25 @@
 interface EmailTemplateProps {
-  subpath: 'new-password' | 'email-confirmation';
+  type: 'new' | 'reset';
   token: string;
   name: string;
 }
 
 const message = {
-  'new-password': 'Click the button below to securely reset your password',
-  'email-confirmation':
-    'Thank you for registering with Saigon Rovers Basketball Club. Please confirm your email address to complete your registration',
+  new: 'Click the button below to create a new password',
+  reset: 'Click the button below to securely reset your password',
 };
 
 const button = {
-  'new-password': 'Create new password',
-  'email-confirmation': 'Confirm your email',
+  new: 'Create new password',
+  reset: 'Reset password',
 };
 
 export default function EmailTemplate({
-  subpath,
+  type,
   token,
   name,
 }: EmailTemplateProps) {
-  const confirmLink = `http://localhost:3000/${subpath}?token=${token}`;
+  const confirmLink = `http://localhost:3000/new-password?token=${token}`;
 
   return `<div
       style="
@@ -47,7 +46,7 @@ export default function EmailTemplate({
           Hi <strong>${name}</strong>,
         </p>
         <p style="font-size: 14px; margin: 0 0 24px 0">
-          ${message[subpath]}. If you did not request this, you can ignore this email.
+          ${message[type]}. If you did not request this, you can ignore this email.
         </p>
 
         <table
@@ -73,7 +72,7 @@ export default function EmailTemplate({
                   text-decoration: none;
                 "
               >
-                ${button[subpath]}
+                ${button[type]}
               </a>
               <p
                 style="
@@ -83,7 +82,7 @@ export default function EmailTemplate({
                   color: #718096;
                 "
               >
-                This link will be valid for only one hour.
+                This link will be valid for 24 hours.
               </p>
             </td>
           </tr>

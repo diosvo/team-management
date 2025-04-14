@@ -1,19 +1,19 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
-import { Suspense } from 'react';
+import { Geist } from 'next/font/google';
 
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 
 import { Provider as UiProvider } from '@/components/ui/provider';
 import { Toaster } from '@/components/ui/toaster';
+import { getUser } from '@/features/user/actions/auth';
+import { UserProvider } from '@/hooks/use-user';
 
 import './globals.css';
-import Loading from './loading';
 
-const inter = Inter({
+const geist = Geist({
   subsets: ['latin'],
-  variable: '--font-inter',
+  variable: '--font-geist',
 });
 
 export const metadata: Metadata = {
@@ -22,7 +22,6 @@ export const metadata: Metadata = {
     template: '%s | SGR Portal',
   },
   description: 'Saigon Rovers Basketball Club',
-  facebook: { appId: '123456789' },
 };
 
 export default function RootLayout({
@@ -30,12 +29,14 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const userPromise = getUser();
+
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body className={geist.className}>
         <UiProvider>
           <Toaster />
-          <Suspense fallback={<Loading />}>{children}</Suspense>
+          <UserProvider userPromise={userPromise}>{children}</UserProvider>
         </UiProvider>
         {/* Vercel plugins */}
         {process.env.NODE_ENV === 'production' && (

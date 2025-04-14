@@ -8,17 +8,18 @@ import {
 
 export interface SelectProps
   extends Omit<ChakraSelect.RootProps, 'collection'> {
+  label?: string;
   collection: Array<{ label: string; value: string }>;
 }
 
 export const Select = (props: SelectProps) => {
-  const { collection, ...rest } = props;
+  const { collection, label, ...rest } = props;
   const dataset = createListCollection({ items: collection });
 
   return (
     <ChakraSelect.Root {...rest} collection={dataset}>
       <ChakraSelect.HiddenSelect />
-      <ChakraSelect.Label />
+      {label && <ChakraSelect.Label>{label}</ChakraSelect.Label>}
 
       <ChakraSelect.Control>
         <ChakraSelect.Trigger>

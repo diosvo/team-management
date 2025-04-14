@@ -1,8 +1,12 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+  devIndicators: {
+    position: 'bottom-right',
+  },
   experimental: {
     nodeMiddleware: true,
+    authInterrupts: true,
     optimizePackageImports: ['@chakra-ui/react'],
   },
   serverExternalPackages: ['pg'],

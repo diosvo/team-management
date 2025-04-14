@@ -5,36 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1741194531068,
-      "tag": "0000_team_rule_table",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1741715505018,
-      "tag": "0001_user_account_table",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1742382786190,
-      "tag": "0002_verification_token_table",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1742974767815,
-      "tag": "0003_password_reset_token_table",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1743350584483,
-      "tag": "0004_user_roles",
+      "when": 1744476309954,
+      "tag": "0000_team_user_rule_table",
       "breakpoints": true
     }
   ]

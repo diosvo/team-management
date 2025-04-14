@@ -1,17 +1,42 @@
-import { auth } from '@/auth';
-import { SessionProvider } from 'next-auth/react';
+import { Grid, GridItem, Separator } from '@chakra-ui/react';
 
-export default async function ProtectedLayout({
+import Header from './_components/header';
+import Sidebar from './_components/sidebar';
+
+export default function ProtectedLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await auth();
-
   return (
-    <SessionProvider session={session}>
-      <>Private Layout</>
-      {children}
-    </SessionProvider>
+    <Grid
+      h="100vh"
+      templateRows="auto 1fr"
+      templateColumns="224px 1fr"
+      templateAreas={`
+        "header header"
+        "sidebar main"
+      `}
+    >
+      <GridItem gridArea="header" bg="white">
+        <Header />
+        <Separator />
+      </GridItem>
+
+      <GridItem
+        gridArea="sidebar"
+        w="224px"
+        bg="white"
+        borderRightWidth="1px"
+        borderRightStyle="solid"
+        borderRightColor="gray.300"
+      >
+        <Sidebar />
+      </GridItem>
+
+      <GridItem gridArea="main" p="4">
+        {children}
+      </GridItem>
+    </Grid>
   );
 }

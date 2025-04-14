@@ -1,22 +1,27 @@
+import { sql } from 'drizzle-orm';
 import {
+  check,
   date,
-  integer,
   pgEnum,
   pgTable,
-  primaryKey,
   text,
   timestamp,
   uuid,
   varchar,
 } from 'drizzle-orm/pg-core';
-import type { AdapterAccountType } from 'next-auth/adapters';
 
 import { created_at, expires_at, updated_at } from '../helpers';
 
 // Enums
 
 export const userRoles = [
+  'COACH',
+  'PLAYER',
+  'CAPTAIN',
+  'GUEST',
   'SUPER_ADMIN',
+] as const;
+export const SELECTABLE_ROLES = [
   'COACH',
   'PLAYER',
   'CAPTAIN',
@@ -35,59 +40,31 @@ export const userStateEnum = pgEnum('user_state', [
 // Tables
 // Force id and userId by Drizzle ORM Adapter
 
-export const UserTable = pgTable('user', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  name: varchar('name', { length: 128 }).notNull(),
-  dob: date('dob'),
-  password: varchar('password', { length: 128 }),
-  email: text('email').unique(),
-  emailVerified: timestamp('emailVerified', { mode: 'date' }),
-  phone_number: varchar('phone_number', { length: 15 }),
-  citizen_identification: varchar('citizen_identification', { length: 12 }),
-  image: text('image'),
-  state: userStateEnum('state').default('ACTIVE').notNull(),
-  roles: userRolesEnum('roles').notNull().array().default(['PLAYER']),
-  join_date: timestamp('join_date', { withTimezone: true })
-    .defaultNow()
-    .notNull(),
-  created_at,
-  updated_at,
-});
-
-export const AccountTable = pgTable(
-  'account',
+export const UserTable = pgTable(
+  'user',
   {
-    userId: uuid('userId')
-      .notNull()
-      .references(() => UserTable.id, { onDelete: 'cascade' }),
-    type: text('type').$type<AdapterAccountType>().notNull(),
-    provider: text('provider').notNull(),
-    providerAccountId: text('providerAccountId').notNull(),
-    refresh_token: text('refresh_token'),
-    access_token: text('access_token'),
-    expires_at: integer('expires_at'),
-    token_type: text('token_type'),
-    scope: text('scope'),
-    id_token: text('id_token'),
-    session_state: text('session_state'),
+    user_id: uuid('user_id').primaryKey().defaultRandom(),
+    name: varchar('name', { length: 128 }).notNull(),
+    dob: date('dob'),
+    password: varchar('password', { length: 128 }),
+    email: text('email').unique().notNull(),
+    phone_number: varchar('phone_number', { length: 15 }),
+    citizen_identification: varchar('citizen_identification', { length: 12 }),
+    image: text('image'),
+    state: userStateEnum('state').default('ACTIVE').notNull(),
+    roles: userRolesEnum('roles').array().default(['PLAYER']).notNull(),
+    join_date: timestamp('join_date', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    created_at,
+    updated_at,
   },
-  (account) => [
-    {
-      compoundKey: primaryKey({
-        columns: [account.provider, account.providerAccountId],
-      }),
-    },
+  (table) => [
+    check('roles_length', sql`array_length(${table.roles}, 1) BETWEEN 1 AND 2`),
   ]
 );
 
-export const VerificationTokenTable = pgTable('verification_token', {
-  id: uuid('id').notNull().unique().defaultRandom(),
-  email: text('email').unique().notNull(),
-  token: text('token').unique().notNull(),
-  expires_at,
-});
-
-export const PasswordResetTokenTable = pgTable('password_reset_token', {
+export const PasswordTokenTable = pgTable('password_token', {
   id: uuid('id').notNull().unique().defaultRandom(),
   email: text('email').unique().notNull(),
   token: text('token').unique().notNull(),
@@ -95,4 +72,3 @@ export const PasswordResetTokenTable = pgTable('password_reset_token', {
 });
 
 export type User = typeof UserTable.$inferSelect;
-export type Token = typeof VerificationTokenTable.$inferSelect;
