@@ -15,7 +15,13 @@ import { created_at, expires_at, updated_at } from '../helpers';
 // Enums
 
 export const userRoles = [
+  'COACH',
+  'PLAYER',
+  'CAPTAIN',
+  'GUEST',
   'SUPER_ADMIN',
+] as const;
+export const SELECTABLE_ROLES = [
   'COACH',
   'PLAYER',
   'CAPTAIN',
