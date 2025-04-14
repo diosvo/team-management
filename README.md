@@ -20,31 +20,46 @@
 
 ```
 .
+├── assets
+│   └── images
 ├── public
 └── src
     ├── app
-    │   ├── (auth)      # Authentication-related routes (Auth.js integration)
+    │   ├── (auth)
     │   │   ├── _components
     │   │   ├── _helpers
-    │   │   └── login
-    │   ├── (protected)
-    │   │   └── <protected_pages>
-    ├── components      # Reuseable UI components
-    │   └── ui          # Common UI elements (buttons, modals, etc)
+    │   │   ├── login
+    │   │   └── new-password
+    │   └── (protected)
+    │       ├── (overview)
+    │       │   └── dashboard
+    │       ├── (team-management)
+    │       │   └── roster
+    │       │       └── _components
+    │       ├── _components
+    │       ├── _helpers
+    │       └── admin
+    │           └── _components
+    ├── components
+    │   └── ui
     ├── drizzle
     │   ├── migrations
     │   │   └── meta
-    │   └── schema
-    ├── features        # Feature-based modules
-    │   └── (name)
-    │       ├── actions # Server actions
-    │       ├── db      # Database queries
-    │       │   └── cache
-    │       ├── permissions
+    │   ├── schema
+    │   └── sql
+    ├── features
+    │   ├── rule
+    │   │   ├── actions
+    │   │   ├── db
+    │   │   ├── permissions
+    │   │   └── schemas
+    │   └── user
+    │       ├── actions
+    │       ├── db
     │       └── schemas
-    ├── hooks           # React hooks in client components
-    ├── lib             # Helper utilities (data cache)
-    ├── utils           # Reusable models
+    ├── hooks
+    ├── lib
+    └── utils
 ```
 
 > [!NOTE]  
