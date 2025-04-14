@@ -1,13 +1,27 @@
+import { Metadata } from 'next';
+import { forbidden } from 'next/navigation';
+
 import { Box, Grid, GridItem, HStack, Tabs } from '@chakra-ui/react';
 import { BookUser, Coffee, Settings2, Shield } from 'lucide-react';
 
+import { getUser } from '@/features/user/actions/auth';
 import { getRoster } from '@/features/user/actions/user';
 
 import AddUsers from './_components/add-users';
 import BulkUserActions from './_components/bulk-user-actions';
 
+export const metadata: Metadata = {
+  title: 'Admin',
+  description: 'Only visible to SUPER_ADMIN',
+};
+
 export default async function AdminPage() {
   const roster = await getRoster();
+  const user = await getUser();
+
+  if (!user?.roles.includes('SUPER_ADMIN')) {
+    forbidden();
+  }
 
   return (
     <Tabs.Root defaultValue="roster_management" variant="line">

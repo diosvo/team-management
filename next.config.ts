@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     nodeMiddleware: true,
+    authInterrupts: true,
     optimizePackageImports: ['@chakra-ui/react'],
   },
   serverExternalPackages: ['pg'],
