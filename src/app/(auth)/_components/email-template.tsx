@@ -82,7 +82,7 @@ export default function EmailTemplate({
                   color: #718096;
                 "
               >
-                This link will be valid for 24-hour.
+                This link will be valid for 24 hours.
               </p>
             </td>
           </tr>
