@@ -2,7 +2,9 @@
 
 import { useState } from 'react';
 
+import { toaster } from '@/components/ui/toaster';
 import { User } from '@/drizzle/schema';
+import { removeUser } from '@/features/user/actions/user';
 import {
   ActionBar,
   Box,
@@ -23,20 +25,20 @@ export default function BulkUserActions({ roster }: { roster: Array<User> }) {
 
   const rows = roster.map((item) => (
     <Table.Row
-      key={item.name}
-      data-selected={selection.includes(item.name) ? '' : undefined}
+      key={item.user_id}
+      data-selected={selection.includes(item.user_id) ? '' : undefined}
     >
       <Table.Cell>
         <Checkbox.Root
           size="sm"
           top="0.5"
           aria-label="Select row"
-          checked={selection.includes(item.name)}
+          checked={selection.includes(item.user_id)}
           onCheckedChange={(changes) => {
             setSelection((prev) =>
               changes.checked
-                ? [...prev, item.name]
-                : selection.filter((name) => name !== item.name)
+                ? [...prev, item.user_id]
+                : selection.filter((user_id) => user_id !== item.user_id)
             );
           }}
         >
@@ -49,6 +51,19 @@ export default function BulkUserActions({ roster }: { roster: Array<User> }) {
       <Table.Cell>{item.roles.join(', ')}</Table.Cell>
     </Table.Row>
   ));
+
+  const removeUsers = () => {
+    selection.forEach(async (user_id: string) => {
+      const { error, message } = await removeUser(user_id);
+
+      toaster.create({
+        type: error ? 'error' : 'info',
+        description: message,
+      });
+    });
+
+    setSelection([]);
+  };
 
   return (
     <Box w="full">
@@ -69,7 +84,7 @@ export default function BulkUserActions({ roster }: { roster: Array<User> }) {
                 checked={indeterminate ? 'indeterminate' : selection.length > 0}
                 onCheckedChange={(changes) => {
                   setSelection(
-                    changes.checked ? roster.map((item) => item.name) : []
+                    changes.checked ? roster.map((item) => item.user_id) : []
                   );
                 }}
               >
@@ -93,11 +108,8 @@ export default function BulkUserActions({ roster }: { roster: Array<User> }) {
                 {selection.length} selected
               </ActionBar.SelectionTrigger>
               <ActionBar.Separator />
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={removeUsers}>
                 Delete <Kbd>⌫</Kbd>
-              </Button>
-              <Button variant="outline" size="sm">
-                Share <Kbd>T</Kbd>
               </Button>
             </ActionBar.Content>
           </ActionBar.Positioner>

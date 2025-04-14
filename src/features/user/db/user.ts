@@ -1,6 +1,6 @@
 import { cache } from 'react';
 
-import { eq } from 'drizzle-orm';
+import { eq, ne } from 'drizzle-orm';
 
 import { db } from '@/drizzle';
 import { User, UserTable } from '@/drizzle/schema';
@@ -10,9 +10,12 @@ import { AddUserValues } from '../schemas/user';
 
 export const getUsers = cache(async () => {
   try {
-    return await db.select().from(UserTable);
+    return await db
+      .select()
+      .from(UserTable)
+      .where(ne(UserTable.roles, ['SUPER_ADMIN']));
   } catch {
-    logger.warn('An error when fetching users');
+    logger.error('An error when fetching users');
     return [];
   }
 });
@@ -54,6 +57,15 @@ export async function updateUser(user: User) {
       .set(user)
       .where(eq(UserTable.user_id, user.user_id));
   } catch {
+    return null;
+  }
+}
+
+export async function deleteUser(user_id: string) {
+  try {
+    return await db.delete(UserTable).where(eq(UserTable.user_id, user_id));
+  } catch {
+    logger.error('Failed to delete user');
     return null;
   }
 }

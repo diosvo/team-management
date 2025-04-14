@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation';
 import { hash } from 'bcryptjs';
 
 import logger from '@/lib/logger';
-import { sendPasswordResetEmail } from '@/lib/mail';
+import { sendPasswordInstructionEmail } from '@/lib/mail';
 import { createSession, deleteSession, verifySession } from '@/lib/session';
 import { DEFAULT_LOGIN_REDIRECT, LOGIN_PATH } from '@/routes';
 import { ResponseFactory } from '@/utils/response';
@@ -84,7 +84,7 @@ export async function requestResetPassword(values: EmailValue) {
   }
 
   const { email, token } = await generatePasswordToken(data.email);
-  await sendPasswordResetEmail(email, token);
+  await sendPasswordInstructionEmail('reset', email, token);
 
   return ResponseFactory.success('Reset email sent.');
 }

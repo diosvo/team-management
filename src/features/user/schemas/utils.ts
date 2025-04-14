@@ -3,8 +3,16 @@ import { z } from 'zod';
 import { SELECTABLE_ROLES } from '@/drizzle/schema';
 
 export const USER_SCHEMA_VALIDATION = {
-  name: z.string().min(6, { message: 'Be at least 6 characters long.' }).trim(),
-  email: z.string().email({ message: 'Please enter a valid email.' }).trim(),
+  name: z
+    .string()
+    .min(6, { message: 'Be at least 6 characters long.' })
+    .trim()
+    .default(''),
+  email: z
+    .string()
+    .email({ message: 'Please enter a valid email.' })
+    .trim()
+    .default(''),
   password: z
     .string()
     .min(8, { message: 'Be at least 8 characters long.' })

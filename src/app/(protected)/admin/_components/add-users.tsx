@@ -121,24 +121,17 @@ export default function AddUsers({ roster }: { roster: Array<User> }) {
       return;
     }
 
-    try {
-      // Here you would send the data to your API
-      console.info('Submitting users %s', users);
-      toaster.success({
-        title: 'Success',
-        description: `${users.length} user(s) added successfully!`,
-      });
+    const { error, message } = await addUsers(users);
 
-      await addUsers(users);
+    toaster.create({
+      type: error ? 'error' : 'info',
+      description: message,
+    });
 
+    if (!error) {
       // Reset form after successful submission
       setUsers([{ ...emptyUser }]);
       setErrors([{}]);
-    } catch {
-      toaster.error({
-        title: 'Error',
-        description: 'Failed to add users',
-      });
     }
   };
 
