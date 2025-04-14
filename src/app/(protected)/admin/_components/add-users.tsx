@@ -4,35 +4,26 @@ import { useState } from 'react';
 
 import { Box, Button, HStack, Input, Text } from '@chakra-ui/react';
 import { Plus, Trash2 } from 'lucide-react';
+import { ZodError } from 'zod';
 
 import { DataTable, TableColumn } from '@/components/data-table';
 import { Field } from '@/components/ui/field';
 import { Select } from '@/components/ui/select';
 import { toaster } from '@/components/ui/toaster';
-import { User, UserRole, userRoles } from '@/drizzle/schema/user';
+import { SELECTABLE_ROLES, User } from '@/drizzle/schema/user';
+import { addUsers } from '@/features/user/actions/user';
+import { AddUserSchema, AddUserValues } from '@/features/user/schemas/user';
+import { getDefaults } from '@/lib/zod';
 
-interface AddUser {
-  name: string;
-  email: string;
-  roles: Array<UserRole>;
-}
+const emptyUser = getDefaults(AddUserSchema) as AddUserValues;
 
-const emptyUser: AddUser = {
-  name: '',
-  email: '',
-  roles: ['PLAYER'],
-};
-
-// Filter out SUPER_ADMIN from available roles
-const availableRoles = userRoles
-  .filter((role) => role !== 'SUPER_ADMIN')
-  .map((role) => ({
-    label: role.replace('_', ' '),
-    value: role,
-  }));
+const Roles = SELECTABLE_ROLES.map((role) => ({
+  label: role.replace('_', ' '),
+  value: role,
+}));
 
 export default function AddUsers({ roster }: { roster: Array<User> }) {
-  const [users, setUsers] = useState<AddUser[]>([{ ...emptyUser }]);
+  const [users, setUsers] = useState<AddUserValues[]>([{ ...emptyUser }]);
   const [errors, setErrors] = useState<Record<string, string>[]>([{}]);
 
   const addUser = () => {
@@ -54,7 +45,7 @@ export default function AddUsers({ roster }: { roster: Array<User> }) {
 
   const updateUser = (
     index: number,
-    field: keyof AddUser,
+    field: keyof AddUserValues,
     value: string | string[]
   ) => {
     const newUsers = [...users];
@@ -72,15 +63,47 @@ export default function AddUsers({ roster }: { roster: Array<User> }) {
   };
 
   const validateForm = (): boolean => {
-    const newErrors = users.map((user) => {
-      const userErrors: Record<string, string> = {};
-      if (!user.name) userErrors.name = 'Name is required';
-      if (!user.email) userErrors.email = 'Email is required';
-      if (!/^\S+@\S+\.\S+$/.test(user.email))
-        userErrors.email = 'Invalid email format';
-      if (!user.roles.length)
-        userErrors.roles = 'At least one role is required';
-      return userErrors;
+    const newErrors = users.map((user, currentIndex) => {
+      try {
+        // Validate each user against the schema
+        AddUserSchema.parse(user);
+
+        const userErrors: Record<string, string> = {};
+
+        // Check if email already exists in the roster
+        const emailExistsInRoster = roster.some(
+          (rosterUser) =>
+            rosterUser.email.toLowerCase() === user.email.toLowerCase()
+        );
+
+        if (emailExistsInRoster) {
+          userErrors.email = 'Email already exists in the roster';
+        }
+
+        // Check for duplicate emails in current users being added
+        const isDuplicateEmail = users.some(
+          (otherUser, otherIndex) =>
+            currentIndex !== otherIndex &&
+            otherUser.email.toLowerCase() === user.email.toLowerCase()
+        );
+
+        if (isDuplicateEmail) {
+          userErrors.email = 'Duplicate email in the form';
+        }
+
+        return userErrors;
+      } catch (error) {
+        // Handle Zod validation errors
+        if (error instanceof ZodError) {
+          const userErrors: Record<string, string> = {};
+          error.errors.forEach((err) => {
+            const field = err.path[0] as keyof AddUserValues;
+            userErrors[field] = err.message;
+          });
+          return userErrors;
+        }
+        return {};
+      }
     });
 
     setErrors(newErrors);
@@ -106,6 +129,8 @@ export default function AddUsers({ roster }: { roster: Array<User> }) {
         description: `${users.length} user(s) added successfully!`,
       });
 
+      await addUsers(users);
+
       // Reset form after successful submission
       setUsers([{ ...emptyUser }]);
       setErrors([{}]);
@@ -117,7 +142,7 @@ export default function AddUsers({ roster }: { roster: Array<User> }) {
     }
   };
 
-  const columns: Array<TableColumn<AddUser>> = [
+  const columns: Array<TableColumn<AddUserValues>> = [
     {
       header: 'Name',
       accessor: 'name',
@@ -153,9 +178,9 @@ export default function AddUsers({ roster }: { roster: Array<User> }) {
       width: '250px',
       render: (_, row, index) => (
         <Select
-          invalid={!!errors[index]?.roles}
           multiple
-          collection={availableRoles}
+          invalid={!!errors[index]?.roles}
+          collection={Roles}
           value={row.roles}
           onValueChange={({ value }) => {
             updateUser(index, 'roles', value);
@@ -172,7 +197,7 @@ export default function AddUsers({ roster }: { roster: Array<User> }) {
           Add Users
         </Text>
         <>
-          <Button size="sm" variant="subtle" mr={2} onClick={addUser}>
+          <Button size="sm" variant="subtle" onClick={addUser}>
             <Plus size={16} /> Add Row
           </Button>
           <Button type="submit" size="sm">

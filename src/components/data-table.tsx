@@ -10,17 +10,17 @@ import {
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { ReactNode, useState } from 'react';
 
-export interface TableColumn<T> {
+export interface TableColumn<T, K extends keyof T = keyof T> {
   header: string;
-  accessor: keyof T;
+  accessor: K;
   width?: string;
   flex?: number;
-  render?: (value: any, row: T, rowIndex: number) => ReactNode;
+  render?: (value: T[K], row: T, rowIndex: number) => ReactNode;
 }
 
 export interface DataTableProps<T> {
-  columns: TableColumn<T>[];
-  data: T[];
+  columns: Array<TableColumn<T>>;
+  data: Array<T>;
   actions?: (row: T, rowIndex: number) => ReactNode;
   showPagination?: boolean;
 }

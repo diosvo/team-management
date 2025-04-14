@@ -6,7 +6,7 @@ import { db } from '@/drizzle';
 import { User, UserTable } from '@/drizzle/schema';
 import logger from '@/lib/logger';
 
-import { hashPassword } from './password-reset-token';
+import { AddUserValues } from '../schemas/user';
 
 export const getUsers = cache(async () => {
   try {
@@ -38,15 +38,11 @@ export async function getUserById(user_id: string) {
   }
 }
 
-export async function insertUser(values: User) {
+export async function insertUsers(users: Array<AddUserValues>) {
   try {
-    const hashedPassword = await hashPassword(values.password as string);
-
-    return await db.insert(UserTable).values({
-      ...values,
-      password: hashedPassword,
-    });
+    return await db.insert(UserTable).values(users);
   } catch {
+    logger.error('Failed to insert user(s)');
     return null;
   }
 }
