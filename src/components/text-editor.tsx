@@ -35,17 +35,19 @@ import {
 } from '@/components/ui/popover';
 import { Tooltip } from '@/components/ui/tooltip';
 
+import Visibility from './visibility';
+
 interface TextEditorProps {
   editable: boolean;
   content: string;
-  onCancel: () => void;
   onSave: (content: string) => void;
+  onReset: () => void;
 }
 
 export default function TextEditor({
   editable,
   content,
-  onCancel,
+  onReset,
   onSave,
 }: TextEditorProps) {
   const [url, setUrl] = useState('');
@@ -77,12 +79,12 @@ export default function TextEditor({
     }
   }, [editor, editable]);
 
-  const handleCancel = () => {
+  const handleReset = () => {
     // Reset content to initial state
     if (editor) {
       editor.commands.setContent(initialContent);
     }
-    onCancel();
+    onReset();
   };
 
   // Use Popover for link insertion
@@ -113,7 +115,7 @@ export default function TextEditor({
       >
         <VStack align="stretch">
           {/* Text formatting buttons */}
-          {editable && (
+          <Visibility isVisible={editable}>
             <ButtonGroup>
               <Tooltip content="Bold">
                 <IconButton
@@ -244,7 +246,7 @@ export default function TextEditor({
                 </IconButton>
               </Tooltip>
             </ButtonGroup>
-          )}
+          </Visibility>
 
           <Box p={2} borderRadius="md" minH="150px">
             <EditorContent editor={editor} />
@@ -252,16 +254,16 @@ export default function TextEditor({
         </VStack>
       </Box>
 
-      {editable && (
-        <HStack mt={2} gap={2}>
-          <Button variant="outline" size="sm" onClick={handleCancel}>
-            Cancel
+      <Visibility isVisible={editable}>
+        <HStack justifyContent="flex-end" mt={2} gap={2}>
+          <Button variant="outline" size="sm" onClick={handleReset}>
+            Reset
           </Button>
           <Button size="sm" onClick={() => onSave(editor.getHTML())}>
             Save
           </Button>
         </HStack>
-      )}
+      </Visibility>
     </>
   );
 }
