@@ -1,15 +1,16 @@
 import { relations, sql } from 'drizzle-orm';
-import { check, integer, pgTable, text, uuid } from 'drizzle-orm/pg-core';
+import { check, integer, pgTable, uuid, varchar } from 'drizzle-orm/pg-core';
 
 import { created_at, updated_at } from '../helpers';
 import { RuleTable } from './rule';
+import { UserTable } from './user';
 
 export const TeamTable = pgTable(
   'team',
   {
     team_id: uuid('team_id').primaryKey().defaultRandom(),
-    name: text('name').notNull(),
-    email: text('email').unique().notNull(),
+    name: varchar('name', { length: 128 }).notNull(),
+    email: varchar('email', { length: 255 }).unique().notNull(),
     establish_year: integer('establish_year')
       .default(new Date().getFullYear())
       .notNull(),
@@ -24,8 +25,9 @@ export const TeamTable = pgTable(
   ]
 );
 
-export const TeamRelations = relations(TeamTable, ({ one }) => ({
+export const TeamRelations = relations(TeamTable, ({ one, many }) => ({
   rule: one(RuleTable),
+  users: many(UserTable),
 }));
 
 export type Team = typeof TeamTable.$inferSelect;

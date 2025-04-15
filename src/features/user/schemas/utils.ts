@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { SELECTABLE_ROLES } from '@/drizzle/schema';
 
 export const USER_SCHEMA_VALIDATION = {
+  team_id: z.string().uuid(),
   name: z
     .string()
     .min(6, { message: 'Be at least 6 characters long.' })

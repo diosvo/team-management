@@ -1,4 +1,4 @@
-CREATE TYPE "public"."user_roles" AS ENUM('SUPER_ADMIN', 'COACH', 'PLAYER', 'CAPTAIN', 'GUEST');--> statement-breakpoint
+CREATE TYPE "public"."user_roles" AS ENUM('COACH', 'PLAYER', 'CAPTAIN', 'GUEST', 'SUPER_ADMIN');--> statement-breakpoint
 CREATE TYPE "public"."user_state" AS ENUM('UNKNOWN', 'ACTIVE', 'INACTIVE', 'TEMPORARILY_ABSENT');--> statement-breakpoint
 CREATE TABLE "rule" (
 	"rule_id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
@@ -10,8 +10,8 @@ CREATE TABLE "rule" (
 --> statement-breakpoint
 CREATE TABLE "team" (
 	"team_id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"name" text NOT NULL,
-	"email" text NOT NULL,
+	"name" varchar(128) NOT NULL,
+	"email" varchar(255) NOT NULL,
 	"establish_year" integer DEFAULT 2025 NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
@@ -31,10 +31,11 @@ CREATE TABLE "password_token" (
 --> statement-breakpoint
 CREATE TABLE "user" (
 	"user_id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"team_id" uuid NOT NULL,
 	"name" varchar(128) NOT NULL,
 	"dob" date,
 	"password" varchar(128),
-	"email" text NOT NULL,
+	"email" varchar(255) NOT NULL,
 	"phone_number" varchar(15),
 	"citizen_identification" varchar(12),
 	"image" text,
@@ -47,4 +48,5 @@ CREATE TABLE "user" (
 	CONSTRAINT "roles_length" CHECK (array_length("user"."roles", 1) BETWEEN 1 AND 2)
 );
 --> statement-breakpoint
-ALTER TABLE "rule" ADD CONSTRAINT "rule_team_id_team_team_id_fk" FOREIGN KEY ("team_id") REFERENCES "public"."team"("team_id") ON DELETE cascade ON UPDATE no action;
+ALTER TABLE "rule" ADD CONSTRAINT "rule_team_id_team_team_id_fk" FOREIGN KEY ("team_id") REFERENCES "public"."team"("team_id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "user" ADD CONSTRAINT "user_team_id_team_team_id_fk" FOREIGN KEY ("team_id") REFERENCES "public"."team"("team_id") ON DELETE cascade ON UPDATE no action;

@@ -1,5 +1,5 @@
 {
-  "id": "e24d4beb-c342-4639-84b4-d2defbf1a956",
+  "id": "4ec9f31f-efea-4be6-a1ba-242a47a4c652",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -77,13 +77,13 @@
         },
         "name": {
           "name": "name",
-          "type": "text",
+          "type": "varchar(128)",
           "primaryKey": false,
           "notNull": true
         },
         "email": {
           "name": "email",
-          "type": "text",
+          "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true
         },
@@ -201,6 +201,12 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
+        "team_id": {
+          "name": "team_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
         "name": {
           "name": "name",
           "type": "varchar(128)",
@@ -221,7 +227,7 @@
         },
         "email": {
           "name": "email",
-          "type": "text",
+          "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true
         },
@@ -281,7 +287,21 @@
         }
       },
       "indexes": {},
-      "foreignKeys": {},
+      "foreignKeys": {
+        "user_team_id_team_team_id_fk": {
+          "name": "user_team_id_team_team_id_fk",
+          "tableFrom": "user",
+          "tableTo": "team",
+          "columnsFrom": [
+            "team_id"
+          ],
+          "columnsTo": [
+            "team_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "user_email_unique": {
@@ -307,11 +327,11 @@
       "name": "user_roles",
       "schema": "public",
       "values": [
-        "SUPER_ADMIN",
         "COACH",
         "PLAYER",
         "CAPTAIN",
-        "GUEST"
+        "GUEST",
+        "SUPER_ADMIN"
       ]
     },
     "public.user_state": {
