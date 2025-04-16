@@ -7,6 +7,7 @@ import { Plus, Trash2 } from 'lucide-react';
 import { ZodError } from 'zod';
 
 import { DataTable, TableColumn } from '@/components/data-table';
+import { Alert } from '@/components/ui/alert';
 import { Field } from '@/components/ui/field';
 import { Select } from '@/components/ui/select';
 import { toaster } from '@/components/ui/toaster';
@@ -198,6 +199,12 @@ export default function AddUsers({ roster }: { roster: Array<User> }) {
           </Button>
         </>
       </HStack>
+
+      {errors && (
+        <Alert status="error">
+          <pre>{JSON.stringify(errors)}</pre>
+        </Alert>
+      )}
 
       <DataTable
         columns={columns}

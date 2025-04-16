@@ -20,7 +20,7 @@ export const getUsers = cache(async () => {
   }
 });
 
-export async function getUserByEmail(email: string) {
+export const getUserByEmail = cache(async (email: string) => {
   try {
     return await db.query.UserTable.findFirst({
       where: eq(UserTable.email, email),
@@ -28,9 +28,9 @@ export async function getUserByEmail(email: string) {
   } catch {
     return null;
   }
-}
+});
 
-export async function getUserById(user_id: string) {
+export const getUserById = cache(async (user_id: string) => {
   try {
     return await db.query.UserTable.findFirst({
       where: eq(UserTable.user_id, user_id),
@@ -39,7 +39,7 @@ export async function getUserById(user_id: string) {
     logger.error('Failed to fetch user');
     return null;
   }
-}
+});
 
 export async function insertUsers(users: Array<AddUserValues>) {
   try {
