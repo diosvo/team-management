@@ -1,8 +1,13 @@
-import { Button, Dialog, Portal } from '@chakra-ui/react';
-import { Crown } from 'lucide-react';
+'use client';
+
+import { useState } from 'react';
+
+import { Button, Dialog, Portal, Text } from '@chakra-ui/react';
+import { Crown, Pencil, PencilOff } from 'lucide-react';
 
 import TextEditor from '@/components/text-editor';
 import { CloseButton } from '@/components/ui/close-button';
+import { Tooltip } from '@/components/ui/tooltip';
 import { executeRule } from '@/features/rule/actions/rule';
 import { RuleValues } from '@/features/rule/schemas/rule';
 
@@ -13,7 +18,7 @@ export default function TeamRules({
   editable: boolean;
   team_id: string;
 }) {
-  // const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   async function onSubmit(values: RuleValues) {
     const { error, message: description } = await executeRule(values);
@@ -37,11 +42,24 @@ export default function TeamRules({
         <Dialog.Positioner>
           <Dialog.Content>
             <Dialog.Header>
-              <Dialog.Title>Regulation</Dialog.Title>
+              <Dialog.Title display="flex" alignItems="baseline" gap={1}>
+                <Text>Regulation</Text>
+                <Tooltip
+                  content={`${isEditing ? 'Preview' : 'Enable'} editing`}
+                >
+                  <Button
+                    size="2xs"
+                    variant="ghost"
+                    onClick={() => setIsEditing(!isEditing)}
+                  >
+                    {isEditing ? <PencilOff /> : <Pencil />}
+                  </Button>
+                </Tooltip>
+              </Dialog.Title>
             </Dialog.Header>
             <Dialog.Body>
               <TextEditor
-                editable={editable}
+                editable={editable && isEditing}
                 content={editable ? 'Editable content' : 'Read-only content'}
                 onSave={async (content) =>
                   await onSubmit({

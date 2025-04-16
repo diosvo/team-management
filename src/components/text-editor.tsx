@@ -18,10 +18,12 @@ import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import {
   Bold,
+  Eraser,
   Italic,
   Link2,
   List,
   ListOrdered,
+  Save,
   Underline as UnderlineIcon,
 } from 'lucide-react';
 
@@ -248,18 +250,20 @@ export default function TextEditor({
             </ButtonGroup>
           </Visibility>
 
-          <Box p={2} borderRadius="md" minH="150px">
+          <Box p={editable ? 2 : 0} borderRadius="md" minH="150px">
             <EditorContent editor={editor} />
           </Box>
         </VStack>
       </Box>
 
       <Visibility isVisible={editable}>
-        <HStack justifyContent="flex-end" mt={2} gap={2}>
+        <HStack justifyContent="flex-end" mt={4} gap={2}>
           <Button variant="outline" size="sm" onClick={handleReset}>
+            <Eraser />
             Reset
           </Button>
           <Button size="sm" onClick={() => onSave(editor.getHTML())}>
+            <Save />
             Save
           </Button>
         </HStack>

@@ -1,3 +1,5 @@
+import { cache } from 'react';
+
 import { eq } from 'drizzle-orm';
 
 import { db } from '@/drizzle';
@@ -5,13 +7,13 @@ import { InsertRule, RuleTable } from '@/drizzle/schema/rule';
 
 import { revalidateRuleCache } from './cache';
 
-export async function fetchRule(team_id: string) {
+export const fetchRule = cache(async (team_id: string) => {
   const data = await db.query.RuleTable.findFirst({
     where: eq(RuleTable.team_id, team_id),
   });
 
   return data;
-}
+});
 
 export async function insertRule(data: InsertRule) {
   const [newRule] = await db.insert(RuleTable).values(data).returning();
