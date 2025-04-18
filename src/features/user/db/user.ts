@@ -34,6 +34,18 @@ export const getUserById = cache(async (user_id: string) => {
   try {
     return await db.query.UserTable.findFirst({
       where: eq(UserTable.user_id, user_id),
+      with: {
+        team: {
+          columns: {},
+          with: {
+            rule: {
+              columns: {
+                content: true,
+              },
+            },
+          },
+        },
+      },
     });
   } catch {
     logger.error('Failed to fetch user');

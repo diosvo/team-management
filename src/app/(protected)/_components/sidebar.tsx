@@ -92,7 +92,11 @@ export default function Sidebar() {
       ))}
 
       <VStack align="stretch" mt="auto">
-        <TeamRules editable={isAdmin} team_id={user?.team_id as string} />
+        <TeamRules
+          editable={isAdmin}
+          team_id={user?.team_id as string}
+          content={user?.team.rule.content as string}
+        />
 
         <Visibility isVisible={isAdmin}>
           <NavButton href="/admin" icon={ShieldUser}>

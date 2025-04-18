@@ -41,15 +41,15 @@ import Visibility from './visibility';
 
 interface TextEditorProps {
   editable: boolean;
+  loading: boolean;
   content: string;
   onSave: (content: string) => void;
-  onReset: () => void;
 }
 
 export default function TextEditor({
   editable,
+  loading,
   content,
-  onReset,
   onSave,
 }: TextEditorProps) {
   const [url, setUrl] = useState('');
@@ -82,11 +82,9 @@ export default function TextEditor({
   }, [editor, editable]);
 
   const handleReset = () => {
-    // Reset content to initial state
     if (editor) {
       editor.commands.setContent(initialContent);
     }
-    onReset();
   };
 
   // Use Popover for link insertion
@@ -257,12 +255,22 @@ export default function TextEditor({
       </Box>
 
       <Visibility isVisible={editable}>
-        <HStack justifyContent="flex-end" mt={4} gap={2}>
-          <Button variant="outline" size="sm" onClick={handleReset}>
+        <HStack justifyContent="space-between" mt={4}>
+          <Button
+            size="sm"
+            variant="outline"
+            colorPalette="red"
+            disabled={loading}
+            onClick={handleReset}
+          >
             <Eraser />
             Reset
           </Button>
-          <Button size="sm" onClick={() => onSave(editor.getHTML())}>
+          <Button
+            size="sm"
+            disabled={loading}
+            onClick={() => onSave(editor.getHTML())}
+          >
             <Save />
             Save
           </Button>

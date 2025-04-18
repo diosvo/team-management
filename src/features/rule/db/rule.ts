@@ -8,11 +8,10 @@ import { InsertRule, RuleTable } from '@/drizzle/schema/rule';
 import { revalidateRuleCache } from './cache';
 
 export const fetchRule = cache(async (team_id: string) => {
-  const data = await db.query.RuleTable.findFirst({
+  return await db.query.RuleTable.findFirst({
     where: eq(RuleTable.team_id, team_id),
+    columns: { rule_id: true, content: true },
   });
-
-  return data;
 });
 
 export async function insertRule(data: InsertRule) {

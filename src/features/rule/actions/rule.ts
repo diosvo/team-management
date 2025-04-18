@@ -5,7 +5,7 @@ import { Response, ResponseFactory } from '@/utils/response';
 import { fetchRule, insertRule, updateRule } from '../db/rule';
 import { RuleSchema, RuleValues } from '../schemas/rule';
 
-export async function getRule(team_id: string) {
+export async function getTeamRule(team_id: string) {
   return await fetchRule(team_id);
 }
 
@@ -17,11 +17,11 @@ export async function executeRule(values: RuleValues): Promise<Response> {
   }
 
   try {
-    const existingRule = await fetchRule(data.team_id);
+    const existingRule = await getTeamRule(data.team_id);
 
     if (existingRule) {
       await updateRule(existingRule.rule_id, data.content);
-      return ResponseFactory.error('Rule updated successfully');
+      return ResponseFactory.success('Rule updated successfully');
     } else {
       await insertRule(data);
       return ResponseFactory.success('New rule created successful');
