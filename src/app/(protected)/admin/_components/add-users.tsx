@@ -11,11 +11,12 @@ import { Field } from '@/components/ui/field';
 import { Select } from '@/components/ui/select';
 import { toaster } from '@/components/ui/toaster';
 
-import { SELECTABLE_ROLES, User } from '@/drizzle/schema/user';
+import { User } from '@/drizzle/schema/user';
 import { getDefaults } from '@/lib/zod';
 
 import { addUsers } from '@/features/user/actions/user';
 import { AddUserSchema, AddUserValues } from '@/features/user/schemas/user';
+import { SELECTABLE_ROLES } from '@/utils/constant';
 
 const emptyUser = getDefaults(AddUserSchema) as AddUserValues;
 

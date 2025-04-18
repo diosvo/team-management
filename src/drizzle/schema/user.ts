@@ -10,33 +10,14 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core';
 
+import { UserRole, UserState } from '@/utils/enum';
+
 import { created_at, expires_at, updated_at } from '../helpers';
 import { TeamTable } from './team';
 
-// Enums
+export const userRolesEnum = pgEnum('user_roles', UserRole);
 
-export const userRoles = [
-  'COACH',
-  'PLAYER',
-  'CAPTAIN',
-  'GUEST',
-  'SUPER_ADMIN',
-] as const;
-export const SELECTABLE_ROLES = [
-  'COACH',
-  'PLAYER',
-  'CAPTAIN',
-  'GUEST',
-] as const;
-export type UserRole = (typeof userRoles)[number];
-export const userRolesEnum = pgEnum('user_roles', userRoles);
-
-export const userStateEnum = pgEnum('user_state', [
-  'UNKNOWN',
-  'ACTIVE',
-  'INACTIVE',
-  'TEMPORARILY_ABSENT',
-]);
+export const userStateEnum = pgEnum('user_state', UserState);
 
 // Tables
 // Force id and userId by Drizzle ORM Adapter
@@ -55,8 +36,8 @@ export const UserTable = pgTable(
     phone_number: varchar('phone_number', { length: 15 }),
     citizen_identification: varchar('citizen_identification', { length: 12 }),
     image: text('image'),
-    state: userStateEnum('state').default('ACTIVE').notNull(),
-    roles: userRolesEnum('roles').array().default(['PLAYER']).notNull(),
+    state: userStateEnum('state').default(UserState.ACTIVE).notNull(),
+    roles: userRolesEnum('roles').array().default([UserRole.PLAYER]).notNull(),
     join_date: timestamp('join_date', { withTimezone: true })
       .defaultNow()
       .notNull(),

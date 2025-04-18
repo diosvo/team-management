@@ -5,6 +5,7 @@ import { eq, ne } from 'drizzle-orm';
 import { db } from '@/drizzle';
 import { User, UserTable } from '@/drizzle/schema';
 import logger from '@/lib/logger';
+import { UserRole } from '@/utils/enum';
 
 import { AddUserValues } from '../schemas/user';
 
@@ -13,7 +14,7 @@ export const getUsers = cache(async () => {
     return await db
       .select()
       .from(UserTable)
-      .where(ne(UserTable.roles, ['SUPER_ADMIN']));
+      .where(ne(UserTable.roles, [UserRole.SUPER_ADMIN]));
   } catch {
     logger.error('An error when fetching users');
     return [];

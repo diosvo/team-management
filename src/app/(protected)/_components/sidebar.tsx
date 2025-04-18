@@ -16,6 +16,7 @@ import { LucideProps, ShieldUser } from 'lucide-react';
 import Visibility from '@/components/visibility';
 import { Rule } from '@/drizzle/schema';
 import { useUser } from '@/hooks/use-user';
+import { UserRole } from '@/utils/enum';
 
 import { hrefPath, SIDEBAR_GROUP } from '../_helpers/utils';
 import TeamRule from './team-rule';
@@ -65,7 +66,7 @@ export default function Sidebar() {
   const user = use(userPromise);
 
   const isAdmin = useMemo(() => {
-    return user?.roles?.includes('SUPER_ADMIN') || false;
+    return user?.roles?.includes(UserRole.SUPER_ADMIN) || false;
   }, [user]);
 
   return (
