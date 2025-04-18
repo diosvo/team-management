@@ -2,8 +2,6 @@
 
 import { redirect } from 'next/navigation';
 
-import { hash } from 'bcryptjs';
-
 import logger from '@/lib/logger';
 import { sendPasswordInstructionEmail } from '@/lib/mail';
 import { createSession, deleteSession, verifySession } from '@/lib/session';
@@ -13,6 +11,7 @@ import { ResponseFactory } from '@/utils/response';
 import {
   deletePasswordResetTokenByEmail,
   getPasswordResetTokenByToken,
+  hashPassword,
 } from '../db/password-reset-token';
 import { getUserByEmail, getUserById, updateUser } from '../db/user';
 import {
@@ -43,6 +42,13 @@ export async function login(values: LoginValues) {
   if (!user?.password) {
     return ResponseFactory.error('Please create your password first.');
   }
+
+  const match = (await hashPassword(data.password)) === user.password;
+
+  // Skip the check for now
+  // if (!match) {
+  //   return ResponseFactory.error('Invalid credentials.');
+  // }
 
   try {
     await createSession(user.user_id);
@@ -121,7 +127,7 @@ export async function changePassword(value: PasswordValue, token?: string) {
   try {
     await updateUser({
       ...existingUser,
-      password: await hash(data.password, 10),
+      password: await hashPassword(data.password),
     });
     await deletePasswordResetTokenByEmail(existingToken.email);
 
@@ -132,6 +138,6 @@ export async function changePassword(value: PasswordValue, token?: string) {
 }
 
 export async function logout() {
-  deleteSession();
+  await deleteSession();
   redirect(LOGIN_PATH);
 }

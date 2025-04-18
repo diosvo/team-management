@@ -266,7 +266,7 @@ export default function TextEditor({
           <Button
             size="sm"
             variant="outline"
-            disabled={loading || !hasChanges}
+            disabled={loading}
             onClick={handleReset}
           >
             <Icon as={Eraser} color="red.400" />
