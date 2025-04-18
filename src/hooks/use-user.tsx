@@ -2,15 +2,13 @@
 
 import { createContext, ReactNode, useContext } from 'react';
 
-import { User } from '@/drizzle/schema';
+import { Rule, User } from '@/drizzle/schema';
 
 type UserContextType = {
   userPromise: Promise<
     | (User & {
         team: {
-          rule: {
-            content: string;
-          };
+          rule: Partial<Rule> | null;
         };
       })
     | null

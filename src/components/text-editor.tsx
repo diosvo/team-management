@@ -7,6 +7,7 @@ import {
   Button,
   ButtonGroup,
   HStack,
+  Icon,
   IconButton,
   Input,
   Separator,
@@ -248,7 +249,7 @@ export default function TextEditor({
             </ButtonGroup>
           </Visibility>
 
-          <Box p={editable ? 2 : 0} borderRadius="md" minH="150px">
+          <Box p={editable ? 2 : 0} borderRadius="md">
             <EditorContent editor={editor} />
           </Box>
         </VStack>
@@ -259,11 +260,10 @@ export default function TextEditor({
           <Button
             size="sm"
             variant="outline"
-            colorPalette="red"
             disabled={loading}
             onClick={handleReset}
           >
-            <Eraser />
+            <Icon as={Eraser} color="red.400" />
             Reset
           </Button>
           <Button

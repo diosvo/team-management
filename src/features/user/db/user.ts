@@ -41,6 +41,7 @@ export const getUserById = cache(async (user_id: string) => {
             rule: {
               columns: {
                 content: true,
+                updated_at: true,
               },
             },
           },

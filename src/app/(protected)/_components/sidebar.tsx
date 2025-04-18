@@ -14,6 +14,7 @@ import { Button, Icon, Text, VStack } from '@chakra-ui/react';
 import { LucideProps, ShieldUser } from 'lucide-react';
 
 import Visibility from '@/components/visibility';
+import { Rule } from '@/drizzle/schema';
 import { useUser } from '@/hooks/use-user';
 
 import { hrefPath, SIDEBAR_GROUP } from '../_helpers/utils';
@@ -95,7 +96,7 @@ export default function Sidebar() {
         <TeamRules
           editable={isAdmin}
           team_id={user?.team_id as string}
-          content={user?.team.rule.content as string}
+          rule={user?.team.rule as Rule}
         />
 
         <Visibility isVisible={isAdmin}>

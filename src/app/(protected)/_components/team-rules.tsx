@@ -9,22 +9,19 @@ import TextEditor from '@/components/text-editor';
 import { CloseButton } from '@/components/ui/close-button';
 import { toaster } from '@/components/ui/toaster';
 import { Tooltip } from '@/components/ui/tooltip';
-
 import Visibility from '@/components/visibility';
+
+import { Rule } from '@/drizzle/schema';
 import { executeRule } from '@/features/rule/actions/rule';
 import { RuleValues } from '@/features/rule/schemas/rule';
 
 interface TeamRulesProps {
   editable: boolean;
   team_id: string;
-  content: string;
+  rule: Partial<Rule>;
 }
 
-export default function TeamRules({
-  editable,
-  team_id,
-  content,
-}: TeamRulesProps) {
+export default function TeamRules({ editable, team_id, rule }: TeamRulesProps) {
   const [isPending, startTransition] = useTransition();
   const [isEditing, setIsEditing] = useState<boolean>(false);
 
@@ -80,7 +77,7 @@ export default function TeamRules({
               <TextEditor
                 editable={editable && isEditing && !isPending}
                 loading={isPending}
-                content={content}
+                content={rule.content as string}
                 onSave={async (content: string) =>
                   await onSubmit({
                     content,
@@ -89,6 +86,11 @@ export default function TeamRules({
                 }
               />
             </Dialog.Body>
+            <Dialog.Footer justifyContent="flex-start">
+              <Text fontSize="xs" color="gray.500">
+                Last updated on {rule.updated_at!.toLocaleString('vi-VN')}
+              </Text>
+            </Dialog.Footer>
             <Dialog.CloseTrigger asChild>
               <CloseButton size="sm" />
             </Dialog.CloseTrigger>
