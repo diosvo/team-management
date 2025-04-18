@@ -18,7 +18,7 @@ import { Rule } from '@/drizzle/schema';
 import { useUser } from '@/hooks/use-user';
 
 import { hrefPath, SIDEBAR_GROUP } from '../_helpers/utils';
-import TeamRules from './team-rules';
+import TeamRule from './team-rule';
 
 function NavButton({
   href,
@@ -93,7 +93,7 @@ export default function Sidebar() {
       ))}
 
       <VStack align="stretch" mt="auto">
-        <TeamRules
+        <TeamRule
           editable={isAdmin}
           team_id={user?.team_id as string}
           rule={user?.team.rule as Rule}

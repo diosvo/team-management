@@ -53,8 +53,9 @@ export default function TextEditor({
   content,
   onSave,
 }: TextEditorProps) {
-  const [url, setUrl] = useState('');
-  const [initialContent] = useState(content);
+  const [url, setUrl] = useState<string>('');
+  const [initialContent] = useState<string>(content);
+  const [hasChanges, setHasChanges] = useState<boolean>(false);
 
   const editor = useEditor(
     {
@@ -72,6 +73,10 @@ export default function TextEditor({
         }),
       ],
       immediatelyRender: false,
+      onUpdate: ({ editor }) => {
+        const currentContent = editor.getHTML();
+        setHasChanges(currentContent !== initialContent);
+      },
     },
     [content]
   );
@@ -85,6 +90,7 @@ export default function TextEditor({
   const handleReset = () => {
     if (editor) {
       editor.commands.setContent(initialContent);
+      setHasChanges(false);
     }
   };
 
@@ -260,7 +266,7 @@ export default function TextEditor({
           <Button
             size="sm"
             variant="outline"
-            disabled={loading}
+            disabled={loading || !hasChanges}
             onClick={handleReset}
           >
             <Icon as={Eraser} color="red.400" />
@@ -268,7 +274,7 @@ export default function TextEditor({
           </Button>
           <Button
             size="sm"
-            disabled={loading}
+            disabled={loading || !hasChanges}
             onClick={() => onSave(editor.getHTML())}
           >
             <Save />

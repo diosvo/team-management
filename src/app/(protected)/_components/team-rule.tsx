@@ -15,13 +15,13 @@ import { Rule } from '@/drizzle/schema';
 import { executeRule } from '@/features/rule/actions/rule';
 import { RuleValues } from '@/features/rule/schemas/rule';
 
-interface TeamRulesProps {
+interface TeamRuleProps {
   editable: boolean;
   team_id: string;
   rule: Partial<Rule>;
 }
 
-export default function TeamRules({ editable, team_id, rule }: TeamRulesProps) {
+export default function TeamRule({ editable, team_id, rule }: TeamRuleProps) {
   const [isPending, startTransition] = useTransition();
   const [isEditing, setIsEditing] = useState<boolean>(false);
 
@@ -48,7 +48,7 @@ export default function TeamRules({ editable, team_id, rule }: TeamRulesProps) {
       <Dialog.Trigger asChild>
         <Button size="sm" variant="ghost" justifyContent="flex-start">
           <Icon as={Crown} color="orange.focusRing" />
-          Team Rules
+          Team Rule
         </Button>
       </Dialog.Trigger>
       <Portal>
@@ -88,7 +88,8 @@ export default function TeamRules({ editable, team_id, rule }: TeamRulesProps) {
             </Dialog.Body>
             <Dialog.Footer justifyContent="flex-start">
               <Text fontSize="xs" color="gray.500">
-                Last updated on {rule.updated_at!.toLocaleString('vi-VN')}
+                {rule.updated_at &&
+                  `Last updated on ${rule.updated_at.toLocaleString('vi-VN')}`}
               </Text>
             </Dialog.Footer>
             <Dialog.CloseTrigger asChild>
