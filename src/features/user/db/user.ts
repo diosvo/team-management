@@ -41,7 +41,9 @@ export const getUserById = cache(async (user_id: string) => {
   }
 });
 
-export async function insertUsers(users: Array<AddUserValues>) {
+export async function insertUsers(
+  users: Array<AddUserValues & { team_id: string }>
+) {
   try {
     return await db.insert(UserTable).values(users);
   } catch {

@@ -8,6 +8,7 @@ import { Crown, Pencil, PencilOff } from 'lucide-react';
 import TextEditor from '@/components/text-editor';
 import { CloseButton } from '@/components/ui/close-button';
 import { Tooltip } from '@/components/ui/tooltip';
+
 import { executeRule } from '@/features/rule/actions/rule';
 import { RuleValues } from '@/features/rule/schemas/rule';
 
