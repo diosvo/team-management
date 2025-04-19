@@ -17,17 +17,20 @@ import { useForm } from 'react-hook-form';
 
 import { Alert } from '@/components/ui/alert';
 import { Field } from '@/components/ui/field';
-import { changePassword } from '@/features/user/actions/auth';
-import { PasswordSchema, PasswordValue } from '@/features/user/schemas/auth';
+
 import { LOGIN_PATH } from '@/routes';
 import { Response } from '@/utils/response';
+
+import { changePassword } from '@/features/user/actions/auth';
+import { PasswordSchema, PasswordValue } from '@/features/user/schemas/auth';
 
 export default function NewPasswordPage() {
   const {
     register,
+    reset,
     handleSubmit,
     formState: { errors },
-  } = useForm<PasswordValue>({
+  } = useForm({
     resolver: zodResolver(PasswordSchema),
     defaultValues: {
       password: '',
@@ -42,7 +45,13 @@ export default function NewPasswordPage() {
 
   const onSubmit = (value: PasswordValue) => {
     startTransition(() => {
-      changePassword(value, token as string).then(setResponse);
+      changePassword(value, token as string).then((response: Response) => {
+        setResponse(response);
+
+        if (!response.error) {
+          reset({ password: '' });
+        }
+      });
     });
   };
 

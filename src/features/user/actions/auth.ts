@@ -2,6 +2,8 @@
 
 import { redirect } from 'next/navigation';
 
+import { compare, hash } from 'bcryptjs';
+
 import logger from '@/lib/logger';
 import { sendPasswordInstructionEmail } from '@/lib/mail';
 import { createSession, deleteSession, verifySession } from '@/lib/session';
@@ -11,7 +13,6 @@ import { ResponseFactory } from '@/utils/response';
 import {
   deletePasswordResetTokenByEmail,
   getPasswordResetTokenByToken,
-  hashPassword,
 } from '../db/password-reset-token';
 import { getUserByEmail, getUserById, updateUser } from '../db/user';
 import {
@@ -43,12 +44,11 @@ export async function login(values: LoginValues) {
     return ResponseFactory.error('Please create your password first.');
   }
 
-  const match = (await hashPassword(data.password)) === user.password;
+  const matcher = await compare(data.password, user.password);
 
-  // Skip the check for now
-  // if (!match) {
-  //   return ResponseFactory.error('Invalid credentials.');
-  // }
+  if (!matcher) {
+    return ResponseFactory.error('Invalid credentials.');
+  }
 
   try {
     await createSession(user.user_id);
@@ -127,11 +127,13 @@ export async function changePassword(value: PasswordValue, token?: string) {
   try {
     await updateUser({
       ...existingUser,
-      password: await hashPassword(data.password),
+      password: await hash(data.password, 10),
     });
     await deletePasswordResetTokenByEmail(existingToken.email);
 
-    return ResponseFactory.success('Password update successfully.');
+    return ResponseFactory.success(
+      'Password has been reset. Please back to login page.'
+    );
   } catch {
     return ResponseFactory.error('Failed to reset password!');
   }
