@@ -8,7 +8,7 @@ import logger from '@/lib/logger';
 
 import { revalidateRuleCache } from './cache';
 
-export const fetchRule = cache(async (team_id: string) => {
+export const getRule = cache(async (team_id: string) => {
   return await db.query.RuleTable.findFirst({
     where: eq(RuleTable.team_id, team_id),
     columns: { rule_id: true, content: true },

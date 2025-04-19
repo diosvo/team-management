@@ -13,10 +13,10 @@ import { toaster } from '@/components/ui/toaster';
 
 import { User } from '@/drizzle/schema/user';
 import { getDefaults } from '@/lib/zod';
+import { SELECTABLE_ROLES } from '@/utils/constant';
 
 import { addUsers } from '@/features/user/actions/user';
 import { AddUserSchema, AddUserValues } from '@/features/user/schemas/user';
-import { SELECTABLE_ROLES } from '@/utils/constant';
 
 const emptyUser = getDefaults(AddUserSchema) as AddUserValues;
 
@@ -124,11 +124,16 @@ export default function AddUsers({ roster }: { roster: Array<User> }) {
       return;
     }
 
-    const { error, message } = await addUsers(users);
+    const id = toaster.create({
+      type: 'loading',
+      description: 'Adding users to database...',
+    });
 
-    toaster.create({
-      type: error ? 'error' : 'info',
-      description: message,
+    const { error, message: description } = await addUsers(users);
+
+    toaster.update(id, {
+      type: error ? 'error' : 'success',
+      description,
     });
 
     if (!error) {

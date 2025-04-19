@@ -1,5 +1,3 @@
-import { EmailSchema, LoginSchema } from '@/features/user/schemas/auth';
-
 export enum Page {
   Login = 'login',
   ResetPassword = 'reset-password',
@@ -14,8 +12,3 @@ export const buttonText = {
   [Page.Login]: 'Sign In',
   [Page.ResetPassword]: 'Send request password instruction',
 } as const;
-
-export const FormValues = {
-  [Page.Login]: LoginSchema,
-  [Page.ResetPassword]: EmailSchema,
-};

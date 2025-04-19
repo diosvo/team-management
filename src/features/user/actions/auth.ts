@@ -16,8 +16,6 @@ import {
 } from '../db/password-reset-token';
 import { getUserByEmail, getUserById, updateUser } from '../db/user';
 import {
-  EmailSchema,
-  EmailValue,
   LoginSchema,
   LoginValues,
   PasswordSchema,
@@ -76,8 +74,8 @@ export async function getUser() {
   return user;
 }
 
-export async function requestResetPassword(values: EmailValue) {
-  const { success, data } = EmailSchema.safeParse(values);
+export async function requestResetPassword(values: LoginValues) {
+  const { success, data } = LoginSchema.safeParse(values);
 
   if (!success) {
     return ResponseFactory.error('Email is invalid.');

@@ -21,6 +21,7 @@ const columns: Array<TableColumn<User>> = [
   {
     header: 'Join Date',
     accessor: 'join_date',
+    render: (value) => (value as Date)?.toLocaleDateString('vi-VN'),
   },
   {
     header: 'State',
