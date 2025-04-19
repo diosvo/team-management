@@ -1,8 +1,9 @@
 import { Metadata } from 'next';
 import { forbidden } from 'next/navigation';
+import { Suspense } from 'react';
 
 import { Box, Grid, GridItem, HStack, Tabs } from '@chakra-ui/react';
-import { BookUser, Coffee, Settings2, Shield } from 'lucide-react';
+import { BookUser, Coffee, Film, Package } from 'lucide-react';
 
 import { getUser } from '@/features/user/actions/auth';
 import { getRoster } from '@/features/user/actions/user';
@@ -31,36 +32,40 @@ export default async function AdminPage() {
           <BookUser size={16} />
           Roster Management
         </Tabs.Trigger>
-        <Tabs.Trigger value="settings" disabled>
-          <Settings2 size={16} />
-          Settings
+        <Tabs.Trigger value="equipment" disabled>
+          <Package size={16} />
+          Equipment
         </Tabs.Trigger>
-        <Tabs.Trigger value="rules" disabled>
-          <Shield size={16} />
-          Rules
+        <Tabs.Trigger value="documents" disabled>
+          <Film size={16} />
+          Documents
         </Tabs.Trigger>
       </Tabs.List>
       <Tabs.Content value="roster_management">
         <Grid templateColumns="6fr 4fr" gap={4} mt={4}>
           <GridItem>
             <Box p={4} borderWidth="1px" borderRadius="md" boxShadow="sm">
-              <AddUsers roster={roster} />
+              <Suspense fallback={<div>Loading...</div>}>
+                <AddUsers roster={roster} />
+              </Suspense>
             </Box>
           </GridItem>
           <GridItem>
             <Box p={4} borderWidth="1px" borderRadius="md" boxShadow="sm">
-              <BulkUserActions roster={roster} />
+              <Suspense fallback={<div>Loading...</div>}>
+                <BulkUserActions roster={roster} />
+              </Suspense>
             </Box>
           </GridItem>
         </Grid>
       </Tabs.Content>
-      <Tabs.Content value="settings">
+      <Tabs.Content value="equipment">
         <HStack justifyContent="center">
           <Coffee size={16} />
           The feature will be available soon.
         </HStack>
       </Tabs.Content>
-      <Tabs.Content value="rules">
+      <Tabs.Content value="documents">
         <HStack justifyContent="center">
           <Coffee size={16} />
           The feature will be available soon.

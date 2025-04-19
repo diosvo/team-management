@@ -11,7 +11,7 @@ export const pool = new Pool({
 
 export const db = drizzle({
   client: pool,
-  logger: true,
+  // logger: true, // Uncomment for debugging
 
   schema,
 });

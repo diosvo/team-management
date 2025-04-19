@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import Link, { useLinkStatus } from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   ForwardRefExoticComponent,
@@ -10,7 +10,7 @@ import {
   useMemo,
 } from 'react';
 
-import { Button, Icon, Text, VStack } from '@chakra-ui/react';
+import { Button, Icon, Spinner, Text, VStack } from '@chakra-ui/react';
 import { LucideProps, ShieldUser } from 'lucide-react';
 
 import Visibility from '@/components/visibility';
@@ -20,6 +20,15 @@ import { UserRole } from '@/utils/enum';
 
 import { hrefPath, SIDEBAR_GROUP } from '../_helpers/utils';
 import TeamRule from './team-rule';
+
+function LoadingIndicator() {
+  const { pending } = useLinkStatus();
+  return (
+    pending && (
+      <Spinner size="xs" colorPalette="gray" ml="auto" borderWidth="1px" />
+    )
+  );
+}
 
 function NavButton({
   href,
@@ -54,7 +63,9 @@ function NavButton({
         </div>
       ) : (
         <Link href={href}>
-          {icon && <Icon as={icon} />} {children}
+          {icon && <Icon as={icon} />}
+          {children}
+          <LoadingIndicator />
         </Link>
       )}
     </Button>
@@ -70,10 +81,10 @@ export default function Sidebar() {
   }, [user]);
 
   return (
-    <VStack align="stretch" py="4" px={2} gap={6} height="full">
+    <VStack align="stretch" py={4} px={2} gap={6} height="full">
       {SIDEBAR_GROUP.map(({ title, items }) => (
         <VStack key={title} align="stretch">
-          <Text fontSize="xs" marginLeft="4">
+          <Text fontSize="xs" marginLeft={4}>
             {title}
           </Text>
 
