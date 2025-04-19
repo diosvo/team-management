@@ -54,7 +54,6 @@ export default function TextEditor({
   onSave,
 }: TextEditorProps) {
   const [url, setUrl] = useState<string>('');
-  const [initialContent] = useState<string>(content);
   const [hasChanges, setHasChanges] = useState<boolean>(false);
 
   const editor = useEditor(
@@ -75,7 +74,7 @@ export default function TextEditor({
       immediatelyRender: false,
       onUpdate: ({ editor }) => {
         const currentContent = editor.getHTML();
-        setHasChanges(currentContent !== initialContent);
+        setHasChanges(currentContent !== content);
       },
     },
     [content]
@@ -89,7 +88,7 @@ export default function TextEditor({
 
   const handleReset = () => {
     if (editor) {
-      editor.commands.setContent(initialContent);
+      editor.commands.setContent(content);
       setHasChanges(false);
     }
   };
