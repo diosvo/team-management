@@ -4,6 +4,7 @@ import { Badge } from '@chakra-ui/react';
 
 import { DataTable, TableColumn } from '@/components/data-table';
 import { User } from '@/drizzle/schema';
+import { UserState } from '@/utils/enum';
 
 const columns: Array<TableColumn<User>> = [
   {
@@ -28,9 +29,9 @@ const columns: Array<TableColumn<User>> = [
     accessor: 'state',
     render: (value) => {
       const color =
-        value === 'ACTIVE'
+        value === UserState.ACTIVE
           ? 'green'
-          : value === 'TEMPORARILY_ABSENT'
+          : value === UserState.TEMPORARILY_ABSENT
           ? 'orange'
           : 'red';
 

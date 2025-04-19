@@ -1,7 +1,8 @@
 import {
   BadgeCheck,
   CalendarDays,
-  ChartArea,
+  Dumbbell,
+  FileChartColumnIncreasing,
   FileText,
   Home,
   Users,
@@ -18,7 +19,7 @@ export const SIDEBAR_GROUP = [
     title: 'Overview',
     items: [
       { icon: Home, text: 'Dashboard', active: true, disabled: false },
-      { icon: ChartArea, text: 'Team Analytics', disabled: true },
+      { icon: Dumbbell, text: 'Training', disabled: true },
     ],
   },
   {
@@ -28,6 +29,16 @@ export const SIDEBAR_GROUP = [
       { icon: CalendarDays, text: 'Schedule', disabled: true },
       { icon: BadgeCheck, text: 'Attendance', disabled: true },
       { icon: FileText, text: 'Registration', disabled: true },
+    ],
+  },
+  {
+    title: 'Performance',
+    items: [
+      {
+        icon: FileChartColumnIncreasing,
+        text: 'Bi-monthly Testing',
+        disabled: true,
+      },
     ],
   },
 ];
