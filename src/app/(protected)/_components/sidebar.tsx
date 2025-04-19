@@ -7,13 +7,19 @@ import {
   ReactNode,
   RefAttributes,
   use,
+  useMemo,
 } from 'react';
 
 import { Button, Icon, Text, VStack } from '@chakra-ui/react';
-import { Crown, LucideProps, ShieldUser } from 'lucide-react';
+import { LucideProps, ShieldUser } from 'lucide-react';
 
+import Visibility from '@/components/visibility';
+import { Rule } from '@/drizzle/schema';
 import { useUser } from '@/hooks/use-user';
+import { UserRole } from '@/utils/enum';
+
 import { hrefPath, SIDEBAR_GROUP } from '../_helpers/utils';
+import TeamRule from './team-rule';
 
 function NavButton({
   href,
@@ -35,7 +41,6 @@ function NavButton({
     <Button
       w="full"
       size="sm"
-      borderRadius="sm"
       justifyContent="flex-start"
       disabled={disabled}
       variant={isActive ? 'subtle' : 'ghost'}
@@ -60,8 +65,12 @@ export default function Sidebar() {
   const { userPromise } = useUser();
   const user = use(userPromise);
 
+  const isAdmin = useMemo(() => {
+    return user?.roles?.includes(UserRole.SUPER_ADMIN) || false;
+  }, [user]);
+
   return (
-    <VStack align="stretch" py="4" px="2" gap={6} height="full">
+    <VStack align="stretch" py="4" px={2} gap={6} height="full">
       {SIDEBAR_GROUP.map(({ title, items }) => (
         <VStack key={title} align="stretch">
           <Text fontSize="xs" marginLeft="4">
@@ -85,14 +94,17 @@ export default function Sidebar() {
       ))}
 
       <VStack align="stretch" mt="auto">
-        <NavButton href="/rules" icon={Crown} disabled>
-          Team Rules
-        </NavButton>
-        {user?.roles?.includes('SUPER_ADMIN') && (
+        <TeamRule
+          editable={isAdmin}
+          team_id={user?.team_id as string}
+          rule={user?.team.rule as Rule}
+        />
+
+        <Visibility isVisible={isAdmin}>
           <NavButton href="/admin" icon={ShieldUser}>
             Administration
           </NavButton>
-        )}
+        </Visibility>
       </VStack>
     </VStack>
   );

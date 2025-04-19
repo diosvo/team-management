@@ -2,10 +2,17 @@
 
 import { createContext, ReactNode, useContext } from 'react';
 
-import { User } from '@/drizzle/schema';
+import { Rule, User } from '@/drizzle/schema';
 
 type UserContextType = {
-  userPromise: Promise<User | null>;
+  userPromise: Promise<
+    | (User & {
+        team: {
+          rule: Partial<Rule> | null;
+        };
+      })
+    | null
+  >;
 };
 
 const UserContext = createContext<UserContextType | null>(null);
@@ -23,7 +30,7 @@ export function UserProvider({
   userPromise,
 }: {
   children: ReactNode;
-  userPromise: Promise<User | null>;
+  userPromise: UserContextType['userPromise'];
 }) {
   return (
     <UserContext.Provider value={{ userPromise }}>

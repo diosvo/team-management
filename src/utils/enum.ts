@@ -1,0 +1,14 @@
+export enum UserRole {
+  COACH = 'COACH',
+  PLAYER = 'PLAYER',
+  CAPTAIN = 'CAPTAIN',
+  GUEST = 'GUEST',
+  SUPER_ADMIN = 'SUPER_ADMIN',
+}
+
+export enum UserState {
+  UNKNOWN = 'UNKNOWN',
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
+  TEMPORARILY_ABSENT = 'TEMPORARILY_ABSENT',
+}

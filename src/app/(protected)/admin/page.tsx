@@ -6,6 +6,7 @@ import { BookUser, Coffee, Settings2, Shield } from 'lucide-react';
 
 import { getUser } from '@/features/user/actions/auth';
 import { getRoster } from '@/features/user/actions/user';
+import { UserRole } from '@/utils/enum';
 
 import AddUsers from './_components/add-users';
 import BulkUserActions from './_components/bulk-user-actions';
@@ -19,7 +20,7 @@ export default async function AdminPage() {
   const roster = await getRoster();
   const user = await getUser();
 
-  if (!user?.roles.includes('SUPER_ADMIN')) {
+  if (!user?.roles.includes(UserRole.SUPER_ADMIN)) {
     forbidden();
   }
 

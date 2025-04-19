@@ -1,12 +1,7 @@
-import { hash } from 'bcryptjs';
 import { eq } from 'drizzle-orm';
 
 import { db } from '@/drizzle';
 import { PasswordTokenTable } from '@/drizzle/schema';
-
-export function hashPassword(password: string) {
-  return hash(password, 10);
-}
 
 export async function insertPasswordResetToken(
   email: string,

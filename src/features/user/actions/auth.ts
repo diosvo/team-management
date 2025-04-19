@@ -2,7 +2,7 @@
 
 import { redirect } from 'next/navigation';
 
-import { hash } from 'bcryptjs';
+import { compare, hash } from 'bcryptjs';
 
 import logger from '@/lib/logger';
 import { sendPasswordInstructionEmail } from '@/lib/mail';
@@ -16,8 +16,6 @@ import {
 } from '../db/password-reset-token';
 import { getUserByEmail, getUserById, updateUser } from '../db/user';
 import {
-  EmailSchema,
-  EmailValue,
   LoginSchema,
   LoginValues,
   PasswordSchema,
@@ -42,6 +40,12 @@ export async function login(values: LoginValues) {
 
   if (!user?.password) {
     return ResponseFactory.error('Please create your password first.');
+  }
+
+  const matcher = await compare(data.password, user.password);
+
+  if (!matcher) {
+    return ResponseFactory.error('Invalid credentials.');
   }
 
   try {
@@ -70,8 +74,8 @@ export async function getUser() {
   return user;
 }
 
-export async function requestResetPassword(values: EmailValue) {
-  const { success, data } = EmailSchema.safeParse(values);
+export async function requestResetPassword(values: LoginValues) {
+  const { success, data } = LoginSchema.safeParse(values);
 
   if (!success) {
     return ResponseFactory.error('Email is invalid.');
@@ -125,13 +129,15 @@ export async function changePassword(value: PasswordValue, token?: string) {
     });
     await deletePasswordResetTokenByEmail(existingToken.email);
 
-    return ResponseFactory.success('Password update successfully.');
+    return ResponseFactory.success(
+      'Password has been reset. Please back to login page.'
+    );
   } catch {
     return ResponseFactory.error('Failed to reset password!');
   }
 }
 
 export async function logout() {
-  deleteSession();
+  await deleteSession();
   redirect(LOGIN_PATH);
 }

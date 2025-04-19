@@ -14,20 +14,17 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FieldErrors, useForm } from 'react-hook-form';
 
+import { Alert } from '@/components/ui/alert';
 import { Field } from '@/components/ui/field';
+
+import { Response } from '@/utils/response';
+import { buttonText, Page, pageTitle } from '../_helpers/utils';
+
 import {
   login as loginAction,
   requestResetPassword,
 } from '@/features/user/actions/auth';
-import {
-  AuthValues,
-  EmailValue,
-  LoginValues,
-} from '@/features/user/schemas/auth';
-import { Response } from '@/utils/response';
-
-import { Alert } from '@/components/ui/alert';
-import { buttonText, FormValues, Page, pageTitle } from '../_helpers/utils';
+import { LoginSchema, LoginValues } from '@/features/user/schemas/auth';
 
 export default function LoginPage() {
   const [page, setPage] = useState(Page.Login);
@@ -39,8 +36,8 @@ export default function LoginPage() {
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm<AuthValues>({
-    resolver: zodResolver(FormValues[page]),
+  } = useForm({
+    resolver: zodResolver(LoginSchema),
     defaultValues: {
       email: '',
       password: '',
@@ -52,12 +49,10 @@ export default function LoginPage() {
     setResponse(undefined);
   }, [page, reset, setResponse]);
 
-  const onSubmit = (data: AuthValues) => {
+  const onSubmit = (data: LoginValues) => {
     startTransition(() => {
       const action =
-        page === Page.Login
-          ? loginAction(data as LoginValues)
-          : requestResetPassword(data as EmailValue);
+        page === Page.Login ? loginAction(data) : requestResetPassword(data);
 
       return action.then(setResponse);
     });

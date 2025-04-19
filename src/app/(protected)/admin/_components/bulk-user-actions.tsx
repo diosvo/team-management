@@ -57,7 +57,7 @@ export default function BulkUserActions({ roster }: { roster: Array<User> }) {
       const { error, message } = await removeUser(user_id);
 
       toaster.create({
-        type: error ? 'error' : 'info',
+        type: error ? 'error' : 'success',
         description: message,
       });
     });

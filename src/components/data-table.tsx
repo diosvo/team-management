@@ -97,7 +97,10 @@ export function DataTable<T extends object>({
               ))
             ) : (
               <Table.Row>
-                <Table.Cell colSpan={columns.length + (actions ? 1 : 0)}>
+                <Table.Cell
+                  colSpan={columns.length + (actions ? 1 : 0)}
+                  textAlign="center"
+                >
                   No data found.
                 </Table.Cell>
               </Table.Row>

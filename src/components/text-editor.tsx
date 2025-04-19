@@ -7,6 +7,7 @@ import {
   Button,
   ButtonGroup,
   HStack,
+  Icon,
   IconButton,
   Input,
   Separator,
@@ -18,10 +19,12 @@ import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import {
   Bold,
+  Eraser,
   Italic,
   Link2,
   List,
   ListOrdered,
+  Save,
   Underline as UnderlineIcon,
 } from 'lucide-react';
 
@@ -35,21 +38,23 @@ import {
 } from '@/components/ui/popover';
 import { Tooltip } from '@/components/ui/tooltip';
 
+import Visibility from './visibility';
+
 interface TextEditorProps {
   editable: boolean;
+  loading: boolean;
   content: string;
-  onCancel: () => void;
   onSave: (content: string) => void;
 }
 
 export default function TextEditor({
   editable,
+  loading,
   content,
-  onCancel,
   onSave,
 }: TextEditorProps) {
-  const [url, setUrl] = useState('');
-  const [initialContent] = useState(content);
+  const [url, setUrl] = useState<string>('');
+  const [hasChanges, setHasChanges] = useState<boolean>(false);
 
   const editor = useEditor(
     {
@@ -67,6 +72,10 @@ export default function TextEditor({
         }),
       ],
       immediatelyRender: false,
+      onUpdate: ({ editor }) => {
+        const currentContent = editor.getHTML();
+        setHasChanges(currentContent !== content);
+      },
     },
     [content]
   );
@@ -77,12 +86,11 @@ export default function TextEditor({
     }
   }, [editor, editable]);
 
-  const handleCancel = () => {
-    // Reset content to initial state
+  const handleReset = () => {
     if (editor) {
-      editor.commands.setContent(initialContent);
+      editor.commands.setContent(content);
+      setHasChanges(false);
     }
-    onCancel();
   };
 
   // Use Popover for link insertion
@@ -113,7 +121,7 @@ export default function TextEditor({
       >
         <VStack align="stretch">
           {/* Text formatting buttons */}
-          {editable && (
+          <Visibility isVisible={editable}>
             <ButtonGroup>
               <Tooltip content="Bold">
                 <IconButton
@@ -244,24 +252,35 @@ export default function TextEditor({
                 </IconButton>
               </Tooltip>
             </ButtonGroup>
-          )}
+          </Visibility>
 
-          <Box p={2} borderRadius="md" minH="150px">
+          <Box p={editable ? 2 : 0} borderRadius="md">
             <EditorContent editor={editor} />
           </Box>
         </VStack>
       </Box>
 
-      {editable && (
-        <HStack mt={2} gap={2}>
-          <Button variant="outline" size="sm" onClick={handleCancel}>
-            Cancel
+      <Visibility isVisible={editable}>
+        <HStack justifyContent="space-between" mt={4}>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={loading}
+            onClick={handleReset}
+          >
+            <Icon as={Eraser} color="red.400" />
+            Reset
           </Button>
-          <Button size="sm" onClick={() => onSave(editor.getHTML())}>
+          <Button
+            size="sm"
+            disabled={loading || !hasChanges}
+            onClick={() => onSave(editor.getHTML())}
+          >
+            <Save />
             Save
           </Button>
         </HStack>
-      )}
+      </Visibility>
     </>
   );
 }

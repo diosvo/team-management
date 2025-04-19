@@ -1,8 +1,10 @@
 import { z } from 'zod';
 
-import { SELECTABLE_ROLES } from '@/drizzle/schema';
+import { SELECTABLE_ROLES } from '@/utils/constant';
+import { UserRole } from '@/utils/enum';
 
 export const USER_SCHEMA_VALIDATION = {
+  team_id: z.string().uuid(),
   name: z
     .string()
     .min(6, { message: 'Be at least 6 characters long.' })
@@ -21,6 +23,11 @@ export const USER_SCHEMA_VALIDATION = {
     .regex(/[^a-zA-Z0-9]/, {
       message: 'Contain at least one special character.',
     })
-    .trim(),
-  roles: z.array(z.enum(SELECTABLE_ROLES)).min(1).max(2).default(['PLAYER']),
+    .trim()
+    .default(''),
+  roles: z
+    .array(z.enum(SELECTABLE_ROLES))
+    .min(1)
+    .max(2)
+    .default([UserRole.PLAYER]),
 };

@@ -1,17 +1,26 @@
 'use client';
 
 import Image from 'next/image';
-import { use } from 'react';
+import { use, useTransition } from 'react';
 
 import { Avatar, HStack, Menu } from '@chakra-ui/react';
+import { LogOut, User } from 'lucide-react';
 
+import { logout } from '@/features/user/actions/auth';
 import { useUser } from '@/hooks/use-user';
 import HeaderLogo from '@assets/images/header-logo.png';
-import { LogOut, User } from 'lucide-react';
 
 export default function Header() {
   const { userPromise } = useUser();
   const user = use(userPromise);
+
+  const [isPending, startTransition] = useTransition();
+
+  const handleLogout = () => {
+    startTransition(async () => {
+      await logout();
+    });
+  };
 
   return (
     <HStack align="center" justify="space-between" py="2" px="4">
@@ -39,7 +48,11 @@ export default function Header() {
 
             <Menu.Separator />
 
-            <Menu.Item value="logout">
+            <Menu.Item
+              value="logout"
+              disabled={isPending}
+              onClick={handleLogout}
+            >
               <LogOut size={16} /> Logout
             </Menu.Item>
           </Menu.Content>
