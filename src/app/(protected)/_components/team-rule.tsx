@@ -93,7 +93,7 @@ export default function TeamRule({ editable, team_id, rule }: TeamRuleProps) {
           />
         </DialogBody>
         <DialogFooter justifyContent="flex-start">
-          <Text fontSize="xs" color="gray.500">
+          <Text fontSize="xs" color="GrayText">
             {rule.updated_at &&
               `Last updated on ${rule.updated_at.toLocaleString(LOCALE)}`}
           </Text>

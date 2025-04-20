@@ -3,12 +3,16 @@
 import Image from 'next/image';
 import { use, useTransition } from 'react';
 
-import { Avatar, HStack, Menu } from '@chakra-ui/react';
-import { LogOut, User } from 'lucide-react';
+import { Avatar, Circle, Float, HStack, Menu } from '@chakra-ui/react';
+import { LogOut } from 'lucide-react';
 
-import { logout } from '@/features/user/actions/auth';
 import { useUser } from '@/hooks/use-user';
 import HeaderLogo from '@assets/images/header-logo.png';
+
+import { toaster } from '@/components/ui/toaster';
+import { logout } from '@/features/user/actions/auth';
+import { colorState } from '@/utils/helper';
+import UserInfo from './user-info';
 
 export default function Header() {
   const { userPromise } = useUser();
@@ -22,6 +26,14 @@ export default function Header() {
     });
   };
 
+  if (!user) {
+    toaster.error({
+      title: 'Session has been expired',
+      description: 'Please login again.',
+    });
+    return null;
+  }
+
   return (
     <HStack align="center" justify="space-between" py="2" px="4">
       <Image
@@ -34,16 +46,24 @@ export default function Header() {
       />
 
       <Menu.Root>
-        <Menu.Trigger>
+        <Menu.Trigger focusVisibleRing="none">
           <Avatar.Root variant="subtle" size="sm">
-            <Avatar.Fallback name={user?.name} />
-            <Avatar.Image src={user?.image as string} />
+            <Avatar.Fallback name={user.name} />
+            <Avatar.Image src={user.image as string} />
+            <Float placement="bottom-end" offsetX="1" offsetY="1">
+              <Circle
+                size="8px"
+                outline="0.2em solid"
+                outlineColor="bg"
+                bg={colorState(user.state)}
+              />
+            </Float>
           </Avatar.Root>
         </Menu.Trigger>
         <Menu.Positioner>
           <Menu.Content>
-            <Menu.Item value="user">
-              <User size={16} /> {user?.name}
+            <Menu.Item value="user-info" asChild>
+              <UserInfo user={user} />
             </Menu.Item>
 
             <Menu.Separator />
@@ -52,8 +72,9 @@ export default function Header() {
               value="logout"
               disabled={isPending}
               onClick={handleLogout}
+              _hover={{ cursor: 'pointer' }}
             >
-              <LogOut size={16} /> Logout
+              <LogOut size={14} /> Logout
             </Menu.Item>
           </Menu.Content>
         </Menu.Positioner>
