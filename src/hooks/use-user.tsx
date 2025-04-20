@@ -6,16 +6,17 @@ import { Rule, User } from '@/drizzle/schema';
 
 type UserContextType = {
   userPromise: Promise<
-    | (User & {
+    Nullable<
+      User & {
         team: {
-          rule: Partial<Rule> | null;
+          rule: Nullable<Partial<Rule>>;
         };
-      })
-    | null
+      }
+    >
   >;
 };
 
-const UserContext = createContext<UserContextType | null>(null);
+const UserContext = createContext<Nullable<UserContextType>>(null);
 
 export function useUser(): UserContextType {
   const context = useContext(UserContext);
