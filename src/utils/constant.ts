@@ -2,6 +2,7 @@ import { v4 as uuidV4 } from 'uuid';
 import { UserRole } from './enum';
 
 export const UUID = uuidV4();
+export const LOCALE = 'vi-VN';
 
 // 1 hour
 export const EXPIRES_AT = new Date(new Date().getTime() + 3600 * 1000);
