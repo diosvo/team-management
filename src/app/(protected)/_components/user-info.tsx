@@ -198,12 +198,7 @@ export default function UserInfo({ user }: UserInfoProps) {
                     <ShieldCheck size={14} color="GrayText" />
                     <Text color="GrayText">Roles:</Text>
                     {user.roles.map((role: string) => (
-                      <Badge
-                        key={role}
-                        variant="outline"
-                        width="max-content"
-                        borderRadius="full"
-                      >
+                      <Badge key={role} variant="outline" borderRadius="full">
                         {role}
                       </Badge>
                     ))}

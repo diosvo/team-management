@@ -11,9 +11,8 @@ import {
 } from 'react';
 
 import { Button, Icon, Spinner, Text, VStack } from '@chakra-ui/react';
-import { LucideProps, ShieldUser } from 'lucide-react';
+import { LucideProps } from 'lucide-react';
 
-import Visibility from '@/components/visibility';
 import { Rule } from '@/drizzle/schema';
 import { useUser } from '@/hooks/use-user';
 import { UserRole } from '@/utils/enum';
@@ -110,12 +109,6 @@ export default function Sidebar() {
           team_id={user?.team_id as string}
           rule={user?.team.rule as Rule}
         />
-
-        <Visibility isVisible={isAdmin}>
-          <NavButton href="/admin" icon={ShieldUser}>
-            Administration
-          </NavButton>
-        </Visibility>
       </VStack>
     </VStack>
   );

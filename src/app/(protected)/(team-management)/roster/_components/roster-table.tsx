@@ -1,46 +1,214 @@
 'use client';
 
-import { Badge } from '@chakra-ui/react';
+import { useState } from 'react';
 
-import { DataTable, TableColumn } from '@/components/data-table';
+import {
+  ActionBar,
+  Badge,
+  Box,
+  Button,
+  ButtonGroup,
+  Checkbox,
+  Heading,
+  HStack,
+  IconButton,
+  Pagination,
+  Portal,
+  Table,
+} from '@chakra-ui/react';
+import { ChevronLeft, ChevronRight, UserRoundPlus } from 'lucide-react';
+
+import { toaster } from '@/components/ui/toaster';
+
 import { User } from '@/drizzle/schema';
-import { formatDate } from '@/utils/formatter';
 import { colorState } from '@/utils/helper';
 
-const columns: Array<TableColumn<User>> = [
-  {
-    header: 'Name',
-    accessor: 'name',
-  },
-  {
-    header: 'Email',
-    accessor: 'email',
-  },
-  {
-    header: 'DOB',
-    accessor: 'dob',
-    render: (value) => formatDate(value as Date),
-  },
-  {
-    header: 'Join Date',
-    accessor: 'join_date',
-    render: (value) => formatDate(value as Date),
-  },
-  {
-    header: 'State',
-    accessor: 'state',
-    render: (value) => {
-      const state = value as string;
-
-      return (
-        <Badge variant="surface" colorPalette={colorState(state)}>
-          {state}
-        </Badge>
-      );
-    },
-  },
-];
+import UserInfo from '@/app/(protected)/_components/user-info';
+import { removeUser } from '@/features/user/actions/user';
 
 export function RosterTable({ users }: { users: Array<User> }) {
-  return <DataTable columns={columns} data={users} showPagination />;
+  const [selection, setSelection] = useState<Array<string>>([]);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    pageSize: 10,
+  });
+
+  const totalCount = users.length;
+
+  // Selection
+  const hasSelection = selection.length > 0;
+  const indeterminate = hasSelection && selection.length < totalCount;
+
+  // Calculate the users to show for the current page
+  const startIndex = (pagination.page - 1) * pagination.pageSize;
+  const endIndex = Math.min(startIndex + pagination.pageSize, totalCount);
+  const currentData = users.slice(startIndex, endIndex);
+
+  const removeUsers = () => {
+    selection.forEach(async (user_id: string) => {
+      const { error, message: description } = await removeUser(user_id);
+
+      toaster.create({
+        type: error ? 'error' : 'success',
+        description,
+      });
+    });
+
+    setSelection([]);
+  };
+
+  return (
+    <Box>
+      <HStack justifyContent="space-between">
+        <Heading as="h1" size="xl">
+          Team Roster
+        </Heading>
+        <Button size="sm">
+          <UserRoundPlus />
+          Add User
+        </Button>
+      </HStack>
+
+      <Table.ScrollArea my={6}>
+        <Table.Root stickyHeader interactive>
+          <Table.Header>
+            <Table.Row>
+              <Table.ColumnHeader w="6">
+                <Checkbox.Root
+                  size="sm"
+                  top="0.5"
+                  aria-label="Select all rows"
+                  checked={
+                    indeterminate ? 'indeterminate' : selection.length > 0
+                  }
+                  onCheckedChange={(changes) => {
+                    setSelection(
+                      changes.checked ? users.map(({ user_id }) => user_id) : []
+                    );
+                  }}
+                >
+                  <Checkbox.HiddenInput />
+                  <Checkbox.Control />
+                </Checkbox.Root>
+              </Table.ColumnHeader>
+              <Table.ColumnHeader>No.</Table.ColumnHeader>
+              <Table.ColumnHeader>Name</Table.ColumnHeader>
+              <Table.ColumnHeader>Email</Table.ColumnHeader>
+              <Table.ColumnHeader>State</Table.ColumnHeader>
+              <Table.ColumnHeader>Roles</Table.ColumnHeader>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
+            {currentData.length > 0 ? (
+              currentData.map((user) => (
+                <Table.Row
+                  key={user.user_id}
+                  data-selected={
+                    selection.includes(user.user_id) ? '' : undefined
+                  }
+                  onClick={() => <UserInfo user={user} />}
+                >
+                  <Table.Cell>
+                    <Checkbox.Root
+                      size="sm"
+                      top="0.5"
+                      aria-label="Select row"
+                      checked={selection.includes(user.user_id)}
+                      onCheckedChange={(changes) => {
+                        setSelection((prev) =>
+                          changes.checked
+                            ? [...prev, user.user_id]
+                            : selection.filter((id) => id !== user.user_id)
+                        );
+                      }}
+                    >
+                      <Checkbox.HiddenInput />
+                      <Checkbox.Control />
+                    </Checkbox.Root>
+                  </Table.Cell>
+                  <Table.Cell>-</Table.Cell>
+                  <Table.Cell>{user.name}</Table.Cell>
+                  <Table.Cell>{user.email}</Table.Cell>
+                  <Table.Cell>
+                    <Badge
+                      variant="surface"
+                      borderRadius="full"
+                      colorPalette={colorState(user.state)}
+                    >
+                      {user.state}
+                    </Badge>
+                  </Table.Cell>
+                  <Table.Cell>
+                    {user.roles.map((role: string) => (
+                      <Badge key={role} variant="outline" borderRadius="full">
+                        {role}
+                      </Badge>
+                    ))}
+                  </Table.Cell>
+                </Table.Row>
+              ))
+            ) : (
+              <Table.Row>
+                <Table.Cell colSpan={5} textAlign="center">
+                  No data found.
+                </Table.Cell>
+              </Table.Row>
+            )}
+          </Table.Body>
+        </Table.Root>
+      </Table.ScrollArea>
+      <Pagination.Root
+        display="flex"
+        justifyContent="space-between"
+        count={totalCount}
+        pageSize={pagination.pageSize}
+        page={pagination.page}
+        onPageChange={({ page }) =>
+          setPagination((prev) => ({ ...prev, page }))
+        }
+      >
+        <Pagination.PageText
+          format="long"
+          flex="1"
+          fontWeight="normal"
+          fontSize="14px"
+        />
+
+        <ButtonGroup variant="ghost" size="sm">
+          <Pagination.PrevTrigger asChild>
+            <IconButton aria-label="Previous page">
+              <ChevronLeft />
+            </IconButton>
+          </Pagination.PrevTrigger>
+
+          <Pagination.NextTrigger asChild>
+            <IconButton aria-label="Next page">
+              <ChevronRight />
+            </IconButton>
+          </Pagination.NextTrigger>
+        </ButtonGroup>
+      </Pagination.Root>
+
+      <ActionBar.Root open={hasSelection}>
+        <Portal>
+          <ActionBar.Positioner>
+            <ActionBar.Content>
+              <ActionBar.SelectionTrigger>
+                {selection.length} selected
+              </ActionBar.SelectionTrigger>
+              <ActionBar.Separator />
+              <Button
+                variant="outline"
+                colorPalette="red"
+                size="sm"
+                onClick={removeUsers}
+              >
+                Delete
+              </Button>
+            </ActionBar.Content>
+          </ActionBar.Positioner>
+        </Portal>
+      </ActionBar.Root>
+    </Box>
+  );
 }
