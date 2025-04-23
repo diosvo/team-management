@@ -3,11 +3,11 @@ import { cache } from 'react';
 import { eq, ne } from 'drizzle-orm';
 
 import { db } from '@/drizzle';
-import { UserTable } from '@/drizzle/schema';
+import { User, UserTable } from '@/drizzle/schema';
 import logger from '@/lib/logger';
 import { UserRole } from '@/utils/enum';
 
-import { AddUserValues, UpdateUserValues } from '../schemas/user';
+import { AddUserValues } from '../schemas/user';
 
 export const getUsers = cache(async () => {
   try {
@@ -66,7 +66,7 @@ export async function insertUsers(
   }
 }
 
-export async function updateUser(user_id: string, user: UpdateUserValues) {
+export async function updateUser(user_id: string, user: Partial<User>) {
   try {
     return await db
       .update(UserTable)

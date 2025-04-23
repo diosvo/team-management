@@ -62,7 +62,7 @@ export async function updateUserInfo(
   try {
     await updateUser(user_id, data);
 
-    return ResponseFactory.success('Updated user successfully');
+    return ResponseFactory.success('Updated information successfully');
   } catch {
     return ResponseFactory.error('Failed to update user');
   }
