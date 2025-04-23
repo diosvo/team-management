@@ -41,8 +41,8 @@ import { Field } from '@/components/ui/field';
 import Visibility from '@/components/visibility';
 
 import { User } from '@/drizzle/schema';
-import { LOCALE } from '@/utils/constant';
 import { UserRole } from '@/utils/enum';
+import { formatDate } from '@/utils/formatter';
 import { colorState } from '@/utils/helper';
 
 import { toaster } from '@/components/ui/toaster';
@@ -211,7 +211,7 @@ export default function UserInfo({ user }: UserInfoProps) {
                 </HStack>
                 {user.join_date && (
                   <InfoItem label="Joined" icon={LucideClock9}>
-                    {new Date(user.join_date).toLocaleDateString(LOCALE)}
+                    {formatDate(user.join_date)}
                   </InfoItem>
                 )}
               </VStack>
@@ -228,10 +228,10 @@ export default function UserInfo({ user }: UserInfoProps) {
                 </HStack>
                 <VStack width="full" align="stretch">
                   <InfoItem label="Created">
-                    {user.created_at.toLocaleDateString(LOCALE)}
+                    {formatDate(user.created_at)}
                   </InfoItem>
                   <InfoItem label="Last Update">
-                    {user.updated_at.toLocaleDateString(LOCALE)}
+                    {formatDate(user.updated_at)}
                   </InfoItem>
                 </VStack>
               </VStack>
