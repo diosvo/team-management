@@ -5,8 +5,12 @@ import { Response, ResponseFactory } from '@/utils/response';
 
 import { getTeam } from '@/features/team/actions/team';
 import { revalidateAdminPath } from '../db/cache';
-import { deleteUser, getUsers, insertUsers } from '../db/user';
-import { AddUserValues } from '../schemas/user';
+import { deleteUser, getUsers, insertUsers, updateUser } from '../db/user';
+import {
+  AddUserValues,
+  UpdateUserSchema,
+  UpdateUserValues,
+} from '../schemas/user';
 import { generatePasswordToken } from './password-reset-token';
 
 export async function getRoster() {
@@ -42,6 +46,25 @@ export async function addUsers(
     return ResponseFactory.error(
       'An error occurred while creating your account.'
     );
+  }
+}
+
+export async function updateUserInfo(
+  user_id: string,
+  values: UpdateUserValues
+): Promise<Response> {
+  const { data, error } = UpdateUserSchema.safeParse(values);
+
+  if (error) {
+    return ResponseFactory.error(error.message);
+  }
+
+  try {
+    await updateUser(user_id, data);
+
+    return ResponseFactory.success('Updated user successfully');
+  } catch {
+    return ResponseFactory.error('Failed to update user');
   }
 }
 

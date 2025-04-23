@@ -10,6 +10,7 @@ export const USER_SCHEMA_VALIDATION = {
     .min(6, { message: 'Be at least 6 characters long.' })
     .trim()
     .default(''),
+  dob: z.string().date().optional(),
   email: z
     .string()
     .email({ message: 'Please enter a valid email.' })

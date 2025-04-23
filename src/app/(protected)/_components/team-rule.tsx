@@ -36,7 +36,7 @@ export default function TeamRule({ editable, team_id, rule }: TeamRuleProps) {
   const [isPending, startTransition] = useTransition();
   const [isEditing, setIsEditing] = useState<boolean>(false);
 
-  async function onSubmit(values: RuleValues) {
+  function onSubmit(values: RuleValues) {
     startTransition(async () => {
       const id = toaster.create({
         type: 'loading',
@@ -84,8 +84,8 @@ export default function TeamRule({ editable, team_id, rule }: TeamRuleProps) {
             editable={editable && isEditing && !isPending}
             loading={isPending}
             content={rule.content as string}
-            onSave={async (content: string) =>
-              await onSubmit({
+            onSave={(content: string) =>
+              onSubmit({
                 content,
                 team_id,
               })

@@ -3,11 +3,11 @@ import { cache } from 'react';
 import { eq, ne } from 'drizzle-orm';
 
 import { db } from '@/drizzle';
-import { User, UserTable } from '@/drizzle/schema';
+import { UserTable } from '@/drizzle/schema';
 import logger from '@/lib/logger';
 import { UserRole } from '@/utils/enum';
 
-import { AddUserValues } from '../schemas/user';
+import { AddUserValues, UpdateUserValues } from '../schemas/user';
 
 export const getUsers = cache(async () => {
   try {
@@ -66,12 +66,12 @@ export async function insertUsers(
   }
 }
 
-export async function updateUser(user: User) {
+export async function updateUser(user_id: string, user: UpdateUserValues) {
   try {
     return await db
       .update(UserTable)
       .set(user)
-      .where(eq(UserTable.user_id, user.user_id));
+      .where(eq(UserTable.user_id, user_id));
   } catch {
     return null;
   }

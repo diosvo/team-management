@@ -1,5 +1,33 @@
 'use client';
 
+import { ReactNode, useTransition } from 'react';
+
+import {
+  Badge,
+  Button,
+  DialogTrigger,
+  HStack,
+  Icon,
+  Input,
+  InputGroup,
+  Separator,
+  Spinner,
+  Text,
+  VStack,
+} from '@chakra-ui/react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import {
+  CalendarDays,
+  Check,
+  CircleUserRound,
+  LucideClock9,
+  Mail,
+  ShieldCheck,
+  UserIcon,
+  X,
+} from 'lucide-react';
+import { useForm } from 'react-hook-form';
+
 import {
   DialogBody,
   DialogCloseTrigger,
@@ -9,35 +37,69 @@ import {
   DialogRoot,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Field } from '@/components/ui/field';
 import Visibility from '@/components/visibility';
+
 import { User } from '@/drizzle/schema';
 import { LOCALE } from '@/utils/constant';
 import { UserRole } from '@/utils/enum';
 import { colorState } from '@/utils/helper';
+
+import { toaster } from '@/components/ui/toaster';
+import { updateUserInfo } from '@/features/user/actions/user';
 import {
-  Badge,
-  Button,
-  DialogTrigger,
-  HStack,
-  Icon,
-  Separator,
-  Text,
-  VStack,
-} from '@chakra-ui/react';
-import {
-  CalendarDays,
-  CircleUserRound,
-  LucideClock9,
-  Mail,
-  ShieldCheck,
-  UserIcon,
-} from 'lucide-react';
+  UpdateUserSchema,
+  UpdateUserValues,
+} from '@/features/user/schemas/user';
+
+interface InfoItemProps {
+  label: string;
+  children: ReactNode;
+  icon?: React.ElementType;
+}
+
+function InfoItem({ icon: IconComponent, label, children }: InfoItemProps) {
+  return (
+    <HStack gap={1}>
+      {IconComponent && <IconComponent size={14} color="GrayText" />}
+      <Text color="GrayText">{label}:</Text>
+      {children}
+    </HStack>
+  );
+}
 
 interface UserInfoProps {
   user: User;
 }
 
 export default function UserInfo({ user }: UserInfoProps) {
+  const [isPending, startTransition] = useTransition();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(UpdateUserSchema),
+    defaultValues: {
+      dob: user.dob as string,
+    },
+  });
+
+  const onSubmit = (values: UpdateUserValues) => {
+    startTransition(async () => {
+      const { error, message: description } = await updateUserInfo(
+        user.user_id,
+        values
+      );
+
+      toaster.create({
+        type: error ? 'error' : 'success',
+        description,
+      });
+    });
+  };
+
   return (
     <DialogRoot>
       <DialogTrigger asChild>
@@ -73,16 +135,43 @@ export default function UserInfo({ user }: UserInfoProps) {
                 <Separator flex="1" />
               </HStack>
               <VStack width="full" align="stretch">
-                <HStack gap={1}>
-                  <Mail size={14} color="GrayText" />
-                  <Text color="GrayText">Email:</Text>
+                <InfoItem label="Email" icon={Mail}>
                   {user.email}
-                </HStack>
-                <HStack gap={1}>
-                  <CalendarDays size={14} color="GrayText" />
-                  <Text color="GrayText">DOB:</Text>
-                  {new Date(user.dob as string).toLocaleDateString(LOCALE)}
-                </HStack>
+                </InfoItem>
+                <InfoItem label="DOB" icon={CalendarDays}>
+                  <form onSubmit={handleSubmit(onSubmit)}>
+                    <Field
+                      width="132px"
+                      disabled={isPending}
+                      invalid={!!errors.dob}
+                    >
+                      <InputGroup
+                        endElement={
+                          isPending ? (
+                            <Spinner
+                              size="xs"
+                              borderWidth="1px"
+                              color="GrayText"
+                            />
+                          ) : (
+                            <Icon
+                              size="xs"
+                              as={!!errors.dob ? X : Check}
+                              color={!!errors.dob ? 'tomato' : 'green'}
+                            />
+                          )
+                        }
+                      >
+                        <Input
+                          size="sm"
+                          variant="flushed"
+                          placeholder="YYYY-MM-DD"
+                          {...register('dob')}
+                        />
+                      </InputGroup>
+                    </Field>
+                  </form>
+                </InfoItem>
               </VStack>
             </VStack>
 
@@ -120,11 +209,9 @@ export default function UserInfo({ user }: UserInfoProps) {
                     ))}
                   </HStack>
                 </HStack>
-                <HStack gap={1}>
-                  <LucideClock9 size={14} color="GrayText" />
-                  <Text color="GrayText">Joined:</Text>
+                <InfoItem label="Joined" icon={LucideClock9}>
                   {user.join_date.toLocaleDateString(LOCALE)}
-                </HStack>
+                </InfoItem>
               </VStack>
             </VStack>
 
@@ -138,14 +225,12 @@ export default function UserInfo({ user }: UserInfoProps) {
                   <Separator flex="1" />
                 </HStack>
                 <VStack width="full" align="stretch">
-                  <HStack gap={1}>
-                    <Text color="GrayText">Created:</Text>
+                  <InfoItem label="Created">
                     {user.created_at.toLocaleDateString(LOCALE)}
-                  </HStack>
-                  <HStack gap={1}>
-                    <Text color="GrayText">Last Update:</Text>
+                  </InfoItem>
+                  <InfoItem label="Last Update">
                     {user.updated_at.toLocaleDateString(LOCALE)}
-                  </HStack>
+                  </InfoItem>
                 </VStack>
               </VStack>
             </Visibility>
