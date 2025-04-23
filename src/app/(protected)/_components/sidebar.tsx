@@ -54,7 +54,7 @@ function NavButton({
       disabled={disabled}
       variant={isActive ? 'subtle' : 'ghost'}
       colorScheme={isActive ? 'blue' : 'gray'}
-      color={isActive ? 'inherit' : 'gray.500'}
+      color={isActive ? 'inherit' : 'GrayText'}
       asChild
     >
       {disabled ? (

@@ -4,7 +4,8 @@ import { Badge } from '@chakra-ui/react';
 
 import { DataTable, TableColumn } from '@/components/data-table';
 import { User } from '@/drizzle/schema';
-import { UserState } from '@/utils/enum';
+import { formatDate } from '@/utils/formatter';
+import { colorState } from '@/utils/helper';
 
 const columns: Array<TableColumn<User>> = [
   {
@@ -18,26 +19,22 @@ const columns: Array<TableColumn<User>> = [
   {
     header: 'DOB',
     accessor: 'dob',
+    render: (value) => formatDate(value as Date),
   },
   {
     header: 'Join Date',
     accessor: 'join_date',
-    render: (value) => (value as Date)?.toLocaleDateString('vi-VN'),
+    render: (value) => formatDate(value as Date),
   },
   {
     header: 'State',
     accessor: 'state',
     render: (value) => {
-      const color =
-        value === UserState.ACTIVE
-          ? 'green'
-          : value === UserState.TEMPORARILY_ABSENT
-          ? 'orange'
-          : 'red';
+      const state = value as string;
 
       return (
-        <Badge variant="surface" colorPalette={color}>
-          {value as string}
+        <Badge variant="surface" colorPalette={colorState(state)}>
+          {state}
         </Badge>
       );
     },

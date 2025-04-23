@@ -123,8 +123,7 @@ export async function changePassword(value: PasswordValue, token?: string) {
   }
 
   try {
-    await updateUser({
-      ...existingUser,
+    await updateUser(existingUser.user_id, {
       password: await hash(data.password, 10),
     });
     await deletePasswordResetTokenByEmail(existingToken.email);

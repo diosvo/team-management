@@ -66,12 +66,12 @@ export async function insertUsers(
   }
 }
 
-export async function updateUser(user: User) {
+export async function updateUser(user_id: string, user: Partial<User>) {
   try {
     return await db
       .update(UserTable)
       .set(user)
-      .where(eq(UserTable.user_id, user.user_id));
+      .where(eq(UserTable.user_id, user_id));
   } catch {
     return null;
   }
