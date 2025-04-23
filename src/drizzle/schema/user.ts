@@ -5,7 +5,6 @@ import {
   pgEnum,
   pgTable,
   text,
-  timestamp,
   uuid,
   varchar,
 } from 'drizzle-orm/pg-core';
@@ -38,9 +37,7 @@ export const UserTable = pgTable(
     image: text('image'),
     state: userStateEnum('state').default(UserState.ACTIVE).notNull(),
     roles: userRolesEnum('roles').array().default([UserRole.PLAYER]).notNull(),
-    join_date: timestamp('join_date', { withTimezone: true })
-      .defaultNow()
-      .notNull(),
+    join_date: date('join_date'),
     created_at,
     updated_at,
   },

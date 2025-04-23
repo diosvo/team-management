@@ -209,9 +209,11 @@ export default function UserInfo({ user }: UserInfoProps) {
                     ))}
                   </HStack>
                 </HStack>
-                <InfoItem label="Joined" icon={LucideClock9}>
-                  {user.join_date.toLocaleDateString(LOCALE)}
-                </InfoItem>
+                {user.join_date && (
+                  <InfoItem label="Joined" icon={LucideClock9}>
+                    {new Date(user.join_date).toLocaleDateString(LOCALE)}
+                  </InfoItem>
+                )}
               </VStack>
             </VStack>
 
