@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, useTransition } from 'react';
+import { ReactNode, useState, useTransition } from 'react';
 
 import {
   Badge,
@@ -52,6 +52,31 @@ import {
   UpdateUserValues,
 } from '@/features/user/schemas/user';
 
+// Global dialog state management
+const useUserInfoDialog = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+
+  const openDialog = (user: User) => {
+    setSelectedUser(user);
+    setIsOpen(true);
+  };
+
+  const closeDialog = () => {
+    setIsOpen(false);
+  };
+
+  return {
+    isOpen,
+    selectedUser,
+    openDialog,
+    closeDialog,
+  };
+};
+
+// Export the hook for external usage
+export { useUserInfoDialog };
+
 interface InfoItemProps {
   label: string;
   children: ReactNode;
@@ -68,11 +93,7 @@ function InfoItem({ icon: IconComponent, label, children }: InfoItemProps) {
   );
 }
 
-interface UserInfoProps {
-  user: User;
-}
-
-export default function UserInfo({ user }: UserInfoProps) {
+function UserInfoContent({ user }: { user: User }) {
   const [isPending, startTransition] = useTransition();
 
   const {
@@ -101,139 +122,172 @@ export default function UserInfo({ user }: UserInfoProps) {
   };
 
   return (
-    <DialogRoot>
-      <DialogTrigger asChild>
-        <Button
-          variant="ghost"
-          p={1}
-          gap={2}
-          width="full"
-          height="max-content"
-          focusVisibleRing="none"
-          justifyContent="flex-start"
-        >
-          <Icon as={UserIcon} size="sm" />
-          {user.name}
-        </Button>
-      </DialogTrigger>
+    <VStack align="stretch">
+      <VStack gap={2}>
+        <HStack width="full">
+          <Separator flex="1" />
+          <Text flexShrink="0" fontSize="sm" color="GrayText">
+            Personal
+          </Text>
+          <Separator flex="1" />
+        </HStack>
+        <VStack width="full" align="stretch">
+          <InfoItem label="Email" icon={Mail}>
+            {user.email}
+          </InfoItem>
+          <InfoItem label="DOB" icon={CalendarDays}>
+            <form onSubmit={handleSubmit(onSubmit)}>
+              <Field width="132px" disabled={isPending} invalid={!!errors.dob}>
+                <InputGroup
+                  endElement={
+                    isPending ? (
+                      <Spinner size="xs" borderWidth="1px" color="GrayText" />
+                    ) : (
+                      <Icon
+                        size="xs"
+                        as={!!errors.dob ? X : Check}
+                        color={!!errors.dob ? 'tomato' : 'green'}
+                      />
+                    )
+                  }
+                >
+                  <Input
+                    size="sm"
+                    variant="flushed"
+                    placeholder="YYYY-MM-DD"
+                    {...register('dob')}
+                  />
+                </InputGroup>
+              </Field>
+            </form>
+          </InfoItem>
+        </VStack>
+      </VStack>
+
+      <VStack gap={2}>
+        <HStack width="full">
+          <Separator flex="1" />
+          <Text flexShrink="0" fontSize="sm" color="GrayText">
+            Team
+          </Text>
+          <Separator flex="1" />
+        </HStack>
+        <VStack width="full" align="stretch">
+          <HStack justifyContent="space-between">
+            <Badge
+              variant="surface"
+              width="max-content"
+              borderRadius="full"
+              colorPalette={colorState(user.state)}
+            >
+              {user.state}
+            </Badge>
+
+            <HStack gap={1}>
+              <ShieldCheck size={14} color="GrayText" />
+              <Text color="GrayText">Roles:</Text>
+              {user.roles.map((role: string) => (
+                <Badge key={role} variant="outline" borderRadius="full">
+                  {role}
+                </Badge>
+              ))}
+            </HStack>
+          </HStack>
+          {user.join_date && (
+            <InfoItem label="Joined" icon={LucideClock9}>
+              {formatDate(user.join_date)}
+            </InfoItem>
+          )}
+        </VStack>
+      </VStack>
+
+      <Visibility isVisible={user.roles.includes(UserRole.SUPER_ADMIN)}>
+        <VStack gap={2}>
+          <HStack width="full">
+            <Separator flex="1" />
+            <Text flexShrink="0" fontSize="sm" color="GrayText">
+              System
+            </Text>
+            <Separator flex="1" />
+          </HStack>
+          <VStack width="full" align="stretch">
+            <InfoItem label="Created">{formatDate(user.created_at)}</InfoItem>
+            <InfoItem label="Last Update">
+              {formatDate(user.updated_at)}
+            </InfoItem>
+          </VStack>
+        </VStack>
+      </Visibility>
+    </VStack>
+  );
+}
+
+interface UserInfoProps {
+  user: User;
+  triggerComponent?: ReactNode;
+  isControlled?: boolean;
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+// Main component that handles the dialog
+export default function UserInfo({
+  user,
+  triggerComponent,
+  isControlled = false,
+  isOpen: controlledIsOpen,
+  onClose,
+}: UserInfoProps) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleClose = () => {
+    if (isControlled && onClose) {
+      onClose();
+    } else {
+      setIsOpen(false);
+    }
+  };
+
+  const dialogOpen = isControlled ? controlledIsOpen : isOpen;
+
+  const handleOpenChange = (details: { open: boolean }) => {
+    if (!isControlled) {
+      setIsOpen(details.open);
+    }
+  };
+
+  return (
+    <DialogRoot open={dialogOpen} onOpenChange={handleOpenChange}>
+      {triggerComponent ? (
+        <DialogTrigger asChild>{triggerComponent}</DialogTrigger>
+      ) : (
+        <DialogTrigger asChild>
+          <Button
+            variant="ghost"
+            p={1}
+            gap={2}
+            width="full"
+            height="max-content"
+            focusVisibleRing="none"
+            justifyContent="flex-start"
+          >
+            <Icon as={UserIcon} size="sm" />
+            {user.name}
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent>
         <DialogHeader>
           <DialogTitle display="flex" alignItems="center" gap={2}>
             <CircleUserRound />
             <Text>{user.name}</Text>
           </DialogTitle>
-          <DialogDescription>#5</DialogDescription>
+          <DialogDescription>#{user.user_id.substring(0, 5)}</DialogDescription>
         </DialogHeader>
         <DialogBody>
-          <VStack align="stretch">
-            <VStack gap={2}>
-              <HStack width="full">
-                <Separator flex="1" />
-                <Text flexShrink="0" fontSize="sm" color="GrayText">
-                  Personal
-                </Text>
-                <Separator flex="1" />
-              </HStack>
-              <VStack width="full" align="stretch">
-                <InfoItem label="Email" icon={Mail}>
-                  {user.email}
-                </InfoItem>
-                <InfoItem label="DOB" icon={CalendarDays}>
-                  <form onSubmit={handleSubmit(onSubmit)}>
-                    <Field
-                      width="132px"
-                      disabled={isPending}
-                      invalid={!!errors.dob}
-                    >
-                      <InputGroup
-                        endElement={
-                          isPending ? (
-                            <Spinner
-                              size="xs"
-                              borderWidth="1px"
-                              color="GrayText"
-                            />
-                          ) : (
-                            <Icon
-                              size="xs"
-                              as={!!errors.dob ? X : Check}
-                              color={!!errors.dob ? 'tomato' : 'green'}
-                            />
-                          )
-                        }
-                      >
-                        <Input
-                          size="sm"
-                          variant="flushed"
-                          placeholder="YYYY-MM-DD"
-                          {...register('dob')}
-                        />
-                      </InputGroup>
-                    </Field>
-                  </form>
-                </InfoItem>
-              </VStack>
-            </VStack>
-
-            <VStack gap={2}>
-              <HStack width="full">
-                <Separator flex="1" />
-                <Text flexShrink="0" fontSize="sm" color="GrayText">
-                  Team
-                </Text>
-                <Separator flex="1" />
-              </HStack>
-              <VStack width="full" align="stretch">
-                <HStack justifyContent="space-between">
-                  <Badge
-                    variant="surface"
-                    width="max-content"
-                    borderRadius="full"
-                    colorPalette={colorState(user.state)}
-                  >
-                    {user.state}
-                  </Badge>
-
-                  <HStack gap={1}>
-                    <ShieldCheck size={14} color="GrayText" />
-                    <Text color="GrayText">Roles:</Text>
-                    {user.roles.map((role: string) => (
-                      <Badge key={role} variant="outline" borderRadius="full">
-                        {role}
-                      </Badge>
-                    ))}
-                  </HStack>
-                </HStack>
-                {user.join_date && (
-                  <InfoItem label="Joined" icon={LucideClock9}>
-                    {formatDate(user.join_date)}
-                  </InfoItem>
-                )}
-              </VStack>
-            </VStack>
-
-            <Visibility isVisible={user.roles.includes(UserRole.SUPER_ADMIN)}>
-              <VStack gap={2}>
-                <HStack width="full">
-                  <Separator flex="1" />
-                  <Text flexShrink="0" fontSize="sm" color="GrayText">
-                    System
-                  </Text>
-                  <Separator flex="1" />
-                </HStack>
-                <VStack width="full" align="stretch">
-                  <InfoItem label="Created">
-                    {formatDate(user.created_at)}
-                  </InfoItem>
-                  <InfoItem label="Last Update">
-                    {formatDate(user.updated_at)}
-                  </InfoItem>
-                </VStack>
-              </VStack>
-            </Visibility>
-          </VStack>
+          <UserInfoContent user={user} />
         </DialogBody>
-        <DialogCloseTrigger />
+        <DialogCloseTrigger onClick={handleClose} />
       </DialogContent>
     </DialogRoot>
   );

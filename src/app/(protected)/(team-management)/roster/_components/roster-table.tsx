@@ -9,21 +9,30 @@ import {
   Button,
   ButtonGroup,
   Checkbox,
+  EmptyState,
   Heading,
   HStack,
   IconButton,
   Pagination,
   Portal,
   Table,
+  VStack,
 } from '@chakra-ui/react';
-import { ChevronLeft, ChevronRight, UserRoundPlus } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  SwatchBook,
+  UserRoundPlus,
+} from 'lucide-react';
 
 import { toaster } from '@/components/ui/toaster';
 
 import { User } from '@/drizzle/schema';
 import { colorState } from '@/utils/helper';
 
-import UserInfo from '@/app/(protected)/_components/user-info';
+import UserInfo, {
+  useUserInfoDialog,
+} from '@/app/(protected)/_components/user-info';
 import { removeUser } from '@/features/user/actions/user';
 
 export function RosterTable({ users }: { users: Array<User> }) {
@@ -32,6 +41,7 @@ export function RosterTable({ users }: { users: Array<User> }) {
     page: 1,
     pageSize: 10,
   });
+  const { isOpen, selectedUser, openDialog, closeDialog } = useUserInfoDialog();
 
   const totalCount = users.length;
 
@@ -68,7 +78,6 @@ export function RosterTable({ users }: { users: Array<User> }) {
           Add User
         </Button>
       </HStack>
-
       <Table.ScrollArea my={6}>
         <Table.Root stickyHeader interactive>
           <Table.Header>
@@ -106,9 +115,10 @@ export function RosterTable({ users }: { users: Array<User> }) {
                   data-selected={
                     selection.includes(user.user_id) ? '' : undefined
                   }
-                  onClick={() => <UserInfo user={user} />}
+                  onClick={() => openDialog(user)}
+                  _hover={{ cursor: 'pointer' }}
                 >
-                  <Table.Cell>
+                  <Table.Cell onClick={(e) => e.stopPropagation()}>
                     <Checkbox.Root
                       size="sm"
                       top="0.5"
@@ -149,14 +159,35 @@ export function RosterTable({ users }: { users: Array<User> }) {
               ))
             ) : (
               <Table.Row>
-                <Table.Cell colSpan={5} textAlign="center">
-                  No data found.
+                <Table.Cell colSpan={5}>
+                  <EmptyState.Root>
+                    <EmptyState.Content>
+                      <EmptyState.Indicator>
+                        <SwatchBook />
+                      </EmptyState.Indicator>
+                      <VStack textAlign="center">
+                        <EmptyState.Title>No results found</EmptyState.Title>
+                        <EmptyState.Description>
+                          Try adjusting your search
+                        </EmptyState.Description>
+                      </VStack>
+                    </EmptyState.Content>
+                  </EmptyState.Root>
                 </Table.Cell>
               </Table.Row>
             )}
           </Table.Body>
         </Table.Root>
       </Table.ScrollArea>
+      {/* User Info Dialog - controlled by the table */}
+      {selectedUser && (
+        <UserInfo
+          user={selectedUser}
+          isControlled={true}
+          isOpen={isOpen}
+          onClose={closeDialog}
+        />
+      )}
       <Pagination.Root
         display="flex"
         justifyContent="space-between"
@@ -188,7 +219,6 @@ export function RosterTable({ users }: { users: Array<User> }) {
           </Pagination.NextTrigger>
         </ButtonGroup>
       </Pagination.Root>
-
       <ActionBar.Root open={hasSelection}>
         <Portal>
           <ActionBar.Positioner>
