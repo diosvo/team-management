@@ -30,9 +30,6 @@ import { toaster } from '@/components/ui/toaster';
 import { User } from '@/drizzle/schema';
 import { colorState } from '@/utils/helper';
 
-import UserInfo, {
-  useUserInfoDialog,
-} from '@/app/(protected)/_components/user-info';
 import { removeUser } from '@/features/user/actions/user';
 
 export function RosterTable({ users }: { users: Array<User> }) {
@@ -41,13 +38,13 @@ export function RosterTable({ users }: { users: Array<User> }) {
     page: 1,
     pageSize: 10,
   });
-  const { isOpen, selectedUser, openDialog, closeDialog } = useUserInfoDialog();
 
   const totalCount = users.length;
+  const selectionCount = selection.length;
 
   // Selection
-  const hasSelection = selection.length > 0;
-  const indeterminate = hasSelection && selection.length < totalCount;
+  const hasSelection = selectionCount > 0;
+  const indeterminate = hasSelection && selectionCount < totalCount;
 
   // Calculate the users to show for the current page
   const startIndex = (pagination.page - 1) * pagination.pageSize;
@@ -87,9 +84,7 @@ export function RosterTable({ users }: { users: Array<User> }) {
                   size="sm"
                   top="0.5"
                   aria-label="Select all rows"
-                  checked={
-                    indeterminate ? 'indeterminate' : selection.length > 0
-                  }
+                  checked={indeterminate ? 'indeterminate' : selectionCount > 0}
                   onCheckedChange={(changes) => {
                     setSelection(
                       changes.checked ? users.map(({ user_id }) => user_id) : []
@@ -115,7 +110,7 @@ export function RosterTable({ users }: { users: Array<User> }) {
                   data-selected={
                     selection.includes(user.user_id) ? '' : undefined
                   }
-                  onClick={() => openDialog(user)}
+                  onClick={() => console.log('roster_table')}
                   _hover={{ cursor: 'pointer' }}
                 >
                   <Table.Cell onClick={(e) => e.stopPropagation()}>
@@ -179,15 +174,6 @@ export function RosterTable({ users }: { users: Array<User> }) {
           </Table.Body>
         </Table.Root>
       </Table.ScrollArea>
-      {/* User Info Dialog - controlled by the table */}
-      {selectedUser && (
-        <UserInfo
-          user={selectedUser}
-          isControlled={true}
-          isOpen={isOpen}
-          onClose={closeDialog}
-        />
-      )}
       <Pagination.Root
         display="flex"
         justifyContent="space-between"
@@ -224,7 +210,7 @@ export function RosterTable({ users }: { users: Array<User> }) {
           <ActionBar.Positioner>
             <ActionBar.Content>
               <ActionBar.SelectionTrigger>
-                {selection.length} selected
+                {selectionCount} selected
               </ActionBar.SelectionTrigger>
               <ActionBar.Separator />
               <Button
