@@ -70,7 +70,7 @@ export default function Header() {
               value="user-info"
               _hover={{ cursor: 'pointer' }}
               onClick={() =>
-                dialog.open('team-rule', {
+                dialog.open('current-user-info', {
                   children: (
                     <UserInfo
                       user={user}

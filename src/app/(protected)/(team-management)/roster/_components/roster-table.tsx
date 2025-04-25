@@ -27,6 +27,7 @@ import {
 
 import { dialog } from '@/components/ui/dialog';
 import { toaster } from '@/components/ui/toaster';
+import Visibility from '@/components/visibility';
 
 import { User } from '@/drizzle/schema';
 import { useUser } from '@/hooks/use-user';
@@ -40,6 +41,7 @@ import AddUser from './add-user';
 export function RosterTable({ users }: { users: Array<User> }) {
   const { userPromise } = useUser();
   const currentUser = use(userPromise);
+  const isAdmin = currentUser!.roles.includes(UserRole.SUPER_ADMIN);
 
   const [selection, setSelection] = useState<Array<string>>([]);
   const [pagination, setPagination] = useState({
@@ -59,14 +61,16 @@ export function RosterTable({ users }: { users: Array<User> }) {
   const endIndex = Math.min(startIndex + pagination.pageSize, totalCount);
   const currentData = users.slice(startIndex, endIndex);
 
-  const removeUsers = () => {
-    selection.forEach(async (user_id: string) => {
-      const { error, message: description } = await removeUser(user_id);
+  const removeUsers = async () => {
+    const results = await Promise.all(selection.map(removeUser));
+    const hasErrors = results.some(({ error }) => error);
+    const successCount = results.filter((result) => !result.error).length;
 
-      toaster.create({
-        type: error ? 'error' : 'success',
-        description,
-      });
+    toaster.create({
+      type: hasErrors ? 'warning' : 'success',
+      description: hasErrors
+        ? `Deleted ${successCount} user(s), but some operations failed.`
+        : `Successfully deleted ${successCount} user(s).`,
     });
 
     setSelection([]);
@@ -78,17 +82,19 @@ export function RosterTable({ users }: { users: Array<User> }) {
         <Heading as="h1" size="xl">
           Team Roster
         </Heading>
-        <Button
-          size="sm"
-          onClick={() =>
-            dialog.open('team-rule', {
-              children: <AddUser users={users} />,
-            })
-          }
-        >
-          <UserRoundPlus />
-          Add User
-        </Button>
+        <Visibility isVisible={isAdmin}>
+          <Button
+            size="sm"
+            onClick={() =>
+              dialog.open('add-user', {
+                children: <AddUser users={users} />,
+              })
+            }
+          >
+            <UserRoundPlus />
+            Add User
+          </Button>
+        </Visibility>
       </HStack>
       <Table.ScrollArea my={6}>
         <Table.Root stickyHeader interactive>
@@ -99,7 +105,6 @@ export function RosterTable({ users }: { users: Array<User> }) {
                   size="sm"
                   top="0.5"
                   aria-label="Select all rows"
-                  _hover={{ cursor: 'pointer' }}
                   checked={indeterminate ? 'indeterminate' : selectionCount > 0}
                   onCheckedChange={(changes) => {
                     setSelection(
@@ -128,15 +133,8 @@ export function RosterTable({ users }: { users: Array<User> }) {
                   }
                   _hover={{ cursor: 'pointer' }}
                   onClick={() =>
-                    dialog.open('team-rule', {
-                      children: (
-                        <UserInfo
-                          user={user}
-                          isAdmin={currentUser!.roles.includes(
-                            UserRole.SUPER_ADMIN
-                          )}
-                        />
-                      ),
+                    dialog.open('user-info', {
+                      children: <UserInfo user={user} isAdmin={isAdmin} />,
                     })
                   }
                 >

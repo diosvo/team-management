@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { SELECTABLE_ROLES } from '@/utils/constant';
-import { UserRole } from '@/utils/enum';
+import { SELECTABLE_ROLES, SELECTABLE_STATES } from '@/utils/constant';
+import { UserRole, UserState } from '@/utils/enum';
 
 export const USER_SCHEMA_VALIDATION = {
   team_id: z.string().uuid(),
@@ -31,4 +31,16 @@ export const USER_SCHEMA_VALIDATION = {
     .min(1)
     .max(2)
     .default([UserRole.PLAYER]),
+  state: z.enum(SELECTABLE_STATES).default(UserState.ACTIVE),
+  join_date: z
+    .string()
+    .date()
+    .transform((value) => {
+      if (!value) return undefined;
+
+      const date = value.split('T')[0];
+      return date;
+    })
+    .default('')
+    .optional(),
 };

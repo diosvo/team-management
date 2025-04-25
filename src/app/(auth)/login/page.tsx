@@ -17,6 +17,7 @@ import { FieldErrors, useForm } from 'react-hook-form';
 import { Alert } from '@/components/ui/alert';
 import { Field } from '@/components/ui/field';
 
+import { getDefaults } from '@/lib/zod';
 import { Response } from '@/utils/response';
 import { buttonText, Page, pageTitle } from '../_helpers/utils';
 
@@ -38,10 +39,7 @@ export default function LoginPage() {
     reset,
   } = useForm({
     resolver: zodResolver(LoginSchema),
-    defaultValues: {
-      email: '',
-      password: '',
-    },
+    defaultValues: getDefaults(LoginSchema) as LoginValues,
   });
 
   useEffect(() => {

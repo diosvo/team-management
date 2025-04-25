@@ -56,7 +56,7 @@ export default function UserInfo({ isAdmin, user }: UserInfoProps) {
       </DialogHeader>
       <DialogBody>
         <VStack align="stretch">
-          <VStack gap={2}>
+          <VStack>
             <HStack width="full">
               <Separator flex="1" />
               <Text flexShrink="0" fontSize="sm" color="GrayText">
@@ -73,7 +73,7 @@ export default function UserInfo({ isAdmin, user }: UserInfoProps) {
               </InfoItem>
             </VStack>
           </VStack>
-          <VStack gap={2}>
+          <VStack spaceY={4}>
             <HStack width="full">
               <Separator flex="1" />
               <Text flexShrink="0" fontSize="sm" color="GrayText">
@@ -110,7 +110,7 @@ export default function UserInfo({ isAdmin, user }: UserInfoProps) {
             </VStack>
           </VStack>
           <Visibility isVisible={isAdmin}>
-            <VStack gap={2}>
+            <VStack>
               <HStack width="full">
                 <Separator flex="1" />
                 <Text flexShrink="0" fontSize="sm" color="GrayText">

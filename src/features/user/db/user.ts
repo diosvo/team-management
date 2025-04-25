@@ -55,13 +55,11 @@ export const getUserById = cache(async (user_id: string) => {
   }
 });
 
-export async function insertUsers(
-  users: Array<AddUserValues & { team_id: string }>
-) {
+export async function insertUser(user: AddUserValues & { team_id: string }) {
   try {
-    return await db.insert(UserTable).values(users);
-  } catch {
-    logger.error('Failed to insert user(s)');
+    return await db.insert(UserTable).values(user);
+  } catch (error) {
+    logger.error(error);
     return null;
   }
 }
