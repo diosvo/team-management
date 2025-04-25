@@ -9,8 +9,8 @@ import { CloseButton } from './ui/close-button';
 
 interface ModalProps {
   children: ReactNode;
-  size?: 'sm' | 'md' | 'xl' | '2xl';
   position?: 'top' | 'middle';
+  size?: 'sm' | 'md' | 'xl' | '2xl';
   onClose?: () => void;
 }
 
@@ -53,9 +53,9 @@ export default function Modal({
         position="fixed"
         inset={0}
         zIndex={2}
+        aria-hidden="true"
         backgroundColor="rgba(0, 0, 0, 0.3)"
         onClick={handleCloseModal}
-        aria-hidden="true"
       />
       <Container
         ref={modalRef}
