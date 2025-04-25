@@ -41,14 +41,19 @@ const States = SELECTABLE_STATES.map((state) => ({
   value: state,
 }));
 
-export default function AddUser({ users }: { users: Array<User> }) {
+interface AddUserProps {
+  users: Array<User>;
+}
+
+export default function AddUser({ users }: AddUserProps) {
   const [isPending, startTransition] = useTransition();
 
   const {
-    register,
-    handleSubmit,
-    getValues,
     reset,
+    register,
+    getValues,
+    handleSubmit,
+    setError,
     formState: { errors, isLoading, isValid },
   } = useForm({
     resolver: zodResolver(AddUserSchema),
@@ -56,6 +61,16 @@ export default function AddUser({ users }: { users: Array<User> }) {
   });
 
   const onSubmit = (data: AddUserValues) => {
+    const emailExists = users.some((user) => user.email === data.email);
+
+    if (emailExists) {
+      setError('email', {
+        type: 'custom',
+        message: 'Email already exists',
+      });
+      return;
+    }
+
     const id = toaster.create({
       type: 'loading',
       description: 'Adding user to database...',
@@ -81,8 +96,8 @@ export default function AddUser({ users }: { users: Array<User> }) {
         <DialogTitle>Add User</DialogTitle>
       </DialogHeader>
       <DialogBody>
-        <VStack spaceY={4}>
-          <HStack width="full">
+        <VStack gap={4}>
+          <HStack width="full" alignItems="flex-start">
             <Field
               required
               label="Fullname"
@@ -132,8 +147,8 @@ export default function AddUser({ users }: { users: Array<User> }) {
             </Field>
           </HStack>
 
-          <VStack spaceY={2} width="full">
-            <HStack width="full">
+          <VStack width="full">
+            <HStack width="full" marginBottom={2}>
               <Separator flex="1" />
               <Text flexShrink="0" fontSize="sm" color="GrayText">
                 Optional

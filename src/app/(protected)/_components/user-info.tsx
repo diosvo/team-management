@@ -73,7 +73,7 @@ export default function UserInfo({ isAdmin, user }: UserInfoProps) {
               </InfoItem>
             </VStack>
           </VStack>
-          <VStack spaceY={4}>
+          <VStack>
             <HStack width="full">
               <Separator flex="1" />
               <Text flexShrink="0" fontSize="sm" color="GrayText">

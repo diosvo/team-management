@@ -13,6 +13,9 @@ import {
   Heading,
   HStack,
   IconButton,
+  Input,
+  InputGroup,
+  Kbd,
   Pagination,
   Portal,
   Table,
@@ -21,6 +24,7 @@ import {
 import {
   ChevronLeft,
   ChevronRight,
+  Search,
   SwatchBook,
   UserRoundPlus,
 } from 'lucide-react';
@@ -78,13 +82,23 @@ export function RosterTable({ users }: { users: Array<User> }) {
 
   return (
     <Box>
-      <HStack justifyContent="space-between">
-        <Heading as="h1" size="xl">
-          Team Roster
-        </Heading>
+      <Heading as="h1" size="xl">
+        Team Roster
+      </Heading>
+      <HStack marginBlock={6}>
+        <InputGroup
+          flex="1"
+          startElement={<Search size={14} />}
+          endElement={<Kbd>⌘K</Kbd>}
+        >
+          <Input
+            placeholder="Search..."
+            borderWidth="1px"
+            css={{ '--focus-color': 'colors.red.400' }}
+          />
+        </InputGroup>
         <Visibility isVisible={isAdmin}>
           <Button
-            size="sm"
             onClick={() =>
               dialog.open('add-user', {
                 children: <AddUser users={users} />,
@@ -96,8 +110,9 @@ export function RosterTable({ users }: { users: Array<User> }) {
           </Button>
         </Visibility>
       </HStack>
-      <Table.ScrollArea my={6}>
-        <Table.Root stickyHeader interactive>
+
+      <Table.ScrollArea>
+        <Table.Root stickyHeader interactive={totalCount > 0}>
           <Table.Header>
             <Table.Row>
               <Table.ColumnHeader w="6">
@@ -179,14 +194,14 @@ export function RosterTable({ users }: { users: Array<User> }) {
               ))
             ) : (
               <Table.Row>
-                <Table.Cell colSpan={5}>
+                <Table.Cell colSpan={6}>
                   <EmptyState.Root>
                     <EmptyState.Content>
                       <EmptyState.Indicator>
                         <SwatchBook />
                       </EmptyState.Indicator>
                       <VStack textAlign="center">
-                        <EmptyState.Title>No results found</EmptyState.Title>
+                        <EmptyState.Title>No users found</EmptyState.Title>
                         <EmptyState.Description>
                           Try adjusting your search
                         </EmptyState.Description>
@@ -199,12 +214,15 @@ export function RosterTable({ users }: { users: Array<User> }) {
           </Table.Body>
         </Table.Root>
       </Table.ScrollArea>
+
       <Pagination.Root
         display="flex"
         justifyContent="space-between"
+        marginTop={6}
+        opacity={totalCount > 0 ? 1 : 0}
         count={totalCount}
-        pageSize={pagination.pageSize}
         page={pagination.page}
+        pageSize={pagination.pageSize}
         onPageChange={({ page }) =>
           setPagination((prev) => ({ ...prev, page }))
         }
