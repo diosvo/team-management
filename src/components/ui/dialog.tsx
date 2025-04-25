@@ -2,11 +2,11 @@
 
 import { CloseButton, Dialog, Portal, createOverlay } from '@chakra-ui/react';
 
-interface DialogProps {
-  content: React.ReactNode;
+interface DialogProps extends Dialog.RootProps {
+  children: React.ReactNode;
 }
 
-export const dialog = createOverlay<DialogProps>(({ content, ...rest }) => {
+export const dialog = createOverlay<DialogProps>(({ children, ...rest }) => {
   return (
     <Dialog.Root {...rest}>
       <Portal>
@@ -14,9 +14,9 @@ export const dialog = createOverlay<DialogProps>(({ content, ...rest }) => {
         <Dialog.Positioner>
           <Dialog.Content>
             <Dialog.CloseTrigger asChild>
-              <CloseButton size="sm" />
+              <CloseButton size="sm" focusRing="none" />
             </Dialog.CloseTrigger>
-            {content}
+            {children}
           </Dialog.Content>
         </Dialog.Positioner>
       </Portal>

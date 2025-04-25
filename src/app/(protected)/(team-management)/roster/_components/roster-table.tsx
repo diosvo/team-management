@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { use, useState } from 'react';
 
 import {
   ActionBar,
@@ -25,14 +25,22 @@ import {
   UserRoundPlus,
 } from 'lucide-react';
 
+import { dialog } from '@/components/ui/dialog';
 import { toaster } from '@/components/ui/toaster';
 
 import { User } from '@/drizzle/schema';
+import { useUser } from '@/hooks/use-user';
+import { UserRole } from '@/utils/enum';
 import { colorState } from '@/utils/helper';
 
+import UserInfo from '@/app/(protected)/_components/user-info';
 import { removeUser } from '@/features/user/actions/user';
+import AddUser from './add-user';
 
 export function RosterTable({ users }: { users: Array<User> }) {
+  const { userPromise } = useUser();
+  const currentUser = use(userPromise);
+
   const [selection, setSelection] = useState<Array<string>>([]);
   const [pagination, setPagination] = useState({
     page: 1,
@@ -70,7 +78,14 @@ export function RosterTable({ users }: { users: Array<User> }) {
         <Heading as="h1" size="xl">
           Team Roster
         </Heading>
-        <Button size="sm">
+        <Button
+          size="sm"
+          onClick={() =>
+            dialog.open('team-rule', {
+              children: <AddUser users={users} />,
+            })
+          }
+        >
           <UserRoundPlus />
           Add User
         </Button>
@@ -84,6 +99,7 @@ export function RosterTable({ users }: { users: Array<User> }) {
                   size="sm"
                   top="0.5"
                   aria-label="Select all rows"
+                  _hover={{ cursor: 'pointer' }}
                   checked={indeterminate ? 'indeterminate' : selectionCount > 0}
                   onCheckedChange={(changes) => {
                     setSelection(
@@ -110,8 +126,19 @@ export function RosterTable({ users }: { users: Array<User> }) {
                   data-selected={
                     selection.includes(user.user_id) ? '' : undefined
                   }
-                  onClick={() => console.log('roster_table')}
                   _hover={{ cursor: 'pointer' }}
+                  onClick={() =>
+                    dialog.open('team-rule', {
+                      children: (
+                        <UserInfo
+                          user={user}
+                          isAdmin={currentUser!.roles.includes(
+                            UserRole.SUPER_ADMIN
+                          )}
+                        />
+                      ),
+                    })
+                  }
                 >
                   <Table.Cell onClick={(e) => e.stopPropagation()}>
                     <Checkbox.Root
@@ -225,6 +252,7 @@ export function RosterTable({ users }: { users: Array<User> }) {
           </ActionBar.Positioner>
         </Portal>
       </ActionBar.Root>
+      <dialog.Viewport />
     </Box>
   );
 }

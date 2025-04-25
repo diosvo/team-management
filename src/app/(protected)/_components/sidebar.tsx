@@ -13,10 +13,11 @@ import {
 import { Button, Icon, Spinner, Text, VStack } from '@chakra-ui/react';
 import { Crown, LucideProps } from 'lucide-react';
 
+import { dialog } from '@/components/ui/dialog';
+
 import { useUser } from '@/hooks/use-user';
 import { UserRole } from '@/utils/enum';
 
-import { dialog } from '@/components/ui/dialog';
 import { hrefPath, SIDEBAR_GROUP } from '../_helpers/utils';
 import TeamRule from './team-rule';
 
@@ -110,7 +111,7 @@ export default function Sidebar() {
           justifyContent="flex-start"
           onClick={() => {
             dialog.open('team-rule', {
-              content: (
+              children: (
                 <TeamRule
                   editable={isAdmin}
                   team_id={user?.team_id as string}
@@ -123,9 +124,8 @@ export default function Sidebar() {
           <Icon as={Crown} color="orange.focusRing" />
           Team Rule
         </Button>
-
-        <dialog.Viewport />
       </VStack>
+      <dialog.Viewport />
     </VStack>
   );
 }

@@ -1,45 +1,27 @@
 'use client';
 
-import { ReactNode, useTransition } from 'react';
+import { ReactNode } from 'react';
 
-import {
-  Badge,
-  HStack,
-  Icon,
-  Input,
-  InputGroup,
-  Separator,
-  Spinner,
-  Text,
-  VStack,
-} from '@chakra-ui/react';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { Badge, HStack, Separator, Text, VStack } from '@chakra-ui/react';
 import {
   CalendarDays,
-  Check,
   CircleUserRound,
   LucideClock9,
   Mail,
   ShieldCheck,
-  X,
 } from 'lucide-react';
-import { useForm } from 'react-hook-form';
 
-import Modal from '@/components/modal';
-import { Field } from '@/components/ui/field';
+import {
+  DialogBody,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import Visibility from '@/components/visibility';
 
 import { User } from '@/drizzle/schema';
-import { UserRole } from '@/utils/enum';
 import { formatDate } from '@/utils/formatter';
 import { colorState } from '@/utils/helper';
-
-import { toaster } from '@/components/ui/toaster';
-import { updateUserInfo } from '@/features/user/actions/user';
-import {
-  UpdateUserSchema,
-  UpdateUserValues,
-} from '@/features/user/schemas/user';
 
 interface InfoItemProps {
   label: string;
@@ -58,46 +40,21 @@ function InfoItem({ icon: IconComponent, label, children }: InfoItemProps) {
 }
 
 interface UserInfoProps {
+  isAdmin: boolean;
   user: User;
 }
 
-export default function UserInfo({ user }: UserInfoProps) {
-  const [isPending, startTransition] = useTransition();
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({
-    resolver: zodResolver(UpdateUserSchema),
-    defaultValues: {
-      dob: user.dob as string,
-    },
-  });
-
-  const onSubmit = (values: UpdateUserValues) => {
-    startTransition(async () => {
-      const { error, message: description } = await updateUserInfo(
-        user.user_id,
-        values
-      );
-
-      toaster.create({
-        type: error ? 'error' : 'success',
-        description,
-      });
-    });
-  };
-
+export default function UserInfo({ isAdmin, user }: UserInfoProps) {
   return (
-    <Modal>
-      <VStack align="stretch">
-        <HStack alignItems="center" gap={2}>
+    <>
+      <DialogHeader>
+        <DialogTitle display="flex" alignItems="center" gap={1}>
           <CircleUserRound />
           <Text>{user.name}</Text>
-        </HStack>
-        <Text color="GrayText">#5</Text>
-
+        </DialogTitle>
+        <DialogDescription>#5</DialogDescription>
+      </DialogHeader>
+      <DialogBody>
         <VStack align="stretch">
           <VStack gap={2}>
             <HStack width="full">
@@ -112,42 +69,10 @@ export default function UserInfo({ user }: UserInfoProps) {
                 {user.email}
               </InfoItem>
               <InfoItem label="DOB" icon={CalendarDays}>
-                <form onSubmit={handleSubmit(onSubmit)}>
-                  <Field
-                    width="132px"
-                    disabled={isPending}
-                    invalid={!!errors.dob}
-                  >
-                    <InputGroup
-                      endElement={
-                        isPending ? (
-                          <Spinner
-                            size="xs"
-                            borderWidth="1px"
-                            color="GrayText"
-                          />
-                        ) : (
-                          <Icon
-                            size="xs"
-                            as={!!errors.dob ? X : Check}
-                            color={!!errors.dob ? 'tomato' : 'green'}
-                          />
-                        )
-                      }
-                    >
-                      <Input
-                        size="sm"
-                        variant="flushed"
-                        placeholder="YYYY-MM-DD"
-                        {...register('dob')}
-                      />
-                    </InputGroup>
-                  </Field>
-                </form>
+                {formatDate(user.dob)}
               </InfoItem>
             </VStack>
           </VStack>
-
           <VStack gap={2}>
             <HStack width="full">
               <Separator flex="1" />
@@ -184,8 +109,7 @@ export default function UserInfo({ user }: UserInfoProps) {
               )}
             </VStack>
           </VStack>
-
-          <Visibility isVisible={user.roles.includes(UserRole.SUPER_ADMIN)}>
+          <Visibility isVisible={isAdmin}>
             <VStack gap={2}>
               <HStack width="full">
                 <Separator flex="1" />
@@ -205,7 +129,7 @@ export default function UserInfo({ user }: UserInfoProps) {
             </VStack>
           </Visibility>
         </VStack>
-      </VStack>
-    </Modal>
+      </DialogBody>
+    </>
   );
 }
