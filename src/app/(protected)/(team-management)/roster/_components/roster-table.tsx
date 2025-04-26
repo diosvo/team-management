@@ -115,22 +115,30 @@ export function RosterTable({ users }: { users: Array<User> }) {
         <Table.Root stickyHeader interactive={totalCount > 0}>
           <Table.Header>
             <Table.Row>
-              <Table.ColumnHeader w="6">
-                <Checkbox.Root
-                  size="sm"
-                  top="0.5"
-                  aria-label="Select all rows"
-                  checked={indeterminate ? 'indeterminate' : selectionCount > 0}
-                  onCheckedChange={(changes) => {
-                    setSelection(
-                      changes.checked ? users.map(({ user_id }) => user_id) : []
-                    );
-                  }}
-                >
-                  <Checkbox.HiddenInput />
-                  <Checkbox.Control />
-                </Checkbox.Root>
-              </Table.ColumnHeader>
+              <Visibility isVisible={isAdmin}>
+                <Table.ColumnHeader width={6}>
+                  <Checkbox.Root
+                    size="sm"
+                    top={0.5}
+                    aria-label="Select all rows"
+                    checked={
+                      indeterminate ? 'indeterminate' : selectionCount > 0
+                    }
+                    onCheckedChange={(changes) => {
+                      setSelection(
+                        changes.checked
+                          ? users
+                              .map(({ user_id }) => user_id)
+                              .filter((id) => id !== currentUser?.user_id)
+                          : []
+                      );
+                    }}
+                  >
+                    <Checkbox.HiddenInput />
+                    <Checkbox.Control />
+                  </Checkbox.Root>
+                </Table.ColumnHeader>
+              </Visibility>
               <Table.ColumnHeader>No.</Table.ColumnHeader>
               <Table.ColumnHeader>Name</Table.ColumnHeader>
               <Table.ColumnHeader>Email</Table.ColumnHeader>
@@ -153,24 +161,27 @@ export function RosterTable({ users }: { users: Array<User> }) {
                     })
                   }
                 >
-                  <Table.Cell onClick={(e) => e.stopPropagation()}>
-                    <Checkbox.Root
-                      size="sm"
-                      top="0.5"
-                      aria-label="Select row"
-                      checked={selection.includes(user.user_id)}
-                      onCheckedChange={(changes) => {
-                        setSelection((prev) =>
-                          changes.checked
-                            ? [...prev, user.user_id]
-                            : selection.filter((id) => id !== user.user_id)
-                        );
-                      }}
-                    >
-                      <Checkbox.HiddenInput />
-                      <Checkbox.Control />
-                    </Checkbox.Root>
-                  </Table.Cell>
+                  <Visibility isVisible={isAdmin}>
+                    <Table.Cell onClick={(e) => e.stopPropagation()}>
+                      <Checkbox.Root
+                        size="sm"
+                        top="0.5"
+                        aria-label="Select row"
+                        checked={selection.includes(user.user_id)}
+                        readOnly={currentUser?.user_id === user.user_id}
+                        onCheckedChange={(changes) => {
+                          setSelection((prev) =>
+                            changes.checked
+                              ? [...prev, user.user_id]
+                              : selection.filter((id) => id !== user.user_id)
+                          );
+                        }}
+                      >
+                        <Checkbox.HiddenInput />
+                        <Checkbox.Control />
+                      </Checkbox.Root>
+                    </Table.Cell>
+                  </Visibility>
                   <Table.Cell>-</Table.Cell>
                   <Table.Cell>{user.name}</Table.Cell>
                   <Table.Cell>{user.email}</Table.Cell>
