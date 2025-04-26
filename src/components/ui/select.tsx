@@ -1,5 +1,3 @@
-'use client';
-
 import {
   Select as ChakraSelect,
   createListCollection,
@@ -8,12 +6,13 @@ import {
 
 export interface SelectProps
   extends Omit<ChakraSelect.RootProps, 'collection'> {
-  label?: string;
   collection: Array<{ label: string; value: string }>;
+  label?: string;
+  containerRef?: React.RefObject<Nullable<HTMLDivElement>>;
 }
 
 export const Select = (props: SelectProps) => {
-  const { collection, label, ...rest } = props;
+  const { collection, label, containerRef, ...rest } = props;
   const dataset = createListCollection({ items: collection });
 
   return (
@@ -31,7 +30,7 @@ export const Select = (props: SelectProps) => {
         </ChakraSelect.IndicatorGroup>
       </ChakraSelect.Control>
 
-      <Portal>
+      <Portal container={containerRef}>
         <ChakraSelect.Positioner>
           <ChakraSelect.Content>
             {dataset.items.map((item) => (

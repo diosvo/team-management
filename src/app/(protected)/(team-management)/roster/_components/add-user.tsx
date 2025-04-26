@@ -1,6 +1,6 @@
 'use client';
 
-import { useTransition } from 'react';
+import { RefObject, useTransition } from 'react';
 
 import {
   Button,
@@ -43,9 +43,10 @@ const States = SELECTABLE_STATES.map((state) => ({
 
 interface AddUserProps {
   users: Array<User>;
+  containerRef: RefObject<Nullable<HTMLDivElement>>;
 }
 
-export default function AddUser({ users }: AddUserProps) {
+export default function AddUser({ users, containerRef }: AddUserProps) {
   const [isPending, startTransition] = useTransition();
 
   const {
@@ -130,6 +131,7 @@ export default function AddUser({ users }: AddUserProps) {
                 multiple
                 collection={Roles}
                 value={getValues('roles')}
+                containerRef={containerRef}
                 {...register('roles')}
               />
             </Field>
@@ -142,6 +144,7 @@ export default function AddUser({ users }: AddUserProps) {
               <Select
                 collection={States}
                 value={[UserState.ACTIVE]}
+                containerRef={containerRef}
                 {...register('state')}
               />
             </Field>

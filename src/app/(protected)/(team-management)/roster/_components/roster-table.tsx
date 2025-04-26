@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useState } from 'react';
+import { use, useRef, useState } from 'react';
 
 import {
   ActionBar,
@@ -24,6 +24,7 @@ import {
 import {
   ChevronLeft,
   ChevronRight,
+  Filter,
   Search,
   SwatchBook,
   UserRoundPlus,
@@ -42,10 +43,15 @@ import UserInfo from '@/app/(protected)/_components/user-info';
 import { removeUser } from '@/features/user/actions/user';
 import AddUser from './add-user';
 
-export function RosterTable({ users }: { users: Array<User> }) {
+interface RosterTableProps {
+  users: Array<User>;
+}
+
+export function RosterTable({ users }: RosterTableProps) {
   const { userPromise } = useUser();
   const currentUser = use(userPromise);
   const isAdmin = currentUser!.roles.includes(UserRole.SUPER_ADMIN);
+  const dialogContentRef = useRef<HTMLDivElement>(null);
 
   const [selection, setSelection] = useState<Array<string>>([]);
   const [pagination, setPagination] = useState({
@@ -89,7 +95,11 @@ export function RosterTable({ users }: { users: Array<User> }) {
         <InputGroup
           flex="1"
           startElement={<Search size={14} />}
-          endElement={<Kbd>⌘K</Kbd>}
+          endElement={
+            <Kbd size="sm" variant="outline">
+              Enter
+            </Kbd>
+          }
         >
           <Input
             placeholder="Search..."
@@ -97,11 +107,18 @@ export function RosterTable({ users }: { users: Array<User> }) {
             css={{ '--focus-color': 'colors.red.400' }}
           />
         </InputGroup>
+        <Button variant="surface" disabled>
+          <Filter />
+          Filters
+        </Button>
         <Visibility isVisible={isAdmin}>
           <Button
             onClick={() =>
               dialog.open('add-user', {
-                children: <AddUser users={users} />,
+                contentRef: dialogContentRef,
+                children: (
+                  <AddUser users={users} containerRef={dialogContentRef} />
+                ),
               })
             }
           >
