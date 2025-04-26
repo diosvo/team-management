@@ -1,21 +1,17 @@
-import { LOCALE } from './constant';
+import { format } from 'date-fns';
 
-/**
- * Format a date value to a localized string using the app's default locale
- * @param date - The date to format
- * @param options - Optional DateTimeFormatOptions
- * @returns Formatted date string or '-' for null/undefined values
- */
-export const formatDate = (
-  date: Date | string | null | undefined,
-  options?: Intl.DateTimeFormatOptions
-): string => {
+import { LOCALE_DATE_FORMAT, LOCALE_DATETIME_FORMAT } from './constant';
+
+export const formatDate = (date: Date | string | null | undefined): string => {
   if (!date) return '-';
 
-  const dateObj = date instanceof Date ? date : new Date(date);
+  return format(date, LOCALE_DATE_FORMAT);
+};
 
-  // Check if date is valid
-  if (isNaN(dateObj.getTime())) return '-';
+export const formatDatetime = (
+  datetime: Date | string | null | undefined
+): string => {
+  if (!datetime) return '-';
 
-  return dateObj.toLocaleDateString(LOCALE, options);
+  return format(datetime, LOCALE_DATETIME_FORMAT);
 };

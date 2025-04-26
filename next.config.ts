@@ -5,11 +5,10 @@ const nextConfig: NextConfig = {
     position: 'bottom-right',
   },
   experimental: {
-    nodeMiddleware: true,
     authInterrupts: true,
+    nodeMiddleware: true,
     optimizePackageImports: ['@chakra-ui/react'],
   },
-  serverExternalPackages: ['pg'],
   images: {
     localPatterns: [
       {
@@ -18,6 +17,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  serverExternalPackages: ['pg'],
 };
 
 export default nextConfig;

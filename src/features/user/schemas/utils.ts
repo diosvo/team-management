@@ -1,7 +1,13 @@
 import { z } from 'zod';
 
-import { SELECTABLE_ROLES, SELECTABLE_STATES } from '@/utils/constant';
+import {
+  ESTABLISHED_DATE,
+  SELECTABLE_ROLES,
+  SELECTABLE_STATES,
+} from '@/utils/constant';
 import { UserRole, UserState } from '@/utils/enum';
+
+// date() - YYYY-MM-DD
 
 export const USER_SCHEMA_VALIDATION = {
   team_id: z.string().uuid(),
@@ -10,7 +16,7 @@ export const USER_SCHEMA_VALIDATION = {
     .min(6, { message: 'Be at least 6 characters long.' })
     .trim()
     .default(''),
-  dob: z.string().date().default('').optional(),
+  dob: z.string().date().optional(),
   email: z
     .string()
     .email({ message: 'Please enter a valid email.' })
@@ -32,5 +38,5 @@ export const USER_SCHEMA_VALIDATION = {
     .max(2, { message: 'Select at most two roles.' })
     .default([UserRole.PLAYER]),
   state: z.enum(SELECTABLE_STATES).default(UserState.ACTIVE),
-  join_date: z.string().date().default('').optional(),
+  join_date: z.string().date().optional().default(ESTABLISHED_DATE),
 };

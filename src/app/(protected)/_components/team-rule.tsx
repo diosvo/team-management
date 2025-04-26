@@ -17,7 +17,7 @@ import { Tooltip } from '@/components/ui/tooltip';
 import Visibility from '@/components/visibility';
 
 import { Rule } from '@/drizzle/schema';
-import { LOCALE } from '@/utils/constant';
+import { formatDatetime } from '@/utils/formatter';
 
 import { executeRule } from '@/features/rule/actions/rule';
 import { RuleValues } from '@/features/rule/schemas/rule';
@@ -84,7 +84,7 @@ export default function TeamRule({ editable, team_id, rule }: TeamRuleProps) {
       <DialogFooter justifyContent="flex-start">
         <Text fontSize="xs" color="GrayText">
           {rule.updated_at &&
-            `Last updated on ${rule.updated_at.toLocaleString(LOCALE)}`}
+            `Last updated on ${formatDatetime(rule.updated_at)}`}
         </Text>
       </DialogFooter>
     </>
