@@ -104,7 +104,7 @@ export function RosterTable({ users }: RosterTableProps) {
           <Input
             placeholder="Search..."
             borderWidth="1px"
-            css={{ '--focus-color': 'colors.red.400' }}
+            css={{ '--focus-color': 'colors.orange.200' }}
           />
         </InputGroup>
         <Button variant="surface" disabled>
@@ -129,7 +129,7 @@ export function RosterTable({ users }: RosterTableProps) {
       </HStack>
 
       <Table.ScrollArea>
-        <Table.Root stickyHeader interactive={totalCount > 0}>
+        <Table.Root stickyHeader interactive={currentData.length > 0}>
           <Table.Header>
             <Table.Row>
               <Visibility isVisible={isAdmin}>
@@ -213,7 +213,12 @@ export function RosterTable({ users }: RosterTableProps) {
                   </Table.Cell>
                   <Table.Cell>
                     {user.roles.map((role: string) => (
-                      <Badge key={role} variant="outline" borderRadius="full">
+                      <Badge
+                        key={role}
+                        variant="outline"
+                        borderRadius="full"
+                        marginRight={2}
+                      >
                         {role}
                       </Badge>
                     ))}

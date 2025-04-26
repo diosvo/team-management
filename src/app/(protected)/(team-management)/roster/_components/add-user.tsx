@@ -55,7 +55,7 @@ export default function AddUser({ users, containerRef }: AddUserProps) {
     getValues,
     handleSubmit,
     setError,
-    formState: { errors, isLoading, isValid },
+    formState: { errors },
   } = useForm({
     resolver: zodResolver(AddUserSchema),
     defaultValues: getDefaults(AddUserSchema) as AddUserValues,
@@ -120,7 +120,7 @@ export default function AddUser({ users, containerRef }: AddUserProps) {
               />
             </Field>
           </HStack>
-          <HStack width="full">
+          <HStack width="full" alignItems="flex-start">
             <Field
               required
               label="Roles"
@@ -130,7 +130,7 @@ export default function AddUser({ users, containerRef }: AddUserProps) {
               <Select
                 multiple
                 collection={Roles}
-                value={getValues('roles')}
+                defaultValue={getValues('roles')}
                 containerRef={containerRef}
                 {...register('roles')}
               />
@@ -143,7 +143,7 @@ export default function AddUser({ users, containerRef }: AddUserProps) {
             >
               <Select
                 collection={States}
-                value={[UserState.ACTIVE]}
+                defaultValue={[UserState.ACTIVE]}
                 containerRef={containerRef}
                 {...register('state')}
               />
@@ -170,12 +170,7 @@ export default function AddUser({ users, containerRef }: AddUserProps) {
         </VStack>
       </DialogBody>
       <DialogFooter>
-        <Button
-          type="submit"
-          disabled={isLoading || !isValid}
-          loading={isPending}
-          loadingText="Adding..."
-        >
+        <Button type="submit" loading={isPending} loadingText="Adding...">
           <Plus /> Add
         </Button>
       </DialogFooter>
