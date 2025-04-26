@@ -1,7 +1,5 @@
-import { v4 as uuidV4 } from 'uuid';
-import { UserRole } from './enum';
+import { UserRole, UserState } from './enum';
 
-export const UUID = uuidV4();
 export const LOCALE = 'vi-VN';
 
 // 1 hour
@@ -12,4 +10,10 @@ export const SELECTABLE_ROLES = [
   UserRole.COACH,
   UserRole.GUEST,
   UserRole.PLAYER,
+] as const;
+export const SELECTABLE_STATES = [
+  UserState.ACTIVE,
+  UserState.INACTIVE,
+  UserState.TEMPORARILY_ABSENT,
+  UserState.UNKNOWN,
 ] as const;

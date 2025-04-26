@@ -1,6 +1,7 @@
 'use server';
 
-import { EXPIRES_AT, UUID } from '@/utils/constant';
+import { EXPIRES_AT } from '@/utils/constant';
+import { v4 as uuidV4 } from 'uuid';
 
 import {
   deletePasswordResetTokenByEmail as deleteAction,
@@ -15,5 +16,5 @@ export async function generatePasswordToken(email: string) {
     await deleteAction(email);
   }
 
-  return await insertAction(email, UUID, EXPIRES_AT);
+  return await insertAction(email, uuidV4(), EXPIRES_AT);
 }

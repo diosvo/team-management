@@ -1,20 +1,16 @@
 import { cache } from 'react';
 
-import { eq, ne } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 
 import { db } from '@/drizzle';
 import { User, UserTable } from '@/drizzle/schema';
 import logger from '@/lib/logger';
-import { UserRole } from '@/utils/enum';
 
 import { AddUserValues } from '../schemas/user';
 
 export const getUsers = cache(async () => {
   try {
-    return await db
-      .select()
-      .from(UserTable)
-      .where(ne(UserTable.roles, [UserRole.SUPER_ADMIN]));
+    return await db.select().from(UserTable);
   } catch {
     logger.error('An error when fetching users');
     return [];
@@ -55,13 +51,11 @@ export const getUserById = cache(async (user_id: string) => {
   }
 });
 
-export async function insertUsers(
-  users: Array<AddUserValues & { team_id: string }>
-) {
+export async function insertUser(user: AddUserValues & { team_id: string }) {
   try {
-    return await db.insert(UserTable).values(users);
-  } catch {
-    logger.error('Failed to insert user(s)');
+    return await db.insert(UserTable).values(user);
+  } catch (error) {
+    logger.error(error);
     return null;
   }
 }

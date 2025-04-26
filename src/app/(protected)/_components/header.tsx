@@ -4,14 +4,18 @@ import Image from 'next/image';
 import { use, useTransition } from 'react';
 
 import { Avatar, Circle, Float, HStack, Menu } from '@chakra-ui/react';
-import { LogOut } from 'lucide-react';
+import { LogOut, UserIcon } from 'lucide-react';
 
 import { useUser } from '@/hooks/use-user';
+import { UserRole } from '@/utils/enum';
+import { colorState } from '@/utils/helper';
 import HeaderLogo from '@assets/images/header-logo.png';
 
+import { dialog } from '@/components/ui/dialog';
 import { toaster } from '@/components/ui/toaster';
+
 import { logout } from '@/features/user/actions/auth';
-import { colorState } from '@/utils/helper';
+
 import UserInfo from './user-info';
 
 export default function Header() {
@@ -62,8 +66,22 @@ export default function Header() {
         </Menu.Trigger>
         <Menu.Positioner>
           <Menu.Content>
-            <Menu.Item value="user-info" asChild>
-              <UserInfo user={user} />
+            <Menu.Item
+              value="user-info"
+              _hover={{ cursor: 'pointer' }}
+              onClick={() =>
+                dialog.open('current-user-info', {
+                  children: (
+                    <UserInfo
+                      user={user}
+                      isAdmin={user!.roles.includes(UserRole.SUPER_ADMIN)}
+                    />
+                  ),
+                })
+              }
+            >
+              <UserIcon size={14} />
+              {user.name}
             </Menu.Item>
 
             <Menu.Separator />
@@ -71,14 +89,15 @@ export default function Header() {
             <Menu.Item
               value="logout"
               disabled={isPending}
-              onClick={handleLogout}
               _hover={{ cursor: 'pointer' }}
+              onClick={handleLogout}
             >
               <LogOut size={14} /> Logout
             </Menu.Item>
           </Menu.Content>
         </Menu.Positioner>
       </Menu.Root>
+      <dialog.Viewport />
     </HStack>
   );
 }

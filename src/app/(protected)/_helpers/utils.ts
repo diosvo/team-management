@@ -4,7 +4,9 @@ import {
   Dumbbell,
   FileChartColumnIncreasing,
   FileText,
+  Film,
   Home,
+  Package,
   Users,
 } from 'lucide-react';
 
@@ -37,6 +39,21 @@ export const SIDEBAR_GROUP = [
       {
         icon: FileChartColumnIncreasing,
         text: 'Bi-monthly Testing',
+        disabled: true,
+      },
+    ],
+  },
+  {
+    title: 'Assets',
+    items: [
+      {
+        icon: Package,
+        text: 'Equipment',
+        disabled: true,
+      },
+      {
+        icon: Film,
+        text: 'Documents',
         disabled: true,
       },
     ],

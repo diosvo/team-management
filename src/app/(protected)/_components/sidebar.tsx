@@ -11,10 +11,10 @@ import {
 } from 'react';
 
 import { Button, Icon, Spinner, Text, VStack } from '@chakra-ui/react';
-import { LucideProps, ShieldUser } from 'lucide-react';
+import { Crown, LucideProps } from 'lucide-react';
 
-import Visibility from '@/components/visibility';
-import { Rule } from '@/drizzle/schema';
+import { dialog } from '@/components/ui/dialog';
+
 import { useUser } from '@/hooks/use-user';
 import { UserRole } from '@/utils/enum';
 
@@ -105,18 +105,27 @@ export default function Sidebar() {
       ))}
 
       <VStack align="stretch" mt="auto">
-        <TeamRule
-          editable={isAdmin}
-          team_id={user?.team_id as string}
-          rule={user?.team.rule as Rule}
-        />
-
-        <Visibility isVisible={isAdmin}>
-          <NavButton href="/admin" icon={ShieldUser}>
-            Administration
-          </NavButton>
-        </Visibility>
+        <Button
+          size="sm"
+          variant="ghost"
+          justifyContent="flex-start"
+          onClick={() => {
+            dialog.open('team-rule', {
+              children: (
+                <TeamRule
+                  editable={isAdmin}
+                  team_id={user?.team_id as string}
+                  rule={user?.team.rule || {}}
+                />
+              ),
+            });
+          }}
+        >
+          <Icon as={Crown} color="orange.focusRing" />
+          Team Rule
+        </Button>
       </VStack>
+      <dialog.Viewport />
     </VStack>
   );
 }

@@ -5,7 +5,7 @@ import { Response, ResponseFactory } from '@/utils/response';
 
 import { getTeam } from '@/features/team/actions/team';
 import { revalidateAdminPath } from '../db/cache';
-import { deleteUser, getUsers, insertUsers, updateUser } from '../db/user';
+import { deleteUser, getUsers, insertUser, updateUser } from '../db/user';
 import {
   AddUserValues,
   UpdateUserSchema,
@@ -17,8 +17,8 @@ export async function getRoster() {
   return await getUsers();
 }
 
-export async function addUsers(
-  usersWithoutTeam: Array<AddUserValues>
+export async function addUser(
+  usersWithoutTeam: AddUserValues
 ): Promise<Response> {
   try {
     const team = await getTeam();
@@ -27,25 +27,27 @@ export async function addUsers(
       return ResponseFactory.error('Team not found');
     }
 
-    const users = usersWithoutTeam.map((user) => ({
-      ...user,
+    const user = {
+      ...usersWithoutTeam,
       team_id: team.team_id,
-    }));
+    };
 
-    await insertUsers(users);
+    const data = await insertUser(user);
 
-    for (const user of users) {
-      const { email, token } = await generatePasswordToken(user.email);
-      await sendPasswordInstructionEmail('reset', email, token);
+    if (!data) {
+      return ResponseFactory.error(
+        'Failed to add user. Please check your input'
+      );
     }
+
+    const { email, token } = await generatePasswordToken(user.email);
+    await sendPasswordInstructionEmail('reset', email, token);
 
     revalidateAdminPath();
 
     return ResponseFactory.success('Sent an email to with instructions');
-  } catch {
-    return ResponseFactory.error(
-      'An error occurred while creating your account.'
-    );
+  } catch (error) {
+    return ResponseFactory.fromError(error as Error);
   }
 }
 

@@ -15,7 +15,7 @@ export default function LoginLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <Box position="relative" w="100vw" h="100vh">
+    <Box h="100vh">
       <Image
         fill
         priority
@@ -25,7 +25,7 @@ export default function LoginLayout({
         style={{ objectFit: 'cover' }}
         alt="Saigon Rovers Basketball Club Background Layer"
       />
-      <Center p="2rem" w="100%" h="100%">
+      <Center p="2rem" h="100%">
         <Container
           p="8"
           maxW="xl"

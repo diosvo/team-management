@@ -5,5 +5,7 @@ export function colorState(state: string): string {
     ? 'green'
     : state === UserState.TEMPORARILY_ABSENT
     ? 'orange'
-    : 'red';
+    : state === UserState.INACTIVE
+    ? 'red'
+    : 'gray';
 }
