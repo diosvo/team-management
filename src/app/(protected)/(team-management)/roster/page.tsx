@@ -1,20 +1,34 @@
 import { Metadata } from 'next';
-import { Suspense } from 'react';
 
-import { getRoster } from '@/features/user/actions/user';
-import { RosterTable } from './_components/roster-table';
+import { Box, Heading } from '@chakra-ui/react';
+import { Suspense } from 'react';
+import RosterActions from './_components/roster-actions';
+import RosterMain from './_components/roster-main';
 
 export const metadata: Metadata = {
   title: 'Roster',
   description: 'View the team roster',
 };
 
-export default async function RosterPage() {
-  const users = await getRoster();
+export default async function RosterPage(
+  props: Partial<{
+    searchParams: Promise<{
+      q: string;
+    }>;
+  }>
+) {
+  const searchParams = await props.searchParams;
+  const query = searchParams?.q || '';
 
   return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <RosterTable users={users} />
-    </Suspense>
+    <Box>
+      <Heading as="h1" size="xl">
+        Team Roster
+      </Heading>
+      <RosterActions />
+      <Suspense key={query} fallback={<div>Roster Loading...</div>}>
+        <RosterMain query={query} />
+      </Suspense>
+    </Box>
   );
 }

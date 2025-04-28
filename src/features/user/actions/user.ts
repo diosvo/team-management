@@ -13,8 +13,8 @@ import {
 } from '../schemas/user';
 import { generatePasswordToken } from './password-reset-token';
 
-export async function getRoster() {
-  return await getUsers();
+export async function getRoster(query: string = '') {
+  return await getUsers(query);
 }
 
 export async function addUser(

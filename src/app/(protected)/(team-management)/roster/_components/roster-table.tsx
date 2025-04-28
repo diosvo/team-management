@@ -1,34 +1,21 @@
 'use client';
 
-import { use, useRef, useState } from 'react';
+import { use, useState } from 'react';
 
 import {
   ActionBar,
   Badge,
-  Box,
   Button,
   ButtonGroup,
   Checkbox,
   EmptyState,
-  Heading,
-  HStack,
   IconButton,
-  Input,
-  InputGroup,
-  Kbd,
   Pagination,
   Portal,
   Table,
   VStack,
 } from '@chakra-ui/react';
-import {
-  ChevronLeft,
-  ChevronRight,
-  Filter,
-  Search,
-  SwatchBook,
-  UserRoundPlus,
-} from 'lucide-react';
+import { ChevronLeft, ChevronRight, SwatchBook } from 'lucide-react';
 
 import { dialog } from '@/components/ui/dialog';
 import { toaster } from '@/components/ui/toaster';
@@ -41,7 +28,6 @@ import { colorState } from '@/utils/helper';
 
 import UserInfo from '@/app/(protected)/_components/user-info';
 import { removeUser } from '@/features/user/actions/user';
-import AddUser from './add-user';
 
 interface RosterTableProps {
   users: Array<User>;
@@ -51,7 +37,6 @@ export function RosterTable({ users }: RosterTableProps) {
   const { userPromise } = useUser();
   const currentUser = use(userPromise);
   const isAdmin = currentUser!.roles.includes(UserRole.SUPER_ADMIN);
-  const dialogContentRef = useRef<HTMLDivElement>(null);
 
   const [selection, setSelection] = useState<Array<string>>([]);
   const [pagination, setPagination] = useState({
@@ -87,51 +72,7 @@ export function RosterTable({ users }: RosterTableProps) {
   };
 
   return (
-    <Box>
-      <Heading as="h1" size="xl">
-        Team Roster
-      </Heading>
-      <HStack marginBlock={6}>
-        <InputGroup
-          flex="1"
-          startElement={<Search size={14} />}
-          endElement={
-            <Kbd size="sm" variant="outline">
-              Enter
-            </Kbd>
-          }
-        >
-          <Input
-            placeholder="Search..."
-            borderWidth="1px"
-            css={{ '--focus-color': 'colors.orange.200' }}
-          />
-        </InputGroup>
-        <Button variant="surface" disabled>
-          <Filter />
-          Filters
-        </Button>
-        <Visibility isVisible={isAdmin}>
-          <Button
-            onClick={() =>
-              dialog.open('add-user', {
-                contentRef: dialogContentRef,
-                children: (
-                  <AddUser
-                    users={users}
-                    currentMail={currentUser!.email}
-                    containerRef={dialogContentRef}
-                  />
-                ),
-              })
-            }
-          >
-            <UserRoundPlus />
-            Add User
-          </Button>
-        </Visibility>
-      </HStack>
-
+    <>
       <Table.ScrollArea>
         <Table.Root stickyHeader interactive={currentData.length > 0}>
           <Table.Header>
@@ -304,6 +245,6 @@ export function RosterTable({ users }: RosterTableProps) {
         </Portal>
       </ActionBar.Root>
       <dialog.Viewport />
-    </Box>
+    </>
   );
 }

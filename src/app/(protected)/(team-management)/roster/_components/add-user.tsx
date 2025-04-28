@@ -1,6 +1,6 @@
 'use client';
 
-import { RefObject, useTransition } from 'react';
+import { RefObject, useMemo, useTransition } from 'react';
 
 import {
   Button,
@@ -70,6 +70,10 @@ export default function AddUser({
     defaultValues: getDefaults(AddUserSchema) as AddUserValues,
   });
 
+  const emailExists = useMemo(() => {
+    return users.some((user) => user.email === getValues('email'));
+  }, [users]);
+
   const onSubmit = (data: AddUserValues) => {
     if (data.email === currentMail) {
       setError('email', {
@@ -78,8 +82,6 @@ export default function AddUser({
       });
       return;
     }
-
-    const emailExists = users.some((user) => user.email === data.email);
 
     if (emailExists) {
       setError('email', {

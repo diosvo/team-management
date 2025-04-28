@@ -1,6 +1,6 @@
 import { cache } from 'react';
 
-import { eq, ne } from 'drizzle-orm';
+import { and, eq, ne } from 'drizzle-orm';
 
 import { db } from '@/drizzle';
 import { User, UserTable } from '@/drizzle/schema';
@@ -9,12 +9,23 @@ import { UserRole } from '@/utils/enum';
 
 import { AddUserValues } from '../schemas/user';
 
-export const getUsers = cache(async () => {
+export const getUsers = cache(async (query: string) => {
   try {
+    if (query) {
+      return await db
+        .select()
+        .from(UserTable)
+        .where(
+          and(
+            ne(UserTable.roles, [UserRole.SUPER_ADMIN]),
+            eq(UserTable.name, `${query}`)
+          )
+        );
+    }
     return await db
       .select()
       .from(UserTable)
-      .where(ne(UserTable.roles, [UserRole.SUPER_ADMIN]));
+      .where(and(ne(UserTable.roles, [UserRole.SUPER_ADMIN])));
   } catch {
     logger.error('An error when fetching users');
     return [];
