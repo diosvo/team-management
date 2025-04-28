@@ -3,6 +3,7 @@ import 'server-only';
 import { cookies } from 'next/headers';
 import { cache } from 'react';
 
+import { EXPIRES_AT } from '@/utils/constant';
 import { SignJWT, jwtVerify } from 'jose';
 
 type SessionData = {
@@ -16,7 +17,6 @@ const secretKey = process.env.SESSION_SECRET!;
 const key = new TextEncoder().encode(secretKey);
 export const COOKIE = {
   name: 'sgr-session',
-  duration: 60 * 60 * 1000, // 1 hour
 };
 
 async function encrypt(payload: SessionData) {
@@ -39,7 +39,7 @@ export async function decrypt(session: string | undefined = '') {
 }
 
 export async function createSession(user_id: string) {
-  const expires = new Date(Date.now() + COOKIE.duration);
+  const expires = EXPIRES_AT;
   const session = await encrypt({ user_id, expires });
   const cookieStore = await cookies();
 

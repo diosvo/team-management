@@ -117,7 +117,11 @@ export function RosterTable({ users }: RosterTableProps) {
               dialog.open('add-user', {
                 contentRef: dialogContentRef,
                 children: (
-                  <AddUser users={users} containerRef={dialogContentRef} />
+                  <AddUser
+                    users={users}
+                    currentMail={currentUser!.email}
+                    containerRef={dialogContentRef}
+                  />
                 ),
               })
             }
@@ -144,9 +148,7 @@ export function RosterTable({ users }: RosterTableProps) {
                     onCheckedChange={(changes) => {
                       setSelection(
                         changes.checked
-                          ? users
-                              .map(({ user_id }) => user_id)
-                              .filter((id) => id !== currentUser?.user_id)
+                          ? users.map(({ user_id }) => user_id)
                           : []
                       );
                     }}

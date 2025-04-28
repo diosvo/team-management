@@ -22,13 +22,17 @@ import {
 } from '@/components/ui/dialog';
 import { Field } from '@/components/ui/field';
 import { Select } from '@/components/ui/select';
+import { toaster } from '@/components/ui/toaster';
 
 import { User } from '@/drizzle/schema/user';
 import { getDefaults } from '@/lib/zod';
-import { SELECTABLE_ROLES, SELECTABLE_STATES } from '@/utils/constant';
+import {
+  ESTABLISHED_DATE,
+  SELECTABLE_ROLES,
+  SELECTABLE_STATES,
+} from '@/utils/constant';
 import { UserState } from '@/utils/enum';
 
-import { toaster } from '@/components/ui/toaster';
 import { addUser } from '@/features/user/actions/user';
 import { AddUserSchema, AddUserValues } from '@/features/user/schemas/user';
 
@@ -43,10 +47,15 @@ const States = SELECTABLE_STATES.map((state) => ({
 
 interface AddUserProps {
   users: Array<User>;
+  currentMail: string;
   containerRef: RefObject<Nullable<HTMLDivElement>>;
 }
 
-export default function AddUser({ users, containerRef }: AddUserProps) {
+export default function AddUser({
+  users,
+  currentMail,
+  containerRef,
+}: AddUserProps) {
   const [isPending, startTransition] = useTransition();
 
   const {
@@ -62,6 +71,14 @@ export default function AddUser({ users, containerRef }: AddUserProps) {
   });
 
   const onSubmit = (data: AddUserValues) => {
+    if (data.email === currentMail) {
+      setError('email', {
+        type: 'custom',
+        message: 'You cannot add yourself',
+      });
+      return;
+    }
+
     const emailExists = users.some((user) => user.email === data.email);
 
     if (emailExists) {
@@ -105,7 +122,7 @@ export default function AddUser({ users, containerRef }: AddUserProps) {
               invalid={!!errors.name}
               errorText={errors.name?.message}
             >
-              <Input {...register('name')} />
+              <Input {...register('name')} disabled={isPending} />
             </Field>
             <Field
               required
@@ -116,6 +133,7 @@ export default function AddUser({ users, containerRef }: AddUserProps) {
               <Input
                 type="email"
                 placeholder="abc@gmail.com"
+                disabled={isPending}
                 {...register('email')}
               />
             </Field>
@@ -132,6 +150,7 @@ export default function AddUser({ users, containerRef }: AddUserProps) {
                 collection={Roles}
                 defaultValue={getValues('roles')}
                 containerRef={containerRef}
+                disabled={isPending}
                 {...register('roles')}
               />
             </Field>
@@ -145,6 +164,7 @@ export default function AddUser({ users, containerRef }: AddUserProps) {
                 collection={States}
                 defaultValue={[UserState.ACTIVE]}
                 containerRef={containerRef}
+                disabled={isPending}
                 {...register('state')}
               />
             </Field>
@@ -160,10 +180,22 @@ export default function AddUser({ users, containerRef }: AddUserProps) {
             </HStack>
             <HStack width="full">
               <Field label="DOB">
-                <Input type="datetime-local" />
+                <Input
+                  type="date"
+                  min="1997-01-01"
+                  defaultValue="2000-01-01"
+                  disabled={isPending}
+                  {...register('dob')}
+                />
               </Field>
               <Field label="Join Date">
-                <Input type="datetime-local" />
+                <Input
+                  type="date"
+                  min={ESTABLISHED_DATE}
+                  defaultValue={getValues('join_date')}
+                  disabled={isPending}
+                  {...register('join_date')}
+                />
               </Field>
             </HStack>
           </VStack>

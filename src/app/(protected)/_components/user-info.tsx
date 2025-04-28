@@ -3,6 +3,7 @@
 import { ReactNode } from 'react';
 
 import { Badge, HStack, Separator, Text, VStack } from '@chakra-ui/react';
+import { formatDistanceToNow } from 'date-fns';
 import {
   CalendarDays,
   CircleUserRound,
@@ -105,6 +106,13 @@ export default function UserInfo({ isAdmin, user }: UserInfoProps) {
               {user.join_date && (
                 <InfoItem label="Joined" icon={LucideClock9}>
                   {formatDate(user.join_date)}
+                  <Text fontSize="sm" color="GrayText">
+                    (
+                    {formatDistanceToNow(user.join_date, {
+                      addSuffix: true,
+                    })}
+                    )
+                  </Text>
                 </InfoItem>
               )}
             </VStack>
