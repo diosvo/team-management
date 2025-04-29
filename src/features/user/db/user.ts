@@ -1,6 +1,6 @@
 import { cache } from 'react';
 
-import { and, eq, ne } from 'drizzle-orm';
+import { and, arrayContained, eq, ilike, not } from 'drizzle-orm';
 
 import { db } from '@/drizzle';
 import { User, UserTable } from '@/drizzle/schema';
@@ -17,15 +17,15 @@ export const getUsers = cache(async (query: string) => {
         .from(UserTable)
         .where(
           and(
-            ne(UserTable.roles, [UserRole.SUPER_ADMIN]),
-            eq(UserTable.name, `${query}`)
+            not(arrayContained(UserTable.roles, [UserRole.SUPER_ADMIN])),
+            ilike(UserTable.name, `%${query}%`)
           )
         );
     }
     return await db
       .select()
       .from(UserTable)
-      .where(and(ne(UserTable.roles, [UserRole.SUPER_ADMIN])));
+      .where(not(arrayContained(UserTable.roles, [UserRole.SUPER_ADMIN])));
   } catch {
     logger.error('An error when fetching users');
     return [];

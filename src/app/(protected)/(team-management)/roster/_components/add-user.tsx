@@ -28,22 +28,13 @@ import { User } from '@/drizzle/schema/user';
 import { getDefaults } from '@/lib/zod';
 import {
   ESTABLISHED_DATE,
-  SELECTABLE_ROLES,
-  SELECTABLE_STATES,
+  RolesSelection,
+  StatesSelection,
 } from '@/utils/constant';
 import { UserState } from '@/utils/enum';
 
 import { addUser } from '@/features/user/actions/user';
 import { AddUserSchema, AddUserValues } from '@/features/user/schemas/user';
-
-const Roles = SELECTABLE_ROLES.map((role) => ({
-  label: role.replace('_', ' '),
-  value: role,
-}));
-const States = SELECTABLE_STATES.map((state) => ({
-  label: state.replace('_', ' '),
-  value: state,
-}));
 
 interface AddUserProps {
   users: Array<User>;
@@ -149,7 +140,7 @@ export default function AddUser({
             >
               <Select
                 multiple
-                collection={Roles}
+                collection={RolesSelection}
                 defaultValue={getValues('roles')}
                 containerRef={containerRef}
                 disabled={isPending}
@@ -163,7 +154,7 @@ export default function AddUser({
               errorText={errors.state?.message}
             >
               <Select
-                collection={States}
+                collection={StatesSelection}
                 defaultValue={[UserState.ACTIVE]}
                 containerRef={containerRef}
                 disabled={isPending}

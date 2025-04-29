@@ -5,10 +5,14 @@ import { useRef, useTransition } from 'react';
 
 import {
   Button,
+  CheckboxGroup,
+  Grid,
   HStack,
   Input,
   InputGroup,
   Kbd,
+  Popover,
+  Portal,
   Spinner,
 } from '@chakra-ui/react';
 import { Filter, Search, UserRoundPlus } from 'lucide-react';
@@ -16,6 +20,11 @@ import { Filter, Search, UserRoundPlus } from 'lucide-react';
 import { dialog } from '@/components/ui/dialog';
 import Visibility from '@/components/visibility';
 
+import { Checkbox } from '@/components/ui/checkbox';
+import { FilterUsersSchema } from '@/features/user/schemas/user';
+import { RolesSelection, StatesSelection } from '@/utils/constant';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useController, useForm } from 'react-hook-form';
 import AddUser from './add-user';
 
 const Q_KEY = 'q' as const;
@@ -47,6 +56,26 @@ export default function RosterActions() {
   const [isPending, startTransition] = useTransition();
   const dialogContentRef = useRef<HTMLDivElement>(null);
 
+  const {
+    control,
+    reset,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(FilterUsersSchema),
+  });
+
+  const roles = useController({
+    control,
+    name: 'roles',
+    defaultValue: [],
+  });
+  const states = useController({
+    control,
+    name: 'state',
+    defaultValue: [],
+  });
+
   const handleSearch = debounce((term: string) => {
     console.log(`Searching... ${term}`);
 
@@ -73,11 +102,7 @@ export default function RosterActions() {
             <Search size={14} />
           )
         }
-        endElement={
-          <Kbd size="sm" variant="outline">
-            Enter
-          </Kbd>
-        }
+        endElement={<Kbd size="sm">Enter</Kbd>}
       >
         <Input
           borderWidth="1px"
@@ -92,10 +117,76 @@ export default function RosterActions() {
           }}
         />
       </InputGroup>
-      <Button variant="surface" disabled>
-        <Filter />
-        Filters
-      </Button>
+
+      <Popover.Root lazyMount defaultOpen>
+        <Popover.Trigger asChild>
+          <Button variant="surface">
+            <Filter />
+            Filters
+          </Button>
+        </Popover.Trigger>
+        <Portal>
+          <Popover.Positioner>
+            <Popover.Content>
+              <Popover.Arrow />
+              <Popover.Body>
+                <form onSubmit={handleSubmit((data) => console.log(data))}>
+                  <>
+                    <Popover.Title fontWeight="medium" mb={2}>
+                      State
+                    </Popover.Title>
+                    <CheckboxGroup
+                      value={states.field.value}
+                      onValueChange={states.field.onChange}
+                      name={states.field.name}
+                    >
+                      {StatesSelection.map((item) => (
+                        <Checkbox
+                          key={item.value}
+                          value={item.value}
+                          variant="outline"
+                          colorPalette="gray"
+                        >
+                          {item.label}
+                        </Checkbox>
+                      ))}
+                    </CheckboxGroup>
+                  </>
+                  <>
+                    <Popover.Title fontWeight="medium" mb={2} mt={4}>
+                      Roles
+                    </Popover.Title>
+                    <CheckboxGroup
+                      value={roles.field.value}
+                      onValueChange={roles.field.onChange}
+                      name={roles.field.name}
+                    >
+                      <Grid templateColumns="repeat(2, 1fr)" gap={2}>
+                        {RolesSelection.map((item) => (
+                          <Checkbox
+                            key={item.value}
+                            value={item.value}
+                            variant="outline"
+                            colorPalette="gray"
+                          >
+                            {item.label}
+                          </Checkbox>
+                        ))}
+                      </Grid>
+                    </CheckboxGroup>
+                  </>
+                </form>
+              </Popover.Body>
+              <Popover.Footer>
+                <Button size="sm" type="submit">
+                  Apply
+                </Button>
+              </Popover.Footer>
+            </Popover.Content>
+          </Popover.Positioner>
+        </Portal>
+      </Popover.Root>
+
       <Visibility isVisible={true}>
         <Button
           onClick={() =>
