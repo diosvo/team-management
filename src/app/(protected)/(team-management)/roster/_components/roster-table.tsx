@@ -7,7 +7,6 @@ import {
   Badge,
   Button,
   ButtonGroup,
-  Checkbox,
   EmptyState,
   IconButton,
   Pagination,
@@ -27,6 +26,7 @@ import { UserRole } from '@/utils/enum';
 import { colorState } from '@/utils/helper';
 
 import UserInfo from '@/app/(protected)/_components/user-info';
+import { Checkbox } from '@/components/ui/checkbox';
 import { removeUser } from '@/features/user/actions/user';
 
 interface RosterTableProps {
@@ -79,8 +79,7 @@ export function RosterTable({ users }: RosterTableProps) {
             <Table.Row>
               <Visibility isVisible={isAdmin}>
                 <Table.ColumnHeader width={6}>
-                  <Checkbox.Root
-                    size="sm"
+                  <Checkbox
                     top={0.5}
                     aria-label="Select all rows"
                     checked={
@@ -93,10 +92,7 @@ export function RosterTable({ users }: RosterTableProps) {
                           : []
                       );
                     }}
-                  >
-                    <Checkbox.HiddenInput />
-                    <Checkbox.Control />
-                  </Checkbox.Root>
+                  />
                 </Table.ColumnHeader>
               </Visibility>
               <Table.ColumnHeader>No.</Table.ColumnHeader>
@@ -123,8 +119,7 @@ export function RosterTable({ users }: RosterTableProps) {
                 >
                   <Visibility isVisible={isAdmin}>
                     <Table.Cell onClick={(e) => e.stopPropagation()}>
-                      <Checkbox.Root
-                        size="sm"
+                      <Checkbox
                         top="0.5"
                         aria-label="Select row"
                         checked={selection.includes(user.user_id)}
@@ -136,10 +131,7 @@ export function RosterTable({ users }: RosterTableProps) {
                               : selection.filter((id) => id !== user.user_id)
                           );
                         }}
-                      >
-                        <Checkbox.HiddenInput />
-                        <Checkbox.Control />
-                      </Checkbox.Root>
+                      />
                     </Table.Cell>
                   </Visibility>
                   <Table.Cell>-</Table.Cell>

@@ -11,7 +11,7 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
   function Checkbox(props, ref) {
     const { icon, children, inputProps, rootRef, ...rest } = props;
     return (
-      <ChakraCheckbox.Root ref={rootRef} {...rest}>
+      <ChakraCheckbox.Root ref={rootRef} size="sm" {...rest}>
         <ChakraCheckbox.HiddenInput ref={ref} {...inputProps} />
         <ChakraCheckbox.Control>
           {icon || <ChakraCheckbox.Indicator />}

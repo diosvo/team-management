@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useRef, useTransition } from 'react';
+import { use, useRef, useTransition } from 'react';
 
 import {
   Button,
@@ -15,68 +15,49 @@ import {
   Portal,
   Spinner,
 } from '@chakra-ui/react';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Filter, Search, UserRoundPlus } from 'lucide-react';
+import { useController, useForm } from 'react-hook-form';
 
+import { Checkbox } from '@/components/ui/checkbox';
 import { dialog } from '@/components/ui/dialog';
 import Visibility from '@/components/visibility';
 
-import { Checkbox } from '@/components/ui/checkbox';
-import { FilterUsersSchema } from '@/features/user/schemas/user';
+import { useUser } from '@/hooks/use-user';
 import { RolesSelection, StatesSelection } from '@/utils/constant';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useController, useForm } from 'react-hook-form';
+import { UserRole } from '@/utils/enum';
+
+import { FilterUsersSchema } from '@/features/user/schemas/user';
 import AddUser from './add-user';
 
 const Q_KEY = 'q' as const;
 
-function debounce(func: Function, wait: number = 0): Function {
-  let timeoutID: ReturnType<typeof setTimeout> | null = null;
-
-  return function (this: any, ...args: any[]) {
-    // Keep a reference to `this` so that
-    // func.apply() can access it.
-    const context = this;
-    clearTimeout(timeoutID ?? undefined);
-
-    timeoutID = setTimeout(function () {
-      timeoutID = null; // Not strictly necessary but good to do this.
-      func.apply(context, args);
-    }, wait);
-  };
-}
-
 export default function RosterActions() {
-  // Allow to access the parameters of the current URL
-  const searchParams = useSearchParams();
-  // Read the current URL's pathname
-  const pathname = usePathname();
-  // Enable navigation between routes within client components programmatically
-  const { replace } = useRouter();
+  const searchParams = useSearchParams(); // Access the parameters of the current URL
+  const pathname = usePathname(); // Read the current URL's pathname
+  const { replace } = useRouter(); // Enable navigation between routes within client components programmatically
 
   const [isPending, startTransition] = useTransition();
   const dialogContentRef = useRef<HTMLDivElement>(null);
 
-  const {
-    control,
-    reset,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({
+  const { userPromise } = useUser();
+  const user = use(userPromise);
+
+  const { control, reset, handleSubmit } = useForm({
     resolver: zodResolver(FilterUsersSchema),
   });
-
   const roles = useController({
     control,
     name: 'roles',
     defaultValue: [],
   });
-  const states = useController({
+  const state = useController({
     control,
     name: 'state',
     defaultValue: [],
   });
 
-  const handleSearch = debounce((term: string) => {
+  const handleSearch = (term: string) => {
     console.log(`Searching... ${term}`);
 
     const params = new URLSearchParams(searchParams);
@@ -89,7 +70,7 @@ export default function RosterActions() {
     startTransition(() => {
       replace(`${pathname}?${params.toString()}`);
     });
-  }, 300);
+  };
 
   return (
     <HStack marginBlock={6}>
@@ -118,7 +99,7 @@ export default function RosterActions() {
         />
       </InputGroup>
 
-      <Popover.Root lazyMount defaultOpen>
+      <Popover.Root lazyMount>
         <Popover.Trigger asChild>
           <Button variant="surface">
             <Filter />
@@ -127,7 +108,7 @@ export default function RosterActions() {
         </Popover.Trigger>
         <Portal>
           <Popover.Positioner>
-            <Popover.Content>
+            <Popover.Content width={{ base: '2xs' }}>
               <Popover.Arrow />
               <Popover.Body>
                 <form onSubmit={handleSubmit((data) => console.log(data))}>
@@ -136,9 +117,9 @@ export default function RosterActions() {
                       State
                     </Popover.Title>
                     <CheckboxGroup
-                      value={states.field.value}
-                      onValueChange={states.field.onChange}
-                      name={states.field.name}
+                      name={state.field.name}
+                      value={state.field.value}
+                      onValueChange={state.field.onChange}
                     >
                       {StatesSelection.map((item) => (
                         <Checkbox
@@ -157,9 +138,9 @@ export default function RosterActions() {
                       Roles
                     </Popover.Title>
                     <CheckboxGroup
+                      name={roles.field.name}
                       value={roles.field.value}
                       onValueChange={roles.field.onChange}
-                      name={roles.field.name}
                     >
                       <Grid templateColumns="repeat(2, 1fr)" gap={2}>
                         {RolesSelection.map((item) => (
@@ -168,6 +149,7 @@ export default function RosterActions() {
                             value={item.value}
                             variant="outline"
                             colorPalette="gray"
+                            aria-label={item.label}
                           >
                             {item.label}
                           </Checkbox>
@@ -176,9 +158,22 @@ export default function RosterActions() {
                     </CheckboxGroup>
                   </>
                 </form>
+                {/* <Code>
+                  states: {JSON.stringify(states.field.value, null, 2)}
+                </Code>
+                <Code>roles: {JSON.stringify(roles.field.value, null, 2)}</Code> */}
               </Popover.Body>
-              <Popover.Footer>
-                <Button size="sm" type="submit">
+              <Popover.Footer justifyContent="space-between">
+                <Button
+                  type="reset"
+                  size="sm"
+                  variant="outline"
+                  colorPalette="red"
+                  onClick={() => reset()}
+                >
+                  Reset
+                </Button>
+                <Button type="submit" size="sm">
                   Apply
                 </Button>
               </Popover.Footer>
@@ -187,7 +182,7 @@ export default function RosterActions() {
         </Portal>
       </Popover.Root>
 
-      <Visibility isVisible={true}>
+      <Visibility isVisible={user!.roles.includes(UserRole.SUPER_ADMIN)}>
         <Button
           onClick={() =>
             dialog.open('add-user', {
@@ -203,7 +198,7 @@ export default function RosterActions() {
           }
         >
           <UserRoundPlus />
-          Add User
+          Add
         </Button>
       </Visibility>
     </HStack>

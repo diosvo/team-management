@@ -1,7 +1,8 @@
 import { Metadata } from 'next';
+import { Suspense } from 'react';
 
 import { Box, Heading } from '@chakra-ui/react';
-import { Suspense } from 'react';
+
 import RosterActions from './_components/roster-actions';
 import RosterMain from './_components/roster-main';
 

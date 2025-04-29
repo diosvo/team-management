@@ -104,7 +104,7 @@ export default function AddUser({
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <DialogHeader>
-        <DialogTitle>Add User</DialogTitle>
+        <DialogTitle>Add to Roster</DialogTitle>
       </DialogHeader>
       <DialogBody>
         <VStack gap={4}>
