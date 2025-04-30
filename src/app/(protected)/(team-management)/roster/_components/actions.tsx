@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useRef, useTransition } from 'react';
+import { useRef, useState, useTransition } from 'react';
 
 import {
   Button,
@@ -16,7 +16,7 @@ import {
   Spinner,
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Filter, Search, UserRoundPlus } from 'lucide-react';
+import { Filter, Search, Trash2, UserRoundPlus } from 'lucide-react';
 import { useController, useForm } from 'react-hook-form';
 
 import { Checkbox } from '@/components/ui/checkbox';
@@ -26,32 +26,48 @@ import Visibility from '@/components/visibility';
 import { usePermissions } from '@/hooks/use-permissions';
 import { RolesSelection, StatesSelection } from '@/utils/constant';
 
-import { FilterUsersSchema } from '@/features/user/schemas/user';
+import { CloseButton } from '@/components/ui/close-button';
+import {
+  FilterUsersSchema,
+  FilterUsersValues,
+} from '@/features/user/schemas/user';
+import { UserRole, UserState } from '@/utils/enum';
 import AddUser from './add-user';
 
-const Q_KEY = 'q' as const;
-
-export default function RosterActions() {
+export default function RosterActions({
+  emailExists,
+}: {
+  emailExists: Array<string>;
+}) {
   const searchParams = useSearchParams(); // Access the parameters of the current URL
   const pathname = usePathname(); // Read the current URL's pathname
   const { replace } = useRouter(); // Enable navigation between routes within client components programmatically
 
   const isAdmin = usePermissions();
   const [isPending, startTransition] = useTransition();
+  const [openPopover, setOpenPopover] = useState<boolean>(false);
+  const inputRef = useRef<HTMLInputElement>(null);
   const dialogContentRef = useRef<HTMLDivElement>(null);
 
   const { control, reset, handleSubmit } = useForm({
     resolver: zodResolver(FilterUsersSchema),
   });
+  const query = useController({
+    control,
+    name: 'query',
+    defaultValue: searchParams.get('query')?.toString(),
+  });
   const roles = useController({
     control,
     name: 'roles',
-    defaultValue: [],
+    defaultValue: searchParams.get('roles')?.split(',') as Array<
+      UserRole.COACH | UserRole.PLAYER | UserRole.CAPTAIN | UserRole.GUEST
+    >,
   });
   const state = useController({
     control,
     name: 'state',
-    defaultValue: [],
+    defaultValue: searchParams.get('state')?.split(',') as Array<UserState>,
   });
 
   const handleSearch = (term: string) => {
@@ -59,11 +75,41 @@ export default function RosterActions() {
 
     const params = new URLSearchParams(searchParams);
     if (term) {
-      params.set(Q_KEY, term);
+      params.set('query', term);
     } else {
-      params.delete(Q_KEY);
+      params.delete('query');
     }
 
+    startTransition(() => {
+      replace(`${pathname}?${params.toString()}`);
+    });
+  };
+
+  const handleFilter = ({ state, roles }: FilterUsersValues) => {
+    console.log(`Filtering...`, state, roles);
+
+    const params = new URLSearchParams(searchParams);
+    if (state.length > 0) {
+      params.set('state', state.join(','));
+    } else {
+      params.delete('state');
+    }
+    if (roles.length > 0) {
+      params.set('roles', roles.join(','));
+    } else {
+      params.delete('roles');
+    }
+    startTransition(() => {
+      replace(`${pathname}?${params.toString()}`);
+    });
+  };
+
+  const clearAllFilters = () => {
+    console.log('Clearing all filters...');
+    const params = new URLSearchParams(searchParams);
+    params.delete('state');
+    params.delete('roles');
+    params.delete('query');
     startTransition(() => {
       replace(`${pathname}?${params.toString()}`);
     });
@@ -80,14 +126,29 @@ export default function RosterActions() {
             <Search size={14} />
           )
         }
-        endElement={<Kbd size="sm">Enter</Kbd>}
+        endElement={
+          searchParams.get('query')?.toString() ? (
+            <CloseButton
+              size="xs"
+              onClick={() => {
+                query.field.onChange('');
+                handleSearch(query.field.value as string);
+                inputRef.current?.focus();
+              }}
+              me="-2"
+            />
+          ) : (
+            <Kbd size="sm">Enter</Kbd>
+          )
+        }
       >
         <Input
+          ref={inputRef}
           borderWidth="1px"
           placeholder="Search..."
           name="search-roster"
           css={{ '--focus-color': 'colors.red.300' }}
-          defaultValue={searchParams.get(Q_KEY)?.toString()}
+          onChange={query.field.onChange}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
               e.preventDefault();
@@ -97,7 +158,10 @@ export default function RosterActions() {
         />
       </InputGroup>
 
-      <Popover.Root lazyMount>
+      <Popover.Root
+        open={openPopover}
+        onOpenChange={(e) => setOpenPopover(e.open)}
+      >
         <Popover.Trigger asChild>
           <Button variant="surface">
             <Filter />
@@ -107,9 +171,9 @@ export default function RosterActions() {
         <Portal>
           <Popover.Positioner>
             <Popover.Content width={{ base: '2xs' }}>
-              <Popover.Arrow />
-              <Popover.Body>
-                <form onSubmit={handleSubmit((data) => console.log(data))}>
+              <form onSubmit={handleSubmit(handleFilter)}>
+                <Popover.Arrow />
+                <Popover.Body>
                   <>
                     <Popover.Title fontWeight="medium" mb={2}>
                       State
@@ -125,6 +189,7 @@ export default function RosterActions() {
                           value={item.value}
                           variant="outline"
                           colorPalette="gray"
+                          aria-label={item.label}
                         >
                           {item.label}
                         </Checkbox>
@@ -155,30 +220,39 @@ export default function RosterActions() {
                       </Grid>
                     </CheckboxGroup>
                   </>
-                </form>
-                {/* <Code>
-                  states: {JSON.stringify(states.field.value, null, 2)}
-                </Code>
-                <Code>roles: {JSON.stringify(roles.field.value, null, 2)}</Code> */}
-              </Popover.Body>
-              <Popover.Footer justifyContent="space-between">
-                <Button
-                  type="reset"
-                  size="sm"
-                  variant="outline"
-                  colorPalette="red"
-                  onClick={() => reset()}
-                >
-                  Reset
-                </Button>
-                <Button type="submit" size="sm">
-                  Apply
-                </Button>
-              </Popover.Footer>
+                </Popover.Body>
+                <Popover.Footer justifyContent="space-between">
+                  <Button
+                    type="reset"
+                    size="sm"
+                    variant="outline"
+                    colorPalette="red"
+                    onClick={() => reset()}
+                  >
+                    Restore
+                  </Button>
+                  <Button
+                    type="submit"
+                    size="sm"
+                    onClick={() => setOpenPopover(false)}
+                  >
+                    Apply
+                  </Button>
+                </Popover.Footer>
+              </form>
             </Popover.Content>
           </Popover.Positioner>
         </Portal>
       </Popover.Root>
+
+      <Button
+        variant="outline"
+        disabled={!searchParams.toString()}
+        onClick={clearAllFilters}
+      >
+        <Trash2 color="red" />
+        Clear All Search
+      </Button>
 
       <Visibility isVisible={isAdmin}>
         <Button
@@ -187,8 +261,7 @@ export default function RosterActions() {
               contentRef: dialogContentRef,
               children: (
                 <AddUser
-                  users={[]}
-                  currentMail={'vtmn1212@gmail.com'}
+                  emailExists={emailExists}
                   containerRef={dialogContentRef}
                 />
               ),

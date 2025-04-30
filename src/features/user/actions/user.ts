@@ -8,13 +8,14 @@ import { revalidateAdminPath } from '../db/cache';
 import { deleteUser, getUsers, insertUser, updateUser } from '../db/user';
 import {
   AddUserValues,
+  FilterUsersValues,
   UpdateUserSchema,
   UpdateUserValues,
 } from '../schemas/user';
 import { generatePasswordToken } from './password-reset-token';
 
-export async function getRoster(query: string = '') {
-  return await getUsers(query);
+export async function getRoster(params: Partial<FilterUsersValues>) {
+  return await getUsers(params);
 }
 
 export async function addUser(

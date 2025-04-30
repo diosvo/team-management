@@ -1,6 +1,6 @@
 'use client';
 
-import { RefObject, useMemo, useTransition } from 'react';
+import { RefObject, useTransition } from 'react';
 
 import {
   Button,
@@ -24,7 +24,6 @@ import { Field } from '@/components/ui/field';
 import { Select } from '@/components/ui/select';
 import { toaster } from '@/components/ui/toaster';
 
-import { User } from '@/drizzle/schema/user';
 import { getDefaults } from '@/lib/zod';
 import {
   ESTABLISHED_DATE,
@@ -37,16 +36,11 @@ import { addUser } from '@/features/user/actions/user';
 import { AddUserSchema, AddUserValues } from '@/features/user/schemas/user';
 
 interface AddUserProps {
-  users: Array<User>;
-  currentMail: string;
+  emailExists: Array<string>;
   containerRef: RefObject<Nullable<HTMLDivElement>>;
 }
 
-export default function AddUser({
-  users,
-  currentMail,
-  containerRef,
-}: AddUserProps) {
+export default function AddUser({ emailExists, containerRef }: AddUserProps) {
   const [isPending, startTransition] = useTransition();
 
   const {
@@ -61,19 +55,7 @@ export default function AddUser({
     defaultValues: getDefaults(AddUserSchema) as AddUserValues,
   });
 
-  const emailExists = useMemo(() => {
-    return users.some((user) => user.email === getValues('email'));
-  }, [users]);
-
   const onSubmit = (data: AddUserValues) => {
-    if (data.email === currentMail) {
-      setError('email', {
-        type: 'custom',
-        message: 'You cannot add yourself',
-      });
-      return;
-    }
-
     if (emailExists) {
       setError('email', {
         type: 'custom',

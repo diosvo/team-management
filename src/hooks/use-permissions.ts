@@ -1,3 +1,5 @@
+'use client';
+
 import { use, useMemo } from 'react';
 
 import { UserRole } from '@/utils/enum';
