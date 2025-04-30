@@ -3,8 +3,7 @@ import { Suspense } from 'react';
 
 import { Box, Heading } from '@chakra-ui/react';
 
-import { UserRole, UserState } from '@/utils/enum';
-
+import { SelectableRole, SelectableState } from '@/utils/type';
 import RosterMain from './_components/main';
 
 export const metadata: Metadata = {
@@ -28,15 +27,17 @@ export default async function RosterPage(
   const rolesArray = roles
     ? roles
         .split(',')
-        .map((role) => UserRole[role as keyof typeof UserRole])
-        .filter((role) => role !== UserRole.SUPER_ADMIN)
+        .map((role) => role as SelectableRole)
+        .filter(Boolean)
     : [];
   const stateArray = state
     ? state
         .split(',')
-        .map((value) => UserState[value as keyof typeof UserState])
+        .map((value) => value as SelectableState)
         .filter(Boolean)
     : [];
+
+  console.log(searchParams);
 
   return (
     <Box>

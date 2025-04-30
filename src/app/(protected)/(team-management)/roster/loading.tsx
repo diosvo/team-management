@@ -1,5 +1,4 @@
 import { Box, Flex, Heading, Skeleton } from '@chakra-ui/react';
-import RosterTableSkeleton from './_components/table-skeleton';
 
 export default function Loading() {
   return (
@@ -14,7 +13,7 @@ export default function Loading() {
         <Skeleton height="40px" width="120px" />
       </Flex>
 
-      <RosterTableSkeleton />
+      {/* <RosterTableSkeleton /> */}
     </Box>
   );
 }

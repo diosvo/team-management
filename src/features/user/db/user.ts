@@ -4,6 +4,7 @@ import { and, arrayContained, eq, ilike, inArray, not, SQL } from 'drizzle-orm';
 
 import { db } from '@/drizzle';
 import { User, UserTable } from '@/drizzle/schema';
+
 import logger from '@/lib/logger';
 import { UserRole } from '@/utils/enum';
 
