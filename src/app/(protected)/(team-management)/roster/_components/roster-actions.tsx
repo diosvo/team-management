@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { use, useRef, useTransition } from 'react';
+import { useRef, useTransition } from 'react';
 
 import {
   Button,
@@ -23,9 +23,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { dialog } from '@/components/ui/dialog';
 import Visibility from '@/components/visibility';
 
-import { useUser } from '@/hooks/use-user';
+import { usePermissions } from '@/hooks/use-permissions';
 import { RolesSelection, StatesSelection } from '@/utils/constant';
-import { UserRole } from '@/utils/enum';
 
 import { FilterUsersSchema } from '@/features/user/schemas/user';
 import AddUser from './add-user';
@@ -37,11 +36,9 @@ export default function RosterActions() {
   const pathname = usePathname(); // Read the current URL's pathname
   const { replace } = useRouter(); // Enable navigation between routes within client components programmatically
 
+  const isAdmin = usePermissions();
   const [isPending, startTransition] = useTransition();
   const dialogContentRef = useRef<HTMLDivElement>(null);
-
-  const { userPromise } = useUser();
-  const user = use(userPromise);
 
   const { control, reset, handleSubmit } = useForm({
     resolver: zodResolver(FilterUsersSchema),
@@ -88,6 +85,7 @@ export default function RosterActions() {
         <Input
           borderWidth="1px"
           placeholder="Search..."
+          name="search-roster"
           css={{ '--focus-color': 'colors.red.300' }}
           defaultValue={searchParams.get(Q_KEY)?.toString()}
           onKeyDown={(e) => {
@@ -182,7 +180,7 @@ export default function RosterActions() {
         </Portal>
       </Popover.Root>
 
-      <Visibility isVisible={user!.roles.includes(UserRole.SUPER_ADMIN)}>
+      <Visibility isVisible={isAdmin}>
         <Button
           onClick={() =>
             dialog.open('add-user', {

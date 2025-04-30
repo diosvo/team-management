@@ -186,6 +186,7 @@ export default function TextEditor({
                       <HStack mb={2}>
                         <Input
                           placeholder="https://example.com"
+                          name="url-link"
                           size="xs"
                           value={url}
                           onChange={(e) => setUrl(e.target.value)}

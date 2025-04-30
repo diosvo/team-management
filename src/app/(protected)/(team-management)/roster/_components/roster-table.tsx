@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useState } from 'react';
+import { useState } from 'react';
 
 import {
   ActionBar,
@@ -16,17 +16,16 @@ import {
 } from '@chakra-ui/react';
 import { ChevronLeft, ChevronRight, SwatchBook } from 'lucide-react';
 
+import { Checkbox } from '@/components/ui/checkbox';
 import { dialog } from '@/components/ui/dialog';
 import { toaster } from '@/components/ui/toaster';
 import Visibility from '@/components/visibility';
 
 import { User } from '@/drizzle/schema';
-import { useUser } from '@/hooks/use-user';
-import { UserRole } from '@/utils/enum';
+import { usePermissions } from '@/hooks/use-permissions';
 import { colorState } from '@/utils/helper';
 
 import UserInfo from '@/app/(protected)/_components/user-info';
-import { Checkbox } from '@/components/ui/checkbox';
 import { removeUser } from '@/features/user/actions/user';
 
 interface RosterTableProps {
@@ -34,9 +33,7 @@ interface RosterTableProps {
 }
 
 export function RosterTable({ users }: RosterTableProps) {
-  const { userPromise } = useUser();
-  const currentUser = use(userPromise);
-  const isAdmin = currentUser!.roles.includes(UserRole.SUPER_ADMIN);
+  const isAdmin = usePermissions();
 
   const [selection, setSelection] = useState<Array<string>>([]);
   const [pagination, setPagination] = useState({
@@ -123,7 +120,6 @@ export function RosterTable({ users }: RosterTableProps) {
                         top="0.5"
                         aria-label="Select row"
                         checked={selection.includes(user.user_id)}
-                        readOnly={currentUser?.user_id === user.user_id}
                         onCheckedChange={(changes) => {
                           setSelection((prev) =>
                             changes.checked
