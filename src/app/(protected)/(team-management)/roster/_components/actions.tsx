@@ -3,8 +3,8 @@
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useRef, useState, useTransition } from 'react';
 
-import { Button, HStack } from '@chakra-ui/react';
-import { Trash2, UserRoundPlus } from 'lucide-react';
+import { Button, Heading, HStack, VStack } from '@chakra-ui/react';
+import { UserRoundPlus } from 'lucide-react';
 
 import { dialog } from '@/components/ui/dialog';
 import Visibility from '@/components/visibility';
@@ -23,15 +23,15 @@ export default function RosterActions({
 }) {
   const isAdmin = usePermissions();
   const dialogContentRef = useRef<HTMLDivElement>(null);
+  const [isPending, startTransition] = useTransition();
+  const [openPopover, setOpenPopover] = useState<boolean>(false);
 
+  // Access the parameters of the current URL
   const searchParams = useSearchParams();
   // Read the current URL's pathname
   const pathname = usePathname();
   // Enable navigation between routes within client components programmatically
   const { replace } = useRouter();
-
-  const [isPending, startTransition] = useTransition();
-  const [openPopover, setOpenPopover] = useState<boolean>(false);
 
   const handleSearch = (term: string) => {
     const params = new URLSearchParams(searchParams);
@@ -68,47 +68,57 @@ export default function RosterActions({
 
   const handleClearAll = () => {
     const params = new URLSearchParams(searchParams);
-    params.forEach((_, key) => params.delete(key));
+    params.delete('query');
+    params.delete('state');
+    params.delete('roles');
     startTransition(() => replace(`${pathname}?${params.toString()}`));
   };
 
   return (
-    <HStack marginBlock={6}>
-      <SearchBar isPending={isPending} onSearch={handleSearch} />
-
-      <SelectionFilter
-        open={openPopover}
-        onOpenChange={setOpenPopover}
-        onFilter={handleSelection}
-      />
-
-      <Button
-        variant="outline"
-        disabled={!searchParams.toString()}
-        onClick={handleClearAll}
-      >
-        <Trash2 color="red" />
-        Clear All Search
-      </Button>
-
-      <Visibility isVisible={isAdmin}>
+    <VStack align="stretch">
+      <HStack alignItems="center">
+        <Heading as="h1" size="xl" marginRight="auto">
+          Team Roster
+        </Heading>
         <Button
-          onClick={() =>
-            dialog.open('add-user', {
-              contentRef: dialogContentRef,
-              children: (
-                <AddUser
-                  emailExists={emailExists}
-                  containerRef={dialogContentRef}
-                />
-              ),
-            })
-          }
+          variant="plain"
+          textDecoration="underline"
+          _hover={{ color: 'tomato' }}
+          disabled={!searchParams.toString()}
+          onClick={handleClearAll}
         >
-          <UserRoundPlus />
-          Add
+          Clear all search
         </Button>
-      </Visibility>
-    </HStack>
+      </HStack>
+
+      <HStack marginBlock={2}>
+        <SearchBar isPending={isPending} onSearch={handleSearch} />
+
+        <SelectionFilter
+          open={openPopover}
+          onOpenChange={setOpenPopover}
+          onFilter={handleSelection}
+        />
+
+        <Visibility isVisible={isAdmin}>
+          <Button
+            onClick={() =>
+              dialog.open('add-user', {
+                contentRef: dialogContentRef,
+                children: (
+                  <AddUser
+                    emailExists={emailExists}
+                    containerRef={dialogContentRef}
+                  />
+                ),
+              })
+            }
+          >
+            <UserRoundPlus />
+            Add
+          </Button>
+        </Visibility>
+      </HStack>
+    </VStack>
   );
 }

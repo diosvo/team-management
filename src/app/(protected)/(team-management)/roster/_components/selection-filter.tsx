@@ -1,6 +1,7 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
+import { useMemo } from 'react';
 
 import { Button, CheckboxGroup, Grid, Popover, Portal } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -52,7 +53,14 @@ export default function SelectionFilter({
       ?.split(',') as Array<SelectableState>,
   });
 
+  const checkboxCounter = useMemo(
+    () => (roles.field.value?.length ?? 0) + (state.field.value?.length ?? 0),
+    [roles.field.value, state.field.value]
+  );
+
   const onSubmit = (values: FilterUsersValues) => {
+    if (!checkboxCounter) return;
+
     onFilter(values.state, values.roles);
     onOpenChange(false);
   };
@@ -62,7 +70,7 @@ export default function SelectionFilter({
       <Popover.Trigger asChild>
         <Button variant="surface">
           <Filter />
-          Filters
+          Filters {checkboxCounter > 0 ? '(' + checkboxCounter + ')' : ''}
         </Button>
       </Popover.Trigger>
       <Portal>
@@ -128,7 +136,7 @@ export default function SelectionFilter({
                 >
                   Reset
                 </Button>
-                <Button type="submit" size="sm">
+                <Button type="submit" size="sm" disabled={!checkboxCounter}>
                   Apply
                 </Button>
               </Popover.Footer>

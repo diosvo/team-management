@@ -1,15 +1,9 @@
-import {
-  Box,
-  Center,
-  Grid,
-  GridItem,
-  Separator,
-  Spinner,
-  Text,
-  VStack,
-} from '@chakra-ui/react';
-
 import { Suspense } from 'react';
+
+import { Box, Grid, GridItem, Separator } from '@chakra-ui/react';
+
+import Loading from '@/components/loading';
+
 import Header from './_components/header';
 import Sidebar from './_components/sidebar';
 
@@ -45,20 +39,7 @@ export default function ProtectedLayout({
       </GridItem>
 
       <GridItem gridArea="main">
-        <Suspense
-          fallback={
-            <Center h="full">
-              <VStack gap={4}>
-                <Spinner
-                  size="xl"
-                  color="tomato"
-                  css={{ '--spinner-track-color': 'colors.gray.200' }}
-                />
-                <Text fontSize="xl">Loading...</Text>
-              </VStack>
-            </Center>
-          }
-        >
+        <Suspense fallback={<Loading />}>
           <Box p={4}>{children}</Box>
         </Suspense>
       </GridItem>

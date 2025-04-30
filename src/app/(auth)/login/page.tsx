@@ -2,15 +2,7 @@
 
 import { useEffect, useState, useTransition } from 'react';
 
-import {
-  Button,
-  Heading,
-  Input,
-  Link,
-  Stack,
-  Text,
-  VStack,
-} from '@chakra-ui/react';
+import { Button, Heading, Input, Link, VStack } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FieldErrors, useForm } from 'react-hook-form';
 
@@ -58,14 +50,12 @@ export default function LoginPage() {
 
   return (
     <>
-      <VStack mb="6">
-        <Heading textAlign="center" size={{ base: 'xl', md: '2xl' }}>
-          {pageTitle[page]}
-        </Heading>
-      </VStack>
+      <Heading textAlign="center" size={{ base: 'xl', md: '2xl' }}>
+        {pageTitle[page]}
+      </Heading>
 
       <form onSubmit={handleSubmit(onSubmit)}>
-        <Stack gap="6">
+        <VStack gap={4} align="stretch">
           <Field
             required
             label="Email"
@@ -94,15 +84,14 @@ export default function LoginPage() {
                 />
               </Field>
 
-              <Text fontWeight="medium">
-                <Link
-                  fontSize="sm"
-                  textDecoration="underline"
-                  onClick={() => setPage(Page.ResetPassword)}
-                >
-                  Forgot your password?
-                </Link>
-              </Text>
+              <Link
+                fontSize="sm"
+                fontWeight="semibold"
+                textDecoration="underline"
+                onClick={() => setPage(Page.ResetPassword)}
+              >
+                Forgot your password?
+              </Link>
             </>
           )}
 
@@ -118,16 +107,17 @@ export default function LoginPage() {
           </Button>
 
           {page === Page.ResetPassword && (
-            <Text fontSize="sm" fontWeight="medium" textAlign="center">
-              <Link
-                textDecoration="underline"
-                onClick={() => setPage(Page.Login)}
-              >
-                Go back to sign in
-              </Link>
-            </Text>
+            <Link
+              fontSize="sm"
+              alignSelf="center"
+              fontWeight="medium"
+              textDecoration="underline"
+              onClick={() => setPage(Page.Login)}
+            >
+              Go back to sign in
+            </Link>
           )}
-        </Stack>
+        </VStack>
       </form>
     </>
   );

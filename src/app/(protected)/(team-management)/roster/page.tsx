@@ -1,8 +1,7 @@
 import { Metadata } from 'next';
 import { Suspense } from 'react';
 
-import { Box, Heading } from '@chakra-ui/react';
-
+import Loading from '@/components/loading';
 import { SelectableRole, SelectableState } from '@/utils/type';
 import RosterMain from './_components/main';
 
@@ -37,22 +36,15 @@ export default async function RosterPage(
         .filter(Boolean)
     : [];
 
-  console.log(searchParams);
-
   return (
-    <Box>
-      <Heading as="h1" size="xl">
-        Team Roster
-      </Heading>
-      <Suspense key={query || roles || state} fallback={<div>Loading...</div>}>
-        <RosterMain
-          params={{
-            query,
-            roles: rolesArray,
-            state: stateArray,
-          }}
-        />
-      </Suspense>
-    </Box>
+    <Suspense key={query || roles || state} fallback={<Loading />}>
+      <RosterMain
+        params={{
+          query,
+          roles: rolesArray,
+          state: stateArray,
+        }}
+      />
+    </Suspense>
   );
 }

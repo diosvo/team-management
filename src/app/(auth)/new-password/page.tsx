@@ -3,15 +3,7 @@
 import { useSearchParams } from 'next/navigation';
 import { useState, useTransition } from 'react';
 
-import {
-  Button,
-  Heading,
-  Input,
-  Link,
-  Stack,
-  Text,
-  VStack,
-} from '@chakra-ui/react';
+import { Button, Heading, Input, Link, Stack, VStack } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 
@@ -95,11 +87,14 @@ export default function NewPasswordPage() {
           </Stack>
         </form>
       </Stack>
-      <Text fontWeight="medium">
-        <Link textDecoration="underline" href={LOGIN_PATH}>
-          Go to login
-        </Link>
-      </Text>
+      <Link
+        fontSize="sm"
+        fontWeight="semibold"
+        textDecoration="underline"
+        href={LOGIN_PATH}
+      >
+        Go to login
+      </Link>
     </VStack>
   );
 }

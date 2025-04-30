@@ -14,7 +14,7 @@ import {
 } from '../schemas/user';
 import { generatePasswordToken } from './password-reset-token';
 
-export async function getRoster(params: Partial<FilterUsersValues>) {
+export async function getRoster(params: FilterUsersValues) {
   return await getUsers(params);
 }
 

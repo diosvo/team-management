@@ -11,7 +11,7 @@ import { UserRole } from '@/utils/enum';
 import { AddUserValues, FilterUsersValues } from '../schemas/user';
 
 export const getUsers = cache(
-  async ({ query, roles, state }: Partial<FilterUsersValues> = {}) => {
+  async ({ query, roles, state }: FilterUsersValues) => {
     // Always exclude SUPER_ADMIN user
     const filters: Array<SQL> = [
       not(arrayContained(UserTable.roles, [UserRole.SUPER_ADMIN])),
