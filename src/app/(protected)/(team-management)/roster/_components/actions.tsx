@@ -21,14 +21,11 @@ export default function RosterActions({
   emailExists: Array<string>;
 }) {
   const isAdmin = usePermissions();
-  const { defaultFilters, filters, isPending, updateFilters } = useFilters();
+  const { filters, isPending, updateFilters } = useFilters();
 
   const dialogContentRef = useRef<HTMLDivElement>(null);
   const isFilterEmpty = useMemo(
-    () =>
-      filters.query === '' &&
-      filters.roles?.length === 0 &&
-      filters.state?.length === 0,
+    () => !Object.values(filters).every(Boolean),
     [filters]
   );
 
@@ -41,7 +38,13 @@ export default function RosterActions({
           textDecoration="underline"
           _hover={{ color: 'tomato' }}
           disabled={isFilterEmpty || isPending}
-          onClick={() => updateFilters(defaultFilters)}
+          onClick={() =>
+            updateFilters({
+              query: '',
+              roles: [],
+              state: [],
+            })
+          }
         >
           Clear all search
         </Button>

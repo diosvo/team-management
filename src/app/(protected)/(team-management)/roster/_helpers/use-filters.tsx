@@ -3,16 +3,10 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createContext, useContext, useOptimistic, useTransition } from 'react';
 
-import { getDefaults } from '@/lib/zod';
-import { SelectableRole, SelectableState } from '@/utils/type';
-
-import {
-  FilterUsersSchema,
-  FilterUsersValues,
-} from '@/features/user/schemas/user';
+import { FilterUsersValues } from '@/features/user/schemas/user';
+import { parseSearchParams } from './parse-params';
 
 type FilterContextType = {
-  defaultFilters: FilterUsersValues;
   filters: FilterUsersValues;
   isPending: boolean;
   updateFilters: (_updates: Partial<FilterUsersValues>) => void;
@@ -27,18 +21,9 @@ export default function FilterProvider({
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-
-  const rolesParam = searchParams.get('roles');
-  const stateParam = searchParams.get('state');
-
-  const filters = FilterUsersSchema.safeParse({
-    query: searchParams.get('query') || '',
-    roles: rolesParam ? (rolesParam.split(',') as Array<SelectableRole>) : [],
-    state: stateParam ? (stateParam.split(',') as Array<SelectableState>) : [],
-  });
-
-  const defaultFilters = getDefaults(FilterUsersSchema) as FilterUsersValues;
-  const initialFilters = filters.success ? filters.data : defaultFilters;
+  const initialFilters = parseSearchParams(
+    Object.fromEntries(searchParams.entries())
+  );
 
   const [isPending, startTransition] = useTransition();
   const [optimisticFilters, setOptimisticFilters] = useOptimistic(
@@ -51,7 +36,7 @@ export default function FilterProvider({
     }
   );
 
-  function updateFilters(updates: Partial<typeof optimisticFilters>) {
+  function updateFilters(updates: Partial<FilterUsersValues>) {
     const newState = {
       ...optimisticFilters,
       ...updates,
@@ -76,7 +61,6 @@ export default function FilterProvider({
   return (
     <FilterContext.Provider
       value={{
-        defaultFilters,
         filters: optimisticFilters,
         isPending,
         updateFilters,

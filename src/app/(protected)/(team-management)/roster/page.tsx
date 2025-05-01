@@ -1,33 +1,29 @@
-import { SelectableRole, SelectableState } from '@/utils/type';
-import RosterMain from './_components/main';
+import { getRoster } from '@/features/user/actions/user';
+import RosterActions from './_components/actions';
+import { RosterTable } from './_components/table';
+import { parseSearchParams } from './_helpers/parse-params';
 
-export default async function RosterPage(
-  props: Partial<{
-    searchParams: Promise<{
-      query: string;
-      roles: string;
-      state: string;
-    }>;
-  }>
-) {
+export default async function RosterPage(props: {
+  searchParams: Promise<{
+    query: string;
+    roles: string;
+    state: string;
+  }>;
+}) {
   const searchParams = await props.searchParams;
-  const query = searchParams?.query || '';
-  const roles = searchParams?.roles || '';
-  const state = searchParams?.state || '';
-  const rolesArray = roles
-    ? roles.split(',').map((role) => role as SelectableRole)
-    : [];
-  const stateArray = state
-    ? state.split(',').map((value) => value as SelectableState)
-    : [];
+  const params = parseSearchParams(
+    Object.fromEntries(new URLSearchParams(searchParams))
+  );
+  const users = await getRoster(params);
+  const emailExists = [
+    'vtmn1212@gmail.com',
+    ...users.map((user) => user.email),
+  ];
 
   return (
-    <RosterMain
-      params={{
-        query,
-        roles: rolesArray,
-        state: stateArray,
-      }}
-    />
+    <>
+      <RosterActions emailExists={emailExists} />
+      <RosterTable users={users} />
+    </>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { Input, InputGroup, Kbd, Spinner } from '@chakra-ui/react';
 import { Search } from 'lucide-react';
@@ -11,8 +11,14 @@ import { CloseButton } from '@/components/ui/close-button';
 export default function SearchBar() {
   const inputRef = useRef<HTMLInputElement>(null);
   const { filters, isPending, updateFilters } = useFilters();
+  const [inputValue, setInputValue] = useState(filters.query);
+
+  useEffect(() => {
+    setInputValue(filters.query || '');
+  }, [filters.query]);
 
   const handleClear = () => {
+    setInputValue('');
     updateFilters({ query: '' });
     inputRef.current?.focus();
   };
@@ -20,8 +26,12 @@ export default function SearchBar() {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      updateFilters({ query: e.currentTarget.value });
+      updateFilters({ query: inputValue });
     }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(e.target.value);
   };
 
   return (
@@ -35,7 +45,7 @@ export default function SearchBar() {
         )
       }
       endElement={
-        filters.query ? (
+        inputValue ? (
           <CloseButton size="2xs" borderRadius="full" onClick={handleClear} />
         ) : (
           <Kbd size="sm">Enter</Kbd>
@@ -49,7 +59,8 @@ export default function SearchBar() {
         name="search-bar"
         placeholder="Search..."
         css={{ '--focus-color': 'colors.red.200' }}
-        defaultValue={filters.query}
+        value={inputValue}
+        onChange={handleChange}
         onKeyDown={handleKeyDown}
       />
     </InputGroup>

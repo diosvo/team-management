@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { Button, CheckboxGroup, Grid, Popover, Portal } from '@chakra-ui/react';
 import { Filter } from 'lucide-react';
@@ -19,6 +19,14 @@ export default function SelectionFilter() {
     state: filters.state,
   });
   const [openPopover, setOpenPopover] = useState<boolean>(false);
+
+  useEffect(() => {
+    setSelection((prev) => ({
+      ...prev,
+      roles: filters.roles,
+      state: filters.state,
+    }));
+  }, [filters.state, filters.roles]);
 
   const checkboxCounter = useMemo(
     () => (selection.roles || []).length + (selection.state || []).length,
