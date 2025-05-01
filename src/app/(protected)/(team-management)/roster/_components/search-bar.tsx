@@ -1,42 +1,26 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useRef, useState, useTransition } from 'react';
+import { useRef } from 'react';
 
 import { Input, InputGroup, Kbd, Spinner } from '@chakra-ui/react';
 import { Search } from 'lucide-react';
 
+import { useFilters } from '@/app/(protected)/(team-management)/roster/_helpers/use-filters';
 import { CloseButton } from '@/components/ui/close-button';
 
-const Q_KEY = 'query';
-
-export default function SearchBar({ isLoading }: { isLoading: boolean }) {
-  const router = useRouter();
+export default function SearchBar() {
   const inputRef = useRef<HTMLInputElement>(null);
-
-  const searchParams = useSearchParams();
-  const [isPending, startTransition] = useTransition();
-  const [value, setValue] = useState<string>(searchParams.get(Q_KEY) ?? '');
-
-  const onSearch = (term: string) => {
-    const params = new URLSearchParams(searchParams);
-    term ? params.set(Q_KEY, term) : params.delete(Q_KEY);
-
-    startTransition(() => {
-      setValue(term);
-      router.push(`?${params.toString()}`);
-    });
-  };
+  const { filters, isPending, updateFilters } = useFilters();
 
   const handleClear = () => {
-    onSearch('');
+    updateFilters({ query: '' });
     inputRef.current?.focus();
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      onSearch(e.currentTarget.value);
+      updateFilters({ query: e.currentTarget.value });
     }
   };
 
@@ -44,14 +28,14 @@ export default function SearchBar({ isLoading }: { isLoading: boolean }) {
     <InputGroup
       flex="1"
       startElement={
-        isPending || isLoading ? (
+        isPending ? (
           <Spinner size="xs" colorPalette="gray" borderWidth="1px" />
         ) : (
           <Search size={14} />
         )
       }
       endElement={
-        searchParams.get(Q_KEY) ? (
+        filters.query ? (
           <CloseButton size="2xs" borderRadius="full" onClick={handleClear} />
         ) : (
           <Kbd size="sm">Enter</Kbd>
@@ -65,9 +49,8 @@ export default function SearchBar({ isLoading }: { isLoading: boolean }) {
         name="search-bar"
         placeholder="Search..."
         css={{ '--focus-color': 'colors.red.200' }}
-        value={value}
+        defaultValue={filters.query}
         onKeyDown={handleKeyDown}
-        onChange={(e) => setValue(e.currentTarget.value)}
       />
     </InputGroup>
   );

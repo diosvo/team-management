@@ -1,5 +1,13 @@
-import { SkeletonText } from '@chakra-ui/react';
+import { Box, Skeleton, SkeletonText, Stack } from '@chakra-ui/react';
 
 export default function Loading() {
-  return <SkeletonText noOfLines={3} gap="4" />;
+  return (
+    <Stack>
+      <Box>
+        <Skeleton height={8} width={36} />
+        <Skeleton height={10} width="100%" marginBlock={4} />
+      </Box>
+      <SkeletonText noOfLines={6} gap={4} />
+    </Stack>
+  );
 }

@@ -23,9 +23,9 @@ export const UpdateUserSchema = z.object({
 });
 
 export const FilterUsersSchema = z.object({
-  query: z.string().default(''),
-  roles: roles.default([]),
-  state: z.array(state).default([]),
+  query: z.string().default('').optional(),
+  roles: roles.default([]).optional(),
+  state: z.array(state).default([]).optional(),
 });
 
 export type AddUserValues = z.infer<typeof AddUserSchema>;
