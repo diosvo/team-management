@@ -1,7 +1,7 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
-import { useMemo, useRef } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useMemo, useRef, useTransition } from 'react';
 
 import { Input, InputGroup, Kbd, Spinner } from '@chakra-ui/react';
 import { Search } from 'lucide-react';
@@ -9,26 +9,37 @@ import { useController, useForm } from 'react-hook-form';
 
 import { CloseButton } from '@/components/ui/close-button';
 
-interface SearchBarProps {
-  isPending: boolean;
-  onSearch: (term: string) => void;
-}
+const Q_KEY = 'query';
 
-export default function SearchBar({ isPending, onSearch }: SearchBarProps) {
+export default function SearchBar({ isLoading }: { isLoading: boolean }) {
+  const router = useRouter();
   const { control } = useForm();
   const searchParams = useSearchParams();
   const inputRef = useRef<HTMLInputElement>(null);
+  const [isPending, startTransition] = useTransition();
 
   const searchQuery = useMemo(
-    () => searchParams.get('query')?.toString() || '',
+    () => searchParams.get(Q_KEY)?.toString() || '',
     [searchParams]
   );
 
   const query = useController({
     control,
-    name: 'query',
+    name: Q_KEY,
     defaultValue: searchQuery,
   });
+
+  const onSearch = (term: string) => {
+    const params = new URLSearchParams(searchParams);
+    if (term) {
+      params.set(Q_KEY, term);
+    } else {
+      params.delete(Q_KEY);
+    }
+    startTransition(() => {
+      router.push(`?${params.toString()}`);
+    });
+  };
 
   const handleClear = () => {
     query.field.onChange('');
@@ -47,7 +58,7 @@ export default function SearchBar({ isPending, onSearch }: SearchBarProps) {
     <InputGroup
       flex="1"
       startElement={
-        isPending ? (
+        isPending || isLoading ? (
           <Spinner size="xs" colorPalette="gray" borderWidth="1px" />
         ) : (
           <Search size={14} />
@@ -55,7 +66,7 @@ export default function SearchBar({ isPending, onSearch }: SearchBarProps) {
       }
       endElement={
         searchQuery ? (
-          <CloseButton size="xs" onClick={handleClear} />
+          <CloseButton size="2xs" borderRadius="full" onClick={handleClear} />
         ) : (
           <Kbd size="sm">Enter</Kbd>
         )
