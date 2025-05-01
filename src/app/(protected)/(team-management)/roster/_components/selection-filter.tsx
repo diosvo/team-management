@@ -1,7 +1,7 @@
 'use client';
 
-import { ReadonlyURLSearchParams } from 'next/navigation';
-import { useMemo } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useMemo, useOptimistic, useState, useTransition } from 'react';
 
 import { Button, CheckboxGroup, Grid, Popover, Portal } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -18,22 +18,18 @@ import {
   FilterUsersValues,
 } from '@/features/user/schemas/user';
 
-interface SelectionFilterProps {
-  open: boolean;
-  searchParams: ReadonlyURLSearchParams;
-  onOpenChange: (open: boolean) => void;
-  onFilter: (
-    state: Array<SelectableState>,
-    roles: Array<SelectableRole>
-  ) => void;
-}
+export default function SelectionFilter() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [isPending, startTransition] = useTransition();
+  const [openPopover, setOpenPopover] = useState<boolean>(false);
+  const [optimisticRoles, setOptimisticRoles] = useOptimistic(
+    searchParams.get('roles')?.split(',')
+  );
+  const [optimisticState, setOptimisticState] = useOptimistic(
+    searchParams.get('state')?.split(',')
+  );
 
-export default function SelectionFilter({
-  open,
-  searchParams,
-  onOpenChange,
-  onFilter,
-}: SelectionFilterProps) {
   const { control, reset, handleSubmit } = useForm({
     resolver: zodResolver(FilterUsersSchema),
   });
@@ -41,17 +37,13 @@ export default function SelectionFilter({
   const roles = useController({
     control,
     name: 'roles',
-    defaultValue: searchParams
-      .get('roles')
-      ?.split(',') as Array<SelectableRole>,
+    defaultValue: optimisticRoles as Array<SelectableRole>,
   });
 
   const state = useController({
     control,
     name: 'state',
-    defaultValue: searchParams
-      .get('state')
-      ?.split(',') as Array<SelectableState>,
+    defaultValue: optimisticState as Array<SelectableState>,
   });
 
   const checkboxCounter = useMemo(
@@ -62,18 +54,41 @@ export default function SelectionFilter({
   const onSubmit = (values: FilterUsersValues) => {
     if (!checkboxCounter) return;
 
-    console.log('onSubmit', values);
+    const params = new URLSearchParams(searchParams);
 
-    onFilter(values.state, values.roles);
-    onOpenChange(false);
+    console.log(values);
+
+    params.delete('roles');
+    params.delete('state');
+
+    if (values.roles.length > 0) {
+      params.set('roles', values.roles.join(','));
+      startTransition(() => {
+        setOptimisticRoles(values.roles);
+        router.push(`?${params.toString()}`);
+      });
+    }
+
+    if (values.state.length > 0) {
+      params.set('state', values.state.join(','));
+      startTransition(() => {
+        setOptimisticState(values.state);
+        router.push(`?${params.toString()}`);
+      });
+    }
+
+    setOpenPopover(false);
   };
 
   return (
-    <Popover.Root open={open} onOpenChange={(e) => onOpenChange(e.open)}>
+    <Popover.Root
+      open={openPopover}
+      onOpenChange={(e) => setOpenPopover(e.open)}
+    >
       <Popover.Trigger asChild>
-        <Button variant="surface">
+        <Button variant="surface" disabled={isPending}>
           <Filter />
-          Filters {checkboxCounter > 0 ? '(' + checkboxCounter + ')' : ''}
+          Filters {checkboxCounter > 0 ? '(' + checkboxCounter + ')' : null}
         </Button>
       </Popover.Trigger>
       <Portal>

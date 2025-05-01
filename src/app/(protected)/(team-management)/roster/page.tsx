@@ -1,7 +1,6 @@
 import { Metadata } from 'next';
 
 import { SelectableRole, SelectableState } from '@/utils/type';
-
 import RosterMain from './_components/main';
 
 export const metadata: Metadata = {
