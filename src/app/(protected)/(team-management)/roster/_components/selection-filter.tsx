@@ -1,6 +1,6 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
+import { ReadonlyURLSearchParams } from 'next/navigation';
 import { useMemo } from 'react';
 
 import { Button, CheckboxGroup, Grid, Popover, Portal } from '@chakra-ui/react';
@@ -20,6 +20,7 @@ import {
 
 interface SelectionFilterProps {
   open: boolean;
+  searchParams: ReadonlyURLSearchParams;
   onOpenChange: (open: boolean) => void;
   onFilter: (
     state: Array<SelectableState>,
@@ -29,10 +30,10 @@ interface SelectionFilterProps {
 
 export default function SelectionFilter({
   open,
+  searchParams,
   onOpenChange,
   onFilter,
 }: SelectionFilterProps) {
-  const searchParams = useSearchParams();
   const { control, reset, handleSubmit } = useForm({
     resolver: zodResolver(FilterUsersSchema),
   });
@@ -60,6 +61,8 @@ export default function SelectionFilter({
 
   const onSubmit = (values: FilterUsersValues) => {
     if (!checkboxCounter) return;
+
+    console.log('onSubmit', values);
 
     onFilter(values.state, values.roles);
     onOpenChange(false);

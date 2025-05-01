@@ -1,8 +1,7 @@
 import { Metadata } from 'next';
-import { Suspense } from 'react';
 
-import Loading from '@/components/loading';
 import { SelectableRole, SelectableState } from '@/utils/type';
+
 import RosterMain from './_components/main';
 
 export const metadata: Metadata = {
@@ -24,27 +23,19 @@ export default async function RosterPage(
   const roles = searchParams?.roles || '';
   const state = searchParams?.state || '';
   const rolesArray = roles
-    ? roles
-        .split(',')
-        .map((role) => role as SelectableRole)
-        .filter(Boolean)
+    ? roles.split(',').map((role) => role as SelectableRole)
     : [];
   const stateArray = state
-    ? state
-        .split(',')
-        .map((value) => value as SelectableState)
-        .filter(Boolean)
+    ? state.split(',').map((value) => value as SelectableState)
     : [];
 
   return (
-    <Suspense key={query || roles || state} fallback={<Loading />}>
-      <RosterMain
-        params={{
-          query,
-          roles: rolesArray,
-          state: stateArray,
-        }}
-      />
-    </Suspense>
+    <RosterMain
+      params={{
+        query,
+        roles: rolesArray,
+        state: stateArray,
+      }}
+    />
   );
 }

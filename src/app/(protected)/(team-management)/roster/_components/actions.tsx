@@ -1,20 +1,36 @@
 'use client';
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useRef, useState, useTransition } from 'react';
+import { useCallback, useRef, useState, useTransition } from 'react';
 
 import { Button, Heading, HStack, VStack } from '@chakra-ui/react';
 import { UserRoundPlus } from 'lucide-react';
 
+import SearchBar from '@/components/search-bar';
 import { dialog } from '@/components/ui/dialog';
 import Visibility from '@/components/visibility';
 
 import { usePermissions } from '@/hooks/use-permissions';
-
 import { SelectableRole, SelectableState } from '@/utils/type';
+
 import AddUser from './add-user';
-import SearchBar from './search-bar';
 import SelectionFilter from './selection-filter';
+
+const createQueryString = (
+  searchParams: URLSearchParams,
+  updates: Record<string, string | null>
+) => {
+  const params = new URLSearchParams(searchParams.toString());
+
+  console.log('createQueryString', updates);
+
+  Object.entries(updates).forEach(([key, value]) => {
+    if (value === null) params.delete(key);
+    else params.set(key, value);
+  });
+
+  return params.toString();
+};
 
 export default function RosterActions({
   emailExists,
@@ -31,47 +47,37 @@ export default function RosterActions({
   // Read the current URL's pathname
   const pathname = usePathname();
   // Enable navigation between routes within client components programmatically
-  const { replace } = useRouter();
+  const { replace, push } = useRouter();
 
-  const handleSearch = (term: string) => {
-    const params = new URLSearchParams(searchParams);
-    if (term) {
-      params.set('query', term);
-    } else {
-      params.delete('query');
-    }
+  const handleSearch = useCallback(
+    (term: string) => {
+      const queryString = createQueryString(searchParams, {
+        query: term || null,
+      });
 
-    startTransition(() => {
-      replace(`${pathname}?${params.toString()}`);
-    });
-  };
+      startTransition(() => {
+        push('?' + queryString);
+      });
+    },
+    [searchParams]
+  );
 
-  const handleSelection = (
-    state: Array<SelectableState>,
-    roles: Array<SelectableRole>
-  ) => {
-    const params = new URLSearchParams(searchParams);
-    if (state.length > 0) {
-      params.set('state', state.join(','));
-    } else {
-      params.delete('state');
-    }
-    if (roles.length > 0) {
-      params.set('roles', roles.join(','));
-    } else {
-      params.delete('roles');
-    }
-    startTransition(() => {
-      replace(`${pathname}?${params.toString()}`);
-    });
-  };
+  const handleSelection = useCallback(
+    (state: Array<SelectableState>, roles: Array<SelectableRole>) => {
+      const queryString = createQueryString(searchParams, {
+        state: state.length > 0 ? state.join(',') : null,
+        roles: roles.length > 0 ? roles.join(',') : null,
+      });
+
+      startTransition(() => {
+        push('?' + queryString);
+      });
+    },
+    [searchParams]
+  );
 
   const handleClearAll = () => {
-    const params = new URLSearchParams(searchParams);
-    params.delete('query');
-    params.delete('state');
-    params.delete('roles');
-    startTransition(() => replace(`${pathname}?${params.toString()}`));
+    startTransition(() => replace(pathname));
   };
 
   return (
@@ -96,6 +102,7 @@ export default function RosterActions({
 
         <SelectionFilter
           open={openPopover}
+          searchParams={searchParams}
           onOpenChange={setOpenPopover}
           onFilter={handleSelection}
         />

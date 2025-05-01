@@ -65,7 +65,7 @@ export default function SearchBar({ isPending, onSearch }: SearchBarProps) {
         ref={inputRef}
         maxLength={50}
         borderWidth="1px"
-        name="search-roster"
+        name="search-bar"
         placeholder="Search..."
         css={{ '--focus-color': 'colors.red.300' }}
         value={query.field.value}

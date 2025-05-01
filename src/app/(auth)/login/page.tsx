@@ -1,5 +1,6 @@
 'use client';
 
+import { useSearchParams } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
 
 import { Button, Heading, Input, Link, VStack } from '@chakra-ui/react';
@@ -10,6 +11,7 @@ import { Alert } from '@/components/ui/alert';
 import { Field } from '@/components/ui/field';
 
 import { getDefaults } from '@/lib/zod';
+import { DEFAULT_LOGIN_REDIRECT } from '@/routes';
 import { Response } from '@/utils/response';
 import { buttonText, Page, pageTitle } from '../_helpers/utils';
 
@@ -21,8 +23,12 @@ import { LoginSchema, LoginValues } from '@/features/user/schemas/auth';
 
 export default function LoginPage() {
   const [page, setPage] = useState(Page.Login);
-  const [isPending, startTransition] = useTransition();
   const [response, setResponse] = useState<Response>();
+
+  const searchParams = useSearchParams();
+  const [isPending, startTransition] = useTransition();
+
+  const callbackUrl = searchParams.get('callbackUrl') || DEFAULT_LOGIN_REDIRECT;
 
   const {
     register,
@@ -102,6 +108,9 @@ export default function LoginPage() {
             />
           )}
 
+          {page === Page.Login && (
+            <input type="hidden" name="redirectTo" value={callbackUrl} />
+          )}
           <Button type="submit" rounded="full" loading={isPending}>
             {buttonText[page]}
           </Button>
@@ -110,7 +119,7 @@ export default function LoginPage() {
             <Link
               fontSize="sm"
               alignSelf="center"
-              fontWeight="medium"
+              fontWeight="semibold"
               textDecoration="underline"
               onClick={() => setPage(Page.Login)}
             >
