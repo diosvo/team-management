@@ -31,11 +31,8 @@ export default function SearchBar({ isLoading }: { isLoading: boolean }) {
 
   const onSearch = (term: string) => {
     const params = new URLSearchParams(searchParams);
-    if (term) {
-      params.set(Q_KEY, term);
-    } else {
-      params.delete(Q_KEY);
-    }
+    term ? params.set(Q_KEY, term) : params.delete(Q_KEY);
+
     startTransition(() => {
       router.push(`?${params.toString()}`);
     });
@@ -78,7 +75,7 @@ export default function SearchBar({ isLoading }: { isLoading: boolean }) {
         borderWidth="1px"
         name="search-bar"
         placeholder="Search..."
-        css={{ '--focus-color': 'colors.red.300' }}
+        css={{ '--focus-color': 'colors.red.200' }}
         value={query.field.value}
         onChange={query.field.onChange}
         onKeyDown={handleKeyDown}

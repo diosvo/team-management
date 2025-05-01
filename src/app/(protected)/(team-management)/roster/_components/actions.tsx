@@ -30,10 +30,8 @@ export default function RosterActions({
 
   return (
     <VStack align="stretch">
-      <HStack alignItems="center">
-        <Heading as="h1" size="xl" marginRight="auto">
-          Team Roster
-        </Heading>
+      <HStack justifyContent="space-between">
+        <Heading size="2xl">Team Roster</Heading>
         <Button
           variant="plain"
           textDecoration="underline"

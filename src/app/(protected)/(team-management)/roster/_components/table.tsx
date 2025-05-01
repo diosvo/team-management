@@ -8,13 +8,20 @@ import {
   Button,
   ButtonGroup,
   EmptyState,
+  Icon,
   IconButton,
   Pagination,
   Portal,
   Table,
   VStack,
 } from '@chakra-ui/react';
-import { ChevronLeft, ChevronRight, SwatchBook } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  ShieldAlert,
+  ShieldCheck,
+  SwatchBook,
+} from 'lucide-react';
 
 import { Checkbox } from '@/components/ui/checkbox';
 import { dialog } from '@/components/ui/dialog';
@@ -28,11 +35,7 @@ import { colorState } from '@/utils/helper';
 import UserInfo from '@/app/(protected)/_components/user-info';
 import { removeUser } from '@/features/user/actions/user';
 
-interface RosterTableProps {
-  users: Array<User>;
-}
-
-export function RosterTable({ users }: RosterTableProps) {
+export function RosterTable({ users }: { users: Array<User> }) {
   const isAdmin = usePermissions();
 
   const [selection, setSelection] = useState<Array<string>>([]);
@@ -75,22 +78,27 @@ export function RosterTable({ users }: RosterTableProps) {
           <Table.Header>
             <Table.Row>
               <Visibility isVisible={isAdmin}>
-                <Table.ColumnHeader width={6}>
-                  <Checkbox
-                    top={0.5}
-                    aria-label="Select all rows"
-                    checked={
-                      indeterminate ? 'indeterminate' : selectionCount > 0
-                    }
-                    onCheckedChange={(changes) => {
-                      setSelection(
-                        changes.checked
-                          ? users.map(({ user_id }) => user_id)
-                          : []
-                      );
-                    }}
-                  />
-                </Table.ColumnHeader>
+                <>
+                  <Table.ColumnHeader width={6}>
+                    <Checkbox
+                      top={0.5}
+                      aria-label="Select all rows"
+                      checked={
+                        indeterminate ? 'indeterminate' : selectionCount > 0
+                      }
+                      onCheckedChange={(changes) => {
+                        setSelection(
+                          changes.checked
+                            ? users.map(({ user_id }) => user_id)
+                            : []
+                        );
+                      }}
+                    />
+                  </Table.ColumnHeader>
+                  <Table.ColumnHeader textAlign="center">
+                    Verified
+                  </Table.ColumnHeader>
+                </>
               </Visibility>
               <Table.ColumnHeader>No.</Table.ColumnHeader>
               <Table.ColumnHeader>Name</Table.ColumnHeader>
@@ -115,20 +123,29 @@ export function RosterTable({ users }: RosterTableProps) {
                   }
                 >
                   <Visibility isVisible={isAdmin}>
-                    <Table.Cell onClick={(e) => e.stopPropagation()}>
-                      <Checkbox
-                        top="0.5"
-                        aria-label="Select row"
-                        checked={selection.includes(user.user_id)}
-                        onCheckedChange={(changes) => {
-                          setSelection((prev) =>
-                            changes.checked
-                              ? [...prev, user.user_id]
-                              : selection.filter((id) => id !== user.user_id)
-                          );
-                        }}
-                      />
-                    </Table.Cell>
+                    <>
+                      <Table.Cell onClick={(e) => e.stopPropagation()}>
+                        <Checkbox
+                          top="0.5"
+                          aria-label="Select row"
+                          checked={selection.includes(user.user_id)}
+                          onCheckedChange={(changes) => {
+                            setSelection((prev) =>
+                              changes.checked
+                                ? [...prev, user.user_id]
+                                : selection.filter((id) => id !== user.user_id)
+                            );
+                          }}
+                        />
+                      </Table.Cell>
+                      <Table.Cell textAlign="center">
+                        {user.password ? (
+                          <Icon as={ShieldCheck} size="md" color="green.500" />
+                        ) : (
+                          <Icon as={ShieldAlert} size="md" color="orange.500" />
+                        )}
+                      </Table.Cell>
+                    </>
                   </Visibility>
                   <Table.Cell>-</Table.Cell>
                   <Table.Cell>{user.name}</Table.Cell>
