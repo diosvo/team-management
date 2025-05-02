@@ -7,7 +7,6 @@ import {
   ReactNode,
   RefAttributes,
   use,
-  useMemo,
 } from 'react';
 
 import { Button, Icon, Spinner, Text, VStack } from '@chakra-ui/react';
@@ -15,8 +14,8 @@ import { Crown, LucideProps } from 'lucide-react';
 
 import { dialog } from '@/components/ui/dialog';
 
+import { usePermissions } from '@/hooks/use-permissions';
 import { useUser } from '@/hooks/use-user';
-import { UserRole } from '@/utils/enum';
 
 import { hrefPath, SIDEBAR_GROUP } from '../_helpers/utils';
 import TeamRule from './team-rule';
@@ -75,10 +74,7 @@ function NavButton({
 export default function Sidebar() {
   const { userPromise } = useUser();
   const user = use(userPromise);
-
-  const isAdmin = useMemo(() => {
-    return user?.roles?.includes(UserRole.SUPER_ADMIN) || false;
-  }, [user]);
+  const isAdmin = usePermissions();
 
   return (
     <VStack align="stretch" py={4} px={2} gap={6} height="full">

@@ -5,16 +5,23 @@ import { Response, ResponseFactory } from '@/utils/response';
 
 import { getTeam } from '@/features/team/actions/team';
 import { revalidateAdminPath } from '../db/cache';
-import { deleteUser, getUsers, insertUser, updateUser } from '../db/user';
+import {
+  deleteUser,
+  getExistingEmails,
+  getUsers,
+  insertUser,
+  updateUser,
+} from '../db/user';
 import {
   AddUserValues,
+  FilterUsersValues,
   UpdateUserSchema,
   UpdateUserValues,
 } from '../schemas/user';
 import { generatePasswordToken } from './password-reset-token';
 
-export async function getRoster() {
-  return await getUsers();
+export async function getRoster(params: FilterUsersValues) {
+  return await getUsers(params);
 }
 
 export async function addUser(
@@ -31,6 +38,12 @@ export async function addUser(
       ...usersWithoutTeam,
       team_id: team.team_id,
     };
+
+    const existingEmails = await getExistingEmails();
+
+    if (existingEmails.includes(user.email)) {
+      return ResponseFactory.error('Email already exists');
+    }
 
     const data = await insertUser(user);
 

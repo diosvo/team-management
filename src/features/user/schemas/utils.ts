@@ -5,7 +5,6 @@ import {
   SELECTABLE_ROLES,
   SELECTABLE_STATES,
 } from '@/utils/constant';
-import { UserRole, UserState } from '@/utils/enum';
 
 // date() - YYYY-MM-DD
 
@@ -32,11 +31,7 @@ export const USER_SCHEMA_VALIDATION = {
     })
     .trim()
     .default(''),
-  roles: z
-    .array(z.enum(SELECTABLE_ROLES))
-    .min(1, { message: 'Select at least one role.' })
-    .max(2, { message: 'Select at most two roles.' })
-    .default([UserRole.PLAYER]),
-  state: z.enum(SELECTABLE_STATES).default(UserState.ACTIVE),
+  roles: z.array(z.enum(SELECTABLE_ROLES)),
+  state: z.enum(SELECTABLE_STATES),
   join_date: z.string().date().optional().default(ESTABLISHED_DATE),
 };

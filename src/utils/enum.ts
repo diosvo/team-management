@@ -7,7 +7,6 @@ export enum UserRole {
 }
 
 export enum UserState {
-  UNKNOWN = 'UNKNOWN',
   ACTIVE = 'ACTIVE',
   INACTIVE = 'INACTIVE',
   TEMPORARILY_ABSENT = 'TEMPORARILY_ABSENT',

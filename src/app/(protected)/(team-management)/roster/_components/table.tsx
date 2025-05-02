@@ -1,21 +1,15 @@
 'use client';
 
-import { use, useRef, useState } from 'react';
+import { useState } from 'react';
 
 import {
   ActionBar,
   Badge,
-  Box,
   Button,
   ButtonGroup,
-  Checkbox,
   EmptyState,
-  Heading,
-  HStack,
+  Icon,
   IconButton,
-  Input,
-  InputGroup,
-  Kbd,
   Pagination,
   Portal,
   Table,
@@ -24,34 +18,25 @@ import {
 import {
   ChevronLeft,
   ChevronRight,
-  Filter,
-  Search,
+  ShieldAlert,
+  ShieldCheck,
   SwatchBook,
-  UserRoundPlus,
 } from 'lucide-react';
 
+import { Checkbox } from '@/components/ui/checkbox';
 import { dialog } from '@/components/ui/dialog';
 import { toaster } from '@/components/ui/toaster';
 import Visibility from '@/components/visibility';
 
 import { User } from '@/drizzle/schema';
-import { useUser } from '@/hooks/use-user';
-import { UserRole } from '@/utils/enum';
+import { usePermissions } from '@/hooks/use-permissions';
 import { colorState } from '@/utils/helper';
 
 import UserInfo from '@/app/(protected)/_components/user-info';
 import { removeUser } from '@/features/user/actions/user';
-import AddUser from './add-user';
 
-interface RosterTableProps {
-  users: Array<User>;
-}
-
-export function RosterTable({ users }: RosterTableProps) {
-  const { userPromise } = useUser();
-  const currentUser = use(userPromise);
-  const isAdmin = currentUser!.roles.includes(UserRole.SUPER_ADMIN);
-  const dialogContentRef = useRef<HTMLDivElement>(null);
+export function RosterTable({ users }: { users: Array<User> }) {
+  const isAdmin = usePermissions();
 
   const [selection, setSelection] = useState<Array<string>>([]);
   const [pagination, setPagination] = useState({
@@ -87,76 +72,33 @@ export function RosterTable({ users }: RosterTableProps) {
   };
 
   return (
-    <Box>
-      <Heading as="h1" size="xl">
-        Team Roster
-      </Heading>
-      <HStack marginBlock={6}>
-        <InputGroup
-          flex="1"
-          startElement={<Search size={14} />}
-          endElement={
-            <Kbd size="sm" variant="outline">
-              Enter
-            </Kbd>
-          }
-        >
-          <Input
-            placeholder="Search..."
-            borderWidth="1px"
-            css={{ '--focus-color': 'colors.orange.200' }}
-          />
-        </InputGroup>
-        <Button variant="surface" disabled>
-          <Filter />
-          Filters
-        </Button>
-        <Visibility isVisible={isAdmin}>
-          <Button
-            onClick={() =>
-              dialog.open('add-user', {
-                contentRef: dialogContentRef,
-                children: (
-                  <AddUser
-                    users={users}
-                    currentMail={currentUser!.email}
-                    containerRef={dialogContentRef}
-                  />
-                ),
-              })
-            }
-          >
-            <UserRoundPlus />
-            Add User
-          </Button>
-        </Visibility>
-      </HStack>
-
+    <>
       <Table.ScrollArea>
         <Table.Root stickyHeader interactive={currentData.length > 0}>
           <Table.Header>
             <Table.Row>
               <Visibility isVisible={isAdmin}>
-                <Table.ColumnHeader width={6}>
-                  <Checkbox.Root
-                    size="sm"
-                    top={0.5}
-                    aria-label="Select all rows"
-                    checked={
-                      indeterminate ? 'indeterminate' : selectionCount > 0
-                    }
-                    onCheckedChange={(changes) => {
-                      setSelection(
-                        changes.checked
-                          ? users.map(({ user_id }) => user_id)
-                          : []
-                      );
-                    }}
-                  >
-                    <Checkbox.HiddenInput />
-                    <Checkbox.Control />
-                  </Checkbox.Root>
-                </Table.ColumnHeader>
+                <>
+                  <Table.ColumnHeader width={6}>
+                    <Checkbox
+                      top={0.5}
+                      aria-label="Select all rows"
+                      checked={
+                        indeterminate ? 'indeterminate' : selectionCount > 0
+                      }
+                      onCheckedChange={(changes) => {
+                        setSelection(
+                          changes.checked
+                            ? users.map(({ user_id }) => user_id)
+                            : []
+                        );
+                      }}
+                    />
+                  </Table.ColumnHeader>
+                  <Table.ColumnHeader textAlign="center">
+                    Verified
+                  </Table.ColumnHeader>
+                </>
               </Visibility>
               <Table.ColumnHeader>No.</Table.ColumnHeader>
               <Table.ColumnHeader>Name</Table.ColumnHeader>
@@ -181,25 +123,29 @@ export function RosterTable({ users }: RosterTableProps) {
                   }
                 >
                   <Visibility isVisible={isAdmin}>
-                    <Table.Cell onClick={(e) => e.stopPropagation()}>
-                      <Checkbox.Root
-                        size="sm"
-                        top="0.5"
-                        aria-label="Select row"
-                        checked={selection.includes(user.user_id)}
-                        readOnly={currentUser?.user_id === user.user_id}
-                        onCheckedChange={(changes) => {
-                          setSelection((prev) =>
-                            changes.checked
-                              ? [...prev, user.user_id]
-                              : selection.filter((id) => id !== user.user_id)
-                          );
-                        }}
-                      >
-                        <Checkbox.HiddenInput />
-                        <Checkbox.Control />
-                      </Checkbox.Root>
-                    </Table.Cell>
+                    <>
+                      <Table.Cell onClick={(e) => e.stopPropagation()}>
+                        <Checkbox
+                          top="0.5"
+                          aria-label="Select row"
+                          checked={selection.includes(user.user_id)}
+                          onCheckedChange={(changes) => {
+                            setSelection((prev) =>
+                              changes.checked
+                                ? [...prev, user.user_id]
+                                : selection.filter((id) => id !== user.user_id)
+                            );
+                          }}
+                        />
+                      </Table.Cell>
+                      <Table.Cell textAlign="center">
+                        {user.password ? (
+                          <Icon as={ShieldCheck} size="md" color="green.500" />
+                        ) : (
+                          <Icon as={ShieldAlert} size="md" color="orange.500" />
+                        )}
+                      </Table.Cell>
+                    </>
                   </Visibility>
                   <Table.Cell>-</Table.Cell>
                   <Table.Cell>{user.name}</Table.Cell>
@@ -304,6 +250,6 @@ export function RosterTable({ users }: RosterTableProps) {
         </Portal>
       </ActionBar.Root>
       <dialog.Viewport />
-    </Box>
+    </>
   );
 }

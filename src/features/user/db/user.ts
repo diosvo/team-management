@@ -1,22 +1,64 @@
 import { cache } from 'react';
 
-import { eq, ne } from 'drizzle-orm';
+import {
+  and,
+  arrayContained,
+  eq,
+  getTableColumns,
+  ilike,
+  inArray,
+  not,
+  or,
+  SQL,
+} from 'drizzle-orm';
 
 import { db } from '@/drizzle';
 import { User, UserTable } from '@/drizzle/schema';
+
 import logger from '@/lib/logger';
 import { UserRole } from '@/utils/enum';
 
-import { AddUserValues } from '../schemas/user';
+import { AddUserValues, FilterUsersValues } from '../schemas/user';
 
-export const getUsers = cache(async () => {
+export const getUsers = cache(
+  async ({ query, roles, state }: FilterUsersValues) => {
+    // Always exclude SUPER_ADMIN user
+    const filters: Array<SQL | undefined> = [
+      not(arrayContained(UserTable.roles, [UserRole.SUPER_ADMIN])),
+    ];
+
+    // Only apply filters if parameters are provided and non-empty
+    if (query && query.trim() !== '')
+      filters.push(
+        or(
+          ilike(UserTable.email, `%${query}%`),
+          ilike(UserTable.name, `%${query}%`)
+        )
+      );
+    if (state && state.length > 0)
+      filters.push(inArray(UserTable.state, state));
+    if (roles && roles.length > 0)
+      filters.push(arrayContained(UserTable.roles, roles));
+
+    try {
+      return await db
+        .select()
+        .from(UserTable)
+        .where(and(...filters));
+    } catch {
+      logger.error('An error when fetching users');
+      return [];
+    }
+  }
+);
+
+export const getExistingEmails = cache(async () => {
   try {
-    return await db
-      .select()
-      .from(UserTable)
-      .where(ne(UserTable.roles, [UserRole.SUPER_ADMIN]));
+    const { email } = getTableColumns(UserTable);
+    const data = await db.select({ email }).from(UserTable);
+    return data.map((user) => user.email);
   } catch {
-    logger.error('An error when fetching users');
+    logger.error('An error when getting existing emails');
     return [];
   }
 });

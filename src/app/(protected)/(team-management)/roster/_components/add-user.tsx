@@ -24,38 +24,22 @@ import { Field } from '@/components/ui/field';
 import { Select } from '@/components/ui/select';
 import { toaster } from '@/components/ui/toaster';
 
-import { User } from '@/drizzle/schema/user';
 import { getDefaults } from '@/lib/zod';
 import {
   ESTABLISHED_DATE,
-  SELECTABLE_ROLES,
-  SELECTABLE_STATES,
+  RolesSelection,
+  StatesSelection,
 } from '@/utils/constant';
 import { UserState } from '@/utils/enum';
 
 import { addUser } from '@/features/user/actions/user';
 import { AddUserSchema, AddUserValues } from '@/features/user/schemas/user';
 
-const Roles = SELECTABLE_ROLES.map((role) => ({
-  label: role.replace('_', ' '),
-  value: role,
-}));
-const States = SELECTABLE_STATES.map((state) => ({
-  label: state.replace('_', ' '),
-  value: state,
-}));
-
-interface AddUserProps {
-  users: Array<User>;
-  currentMail: string;
-  containerRef: RefObject<Nullable<HTMLDivElement>>;
-}
-
 export default function AddUser({
-  users,
-  currentMail,
   containerRef,
-}: AddUserProps) {
+}: {
+  containerRef: RefObject<Nullable<HTMLDivElement>>;
+}) {
   const [isPending, startTransition] = useTransition();
 
   const {
@@ -63,7 +47,6 @@ export default function AddUser({
     register,
     getValues,
     handleSubmit,
-    setError,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(AddUserSchema),
@@ -71,24 +54,6 @@ export default function AddUser({
   });
 
   const onSubmit = (data: AddUserValues) => {
-    if (data.email === currentMail) {
-      setError('email', {
-        type: 'custom',
-        message: 'You cannot add yourself',
-      });
-      return;
-    }
-
-    const emailExists = users.some((user) => user.email === data.email);
-
-    if (emailExists) {
-      setError('email', {
-        type: 'custom',
-        message: 'Email already exists',
-      });
-      return;
-    }
-
     const id = toaster.create({
       type: 'loading',
       description: 'Adding user to database...',
@@ -111,7 +76,7 @@ export default function AddUser({
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <DialogHeader>
-        <DialogTitle>Add User</DialogTitle>
+        <DialogTitle>Add to Roster</DialogTitle>
       </DialogHeader>
       <DialogBody>
         <VStack gap={4}>
@@ -147,7 +112,7 @@ export default function AddUser({
             >
               <Select
                 multiple
-                collection={Roles}
+                collection={RolesSelection}
                 defaultValue={getValues('roles')}
                 containerRef={containerRef}
                 disabled={isPending}
@@ -161,7 +126,7 @@ export default function AddUser({
               errorText={errors.state?.message}
             >
               <Select
-                collection={States}
+                collection={StatesSelection}
                 defaultValue={[UserState.ACTIVE]}
                 containerRef={containerRef}
                 disabled={isPending}

@@ -6,8 +6,8 @@ import { use, useTransition } from 'react';
 import { Avatar, Circle, Float, HStack, Menu } from '@chakra-ui/react';
 import { LogOut, UserIcon } from 'lucide-react';
 
+import { usePermissions } from '@/hooks/use-permissions';
 import { useUser } from '@/hooks/use-user';
-import { UserRole } from '@/utils/enum';
 import { colorState } from '@/utils/helper';
 import HeaderLogo from '@assets/images/header-logo.png';
 
@@ -22,6 +22,7 @@ export default function Header() {
   const { userPromise } = useUser();
   const user = use(userPromise);
 
+  const isAdmin = usePermissions();
   const [isPending, startTransition] = useTransition();
 
   const handleLogout = () => {
@@ -71,12 +72,7 @@ export default function Header() {
               _hover={{ cursor: 'pointer' }}
               onClick={() =>
                 dialog.open('current-user-info', {
-                  children: (
-                    <UserInfo
-                      user={user}
-                      isAdmin={user!.roles.includes(UserRole.SUPER_ADMIN)}
-                    />
-                  ),
+                  children: <UserInfo user={user} isAdmin={isAdmin} />,
                 })
               }
             >

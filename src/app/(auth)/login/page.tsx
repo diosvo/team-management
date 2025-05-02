@@ -1,16 +1,9 @@
 'use client';
 
+import { useSearchParams } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
 
-import {
-  Button,
-  Heading,
-  Input,
-  Link,
-  Stack,
-  Text,
-  VStack,
-} from '@chakra-ui/react';
+import { Button, Heading, Input, Link, VStack } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FieldErrors, useForm } from 'react-hook-form';
 
@@ -18,6 +11,7 @@ import { Alert } from '@/components/ui/alert';
 import { Field } from '@/components/ui/field';
 
 import { getDefaults } from '@/lib/zod';
+import { DEFAULT_LOGIN_REDIRECT } from '@/routes';
 import { Response } from '@/utils/response';
 import { buttonText, Page, pageTitle } from '../_helpers/utils';
 
@@ -29,8 +23,12 @@ import { LoginSchema, LoginValues } from '@/features/user/schemas/auth';
 
 export default function LoginPage() {
   const [page, setPage] = useState(Page.Login);
-  const [isPending, startTransition] = useTransition();
   const [response, setResponse] = useState<Response>();
+
+  const searchParams = useSearchParams();
+  const [isPending, startTransition] = useTransition();
+
+  const callbackUrl = searchParams.get('callbackUrl') || DEFAULT_LOGIN_REDIRECT;
 
   const {
     register,
@@ -58,14 +56,12 @@ export default function LoginPage() {
 
   return (
     <>
-      <VStack mb="6">
-        <Heading textAlign="center" size={{ base: 'xl', md: '2xl' }}>
-          {pageTitle[page]}
-        </Heading>
-      </VStack>
+      <Heading textAlign="center" size={{ base: 'xl', md: '2xl' }}>
+        {pageTitle[page]}
+      </Heading>
 
       <form onSubmit={handleSubmit(onSubmit)}>
-        <Stack gap="6">
+        <VStack gap={4} align="stretch">
           <Field
             required
             label="Email"
@@ -94,15 +90,14 @@ export default function LoginPage() {
                 />
               </Field>
 
-              <Text fontWeight="medium">
-                <Link
-                  fontSize="sm"
-                  textDecoration="underline"
-                  onClick={() => setPage(Page.ResetPassword)}
-                >
-                  Forgot your password?
-                </Link>
-              </Text>
+              <Link
+                fontSize="sm"
+                fontWeight="500"
+                textDecoration="underline"
+                onClick={() => setPage(Page.ResetPassword)}
+              >
+                Forgot your password?
+              </Link>
             </>
           )}
 
@@ -113,21 +108,25 @@ export default function LoginPage() {
             />
           )}
 
+          {page === Page.Login && (
+            <input type="hidden" name="redirectTo" value={callbackUrl} />
+          )}
           <Button type="submit" rounded="full" loading={isPending}>
             {buttonText[page]}
           </Button>
 
           {page === Page.ResetPassword && (
-            <Text fontSize="sm" fontWeight="medium" textAlign="center">
-              <Link
-                textDecoration="underline"
-                onClick={() => setPage(Page.Login)}
-              >
-                Go back to sign in
-              </Link>
-            </Text>
+            <Link
+              fontSize="sm"
+              alignSelf="center"
+              fontWeight="500"
+              textDecoration="underline"
+              onClick={() => setPage(Page.Login)}
+            >
+              Go back to sign in
+            </Link>
           )}
-        </Stack>
+        </VStack>
       </form>
     </>
   );

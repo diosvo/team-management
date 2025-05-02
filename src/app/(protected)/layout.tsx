@@ -1,4 +1,8 @@
-import { Grid, GridItem, Separator } from '@chakra-ui/react';
+import { Suspense } from 'react';
+
+import { Box, Grid, GridItem, Separator } from '@chakra-ui/react';
+
+import Loading from '@/components/loading';
 
 import Header from './_components/header';
 import Sidebar from './_components/sidebar';
@@ -34,8 +38,10 @@ export default function ProtectedLayout({
         <Sidebar />
       </GridItem>
 
-      <GridItem gridArea="main" p="4">
-        {children}
+      <GridItem gridArea="main">
+        <Suspense fallback={<Loading />}>
+          <Box p={4}>{children}</Box>
+        </Suspense>
       </GridItem>
     </Grid>
   );
