@@ -74,7 +74,11 @@ export function RosterTable({ users }: { users: Array<User> }) {
   return (
     <>
       <Table.ScrollArea>
-        <Table.Root stickyHeader interactive={currentData.length > 0}>
+        <Table.Root
+          size={{ base: 'sm' }}
+          stickyHeader
+          interactive={currentData.length > 0}
+        >
           <Table.Header>
             <Table.Row>
               <Visibility isVisible={isAdmin}>

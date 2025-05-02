@@ -1,10 +1,20 @@
 'use client';
 
-import Image from 'next/image';
+import NextImage from 'next/image';
 import { use, useTransition } from 'react';
 
-import { Avatar, Circle, Float, HStack, Menu } from '@chakra-ui/react';
-import { LogOut, UserIcon } from 'lucide-react';
+import {
+  Avatar,
+  Circle,
+  Drawer,
+  Float,
+  HStack,
+  IconButton,
+  Image,
+  Menu,
+  Portal,
+} from '@chakra-ui/react';
+import { LogOut, PanelRightOpen, UserIcon } from 'lucide-react';
 
 import { usePermissions } from '@/hooks/use-permissions';
 import { useUser } from '@/hooks/use-user';
@@ -16,6 +26,7 @@ import { toaster } from '@/components/ui/toaster';
 
 import { logout } from '@/features/user/actions/auth';
 
+import Sidebar from './sidebar';
 import UserInfo from './user-info';
 
 export default function Header() {
@@ -40,22 +51,23 @@ export default function Header() {
   }
 
   return (
-    <HStack align="center" justify="space-between" py="2" px="4">
-      <Image
-        priority
-        width={192}
-        quality={100}
-        placeholder="blur"
-        src={HeaderLogo}
-        alt="Text Logo"
-      />
+    <HStack align="center" paddingBlock={2} paddingInline={4}>
+      <Image width={{ base: 144, md: 192 }} marginRight="auto" asChild>
+        <NextImage
+          priority
+          quality={100}
+          placeholder="blur"
+          src={HeaderLogo}
+          alt="Text Logo"
+        />
+      </Image>
 
       <Menu.Root>
         <Menu.Trigger focusVisibleRing="none">
-          <Avatar.Root variant="subtle" size="sm">
+          <Avatar.Root variant="subtle" size={{ base: 'xs', md: 'sm' }}>
             <Avatar.Fallback name={user.name} />
             <Avatar.Image src={user.image as string} />
-            <Float placement="bottom-end" offsetX="1" offsetY="1">
+            <Float placement="bottom-end" offsetX={1} offsetY={1}>
               <Circle
                 size="8px"
                 outline="0.2em solid"
@@ -93,6 +105,29 @@ export default function Header() {
           </Menu.Content>
         </Menu.Positioner>
       </Menu.Root>
+
+      <Drawer.Root>
+        <Drawer.Trigger asChild>
+          <IconButton
+            hideFrom="sm"
+            size="md"
+            variant="ghost"
+            borderRadius="full"
+          >
+            <PanelRightOpen />
+          </IconButton>
+        </Drawer.Trigger>
+        <Portal>
+          <Drawer.Backdrop />
+          <Drawer.Positioner>
+            <Drawer.Content maxWidth="224px">
+              <Drawer.Body padding={0}>
+                <Sidebar />
+              </Drawer.Body>
+            </Drawer.Content>
+          </Drawer.Positioner>
+        </Portal>
+      </Drawer.Root>
       <dialog.Viewport />
     </HStack>
   );

@@ -39,7 +39,11 @@ export default function SelectionFilter() {
       onOpenChange={(e) => setOpenPopover(e.open)}
     >
       <Popover.Trigger asChild>
-        <Button variant="surface" disabled={isPending}>
+        <Button
+          variant="surface"
+          size={{ base: 'sm', md: 'md' }}
+          disabled={isPending}
+        >
           <Filter />
           Filters {checkboxCounter > 0 ? '(' + checkboxCounter + ')' : null}
         </Button>

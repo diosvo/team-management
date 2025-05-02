@@ -12,8 +12,8 @@ export const dialog = createOverlay<DialogProps>(
     return (
       <Dialog.Root {...rest}>
         <Portal>
-          <Dialog.Backdrop />
-          <Dialog.Positioner aria-hidden="true">
+          <Dialog.Backdrop zIndex={1400} />
+          <Dialog.Positioner paddingInline={8}>
             <Dialog.Content ref={contentRef}>
               <Dialog.CloseTrigger
                 asChild
