@@ -122,7 +122,6 @@ export default function SelectionFilter() {
               </Button>
               <Button
                 size="sm"
-                disabled={!checkboxCounter}
                 onClick={() => {
                   updateFilters(selection);
                   setOpenPopover(false);

@@ -45,7 +45,7 @@ export default function SearchBar() {
         )
       }
       endElement={
-        inputValue ? (
+        filters.query ? (
           <CloseButton size="2xs" borderRadius="full" onClick={handleClear} />
         ) : (
           <Kbd size="sm">Enter</Kbd>

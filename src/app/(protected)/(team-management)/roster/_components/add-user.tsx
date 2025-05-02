@@ -35,12 +35,11 @@ import { UserState } from '@/utils/enum';
 import { addUser } from '@/features/user/actions/user';
 import { AddUserSchema, AddUserValues } from '@/features/user/schemas/user';
 
-interface AddUserProps {
-  emailExists: Array<string>;
+export default function AddUser({
+  containerRef,
+}: {
   containerRef: RefObject<Nullable<HTMLDivElement>>;
-}
-
-export default function AddUser({ emailExists, containerRef }: AddUserProps) {
+}) {
   const [isPending, startTransition] = useTransition();
 
   const {
@@ -48,7 +47,6 @@ export default function AddUser({ emailExists, containerRef }: AddUserProps) {
     register,
     getValues,
     handleSubmit,
-    setError,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(AddUserSchema),
@@ -56,14 +54,6 @@ export default function AddUser({ emailExists, containerRef }: AddUserProps) {
   });
 
   const onSubmit = (data: AddUserValues) => {
-    if (emailExists) {
-      setError('email', {
-        type: 'custom',
-        message: 'Email already exists',
-      });
-      return;
-    }
-
     const id = toaster.create({
       type: 'loading',
       description: 'Adding user to database...',

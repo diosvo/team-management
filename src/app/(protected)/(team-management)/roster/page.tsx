@@ -15,14 +15,10 @@ export default async function RosterPage(props: {
     Object.fromEntries(new URLSearchParams(searchParams))
   );
   const users = await getRoster(params);
-  const emailExists = [
-    'vtmn1212@gmail.com',
-    ...users.map((user) => user.email),
-  ];
 
   return (
     <>
-      <RosterActions emailExists={emailExists} />
+      <RosterActions />
       <RosterTable users={users} />
     </>
   );

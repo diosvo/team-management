@@ -89,7 +89,7 @@ export default function NewPasswordPage() {
       </Stack>
       <Link
         fontSize="sm"
-        fontWeight="semibold"
+        fontWeight="500"
         textDecoration="underline"
         href={LOGIN_PATH}
       >

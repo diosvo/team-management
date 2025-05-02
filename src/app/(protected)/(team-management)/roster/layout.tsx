@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+
 import FilterProvider from './_helpers/use-filters';
 
 export const metadata: Metadata = {

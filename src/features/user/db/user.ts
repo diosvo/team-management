@@ -1,6 +1,16 @@
 import { cache } from 'react';
 
-import { and, arrayContained, eq, ilike, inArray, not, SQL } from 'drizzle-orm';
+import {
+  and,
+  arrayContained,
+  eq,
+  getTableColumns,
+  ilike,
+  inArray,
+  not,
+  or,
+  SQL,
+} from 'drizzle-orm';
 
 import { db } from '@/drizzle';
 import { User, UserTable } from '@/drizzle/schema';
@@ -13,13 +23,18 @@ import { AddUserValues, FilterUsersValues } from '../schemas/user';
 export const getUsers = cache(
   async ({ query, roles, state }: FilterUsersValues) => {
     // Always exclude SUPER_ADMIN user
-    const filters: Array<SQL> = [
+    const filters: Array<SQL | undefined> = [
       not(arrayContained(UserTable.roles, [UserRole.SUPER_ADMIN])),
     ];
 
     // Only apply filters if parameters are provided and non-empty
     if (query && query.trim() !== '')
-      filters.push(ilike(UserTable.name, `%${query}%`));
+      filters.push(
+        or(
+          ilike(UserTable.email, `%${query}%`),
+          ilike(UserTable.name, `%${query}%`)
+        )
+      );
     if (state && state.length > 0)
       filters.push(inArray(UserTable.state, state));
     if (roles && roles.length > 0)
@@ -36,6 +51,17 @@ export const getUsers = cache(
     }
   }
 );
+
+export const getExistingEmails = cache(async () => {
+  try {
+    const { email } = getTableColumns(UserTable);
+    const data = await db.select({ email }).from(UserTable);
+    return data.map((user) => user.email);
+  } catch {
+    logger.error('An error when getting existing emails');
+    return [];
+  }
+});
 
 export const getUserByEmail = cache(async (email: string) => {
   try {

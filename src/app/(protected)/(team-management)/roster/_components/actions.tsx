@@ -15,11 +15,7 @@ import AddUser from './add-user';
 import SearchBar from './search-bar';
 import SelectionFilter from './selection-filter';
 
-export default function RosterActions({
-  emailExists,
-}: {
-  emailExists: Array<string>;
-}) {
+export default function RosterActions() {
   const isAdmin = usePermissions();
   const { filters, isPending, updateFilters } = useFilters();
 
@@ -58,12 +54,7 @@ export default function RosterActions({
             onClick={() =>
               dialog.open('add-user', {
                 contentRef: dialogContentRef,
-                children: (
-                  <AddUser
-                    emailExists={emailExists}
-                    containerRef={dialogContentRef}
-                  />
-                ),
+                children: <AddUser containerRef={dialogContentRef} />,
               })
             }
           >

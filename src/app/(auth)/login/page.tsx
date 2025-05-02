@@ -92,7 +92,7 @@ export default function LoginPage() {
 
               <Link
                 fontSize="sm"
-                fontWeight="semibold"
+                fontWeight="500"
                 textDecoration="underline"
                 onClick={() => setPage(Page.ResetPassword)}
               >
@@ -119,7 +119,7 @@ export default function LoginPage() {
             <Link
               fontSize="sm"
               alignSelf="center"
-              fontWeight="semibold"
+              fontWeight="500"
               textDecoration="underline"
               onClick={() => setPage(Page.Login)}
             >
