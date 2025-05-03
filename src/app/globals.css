@@ -10,12 +10,6 @@
   }
 }
 
-html,
-body {
-  max-width: 100vw;
-  overflow-x: hidden;
-}
-
 body {
   color: var(--foreground);
   background: var(--background);
@@ -25,11 +19,6 @@ body {
 
 .font-mono {
   font-family: ui-monospace, monospace;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -74,20 +63,4 @@ a {
 
 .ProseMirror u {
   text-decoration: underline;
-}
-
-.modal::backdrop {
-  background: hsl(0 0% 0% / 50%);
-}
-
-.modal {
-  max-width: 20rem;
-  padding: 2rem;
-  border: 0;
-  border-radius: 0.5rem;
-  position: relative;
-  border-radius: 1rem;
-  position: fixed;
-  box-shadow: hsl(0 0% 0% / 10%) 0 0 0.5rem 0.25rem;
-  border: 1px solid #ccc;
 }

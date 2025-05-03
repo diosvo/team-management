@@ -12,6 +12,13 @@ export const system = createSystem(defaultConfig, {
       },
     },
   },
+  globalCss: {
+    'html, body': {
+      maxWidth: '100vw',
+      overflowX: 'hidden',
+      padding: 0,
+    },
+  },
 });
 
 export function Provider(props: ColorModeProviderProps) {
