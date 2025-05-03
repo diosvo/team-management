@@ -56,16 +56,14 @@ function NavButton({
 
   return (
     <Button
-      w="full"
-      size="sm"
+      size={{ base: 'xs', md: 'sm' }}
       justifyContent={isExpanded ? 'flex-start' : 'center'}
       disabled={disabled}
       variant={isActive ? 'subtle' : 'ghost'}
-      colorScheme={isActive ? 'blue' : 'gray'}
       color={isActive ? 'inherit' : 'GrayText'}
-      asChild
       paddingInline={isExpanded ? undefined : 2}
       title={isExpanded ? undefined : String(children)}
+      asChild
     >
       {disabled ? (
         <div>
@@ -94,33 +92,36 @@ export default function Sidebar({
   return (
     <VStack
       align="stretch"
+      height="full"
       paddingBlock={4}
       paddingInline={2}
       gap={isExpanded ? 6 : 2}
-      height="full"
       overflow="hidden"
     >
       {SIDEBAR_GROUP.map(({ title, items }, index) => (
         <VStack key={title} align="stretch">
           {isExpanded ? (
-            <Text fontSize="xs" marginLeft={4}>
+            <Text
+              fontSize={{ base: '2xs', md: 'xs' }}
+              marginLeft={{ base: 3, md: 4 }}
+            >
               {title}
             </Text>
           ) : (
             index > 0 && <Separator />
           )}
 
-          {items.map((item) => {
-            const path = hrefPath(item.text);
+          {items.map(({ text, icon, disabled }) => {
+            const path = hrefPath(text);
             return (
               <NavButton
-                key={item.text}
+                key={text}
                 href={path}
-                icon={item.icon}
-                disabled={item.disabled}
+                icon={icon}
+                disabled={disabled}
                 isExpanded={isExpanded}
               >
-                {item.text}
+                {text}
               </NavButton>
             );
           })}
@@ -129,7 +130,7 @@ export default function Sidebar({
 
       <VStack align="stretch" marginTop="auto">
         <Button
-          size="sm"
+          size={{ base: 'xs', md: 'sm' }}
           variant="ghost"
           justifyContent={isExpanded ? 'flex-start' : 'center'}
           title="Team Rule"

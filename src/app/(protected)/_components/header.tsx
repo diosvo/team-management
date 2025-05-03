@@ -1,7 +1,8 @@
 'use client';
 
 import NextImage from 'next/image';
-import { use, useTransition } from 'react';
+import { usePathname } from 'next/navigation';
+import { use, useEffect, useState, useTransition } from 'react';
 
 import {
   Avatar,
@@ -21,6 +22,7 @@ import { useUser } from '@/hooks/use-user';
 import { colorState } from '@/utils/helper';
 import HeaderLogo from '@assets/images/header-logo.png';
 
+import { CloseButton } from '@/components/ui/close-button';
 import { dialog } from '@/components/ui/dialog';
 import { toaster } from '@/components/ui/toaster';
 
@@ -33,8 +35,15 @@ export default function Header() {
   const { userPromise } = useUser();
   const user = use(userPromise);
 
+  const pathname = usePathname();
   const isAdmin = usePermissions();
+
+  const [open, setOpen] = useState<boolean>(false);
   const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
 
   const handleLogout = () => {
     startTransition(async () => {
@@ -52,7 +61,7 @@ export default function Header() {
 
   return (
     <HStack align="center" paddingBlock={2} paddingInline={4}>
-      <Image width={{ base: 144, md: 192 }} marginRight="auto" asChild>
+      <Image width={{ base: 132, sm: 144, md: 192 }} marginRight="auto" asChild>
         <NextImage
           priority
           quality={100}
@@ -69,7 +78,7 @@ export default function Header() {
             <Avatar.Image src={user.image as string} />
             <Float placement="bottom-end" offsetX={1} offsetY={1}>
               <Circle
-                size="8px"
+                size={2}
                 outline="0.2em solid"
                 outlineColor="bg"
                 bg={colorState(user.state)}
@@ -106,12 +115,12 @@ export default function Header() {
         </Menu.Positioner>
       </Menu.Root>
 
-      <Drawer.Root>
+      <Drawer.Root open={open} onOpenChange={({ open }) => setOpen(open)}>
         <Drawer.Trigger asChild>
           <IconButton
-            hideFrom="sm"
-            size="md"
-            variant="ghost"
+            hideFrom="lg"
+            size="sm"
+            variant="outline"
             borderRadius="full"
           >
             <PanelRightOpen />
@@ -124,6 +133,9 @@ export default function Header() {
               <Drawer.Body padding={0}>
                 <Sidebar />
               </Drawer.Body>
+              <Drawer.CloseTrigger asChild>
+                <CloseButton size="2xs" />
+              </Drawer.CloseTrigger>
             </Drawer.Content>
           </Drawer.Positioner>
         </Portal>

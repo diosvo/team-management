@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useState } from 'react';
 
 import {
   Container,
@@ -14,7 +14,6 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 import Loading from '@/components/loading';
 
-import { usePathname } from 'next/navigation';
 import Header from './_components/header';
 import Sidebar from './_components/sidebar';
 
@@ -23,40 +22,26 @@ export default function ProtectedLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const isMobile = useBreakpointValue({ base: true, md: false });
-  const [isExpanded, setIsExpanded] = useState(false);
+  const smallDevice = useBreakpointValue({
+    base: true,
+    sm: true,
+    md: true,
+    lg: false,
+  });
+  const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const sidebarWidth = isExpanded ? '224px' : '64px';
 
   const toggleSidebar = () => {
     setIsExpanded(!isExpanded);
   };
 
-  // Auto-collapse sidebar on mobile
-  useEffect(() => {
-    if (isMobile) {
-      setIsExpanded(false);
-    }
-  }, [isMobile]);
-
-  // Add this import at the top
-
-  // Then add this code for route change detection
-  const pathname = usePathname();
-
-  // Close sidebar when route changes on mobile devices
-  useEffect(() => {
-    if (isMobile) {
-      setIsExpanded(false);
-    }
-  }, [pathname, isMobile]);
-
   return (
     <Grid
-      h="100vh"
+      height="100vh"
       templateRows="auto 1fr"
-      templateColumns={isMobile ? '1fr' : `${sidebarWidth} 1fr`}
+      templateColumns={smallDevice ? '1fr' : `${sidebarWidth} 1fr`}
       templateAreas={
-        isMobile
+        smallDevice
           ? `
         "header"
         "main"
@@ -74,7 +59,7 @@ export default function ProtectedLayout({
       </GridItem>
 
       <GridItem
-        hideBelow="xl"
+        hideBelow="lg"
         gridArea="sidebar"
         width={sidebarWidth}
         position="relative"
@@ -88,6 +73,7 @@ export default function ProtectedLayout({
           size="sm"
           variant="outline"
           position="absolute"
+          zIndex={1}
           top={4}
           right="-36px"
           paddingBlock={6}
@@ -104,9 +90,8 @@ export default function ProtectedLayout({
       <GridItem gridArea="main">
         <Suspense fallback={<Loading />}>
           <Container
-            paddingBlock={3}
-            paddingInline={{ base: 0, md: 8, xl: 12 }}
-            maxWidth={{ base: 'sm', md: '6xl', lg: '8xl' }}
+            paddingBlock={4}
+            maxWidth={['vw', 'vw', 'vw', '4xl', '6xl', '8xl']}
           >
             {children}
           </Container>

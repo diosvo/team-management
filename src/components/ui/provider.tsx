@@ -16,7 +16,6 @@ export const system = createSystem(defaultConfig, {
     'html, body': {
       maxWidth: '100vw',
       overflowX: 'hidden',
-      padding: 0,
     },
   },
 });
