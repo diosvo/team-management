@@ -2,9 +2,10 @@
 
 import { useMemo, useRef } from 'react';
 
-import { Button, Heading, HStack, Image, VStack } from '@chakra-ui/react';
+import { Button, HStack, VStack } from '@chakra-ui/react';
 import { UserRoundPlus } from 'lucide-react';
 
+import PageTitle from '@/components/page-title';
 import { dialog } from '@/components/ui/dialog';
 import Visibility from '@/components/visibility';
 
@@ -28,21 +29,7 @@ export default function RosterActions() {
   return (
     <VStack align="stretch">
       <HStack justifyContent="space-between">
-        <Heading
-          position="relative"
-          color="red.500"
-          fontStyle="italic"
-          size={{ base: 'xl', md: '2xl' }}
-        >
-          Team Roster
-          <Image
-            position="absolute"
-            left={0}
-            src="https://uploads-ssl.webflow.com/5fac11c3554384e2baf6481c/61c4dc7572d22f05ba26fd34_hero-underline.svg"
-            loading="lazy"
-            alt=""
-          />
-        </Heading>
+        <PageTitle>Team Roster</PageTitle>
         <Button
           variant="plain"
           size={{ base: 'xs', md: 'md' }}
