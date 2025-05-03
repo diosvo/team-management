@@ -22,7 +22,7 @@ export default function RosterActions() {
 
   const dialogContentRef = useRef<HTMLDivElement>(null);
   const isFilterEmpty = useMemo(
-    () => !Object.values(filters).every(Boolean),
+    () => Object.values(filters).every((value) => value.length === 0),
     [filters]
   );
 
