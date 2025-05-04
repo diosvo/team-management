@@ -56,7 +56,7 @@ export function RosterTable({ users }: { users: Array<User> }) {
   const endIndex = Math.min(startIndex + pagination.pageSize, totalCount);
   const currentData = users.slice(startIndex, endIndex);
 
-  const columCount = useMemo(() => {
+  const columnCount = useMemo(() => {
     let count = 0;
     if (isAdmin) {
       count += 2; // Checkbox and Verified
@@ -196,7 +196,7 @@ export function RosterTable({ users }: { users: Array<User> }) {
               ))
             ) : (
               <Table.Row>
-                <Table.Cell colSpan={columCount}>
+                <Table.Cell colSpan={columnCount}>
                   <EmptyState.Root>
                     <EmptyState.Content>
                       <EmptyState.Indicator>
