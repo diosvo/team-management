@@ -60,6 +60,7 @@ export default function SearchBar() {
         placeholder="Search..."
         css={{ '--focus-color': 'colors.red.200' }}
         value={inputValue}
+        size={{ base: 'sm', md: 'md' }}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
       />

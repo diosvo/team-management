@@ -25,10 +25,10 @@ export default function LoginLayout({
         style={{ objectFit: 'cover' }}
         alt="Saigon Rovers Basketball Club Background Layer"
       />
-      <Center p="2rem" h="100%">
+      <Center padding={8} height="100%">
         <Container
-          p="8"
-          maxW="xl"
+          padding={8}
+          maxWidth="xl"
           shadow="lg"
           rounded="lg"
           backgroundColor="white"

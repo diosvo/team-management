@@ -2,13 +2,18 @@ import { cookies } from 'next/headers';
 import { type NextRequest, NextResponse } from 'next/server';
 
 import { COOKIE, decrypt } from '@/lib/session';
-import { DEFAULT_LOGIN_REDIRECT, LOGIN_PATH, PUBLIC_ROUTES } from '@/routes';
+import {
+  AUTH_ROUTES,
+  DEFAULT_LOGIN_REDIRECT,
+  LOGIN_PATH,
+  PUBLIC_ROUTES,
+} from '@/routes';
 
 export default async function middleware(req: NextRequest) {
   // 1. Check if route is protected
   const currentPath = req.nextUrl.pathname;
   const isProtectedRoutes = !PUBLIC_ROUTES.includes(currentPath);
-  const isAuthRoute = [LOGIN_PATH, '/'].includes(currentPath);
+  const isAuthRoute = [...AUTH_ROUTES, '/'].includes(currentPath);
 
   const redirectTo = (path: string) =>
     NextResponse.redirect(new URL(path, req.nextUrl));

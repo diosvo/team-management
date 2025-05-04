@@ -1,29 +1,49 @@
 'use client';
 
-import Image from 'next/image';
-import { use, useTransition } from 'react';
+import NextImage from 'next/image';
+import { usePathname } from 'next/navigation';
+import { use, useEffect, useState, useTransition } from 'react';
 
-import { Avatar, Circle, Float, HStack, Menu } from '@chakra-ui/react';
-import { LogOut, UserIcon } from 'lucide-react';
+import {
+  Avatar,
+  Circle,
+  Drawer,
+  Float,
+  HStack,
+  IconButton,
+  Image,
+  Menu,
+  Portal,
+} from '@chakra-ui/react';
+import { LogOut, PanelRightOpen, UserIcon } from 'lucide-react';
 
 import { usePermissions } from '@/hooks/use-permissions';
 import { useUser } from '@/hooks/use-user';
 import { colorState } from '@/utils/helper';
 import HeaderLogo from '@assets/images/header-logo.png';
 
+import { CloseButton } from '@/components/ui/close-button';
 import { dialog } from '@/components/ui/dialog';
 import { toaster } from '@/components/ui/toaster';
 
 import { logout } from '@/features/user/actions/auth';
 
+import Sidebar from './sidebar';
 import UserInfo from './user-info';
 
 export default function Header() {
   const { userPromise } = useUser();
   const user = use(userPromise);
 
+  const pathname = usePathname();
   const isAdmin = usePermissions();
+
+  const [open, setOpen] = useState<boolean>(false);
   const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
 
   const handleLogout = () => {
     startTransition(async () => {
@@ -40,24 +60,25 @@ export default function Header() {
   }
 
   return (
-    <HStack align="center" justify="space-between" py="2" px="4">
-      <Image
-        priority
-        width={192}
-        quality={100}
-        placeholder="blur"
-        src={HeaderLogo}
-        alt="Text Logo"
-      />
+    <HStack align="center" paddingBlock={2} paddingInline={4}>
+      <Image width={{ base: 132, sm: 144, md: 192 }} marginRight="auto" asChild>
+        <NextImage
+          priority
+          quality={100}
+          placeholder="blur"
+          src={HeaderLogo}
+          alt="Text Logo"
+        />
+      </Image>
 
       <Menu.Root>
         <Menu.Trigger focusVisibleRing="none">
-          <Avatar.Root variant="subtle" size="sm">
+          <Avatar.Root variant="subtle" size={{ base: 'xs', md: 'sm' }}>
             <Avatar.Fallback name={user.name} />
             <Avatar.Image src={user.image as string} />
-            <Float placement="bottom-end" offsetX="1" offsetY="1">
+            <Float placement="bottom-end" offsetX={1} offsetY={1}>
               <Circle
-                size="8px"
+                size={2}
                 outline="0.2em solid"
                 outlineColor="bg"
                 bg={colorState(user.state)}
@@ -93,6 +114,32 @@ export default function Header() {
           </Menu.Content>
         </Menu.Positioner>
       </Menu.Root>
+
+      <Drawer.Root open={open} onOpenChange={({ open }) => setOpen(open)}>
+        <Drawer.Trigger asChild>
+          <IconButton
+            hideFrom="lg"
+            size="sm"
+            variant="outline"
+            borderRadius="full"
+          >
+            <PanelRightOpen />
+          </IconButton>
+        </Drawer.Trigger>
+        <Portal>
+          <Drawer.Backdrop />
+          <Drawer.Positioner>
+            <Drawer.Content maxWidth="224px">
+              <Drawer.Body padding={0}>
+                <Sidebar />
+              </Drawer.Body>
+              <Drawer.CloseTrigger asChild>
+                <CloseButton size="2xs" />
+              </Drawer.CloseTrigger>
+            </Drawer.Content>
+          </Drawer.Positioner>
+        </Portal>
+      </Drawer.Root>
       <dialog.Viewport />
     </HStack>
   );

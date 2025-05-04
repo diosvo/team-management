@@ -90,7 +90,7 @@ export default function NewPasswordPage() {
       <Link
         fontSize="sm"
         fontWeight="500"
-        textDecoration="underline"
+        variant="underline"
         href={LOGIN_PATH}
       >
         Go to login

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import {
   ActionBar,
@@ -56,6 +56,15 @@ export function RosterTable({ users }: { users: Array<User> }) {
   const endIndex = Math.min(startIndex + pagination.pageSize, totalCount);
   const currentData = users.slice(startIndex, endIndex);
 
+  const columnCount = useMemo(() => {
+    let count = 0;
+    if (isAdmin) {
+      count += 2; // Checkbox and Verified
+    }
+    count += 5; // No., Name, Email, State, Roles
+    return count;
+  }, [isAdmin]);
+
   const removeUsers = async () => {
     const results = await Promise.all(selection.map(removeUser));
     const hasErrors = results.some(({ error }) => error);
@@ -73,8 +82,12 @@ export function RosterTable({ users }: { users: Array<User> }) {
 
   return (
     <>
-      <Table.ScrollArea>
-        <Table.Root stickyHeader interactive={currentData.length > 0}>
+      <Table.ScrollArea marginTop={2} marginBottom={4}>
+        <Table.Root
+          size={{ base: 'sm', md: 'md' }}
+          stickyHeader
+          interactive={currentData.length > 0}
+        >
           <Table.Header>
             <Table.Row>
               <Visibility isVisible={isAdmin}>
@@ -140,9 +153,17 @@ export function RosterTable({ users }: { users: Array<User> }) {
                       </Table.Cell>
                       <Table.Cell textAlign="center">
                         {user.password ? (
-                          <Icon as={ShieldCheck} size="md" color="green.500" />
+                          <Icon
+                            as={ShieldCheck}
+                            size={{ base: 'sm', md: 'md' }}
+                            color="green.500"
+                          />
                         ) : (
-                          <Icon as={ShieldAlert} size="md" color="orange.500" />
+                          <Icon
+                            as={ShieldAlert}
+                            size={{ base: 'sm', md: 'md' }}
+                            color="orange.500"
+                          />
                         )}
                       </Table.Cell>
                     </>
@@ -175,7 +196,7 @@ export function RosterTable({ users }: { users: Array<User> }) {
               ))
             ) : (
               <Table.Row>
-                <Table.Cell colSpan={6}>
+                <Table.Cell colSpan={columnCount}>
                   <EmptyState.Root>
                     <EmptyState.Content>
                       <EmptyState.Indicator>
@@ -199,7 +220,7 @@ export function RosterTable({ users }: { users: Array<User> }) {
       <Pagination.Root
         display="flex"
         justifyContent="space-between"
-        marginTop={6}
+        alignItems="center"
         opacity={totalCount > 0 ? 1 : 0}
         count={totalCount}
         page={pagination.page}
@@ -208,20 +229,13 @@ export function RosterTable({ users }: { users: Array<User> }) {
           setPagination((prev) => ({ ...prev, page }))
         }
       >
-        <Pagination.PageText
-          format="long"
-          flex="1"
-          fontWeight="normal"
-          fontSize="14px"
-        />
-
-        <ButtonGroup variant="ghost" size="sm">
+        <Pagination.PageText format="long" fontSize={14} />
+        <ButtonGroup variant="ghost" size={{ base: 'xs', sm: 'sm' }}>
           <Pagination.PrevTrigger asChild>
             <IconButton aria-label="Previous page">
               <ChevronLeft />
             </IconButton>
           </Pagination.PrevTrigger>
-
           <Pagination.NextTrigger asChild>
             <IconButton aria-label="Next page">
               <ChevronRight />
@@ -229,6 +243,7 @@ export function RosterTable({ users }: { users: Array<User> }) {
           </Pagination.NextTrigger>
         </ButtonGroup>
       </Pagination.Root>
+
       <ActionBar.Root open={hasSelection}>
         <Portal>
           <ActionBar.Positioner>

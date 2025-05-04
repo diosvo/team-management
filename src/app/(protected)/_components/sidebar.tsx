@@ -9,7 +9,14 @@ import {
   use,
 } from 'react';
 
-import { Button, Icon, Spinner, Text, VStack } from '@chakra-ui/react';
+import {
+  Button,
+  Icon,
+  Separator,
+  Spinner,
+  Text,
+  VStack,
+} from '@chakra-ui/react';
 import { Crown, LucideProps } from 'lucide-react';
 
 import { dialog } from '@/components/ui/dialog';
@@ -34,6 +41,7 @@ function NavButton({
   icon,
   disabled = false,
   children,
+  isExpanded = true,
 }: {
   href: string;
   icon: ForwardRefExoticComponent<
@@ -41,70 +49,92 @@ function NavButton({
   >;
   disabled?: boolean;
   children: ReactNode;
+  isExpanded?: boolean;
 }) {
   const pathname = usePathname();
   const isActive = pathname === href;
 
   return (
     <Button
-      w="full"
-      size="sm"
-      justifyContent="flex-start"
+      size={{ base: 'xs', md: 'sm' }}
+      justifyContent={isExpanded ? 'flex-start' : 'center'}
       disabled={disabled}
       variant={isActive ? 'subtle' : 'ghost'}
-      colorScheme={isActive ? 'blue' : 'gray'}
       color={isActive ? 'inherit' : 'GrayText'}
+      paddingInline={isExpanded ? undefined : 2}
+      title={isExpanded ? undefined : String(children)}
       asChild
     >
       {disabled ? (
         <div>
-          {icon && <Icon as={icon} />} {children}
+          {icon && <Icon as={icon} />} {isExpanded && children}
         </div>
       ) : (
         <Link href={href}>
           {icon && <Icon as={icon} />}
-          {children}
-          <LoadingIndicator />
+          {isExpanded && children}
+          {isExpanded && <LoadingIndicator />}
         </Link>
       )}
     </Button>
   );
 }
 
-export default function Sidebar() {
+export default function Sidebar({
+  isExpanded = true,
+}: {
+  isExpanded?: boolean;
+}) {
   const { userPromise } = useUser();
   const user = use(userPromise);
   const isAdmin = usePermissions();
 
   return (
-    <VStack align="stretch" py={4} px={2} gap={6} height="full">
-      {SIDEBAR_GROUP.map(({ title, items }) => (
+    <VStack
+      align="stretch"
+      height="full"
+      paddingBlock={4}
+      paddingInline={2}
+      gap={isExpanded ? 6 : 2}
+      overflow="hidden"
+    >
+      {SIDEBAR_GROUP.map(({ title, items }, index) => (
         <VStack key={title} align="stretch">
-          <Text fontSize="xs" marginLeft={4}>
-            {title}
-          </Text>
+          {isExpanded ? (
+            <Text
+              fontSize={{ base: '2xs', md: 'xs' }}
+              marginLeft={{ base: 3, md: 4 }}
+            >
+              {title}
+            </Text>
+          ) : (
+            index > 0 && <Separator />
+          )}
 
-          {items.map((item) => {
-            const path = hrefPath(item.text);
+          {items.map(({ text, icon, disabled }) => {
+            const path = hrefPath(text);
             return (
               <NavButton
-                key={item.text}
+                key={text}
                 href={path}
-                icon={item.icon}
-                disabled={item.disabled}
+                icon={icon}
+                disabled={disabled}
+                isExpanded={isExpanded}
               >
-                {item.text}
+                {text}
               </NavButton>
             );
           })}
         </VStack>
       ))}
 
-      <VStack align="stretch" mt="auto">
+      <VStack align="stretch" marginTop="auto">
         <Button
-          size="sm"
+          size={{ base: 'xs', md: 'sm' }}
           variant="ghost"
-          justifyContent="flex-start"
+          justifyContent={isExpanded ? 'flex-start' : 'center'}
+          title="Team Rule"
+          paddingInline={isExpanded ? undefined : 2}
           onClick={() => {
             dialog.open('team-rule', {
               children: (
@@ -118,7 +148,7 @@ export default function Sidebar() {
           }}
         >
           <Icon as={Crown} color="orange.focusRing" />
-          Team Rule
+          {isExpanded && 'Team Rule'}
         </Button>
       </VStack>
       <dialog.Viewport />

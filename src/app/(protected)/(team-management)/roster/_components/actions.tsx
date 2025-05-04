@@ -2,9 +2,10 @@
 
 import { useMemo, useRef } from 'react';
 
-import { Button, Heading, HStack, VStack } from '@chakra-ui/react';
+import { Button, HStack, VStack } from '@chakra-ui/react';
 import { UserRoundPlus } from 'lucide-react';
 
+import PageTitle from '@/components/page-title';
 import { dialog } from '@/components/ui/dialog';
 import Visibility from '@/components/visibility';
 
@@ -21,16 +22,17 @@ export default function RosterActions() {
 
   const dialogContentRef = useRef<HTMLDivElement>(null);
   const isFilterEmpty = useMemo(
-    () => !Object.values(filters).every(Boolean),
+    () => Object.values(filters).every((value) => value.length === 0),
     [filters]
   );
 
   return (
     <VStack align="stretch">
       <HStack justifyContent="space-between">
-        <Heading size="2xl">Team Roster</Heading>
+        <PageTitle>Team Roster</PageTitle>
         <Button
           variant="plain"
+          size={{ base: 'xs', md: 'md' }}
           textDecoration="underline"
           _hover={{ color: 'tomato' }}
           disabled={isFilterEmpty || isPending}
@@ -51,6 +53,7 @@ export default function RosterActions() {
         <SelectionFilter />
         <Visibility isVisible={isAdmin}>
           <Button
+            size={{ base: 'sm', md: 'md' }}
             onClick={() =>
               dialog.open('add-user', {
                 contentRef: dialogContentRef,

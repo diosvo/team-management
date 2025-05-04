@@ -56,7 +56,11 @@ export default function LoginPage() {
 
   return (
     <>
-      <Heading textAlign="center" size={{ base: 'xl', md: '2xl' }}>
+      <Heading
+        size={{ base: 'xl', md: '2xl' }}
+        marginBottom={6}
+        textAlign="center"
+      >
         {pageTitle[page]}
       </Heading>
 
