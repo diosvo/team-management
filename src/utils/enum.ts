@@ -10,4 +10,18 @@ export enum UserState {
   ACTIVE = 'ACTIVE',
   INACTIVE = 'INACTIVE',
   TEMPORARILY_ABSENT = 'TEMPORARILY_ABSENT',
+  UNKNOWN = 'UNKNOWN',
+}
+
+export enum CoachPosition {
+  HEAD_COACH = 'HEAD_COACH',
+  ASSISTANT_COACH = 'ASSISTANT_COACH',
+}
+
+export enum PlayerPosition {
+  POINT_GUARD = 'POINT_GUARD',
+  SHOOTING_GUARD = 'SHOOTING_GUARD',
+  SMALL_FORWARD = 'SMALL_FORWARD',
+  CENTER = 'center',
+  FORWARD = 'forward',
 }

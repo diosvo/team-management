@@ -1,6 +1,6 @@
 import { addHours } from 'date-fns';
 
-import { UserRole, UserState } from './enum';
+import { CoachPosition, PlayerPosition, UserRole, UserState } from './enum';
 import { createSelectionOptions } from './formatter';
 
 export const ESTABLISHED_DATE = '2024-02-20';
@@ -25,3 +25,22 @@ export const SELECTABLE_STATES = [
   UserState.TEMPORARILY_ABSENT,
 ] as const;
 export const StatesSelection = createSelectionOptions(SELECTABLE_STATES);
+
+export const SELECTABLE_COACH_POSITIONS = [
+  CoachPosition.HEAD_COACH,
+  CoachPosition.ASSISTANT_COACH,
+] as const;
+export const CoachPositionsSelection = createSelectionOptions(
+  SELECTABLE_COACH_POSITIONS
+);
+
+export const SELECTABLE_PLAYER_POSITIONS = [
+  PlayerPosition.POINT_GUARD,
+  PlayerPosition.SHOOTING_GUARD,
+  PlayerPosition.SMALL_FORWARD,
+  PlayerPosition.CENTER,
+  PlayerPosition.FORWARD,
+] as const;
+export const PlayerPositionsSelection = createSelectionOptions(
+  SELECTABLE_PLAYER_POSITIONS
+);

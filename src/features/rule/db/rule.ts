@@ -1,18 +1,23 @@
 import { cache } from 'react';
 
+import { db } from '@/drizzle';
 import { eq } from 'drizzle-orm';
 
-import { db } from '@/drizzle';
 import { InsertRule, RuleTable } from '@/drizzle/schema/rule';
 import logger from '@/lib/logger';
 
 import { revalidateRuleCache } from './cache';
 
 export const getRule = cache(async (team_id: string) => {
-  return await db.query.RuleTable.findFirst({
-    where: eq(RuleTable.team_id, team_id),
-    columns: { rule_id: true, content: true },
-  });
+  try {
+    return await db.query.RuleTable.findFirst({
+      where: eq(RuleTable.team_id, team_id),
+      columns: { rule_id: true, content: true },
+    });
+  } catch (error) {
+    logger.error('Failed to get rule', error);
+    return null;
+  }
 });
 
 export async function insertRule(data: InsertRule) {

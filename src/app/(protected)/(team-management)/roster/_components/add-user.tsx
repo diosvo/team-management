@@ -26,11 +26,12 @@ import { toaster } from '@/components/ui/toaster';
 
 import { getDefaults } from '@/lib/zod';
 import {
+  CoachPositionsSelection,
   ESTABLISHED_DATE,
   RolesSelection,
   StatesSelection,
 } from '@/utils/constant';
-import { UserState } from '@/utils/enum';
+import { CoachPosition, UserRole, UserState } from '@/utils/enum';
 
 import { addUser } from '@/features/user/actions/user';
 import { AddUserSchema, AddUserValues } from '@/features/user/schemas/user';
@@ -119,6 +120,22 @@ export default function AddUser({
                 {...register('roles')}
               />
             </Field>
+            {getValues('roles')!.includes(UserRole.COACH) && (
+              <Field
+                required
+                label="Coach Position"
+                invalid={!!errors.coach_position}
+                errorText={errors.coach_position?.message}
+              >
+                <Select
+                  collection={CoachPositionsSelection}
+                  defaultValue={[CoachPosition.HEAD_COACH]}
+                  containerRef={containerRef}
+                  disabled={isPending}
+                  {...register('coach_position')}
+                />
+              </Field>
+            )}
             <Field
               required
               label="State"

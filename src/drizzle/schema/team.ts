@@ -1,5 +1,12 @@
 import { relations, sql } from 'drizzle-orm';
-import { check, integer, pgTable, uuid, varchar } from 'drizzle-orm/pg-core';
+import {
+  boolean,
+  check,
+  integer,
+  pgTable,
+  uuid,
+  varchar,
+} from 'drizzle-orm/pg-core';
 
 import { created_at, updated_at } from '../helpers';
 import { RuleTable } from './rule';
@@ -14,6 +21,7 @@ export const TeamTable = pgTable(
     establish_year: integer('establish_year')
       .default(new Date().getFullYear())
       .notNull(),
+    is_default: boolean('is_default').default(false).notNull(),
     created_at,
     updated_at,
   },

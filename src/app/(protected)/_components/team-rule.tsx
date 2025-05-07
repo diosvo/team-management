@@ -20,26 +20,24 @@ import { Rule } from '@/drizzle/schema';
 import { formatDatetime } from '@/utils/formatter';
 
 import { executeRule } from '@/features/rule/actions/rule';
-import { RuleValues } from '@/features/rule/schemas/rule';
 
 interface TeamRuleProps {
   editable: boolean;
-  team_id: string;
   rule: Partial<Rule>;
 }
 
-export default function TeamRule({ editable, team_id, rule }: TeamRuleProps) {
+export default function TeamRule({ editable, rule }: TeamRuleProps) {
   const [isPending, startTransition] = useTransition();
   const [isEditing, setIsEditing] = useState<boolean>(false);
 
-  function onSubmit(values: RuleValues) {
+  function onSubmit(content: string) {
     startTransition(async () => {
       const id = toaster.create({
         type: 'loading',
         description: 'Updating rules...',
       });
 
-      const { error, message: description } = await executeRule(values);
+      const { error, message: description } = await executeRule(content);
 
       toaster.update(id, {
         type: error ? 'error' : 'success',
@@ -73,12 +71,7 @@ export default function TeamRule({ editable, team_id, rule }: TeamRuleProps) {
           editable={editable && isEditing && !isPending}
           loading={isPending}
           content={rule.content as string}
-          onSave={(content: string) =>
-            onSubmit({
-              content,
-              team_id,
-            })
-          }
+          onSave={onSubmit}
         />
       </DialogBody>
       <DialogFooter justifyContent="flex-start">

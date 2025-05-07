@@ -2,24 +2,25 @@
 
 import { Response, ResponseFactory } from '@/utils/response';
 
+import { getTeam } from '@/features/team/actions/team';
+
 import { getRule, insertRule, updateRule } from '../db/rule';
-import { RuleSchema, RuleValues } from '../schemas/rule';
 
-export async function executeRule(values: RuleValues): Promise<Response> {
-  const { success, data } = RuleSchema.safeParse(values);
+export async function executeRule(content: string): Promise<Response> {
+  const team = await getTeam();
 
-  if (!success) {
-    return ResponseFactory.error('There was an error while processing request');
+  if (!team) {
+    return ResponseFactory.error('Team not found');
   }
 
   try {
-    const existingRule = await getRule(data.team_id);
+    const existingRule = await getRule(team.team_id);
 
     if (existingRule) {
-      await updateRule(existingRule.rule_id, data.content);
+      await updateRule(existingRule.rule_id, content);
       return ResponseFactory.success('Rule updated successfully');
     } else {
-      await insertRule(data);
+      await insertRule({ team_id: team.team_id, content });
       return ResponseFactory.success('New rule created successful');
     }
   } catch (error) {

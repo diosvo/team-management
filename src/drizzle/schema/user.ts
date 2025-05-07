@@ -12,6 +12,8 @@ import {
 import { UserRole, UserState } from '@/utils/enum';
 
 import { created_at, expires_at, updated_at } from '../helpers';
+import { CoachTable } from './coach';
+import { PlayerTable } from './player';
 import { TeamTable } from './team';
 
 export const userRolesEnum = pgEnum('user_roles', UserRole);
@@ -19,7 +21,6 @@ export const userRolesEnum = pgEnum('user_roles', UserRole);
 export const userStateEnum = pgEnum('user_state', UserState);
 
 // Tables
-// Force id and userId by Drizzle ORM Adapter
 
 export const UserTable = pgTable(
   'user',
@@ -50,6 +51,14 @@ export const UserRelations = relations(UserTable, ({ one }) => ({
   team: one(TeamTable, {
     fields: [UserTable.team_id],
     references: [TeamTable.team_id],
+  }),
+  asCoach: one(CoachTable, {
+    fields: [UserTable.user_id],
+    references: [CoachTable.user_id],
+  }),
+  asPlayer: one(PlayerTable, {
+    fields: [UserTable.user_id],
+    references: [PlayerTable.user_id],
   }),
 }));
 
