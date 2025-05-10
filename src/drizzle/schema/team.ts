@@ -4,6 +4,7 @@ import {
   check,
   integer,
   pgTable,
+  uniqueIndex,
   uuid,
   varchar,
 } from 'drizzle-orm/pg-core';
@@ -17,7 +18,7 @@ export const TeamTable = pgTable(
   {
     team_id: uuid('team_id').primaryKey().defaultRandom(),
     name: varchar('name', { length: 128 }).notNull(),
-    email: varchar('email', { length: 255 }).unique().notNull(),
+    email: varchar('email', { length: 128 }).unique(),
     establish_year: integer('establish_year')
       .default(new Date().getFullYear())
       .notNull(),
@@ -28,8 +29,11 @@ export const TeamTable = pgTable(
   (table) => [
     check(
       'establish_year',
-      sql`${table.establish_year} >= 2000 AND ${table.establish_year} <= date_part('year', CURRENT_DATE)`
+      sql`${table.establish_year} BETWEEN 2000 AND date_part('year', CURRENT_DATE)`
     ),
+    uniqueIndex('default_team')
+      .on(table.is_default)
+      .where(sql`${table.is_default} = true`),
   ]
 );
 

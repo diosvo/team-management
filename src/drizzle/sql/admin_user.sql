@@ -1,10 +1,12 @@
-INSERT INTO "user" (team_id, dob, email, name, password, roles, state)
-VALUES (
-  '171c23bb-b449-4e5f-991f-7c7de4bee357',
-  '1999-12-12',
-  'vtmn1212@gmail.com',
-  'Dios Vo',
-  '$2a$10$VlOWG6q7gUca5lts9um8duJ/hYbfWO2nvnw.4dc127ihc4fjqfJoS',
-  '{"SUPER_ADMIN"}',
-  'ACTIVE'
-);
+INSERT INTO
+  "user" (team_id, dob, email, name, password, roles, state)
+VALUES
+  (
+    '8c35a39c-0145-4b44-81ff-4e8832e61dd3',
+    '1999-12-12',
+    'vtmn1212@gmail.com',
+    'Dios Vo',
+    '$2b$10$nA5l3ktusgnsNuyKavObiewv3787mtatMHmKP/s3c.c6Z6JTfWqW2',
+    '{"SUPER_ADMIN"}',
+    'ACTIVE'
+  );

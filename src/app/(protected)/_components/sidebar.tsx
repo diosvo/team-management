@@ -137,13 +137,7 @@ export default function Sidebar({
           paddingInline={isExpanded ? undefined : 2}
           onClick={() => {
             dialog.open('team-rule', {
-              children: (
-                <TeamRule
-                  editable={isAdmin}
-                  team_id={user?.team_id as string}
-                  rule={user?.team.rule || {}}
-                />
-              ),
+              children: <TeamRule editable={isAdmin} rule={{ content: 'A' }} />,
             });
           }}
         >
