@@ -10,6 +10,7 @@
   - 🔑 Authentication using email/password with [Jose](https://www.npmjs.com/package/jose) stateless session.
   - 📩 [Resend](https://resend.com/) for email confirmation.
   - 🌊 [Winston](https://github.com/winstonjs/winston) for server logging.
+  - ⏰ [date-fns](https://date-fns.org/) for datetime manipulation.
   - 💃 Using TypeScript, hooks, [Chakra](https://chakra-ui.com/) and other parts of a modern frontend stack.
 
 - 🔒 Secure password hashing by default.
