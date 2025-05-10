@@ -1,9 +1,9 @@
+import { eq } from 'drizzle-orm';
 import { cache } from 'react';
 
 import { db } from '@/drizzle';
 import { TeamTable } from '@/drizzle/schema';
 import logger from '@/lib/logger';
-import { eq } from 'drizzle-orm';
 
 export const getTeam = cache(async () => {
   try {

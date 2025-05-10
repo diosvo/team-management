@@ -12,7 +12,6 @@ export const getRule = cache(async (team_id: string) => {
   try {
     return await db.query.RuleTable.findFirst({
       where: eq(RuleTable.team_id, team_id),
-      columns: { rule_id: true, content: true },
     });
   } catch (error) {
     logger.error('Failed to get rule', error);

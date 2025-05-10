@@ -6,7 +6,7 @@ import {
   ForwardRefExoticComponent,
   ReactNode,
   RefAttributes,
-  use,
+  useTransition,
 } from 'react';
 
 import {
@@ -22,8 +22,8 @@ import { Crown, LucideProps } from 'lucide-react';
 import { dialog } from '@/components/ui/dialog';
 
 import { usePermissions } from '@/hooks/use-permissions';
-import { useUser } from '@/hooks/use-user';
 
+import { getRule } from '@/features/rule/actions/rule';
 import { hrefPath, SIDEBAR_GROUP } from '../_helpers/utils';
 import TeamRule from './team-rule';
 
@@ -85,9 +85,19 @@ export default function Sidebar({
 }: {
   isExpanded?: boolean;
 }) {
-  const { userPromise } = useUser();
-  const user = use(userPromise);
   const isAdmin = usePermissions();
+  const [isPending, startTransition] = useTransition();
+
+  const openRuleDialog = () => {
+    startTransition(async () => {
+      const rule = await getRule();
+      console.log(rule);
+
+      dialog.open('team-rule', {
+        children: <TeamRule editable={isAdmin} rule={rule} />,
+      });
+    });
+  };
 
   return (
     <VStack
@@ -135,11 +145,8 @@ export default function Sidebar({
           justifyContent={isExpanded ? 'flex-start' : 'center'}
           title="Team Rule"
           paddingInline={isExpanded ? undefined : 2}
-          onClick={() => {
-            dialog.open('team-rule', {
-              children: <TeamRule editable={isAdmin} rule={{ content: 'A' }} />,
-            });
-          }}
+          loading={isPending}
+          onClick={openRuleDialog}
         >
           <Icon as={Crown} color="orange.focusRing" />
           {isExpanded && 'Team Rule'}

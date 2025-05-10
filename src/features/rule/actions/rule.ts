@@ -2,9 +2,17 @@
 
 import { Response, ResponseFactory } from '@/utils/response';
 
-import { getTeam } from '@/features/team/actions/team';
+import { Rule } from '@/drizzle/schema';
 
-import { getRule, insertRule, updateRule } from '../db/rule';
+import { getTeam } from '@/features/team/actions/team';
+import { getRule as getAction, insertRule, updateRule } from '../db/rule';
+
+export async function getRule(): Promise<OptionalNullable<Rule>> {
+  const team = await getTeam();
+  if (!team) return;
+
+  return await getAction(team.team_id);
+}
 
 export async function executeRule(content: string): Promise<Response> {
   const team = await getTeam();
@@ -14,7 +22,7 @@ export async function executeRule(content: string): Promise<Response> {
   }
 
   try {
-    const existingRule = await getRule(team.team_id);
+    const existingRule = await getRule();
 
     if (existingRule) {
       await updateRule(existingRule.rule_id, content);

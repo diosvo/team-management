@@ -23,7 +23,7 @@ import { executeRule } from '@/features/rule/actions/rule';
 
 interface TeamRuleProps {
   editable: boolean;
-  rule: Partial<Rule>;
+  rule: OptionalNullable<Rule>;
 }
 
 export default function TeamRule({ editable, rule }: TeamRuleProps) {
@@ -70,13 +70,13 @@ export default function TeamRule({ editable, rule }: TeamRuleProps) {
         <TextEditor
           editable={editable && isEditing && !isPending}
           loading={isPending}
-          content={rule.content as string}
+          content={rule?.content || ''}
           onSave={onSubmit}
         />
       </DialogBody>
       <DialogFooter justifyContent="flex-start">
         <Text fontSize="xs" color="GrayText">
-          {rule.updated_at &&
+          {rule?.updated_at &&
             `Last updated on ${formatDatetime(rule.updated_at)}`}
         </Text>
       </DialogFooter>
