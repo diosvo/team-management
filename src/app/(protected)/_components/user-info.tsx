@@ -2,17 +2,26 @@
 
 import { ReactNode } from 'react';
 
-import { Badge, HStack, Separator, Text, VStack } from '@chakra-ui/react';
+import {
+  Badge,
+  HStack,
+  IconButton,
+  Separator,
+  Text,
+  VStack,
+} from '@chakra-ui/react';
 import { formatDistanceToNow } from 'date-fns';
 import {
   CalendarDays,
   CircleUserRound,
   LucideClock9,
   Mail,
+  Pencil,
   ShieldCheck,
 } from 'lucide-react';
 
 import {
+  dialog,
   DialogBody,
   DialogDescription,
   DialogHeader,
@@ -23,6 +32,7 @@ import Visibility from '@/components/visibility';
 import { User } from '@/drizzle/schema';
 import { formatDate } from '@/utils/formatter';
 import { colorState } from '@/utils/helper';
+import UpdateUserInfo from './update-user-info';
 
 interface InfoItemProps {
   label: string;
@@ -40,17 +50,25 @@ function InfoItem({ icon: IconComponent, label, children }: InfoItemProps) {
   );
 }
 
-interface UserInfoProps {
+export default function UserInfo({
+  isAdmin,
+  user,
+}: {
   isAdmin: boolean;
   user: User;
-}
+}) {
+  const openEditProfileDialog = () => {
+    dialog.update('current-user-info', {
+      children: <UpdateUserInfo user={user} isAdmin={isAdmin} />,
+      closeOnInteractOutside: false,
+    });
+  };
 
-export default function UserInfo({ isAdmin, user }: UserInfoProps) {
   return (
     <>
       <DialogHeader>
         <DialogTitle display="flex" alignItems="center" gap={1}>
-          <CircleUserRound />
+          <CircleUserRound onClick={openEditProfileDialog} />
           <Text>{user.name}</Text>
         </DialogTitle>
         <DialogDescription>#5</DialogDescription>
@@ -63,6 +81,14 @@ export default function UserInfo({ isAdmin, user }: UserInfoProps) {
               <Text flexShrink="0" fontSize="sm" color="GrayText">
                 Personal
               </Text>
+              <IconButton
+                size="2xs"
+                variant="ghost"
+                aria-label="Edit user information"
+                onClick={openEditProfileDialog}
+              >
+                <Pencil />
+              </IconButton>
               <Separator flex="1" />
             </HStack>
             <VStack width="full" align="stretch">
