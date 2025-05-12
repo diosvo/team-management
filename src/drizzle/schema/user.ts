@@ -12,8 +12,8 @@ import {
 import { UserRole, UserState } from '@/utils/enum';
 
 import { created_at, expires_at, updated_at } from '../helpers';
-import { CoachTable } from './coach';
-import { PlayerTable } from './player';
+import { Coach, CoachTable } from './coach';
+import { Player, PlayerTable } from './player';
 import { TeamTable } from './team';
 
 export const userRolesEnum = pgEnum('user_roles', UserRole);
@@ -70,3 +70,6 @@ export const PasswordTokenTable = pgTable('password_token', {
 });
 
 export type User = typeof UserTable.$inferSelect;
+export type UserDetails = User & {
+  details: Player | Coach;
+};

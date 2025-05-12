@@ -92,7 +92,7 @@ export default function Header() {
               value="user-info"
               _hover={{ cursor: 'pointer' }}
               onClick={() =>
-                dialog.open('current-user-info', {
+                dialog.open('profile', {
                   children: <UserInfo user={user} isAdmin={isAdmin} />,
                 })
               }
@@ -117,12 +117,7 @@ export default function Header() {
 
       <Drawer.Root open={open} onOpenChange={({ open }) => setOpen(open)}>
         <Drawer.Trigger asChild>
-          <IconButton
-            hideFrom="lg"
-            size="sm"
-            variant="outline"
-            borderRadius="full"
-          >
+          <IconButton hideFrom="lg" size="sm" variant="outline" rounded="full">
             <PanelRightOpen />
           </IconButton>
         </Drawer.Trigger>

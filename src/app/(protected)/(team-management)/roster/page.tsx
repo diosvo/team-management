@@ -1,6 +1,7 @@
 import { getRoster } from '@/features/user/actions/user';
+
 import RosterActions from './_components/actions';
-import { RosterTable } from './_components/table';
+import RosterTable from './_components/table';
 import { parseSearchParams } from './_helpers/parse-params';
 
 export default async function RosterPage(props: {
@@ -15,6 +16,8 @@ export default async function RosterPage(props: {
     Object.fromEntries(new URLSearchParams(searchParams))
   );
   const users = await getRoster(params);
+
+  console.log(users);
 
   return (
     <>

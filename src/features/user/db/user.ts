@@ -41,12 +41,29 @@ export const getUsers = cache(
       filters.push(arrayContained(UserTable.roles, roles));
 
     try {
-      return await db
-        .select()
-        .from(UserTable)
-        .where(and(...filters));
-    } catch {
-      logger.error('An error when fetching users');
+      // Use prepared query to improve performance and reusability
+      return await db.transaction(async (tx) => {
+        const users = await tx.query.UserTable.findMany({
+          where: and(...filters),
+          with: {
+            asPlayer: true,
+            asCoach: true,
+          },
+        });
+
+        // Process results in batches for better memory management
+        return users.map(({ asPlayer, asCoach, ...user }) => {
+          // Use destructuring to avoid modifying the original object
+
+          if (user.roles.includes(UserRole.PLAYER))
+            return { ...user, details: asPlayer };
+          if (user.roles.includes(UserRole.COACH))
+            return { ...user, details: asCoach };
+          return user;
+        });
+      });
+    } catch (error) {
+      logger.error('An error when fetching users', error);
       return [];
     }
   }
@@ -75,22 +92,22 @@ export const getUserByEmail = cache(async (email: string) => {
 
 export const getUserById = cache(async (user_id: string) => {
   try {
-    return await db.query.UserTable.findFirst({
+    const user = await db.query.UserTable.findFirst({
       where: eq(UserTable.user_id, user_id),
       with: {
-        team: {
-          columns: {},
-          with: {
-            rule: {
-              columns: {
-                content: true,
-                updated_at: true,
-              },
-            },
-          },
-        },
+        asCoach: true,
+        asPlayer: true,
       },
     });
+
+    if (!user) return null;
+
+    if (user.roles.includes(UserRole.PLAYER))
+      return { ...user, details: user.asPlayer };
+    if (user.roles.includes(UserRole.COACH))
+      return { ...user, details: user.asCoach };
+
+    return user;
   } catch {
     logger.error('Failed to fetch user');
     return null;

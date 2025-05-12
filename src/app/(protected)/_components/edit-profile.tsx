@@ -13,14 +13,14 @@ import {
   DialogFooter,
   HStack,
   IconButton,
-  Input,
+  NumberInput,
   VStack,
 } from '@chakra-ui/react';
 import { ArrowLeft, Save } from 'lucide-react';
 import { useTransition } from 'react';
 import UserInfo from './user-info';
 
-export default function UpdateUserInfo({
+export default function EditProfile({
   isAdmin,
   user,
 }: {
@@ -35,10 +35,10 @@ export default function UpdateUserInfo({
         <IconButton
           size="xs"
           variant="ghost"
-          borderRadius="full"
+          rounded="full"
           aria-label="Back to user information"
           onClick={() =>
-            dialog.update('current-user-info', {
+            dialog.update('profile', {
               children: <UserInfo user={user} isAdmin={isAdmin} />,
             })
           }
@@ -51,10 +51,10 @@ export default function UpdateUserInfo({
         <VStack gap={4}>
           <HStack width="full" alignItems="flex-start">
             <Field label="Jersey Number">
-              <Input disabled={isPending} />
-            </Field>
-            <Field label="Jersey Size">
-              <Input disabled={isPending} />
+              <NumberInput.Root size="sm" min={0} max={99}>
+                <NumberInput.Control />
+                <NumberInput.Input />
+              </NumberInput.Root>
             </Field>
           </HStack>
         </VStack>

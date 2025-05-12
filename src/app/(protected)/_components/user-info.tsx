@@ -5,6 +5,7 @@ import { ReactNode } from 'react';
 import {
   Badge,
   HStack,
+  Icon,
   IconButton,
   Separator,
   Text,
@@ -32,7 +33,9 @@ import Visibility from '@/components/visibility';
 import { User } from '@/drizzle/schema';
 import { formatDate } from '@/utils/formatter';
 import { colorState } from '@/utils/helper';
-import UpdateUserInfo from './update-user-info';
+
+import { Tooltip } from '@/components/ui/tooltip';
+import EditProfile from './edit-profile';
 
 interface InfoItemProps {
   label: string;
@@ -58,8 +61,8 @@ export default function UserInfo({
   user: User;
 }) {
   const openEditProfileDialog = () => {
-    dialog.update('current-user-info', {
-      children: <UpdateUserInfo user={user} isAdmin={isAdmin} />,
+    dialog.update('profile', {
+      children: <EditProfile user={user} isAdmin={isAdmin} />,
       closeOnInteractOutside: false,
     });
   };
@@ -67,8 +70,12 @@ export default function UserInfo({
   return (
     <>
       <DialogHeader>
-        <DialogTitle display="flex" alignItems="center" gap={1}>
-          <CircleUserRound onClick={openEditProfileDialog} />
+        <DialogTitle display="flex" alignItems="center" gap={2}>
+          <Tooltip content="Edit profile" positioning={{ placement: 'top' }}>
+            <Icon _hover={{ cursor: 'pointer', color: 'tomato' }}>
+              <CircleUserRound onClick={openEditProfileDialog} />
+            </Icon>
+          </Tooltip>
           <Text>{user.name}</Text>
         </DialogTitle>
         <DialogDescription>#5</DialogDescription>
@@ -113,7 +120,7 @@ export default function UserInfo({
                 <Badge
                   variant="surface"
                   width="max-content"
-                  borderRadius="full"
+                  rounded="full"
                   colorPalette={colorState(user.state)}
                 >
                   {user.state}
@@ -123,7 +130,7 @@ export default function UserInfo({
                   <ShieldCheck size={14} color="GrayText" />
                   <Text color="GrayText">Roles:</Text>
                   {user.roles.map((role: string) => (
-                    <Badge key={role} variant="outline" borderRadius="full">
+                    <Badge key={role} variant="outline" rounded="full">
                       {role}
                     </Badge>
                   ))}

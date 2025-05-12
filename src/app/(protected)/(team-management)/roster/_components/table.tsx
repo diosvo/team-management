@@ -34,8 +34,9 @@ import { colorState } from '@/utils/helper';
 
 import UserInfo from '@/app/(protected)/_components/user-info';
 import { removeUser } from '@/features/user/actions/user';
+import { formatDate } from '@/utils/formatter';
 
-export function RosterTable({ users }: { users: Array<User> }) {
+export default function PlayerTable({ users }: { users: Array<User> }) {
   const isAdmin = usePermissions();
 
   const [selection, setSelection] = useState<Array<string>>([]);
@@ -61,7 +62,7 @@ export function RosterTable({ users }: { users: Array<User> }) {
     if (isAdmin) {
       count += 2; // Checkbox and Verified
     }
-    count += 5; // No., Name, Email, State, Roles
+    count += 6; // No., Name, DOB, Email, State, Roles
     return count;
   }, [isAdmin]);
 
@@ -115,6 +116,7 @@ export function RosterTable({ users }: { users: Array<User> }) {
               </Visibility>
               <Table.ColumnHeader>No.</Table.ColumnHeader>
               <Table.ColumnHeader>Name</Table.ColumnHeader>
+              <Table.ColumnHeader>DOB</Table.ColumnHeader>
               <Table.ColumnHeader>Email</Table.ColumnHeader>
               <Table.ColumnHeader>State</Table.ColumnHeader>
               <Table.ColumnHeader>Roles</Table.ColumnHeader>
@@ -130,7 +132,7 @@ export function RosterTable({ users }: { users: Array<User> }) {
                   }
                   _hover={{ cursor: 'pointer' }}
                   onClick={() =>
-                    dialog.open('user-info', {
+                    dialog.open('profile', {
                       children: <UserInfo user={user} isAdmin={isAdmin} />,
                     })
                   }
@@ -170,11 +172,12 @@ export function RosterTable({ users }: { users: Array<User> }) {
                   </Visibility>
                   <Table.Cell>-</Table.Cell>
                   <Table.Cell>{user.name}</Table.Cell>
+                  <Table.Cell> {formatDate(user.dob)}</Table.Cell>
                   <Table.Cell>{user.email}</Table.Cell>
                   <Table.Cell>
                     <Badge
                       variant="surface"
-                      borderRadius="full"
+                      rounded="full"
                       colorPalette={colorState(user.state)}
                     >
                       {user.state}
@@ -185,7 +188,7 @@ export function RosterTable({ users }: { users: Array<User> }) {
                       <Badge
                         key={role}
                         variant="outline"
-                        borderRadius="full"
+                        rounded="full"
                         marginRight={2}
                       >
                         {role}

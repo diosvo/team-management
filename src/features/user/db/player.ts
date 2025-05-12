@@ -16,14 +16,7 @@ export const getPlayerByUserId = cache(async (user_id: string) => {
   }
 });
 
-export async function insertPlayer(player: {
-  user_id: string;
-  jersey_number?: number;
-  position?: string;
-  height_cm?: number;
-  weight_kg?: number;
-  dominant_foot?: string;
-}) {
+export async function insertPlayer(player: Player) {
   try {
     await db.insert(PlayerTable).values(player);
     return { error: false };
