@@ -20,8 +20,11 @@ export const AddUserSchema = z.object({
   join_date,
 });
 
-export const UpdateUserSchema = z.object({
+export const EditProfileSchema = z.object({
   dob,
+  height: z.number().min(0).max(200).describe('cm').optional(),
+  weight: z.number().min(0).max(100).describe('kg').optional(),
+  jersey_number: z.number().min(0).max(99).optional(),
 });
 
 export const FilterUsersSchema = z.object({
@@ -31,5 +34,5 @@ export const FilterUsersSchema = z.object({
 });
 
 export type AddUserValues = z.infer<typeof AddUserSchema>;
-export type UpdateUserValues = z.infer<typeof UpdateUserSchema>;
+export type EditProfileValues = z.infer<typeof EditProfileSchema>;
 export type FilterUsersValues = z.infer<typeof FilterUsersSchema>;

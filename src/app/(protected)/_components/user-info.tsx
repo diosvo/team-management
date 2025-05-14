@@ -88,14 +88,19 @@ export default function UserInfo({
               <Text flexShrink="0" fontSize="sm" color="GrayText">
                 Personal
               </Text>
-              <IconButton
-                size="2xs"
-                variant="ghost"
-                aria-label="Edit user information"
-                onClick={openEditProfileDialog}
+              <Tooltip
+                content="Edit profile"
+                positioning={{ placement: 'top' }}
               >
-                <Pencil />
-              </IconButton>
+                <IconButton
+                  size="2xs"
+                  variant="ghost"
+                  aria-label="Edit user information"
+                  onClick={openEditProfileDialog}
+                >
+                  <Pencil />
+                </IconButton>
+              </Tooltip>
               <Separator flex="1" />
             </HStack>
             <VStack width="full" align="stretch">

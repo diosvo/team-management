@@ -1,20 +1,8 @@
 import { eq } from 'drizzle-orm';
-import { cache } from 'react';
 
 import { db } from '@/drizzle';
 import { Player, PlayerTable } from '@/drizzle/schema/player';
 import logger from '@/lib/logger';
-
-export const getPlayerByUserId = cache(async (user_id: string) => {
-  try {
-    return await db.query.PlayerTable.findFirst({
-      where: eq(PlayerTable.user_id, user_id),
-    });
-  } catch (error) {
-    logger.error('Failed to fetch player information');
-    return null;
-  }
-});
 
 export async function insertPlayer(player: Player) {
   try {

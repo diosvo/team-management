@@ -22,6 +22,6 @@ export enum PlayerPosition {
   POINT_GUARD = 'POINT_GUARD',
   SHOOTING_GUARD = 'SHOOTING_GUARD',
   SMALL_FORWARD = 'SMALL_FORWARD',
-  CENTER = 'center',
-  FORWARD = 'forward',
+  CENTER = 'CENTER',
+  FORWARD = 'FORWARD',
 }

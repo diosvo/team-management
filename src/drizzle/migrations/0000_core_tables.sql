@@ -1,5 +1,5 @@
 CREATE TYPE "public"."coach_position" AS ENUM('HEAD_COACH', 'ASSISTANT_COACH');--> statement-breakpoint
-CREATE TYPE "public"."position" AS ENUM('POINT_GUARD', 'SHOOTING_GUARD', 'SMALL_FORWARD', 'center', 'forward');--> statement-breakpoint
+CREATE TYPE "public"."player_position" AS ENUM('POINT_GUARD', 'SHOOTING_GUARD', 'SMALL_FORWARD', 'CENTER', 'FORWARD');--> statement-breakpoint
 CREATE TYPE "public"."user_roles" AS ENUM('COACH', 'PLAYER', 'CAPTAIN', 'GUEST', 'SUPER_ADMIN');--> statement-breakpoint
 CREATE TYPE "public"."user_state" AS ENUM('ACTIVE', 'INACTIVE', 'TEMPORARILY_ABSENT', 'UNKNOWN');--> statement-breakpoint
 CREATE TABLE "coach" (
@@ -12,11 +12,12 @@ CREATE TABLE "coach" (
 CREATE TABLE "player" (
 	"user_id" uuid PRIMARY KEY NOT NULL,
 	"jersey_number" integer,
-	"position" "position",
+	"position" "player_position",
 	"height" real,
 	"weight" real,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "player_jersey_number_unique" UNIQUE("jersey_number"),
 	CONSTRAINT "jersey_number" CHECK ("player"."jersey_number" BETWEEN 0 AND 99)
 );
 --> statement-breakpoint

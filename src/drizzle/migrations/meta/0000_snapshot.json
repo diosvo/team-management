@@ -1,5 +1,5 @@
 {
-  "id": "4f1228e9-4f0b-427a-b764-df7b31a947e3",
+  "id": "122c513e-c187-423e-b6fa-8ae3ad6b8eed",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -76,7 +76,7 @@
         },
         "position": {
           "name": "position",
-          "type": "position",
+          "type": "player_position",
           "primaryKey": false,
           "notNull": false
         },
@@ -124,7 +124,15 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "player_jersey_number_unique": {
+          "name": "player_jersey_number_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "jersey_number"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {
         "jersey_number": {
@@ -483,15 +491,15 @@
         "ASSISTANT_COACH"
       ]
     },
-    "public.position": {
-      "name": "position",
+    "public.player_position": {
+      "name": "player_position",
       "schema": "public",
       "values": [
         "POINT_GUARD",
         "SHOOTING_GUARD",
         "SMALL_FORWARD",
-        "center",
-        "forward"
+        "CENTER",
+        "FORWARD"
       ]
     },
     "public.user_roles": {

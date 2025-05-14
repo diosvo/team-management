@@ -14,9 +14,9 @@ import {
 } from '../db/user';
 import {
   AddUserValues,
+  EditProfileSchema,
+  EditProfileValues,
   FilterUsersValues,
-  UpdateUserSchema,
-  UpdateUserValues,
 } from '../schemas/user';
 import { generatePasswordToken } from './password-reset-token';
 
@@ -64,17 +64,18 @@ export async function addUser(
   }
 }
 
-export async function updateUserInfo(
+export async function updateProfile(
   user_id: string,
-  values: UpdateUserValues
+  values: EditProfileValues
 ): Promise<Response> {
-  const { data, error } = UpdateUserSchema.safeParse(values);
+  const { data, error } = EditProfileSchema.safeParse(values);
 
   if (error) {
     return ResponseFactory.error(error.message);
   }
 
   try {
+    // calculate based on fields? updateUser or updatePlayer
     await updateUser(user_id, data);
 
     return ResponseFactory.success('Updated information successfully');
