@@ -17,8 +17,10 @@ import {
 } from '@chakra-ui/react';
 import { LogOut, PanelRightOpen, UserIcon } from 'lucide-react';
 
+import { logout } from '@/features/user/actions/auth';
 import { usePermissions } from '@/hooks/use-permissions';
 import { useUser } from '@/hooks/use-user';
+
 import { colorState } from '@/utils/helper';
 import HeaderLogo from '@assets/images/header-logo.png';
 
@@ -26,17 +28,15 @@ import { CloseButton } from '@/components/ui/close-button';
 import { dialog } from '@/components/ui/dialog';
 import { toaster } from '@/components/ui/toaster';
 
-import { logout } from '@/features/user/actions/auth';
-
 import Sidebar from './sidebar';
 import UserInfo from './user-info';
 
 export default function Header() {
   const { userPromise } = useUser();
   const user = use(userPromise);
+  const { isAdmin } = usePermissions();
 
   const pathname = usePathname();
-  const isAdmin = usePermissions();
 
   const [open, setOpen] = useState<boolean>(false);
   const [isPending, startTransition] = useTransition();
@@ -129,7 +129,7 @@ export default function Header() {
                 <Sidebar />
               </Drawer.Body>
               <Drawer.CloseTrigger asChild>
-                <CloseButton size="2xs" />
+                <CloseButton size="2xs" rounded="full" />
               </Drawer.CloseTrigger>
             </Drawer.Content>
           </Drawer.Positioner>

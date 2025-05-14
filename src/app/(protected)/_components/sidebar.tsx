@@ -85,7 +85,7 @@ export default function Sidebar({
 }: {
   isExpanded?: boolean;
 }) {
-  const isAdmin = usePermissions();
+  const { isAdmin } = usePermissions();
   const [isPending, startTransition] = useTransition();
 
   const openRuleDialog = () => {

@@ -36,8 +36,8 @@ import UserInfo from '@/app/(protected)/_components/user-info';
 import { removeUser } from '@/features/user/actions/user';
 import { formatDate } from '@/utils/formatter';
 
-export default function PlayerTable({ users }: { users: Array<User> }) {
-  const isAdmin = usePermissions();
+export default function RosterTable({ users }: { users: Array<User> }) {
+  const { isAdmin } = usePermissions();
 
   const [selection, setSelection] = useState<Array<string>>([]);
   const [pagination, setPagination] = useState({
