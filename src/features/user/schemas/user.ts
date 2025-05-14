@@ -2,10 +2,10 @@ import { z } from 'zod';
 
 import { CoachPosition, UserRole, UserState } from '@/utils/enum';
 
+import { SELECTABLE_COACH_POSITIONS } from '@/utils/constant';
 import { USER_SCHEMA_VALIDATION } from './utils';
 
-const { name, dob, email, roles, state, coach_position, join_date } =
-  USER_SCHEMA_VALIDATION;
+const { name, dob, email, roles, state, join_date } = USER_SCHEMA_VALIDATION;
 
 export const AddUserSchema = z.object({
   name,
@@ -16,15 +16,28 @@ export const AddUserSchema = z.object({
     .max(2, { message: 'Select at most two roles.' })
     .default([UserRole.PLAYER]),
   state: state.default(UserState.ACTIVE),
-  coach_position: coach_position.default(CoachPosition.HEAD_COACH),
+  coach_position: z
+    .enum(SELECTABLE_COACH_POSITIONS)
+    .default(CoachPosition.HEAD_COACH),
   join_date,
 });
 
 export const EditProfileSchema = z.object({
+  // User
+  name: name.optional(),
   dob,
-  height: z.number().min(0).max(200).describe('cm').optional(),
-  weight: z.number().min(0).max(100).describe('kg').optional(),
-  jersey_number: z.number().min(0).max(99).optional(),
+  phone_number: z.string().trim().optional(),
+  citizen_identification: z.string().optional(),
+  // Player
+  jersey_number: z.union([z.number().min(0).max(99), z.null()]).optional(),
+  height: z
+    .union([z.number().min(0).max(200), z.null()])
+    .describe('cm')
+    .optional(),
+  weight: z
+    .union([z.number().min(0).max(100), z.null()])
+    .describe('kg')
+    .optional(),
 });
 
 export const FilterUsersSchema = z.object({

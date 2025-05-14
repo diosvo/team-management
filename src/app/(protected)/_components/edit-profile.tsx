@@ -1,19 +1,7 @@
 'use client';
 
-import {
-  dialog,
-  DialogBody,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Field } from '@/components/ui/field';
-import { toaster } from '@/components/ui/toaster';
-import { User } from '@/drizzle/schema';
-import { updateProfile } from '@/features/user/actions/user';
-import {
-  EditProfileSchema,
-  EditProfileValues,
-} from '@/features/user/schemas/user';
+import { useTransition } from 'react';
+
 import {
   Button,
   DialogFooter,
@@ -27,8 +15,24 @@ import {
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowLeft, Save } from 'lucide-react';
-import { useTransition } from 'react';
 import { useForm } from 'react-hook-form';
+
+import {
+  dialog,
+  DialogBody,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Field } from '@/components/ui/field';
+import { toaster } from '@/components/ui/toaster';
+
+import { User } from '@/drizzle/schema';
+import { updateProfile } from '@/features/user/actions/user';
+import {
+  EditProfileSchema,
+  EditProfileValues,
+} from '@/features/user/schemas/user';
+
 import UserInfo from './user-info';
 
 export default function EditProfile({
@@ -41,9 +45,8 @@ export default function EditProfile({
   const [isPending, startTransition] = useTransition();
 
   const {
-    reset,
     register,
-    getValues,
+    setValue,
     handleSubmit,
     formState: { errors },
   } = useForm({
@@ -101,23 +104,49 @@ export default function EditProfile({
               </Text>
               <Separator flex="1" />
             </HStack>
-            <HStack width="full">
-              <Field label="Fullname">
-                <Input disabled={isPending} />
+            <HStack width="full" alignItems="flex-start">
+              <Field
+                label="Fullname"
+                invalid={!!errors.name}
+                errorText={errors.name?.message}
+              >
+                <Input
+                  defaultValue={user.name}
+                  disabled={isPending}
+                  {...register('name')}
+                />
               </Field>
               <Field label="DOB">
-                <Input type="date" min="1997-01-01" disabled={isPending} />
+                <Input
+                  type="date"
+                  min="1997-01-01"
+                  defaultValue={user.dob as string}
+                  disabled={isPending}
+                  {...register('dob')}
+                />
               </Field>
             </HStack>
-            <HStack width="full">
-              <Field label="Phone Number">
-                <Input max={10} placeholder="(+84)" disabled={isPending} />
+            <HStack width="full" alignItems="flex-start">
+              <Field
+                label="Phone Number"
+                invalid={!!errors.phone_number}
+                errorText={errors.phone_number?.message}
+              >
+                <Input
+                  max={10}
+                  disabled={isPending}
+                  {...register('phone_number')}
+                />
               </Field>
-              <Field label="Citizen Identification">
+              <Field
+                label="Citizen Identification"
+                invalid={!!errors.citizen_identification}
+                errorText={errors.citizen_identification?.message}
+              >
                 <Input
                   max={12}
-                  placeholder="xxxxxxxxxxxxxxxx"
                   disabled={isPending}
+                  {...register('citizen_identification')}
                 />
               </Field>
             </HStack>
@@ -130,31 +159,55 @@ export default function EditProfile({
               </Text>
               <Separator flex="1" />
             </HStack>
-            <HStack width="full">
-              <Field label="Jersey Number">
-                <NumberInput.Root min={0} max={99}>
+            <HStack width="full" alignItems="flex-start">
+              <Field
+                label="Jersey Number"
+                invalid={!!errors.jersey_number}
+                errorText={errors.jersey_number?.message}
+              >
+                <NumberInput.Root
+                  min={0}
+                  max={99}
+                  onValueChange={({ valueAsNumber }) =>
+                    setValue('jersey_number', valueAsNumber)
+                  }
+                >
                   <NumberInput.Control />
                   <NumberInput.Input {...register('jersey_number')} />
                 </NumberInput.Root>
               </Field>
-              <Field label="Height">
+              <Field
+                label="Height"
+                invalid={!!errors.height}
+                errorText={errors.height?.message}
+              >
                 <NumberInput.Root
                   min={0}
                   max={200}
-                  formatOptions={{
-                    style: 'unit',
-                    unit: 'centimeter',
-                    unitDisplay: 'narrow',
-                  }}
+                  onValueChange={({ valueAsNumber }) =>
+                    setValue('height', valueAsNumber)
+                  }
+                  // formatOptions={{
+                  //   style: 'unit',
+                  //   unit: 'centimeter',
+                  //   unitDisplay: 'narrow',
+                  // }}
                 >
                   <NumberInput.Control />
                   <NumberInput.Input {...register('height')} />
                 </NumberInput.Root>
               </Field>
-              <Field label="Weight">
+              <Field
+                label="Weight"
+                invalid={!!errors.weight}
+                errorText={errors.weight?.message}
+              >
                 <NumberInput.Root
                   min={0}
                   max={100}
+                  onValueChange={({ valueAsNumber }) =>
+                    setValue('weight', valueAsNumber)
+                  }
                   formatOptions={{
                     style: 'unit',
                     unit: 'kilogram',

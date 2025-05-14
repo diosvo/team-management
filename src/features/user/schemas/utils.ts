@@ -1,11 +1,6 @@
 import { z } from 'zod';
 
-import {
-  ESTABLISHED_DATE,
-  SELECTABLE_COACH_POSITIONS,
-  SELECTABLE_ROLES,
-  SELECTABLE_STATES,
-} from '@/utils/constant';
+import { SELECTABLE_ROLES, SELECTABLE_STATES } from '@/utils/constant';
 
 // date() - YYYY-MM-DD
 
@@ -34,6 +29,5 @@ export const USER_SCHEMA_VALIDATION = {
     .default(''),
   roles: z.array(z.enum(SELECTABLE_ROLES)),
   state: z.enum(SELECTABLE_STATES),
-  coach_position: z.enum(SELECTABLE_COACH_POSITIONS).optional(),
-  join_date: z.string().date().optional().default(ESTABLISHED_DATE),
+  join_date: z.string().date().optional(),
 };

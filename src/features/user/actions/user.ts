@@ -1,10 +1,14 @@
 'use server';
 
 import { sendPasswordInstructionEmail } from '@/lib/mail';
+import { UserRole } from '@/utils/enum';
 import { Response, ResponseFactory } from '@/utils/response';
 
 import { getTeam } from '@/features/team/actions/team';
+
 import { revalidateAdminPath } from '../db/cache';
+import { insertCoach } from '../db/coach';
+import { insertPlayer, updatePlayer } from '../db/player';
 import {
   deleteUser,
   getExistingEmails,
@@ -53,6 +57,25 @@ export async function addUser(
       );
     }
 
+    if (user.roles.includes(UserRole.PLAYER)) {
+      const player = await insertPlayer({ user_id: data.user_id });
+
+      if (!player) {
+        return ResponseFactory.error('Failed to extend user as player');
+      }
+    }
+
+    if (user.roles.includes(UserRole.COACH)) {
+      const coach = await insertCoach({
+        user_id: data.user_id,
+        position: user.coach_position,
+      });
+
+      if (!coach) {
+        return ResponseFactory.error('Failed to grant user as coach');
+      }
+    }
+
     const { email, token } = await generatePasswordToken(user.email);
     await sendPasswordInstructionEmail('reset', email, token);
 
@@ -75,11 +98,13 @@ export async function updateProfile(
   }
 
   try {
-    // calculate based on fields? updateUser or updatePlayer
-    await updateUser(user_id, data);
+    const { jersey_number, height, weight, ...userData } = data;
+
+    await updateUser(user_id, userData);
+    await updatePlayer({ user_id, jersey_number, height, weight });
 
     return ResponseFactory.success('Updated information successfully');
-  } catch {
+  } catch (error) {
     return ResponseFactory.error('Failed to update user');
   }
 }

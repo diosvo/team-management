@@ -17,7 +17,7 @@ export default async function RosterPage(props: {
   );
   const users = await getRoster(params);
 
-  console.log(users);
+  // console.log(users);
 
   return (
     <>

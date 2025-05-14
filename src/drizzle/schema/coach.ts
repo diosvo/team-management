@@ -28,3 +28,4 @@ export const CoachRelations = relations(CoachTable, ({ one }) => ({
 }));
 
 export type Coach = typeof CoachTable.$inferSelect;
+export type InsertCoach = typeof CoachTable.$inferInsert;

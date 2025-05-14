@@ -37,3 +37,4 @@ export const PlayerRelations = relations(PlayerTable, ({ one }) => ({
 }));
 
 export type Player = typeof PlayerTable.$inferSelect;
+export type InsertPlayer = typeof PlayerTable.$inferInsert;

@@ -1,17 +1,13 @@
-import { eq } from 'drizzle-orm';
-import { cache } from 'react';
-
 import { db } from '@/drizzle';
-import { CoachTable } from '@/drizzle/schema/coach';
+import { CoachTable, InsertCoach } from '@/drizzle/schema/coach';
+
 import logger from '@/lib/logger';
 
-export const getCoachByUserId = cache(async (user_id: string) => {
+export async function insertCoach(coach: InsertCoach) {
   try {
-    return await db.query.CoachTable.findFirst({
-      where: eq(CoachTable.user_id, user_id),
-    });
+    return await db.insert(CoachTable).values(coach);
   } catch (error) {
-    logger.error('Failed to fetch coach information');
+    logger.error(error);
     return null;
   }
-});
+}

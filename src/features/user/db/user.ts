@@ -13,12 +13,12 @@ import {
 } from 'drizzle-orm';
 
 import { db } from '@/drizzle';
-import { User, UserTable } from '@/drizzle/schema';
+import { InsertUser, User, UserTable } from '@/drizzle/schema';
 
 import logger from '@/lib/logger';
 import { UserRole } from '@/utils/enum';
 
-import { AddUserValues, FilterUsersValues } from '../schemas/user';
+import { FilterUsersValues } from '../schemas/user';
 
 export const getUsers = cache(
   async ({ query, roles, state }: FilterUsersValues) => {
@@ -54,7 +54,6 @@ export const getUsers = cache(
         // Process results in batches for better memory management
         return users.map(({ asPlayer, asCoach, ...user }) => {
           // Use destructuring to avoid modifying the original object
-
           if (user.roles.includes(UserRole.PLAYER))
             return { ...user, details: asPlayer };
           if (user.roles.includes(UserRole.COACH))
@@ -114,9 +113,13 @@ export const getUserById = cache(async (user_id: string) => {
   }
 });
 
-export async function insertUser(user: AddUserValues & { team_id: string }) {
+export async function insertUser(user: InsertUser) {
   try {
-    return await db.insert(UserTable).values(user);
+    const [data] = await db.insert(UserTable).values(user).returning({
+      user_id: UserTable.user_id,
+    });
+
+    return data;
   } catch (error) {
     logger.error(error);
     return null;

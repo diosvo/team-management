@@ -70,6 +70,7 @@ export const PasswordTokenTable = pgTable('password_token', {
 });
 
 export type User = typeof UserTable.$inferSelect;
+export type InsertUser = typeof UserTable.$inferInsert;
 export type UserDetails = User & {
   details: Player | Coach;
 };

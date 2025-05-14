@@ -174,7 +174,7 @@ export default function AddUser({
                 <Input
                   type="date"
                   min={ESTABLISHED_DATE}
-                  defaultValue={getValues('join_date')}
+                  defaultValue={ESTABLISHED_DATE}
                   disabled={isPending}
                   {...register('join_date')}
                 />
