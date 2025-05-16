@@ -56,6 +56,7 @@ export default function EditProfile({
   const backToUserInfo = () => {
     dialog.update('profile', {
       children: <UserInfo user={user} isAdmin={isAdmin} />,
+      closeOnInteractOutside: true,
     });
   };
 
@@ -173,7 +174,9 @@ export default function EditProfile({
                   }
                 >
                   <NumberInput.Control />
-                  <NumberInput.Input {...register('jersey_number')} />
+                  <NumberInput.Input
+                    {...register('jersey_number', { valueAsNumber: true })}
+                  />
                 </NumberInput.Root>
               </Field>
               <Field
@@ -187,14 +190,11 @@ export default function EditProfile({
                   onValueChange={({ valueAsNumber }) =>
                     setValue('height', valueAsNumber)
                   }
-                  // formatOptions={{
-                  //   style: 'unit',
-                  //   unit: 'centimeter',
-                  //   unitDisplay: 'narrow',
-                  // }}
                 >
                   <NumberInput.Control />
-                  <NumberInput.Input {...register('height')} />
+                  <NumberInput.Input
+                    {...register('height', { valueAsNumber: true })}
+                  />
                 </NumberInput.Root>
               </Field>
               <Field
@@ -208,14 +208,11 @@ export default function EditProfile({
                   onValueChange={({ valueAsNumber }) =>
                     setValue('weight', valueAsNumber)
                   }
-                  formatOptions={{
-                    style: 'unit',
-                    unit: 'kilogram',
-                    unitDisplay: 'narrow',
-                  }}
                 >
                   <NumberInput.Control />
-                  <NumberInput.Input {...register('weight')} />
+                  <NumberInput.Input
+                    {...register('weight', { valueAsNumber: true })}
+                  />
                 </NumberInput.Root>
               </Field>
             </HStack>

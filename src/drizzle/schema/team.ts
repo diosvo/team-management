@@ -31,6 +31,7 @@ export const TeamTable = pgTable(
       'establish_year',
       sql`${table.establish_year} BETWEEN 2000 AND date_part('year', CURRENT_DATE)`
     ),
+    // Ensure that there is only one default team
     uniqueIndex('default_team')
       .on(table.is_default)
       .where(sql`${table.is_default} = true`),

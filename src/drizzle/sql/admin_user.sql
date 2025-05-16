@@ -10,3 +10,8 @@ VALUES
     '{"SUPER_ADMIN"}',
     'ACTIVE'
   );
+
+INSERT INTO
+  "player" (user_id)
+VALUES
+  ('e08c520f-64f3-4612-a1d4-028a847c203e')

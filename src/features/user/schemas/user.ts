@@ -29,15 +29,9 @@ export const EditProfileSchema = z.object({
   phone_number: z.string().trim().optional(),
   citizen_identification: z.string().optional(),
   // Player
-  jersey_number: z.union([z.number().min(0).max(99), z.null()]).optional(),
-  height: z
-    .union([z.number().min(0).max(200), z.null()])
-    .describe('cm')
-    .optional(),
-  weight: z
-    .union([z.number().min(0).max(100), z.null()])
-    .describe('kg')
-    .optional(),
+  jersey_number: z.number().optional().describe('Jersey Number'),
+  height: z.number().optional().describe('cm'),
+  weight: z.number().optional().describe('kg'),
 });
 
 export const FilterUsersSchema = z.object({
