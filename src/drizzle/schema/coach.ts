@@ -14,7 +14,7 @@ export const CoachTable = pgTable('coach', {
     .primaryKey()
     .references(() => UserTable.user_id, { onDelete: 'cascade' }),
   position: coachPositionEnum('position')
-    .default(CoachPosition.HEAD_COACH)
+    .default(CoachPosition.ASSISTANT_COACH)
     .notNull(),
   created_at,
   updated_at,

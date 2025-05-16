@@ -12,8 +12,8 @@ import {
 import { UserRole, UserState } from '@/utils/enum';
 
 import { created_at, expires_at, updated_at } from '../helpers';
-import { Coach, CoachTable } from './coach';
-import { Player, PlayerTable } from './player';
+import { CoachTable, InsertCoach } from './coach';
+import { InsertPlayer, PlayerTable } from './player';
 import { TeamTable } from './team';
 
 export const userRolesEnum = pgEnum('user_roles', UserRole);
@@ -69,8 +69,9 @@ export const PasswordTokenTable = pgTable('password_token', {
   expires_at,
 });
 
-export type User = typeof UserTable.$inferSelect;
+type UserInfo = typeof UserTable.$inferSelect;
+export interface User extends UserInfo {
+  // Add `jerysey_number` to avoid syntax conflict
+  details: InsertPlayer | (InsertCoach & { jersey_number?: number });
+}
 export type InsertUser = typeof UserTable.$inferInsert;
-export type UserDetails = User & {
-  details: Player | Coach;
-};

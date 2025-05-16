@@ -33,6 +33,7 @@ import {
   EditProfileValues,
 } from '@/features/user/schemas/user';
 
+import Visibility from '@/components/visibility';
 import UserInfo from './user-info';
 
 export default function EditProfile({
@@ -66,6 +67,8 @@ export default function EditProfile({
       description: 'Updating profile...',
     });
 
+    // console.log('Edit profile data:', data);
+
     startTransition(async () => {
       const { error, message: description } = await updateProfile(
         user.user_id,
@@ -97,7 +100,7 @@ export default function EditProfile({
       </DialogHeader>
       <DialogBody>
         <VStack align="stretch">
-          <VStack gap={4} marginBottom={4}>
+          <VStack gap={4}>
             <HStack width="full">
               <Separator flex="1" />
               <Text flexShrink="0" fontSize="sm" color="GrayText">
@@ -152,7 +155,7 @@ export default function EditProfile({
               </Field>
             </HStack>
           </VStack>
-          <VStack gap={4}>
+          <VStack gap={4} marginBlock={4}>
             <HStack width="full">
               <Separator flex="1" />
               <Text flexShrink="0" fontSize="sm" color="GrayText">
@@ -175,6 +178,7 @@ export default function EditProfile({
                 >
                   <NumberInput.Control />
                   <NumberInput.Input
+                    defaultValue={user.details.jersey_number ?? ''}
                     {...register('jersey_number', { valueAsNumber: true })}
                   />
                 </NumberInput.Root>
@@ -217,6 +221,18 @@ export default function EditProfile({
               </Field>
             </HStack>
           </VStack>
+          <Visibility isVisible={isAdmin}>
+            <VStack>
+              <HStack width="full">
+                <Separator flex="1" />
+                <Text flexShrink="0" fontSize="sm" color="GrayText">
+                  System
+                </Text>
+                <Separator flex="1" />
+              </HStack>
+              <HStack width="full">AAAA </HStack>
+            </VStack>
+          </Visibility>
         </VStack>
       </DialogBody>
       <DialogFooter>

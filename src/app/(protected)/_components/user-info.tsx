@@ -31,7 +31,7 @@ import {
 import Visibility from '@/components/visibility';
 
 import { User } from '@/drizzle/schema';
-import { formatDate } from '@/utils/formatter';
+import { formatDate, formatDatetime } from '@/utils/formatter';
 import { colorState } from '@/utils/helper';
 
 import { Tooltip } from '@/components/ui/tooltip';
@@ -78,7 +78,9 @@ export default function UserInfo({
           </Tooltip>
           <Text>{user.name}</Text>
         </DialogTitle>
-        <DialogDescription>#5</DialogDescription>
+        {user.details.jersey_number && (
+          <DialogDescription>#{user.details.jersey_number}</DialogDescription>
+        )}
       </DialogHeader>
       <DialogBody>
         <VStack align="stretch">
@@ -169,7 +171,7 @@ export default function UserInfo({
                   {formatDate(user.created_at)}
                 </InfoItem>
                 <InfoItem label="Last Update">
-                  {formatDate(user.updated_at)}
+                  {formatDatetime(user.updated_at)}
                 </InfoItem>
               </VStack>
             </VStack>

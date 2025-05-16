@@ -21,7 +21,7 @@ import { UserRole } from '@/utils/enum';
 import { FilterUsersValues } from '../schemas/user';
 
 export const getUsers = cache(
-  async ({ query, roles, state }: FilterUsersValues) => {
+  async ({ query, roles, state }: FilterUsersValues): Promise<Array<User>> => {
     // Always exclude SUPER_ADMIN user
     const filters: Array<SQL | undefined> = [
       not(arrayContained(UserTable.roles, [UserRole.SUPER_ADMIN])),
@@ -53,12 +53,20 @@ export const getUsers = cache(
 
         // Process results in batches for better memory management
         return users.map(({ asPlayer, asCoach, ...user }) => {
-          // Use destructuring to avoid modifying the original object
           if (user.roles.includes(UserRole.PLAYER))
             return { ...user, details: asPlayer };
           if (user.roles.includes(UserRole.COACH))
-            return { ...user, details: asCoach };
-          return user;
+            return {
+              ...user,
+              details: asCoach,
+            };
+          // Add details property for users who are neither players nor coaches
+          return {
+            ...user,
+            details: {
+              user_id: user.user_id,
+            },
+          };
         });
       });
     } catch (error) {
@@ -106,7 +114,7 @@ export const getUserById = cache(async (user_id: string) => {
     if (user.roles.includes(UserRole.COACH))
       return { ...user, details: user.asCoach };
 
-    return user;
+    return { ...user, details: { user_id: user.user_id } };
   } catch {
     logger.error('Failed to fetch user');
     return null;

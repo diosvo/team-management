@@ -37,7 +37,7 @@ import { removeUser } from '@/features/user/actions/user';
 import { formatDate } from '@/utils/formatter';
 
 export default function RosterTable({ users }: { users: Array<User> }) {
-  const { isAdmin } = usePermissions();
+  const { isAdmin, isPlayer } = usePermissions();
 
   const [selection, setSelection] = useState<Array<string>>([]);
   const [pagination, setPagination] = useState({
@@ -62,7 +62,7 @@ export default function RosterTable({ users }: { users: Array<User> }) {
     if (isAdmin) {
       count += 2; // Checkbox and Verified
     }
-    count += 6; // No., Name, DOB, Email, State, Roles
+    count += 7; // Remaining columns
     return count;
   }, [isAdmin]);
 
@@ -114,12 +114,17 @@ export default function RosterTable({ users }: { users: Array<User> }) {
                   </Table.ColumnHeader>
                 </>
               </Visibility>
-              <Table.ColumnHeader>No.</Table.ColumnHeader>
-              <Table.ColumnHeader>Name</Table.ColumnHeader>
-              <Table.ColumnHeader>DOB</Table.ColumnHeader>
-              <Table.ColumnHeader>Email</Table.ColumnHeader>
-              <Table.ColumnHeader>State</Table.ColumnHeader>
-              <Table.ColumnHeader>Roles</Table.ColumnHeader>
+              {[
+                'No.',
+                'Name',
+                'DOB',
+                'Email',
+                'State',
+                'Roles',
+                'Positions',
+              ].map((column: string) => (
+                <Table.ColumnHeader key={column}>{column}</Table.ColumnHeader>
+              ))}
             </Table.Row>
           </Table.Header>
           <Table.Body>
@@ -134,6 +139,7 @@ export default function RosterTable({ users }: { users: Array<User> }) {
                   onClick={() =>
                     dialog.open('profile', {
                       children: <UserInfo user={user} isAdmin={isAdmin} />,
+                      closeOnInteractOutside: true,
                     })
                   }
                 >
@@ -170,7 +176,7 @@ export default function RosterTable({ users }: { users: Array<User> }) {
                       </Table.Cell>
                     </>
                   </Visibility>
-                  <Table.Cell>-</Table.Cell>
+                  <Table.Cell>{user.details.jersey_number}</Table.Cell>
                   <Table.Cell>{user.name}</Table.Cell>
                   <Table.Cell> {formatDate(user.dob)}</Table.Cell>
                   <Table.Cell>{user.email}</Table.Cell>
@@ -194,6 +200,15 @@ export default function RosterTable({ users }: { users: Array<User> }) {
                         {role}
                       </Badge>
                     ))}
+                  </Table.Cell>
+                  <Table.Cell>
+                    {user.details.position ? (
+                      <Badge variant="outline" rounded="full">
+                        {user.details.position}
+                      </Badge>
+                    ) : (
+                      '-'
+                    )}
                   </Table.Cell>
                 </Table.Row>
               ))

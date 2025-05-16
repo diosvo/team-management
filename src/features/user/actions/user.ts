@@ -4,6 +4,7 @@ import { sendPasswordInstructionEmail } from '@/lib/mail';
 import { UserRole } from '@/utils/enum';
 import { Response, ResponseFactory } from '@/utils/response';
 
+import { User } from '@/drizzle/schema';
 import { getTeam } from '@/features/team/actions/team';
 
 import { revalidateAdminPath } from '../db/cache';
@@ -24,7 +25,9 @@ import {
 } from '../schemas/user';
 import { generatePasswordToken } from './password-reset-token';
 
-export async function getRoster(params: FilterUsersValues) {
+export async function getRoster(
+  params: FilterUsersValues
+): Promise<Array<User>> {
   return await getUsers(params);
 }
 
@@ -57,8 +60,10 @@ export async function addUser(
       );
     }
 
+    const withUser = { user_id: data.user_id };
+
     if (user.roles.includes(UserRole.PLAYER)) {
-      const player = await insertPlayer({ user_id: data.user_id });
+      const player = await insertPlayer(withUser);
 
       if (!player) {
         return ResponseFactory.error('Failed to extend user as player');
@@ -66,10 +71,7 @@ export async function addUser(
     }
 
     if (user.roles.includes(UserRole.COACH)) {
-      const coach = await insertCoach({
-        user_id: data.user_id,
-        position: user.coach_position,
-      });
+      const coach = await insertCoach(withUser);
 
       if (!coach) {
         return ResponseFactory.error('Failed to grant user as coach');

@@ -5,6 +5,9 @@ import { use, useMemo } from 'react';
 import { UserRole } from '@/utils/enum';
 import { useUser } from './use-user';
 
+/**
+ * @description Hook to determine the current user permissions based on their roles.
+ */
 export function usePermissions() {
   const { userPromise } = useUser();
   const user = use(userPromise);

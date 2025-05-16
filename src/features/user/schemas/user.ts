@@ -1,8 +1,7 @@
 import { z } from 'zod';
 
-import { CoachPosition, UserRole, UserState } from '@/utils/enum';
+import { UserRole, UserState } from '@/utils/enum';
 
-import { SELECTABLE_COACH_POSITIONS } from '@/utils/constant';
 import { USER_SCHEMA_VALIDATION } from './utils';
 
 const { name, dob, email, roles, state, join_date } = USER_SCHEMA_VALIDATION;
@@ -16,9 +15,6 @@ export const AddUserSchema = z.object({
     .max(2, { message: 'Select at most two roles.' })
     .default([UserRole.PLAYER]),
   state: state.default(UserState.ACTIVE),
-  coach_position: z
-    .enum(SELECTABLE_COACH_POSITIONS)
-    .default(CoachPosition.HEAD_COACH),
   join_date,
 });
 
