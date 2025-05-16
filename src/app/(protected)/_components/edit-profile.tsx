@@ -33,6 +33,7 @@ import {
   EditProfileValues,
 } from '@/features/user/schemas/user';
 
+import { PinInput } from '@/components/ui/pin-input';
 import Visibility from '@/components/visibility';
 import UserInfo from './user-info';
 
@@ -100,7 +101,7 @@ export default function EditProfile({
       </DialogHeader>
       <DialogBody>
         <VStack align="stretch">
-          <VStack gap={4}>
+          <VStack>
             <HStack width="full">
               <Separator flex="1" />
               <Text flexShrink="0" fontSize="sm" color="GrayText">
@@ -130,14 +131,15 @@ export default function EditProfile({
                 />
               </Field>
             </HStack>
-            <HStack width="full" alignItems="flex-start">
+            <VStack width="full">
               <Field
                 label="Phone Number"
                 invalid={!!errors.phone_number}
                 errorText={errors.phone_number?.message}
               >
-                <Input
-                  max={10}
+                <PinInput
+                  attached
+                  count={10}
                   disabled={isPending}
                   {...register('phone_number')}
                 />
@@ -147,13 +149,14 @@ export default function EditProfile({
                 invalid={!!errors.citizen_identification}
                 errorText={errors.citizen_identification?.message}
               >
-                <Input
-                  max={12}
+                <PinInput
+                  attached
+                  count={12}
                   disabled={isPending}
                   {...register('citizen_identification')}
                 />
               </Field>
-            </HStack>
+            </VStack>
           </VStack>
           <VStack gap={4} marginBlock={4}>
             <HStack width="full">
@@ -230,7 +233,7 @@ export default function EditProfile({
                 </Text>
                 <Separator flex="1" />
               </HStack>
-              <HStack width="full">AAAA </HStack>
+              <HStack width="full">Test</HStack>
             </VStack>
           </Visibility>
         </VStack>

@@ -132,15 +132,25 @@ export default function UserInfo({
                 >
                   {user.state}
                 </Badge>
+                <HStack>
+                  <HStack gap={1}>
+                    <ShieldCheck size={14} color="GrayText" />
+                    <Text color="GrayText">Roles:</Text>
+                    {user.roles.map((role: string) => (
+                      <Badge key={role} variant="outline" rounded="full">
+                        {role}
+                      </Badge>
+                    ))}
+                  </HStack>
 
-                <HStack gap={1}>
-                  <ShieldCheck size={14} color="GrayText" />
-                  <Text color="GrayText">Roles:</Text>
-                  {user.roles.map((role: string) => (
-                    <Badge key={role} variant="outline" rounded="full">
-                      {role}
-                    </Badge>
-                  ))}
+                  {user.details.position && (
+                    <HStack gap={1}>
+                      <Text color="GrayText">/ Position:</Text>
+                      <Badge variant="outline" rounded="full">
+                        {user.details.position}
+                      </Badge>
+                    </HStack>
+                  )}
                 </HStack>
               </HStack>
               {user.join_date && (
