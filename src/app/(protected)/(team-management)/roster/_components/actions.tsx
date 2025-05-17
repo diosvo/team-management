@@ -39,7 +39,7 @@ export default function RosterActions() {
           onClick={() =>
             updateFilters({
               query: '',
-              roles: [],
+              role: [],
               state: [],
             })
           }

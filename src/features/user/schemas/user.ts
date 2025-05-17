@@ -34,6 +34,10 @@ export const EditProfileSchema = z.object({
   jersey_number: z.number().optional().describe('Jersey Number'),
   height: z.number().optional().describe('cm'),
   weight: z.number().optional().describe('kg'),
+  // System
+  role,
+  state,
+  position,
 });
 
 export const FilterUsersSchema = z.object({

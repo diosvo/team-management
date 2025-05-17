@@ -49,7 +49,7 @@ export const StatesSelection: Array<SelectionOption<string>> = [
   {
     label: 'Absent',
     value: UserState.TEMPORARILY_ABSENT,
-    description: 'Temporarily Absent',
+    description: 'Temporarily',
   },
   {
     label: 'Unknown',

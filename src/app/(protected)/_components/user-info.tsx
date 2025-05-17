@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { ReactNode, RefObject } from 'react';
 
 import {
   Badge,
@@ -37,6 +37,12 @@ import { colorState } from '@/utils/helper';
 import { Tooltip } from '@/components/ui/tooltip';
 import EditProfile from './edit-profile';
 
+export interface UserInfoProps {
+  isAdmin: boolean;
+  user: User;
+  selectionRef: RefObject<Nullable<HTMLDivElement>>;
+}
+
 interface InfoItemProps {
   label: string;
   children: ReactNode;
@@ -56,13 +62,17 @@ function InfoItem({ icon: IconComponent, label, children }: InfoItemProps) {
 export default function UserInfo({
   isAdmin,
   user,
-}: {
-  isAdmin: boolean;
-  user: User;
-}) {
+  selectionRef,
+}: UserInfoProps) {
   const openEditProfileDialog = () => {
     dialog.update('profile', {
-      children: <EditProfile user={user} isAdmin={isAdmin} />,
+      children: (
+        <EditProfile
+          user={user}
+          isAdmin={isAdmin}
+          selectionRef={selectionRef}
+        />
+      ),
       closeOnInteractOutside: false,
     });
   };

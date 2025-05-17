@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 
 import {
   ActionBar,
@@ -38,6 +38,7 @@ import { formatDate } from '@/utils/formatter';
 
 export default function RosterTable({ users }: { users: Array<User> }) {
   const { isAdmin } = usePermissions();
+  const selectionRef = useRef<HTMLDivElement>(null);
 
   const [selection, setSelection] = useState<Array<string>>([]);
   const [pagination, setPagination] = useState({
@@ -138,7 +139,14 @@ export default function RosterTable({ users }: { users: Array<User> }) {
                   _hover={{ cursor: 'pointer' }}
                   onClick={() =>
                     dialog.open('profile', {
-                      children: <UserInfo user={user} isAdmin={isAdmin} />,
+                      contentRef: selectionRef,
+                      children: (
+                        <UserInfo
+                          user={user}
+                          isAdmin={isAdmin}
+                          selectionRef={selectionRef}
+                        />
+                      ),
                       closeOnInteractOutside: true,
                     })
                   }

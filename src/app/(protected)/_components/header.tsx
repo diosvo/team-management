@@ -2,7 +2,7 @@
 
 import NextImage from 'next/image';
 import { usePathname } from 'next/navigation';
-import { use, useEffect, useState, useTransition } from 'react';
+import { use, useEffect, useRef, useState, useTransition } from 'react';
 
 import {
   Avatar,
@@ -40,6 +40,7 @@ export default function Header() {
 
   const [open, setOpen] = useState<boolean>(false);
   const [isPending, startTransition] = useTransition();
+  const selectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setOpen(false);
@@ -98,7 +99,14 @@ export default function Header() {
               _hover={{ cursor: 'pointer' }}
               onClick={() =>
                 dialog.open('profile', {
-                  children: <UserInfo user={user} isAdmin={isAdmin} />,
+                  contentRef: selectionRef,
+                  children: (
+                    <UserInfo
+                      user={user}
+                      isAdmin={isAdmin}
+                      selectionRef={selectionRef}
+                    />
+                  ),
                 })
               }
             >

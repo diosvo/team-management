@@ -24,29 +24,36 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Field } from '@/components/ui/field';
+import { PinInput } from '@/components/ui/pin-input';
+import { Select } from '@/components/ui/select';
 import { toaster } from '@/components/ui/toaster';
+import Visibility from '@/components/visibility';
 
-import { User } from '@/drizzle/schema';
+import {
+  CoachPositionsSelection,
+  PlayerPositionsSelection,
+  RolesSelection,
+  StatesSelection,
+} from '@/utils/constant';
+import { UserRole } from '@/utils/enum';
+
 import { updateProfile } from '@/features/user/actions/user';
 import {
   EditProfileSchema,
   EditProfileValues,
 } from '@/features/user/schemas/user';
 
-import { PinInput } from '@/components/ui/pin-input';
-import Visibility from '@/components/visibility';
-import UserInfo from './user-info';
+import UserInfo, { UserInfoProps } from './user-info';
 
 export default function EditProfile({
   isAdmin,
   user,
-}: {
-  isAdmin: boolean;
-  user: User;
-}) {
+  selectionRef,
+}: UserInfoProps) {
   const [isPending, startTransition] = useTransition();
 
   const {
+    watch,
     register,
     setValue,
     handleSubmit,
@@ -55,9 +62,13 @@ export default function EditProfile({
     resolver: zodResolver(EditProfileSchema),
   });
 
+  const selectedRole = watch('role');
+
   const backToUserInfo = () => {
     dialog.update('profile', {
-      children: <UserInfo user={user} isAdmin={isAdmin} />,
+      children: (
+        <UserInfo user={user} isAdmin={isAdmin} selectionRef={selectionRef} />
+      ),
       closeOnInteractOutside: true,
     });
   };
@@ -228,7 +239,58 @@ export default function EditProfile({
                 </Text>
                 <Separator flex="1" />
               </HStack>
-              <HStack width="full"></HStack>
+              <HStack width="full">
+                <Field
+                  required
+                  label="State"
+                  invalid={!!errors.state}
+                  errorText={errors.state?.message}
+                >
+                  <Select
+                    collection={StatesSelection}
+                    defaultValue={[user.state]}
+                    containerRef={selectionRef}
+                    disabled={isPending}
+                    {...register('state')}
+                  />
+                </Field>
+                <Field
+                  required
+                  label="Role"
+                  invalid={!!errors.role}
+                  errorText={errors.role?.message}
+                >
+                  <Select
+                    collection={RolesSelection}
+                    defaultValue={[user.role]}
+                    containerRef={selectionRef}
+                    disabled={isPending}
+                    {...register('role')}
+                  />
+                </Field>
+                <Field
+                  label="Position"
+                  invalid={!!errors.position}
+                  errorText={errors.position?.message}
+                  disabled={selectedRole === UserRole.GUEST}
+                >
+                  <Select
+                    collection={
+                      selectedRole === UserRole.COACH
+                        ? CoachPositionsSelection
+                        : PlayerPositionsSelection
+                    }
+                    containerRef={selectionRef}
+                    defaultValue={
+                      user.details.position
+                        ? [user.details.position]
+                        : undefined
+                    }
+                    disabled={selectedRole === UserRole.GUEST || isPending}
+                    {...register('position')}
+                  />
+                </Field>
+              </HStack>
             </VStack>
           </Visibility>
         </VStack>
