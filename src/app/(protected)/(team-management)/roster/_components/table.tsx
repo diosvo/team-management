@@ -37,7 +37,7 @@ import { removeUser } from '@/features/user/actions/user';
 import { formatDate } from '@/utils/formatter';
 
 export default function RosterTable({ users }: { users: Array<User> }) {
-  const { isAdmin, isPlayer } = usePermissions();
+  const { isAdmin } = usePermissions();
 
   const [selection, setSelection] = useState<Array<string>>([]);
   const [pagination, setPagination] = useState({
@@ -121,7 +121,7 @@ export default function RosterTable({ users }: { users: Array<User> }) {
                 'Email',
                 'State',
                 'Roles',
-                'Positions',
+                'Position',
               ].map((column: string) => (
                 <Table.ColumnHeader key={column}>{column}</Table.ColumnHeader>
               ))}
@@ -176,7 +176,7 @@ export default function RosterTable({ users }: { users: Array<User> }) {
                       </Table.Cell>
                     </>
                   </Visibility>
-                  <Table.Cell>{user.details.jersey_number}</Table.Cell>
+                  <Table.Cell>{user.details.jersey_number ?? '-'}</Table.Cell>
                   <Table.Cell>{user.name}</Table.Cell>
                   <Table.Cell> {formatDate(user.dob)}</Table.Cell>
                   <Table.Cell>{user.email}</Table.Cell>
@@ -190,16 +190,9 @@ export default function RosterTable({ users }: { users: Array<User> }) {
                     </Badge>
                   </Table.Cell>
                   <Table.Cell>
-                    {user.roles.map((role: string) => (
-                      <Badge
-                        key={role}
-                        variant="outline"
-                        rounded="full"
-                        marginRight={2}
-                      >
-                        {role}
-                      </Badge>
-                    ))}
+                    <Badge variant="outline" rounded="full">
+                      {user.role}
+                    </Badge>
                   </Table.Cell>
                   <Table.Cell>
                     {user.details.position ? (

@@ -2,29 +2,29 @@ import { cache } from 'react';
 
 import {
   and,
-  arrayContained,
   eq,
   getTableColumns,
   ilike,
   inArray,
-  not,
+  ne,
   or,
   SQL,
 } from 'drizzle-orm';
 
 import { db } from '@/drizzle';
-import { InsertUser, User, UserTable } from '@/drizzle/schema';
+import { InsertUser, User, UserRelations, UserTable } from '@/drizzle/schema';
 
 import logger from '@/lib/logger';
 import { UserRole } from '@/utils/enum';
+import { hasPermissions } from '@/utils/helper';
 
 import { FilterUsersValues } from '../schemas/user';
 
 export const getUsers = cache(
-  async ({ query, roles, state }: FilterUsersValues): Promise<Array<User>> => {
+  async ({ query, role, state }: FilterUsersValues): Promise<Array<User>> => {
     // Always exclude SUPER_ADMIN user
     const filters: Array<SQL | undefined> = [
-      not(arrayContained(UserTable.roles, [UserRole.SUPER_ADMIN])),
+      ne(UserTable.role, UserRole.SUPER_ADMIN),
     ];
 
     // Only apply filters if parameters are provided and non-empty
@@ -37,8 +37,7 @@ export const getUsers = cache(
       );
     if (state && state.length > 0)
       filters.push(inArray(UserTable.state, state));
-    if (roles && roles.length > 0)
-      filters.push(arrayContained(UserTable.roles, roles));
+    if (role && role.length > 0) filters.push(inArray(UserTable.role, role));
 
     try {
       // Use prepared query to improve performance and reusability
@@ -52,22 +51,7 @@ export const getUsers = cache(
         });
 
         // Process results in batches for better memory management
-        return users.map(({ asPlayer, asCoach, ...user }) => {
-          if (user.roles.includes(UserRole.PLAYER))
-            return { ...user, details: asPlayer };
-          if (user.roles.includes(UserRole.COACH))
-            return {
-              ...user,
-              details: { ...asCoach, jersey_number: undefined },
-            };
-          // Add details property for users who are neither players nor coaches
-          return {
-            ...user,
-            details: {
-              user_id: user.user_id,
-            },
-          };
-        });
+        return users.map(enrichUser);
       });
     } catch (error) {
       logger.error('An error when fetching users', error);
@@ -109,12 +93,7 @@ export const getUserById = cache(async (user_id: string) => {
 
     if (!user) return null;
 
-    if (user.roles.includes(UserRole.PLAYER))
-      return { ...user, details: user.asPlayer };
-    if (user.roles.includes(UserRole.COACH))
-      return { ...user, details: user.asCoach };
-
-    return { ...user, details: { user_id: user.user_id } };
+    return enrichUser(user);
   } catch {
     logger.error('Failed to fetch user');
     return null;
@@ -152,4 +131,24 @@ export async function deleteUser(user_id: string) {
     logger.error('Failed to delete user');
     return null;
   }
+}
+
+function enrichUser(user: UserRelations): User {
+  const { asPlayer, asCoach, ...userData } = user;
+  const { isPlayer, isCoach } = hasPermissions(userData.role);
+
+  if (isPlayer) return { ...userData, details: asPlayer };
+  if (isCoach)
+    return {
+      ...userData,
+      details: { ...asCoach, jersey_number: undefined },
+    };
+
+  return {
+    ...userData,
+    details: {
+      user_id: userData.user_id,
+      jersey_number: undefined,
+    },
+  };
 }

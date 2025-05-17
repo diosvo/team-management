@@ -7,7 +7,7 @@ import { parseSearchParams } from './_helpers/parse-params';
 export default async function RosterPage(props: {
   searchParams: Promise<{
     query: string;
-    roles: string;
+    role: string;
     state: string;
   }>;
 }) {

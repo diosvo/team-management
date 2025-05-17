@@ -1,6 +1,5 @@
-import { relations, sql } from 'drizzle-orm';
+import { relations } from 'drizzle-orm';
 import {
-  check,
   date,
   pgEnum,
   pgTable,
@@ -22,30 +21,24 @@ export const userStateEnum = pgEnum('user_state', UserState);
 
 // Tables
 
-export const UserTable = pgTable(
-  'user',
-  {
-    user_id: uuid('user_id').defaultRandom().primaryKey(),
-    team_id: uuid('team_id')
-      .notNull()
-      .references(() => TeamTable.team_id, { onDelete: 'cascade' }),
-    name: varchar('name', { length: 128 }).notNull(),
-    dob: date('dob'),
-    password: varchar('password', { length: 128 }),
-    email: varchar('email', { length: 128 }).unique().notNull(),
-    phone_number: varchar('phone_number', { length: 15 }),
-    citizen_identification: varchar('citizen_identification', { length: 12 }),
-    image: text('image'),
-    state: userStateEnum('state').default(UserState.ACTIVE).notNull(),
-    roles: userRolesEnum('roles').array().default([UserRole.PLAYER]).notNull(),
-    join_date: date('join_date'),
-    created_at,
-    updated_at,
-  },
-  (table) => [
-    check('roles_length', sql`array_length(${table.roles}, 1) BETWEEN 1 AND 2`),
-  ]
-);
+export const UserTable = pgTable('user', {
+  user_id: uuid('user_id').defaultRandom().primaryKey(),
+  team_id: uuid('team_id')
+    .notNull()
+    .references(() => TeamTable.team_id, { onDelete: 'cascade' }),
+  name: varchar('name', { length: 128 }).notNull(),
+  dob: date('dob'),
+  password: varchar('password', { length: 128 }),
+  email: varchar('email', { length: 128 }).unique().notNull(),
+  phone_number: varchar('phone_number', { length: 10 }),
+  citizen_identification: varchar('citizen_identification', { length: 12 }),
+  image: text('image'),
+  state: userStateEnum('state').default(UserState.UNKNOWN).notNull(),
+  role: userRolesEnum('role').default(UserRole.PLAYER).notNull(),
+  join_date: date('join_date'),
+  created_at,
+  updated_at,
+});
 
 export const UserRelations = relations(UserTable, ({ one }) => ({
   team: one(TeamTable, {
@@ -70,6 +63,10 @@ export const PasswordTokenTable = pgTable('password_token', {
 });
 
 type UserInfo = typeof UserTable.$inferSelect;
+export interface UserRelations extends UserInfo {
+  asPlayer: InsertPlayer;
+  asCoach: InsertCoach;
+}
 export interface User extends UserInfo {
   // Add `jerysey_number` to avoid syntax conflict
   details: InsertPlayer | (InsertCoach & { jersey_number?: number });

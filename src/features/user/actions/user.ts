@@ -1,12 +1,12 @@
 'use server';
 
 import { sendPasswordInstructionEmail } from '@/lib/mail';
-import { UserRole } from '@/utils/enum';
 import { Response, ResponseFactory } from '@/utils/response';
 
 import { User } from '@/drizzle/schema';
 import { getTeam } from '@/features/team/actions/team';
 
+import { hasPermissions } from '@/utils/helper';
 import { revalidateAdminPath } from '../db/cache';
 import { insertCoach } from '../db/coach';
 import { insertPlayer, updatePlayer } from '../db/player';
@@ -45,6 +45,7 @@ export async function addUser(
       ...usersWithoutTeam,
       team_id: team.team_id,
     };
+    const { isPlayer, isCoach } = hasPermissions(user.role);
 
     const existingEmails = await getExistingEmails();
 
@@ -62,7 +63,7 @@ export async function addUser(
 
     const withUser = { user_id: data.user_id };
 
-    if (user.roles.includes(UserRole.PLAYER)) {
+    if (isPlayer) {
       const player = await insertPlayer(withUser);
 
       if (!player) {
@@ -70,7 +71,7 @@ export async function addUser(
       }
     }
 
-    if (user.roles.includes(UserRole.COACH)) {
+    if (isCoach) {
       const coach = await insertCoach(withUser);
 
       if (!coach) {
@@ -107,7 +108,7 @@ export async function updateProfile(
 
     return ResponseFactory.success('Updated information successfully');
   } catch (error) {
-    return ResponseFactory.error('Failed to update user');
+    return ResponseFactory.fromError(error as Error);
   }
 }
 

@@ -12,7 +12,6 @@ export const LOCALE_DATETIME_FORMAT = LOCALE_DATE_FORMAT + ' HH:mm:ss';
 export const EXPIRES_AT = addHours(new Date(), 1);
 
 export const SELECTABLE_ROLES = [
-  UserRole.CAPTAIN,
   UserRole.COACH,
   UserRole.GUEST,
   UserRole.PLAYER,
@@ -21,10 +20,6 @@ export const RolesSelection: Array<SelectionOption<string>> = [
   {
     label: 'Player',
     value: UserRole.PLAYER,
-  },
-  {
-    label: 'Captain',
-    value: UserRole.CAPTAIN,
   },
   {
     label: 'Coach',
@@ -40,22 +35,25 @@ export const SELECTABLE_STATES = [
   UserState.ACTIVE,
   UserState.INACTIVE,
   UserState.TEMPORARILY_ABSENT,
+  UserState.UNKNOWN,
 ] as const;
 export const StatesSelection: Array<SelectionOption<string>> = [
   {
     label: 'Active',
     value: UserState.ACTIVE,
-    description: 'Active',
   },
   {
     label: 'Inactive',
     value: UserState.INACTIVE,
-    description: 'Inactive',
   },
   {
     label: 'Absent',
     value: UserState.TEMPORARILY_ABSENT,
     description: 'Temporarily Absent',
+  },
+  {
+    label: 'Unknown',
+    value: UserState.UNKNOWN,
   },
 ];
 

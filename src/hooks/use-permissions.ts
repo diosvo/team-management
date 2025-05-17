@@ -2,11 +2,11 @@
 
 import { use, useMemo } from 'react';
 
-import { UserRole } from '@/utils/enum';
+import { hasPermissions } from '@/utils/helper';
 import { useUser } from './use-user';
 
 /**
- * @description Hook to determine the current user permissions based on their roles.
+ * @description Hook to determine the current user permissions based on their role.
  */
 export function usePermissions() {
   const { userPromise } = useUser();
@@ -18,17 +18,9 @@ export function usePermissions() {
         isAdmin: false,
         isPlayer: false,
         isCoach: false,
+        isGuest: false,
       };
     }
-
-    const roles = user.roles;
-
-    return {
-      isAdmin: roles.includes(UserRole.SUPER_ADMIN),
-      isPlayer: [UserRole.PLAYER, UserRole.CAPTAIN].some((role) =>
-        roles.includes(role)
-      ),
-      isCoach: roles.includes(UserRole.COACH),
-    };
+    return hasPermissions(user.role);
   }, [user]);
 }

@@ -136,11 +136,9 @@ export default function UserInfo({
                   <HStack gap={1}>
                     <ShieldCheck size={14} color="GrayText" />
                     <Text color="GrayText">Roles:</Text>
-                    {user.roles.map((role: string) => (
-                      <Badge key={role} variant="outline" rounded="full">
-                        {role}
-                      </Badge>
-                    ))}
+                    <Badge variant="outline" rounded="full">
+                      {user.role}
+                    </Badge>
                   </HStack>
 
                   {user.details.position && (

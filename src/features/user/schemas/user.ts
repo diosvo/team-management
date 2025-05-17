@@ -1,7 +1,5 @@
 import { z } from 'zod';
 
-import { UserRole, UserState } from '@/utils/enum';
-
 import { PLAYER_COACH_VALIDATION, USER_SCHEMA_VALIDATION } from './utils';
 
 const {
@@ -10,7 +8,7 @@ const {
   email,
   phone_number,
   citizen_identification,
-  roles,
+  role,
   state,
   join_date,
 } = USER_SCHEMA_VALIDATION;
@@ -20,11 +18,8 @@ export const AddUserSchema = z.object({
   name,
   email,
   dob,
-  roles: roles
-    .min(1, { message: 'Select at least one role.' })
-    .max(2, { message: 'Select at most two roles.' })
-    .default([UserRole.PLAYER]),
-  state: state.default(UserState.ACTIVE),
+  role,
+  state,
   join_date,
   position,
 });
@@ -43,7 +38,7 @@ export const EditProfileSchema = z.object({
 
 export const FilterUsersSchema = z.object({
   query: z.string().default('').optional(),
-  roles: roles.default([]).optional(),
+  role: z.array(role).default([]).optional(),
   state: z.array(state).default([]).optional(),
 });
 

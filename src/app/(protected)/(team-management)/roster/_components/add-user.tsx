@@ -32,12 +32,7 @@ import {
   RolesSelection,
   StatesSelection,
 } from '@/utils/constant';
-import {
-  CoachPosition,
-  PlayerPosition,
-  UserRole,
-  UserState,
-} from '@/utils/enum';
+import { UserRole, UserState } from '@/utils/enum';
 
 import { addUser } from '@/features/user/actions/user';
 import { AddUserSchema, AddUserValues } from '@/features/user/schemas/user';
@@ -60,7 +55,7 @@ export default function AddUser({
     defaultValues: getDefaults(AddUserSchema) as AddUserValues,
   });
 
-  const selectedRole = watch('roles');
+  const selectedRole = watch('role');
 
   const onSubmit = (data: AddUserValues) => {
     const id = toaster.create({
@@ -129,41 +124,34 @@ export default function AddUser({
             </Field>
             <Field
               required
-              label="Roles"
-              invalid={!!errors.roles}
-              errorText={errors.roles?.message}
+              label="Role"
+              invalid={!!errors.role}
+              errorText={errors.role?.message}
             >
               <Select
-                multiple
                 collection={RolesSelection}
                 defaultValue={[UserRole.PLAYER]}
                 containerRef={containerRef}
                 disabled={isPending}
-                {...register('roles')}
+                {...register('role')}
               />
             </Field>
             <Field
               label="Position"
               invalid={!!errors.position}
               errorText={errors.position?.message}
+              disabled={selectedRole === UserRole.GUEST}
             >
-              {selectedRole!.includes(UserRole.COACH) ? (
-                <Select
-                  collection={CoachPositionsSelection}
-                  defaultValue={[CoachPosition.HEAD_COACH]}
-                  containerRef={containerRef}
-                  disabled={isPending}
-                  {...register('position')}
-                />
-              ) : (
-                <Select
-                  collection={PlayerPositionsSelection}
-                  defaultValue={[PlayerPosition.SHOOTING_GUARD]}
-                  containerRef={containerRef}
-                  disabled={isPending}
-                  {...register('position')}
-                />
-              )}
+              <Select
+                collection={
+                  selectedRole === UserRole.COACH
+                    ? CoachPositionsSelection
+                    : PlayerPositionsSelection
+                }
+                containerRef={containerRef}
+                disabled={isPending || selectedRole === UserRole.GUEST}
+                {...register('position')}
+              />
             </Field>
           </HStack>
 

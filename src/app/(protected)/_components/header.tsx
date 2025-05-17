@@ -61,7 +61,12 @@ export default function Header() {
 
   return (
     <HStack align="center" paddingBlock={2} paddingInline={4}>
-      <Image width={{ base: 132, sm: 144, md: 192 }} marginRight="auto" asChild>
+      <Image
+        width={{ base: 132, sm: 144, md: 192 }}
+        marginRight="auto"
+        alt="Text Logo"
+        asChild
+      >
         <NextImage
           priority
           quality={100}

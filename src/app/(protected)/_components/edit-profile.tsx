@@ -132,6 +132,7 @@ export default function EditProfile({
               >
                 <PinInput
                   attached
+                  size="sm"
                   count={10}
                   disabled={isPending}
                   {...register('phone_number')}
@@ -144,6 +145,7 @@ export default function EditProfile({
               >
                 <PinInput
                   attached
+                  size="sm"
                   count={12}
                   disabled={isPending}
                   {...register('citizen_identification')}
@@ -226,7 +228,7 @@ export default function EditProfile({
                 </Text>
                 <Separator flex="1" />
               </HStack>
-              <HStack width="full">Test</HStack>
+              <HStack width="full"></HStack>
             </VStack>
           </Visibility>
         </VStack>
