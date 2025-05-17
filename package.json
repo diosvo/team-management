@@ -57,9 +57,10 @@
     "db:drop": "drizzle-kit drop",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
+    "db:reset": "tsx src/drizzle/scripts/reset.ts",
     "db:studio": "drizzle-kit studio",
     "dev": "next dev",
     "lint": "next lint"
   },
-  "version": "0.4.0"
+  "version": "0.5.0"
 }

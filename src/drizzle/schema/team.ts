@@ -17,12 +17,12 @@ export const TeamTable = pgTable(
   'team',
   {
     team_id: uuid('team_id').primaryKey().defaultRandom(),
+    is_default: boolean('is_default').default(false).notNull(),
     name: varchar('name', { length: 128 }).notNull(),
     email: varchar('email', { length: 128 }).unique(),
     establish_year: integer('establish_year')
       .default(new Date().getFullYear())
       .notNull(),
-    is_default: boolean('is_default').default(false).notNull(),
     created_at,
     updated_at,
   },
