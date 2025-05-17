@@ -58,7 +58,7 @@ export const getUsers = cache(
           if (user.roles.includes(UserRole.COACH))
             return {
               ...user,
-              details: asCoach,
+              details: { ...asCoach, jersey_number: undefined },
             };
           // Add details property for users who are neither players nor coaches
           return {

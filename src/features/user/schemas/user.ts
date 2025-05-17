@@ -2,9 +2,19 @@ import { z } from 'zod';
 
 import { UserRole, UserState } from '@/utils/enum';
 
-import { USER_SCHEMA_VALIDATION } from './utils';
+import { PLAYER_COACH_VALIDATION, USER_SCHEMA_VALIDATION } from './utils';
 
-const { name, dob, email, roles, state, join_date } = USER_SCHEMA_VALIDATION;
+const {
+  name,
+  dob,
+  email,
+  phone_number,
+  citizen_identification,
+  roles,
+  state,
+  join_date,
+} = USER_SCHEMA_VALIDATION;
+const { position } = PLAYER_COACH_VALIDATION;
 
 export const AddUserSchema = z.object({
   name,
@@ -16,14 +26,15 @@ export const AddUserSchema = z.object({
     .default([UserRole.PLAYER]),
   state: state.default(UserState.ACTIVE),
   join_date,
+  position,
 });
 
 export const EditProfileSchema = z.object({
   // User
   name: name.optional(),
   dob,
-  phone_number: z.string().trim().optional(),
-  citizen_identification: z.string().optional(),
+  phone_number,
+  citizen_identification,
   // Player
   jersey_number: z.number().optional().describe('Jersey Number'),
   height: z.number().optional().describe('cm'),

@@ -1,6 +1,11 @@
 import { z } from 'zod';
 
-import { SELECTABLE_ROLES, SELECTABLE_STATES } from '@/utils/constant';
+import {
+  SELECTABLE_COACH_POSITIONS,
+  SELECTABLE_PLAYER_POSITIONS,
+  SELECTABLE_ROLES,
+  SELECTABLE_STATES,
+} from '@/utils/constant';
 
 // date() - YYYY-MM-DD
 
@@ -17,6 +22,8 @@ export const USER_SCHEMA_VALIDATION = {
     .email({ message: 'Please enter a valid email.' })
     .trim()
     .default(''),
+  phone_number: z.string().length(10).optional(),
+  citizen_identification: z.string().length(12).optional(),
   password: z
     .string()
     .min(8, { message: 'Be at least 8 characters long.' })
@@ -30,4 +37,13 @@ export const USER_SCHEMA_VALIDATION = {
   roles: z.array(z.enum(SELECTABLE_ROLES)),
   state: z.enum(SELECTABLE_STATES),
   join_date: z.string().date().optional(),
+};
+
+export const PLAYER_COACH_VALIDATION = {
+  position: z
+    .union([
+      z.enum(SELECTABLE_COACH_POSITIONS),
+      z.enum(SELECTABLE_PLAYER_POSITIONS),
+    ])
+    .optional(),
 };

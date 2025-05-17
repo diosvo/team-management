@@ -102,13 +102,6 @@ export default function EditProfile({
       <DialogBody>
         <VStack align="stretch">
           <VStack>
-            <HStack width="full">
-              <Separator flex="1" />
-              <Text flexShrink="0" fontSize="sm" color="GrayText">
-                Personal
-              </Text>
-              <Separator flex="1" />
-            </HStack>
             <HStack width="full" alignItems="flex-start">
               <Field
                 label="Fullname"

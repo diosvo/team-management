@@ -1,7 +1,7 @@
 import { addHours } from 'date-fns';
 
+import { SelectionOption } from '@/components/ui/select';
 import { CoachPosition, PlayerPosition, UserRole, UserState } from './enum';
-import { createSelectionOptions } from './formatter';
 
 export const ESTABLISHED_DATE = '2024-02-20';
 export const DEFAULT_DATE_FORMAT = 'yyyy-MM-dd';
@@ -17,22 +17,64 @@ export const SELECTABLE_ROLES = [
   UserRole.GUEST,
   UserRole.PLAYER,
 ] as const;
-export const RolesSelection = createSelectionOptions(SELECTABLE_ROLES);
+export const RolesSelection: Array<SelectionOption<string>> = [
+  {
+    label: 'Player',
+    value: UserRole.PLAYER,
+  },
+  {
+    label: 'Captain',
+    value: UserRole.CAPTAIN,
+  },
+  {
+    label: 'Coach',
+    value: UserRole.COACH,
+  },
+  {
+    label: 'Guest',
+    value: UserRole.GUEST,
+  },
+];
 
 export const SELECTABLE_STATES = [
   UserState.ACTIVE,
   UserState.INACTIVE,
   UserState.TEMPORARILY_ABSENT,
 ] as const;
-export const StatesSelection = createSelectionOptions(SELECTABLE_STATES);
+export const StatesSelection: Array<SelectionOption<string>> = [
+  {
+    label: 'Active',
+    value: UserState.ACTIVE,
+    description: 'Active',
+  },
+  {
+    label: 'Inactive',
+    value: UserState.INACTIVE,
+    description: 'Inactive',
+  },
+  {
+    label: 'Absent',
+    value: UserState.TEMPORARILY_ABSENT,
+    description: 'Temporarily Absent',
+  },
+];
 
 export const SELECTABLE_COACH_POSITIONS = [
   CoachPosition.HEAD_COACH,
   CoachPosition.ASSISTANT_COACH,
 ] as const;
-export const CoachPositionsSelection = createSelectionOptions(
-  SELECTABLE_COACH_POSITIONS
-);
+export const CoachPositionsSelection: Array<SelectionOption<string>> = [
+  {
+    label: 'Head',
+    value: CoachPosition.HEAD_COACH,
+    description: 'Head Coach',
+  },
+  {
+    label: 'Assistant',
+    value: CoachPosition.ASSISTANT_COACH,
+    description: 'Assistant Coach',
+  },
+];
 
 export const SELECTABLE_PLAYER_POSITIONS = [
   PlayerPosition.POINT_GUARD,
@@ -41,6 +83,30 @@ export const SELECTABLE_PLAYER_POSITIONS = [
   PlayerPosition.CENTER,
   PlayerPosition.FORWARD,
 ] as const;
-export const PlayerPositionsSelection = createSelectionOptions(
-  SELECTABLE_PLAYER_POSITIONS
-);
+export const PlayerPositionsSelection: Array<SelectionOption<string>> = [
+  {
+    label: 'PG',
+    value: PlayerPosition.POINT_GUARD,
+    description: 'Point Guard',
+  },
+  {
+    label: 'SG',
+    value: PlayerPosition.SHOOTING_GUARD,
+    description: 'Shooting Guard',
+  },
+  {
+    label: 'SF',
+    value: PlayerPosition.SMALL_FORWARD,
+    description: 'Small Forward',
+  },
+  {
+    label: 'C',
+    value: PlayerPosition.CENTER,
+    description: 'Center',
+  },
+  {
+    label: 'F',
+    value: PlayerPosition.FORWARD,
+    description: 'Forward',
+  },
+];

@@ -26,11 +26,18 @@ import { toaster } from '@/components/ui/toaster';
 
 import { getDefaults } from '@/lib/zod';
 import {
+  CoachPositionsSelection,
   ESTABLISHED_DATE,
+  PlayerPositionsSelection,
   RolesSelection,
   StatesSelection,
 } from '@/utils/constant';
-import { UserRole, UserState } from '@/utils/enum';
+import {
+  CoachPosition,
+  PlayerPosition,
+  UserRole,
+  UserState,
+} from '@/utils/enum';
 
 import { addUser } from '@/features/user/actions/user';
 import { AddUserSchema, AddUserValues } from '@/features/user/schemas/user';
@@ -44,14 +51,16 @@ export default function AddUser({
 
   const {
     reset,
+    watch,
     register,
-    getValues,
     handleSubmit,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(AddUserSchema),
     defaultValues: getDefaults(AddUserSchema) as AddUserValues,
   });
+
+  const selectedRole = watch('roles');
 
   const onSubmit = (data: AddUserValues) => {
     const id = toaster.create({
@@ -103,7 +112,21 @@ export default function AddUser({
               />
             </Field>
           </HStack>
-          <HStack width="full" alignItems="flex-start">
+          <HStack width="full">
+            <Field
+              required
+              label="State"
+              invalid={!!errors.state}
+              errorText={errors.state?.message}
+            >
+              <Select
+                collection={StatesSelection}
+                defaultValue={[UserState.ACTIVE]}
+                containerRef={containerRef}
+                disabled={isPending}
+                {...register('state')}
+              />
+            </Field>
             <Field
               required
               label="Roles"
@@ -120,18 +143,27 @@ export default function AddUser({
               />
             </Field>
             <Field
-              required
-              label="State"
-              invalid={!!errors.state}
-              errorText={errors.state?.message}
+              label="Position"
+              invalid={!!errors.position}
+              errorText={errors.position?.message}
             >
-              <Select
-                collection={StatesSelection}
-                defaultValue={[UserState.ACTIVE]}
-                containerRef={containerRef}
-                disabled={isPending}
-                {...register('state')}
-              />
+              {selectedRole!.includes(UserRole.COACH) ? (
+                <Select
+                  collection={CoachPositionsSelection}
+                  defaultValue={[CoachPosition.HEAD_COACH]}
+                  containerRef={containerRef}
+                  disabled={isPending}
+                  {...register('position')}
+                />
+              ) : (
+                <Select
+                  collection={PlayerPositionsSelection}
+                  defaultValue={[PlayerPosition.SHOOTING_GUARD]}
+                  containerRef={containerRef}
+                  disabled={isPending}
+                  {...register('position')}
+                />
+              )}
             </Field>
           </HStack>
 
