@@ -39,6 +39,7 @@ import EditProfile from './edit-profile';
 
 export interface UserInfoProps {
   isAdmin: boolean;
+  canEditRole: boolean;
   user: User;
   selectionRef: RefObject<Nullable<HTMLDivElement>>;
 }
@@ -61,6 +62,7 @@ function InfoItem({ icon: IconComponent, label, children }: InfoItemProps) {
 
 export default function UserInfo({
   isAdmin,
+  canEditRole,
   user,
   selectionRef,
 }: UserInfoProps) {
@@ -69,7 +71,7 @@ export default function UserInfo({
       children: (
         <EditProfile
           user={user}
-          isAdmin={isAdmin}
+          canEditRole={canEditRole}
           selectionRef={selectionRef}
         />
       ),

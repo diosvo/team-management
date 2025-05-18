@@ -103,6 +103,7 @@ export default function Header() {
                   children: (
                     <UserInfo
                       user={user}
+                      canEditRole={false}
                       isAdmin={isAdmin}
                       selectionRef={selectionRef}
                     />

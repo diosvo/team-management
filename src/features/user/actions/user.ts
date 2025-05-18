@@ -101,10 +101,10 @@ export async function updateProfile(
   }
 
   try {
-    const { jersey_number, height, weight, ...userData } = data;
+    const { user, player } = data;
 
-    await updateUser(user_id, userData);
-    await updatePlayer({ user_id, jersey_number, height, weight });
+    await updateUser(user_id, user);
+    await updatePlayer({ user_id, ...player });
 
     return ResponseFactory.success('Updated information successfully');
   } catch (error) {

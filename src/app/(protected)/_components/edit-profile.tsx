@@ -29,6 +29,7 @@ import { Select } from '@/components/ui/select';
 import { toaster } from '@/components/ui/toaster';
 import Visibility from '@/components/visibility';
 
+import { usePermissions } from '@/hooks/use-permissions';
 import {
   CoachPositionsSelection,
   PlayerPositionsSelection,
@@ -46,10 +47,11 @@ import {
 import UserInfo, { UserInfoProps } from './user-info';
 
 export default function EditProfile({
-  isAdmin,
   user,
+  canEditRole,
   selectionRef,
-}: UserInfoProps) {
+}: Omit<UserInfoProps, 'isAdmin'>) {
+  const { isAdmin, isPlayer } = usePermissions();
   const [isPending, startTransition] = useTransition();
 
   const {
@@ -67,7 +69,12 @@ export default function EditProfile({
   const backToUserInfo = () => {
     dialog.update('profile', {
       children: (
-        <UserInfo user={user} isAdmin={isAdmin} selectionRef={selectionRef} />
+        <UserInfo
+          isAdmin={isAdmin}
+          canEditRole={canEditRole}
+          user={user}
+          selectionRef={selectionRef}
+        />
       ),
       closeOnInteractOutside: true,
     });
@@ -78,8 +85,6 @@ export default function EditProfile({
       type: 'loading',
       description: 'Updating profile...',
     });
-
-    // console.log('Edit profile data:', data);
 
     startTransition(async () => {
       const { error, message: description } = await updateProfile(
@@ -116,13 +121,13 @@ export default function EditProfile({
             <HStack width="full" alignItems="flex-start">
               <Field
                 label="Fullname"
-                invalid={!!errors.name}
-                errorText={errors.name?.message}
+                invalid={!!errors.user?.name}
+                errorText={errors.user?.name?.message}
               >
                 <Input
                   defaultValue={user.name}
                   disabled={isPending}
-                  {...register('name')}
+                  {...register('user.name')}
                 />
               </Field>
               <Field label="DOB">
@@ -131,106 +136,126 @@ export default function EditProfile({
                   min="1997-01-01"
                   defaultValue={user.dob as string}
                   disabled={isPending}
-                  {...register('dob')}
+                  {...register('user.dob')}
                 />
               </Field>
+              <Visibility isVisible={isAdmin}>
+                <Field
+                  required
+                  label="State"
+                  invalid={!!errors.user?.state}
+                  errorText={errors.user?.state?.message}
+                >
+                  <Select
+                    collection={StatesSelection}
+                    defaultValue={[user.state]}
+                    containerRef={selectionRef}
+                    disabled={isPending}
+                    {...register('user.state')}
+                  />
+                </Field>
+              </Visibility>
             </HStack>
             <VStack width="full">
               <Field
-                label="Phone Number"
-                invalid={!!errors.phone_number}
-                errorText={errors.phone_number?.message}
+                label="Phone No."
+                invalid={!!errors.user?.phone_number}
+                errorText={errors.user?.phone_number?.message}
               >
                 <PinInput
                   attached
                   size="sm"
                   count={10}
                   disabled={isPending}
-                  {...register('phone_number')}
+                  {...register('user.phone_number')}
                 />
               </Field>
               <Field
                 label="Citizen Identification"
-                invalid={!!errors.citizen_identification}
-                errorText={errors.citizen_identification?.message}
+                invalid={!!errors.user?.citizen_identification}
+                errorText={errors.user?.citizen_identification?.message}
               >
                 <PinInput
                   attached
                   size="sm"
                   count={12}
                   disabled={isPending}
-                  {...register('citizen_identification')}
+                  {...register('user.citizen_identification')}
                 />
               </Field>
             </VStack>
           </VStack>
-          <VStack gap={4} marginBlock={4}>
-            <HStack width="full">
-              <Separator flex="1" />
-              <Text flexShrink="0" fontSize="sm" color="GrayText">
-                Team
-              </Text>
-              <Separator flex="1" />
-            </HStack>
-            <HStack width="full" alignItems="flex-start">
-              <Field
-                label="Jersey Number"
-                invalid={!!errors.jersey_number}
-                errorText={errors.jersey_number?.message}
-              >
-                <NumberInput.Root
-                  min={0}
-                  max={99}
-                  onValueChange={({ valueAsNumber }) =>
-                    setValue('jersey_number', valueAsNumber)
-                  }
+          <Visibility isVisible={isAdmin || isPlayer}>
+            <VStack gap={4} marginBlock={4}>
+              <HStack width="full">
+                <Separator flex="1" />
+                <Text flexShrink="0" fontSize="sm" color="GrayText">
+                  Team
+                </Text>
+                <Separator flex="1" />
+              </HStack>
+              <HStack width="full" alignItems="flex-start">
+                <Field
+                  label="Jersey No."
+                  invalid={!!errors.player?.jersey_number}
+                  errorText={errors.player?.jersey_number?.message}
                 >
-                  <NumberInput.Control />
-                  <NumberInput.Input
-                    defaultValue={user.details.jersey_number ?? ''}
-                    {...register('jersey_number', { valueAsNumber: true })}
-                  />
-                </NumberInput.Root>
-              </Field>
-              <Field
-                label="Height"
-                invalid={!!errors.height}
-                errorText={errors.height?.message}
-              >
-                <NumberInput.Root
-                  min={0}
-                  max={200}
-                  onValueChange={({ valueAsNumber }) =>
-                    setValue('height', valueAsNumber)
-                  }
+                  <NumberInput.Root
+                    min={0}
+                    max={99}
+                    onValueChange={({ valueAsNumber }) =>
+                      setValue('player.jersey_number', valueAsNumber)
+                    }
+                  >
+                    <NumberInput.Control />
+                    <NumberInput.Input
+                      defaultValue={user.details.jersey_number ?? ''}
+                      {...register('player.jersey_number', {
+                        valueAsNumber: true,
+                      })}
+                    />
+                  </NumberInput.Root>
+                </Field>
+                <Field
+                  label="Height"
+                  invalid={!!errors.player?.height}
+                  errorText={errors.player?.height?.message}
                 >
-                  <NumberInput.Control />
-                  <NumberInput.Input
-                    {...register('height', { valueAsNumber: true })}
-                  />
-                </NumberInput.Root>
-              </Field>
-              <Field
-                label="Weight"
-                invalid={!!errors.weight}
-                errorText={errors.weight?.message}
-              >
-                <NumberInput.Root
-                  min={0}
-                  max={100}
-                  onValueChange={({ valueAsNumber }) =>
-                    setValue('weight', valueAsNumber)
-                  }
+                  <NumberInput.Root
+                    min={0}
+                    max={200}
+                    onValueChange={({ valueAsNumber }) =>
+                      setValue('player.height', valueAsNumber)
+                    }
+                  >
+                    <NumberInput.Control />
+                    <NumberInput.Input
+                      {...register('player.height', { valueAsNumber: true })}
+                    />
+                  </NumberInput.Root>
+                </Field>
+                <Field
+                  label="Weight"
+                  invalid={!!errors.player?.weight}
+                  errorText={errors.player?.message}
                 >
-                  <NumberInput.Control />
-                  <NumberInput.Input
-                    {...register('weight', { valueAsNumber: true })}
-                  />
-                </NumberInput.Root>
-              </Field>
-            </HStack>
-          </VStack>
-          <Visibility isVisible={isAdmin}>
+                  <NumberInput.Root
+                    min={0}
+                    max={100}
+                    onValueChange={({ valueAsNumber }) =>
+                      setValue('player.weight', valueAsNumber)
+                    }
+                  >
+                    <NumberInput.Control />
+                    <NumberInput.Input
+                      {...register('player.weight', { valueAsNumber: true })}
+                    />
+                  </NumberInput.Root>
+                </Field>
+              </HStack>
+            </VStack>
+          </Visibility>
+          <Visibility isVisible={canEditRole}>
             <VStack>
               <HStack width="full">
                 <Separator flex="1" />
@@ -240,20 +265,6 @@ export default function EditProfile({
                 <Separator flex="1" />
               </HStack>
               <HStack width="full">
-                <Field
-                  required
-                  label="State"
-                  invalid={!!errors.state}
-                  errorText={errors.state?.message}
-                >
-                  <Select
-                    collection={StatesSelection}
-                    defaultValue={[user.state]}
-                    containerRef={selectionRef}
-                    disabled={isPending}
-                    {...register('state')}
-                  />
-                </Field>
                 <Field
                   required
                   label="Role"

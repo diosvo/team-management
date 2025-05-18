@@ -25,18 +25,24 @@ export const AddUserSchema = z.object({
 });
 
 export const EditProfileSchema = z.object({
-  // User
-  name: name.optional(),
-  dob,
-  phone_number,
-  citizen_identification,
-  // Player
-  jersey_number: z.number().optional().describe('Jersey Number'),
-  height: z.number().optional().describe('cm'),
-  weight: z.number().optional().describe('kg'),
+  user: z
+    .object({
+      name: name.optional(),
+      dob,
+      phone_number,
+      citizen_identification,
+      state,
+    })
+    .default({}),
+  player: z
+    .object({
+      jersey_number: z.number().optional().describe('Jersey Number'),
+      height: z.number().optional().describe('cm'),
+      weight: z.number().optional().describe('kg'),
+    })
+    .default({}),
   // System
   role,
-  state,
   position,
 });
 

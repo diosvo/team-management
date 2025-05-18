@@ -4,7 +4,7 @@
     "name": "Dios Vo"
   },
   "dependencies": {
-    "@chakra-ui/react": "^3.17.0",
+    "@chakra-ui/react": "^3.19.1",
     "@emotion/react": "^11.14.0",
     "@hookform/resolvers": "^5.0.1",
     "@tiptap/extension-link": "^2.11.7",

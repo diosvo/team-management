@@ -143,6 +143,7 @@ export default function RosterTable({ users }: { users: Array<User> }) {
                       children: (
                         <UserInfo
                           user={user}
+                          canEditRole={isAdmin}
                           isAdmin={isAdmin}
                           selectionRef={selectionRef}
                         />
