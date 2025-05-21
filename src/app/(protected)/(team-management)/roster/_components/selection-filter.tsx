@@ -7,7 +7,7 @@ import { Filter } from 'lucide-react';
 
 import { Checkbox } from '@/components/ui/checkbox';
 
-import { RolesSelection, StatesSelection } from '@/utils/constant';
+import { RoleSelection, StatesSelection } from '@/utils/constant';
 import { SelectableRole, SelectableState } from '@/utils/type';
 
 import { useFilters } from '../_helpers/use-filters';
@@ -15,7 +15,7 @@ import { useFilters } from '../_helpers/use-filters';
 export default function SelectionFilter() {
   const { filters, isPending, updateFilters } = useFilters();
   const [selection, setSelection] = useState({
-    roles: filters.roles,
+    role: filters.role,
     state: filters.state,
   });
   const [openPopover, setOpenPopover] = useState<boolean>(false);
@@ -23,13 +23,13 @@ export default function SelectionFilter() {
   useEffect(() => {
     setSelection((prev) => ({
       ...prev,
-      roles: filters.roles,
+      role: filters.role,
       state: filters.state,
     }));
-  }, [filters.state, filters.roles]);
+  }, [filters.state, filters.role]);
 
   const checkboxCounter = useMemo(
-    () => (selection.roles || []).length + (selection.state || []).length,
+    () => (selection.role || []).length + (selection.state || []).length,
     [selection]
   );
 
@@ -54,7 +54,7 @@ export default function SelectionFilter() {
             <Popover.Arrow />
             <Popover.Body>
               <>
-                <Popover.Title fontWeight="medium" mb={2}>
+                <Popover.Title fontWeight="medium" marginBottom={2}>
                   State
                 </Popover.Title>
                 <CheckboxGroup
@@ -81,21 +81,25 @@ export default function SelectionFilter() {
                 </CheckboxGroup>
               </>
               <>
-                <Popover.Title fontWeight="medium" mb={2} mt={4}>
-                  Roles
+                <Popover.Title
+                  fontWeight="medium"
+                  marginBottom={2}
+                  marginTop={4}
+                >
+                  Role
                 </Popover.Title>
                 <CheckboxGroup
-                  name="roles"
-                  value={selection.roles}
+                  name="role"
+                  value={selection.role}
                   onValueChange={(value: Array<string>) => {
                     setSelection((prev) => ({
                       ...prev,
-                      roles: value as Array<SelectableRole>,
+                      role: value as Array<SelectableRole>,
                     }));
                   }}
                 >
                   <Grid templateColumns="repeat(2, 1fr)" gap={2}>
-                    {RolesSelection.map((item) => (
+                    {RoleSelection.map((item) => (
                       <Checkbox
                         key={item.value}
                         value={item.value}
@@ -117,7 +121,7 @@ export default function SelectionFilter() {
                 colorPalette="red"
                 onClick={() =>
                   setSelection({
-                    roles: [],
+                    role: [],
                     state: [],
                   })
                 }

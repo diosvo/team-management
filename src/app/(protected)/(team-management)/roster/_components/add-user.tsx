@@ -29,7 +29,7 @@ import {
   CoachPositionsSelection,
   ESTABLISHED_DATE,
   PlayerPositionsSelection,
-  RolesSelection,
+  RoleSelection,
   StatesSelection,
 } from '@/utils/constant';
 import {
@@ -145,7 +145,7 @@ export default function AddUser({
               errorText={errors.role?.message}
             >
               <Select
-                collection={RolesSelection}
+                collection={RoleSelection}
                 defaultValue={[UserRole.PLAYER]}
                 containerRef={containerRef}
                 disabled={isPending}

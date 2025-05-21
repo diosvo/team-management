@@ -15,7 +15,7 @@ export function parseSearchParams(
 ): FilterUsersValues {
   const filters = FilterUsersSchema.safeParse({
     query: searchParams?.query || '',
-    roles: searchParams?.role
+    role: searchParams?.role
       ? (searchParams.role.split(',') as Array<SelectableRole>)
       : [],
     state: searchParams?.state

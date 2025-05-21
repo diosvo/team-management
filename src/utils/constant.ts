@@ -16,7 +16,7 @@ export const SELECTABLE_ROLES = [
   UserRole.GUEST,
   UserRole.PLAYER,
 ] as const;
-export const RolesSelection: Array<SelectionOption<string>> = [
+export const RoleSelection: Array<SelectionOption<string>> = [
   {
     label: 'Player',
     value: UserRole.PLAYER,
