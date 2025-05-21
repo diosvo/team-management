@@ -3,6 +3,7 @@
 import { useTransition } from 'react';
 
 import {
+  Badge,
   Button,
   DialogFooter,
   HStack,
@@ -33,12 +34,11 @@ import { usePermissions } from '@/hooks/use-permissions';
 import {
   CoachPositionsSelection,
   PlayerPositionsSelection,
-  RolesSelection,
   StatesSelection,
 } from '@/utils/constant';
-import { UserRole } from '@/utils/enum';
+import { UserRole, UserState } from '@/utils/enum';
 
-import { updateProfile } from '@/features/user/actions/user';
+// import { updateProfile } from '@/features/user/actions/user';
 import {
   EditProfileSchema,
   EditProfileValues,
@@ -48,57 +48,50 @@ import UserInfo, { UserInfoProps } from './user-info';
 
 export default function EditProfile({
   user,
-  canEditRole,
   selectionRef,
 }: Omit<UserInfoProps, 'isAdmin'>) {
   const { isAdmin, isPlayer } = usePermissions();
   const [isPending, startTransition] = useTransition();
 
   const {
-    watch,
     register,
-    setValue,
     handleSubmit,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(EditProfileSchema),
   });
 
-  const selectedRole = watch('role');
-
   const backToUserInfo = () => {
     dialog.update('profile', {
       children: (
-        <UserInfo
-          isAdmin={isAdmin}
-          canEditRole={canEditRole}
-          user={user}
-          selectionRef={selectionRef}
-        />
+        <UserInfo isAdmin={isAdmin} user={user} selectionRef={selectionRef} />
       ),
       closeOnInteractOutside: true,
     });
   };
 
   const onSubmit = (data: EditProfileValues) => {
-    const id = toaster.create({
+    const id = toaster.info({
       type: 'loading',
       description: 'Updating profile...',
     });
 
-    startTransition(async () => {
-      const { error, message: description } = await updateProfile(
-        user.user_id,
-        data
-      );
+    return;
 
-      toaster.update(id, {
-        type: error ? 'error' : 'success',
-        description,
-      });
+    // startTransition(async () => {
+    //   const { error, message: description } = await updateProfile(
+    //     user.user_id,
+    //     user.role,
+    //     data
+    //   );
 
-      if (!error) backToUserInfo();
-    });
+    //   toaster.update(id, {
+    //     type: error ? 'error' : 'success',
+    //     description,
+    //   });
+
+    //   if (!error) backToUserInfo();
+    // });
   };
 
   return (
@@ -120,6 +113,7 @@ export default function EditProfile({
           <VStack>
             <HStack width="full" alignItems="flex-start">
               <Field
+                required
                 label="Fullname"
                 invalid={!!errors.user?.name}
                 errorText={errors.user?.name?.message}
@@ -139,7 +133,9 @@ export default function EditProfile({
                   {...register('user.dob')}
                 />
               </Field>
-              <Visibility isVisible={isAdmin}>
+            </HStack>
+            <Visibility isVisible={isAdmin}>
+              <HStack width="full" alignItems="flex-start">
                 <Field
                   required
                   label="State"
@@ -154,8 +150,29 @@ export default function EditProfile({
                     {...register('user.state')}
                   />
                 </Field>
-              </Visibility>
-            </HStack>
+                <Field
+                  label="Position"
+                  invalid={!!errors.position}
+                  errorText={errors.position?.message}
+                >
+                  <Select
+                    collection={
+                      user.role === UserRole.COACH
+                        ? CoachPositionsSelection
+                        : PlayerPositionsSelection
+                    }
+                    containerRef={selectionRef}
+                    defaultValue={
+                      user.details.position
+                        ? [user.details.position]
+                        : [UserState.UNKNOWN]
+                    }
+                    disabled={isPending}
+                    {...register('position')}
+                  />
+                </Field>
+              </HStack>
+            </Visibility>
             <VStack width="full">
               <Field
                 label="Phone No."
@@ -200,106 +217,43 @@ export default function EditProfile({
                   invalid={!!errors.player?.jersey_number}
                   errorText={errors.player?.jersey_number?.message}
                 >
-                  <NumberInput.Root
-                    min={0}
-                    max={99}
-                    onValueChange={({ valueAsNumber }) =>
-                      setValue('player.jersey_number', valueAsNumber)
-                    }
-                  >
+                  <NumberInput.Root min={0} max={99}>
                     <NumberInput.Control />
                     <NumberInput.Input
-                      defaultValue={user.details.jersey_number ?? ''}
-                      {...register('player.jersey_number', {
-                        valueAsNumber: true,
-                      })}
+                      defaultValue={user.details.jersey_number || ''}
+                      {...register('player.jersey_number')}
                     />
                   </NumberInput.Root>
                 </Field>
                 <Field
                   label="Height"
+                  optionalText={
+                    <Badge size="xs" variant="surface">
+                      cm
+                    </Badge>
+                  }
                   invalid={!!errors.player?.height}
                   errorText={errors.player?.height?.message}
                 >
-                  <NumberInput.Root
-                    min={0}
-                    max={200}
-                    onValueChange={({ valueAsNumber }) =>
-                      setValue('player.height', valueAsNumber)
-                    }
-                  >
+                  <NumberInput.Root min={0} max={200}>
                     <NumberInput.Control />
-                    <NumberInput.Input
-                      {...register('player.height', { valueAsNumber: true })}
-                    />
+                    <NumberInput.Input {...register('player.height')} />
                   </NumberInput.Root>
                 </Field>
                 <Field
                   label="Weight"
+                  optionalText={
+                    <Badge size="xs" variant="surface">
+                      kg
+                    </Badge>
+                  }
                   invalid={!!errors.player?.weight}
                   errorText={errors.player?.message}
                 >
-                  <NumberInput.Root
-                    min={0}
-                    max={100}
-                    onValueChange={({ valueAsNumber }) =>
-                      setValue('player.weight', valueAsNumber)
-                    }
-                  >
+                  <NumberInput.Root min={0} max={100}>
                     <NumberInput.Control />
-                    <NumberInput.Input
-                      {...register('player.weight', { valueAsNumber: true })}
-                    />
+                    <NumberInput.Input {...register('player.weight')} />
                   </NumberInput.Root>
-                </Field>
-              </HStack>
-            </VStack>
-          </Visibility>
-          <Visibility isVisible={canEditRole}>
-            <VStack>
-              <HStack width="full">
-                <Separator flex="1" />
-                <Text flexShrink="0" fontSize="sm" color="GrayText">
-                  System
-                </Text>
-                <Separator flex="1" />
-              </HStack>
-              <HStack width="full">
-                <Field
-                  required
-                  label="Role"
-                  invalid={!!errors.role}
-                  errorText={errors.role?.message}
-                >
-                  <Select
-                    collection={RolesSelection}
-                    defaultValue={[user.role]}
-                    containerRef={selectionRef}
-                    disabled={isPending}
-                    {...register('role')}
-                  />
-                </Field>
-                <Field
-                  label="Position"
-                  invalid={!!errors.position}
-                  errorText={errors.position?.message}
-                  disabled={selectedRole === UserRole.GUEST}
-                >
-                  <Select
-                    collection={
-                      selectedRole === UserRole.COACH
-                        ? CoachPositionsSelection
-                        : PlayerPositionsSelection
-                    }
-                    containerRef={selectionRef}
-                    defaultValue={
-                      user.details.position
-                        ? [user.details.position]
-                        : undefined
-                    }
-                    disabled={selectedRole === UserRole.GUEST || isPending}
-                    {...register('position')}
-                  />
                 </Field>
               </HStack>
             </VStack>

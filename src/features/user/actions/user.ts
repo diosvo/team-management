@@ -6,9 +6,10 @@ import { Response, ResponseFactory } from '@/utils/response';
 import { User } from '@/drizzle/schema';
 import { getTeam } from '@/features/team/actions/team';
 
+import { CoachPosition, PlayerPosition, UserRole } from '@/utils/enum';
 import { hasPermissions } from '@/utils/helper';
 import { revalidateAdminPath } from '../db/cache';
-import { insertCoach } from '../db/coach';
+import { insertCoach, updateCoach } from '../db/coach';
 import { insertPlayer, updatePlayer } from '../db/player';
 import {
   deleteUser,
@@ -92,6 +93,7 @@ export async function addUser(
 
 export async function updateProfile(
   user_id: string,
+  user_role: UserRole,
   values: EditProfileValues
 ): Promise<Response> {
   const { data, error } = EditProfileSchema.safeParse(values);
@@ -101,10 +103,23 @@ export async function updateProfile(
   }
 
   try {
-    const { user, player } = data;
+    const { user, player, position } = data;
 
     await updateUser(user_id, user);
-    await updatePlayer({ user_id, ...player });
+
+    if (user_role === UserRole.PLAYER) {
+      await updatePlayer({
+        user_id,
+        ...player,
+        position: position as PlayerPosition,
+      });
+    }
+    if (user_role === UserRole.COACH) {
+      await updateCoach({
+        user_id,
+        position: position as CoachPosition,
+      });
+    }
 
     return ResponseFactory.success('Updated information successfully');
   } catch (error) {

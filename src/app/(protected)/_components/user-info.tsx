@@ -39,7 +39,6 @@ import EditProfile from './edit-profile';
 
 export interface UserInfoProps {
   isAdmin: boolean;
-  canEditRole: boolean;
   user: User;
   selectionRef: RefObject<Nullable<HTMLDivElement>>;
 }
@@ -62,19 +61,12 @@ function InfoItem({ icon: IconComponent, label, children }: InfoItemProps) {
 
 export default function UserInfo({
   isAdmin,
-  canEditRole,
   user,
   selectionRef,
 }: UserInfoProps) {
   const openEditProfileDialog = () => {
     dialog.update('profile', {
-      children: (
-        <EditProfile
-          user={user}
-          canEditRole={canEditRole}
-          selectionRef={selectionRef}
-        />
-      ),
+      children: <EditProfile user={user} selectionRef={selectionRef} />,
       closeOnInteractOutside: false,
     });
   };

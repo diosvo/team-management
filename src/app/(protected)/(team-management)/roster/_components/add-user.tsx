@@ -1,6 +1,6 @@
 'use client';
 
-import { RefObject, useTransition } from 'react';
+import { RefObject, useEffect, useTransition } from 'react';
 
 import {
   Button,
@@ -32,7 +32,12 @@ import {
   RolesSelection,
   StatesSelection,
 } from '@/utils/constant';
-import { UserRole, UserState } from '@/utils/enum';
+import {
+  CoachPosition,
+  PlayerPosition,
+  UserRole,
+  UserState,
+} from '@/utils/enum';
 
 import { addUser } from '@/features/user/actions/user';
 import { AddUserSchema, AddUserValues } from '@/features/user/schemas/user';
@@ -48,6 +53,7 @@ export default function AddUser({
     reset,
     watch,
     register,
+    setValue,
     handleSubmit,
     formState: { errors },
   } = useForm({
@@ -56,6 +62,16 @@ export default function AddUser({
   });
 
   const selectedRole = watch('role');
+
+  useEffect(() => {
+    if (selectedRole === UserRole.GUEST) {
+      setValue('position', undefined);
+    } else if (selectedRole === UserRole.COACH) {
+      setValue('position', CoachPosition.UNKNOWN);
+    } else if (selectedRole === UserRole.PLAYER) {
+      setValue('position', PlayerPosition.UNKNOWN);
+    }
+  }, [selectedRole, setValue]);
 
   const onSubmit = (data: AddUserValues) => {
     const id = toaster.create({

@@ -6,7 +6,12 @@ import {
   SELECTABLE_ROLES,
   SELECTABLE_STATES,
 } from '@/utils/constant';
-import { UserRole, UserState } from '@/utils/enum';
+import {
+  CoachPosition,
+  PlayerPosition,
+  UserRole,
+  UserState,
+} from '@/utils/enum';
 
 // date() - YYYY-MM-DD
 
@@ -23,8 +28,20 @@ export const USER_SCHEMA_VALIDATION = {
     .email({ message: 'Please enter a valid email.' })
     .trim()
     .default(''),
-  phone_number: z.string().length(10).optional(),
-  citizen_identification: z.string().length(12).optional(),
+  phone_number: z.union([
+    z
+      .string()
+      .length(10, { message: 'Must contain exactly 10 characters' })
+      .nullish(),
+    z.literal(''),
+  ]),
+  citizen_identification: z.union([
+    z
+      .string()
+      .length(12, { message: 'Must contain exactly 12 characters' })
+      .nullish(),
+    z.literal(''),
+  ]),
   password: z
     .string()
     .min(8, { message: 'Be at least 8 characters long.' })
@@ -40,11 +57,13 @@ export const USER_SCHEMA_VALIDATION = {
   join_date: z.string().date().optional(),
 };
 
-export const PLAYER_COACH_VALIDATION = {
-  position: z
-    .union([
-      z.enum(SELECTABLE_COACH_POSITIONS),
-      z.enum(SELECTABLE_PLAYER_POSITIONS),
-    ])
-    .optional(),
+export const PLAYER_VALIDATION = {
+  position: z.enum(SELECTABLE_PLAYER_POSITIONS).default(PlayerPosition.UNKNOWN),
+  jersey_number: z.coerce.number().int().min(0).max(99).nullish(),
+  height: z.coerce.number().int().min(0).max(200).nullish(),
+  weight: z.coerce.number().int().min(0).max(100).nullish(),
+};
+
+export const COACH_VALIDATION = {
+  position: z.enum(SELECTABLE_COACH_POSITIONS).default(CoachPosition.UNKNOWN),
 };

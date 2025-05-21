@@ -1,6 +1,12 @@
 import { z } from 'zod';
 
-import { PLAYER_COACH_VALIDATION, USER_SCHEMA_VALIDATION } from './utils';
+import {
+  COACH_VALIDATION,
+  PLAYER_VALIDATION,
+  USER_SCHEMA_VALIDATION,
+} from './utils';
+const { position: PlayerPosition, ...PlayerSchema } = PLAYER_VALIDATION;
+const { position: CoachPosition } = COACH_VALIDATION;
 
 const {
   name,
@@ -12,7 +18,8 @@ const {
   state,
   join_date,
 } = USER_SCHEMA_VALIDATION;
-const { position } = PLAYER_COACH_VALIDATION;
+
+const position = z.union([PlayerPosition, CoachPosition]).optional();
 
 export const AddUserSchema = z.object({
   name,
@@ -27,22 +34,14 @@ export const AddUserSchema = z.object({
 export const EditProfileSchema = z.object({
   user: z
     .object({
-      name: name.optional(),
+      name,
       dob,
       phone_number,
       citizen_identification,
       state,
     })
     .default({}),
-  player: z
-    .object({
-      jersey_number: z.number().optional().describe('Jersey Number'),
-      height: z.number().optional().describe('cm'),
-      weight: z.number().optional().describe('kg'),
-    })
-    .default({}),
-  // System
-  role,
+  player: z.object(PlayerSchema).default({}),
   position,
 });
 
