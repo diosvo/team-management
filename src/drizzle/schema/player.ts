@@ -19,15 +19,15 @@ export const playerPositionEnum = pgEnum('player_position', PlayerPosition);
 export const PlayerTable = pgTable(
   'player',
   {
-    user_id: uuid('user_id')
+    user_id: uuid()
       .notNull()
       .primaryKey()
       .references(() => UserTable.user_id, { onDelete: 'cascade' }),
-    is_captain: boolean('is_captain').default(false).notNull(),
-    jersey_number: integer('jersey_number').unique(),
-    position: playerPositionEnum('position'),
-    height: integer('height'),
-    weight: integer('weight'),
+    is_captain: boolean().default(false).notNull(),
+    jersey_number: integer().unique(),
+    position: playerPositionEnum().default(PlayerPosition.UNKNOWN),
+    height: integer(),
+    weight: integer(),
     created_at,
     updated_at,
   },

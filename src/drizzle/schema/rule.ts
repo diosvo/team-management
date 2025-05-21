@@ -5,11 +5,11 @@ import { created_at, updated_at } from '../helpers';
 import { TeamTable } from './team';
 
 export const RuleTable = pgTable('rule', {
-  rule_id: uuid('rule_id').primaryKey().defaultRandom(),
-  team_id: uuid('team_id')
+  rule_id: uuid().primaryKey().defaultRandom(),
+  team_id: uuid()
     .notNull()
     .references(() => TeamTable.team_id, { onDelete: 'cascade' }),
-  content: text('content').notNull(),
+  content: text().notNull(),
   created_at,
   updated_at,
 });

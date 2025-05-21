@@ -9,13 +9,11 @@ import { UserTable } from './user';
 export const coachPositionEnum = pgEnum('coach_position', CoachPosition);
 
 export const CoachTable = pgTable('coach', {
-  user_id: uuid('user_id')
+  user_id: uuid()
     .notNull()
     .primaryKey()
     .references(() => UserTable.user_id, { onDelete: 'cascade' }),
-  position: coachPositionEnum('position')
-    .default(CoachPosition.ASSISTANT_COACH)
-    .notNull(),
+  position: coachPositionEnum().default(CoachPosition.UNKNOWN).notNull(),
   created_at,
   updated_at,
 });

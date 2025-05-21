@@ -15,6 +15,7 @@ export enum UserState {
 export enum CoachPosition {
   HEAD_COACH = 'HEAD_COACH',
   ASSISTANT_COACH = 'ASSISTANT_COACH',
+  UNKNOWN = 'UNKNOWN',
 }
 
 export enum PlayerPosition {
@@ -23,4 +24,5 @@ export enum PlayerPosition {
   SMALL_FORWARD = 'SMALL_FORWARD',
   CENTER = 'CENTER',
   FORWARD = 'FORWARD',
+  UNKNOWN = 'UNKNOWN',
 }

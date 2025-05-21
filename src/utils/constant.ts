@@ -60,6 +60,7 @@ export const StatesSelection: Array<SelectionOption<string>> = [
 export const SELECTABLE_COACH_POSITIONS = [
   CoachPosition.HEAD_COACH,
   CoachPosition.ASSISTANT_COACH,
+  CoachPosition.UNKNOWN,
 ] as const;
 export const CoachPositionsSelection: Array<SelectionOption<string>> = [
   {
@@ -72,6 +73,10 @@ export const CoachPositionsSelection: Array<SelectionOption<string>> = [
     value: CoachPosition.ASSISTANT_COACH,
     description: 'Assistant Coach',
   },
+  {
+    label: 'Unknown',
+    value: CoachPosition.UNKNOWN,
+  },
 ];
 
 export const SELECTABLE_PLAYER_POSITIONS = [
@@ -80,6 +85,7 @@ export const SELECTABLE_PLAYER_POSITIONS = [
   PlayerPosition.SMALL_FORWARD,
   PlayerPosition.CENTER,
   PlayerPosition.FORWARD,
+  PlayerPosition.UNKNOWN,
 ] as const;
 export const PlayerPositionsSelection: Array<SelectionOption<string>> = [
   {
@@ -106,5 +112,9 @@ export const PlayerPositionsSelection: Array<SelectionOption<string>> = [
     label: 'F',
     value: PlayerPosition.FORWARD,
     description: 'Forward',
+  },
+  {
+    label: 'Unknown',
+    value: PlayerPosition.UNKNOWN,
   },
 ];

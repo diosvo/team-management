@@ -22,20 +22,20 @@ export const userStateEnum = pgEnum('user_state', UserState);
 // Tables
 
 export const UserTable = pgTable('user', {
-  user_id: uuid('user_id').defaultRandom().primaryKey(),
-  team_id: uuid('team_id')
+  user_id: uuid().defaultRandom().primaryKey(),
+  team_id: uuid()
     .notNull()
     .references(() => TeamTable.team_id, { onDelete: 'cascade' }),
-  name: varchar('name', { length: 128 }).notNull(),
-  dob: date('dob'),
-  password: varchar('password', { length: 128 }),
-  email: varchar('email', { length: 128 }).unique().notNull(),
-  phone_number: varchar('phone_number', { length: 10 }),
-  citizen_identification: varchar('citizen_identification', { length: 12 }),
-  image: text('image'),
-  state: userStateEnum('state').default(UserState.UNKNOWN).notNull(),
-  role: userRolesEnum('role').default(UserRole.PLAYER).notNull(),
-  join_date: date('join_date'),
+  name: varchar({ length: 128 }).notNull(),
+  dob: date(),
+  password: varchar({ length: 128 }),
+  email: varchar({ length: 128 }).unique().notNull(),
+  phone_number: varchar({ length: 10 }),
+  citizen_identification: varchar({ length: 12 }),
+  image: text(),
+  state: userStateEnum().default(UserState.UNKNOWN).notNull(),
+  role: userRolesEnum().default(UserRole.PLAYER).notNull(),
+  join_date: date(),
   created_at,
   updated_at,
 });
@@ -56,9 +56,9 @@ export const UserRelations = relations(UserTable, ({ one }) => ({
 }));
 
 export const PasswordTokenTable = pgTable('password_token', {
-  id: uuid('id').notNull().unique().defaultRandom(),
-  email: text('email').unique().notNull(),
-  token: text('token').unique().notNull(),
+  id: uuid().notNull().unique().defaultRandom(),
+  email: text().unique().notNull(),
+  token: text().unique().notNull(),
   expires_at,
 });
 
