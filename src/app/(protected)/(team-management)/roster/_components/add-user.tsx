@@ -164,6 +164,7 @@ export default function AddUser({
                     ? CoachPositionsSelection
                     : PlayerPositionsSelection
                 }
+                defaultValue={['UNKNOWN']}
                 containerRef={containerRef}
                 disabled={isPending || selectedRole === UserRole.GUEST}
                 {...register('position')}

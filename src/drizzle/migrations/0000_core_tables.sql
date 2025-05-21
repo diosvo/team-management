@@ -1,10 +1,10 @@
-CREATE TYPE "public"."coach_position" AS ENUM('HEAD_COACH', 'ASSISTANT_COACH');--> statement-breakpoint
-CREATE TYPE "public"."player_position" AS ENUM('POINT_GUARD', 'SHOOTING_GUARD', 'SMALL_FORWARD', 'CENTER', 'FORWARD');--> statement-breakpoint
+CREATE TYPE "public"."coach_position" AS ENUM('HEAD_COACH', 'ASSISTANT_COACH', 'UNKNOWN');--> statement-breakpoint
+CREATE TYPE "public"."player_position" AS ENUM('POINT_GUARD', 'SHOOTING_GUARD', 'SMALL_FORWARD', 'CENTER', 'FORWARD', 'UNKNOWN');--> statement-breakpoint
 CREATE TYPE "public"."user_roles" AS ENUM('COACH', 'PLAYER', 'GUEST', 'SUPER_ADMIN');--> statement-breakpoint
 CREATE TYPE "public"."user_state" AS ENUM('ACTIVE', 'INACTIVE', 'TEMPORARILY_ABSENT', 'UNKNOWN');--> statement-breakpoint
 CREATE TABLE "coach" (
 	"user_id" uuid PRIMARY KEY NOT NULL,
-	"position" "coach_position" DEFAULT 'ASSISTANT_COACH' NOT NULL,
+	"position" "coach_position" DEFAULT 'UNKNOWN' NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
@@ -13,7 +13,7 @@ CREATE TABLE "player" (
 	"user_id" uuid PRIMARY KEY NOT NULL,
 	"is_captain" boolean DEFAULT false NOT NULL,
 	"jersey_number" integer,
-	"position" "player_position",
+	"position" "player_position" DEFAULT 'UNKNOWN',
 	"height" integer,
 	"weight" integer,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,

@@ -15,7 +15,7 @@ const rl = readline.createInterface({
 async function askForConfirmation(): Promise<boolean> {
   return new Promise((resolve) => {
     rl.question(
-      '⚠️ Are you sure you want to reset the database? This will delete all data. (Y/N): ',
+      '⚠️  Are you sure you want to reset the database? This will delete all data. (Y/N): ',
       (answer) => {
         rl.close();
         resolve(answer.toLowerCase() === 'y');

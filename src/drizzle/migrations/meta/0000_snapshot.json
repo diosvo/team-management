@@ -1,5 +1,5 @@
 {
-  "id": "d09eea90-8a72-41d4-af6a-c4cbced1dcf3",
+  "id": "13f299fa-ae51-43e9-af40-f15bc6446b0b",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -19,7 +19,7 @@
           "type": "coach_position",
           "primaryKey": false,
           "notNull": true,
-          "default": "'ASSISTANT_COACH'"
+          "default": "'UNKNOWN'"
         },
         "created_at": {
           "name": "created_at",
@@ -85,7 +85,8 @@
           "name": "position",
           "type": "player_position",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "default": "'UNKNOWN'"
         },
         "height": {
           "name": "height",
@@ -427,7 +428,7 @@
         },
         "phone_number": {
           "name": "phone_number",
-          "type": "varchar(15)",
+          "type": "varchar(10)",
           "primaryKey": false,
           "notNull": false
         },
@@ -515,7 +516,8 @@
       "schema": "public",
       "values": [
         "HEAD_COACH",
-        "ASSISTANT_COACH"
+        "ASSISTANT_COACH",
+        "UNKNOWN"
       ]
     },
     "public.player_position": {
@@ -526,7 +528,8 @@
         "SHOOTING_GUARD",
         "SMALL_FORWARD",
         "CENTER",
-        "FORWARD"
+        "FORWARD",
+        "UNKNOWN"
       ]
     },
     "public.user_roles": {

@@ -57,7 +57,7 @@ export default function Header() {
       title: 'Session has been expired',
       description: 'Please login again.',
     });
-    return null;
+    return handleLogout();
   }
 
   return (
@@ -103,6 +103,7 @@ export default function Header() {
                   children: (
                     <UserInfo
                       user={user}
+                      canEdit={false}
                       isAdmin={isAdmin}
                       selectionRef={selectionRef}
                     />

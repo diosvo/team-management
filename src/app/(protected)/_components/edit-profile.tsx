@@ -38,7 +38,7 @@ import {
 } from '@/utils/constant';
 import { UserRole, UserState } from '@/utils/enum';
 
-// import { updateProfile } from '@/features/user/actions/user';
+import { updateProfile } from '@/features/user/actions/user';
 import {
   EditProfileSchema,
   EditProfileValues,
@@ -48,6 +48,7 @@ import UserInfo, { UserInfoProps } from './user-info';
 
 export default function EditProfile({
   user,
+  canEdit,
   selectionRef,
 }: Omit<UserInfoProps, 'isAdmin'>) {
   const { isAdmin, isPlayer } = usePermissions();
@@ -64,34 +65,37 @@ export default function EditProfile({
   const backToUserInfo = () => {
     dialog.update('profile', {
       children: (
-        <UserInfo isAdmin={isAdmin} user={user} selectionRef={selectionRef} />
+        <UserInfo
+          isAdmin={isAdmin}
+          canEdit={canEdit}
+          user={user}
+          selectionRef={selectionRef}
+        />
       ),
       closeOnInteractOutside: true,
     });
   };
 
   const onSubmit = (data: EditProfileValues) => {
-    const id = toaster.info({
+    const id = toaster.create({
       type: 'loading',
       description: 'Updating profile...',
     });
 
-    return;
+    startTransition(async () => {
+      const { error, message: description } = await updateProfile(
+        user.user_id,
+        user.role,
+        data
+      );
 
-    // startTransition(async () => {
-    //   const { error, message: description } = await updateProfile(
-    //     user.user_id,
-    //     user.role,
-    //     data
-    //   );
+      toaster.update(id, {
+        type: error ? 'error' : 'success',
+        description,
+      });
 
-    //   toaster.update(id, {
-    //     type: error ? 'error' : 'success',
-    //     description,
-    //   });
-
-    //   if (!error) backToUserInfo();
-    // });
+      if (!error) backToUserInfo();
+    });
   };
 
   return (
@@ -134,7 +138,7 @@ export default function EditProfile({
                 />
               </Field>
             </HStack>
-            <Visibility isVisible={isAdmin}>
+            <Visibility isVisible={canEdit}>
               <HStack width="full" alignItems="flex-start">
                 <Field
                   required
@@ -261,7 +265,7 @@ export default function EditProfile({
         </VStack>
       </DialogBody>
       <DialogFooter>
-        <Button type="submit" loading={isPending} loadingText="Saving...">
+        <Button type="submit" loading={isPending} loadingText="Updating...">
           <Save /> Update
         </Button>
       </DialogFooter>
