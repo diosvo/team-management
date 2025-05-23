@@ -2,7 +2,15 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
-import { Button, CheckboxGroup, Grid, Popover, Portal } from '@chakra-ui/react';
+import {
+  Button,
+  CheckboxGroup,
+  Grid,
+  HStack,
+  Popover,
+  Portal,
+  Text,
+} from '@chakra-ui/react';
 import { Filter } from 'lucide-react';
 
 import { Checkbox } from '@/components/ui/checkbox';
@@ -54,8 +62,28 @@ export default function SelectionFilter() {
             <Popover.Arrow />
             <Popover.Body>
               <>
-                <Popover.Title fontWeight="medium" marginBottom={2}>
-                  State
+                <Popover.Title marginBottom={2}>
+                  <HStack justifyContent="space-between" alignItems="baseline">
+                    <Text fontWeight="medium">State</Text>
+                    <Text
+                      textStyle="xs"
+                      color="GrayText"
+                      _hover={{
+                        cursor: selection.state.length
+                          ? 'pointer'
+                          : 'not-allowed',
+                        color: selection.state.length ? 'tomato' : 'GrayText',
+                      }}
+                      onClick={() =>
+                        setSelection((prevState) => ({
+                          ...prevState,
+                          state: [],
+                        }))
+                      }
+                    >
+                      clear
+                    </Text>
+                  </HStack>
                 </Popover.Title>
                 <CheckboxGroup
                   name="state"
@@ -67,26 +95,44 @@ export default function SelectionFilter() {
                     }));
                   }}
                 >
-                  {StatesSelection.map((item) => (
-                    <Checkbox
-                      key={item.value}
-                      value={item.value}
-                      variant="outline"
-                      colorPalette="gray"
-                      aria-label={item.label}
-                    >
-                      {item.label}
-                    </Checkbox>
-                  ))}
+                  <Grid templateColumns="repeat(2, 1fr)" gap={4}>
+                    {StatesSelection.map((item) => (
+                      <Checkbox
+                        key={item.value}
+                        value={item.value}
+                        variant="outline"
+                        colorPalette="gray"
+                        aria-label={item.label}
+                      >
+                        {item.label}
+                      </Checkbox>
+                    ))}
+                  </Grid>
                 </CheckboxGroup>
               </>
               <>
-                <Popover.Title
-                  fontWeight="medium"
-                  marginBottom={2}
-                  marginTop={4}
-                >
-                  Role
+                <Popover.Title marginBlock={2}>
+                  <HStack justifyContent="space-between" alignItems="baseline">
+                    <Text fontWeight="medium">Role</Text>
+                    <Text
+                      textStyle="xs"
+                      color="GrayText"
+                      _hover={{
+                        cursor: selection.role.length
+                          ? 'pointer'
+                          : 'not-allowed',
+                        color: selection.role.length ? 'tomato' : 'GrayText',
+                      }}
+                      onClick={() =>
+                        setSelection((prevState) => ({
+                          ...prevState,
+                          role: [],
+                        }))
+                      }
+                    >
+                      clear
+                    </Text>
+                  </HStack>
                 </Popover.Title>
                 <CheckboxGroup
                   name="role"
@@ -98,7 +144,7 @@ export default function SelectionFilter() {
                     }));
                   }}
                 >
-                  <Grid templateColumns="repeat(2, 1fr)" gap={2}>
+                  <Grid templateColumns="repeat(3, 1fr)" gap={4}>
                     {RoleSelection.map((item) => (
                       <Checkbox
                         key={item.value}
@@ -114,20 +160,7 @@ export default function SelectionFilter() {
                 </CheckboxGroup>
               </>
             </Popover.Body>
-            <Popover.Footer justifyContent="space-between">
-              <Button
-                size="sm"
-                variant="outline"
-                colorPalette="red"
-                onClick={() =>
-                  setSelection({
-                    role: [],
-                    state: [],
-                  })
-                }
-              >
-                Reset
-              </Button>
+            <Popover.Footer justifyContent="flex-end">
               <Button
                 size="sm"
                 onClick={() => {

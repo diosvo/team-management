@@ -145,7 +145,7 @@ export default function Sidebar({
           justifyContent={isExpanded ? 'flex-start' : 'center'}
           title="Team Rule"
           paddingInline={isExpanded ? undefined : 2}
-          loading={isPending}
+          disabled={isPending}
           onClick={openRuleDialog}
         >
           <Icon as={Crown} color="orange.focusRing" />
