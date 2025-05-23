@@ -1,6 +1,8 @@
 import { z } from 'zod';
 
 import {
+  DEFAULT_DOB,
+  ESTABLISHED_DATE,
   SELECTABLE_COACH_POSITIONS,
   SELECTABLE_PLAYER_POSITIONS,
   SELECTABLE_ROLES,
@@ -22,7 +24,7 @@ export const USER_SCHEMA_VALIDATION = {
     .min(6, { message: 'Be at least 6 characters long.' })
     .trim()
     .default(''),
-  dob: z.string().date().optional(),
+  dob: z.string().date().default(DEFAULT_DOB),
   email: z
     .string()
     .email({ message: 'Please enter a valid email.' })
@@ -31,14 +33,14 @@ export const USER_SCHEMA_VALIDATION = {
   phone_number: z.union([
     z
       .string()
-      .length(10, { message: 'Must contain exactly 10 characters' })
+      .length(10, { message: 'Must contain exactly 10 digit.' })
       .nullish(),
     z.literal(''),
   ]),
   citizen_identification: z.union([
     z
       .string()
-      .length(12, { message: 'Must contain exactly 12 characters' })
+      .length(12, { message: 'Must contain exactly 12 digit.' })
       .nullish(),
     z.literal(''),
   ]),
@@ -54,7 +56,7 @@ export const USER_SCHEMA_VALIDATION = {
     .default(''),
   state: z.enum(SELECTABLE_STATES).default(UserState.UNKNOWN),
   role: z.enum(SELECTABLE_ROLES).default(UserRole.PLAYER),
-  join_date: z.string().date().optional(),
+  join_date: z.string().date().default(ESTABLISHED_DATE),
 };
 
 export const PLAYER_VALIDATION = {

@@ -206,7 +206,7 @@ export default function EditProfile({
               </Field>
             </VStack>
           </VStack>
-          <Visibility isVisible={isAdmin || isPlayer}>
+          <Visibility isVisible={isPlayer || canEdit}>
             <VStack gap={4} marginBlock={4}>
               <HStack width="full">
                 <Separator flex="1" />

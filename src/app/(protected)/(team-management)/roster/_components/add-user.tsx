@@ -27,6 +27,7 @@ import { toaster } from '@/components/ui/toaster';
 import { getDefaults } from '@/lib/zod';
 import {
   CoachPositionsSelection,
+  DEFAULT_DOB,
   ESTABLISHED_DATE,
   PlayerPositionsSelection,
   RoleSelection,
@@ -87,9 +88,7 @@ export default function AddUser({
         description,
       });
 
-      if (!error) {
-        reset();
-      }
+      if (!error) reset();
     });
   };
 
@@ -185,7 +184,7 @@ export default function AddUser({
                 <Input
                   type="date"
                   min="1997-01-01"
-                  defaultValue="2000-01-01"
+                  defaultValue={DEFAULT_DOB}
                   disabled={isPending}
                   {...register('dob')}
                 />
