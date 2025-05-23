@@ -33,7 +33,7 @@ export const PlayerTable = pgTable(
   },
   (table) => [
     check('jersey_number', sql`${table.jersey_number} BETWEEN 0 AND 99`),
-    check('height', sql`${table.height} BETWEEN 100 AND 200`),
+    check('height', sql`${table.height} BETWEEN 0 AND 200`),
     check('weight', sql`${table.weight} BETWEEN 0 AND 100`),
     // Ensure that there is only one captain in team
     uniqueIndex('team_captain')

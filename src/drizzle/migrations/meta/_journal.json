@@ -8,6 +8,13 @@
       "when": 1747859683033,
       "tag": "0000_core_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1747978208898,
+      "tag": "0001_update_height_constraint",
+      "breakpoints": true
     }
   ]
 }
