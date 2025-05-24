@@ -8,7 +8,7 @@ const { password, email } = USER_SCHEMA_VALIDATION;
 export const PasswordSchema = z.object({ password });
 export const LoginSchema = z.object({
   email,
-  password: z.string().nullable(),
+  password: z.string().default(''),
   // -- password is not required when requesting a reset password
 });
 

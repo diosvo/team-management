@@ -1,5 +1,11 @@
-import { revalidatePath } from 'next/cache';
+import { getIdTag } from '@/lib/data-cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 
-export function revalidateAdminPath() {
-  revalidatePath('/admin');
+export function revalidateRosterPath() {
+  return revalidatePath('/roster');
+}
+
+export function revalidateUserTag(user_id: string) {
+  revalidateTag(getIdTag('user', user_id));
+  revalidateRosterPath();
 }

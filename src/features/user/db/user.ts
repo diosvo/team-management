@@ -119,8 +119,8 @@ export async function updateUser(user_id: string, user: Partial<User>) {
       .update(UserTable)
       .set(user)
       .where(eq(UserTable.user_id, user_id));
-  } catch {
-    return null;
+  } catch (error) {
+    throw error;
   }
 }
 

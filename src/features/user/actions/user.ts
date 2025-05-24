@@ -8,7 +8,8 @@ import { getTeam } from '@/features/team/actions/team';
 
 import { CoachPosition, PlayerPosition, UserRole } from '@/utils/enum';
 import { hasPermissions } from '@/utils/helper';
-import { revalidateAdminPath } from '../db/cache';
+
+import { revalidateRosterPath } from '../db/cache';
 import { insertCoach, updateCoach } from '../db/coach';
 import { insertPlayer, updatePlayer } from '../db/player';
 import {
@@ -83,7 +84,7 @@ export async function addUser(
     const { email, token } = await generatePasswordToken(user.email);
     await sendPasswordInstructionEmail('reset', email, token);
 
-    revalidateAdminPath();
+    revalidateRosterPath();
 
     return ResponseFactory.success('Sent an email to with instructions');
   } catch (error) {
@@ -121,6 +122,8 @@ export async function updateProfile(
       });
     }
 
+    revalidateRosterPath();
+
     return ResponseFactory.success('Updated information successfully');
   } catch (error) {
     return ResponseFactory.fromError(error as Error);
@@ -131,7 +134,7 @@ export async function removeUser(user_id: string): Promise<Response> {
   try {
     await deleteUser(user_id);
 
-    revalidateAdminPath();
+    revalidateRosterPath();
 
     return ResponseFactory.success('User deleted successfully');
   } catch {

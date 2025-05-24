@@ -3,13 +3,10 @@ import { eq } from 'drizzle-orm';
 import { db } from '@/drizzle';
 import { InsertPlayer, PlayerTable } from '@/drizzle/schema/player';
 
-import logger from '@/lib/logger';
-
 export async function insertPlayer(player: InsertPlayer) {
   try {
     return await db.insert(PlayerTable).values(player);
   } catch (error) {
-    logger.error(error);
     return null;
   }
 }
@@ -21,7 +18,6 @@ export async function updatePlayer(player: InsertPlayer) {
       .set(player)
       .where(eq(PlayerTable.user_id, player.user_id));
   } catch (error) {
-    logger.error(error);
-    return null;
+    throw error;
   }
 }

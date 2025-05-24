@@ -3,7 +3,13 @@ import { eq } from 'drizzle-orm';
 import { db } from '@/drizzle';
 import { CoachTable, InsertCoach } from '@/drizzle/schema/coach';
 
-import logger from '@/lib/logger';
+export async function insertCoach(coach: InsertCoach) {
+  try {
+    return await db.insert(CoachTable).values(coach);
+  } catch (error) {
+    throw error;
+  }
+}
 
 export async function updateCoach(coach: InsertCoach) {
   try {
@@ -12,16 +18,6 @@ export async function updateCoach(coach: InsertCoach) {
       .set(coach)
       .where(eq(CoachTable.user_id, coach.user_id));
   } catch (error) {
-    logger.error(error);
-    return null;
-  }
-}
-
-export async function insertCoach(coach: InsertCoach) {
-  try {
-    return await db.insert(CoachTable).values(coach);
-  } catch (error) {
-    logger.error(error);
-    return null;
+    throw error;
   }
 }

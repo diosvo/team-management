@@ -1,4 +1,4 @@
-type CACHE_TAG = 'admin' | 'rule';
+type CACHE_TAG = 'user' | 'rule';
 
 export function getGlobalTag(tag: CACHE_TAG) {
   return `global:${tag}` as const;
