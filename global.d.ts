@@ -1,2 +1,2 @@
 type Nullable<T> = T | null;
-type OptionalNullable<T> = T | undefined | null;
+type Nullish<T> = Nullable<T> | undefined;

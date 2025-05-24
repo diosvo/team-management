@@ -5,5 +5,5 @@ export function getRuleTag() {
 }
 
 export function revalidateRuleTag() {
-  return getGlobalTag('rule');
+  return getRuleTag();
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { Dispatch, SetStateAction, useState, useTransition } from 'react';
 
 import { Button, Text } from '@chakra-ui/react';
 import { Eye, Pencil } from 'lucide-react';
@@ -23,10 +23,11 @@ import { executeRule } from '@/features/rule/actions/rule';
 
 interface TeamRuleProps {
   editable: boolean;
-  rule: OptionalNullable<Rule>;
+  rule: Nullish<Rule>;
+  setRule: Dispatch<SetStateAction<Nullish<Rule>>>;
 }
 
-export default function TeamRule({ editable, rule }: TeamRuleProps) {
+export default function TeamRule({ editable, rule, setRule }: TeamRuleProps) {
   const [isPending, startTransition] = useTransition();
   const [isEditing, setIsEditing] = useState<boolean>(false);
 
@@ -37,14 +38,17 @@ export default function TeamRule({ editable, rule }: TeamRuleProps) {
         description: 'Updating rules...',
       });
 
-      const { error, message: description } = await executeRule(content);
+      const { error, message: description, data } = await executeRule(content);
 
       toaster.update(id, {
         type: error ? 'error' : 'success',
         description,
       });
 
-      setIsEditing(false);
+      if (!error && data) {
+        setRule(data);
+        setIsEditing(false);
+      }
     });
   }
 

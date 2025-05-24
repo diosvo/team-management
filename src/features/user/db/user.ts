@@ -1,4 +1,4 @@
-import { cache } from 'react';
+import { unstable_cache } from 'next/cache';
 
 import {
   and,
@@ -20,7 +20,7 @@ import { hasPermissions } from '@/utils/helper';
 
 import { FilterUsersValues } from '../schemas/user';
 
-export const getUsers = cache(
+export const getUsers = unstable_cache(
   async ({ query, role, state }: FilterUsersValues): Promise<Array<User>> => {
     // Always exclude SUPER_ADMIN user
     const filters: Array<SQL | undefined> = [
@@ -60,7 +60,7 @@ export const getUsers = cache(
   }
 );
 
-export const getExistingEmails = cache(async () => {
+export const getExistingEmails = unstable_cache(async () => {
   try {
     const { email } = getTableColumns(UserTable);
     const data = await db.select({ email }).from(UserTable);
@@ -71,7 +71,7 @@ export const getExistingEmails = cache(async () => {
   }
 });
 
-export const getUserByEmail = cache(async (email: string) => {
+export const getUserByEmail = unstable_cache(async (email: string) => {
   try {
     return await db.query.UserTable.findFirst({
       where: eq(UserTable.email, email),
@@ -81,7 +81,7 @@ export const getUserByEmail = cache(async (email: string) => {
   }
 });
 
-export const getUserById = cache(async (user_id: string) => {
+export const getUserById = unstable_cache(async (user_id: string) => {
   try {
     const user = await db.query.UserTable.findFirst({
       where: eq(UserTable.user_id, user_id),
