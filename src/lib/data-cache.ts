@@ -1,9 +1,9 @@
-type CACHE_TAG = 'user' | 'rule';
+type CacheTag = 'team' | 'user' | 'rule';
 
-export function getGlobalTag(tag: CACHE_TAG) {
+export function getGlobalTag(tag: CacheTag) {
   return `global:${tag}` as const;
 }
 
-export function getIdTag(tag: CACHE_TAG, id: string) {
+export function getIdTag(tag: CacheTag, id: string) {
   return `id:${id}-${tag}` as const;
 }

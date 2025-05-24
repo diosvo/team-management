@@ -15,11 +15,7 @@ export const getRule = unstable_cache(
       return null;
     }
   },
-  [getRuleTag()],
-  {
-    tags: [getRuleTag()],
-    revalidate: 3600,
-  }
+  [getRuleTag()]
 );
 
 export async function insertRule(data: InsertRule) {
