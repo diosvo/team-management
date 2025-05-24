@@ -15,10 +15,20 @@ export const dialog = createOverlay<DialogProps>(
         <Portal>
           <Dialog.Backdrop zIndex="modal" />
           <Dialog.Positioner paddingInline={8}>
-            <Dialog.Content ref={contentRef}>
+            <Dialog.Content
+              ref={contentRef}
+              bg="bg"
+              position="relative"
+              zIndex="modal"
+            >
               {closeButtonOutside ? (
                 <Dialog.CloseTrigger top="0" insetEnd="-12" asChild>
-                  <CloseButton bg="bg" size="sm" />
+                  <CloseButton
+                    bg="bg"
+                    size="sm"
+                    focusRing="none"
+                    aria-label="Close"
+                  />
                 </Dialog.CloseTrigger>
               ) : (
                 <Dialog.CloseTrigger
@@ -27,7 +37,12 @@ export const dialog = createOverlay<DialogProps>(
                   top="4"
                   right="4"
                 >
-                  <CloseButton size="sm" focusRing="none" />
+                  <CloseButton
+                    size="sm"
+                    rounded="full"
+                    focusRing="none"
+                    aria-label="Close"
+                  />
                 </Dialog.CloseTrigger>
               )}
               {children}

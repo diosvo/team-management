@@ -83,8 +83,9 @@ export default function TextEditor({
   useEffect(() => {
     if (editor) {
       editor.setEditable(editable);
+      setHasChanges(false);
     }
-  }, [editor, editable]);
+  }, [editor, editable, content]);
 
   const handleReset = () => {
     if (editor) {
