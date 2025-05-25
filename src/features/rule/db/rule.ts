@@ -20,9 +20,7 @@ export const getRule = unstable_cache(
 
 export async function insertRule(data: InsertRule) {
   try {
-    const [rule] = await db.insert(RuleTable).values(data).returning({
-      rule_id: RuleTable.rule_id,
-    });
+    const [rule] = await db.insert(RuleTable).values(data).returning();
 
     revalidateRuleTag();
 

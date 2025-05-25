@@ -20,7 +20,7 @@ CREATE TABLE "player" (
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "player_jersey_number_unique" UNIQUE("jersey_number"),
 	CONSTRAINT "jersey_number" CHECK ("player"."jersey_number" BETWEEN 0 AND 99),
-	CONSTRAINT "height" CHECK ("player"."height" BETWEEN 100 AND 200),
+	CONSTRAINT "height" CHECK ("player"."height" BETWEEN 0 AND 200),
 	CONSTRAINT "weight" CHECK ("player"."weight" BETWEEN 0 AND 100)
 );
 --> statement-breakpoint

@@ -82,7 +82,7 @@ export default function TextEditor({
 
   useEffect(() => {
     if (editor) editor.setEditable(editable);
-  }, [editable]);
+  }, [editor, editable]);
 
   // Use Popover for link insertion
   const setLink = () => {

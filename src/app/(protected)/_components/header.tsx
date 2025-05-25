@@ -42,23 +42,27 @@ export default function Header() {
   const [isPending, startTransition] = useTransition();
   const selectionRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
-
   const handleLogout = () => {
     startTransition(async () => {
       await logout();
     });
   };
 
-  if (!user) {
-    toaster.error({
-      title: 'Session has been expired',
-      description: 'Please login again.',
-    });
-    return handleLogout();
-  }
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!user) {
+      toaster.error({
+        title: 'Session has been expired',
+        description: 'Please login again.',
+      });
+      handleLogout();
+    }
+  }, [user]);
+
+  if (!user) return null;
 
   return (
     <HStack align="center" paddingBlock={2} paddingInline={4}>

@@ -7,7 +7,7 @@ export async function insertPlayer(player: InsertPlayer) {
   try {
     return await db.insert(PlayerTable).values(player);
   } catch (error) {
-    return null;
+    throw error;
   }
 }
 

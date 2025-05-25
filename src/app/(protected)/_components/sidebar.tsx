@@ -6,8 +6,6 @@ import {
   ForwardRefExoticComponent,
   ReactNode,
   RefAttributes,
-  useEffect,
-  useState,
   useTransition,
 } from 'react';
 
@@ -21,11 +19,10 @@ import {
 } from '@chakra-ui/react';
 import { Crown, LucideProps } from 'lucide-react';
 
-import dialog from '@/components/ui/dialog-test';
+import { dialog } from '@/components/ui/dialog';
 
 import { usePermissions } from '@/hooks/use-permissions';
 
-import { Rule } from '@/drizzle/schema';
 import { getRule } from '@/features/rule/actions/rule';
 import { hrefPath, SIDEBAR_GROUP } from '../_helpers/utils';
 import TeamRule from './team-rule';
@@ -89,33 +86,16 @@ export default function Sidebar({
   isExpanded?: boolean;
 }) {
   const { isAdmin } = usePermissions();
-  const [rule, setRule] = useState<Nullish<Rule>>(null);
   const [isPending, startTransition] = useTransition();
 
-  const fetchRule = () => {
+  const openRuleDialog = () => {
     startTransition(async () => {
-      const data = await getRule();
-      setRule(data);
+      const rule = await getRule();
+
+      dialog.open('team-rule', {
+        children: <TeamRule editable={isAdmin} rule={rule} />,
+      });
     });
-  };
-
-  useEffect(() => {
-    fetchRule();
-  }, []);
-
-  useEffect(() => {
-    // Update the rule when it changes
-    showTeamRule('update');
-  }, [rule]);
-
-  const showTeamRule = (method: 'open' | 'update') => {
-    const children = (
-      <TeamRule editable={isAdmin} rule={rule} setRule={setRule} />
-    );
-
-    method === 'update'
-      ? dialog.update('team-rule', { children })
-      : dialog.open('team-rule', { children });
   };
 
   return (
@@ -165,7 +145,7 @@ export default function Sidebar({
           title="Team Rule"
           paddingInline={isExpanded ? undefined : 2}
           disabled={isPending}
-          onClick={() => showTeamRule('open')}
+          onClick={openRuleDialog}
         >
           <Icon as={Crown} color="orange.focusRing" />
           {isExpanded && 'Team Rule'}

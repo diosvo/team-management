@@ -187,6 +187,7 @@ export default function EditProfile({
                   attached
                   size="sm"
                   count={10}
+                  defaultValue={user.phone_number?.split('') || []}
                   disabled={isPending}
                   {...register('user.phone_number')}
                 />
@@ -201,6 +202,7 @@ export default function EditProfile({
                   size="sm"
                   count={12}
                   disabled={isPending}
+                  defaultValue={user.citizen_identification?.split('') || []}
                   {...register('user.citizen_identification')}
                 />
               </Field>

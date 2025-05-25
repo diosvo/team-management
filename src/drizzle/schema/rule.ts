@@ -22,4 +22,5 @@ export const RuleRelations = relations(RuleTable, ({ one }) => ({
 }));
 
 export type Rule = typeof RuleTable.$inferSelect;
+export type NullishRule = Nullish<Rule>;
 export type InsertRule = typeof RuleTable.$inferInsert;

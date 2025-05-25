@@ -1,5 +1,5 @@
 {
-  "id": "13f299fa-ae51-43e9-af40-f15bc6446b0b",
+  "id": "527da332-baf3-42c2-add2-f29b6cd7c7ba",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -166,7 +166,7 @@
         },
         "height": {
           "name": "height",
-          "value": "\"player\".\"height\" BETWEEN 100 AND 200"
+          "value": "\"player\".\"height\" BETWEEN 0 AND 200"
         },
         "weight": {
           "name": "weight",
