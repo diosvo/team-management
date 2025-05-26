@@ -1,15 +1,17 @@
-import { cache } from 'react';
+import { unstable_cache } from 'next/cache';
+
+import { eq } from 'drizzle-orm';
 
 import { db } from '@/drizzle';
 import { TeamTable } from '@/drizzle/schema';
-import logger from '@/lib/logger';
+import { getTeamTag } from './cache';
 
-export const getTeam = cache(async () => {
+export const getTeam = unstable_cache(async () => {
   try {
-    const [team] = await db.select().from(TeamTable).limit(1);
-    return team;
-  } catch {
-    logger.error('Team may not exist');
-    return null;
+    return await db.query.TeamTable.findFirst({
+      where: eq(TeamTable.is_default, true),
+    });
+  } catch (error) {
+    throw error;
   }
-});
+}, [getTeamTag()]);

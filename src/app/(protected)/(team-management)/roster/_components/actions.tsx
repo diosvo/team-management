@@ -17,7 +17,7 @@ import SearchBar from './search-bar';
 import SelectionFilter from './selection-filter';
 
 export default function RosterActions() {
-  const isAdmin = usePermissions();
+  const { isAdmin } = usePermissions();
   const { filters, isPending, updateFilters } = useFilters();
 
   const dialogContentRef = useRef<HTMLDivElement>(null);
@@ -39,7 +39,7 @@ export default function RosterActions() {
           onClick={() =>
             updateFilters({
               query: '',
-              roles: [],
+              role: [],
               state: [],
             })
           }

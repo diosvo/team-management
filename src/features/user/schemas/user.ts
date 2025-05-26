@@ -1,33 +1,56 @@
 import { z } from 'zod';
 
-import { UserRole, UserState } from '@/utils/enum';
+import {
+  COACH_VALIDATION,
+  PLAYER_VALIDATION,
+  USER_SCHEMA_VALIDATION,
+} from './utils';
+const { position: PlayerPosition, ...PlayerSchema } = PLAYER_VALIDATION;
+const { position: CoachPosition } = COACH_VALIDATION;
 
-import { USER_SCHEMA_VALIDATION } from './utils';
+const {
+  name,
+  dob,
+  email,
+  phone_number,
+  citizen_identification,
+  role,
+  state,
+  join_date,
+} = USER_SCHEMA_VALIDATION;
 
-const { name, dob, email, roles, state, join_date } = USER_SCHEMA_VALIDATION;
+const position = z.union([PlayerPosition, CoachPosition]).optional();
 
 export const AddUserSchema = z.object({
   name,
   email,
   dob,
-  roles: roles
-    .min(1, { message: 'Select at least one role.' })
-    .max(2, { message: 'Select at most two roles.' })
-    .default([UserRole.PLAYER]),
-  state: state.default(UserState.ACTIVE),
+  role,
+  state,
   join_date,
+  position,
 });
 
-export const UpdateUserSchema = z.object({
-  dob,
+export const EditProfileSchema = z.object({
+  user: z
+    .object({
+      name,
+      dob,
+      phone_number,
+      citizen_identification,
+      state,
+    })
+    .default({}),
+  player: z.object(PlayerSchema).default({}),
+  position,
 });
 
 export const FilterUsersSchema = z.object({
-  query: z.string().default('').optional(),
-  roles: roles.default([]).optional(),
-  state: z.array(state).default([]).optional(),
+  query: z.string().default(''),
+  role: z.array(role).default([]),
+  state: z.array(state).default([]),
 });
 
 export type AddUserValues = z.infer<typeof AddUserSchema>;
-export type UpdateUserValues = z.infer<typeof UpdateUserSchema>;
+export type EditProfileValues = z.infer<typeof EditProfileSchema>;
 export type FilterUsersValues = z.infer<typeof FilterUsersSchema>;

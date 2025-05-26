@@ -2,18 +2,10 @@
 
 import { createContext, ReactNode, useContext } from 'react';
 
-import { Rule, User } from '@/drizzle/schema';
+import { User } from '@/drizzle/schema';
 
 type UserContextType = {
-  userPromise: Promise<
-    Nullable<
-      User & {
-        team: {
-          rule: Nullable<Partial<Rule>>;
-        };
-      }
-    >
-  >;
+  userPromise: Promise<Nullable<User>>;
 };
 
 const UserContext = createContext<Nullable<UserContextType>>(null);

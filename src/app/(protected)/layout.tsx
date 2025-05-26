@@ -28,7 +28,7 @@ export default function ProtectedLayout({
     md: true,
     lg: false,
   });
-  const [isExpanded, setIsExpanded] = useState<boolean>(false);
+  const [isExpanded, setIsExpanded] = useState<boolean>(true);
   const sidebarWidth = isExpanded ? '224px' : '64px';
 
   const toggleSidebar = () => {
@@ -79,7 +79,7 @@ export default function ProtectedLayout({
           paddingBlock={6}
           borderTopLeftRadius={0}
           borderBottomLeftRadius={0}
-          borderLeftColor="white"
+          borderLeftColor="gray.100"
           onClick={toggleSidebar}
           title={isExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
         >

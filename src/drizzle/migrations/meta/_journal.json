@@ -5,15 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1744715528808,
-      "tag": "0000_team_user_rule_table",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1745384669430,
-      "tag": "0001_update_join_date_field",
+      "when": 1748161283857,
+      "tag": "0000_core_tables",
       "breakpoints": true
     }
   ]

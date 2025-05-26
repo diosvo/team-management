@@ -1,16 +1,9 @@
-import { revalidateTag } from 'next/cache';
+import { getGlobalTag } from '@/lib/data-cache';
 
-import { getGlobalTag, getIdTag } from '@/lib/data-cache';
-
-export function getRuleGlobalTag() {
+export function getRuleTag() {
   return getGlobalTag('rule');
 }
 
-export function getRuleIdTag(rule_id: string) {
-  return getIdTag('rule', rule_id);
-}
-
-export function revalidateRuleCache(rule_id: string) {
-  revalidateTag(getRuleGlobalTag());
-  revalidateTag(getRuleIdTag(rule_id));
+export function revalidateRuleTag() {
+  return getRuleTag();
 }

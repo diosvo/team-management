@@ -15,7 +15,7 @@ export default function LoginLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <Box h="100vh">
+    <Box height="100vh" position="relative">
       <Image
         fill
         priority

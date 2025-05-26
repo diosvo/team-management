@@ -16,7 +16,7 @@ export default function PageTitle({ children }: { children: React.ReactNode }) {
       size={{ base: 'xl', md: '2xl' }}
     >
       {children}
-      <Image position="absolute" loading="lazy" asChild>
+      <Image position="absolute" loading="lazy" alt="Squiggle" asChild>
         <NextImage src={Squiggle} alt="Squiggle" />
       </Image>
     </Heading>

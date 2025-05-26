@@ -2,16 +2,24 @@ import {
   Select as ChakraSelect,
   createListCollection,
   Portal,
+  Span,
+  Stack,
 } from '@chakra-ui/react';
 
-export interface SelectProps
+export type SelectionOption<T> = {
+  label: string;
+  value: T;
+  description?: string;
+};
+
+export interface SelectProps<T>
   extends Omit<ChakraSelect.RootProps, 'collection'> {
-  collection: Array<{ label: string; value: string }>;
+  collection: Array<SelectionOption<T>>;
   label?: string;
   containerRef?: React.RefObject<Nullable<HTMLDivElement>>;
 }
 
-export const Select = (props: SelectProps) => {
+export const Select = <T,>(props: SelectProps<T>) => {
   const { collection, label, containerRef, ...rest } = props;
   const dataset = createListCollection({ items: collection });
 
@@ -34,8 +42,15 @@ export const Select = (props: SelectProps) => {
         <ChakraSelect.Positioner>
           <ChakraSelect.Content>
             {dataset.items.map((item) => (
-              <ChakraSelect.Item item={item} key={item.value}>
-                {item.label}
+              <ChakraSelect.Item item={item} key={String(item.value)}>
+                <Stack gap="0">
+                  <ChakraSelect.ItemText>{item.label}</ChakraSelect.ItemText>
+                  {item.description && (
+                    <Span color="fg.muted" textStyle="xs">
+                      {item.description}
+                    </Span>
+                  )}
+                </Stack>
                 <ChakraSelect.ItemIndicator />
               </ChakraSelect.Item>
             ))}

@@ -2,7 +2,7 @@
 
 import NextImage from 'next/image';
 import { usePathname } from 'next/navigation';
-import { use, useEffect, useState, useTransition } from 'react';
+import { use, useEffect, useRef, useState, useTransition } from 'react';
 
 import {
   Avatar,
@@ -17,8 +17,10 @@ import {
 } from '@chakra-ui/react';
 import { LogOut, PanelRightOpen, UserIcon } from 'lucide-react';
 
+import { logout } from '@/features/user/actions/auth';
 import { usePermissions } from '@/hooks/use-permissions';
 import { useUser } from '@/hooks/use-user';
+
 import { colorState } from '@/utils/helper';
 import HeaderLogo from '@assets/images/header-logo.png';
 
@@ -26,24 +28,19 @@ import { CloseButton } from '@/components/ui/close-button';
 import { dialog } from '@/components/ui/dialog';
 import { toaster } from '@/components/ui/toaster';
 
-import { logout } from '@/features/user/actions/auth';
-
 import Sidebar from './sidebar';
 import UserInfo from './user-info';
 
 export default function Header() {
   const { userPromise } = useUser();
   const user = use(userPromise);
+  const { isAdmin } = usePermissions();
 
   const pathname = usePathname();
-  const isAdmin = usePermissions();
 
   const [open, setOpen] = useState<boolean>(false);
   const [isPending, startTransition] = useTransition();
-
-  useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
+  const selectionRef = useRef<HTMLDivElement>(null);
 
   const handleLogout = () => {
     startTransition(async () => {
@@ -51,17 +48,30 @@ export default function Header() {
     });
   };
 
-  if (!user) {
-    toaster.error({
-      title: 'Session has been expired',
-      description: 'Please login again.',
-    });
-    return null;
-  }
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!user) {
+      toaster.error({
+        title: 'Session has been expired',
+        description: 'Please login again.',
+      });
+      handleLogout();
+    }
+  }, [user, handleLogout, toaster.error]);
+
+  if (!user) return null;
 
   return (
     <HStack align="center" paddingBlock={2} paddingInline={4}>
-      <Image width={{ base: 132, sm: 144, md: 192 }} marginRight="auto" asChild>
+      <Image
+        width={{ base: 132, sm: 144, md: 192 }}
+        marginRight="auto"
+        alt="Text Logo"
+        asChild
+      >
         <NextImage
           priority
           quality={100}
@@ -92,8 +102,16 @@ export default function Header() {
               value="user-info"
               _hover={{ cursor: 'pointer' }}
               onClick={() =>
-                dialog.open('current-user-info', {
-                  children: <UserInfo user={user} isAdmin={isAdmin} />,
+                dialog.open('profile', {
+                  contentRef: selectionRef,
+                  children: (
+                    <UserInfo
+                      user={user}
+                      canEdit={false}
+                      isAdmin={isAdmin}
+                      selectionRef={selectionRef}
+                    />
+                  ),
                 })
               }
             >
@@ -117,12 +135,7 @@ export default function Header() {
 
       <Drawer.Root open={open} onOpenChange={({ open }) => setOpen(open)}>
         <Drawer.Trigger asChild>
-          <IconButton
-            hideFrom="lg"
-            size="sm"
-            variant="outline"
-            borderRadius="full"
-          >
+          <IconButton hideFrom="lg" size="sm" variant="outline" rounded="full">
             <PanelRightOpen />
           </IconButton>
         </Drawer.Trigger>
@@ -134,7 +147,7 @@ export default function Header() {
                 <Sidebar />
               </Drawer.Body>
               <Drawer.CloseTrigger asChild>
-                <CloseButton size="2xs" />
+                <CloseButton size="2xs" rounded="full" />
               </Drawer.CloseTrigger>
             </Drawer.Content>
           </Drawer.Positioner>

@@ -19,12 +19,12 @@ import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import {
   Bold,
-  Eraser,
   Italic,
   Link2,
   List,
   ListOrdered,
   Save,
+  TimerReset,
   Underline as UnderlineIcon,
 } from 'lucide-react';
 
@@ -81,17 +81,8 @@ export default function TextEditor({
   );
 
   useEffect(() => {
-    if (editor) {
-      editor.setEditable(editable);
-    }
+    if (editor) editor.setEditable(editable);
   }, [editor, editable]);
-
-  const handleReset = () => {
-    if (editor) {
-      editor.commands.setContent(content);
-      setHasChanges(false);
-    }
-  };
 
   // Use Popover for link insertion
   const setLink = () => {
@@ -106,6 +97,13 @@ export default function TextEditor({
     // Update link
     editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
     setUrl('');
+  };
+
+  const handleReset = () => {
+    if (editor) {
+      editor.commands.setContent(content);
+      setHasChanges(false);
+    }
   };
 
   if (!editor) {
@@ -266,10 +264,10 @@ export default function TextEditor({
           <Button
             size="sm"
             variant="outline"
-            disabled={loading}
+            disabled={loading || !hasChanges}
             onClick={handleReset}
           >
-            <Icon as={Eraser} color="red.400" />
+            <Icon as={TimerReset} color="tomato" />
             Reset
           </Button>
           <Button

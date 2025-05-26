@@ -1,6 +1,6 @@
 'use client';
 
-import { RefObject, useTransition } from 'react';
+import { RefObject, useEffect, useTransition } from 'react';
 
 import {
   Button,
@@ -26,11 +26,19 @@ import { toaster } from '@/components/ui/toaster';
 
 import { getDefaults } from '@/lib/zod';
 import {
+  CoachPositionsSelection,
+  DEFAULT_DOB,
   ESTABLISHED_DATE,
-  RolesSelection,
+  PlayerPositionsSelection,
+  RoleSelection,
   StatesSelection,
 } from '@/utils/constant';
-import { UserState } from '@/utils/enum';
+import {
+  CoachPosition,
+  PlayerPosition,
+  UserRole,
+  UserState,
+} from '@/utils/enum';
 
 import { addUser } from '@/features/user/actions/user';
 import { AddUserSchema, AddUserValues } from '@/features/user/schemas/user';
@@ -44,14 +52,27 @@ export default function AddUser({
 
   const {
     reset,
+    watch,
     register,
-    getValues,
+    setValue,
     handleSubmit,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(AddUserSchema),
     defaultValues: getDefaults(AddUserSchema) as AddUserValues,
   });
+
+  const selectedRole = watch('role');
+
+  useEffect(() => {
+    if (selectedRole === UserRole.GUEST) {
+      setValue('position', undefined);
+    } else if (selectedRole === UserRole.COACH) {
+      setValue('position', CoachPosition.UNKNOWN);
+    } else if (selectedRole === UserRole.PLAYER) {
+      setValue('position', PlayerPosition.UNKNOWN);
+    }
+  }, [selectedRole, setValue]);
 
   const onSubmit = (data: AddUserValues) => {
     const id = toaster.create({
@@ -67,9 +88,7 @@ export default function AddUser({
         description,
       });
 
-      if (!error) {
-        reset();
-      }
+      if (!error) reset();
     });
   };
 
@@ -103,22 +122,7 @@ export default function AddUser({
               />
             </Field>
           </HStack>
-          <HStack width="full" alignItems="flex-start">
-            <Field
-              required
-              label="Roles"
-              invalid={!!errors.roles}
-              errorText={errors.roles?.message}
-            >
-              <Select
-                multiple
-                collection={RolesSelection}
-                defaultValue={getValues('roles')}
-                containerRef={containerRef}
-                disabled={isPending}
-                {...register('roles')}
-              />
-            </Field>
+          <HStack width="full">
             <Field
               required
               label="State"
@@ -131,6 +135,38 @@ export default function AddUser({
                 containerRef={containerRef}
                 disabled={isPending}
                 {...register('state')}
+              />
+            </Field>
+            <Field
+              required
+              label="Role"
+              invalid={!!errors.role}
+              errorText={errors.role?.message}
+            >
+              <Select
+                collection={RoleSelection}
+                defaultValue={[UserRole.PLAYER]}
+                containerRef={containerRef}
+                disabled={isPending}
+                {...register('role')}
+              />
+            </Field>
+            <Field
+              label="Position"
+              invalid={!!errors.position}
+              errorText={errors.position?.message}
+              disabled={selectedRole === UserRole.GUEST}
+            >
+              <Select
+                collection={
+                  selectedRole === UserRole.COACH
+                    ? CoachPositionsSelection
+                    : PlayerPositionsSelection
+                }
+                defaultValue={['UNKNOWN']}
+                containerRef={containerRef}
+                disabled={isPending || selectedRole === UserRole.GUEST}
+                {...register('position')}
               />
             </Field>
           </HStack>
@@ -148,7 +184,7 @@ export default function AddUser({
                 <Input
                   type="date"
                   min="1997-01-01"
-                  defaultValue="2000-01-01"
+                  defaultValue={DEFAULT_DOB}
                   disabled={isPending}
                   {...register('dob')}
                 />
@@ -157,7 +193,7 @@ export default function AddUser({
                 <Input
                   type="date"
                   min={ESTABLISHED_DATE}
-                  defaultValue={getValues('join_date')}
+                  defaultValue={ESTABLISHED_DATE}
                   disabled={isPending}
                   {...register('join_date')}
                 />

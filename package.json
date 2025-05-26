@@ -1,25 +1,26 @@
 {
   "author": {
     "email": "vtmn1212@gmail.com",
-    "name": "Dios Vo"
+    "name": "Dios Vo",
+    "url": "https://www.linkedin.com/in/diosvo/"
   },
   "dependencies": {
-    "@chakra-ui/react": "^3.17.0",
+    "@chakra-ui/react": "^3.19.1",
     "@emotion/react": "^11.14.0",
     "@hookform/resolvers": "^5.0.1",
-    "@tiptap/extension-link": "^2.11.7",
-    "@tiptap/extension-underline": "^2.11.7",
-    "@tiptap/react": "^2.11.7",
-    "@tiptap/starter-kit": "^2.11.7",
+    "@tiptap/extension-link": "^2.12.0",
+    "@tiptap/extension-underline": "^2.12.0",
+    "@tiptap/react": "^2.12.0",
+    "@tiptap/starter-kit": "^2.12.0",
     "@vercel/analytics": "^1.5.0",
     "@vercel/speed-insights": "^1.2.0",
     "bcryptjs": "^3.0.2",
-    "drizzle-orm": "^0.42.0",
+    "drizzle-orm": "^0.43.1",
     "jose": "^6.0.10",
     "lucide-react": "^0.501.0",
-    "next": "15.3.1-canary.13",
+    "next": "15.4.0-canary.45",
     "next-themes": "^0.4.6",
-    "pg": "^8.14.1",
+    "pg": "^8.16.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-hook-form": "^7.55.0",
@@ -31,11 +32,11 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
     "@types/node": "^22.14.1",
-    "@types/pg": "^8.11.13",
+    "@types/pg": "^8.15.2",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
     "date-fns": "^4.1.0",
-    "drizzle-kit": "^0.31.0",
+    "drizzle-kit": "^0.31.1",
     "eslint": "^9.24.0",
     "eslint-config-next": "15.3.1",
     "eslint-plugin-security": "^3.0.1",
@@ -57,9 +58,10 @@
     "db:drop": "drizzle-kit drop",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
+    "db:reset": "tsx src/drizzle/scripts/reset.ts",
     "db:studio": "drizzle-kit studio",
     "dev": "next dev",
     "lint": "next lint"
   },
-  "version": "0.4.0"
+  "version": "0.5.0"
 }

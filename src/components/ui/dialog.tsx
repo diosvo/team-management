@@ -1,6 +1,7 @@
 import { RefObject } from 'react';
 
-import { CloseButton, Dialog, Portal, createOverlay } from '@chakra-ui/react';
+import { Dialog, Portal, createOverlay } from '@chakra-ui/react';
+import { CloseButton } from './close-button';
 
 interface DialogProps extends Dialog.RootProps {
   children: React.ReactNode;
@@ -10,18 +11,18 @@ interface DialogProps extends Dialog.RootProps {
 export const dialog = createOverlay<DialogProps>(
   ({ children, contentRef, ...rest }) => {
     return (
-      <Dialog.Root {...rest}>
+      <Dialog.Root {...rest} lazyMount unmountOnExit>
         <Portal>
           <Dialog.Backdrop zIndex="modal" />
           <Dialog.Positioner paddingInline={8}>
-            <Dialog.Content ref={contentRef}>
+            <Dialog.Content ref={contentRef} zIndex="modal">
               <Dialog.CloseTrigger
                 asChild
                 position="absolute"
                 top="4"
                 right="4"
               >
-                <CloseButton size="sm" focusRing="none" />
+                <CloseButton size="sm" rounded="full" focusRing="none" />
               </Dialog.CloseTrigger>
               {children}
             </Dialog.Content>

@@ -1,30 +1,30 @@
-import { cache } from 'react';
+import { unstable_cache } from 'next/cache';
 
 import {
   and,
-  arrayContained,
   eq,
   getTableColumns,
   ilike,
   inArray,
-  not,
+  ne,
   or,
   SQL,
 } from 'drizzle-orm';
 
 import { db } from '@/drizzle';
-import { User, UserTable } from '@/drizzle/schema';
+import { InsertUser, User, UserRelations, UserTable } from '@/drizzle/schema';
 
 import logger from '@/lib/logger';
 import { UserRole } from '@/utils/enum';
+import { hasPermissions } from '@/utils/helper';
 
-import { AddUserValues, FilterUsersValues } from '../schemas/user';
+import { FilterUsersValues } from '../schemas/user';
 
-export const getUsers = cache(
-  async ({ query, roles, state }: FilterUsersValues) => {
+export const getUsers = unstable_cache(
+  async ({ query, role, state }: FilterUsersValues): Promise<Array<User>> => {
     // Always exclude SUPER_ADMIN user
     const filters: Array<SQL | undefined> = [
-      not(arrayContained(UserTable.roles, [UserRole.SUPER_ADMIN])),
+      ne(UserTable.role, UserRole.SUPER_ADMIN),
     ];
 
     // Only apply filters if parameters are provided and non-empty
@@ -37,22 +37,30 @@ export const getUsers = cache(
       );
     if (state && state.length > 0)
       filters.push(inArray(UserTable.state, state));
-    if (roles && roles.length > 0)
-      filters.push(arrayContained(UserTable.roles, roles));
+    if (role && role.length > 0) filters.push(inArray(UserTable.role, role));
 
     try {
-      return await db
-        .select()
-        .from(UserTable)
-        .where(and(...filters));
-    } catch {
-      logger.error('An error when fetching users');
+      // Use prepared query to improve performance and reusability
+      return await db.transaction(async (tx) => {
+        const users = await tx.query.UserTable.findMany({
+          where: and(...filters),
+          with: {
+            asPlayer: true,
+            asCoach: true,
+          },
+        });
+
+        // Process results in batches for better memory management
+        return users.map(enrichUser);
+      });
+    } catch (error) {
+      logger.error('An error when fetching users', error);
       return [];
     }
   }
 );
 
-export const getExistingEmails = cache(async () => {
+export const getExistingEmails = unstable_cache(async () => {
   try {
     const { email } = getTableColumns(UserTable);
     const data = await db.select({ email }).from(UserTable);
@@ -63,7 +71,7 @@ export const getExistingEmails = cache(async () => {
   }
 });
 
-export const getUserByEmail = cache(async (email: string) => {
+export const getUserByEmail = unstable_cache(async (email: string) => {
   try {
     return await db.query.UserTable.findFirst({
       where: eq(UserTable.email, email),
@@ -73,33 +81,32 @@ export const getUserByEmail = cache(async (email: string) => {
   }
 });
 
-export const getUserById = cache(async (user_id: string) => {
+export const getUserById = unstable_cache(async (user_id: string) => {
   try {
-    return await db.query.UserTable.findFirst({
+    const user = await db.query.UserTable.findFirst({
       where: eq(UserTable.user_id, user_id),
       with: {
-        team: {
-          columns: {},
-          with: {
-            rule: {
-              columns: {
-                content: true,
-                updated_at: true,
-              },
-            },
-          },
-        },
+        asCoach: true,
+        asPlayer: true,
       },
     });
+
+    if (!user) return null;
+
+    return enrichUser(user);
   } catch {
     logger.error('Failed to fetch user');
     return null;
   }
 });
 
-export async function insertUser(user: AddUserValues & { team_id: string }) {
+export async function insertUser(user: InsertUser) {
   try {
-    return await db.insert(UserTable).values(user);
+    const [data] = await db.insert(UserTable).values(user).returning({
+      user_id: UserTable.user_id,
+    });
+
+    return data;
   } catch (error) {
     logger.error(error);
     return null;
@@ -112,8 +119,8 @@ export async function updateUser(user_id: string, user: Partial<User>) {
       .update(UserTable)
       .set(user)
       .where(eq(UserTable.user_id, user_id));
-  } catch {
-    return null;
+  } catch (error) {
+    throw error;
   }
 }
 
@@ -124,4 +131,24 @@ export async function deleteUser(user_id: string) {
     logger.error('Failed to delete user');
     return null;
   }
+}
+
+function enrichUser(user: UserRelations): User {
+  const { asPlayer, asCoach, ...userData } = user;
+  const { isPlayer, isCoach } = hasPermissions(userData.role);
+
+  if (isPlayer) return { ...userData, details: asPlayer };
+  if (isCoach)
+    return {
+      ...userData,
+      details: { ...asCoach, jersey_number: undefined },
+    };
+
+  return {
+    ...userData,
+    details: {
+      user_id: userData.user_id,
+      jersey_number: undefined,
+    },
+  };
 }

@@ -1,18 +1,28 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { ReactNode, RefObject } from 'react';
 
-import { Badge, HStack, Separator, Text, VStack } from '@chakra-ui/react';
+import {
+  Badge,
+  HStack,
+  Icon,
+  IconButton,
+  Separator,
+  Text,
+  VStack,
+} from '@chakra-ui/react';
 import { formatDistanceToNow } from 'date-fns';
 import {
   CalendarDays,
   CircleUserRound,
   LucideClock9,
   Mail,
+  Pencil,
   ShieldCheck,
 } from 'lucide-react';
 
 import {
+  dialog,
   DialogBody,
   DialogDescription,
   DialogHeader,
@@ -21,8 +31,18 @@ import {
 import Visibility from '@/components/visibility';
 
 import { User } from '@/drizzle/schema';
-import { formatDate } from '@/utils/formatter';
+import { formatDate, formatDatetime } from '@/utils/formatter';
 import { colorState } from '@/utils/helper';
+
+import { Tooltip } from '@/components/ui/tooltip';
+import EditProfile from './edit-profile';
+
+export interface UserInfoProps {
+  isAdmin: boolean;
+  user: User;
+  canEdit: boolean;
+  selectionRef: RefObject<Nullable<HTMLDivElement>>;
+}
 
 interface InfoItemProps {
   label: string;
@@ -40,20 +60,44 @@ function InfoItem({ icon: IconComponent, label, children }: InfoItemProps) {
   );
 }
 
-interface UserInfoProps {
-  isAdmin: boolean;
-  user: User;
-}
+export default function UserInfo({
+  isAdmin,
+  canEdit,
+  user,
+  selectionRef,
+}: UserInfoProps) {
+  const openEditProfileDialog = () => {
+    dialog.update('profile', {
+      children: (
+        <EditProfile
+          user={user}
+          canEdit={canEdit}
+          selectionRef={selectionRef}
+        />
+      ),
+      closeOnInteractOutside: false,
+    });
+  };
 
-export default function UserInfo({ isAdmin, user }: UserInfoProps) {
   return (
     <>
       <DialogHeader>
-        <DialogTitle display="flex" alignItems="center" gap={1}>
-          <CircleUserRound />
+        <DialogTitle display="flex" alignItems="center" gap={2}>
+          <Tooltip content="Edit profile" positioning={{ placement: 'top' }}>
+            <Icon
+              role="button"
+              tab-index="0"
+              aria-label="icon-info"
+              _hover={{ cursor: 'pointer', color: 'tomato' }}
+            >
+              <CircleUserRound onClick={openEditProfileDialog} />
+            </Icon>
+          </Tooltip>
           <Text>{user.name}</Text>
         </DialogTitle>
-        <DialogDescription>#5</DialogDescription>
+        {user.details.jersey_number && (
+          <DialogDescription>#{user.details.jersey_number}</DialogDescription>
+        )}
       </DialogHeader>
       <DialogBody>
         <VStack align="stretch">
@@ -63,6 +107,19 @@ export default function UserInfo({ isAdmin, user }: UserInfoProps) {
               <Text flexShrink="0" fontSize="sm" color="GrayText">
                 Personal
               </Text>
+              <Tooltip
+                content="Edit profile"
+                positioning={{ placement: 'top' }}
+              >
+                <IconButton
+                  size="2xs"
+                  variant="ghost"
+                  aria-label="Edit user information"
+                  onClick={openEditProfileDialog}
+                >
+                  <Pencil />
+                </IconButton>
+              </Tooltip>
               <Separator flex="1" />
             </HStack>
             <VStack width="full" align="stretch">
@@ -87,20 +144,28 @@ export default function UserInfo({ isAdmin, user }: UserInfoProps) {
                 <Badge
                   variant="surface"
                   width="max-content"
-                  borderRadius="full"
+                  rounded="full"
                   colorPalette={colorState(user.state)}
                 >
                   {user.state}
                 </Badge>
-
-                <HStack gap={1}>
-                  <ShieldCheck size={14} color="GrayText" />
-                  <Text color="GrayText">Roles:</Text>
-                  {user.roles.map((role: string) => (
-                    <Badge key={role} variant="outline" borderRadius="full">
-                      {role}
+                <HStack>
+                  <HStack gap={1}>
+                    <ShieldCheck size={14} color="GrayText" />
+                    <Text color="GrayText">Roles:</Text>
+                    <Badge variant="outline" rounded="full">
+                      {user.role}
                     </Badge>
-                  ))}
+                  </HStack>
+
+                  {user.details.position && (
+                    <HStack gap={1}>
+                      <Text color="GrayText">/ Position:</Text>
+                      <Badge variant="outline" rounded="full">
+                        {user.details.position}
+                      </Badge>
+                    </HStack>
+                  )}
                 </HStack>
               </HStack>
               {user.join_date && (
@@ -131,7 +196,7 @@ export default function UserInfo({ isAdmin, user }: UserInfoProps) {
                   {formatDate(user.created_at)}
                 </InfoItem>
                 <InfoItem label="Last Update">
-                  {formatDate(user.updated_at)}
+                  {formatDatetime(user.updated_at)}
                 </InfoItem>
               </VStack>
             </VStack>

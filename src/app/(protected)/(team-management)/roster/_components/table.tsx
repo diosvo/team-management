@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 
 import {
   ActionBar,
@@ -34,9 +34,11 @@ import { colorState } from '@/utils/helper';
 
 import UserInfo from '@/app/(protected)/_components/user-info';
 import { removeUser } from '@/features/user/actions/user';
+import { formatDate } from '@/utils/formatter';
 
-export function RosterTable({ users }: { users: Array<User> }) {
-  const isAdmin = usePermissions();
+export default function RosterTable({ users }: { users: Array<User> }) {
+  const { isAdmin } = usePermissions();
+  const selectionRef = useRef<HTMLDivElement>(null);
 
   const [selection, setSelection] = useState<Array<string>>([]);
   const [pagination, setPagination] = useState({
@@ -61,7 +63,7 @@ export function RosterTable({ users }: { users: Array<User> }) {
     if (isAdmin) {
       count += 2; // Checkbox and Verified
     }
-    count += 5; // No., Name, Email, State, Roles
+    count += 7; // No., Name, DOB, Email, State, Roles, Position
     return count;
   }, [isAdmin]);
 
@@ -113,11 +115,17 @@ export function RosterTable({ users }: { users: Array<User> }) {
                   </Table.ColumnHeader>
                 </>
               </Visibility>
-              <Table.ColumnHeader>No.</Table.ColumnHeader>
-              <Table.ColumnHeader>Name</Table.ColumnHeader>
-              <Table.ColumnHeader>Email</Table.ColumnHeader>
-              <Table.ColumnHeader>State</Table.ColumnHeader>
-              <Table.ColumnHeader>Roles</Table.ColumnHeader>
+              {[
+                'No.',
+                'Name',
+                'DOB',
+                'Email',
+                'State',
+                'Roles',
+                'Position',
+              ].map((column: string) => (
+                <Table.ColumnHeader key={column}>{column}</Table.ColumnHeader>
+              ))}
             </Table.Row>
           </Table.Header>
           <Table.Body>
@@ -130,8 +138,17 @@ export function RosterTable({ users }: { users: Array<User> }) {
                   }
                   _hover={{ cursor: 'pointer' }}
                   onClick={() =>
-                    dialog.open('user-info', {
-                      children: <UserInfo user={user} isAdmin={isAdmin} />,
+                    dialog.open('profile', {
+                      contentRef: selectionRef,
+                      children: (
+                        <UserInfo
+                          user={user}
+                          canEdit={isAdmin}
+                          isAdmin={isAdmin}
+                          selectionRef={selectionRef}
+                        />
+                      ),
+                      closeOnInteractOutside: true,
                     })
                   }
                 >
@@ -168,29 +185,32 @@ export function RosterTable({ users }: { users: Array<User> }) {
                       </Table.Cell>
                     </>
                   </Visibility>
-                  <Table.Cell>-</Table.Cell>
+                  <Table.Cell>{user.details.jersey_number ?? '-'}</Table.Cell>
                   <Table.Cell>{user.name}</Table.Cell>
+                  <Table.Cell> {formatDate(user.dob)}</Table.Cell>
                   <Table.Cell>{user.email}</Table.Cell>
                   <Table.Cell>
                     <Badge
                       variant="surface"
-                      borderRadius="full"
+                      rounded="full"
                       colorPalette={colorState(user.state)}
                     >
                       {user.state}
                     </Badge>
                   </Table.Cell>
                   <Table.Cell>
-                    {user.roles.map((role: string) => (
-                      <Badge
-                        key={role}
-                        variant="outline"
-                        borderRadius="full"
-                        marginRight={2}
-                      >
-                        {role}
+                    <Badge variant="outline" rounded="full">
+                      {user.role}
+                    </Badge>
+                  </Table.Cell>
+                  <Table.Cell>
+                    {user.details.position ? (
+                      <Badge variant="outline" rounded="full">
+                        {user.details.position}
                       </Badge>
-                    ))}
+                    ) : (
+                      '-'
+                    )}
                   </Table.Cell>
                 </Table.Row>
               ))

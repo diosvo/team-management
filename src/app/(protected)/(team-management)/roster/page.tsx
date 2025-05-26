@@ -1,12 +1,13 @@
 import { getRoster } from '@/features/user/actions/user';
+
 import RosterActions from './_components/actions';
-import { RosterTable } from './_components/table';
+import RosterTable from './_components/table';
 import { parseSearchParams } from './_helpers/parse-params';
 
 export default async function RosterPage(props: {
   searchParams: Promise<{
     query: string;
-    roles: string;
+    role: string;
     state: string;
   }>;
 }) {

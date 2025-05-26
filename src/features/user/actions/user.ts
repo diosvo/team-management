@@ -3,8 +3,15 @@
 import { sendPasswordInstructionEmail } from '@/lib/mail';
 import { Response, ResponseFactory } from '@/utils/response';
 
+import { User } from '@/drizzle/schema';
 import { getTeam } from '@/features/team/actions/team';
-import { revalidateAdminPath } from '../db/cache';
+
+import { CoachPosition, PlayerPosition, UserRole } from '@/utils/enum';
+import { hasPermissions } from '@/utils/helper';
+
+import { revalidateRosterPath } from '../db/cache';
+import { insertCoach, updateCoach } from '../db/coach';
+import { insertPlayer, updatePlayer } from '../db/player';
 import {
   deleteUser,
   getExistingEmails,
@@ -14,13 +21,15 @@ import {
 } from '../db/user';
 import {
   AddUserValues,
+  EditProfileSchema,
+  EditProfileValues,
   FilterUsersValues,
-  UpdateUserSchema,
-  UpdateUserValues,
 } from '../schemas/user';
 import { generatePasswordToken } from './password-reset-token';
 
-export async function getRoster(params: FilterUsersValues) {
+export async function getRoster(
+  params: FilterUsersValues
+): Promise<Array<User>> {
   return await getUsers(params);
 }
 
@@ -38,6 +47,7 @@ export async function addUser(
       ...usersWithoutTeam,
       team_id: team.team_id,
     };
+    const { isPlayer, isCoach } = hasPermissions(user.role);
 
     const existingEmails = await getExistingEmails();
 
@@ -53,10 +63,28 @@ export async function addUser(
       );
     }
 
+    const withUser = { user_id: data.user_id };
+
+    if (isPlayer) {
+      const player = await insertPlayer(withUser);
+
+      if (!player) {
+        return ResponseFactory.error('Failed to extend user as player');
+      }
+    }
+
+    if (isCoach) {
+      const coach = await insertCoach(withUser);
+
+      if (!coach) {
+        return ResponseFactory.error('Failed to grant user as coach');
+      }
+    }
+
     const { email, token } = await generatePasswordToken(user.email);
     await sendPasswordInstructionEmail('reset', email, token);
 
-    revalidateAdminPath();
+    revalidateRosterPath();
 
     return ResponseFactory.success('Sent an email to with instructions');
   } catch (error) {
@@ -64,22 +92,41 @@ export async function addUser(
   }
 }
 
-export async function updateUserInfo(
+export async function updateProfile(
   user_id: string,
-  values: UpdateUserValues
+  user_role: UserRole,
+  values: EditProfileValues
 ): Promise<Response> {
-  const { data, error } = UpdateUserSchema.safeParse(values);
+  const { data, error } = EditProfileSchema.safeParse(values);
 
   if (error) {
     return ResponseFactory.error(error.message);
   }
 
   try {
-    await updateUser(user_id, data);
+    const { user, player, position } = data;
+
+    await updateUser(user_id, user);
+
+    if (user_role === UserRole.PLAYER) {
+      await updatePlayer({
+        user_id,
+        ...player,
+        position: position as PlayerPosition,
+      });
+    }
+    if (user_role === UserRole.COACH) {
+      await updateCoach({
+        user_id,
+        position: position as CoachPosition,
+      });
+    }
+
+    revalidateRosterPath();
 
     return ResponseFactory.success('Updated information successfully');
-  } catch {
-    return ResponseFactory.error('Failed to update user');
+  } catch (error) {
+    return ResponseFactory.fromError(error as Error);
   }
 }
 
@@ -87,7 +134,7 @@ export async function removeUser(user_id: string): Promise<Response> {
   try {
     await deleteUser(user_id);
 
-    revalidateAdminPath();
+    revalidateRosterPath();
 
     return ResponseFactory.success('User deleted successfully');
   } catch {

@@ -1,28 +1,33 @@
-import { cache } from 'react';
-
 import { eq } from 'drizzle-orm';
 
 import { db } from '@/drizzle';
 import { InsertRule, RuleTable } from '@/drizzle/schema/rule';
-import logger from '@/lib/logger';
+import { unstable_cache } from 'next/cache';
+import { getRuleTag, revalidateRuleTag } from './cache';
 
-import { revalidateRuleCache } from './cache';
-
-export const getRule = cache(async (team_id: string) => {
-  return await db.query.RuleTable.findFirst({
-    where: eq(RuleTable.team_id, team_id),
-    columns: { rule_id: true, content: true },
-  });
-});
+export const getRule = unstable_cache(
+  async (team_id: string) => {
+    try {
+      return await db.query.RuleTable.findFirst({
+        where: eq(RuleTable.team_id, team_id),
+      });
+    } catch {
+      return null;
+    }
+  },
+  [getRuleTag()]
+);
 
 export async function insertRule(data: InsertRule) {
-  const [newRule] = await db.insert(RuleTable).values(data).returning();
+  try {
+    const [rule] = await db.insert(RuleTable).values(data).returning();
 
-  if (newRule == null) throw new Error('Failed to create rule');
+    revalidateRuleTag();
 
-  revalidateRuleCache(newRule.rule_id);
-
-  return newRule;
+    return rule;
+  } catch (error) {
+    throw error;
+  }
 }
 
 export async function updateRule(rule_id: string, content: string) {
@@ -33,13 +38,10 @@ export async function updateRule(rule_id: string, content: string) {
       .where(eq(RuleTable.rule_id, rule_id))
       .returning();
 
-    if (data == null) return null;
-
-    revalidateRuleCache(data.rule_id);
+    revalidateRuleTag();
 
     return data;
   } catch (error) {
-    logger.error('Failed to update rule', error);
-    return null;
+    throw error;
   }
 }

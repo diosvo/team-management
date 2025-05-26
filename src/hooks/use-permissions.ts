@@ -2,17 +2,25 @@
 
 import { use, useMemo } from 'react';
 
-import { UserRole } from '@/utils/enum';
+import { hasPermissions } from '@/utils/helper';
 import { useUser } from './use-user';
 
-export function usePermissions(
-  roles: Array<UserRole> = [UserRole.SUPER_ADMIN]
-): boolean {
+/**
+ * @description Hook to determine the current user permissions based on their role.
+ */
+export function usePermissions() {
   const { userPromise } = useUser();
   const user = use(userPromise);
 
   return useMemo(() => {
-    if (!user) return false;
-    return roles.some((role) => user.roles.includes(role));
-  }, [user, roles]);
+    if (!user) {
+      return {
+        isAdmin: false,
+        isPlayer: false,
+        isCoach: false,
+        isGuest: false,
+      };
+    }
+    return hasPermissions(user.role);
+  }, [user]);
 }
