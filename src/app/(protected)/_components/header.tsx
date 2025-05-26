@@ -60,7 +60,7 @@ export default function Header() {
       });
       handleLogout();
     }
-  }, [user]);
+  }, [user, handleLogout, toaster.error]);
 
   if (!user) return null;
 

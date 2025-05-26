@@ -254,7 +254,7 @@ export default function EditProfile({
                     </Badge>
                   }
                   invalid={!!errors.player?.weight}
-                  errorText={errors.player?.message}
+                  errorText={errors.player?.weight?.message}
                 >
                   <NumberInput.Root min={0} max={100}>
                     <NumberInput.Control />

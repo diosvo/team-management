@@ -84,7 +84,12 @@ export default function UserInfo({
       <DialogHeader>
         <DialogTitle display="flex" alignItems="center" gap={2}>
           <Tooltip content="Edit profile" positioning={{ placement: 'top' }}>
-            <Icon _hover={{ cursor: 'pointer', color: 'tomato' }}>
+            <Icon
+              role="button"
+              tab-index="0"
+              aria-label="icon-info"
+              _hover={{ cursor: 'pointer', color: 'tomato' }}
+            >
               <CircleUserRound onClick={openEditProfileDialog} />
             </Icon>
           </Tooltip>

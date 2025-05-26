@@ -63,7 +63,7 @@ export default function RosterTable({ users }: { users: Array<User> }) {
     if (isAdmin) {
       count += 2; // Checkbox and Verified
     }
-    count += 7; // Remaining columns
+    count += 7; // No., Name, DOB, Email, State, Roles, Position
     return count;
   }, [isAdmin]);
 
