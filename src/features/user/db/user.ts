@@ -1,5 +1,3 @@
-import { unstable_cache } from 'next/cache';
-
 import {
   and,
   eq,
@@ -20,47 +18,48 @@ import { hasPermissions } from '@/utils/helper';
 
 import { FilterUsersValues } from '../schemas/user';
 
-export const getUsers = unstable_cache(
-  async ({ query, role, state }: FilterUsersValues): Promise<Array<User>> => {
-    // Always exclude SUPER_ADMIN user
-    const filters: Array<SQL | undefined> = [
-      ne(UserTable.role, UserRole.SUPER_ADMIN),
-    ];
+export async function getUsers({
+  query,
+  role,
+  state,
+}: FilterUsersValues): Promise<Array<User>> {
+  // Always exclude SUPER_ADMIN user
+  const filters: Array<SQL | undefined> = [
+    ne(UserTable.role, UserRole.SUPER_ADMIN),
+  ];
 
-    // Only apply filters if parameters are provided and non-empty
-    if (query && query.trim() !== '')
-      filters.push(
-        or(
-          ilike(UserTable.email, `%${query}%`),
-          ilike(UserTable.name, `%${query}%`)
-        )
-      );
-    if (state && state.length > 0)
-      filters.push(inArray(UserTable.state, state));
-    if (role && role.length > 0) filters.push(inArray(UserTable.role, role));
+  // Only apply filters if parameters are provided and non-empty
+  if (query && query.trim() !== '')
+    filters.push(
+      or(
+        ilike(UserTable.email, `%${query}%`),
+        ilike(UserTable.name, `%${query}%`)
+      )
+    );
+  if (state && state.length > 0) filters.push(inArray(UserTable.state, state));
+  if (role && role.length > 0) filters.push(inArray(UserTable.role, role));
 
-    try {
-      // Use prepared query to improve performance and reusability
-      return await db.transaction(async (tx) => {
-        const users = await tx.query.UserTable.findMany({
-          where: and(...filters),
-          with: {
-            asPlayer: true,
-            asCoach: true,
-          },
-        });
-
-        // Process results in batches for better memory management
-        return users.map(enrichUser);
+  try {
+    // Use prepared query to improve performance and reusability
+    return await db.transaction(async (tx) => {
+      const users = await tx.query.UserTable.findMany({
+        where: and(...filters),
+        with: {
+          asPlayer: true,
+          asCoach: true,
+        },
       });
-    } catch (error) {
-      logger.error('An error when fetching users', error);
-      return [];
-    }
-  }
-);
 
-export const getExistingEmails = unstable_cache(async () => {
+      // Process results in batches for better memory management
+      return users.map(enrichUser);
+    });
+  } catch (error) {
+    logger.error('An error when fetching users', error);
+    return [];
+  }
+}
+
+export async function getExistingEmails() {
   try {
     const { email } = getTableColumns(UserTable);
     const data = await db.select({ email }).from(UserTable);
@@ -69,9 +68,9 @@ export const getExistingEmails = unstable_cache(async () => {
     logger.error('An error when getting existing emails');
     return [];
   }
-});
+}
 
-export const getUserByEmail = unstable_cache(async (email: string) => {
+export async function getUserByEmail(email: string) {
   try {
     return await db.query.UserTable.findFirst({
       where: eq(UserTable.email, email),
@@ -79,9 +78,9 @@ export const getUserByEmail = unstable_cache(async (email: string) => {
   } catch {
     return null;
   }
-});
+}
 
-export const getUserById = unstable_cache(async (user_id: string) => {
+export async function getUserById(user_id: string) {
   try {
     const user = await db.query.UserTable.findFirst({
       where: eq(UserTable.user_id, user_id),
@@ -98,7 +97,7 @@ export const getUserById = unstable_cache(async (user_id: string) => {
     logger.error('Failed to fetch user');
     return null;
   }
-});
+}
 
 export async function insertUser(user: InsertUser) {
   try {

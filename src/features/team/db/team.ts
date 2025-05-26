@@ -1,12 +1,9 @@
-import { unstable_cache } from 'next/cache';
-
 import { eq } from 'drizzle-orm';
 
 import { db } from '@/drizzle';
 import { TeamTable } from '@/drizzle/schema';
-import { getTeamTag } from './cache';
 
-export const getTeam = unstable_cache(async () => {
+export async function getTeam() {
   try {
     return await db.query.TeamTable.findFirst({
       where: eq(TeamTable.is_default, true),
@@ -14,4 +11,4 @@ export const getTeam = unstable_cache(async () => {
   } catch (error) {
     throw error;
   }
-}, [getTeamTag()]);
+}

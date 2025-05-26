@@ -6,6 +6,8 @@ import { NullishRule } from '@/drizzle/schema';
 import { Response, ResponseFactory } from '@/utils/response';
 
 import { getTeam } from '@/features/team/actions/team';
+
+import { revalidateRulePath } from '../db/cache';
 import { getRule as getAction, insertRule, updateRule } from '../db/rule';
 
 export async function getRule(): Promise<NullishRule> {
@@ -27,11 +29,13 @@ export async function executeRule(content: string): Promise<Response> {
 
     if (existingRule) {
       await updateRule(existingRule.rule_id, content);
-      return ResponseFactory.success('Rule updated successfully');
     } else {
       await insertRule({ team_id: team.team_id, content });
-      return ResponseFactory.success('New rule created successfully');
     }
+
+    revalidateRulePath();
+
+    return ResponseFactory.success('Rule updated successfully');
   } catch (error) {
     if (error instanceof pg.DatabaseError && error.code === '23505') {
       return ResponseFactory.error(error.detail);
