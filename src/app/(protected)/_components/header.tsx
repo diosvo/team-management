@@ -26,7 +26,6 @@ import HeaderLogo from '@assets/images/header-logo.png';
 
 import { CloseButton } from '@/components/ui/close-button';
 import { dialog } from '@/components/ui/dialog';
-import { toaster } from '@/components/ui/toaster';
 
 import Sidebar from './sidebar';
 import UserInfo from './user-info';
@@ -51,16 +50,6 @@ export default function Header() {
   useEffect(() => {
     setOpen(false);
   }, [pathname]);
-
-  useEffect(() => {
-    if (!user) {
-      toaster.error({
-        title: 'Session has been expired',
-        description: 'Please login again.',
-      });
-      handleLogout();
-    }
-  }, [user, handleLogout, toaster.error]);
 
   if (!user) return null;
 

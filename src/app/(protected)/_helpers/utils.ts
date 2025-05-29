@@ -1,6 +1,7 @@
 import {
   BadgeCheck,
   CalendarDays,
+  Crown,
   Dumbbell,
   FileChartColumnIncreasing,
   FileText,
@@ -55,6 +56,16 @@ export const SIDEBAR_GROUP = [
         icon: Film,
         text: 'Documents',
         disabled: true,
+      },
+    ],
+  },
+  {
+    title: '',
+    items: [
+      {
+        icon: Crown,
+        text: 'Team Rule',
+        disabled: false,
       },
     ],
   },

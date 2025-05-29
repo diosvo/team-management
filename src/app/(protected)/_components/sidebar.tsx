@@ -2,12 +2,7 @@
 
 import Link, { useLinkStatus } from 'next/link';
 import { usePathname } from 'next/navigation';
-import {
-  ForwardRefExoticComponent,
-  ReactNode,
-  RefAttributes,
-  useTransition,
-} from 'react';
+import { ForwardRefExoticComponent, ReactNode, RefAttributes } from 'react';
 
 import {
   Button,
@@ -17,21 +12,20 @@ import {
   Text,
   VStack,
 } from '@chakra-ui/react';
-import { Crown, LucideProps } from 'lucide-react';
+import { LucideProps } from 'lucide-react';
 
-import { dialog } from '@/components/ui/dialog';
-
-import { usePermissions } from '@/hooks/use-permissions';
-
-import { getRule } from '@/features/rule/actions/rule';
 import { hrefPath, SIDEBAR_GROUP } from '../_helpers/utils';
-import TeamRule from './team-rule';
 
 function LoadingIndicator() {
   const { pending } = useLinkStatus();
   return (
     pending && (
-      <Spinner size="xs" colorPalette="gray" ml="auto" borderWidth="1px" />
+      <Spinner
+        size="xs"
+        colorPalette="gray"
+        marginLeft="auto"
+        borderWidth="1px"
+      />
     )
   );
 }
@@ -39,7 +33,7 @@ function LoadingIndicator() {
 function NavButton({
   href,
   icon,
-  disabled = false,
+  disabled,
   children,
   isExpanded = true,
 }: {
@@ -85,19 +79,6 @@ export default function Sidebar({
 }: {
   isExpanded?: boolean;
 }) {
-  const { isAdmin } = usePermissions();
-  const [isPending, startTransition] = useTransition();
-
-  const openRuleDialog = () => {
-    startTransition(async () => {
-      const rule = await getRule();
-
-      dialog.open('team-rule', {
-        children: <TeamRule editable={isAdmin} rule={rule} />,
-      });
-    });
-  };
-
   return (
     <VStack
       align="stretch"
@@ -108,7 +89,11 @@ export default function Sidebar({
       overflow="hidden"
     >
       {SIDEBAR_GROUP.map(({ title, items }, index) => (
-        <VStack key={title} align="stretch">
+        <VStack
+          key={title}
+          align="stretch"
+          marginTop={title ? undefined : 'auto'}
+        >
           {isExpanded ? (
             <Text
               fontSize={{ base: '2xs', md: 'xs' }}
@@ -136,22 +121,6 @@ export default function Sidebar({
           })}
         </VStack>
       ))}
-
-      <VStack align="stretch" marginTop="auto">
-        <Button
-          size={{ base: 'xs', md: 'sm' }}
-          variant="ghost"
-          justifyContent={isExpanded ? 'flex-start' : 'center'}
-          title="Team Rule"
-          paddingInline={isExpanded ? undefined : 2}
-          disabled={isPending}
-          onClick={openRuleDialog}
-        >
-          <Icon as={Crown} color="orange.focusRing" />
-          {isExpanded && 'Team Rule'}
-        </Button>
-      </VStack>
-      <dialog.Viewport />
     </VStack>
   );
 }

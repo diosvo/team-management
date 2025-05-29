@@ -87,7 +87,7 @@ export default function ProtectedLayout({
         </IconButton>
       </GridItem>
 
-      <GridItem gridArea="main">
+      <GridItem gridArea="main" overflow="auto" height="100%">
         <Suspense fallback={<Loading />}>
           <Container
             paddingBlock={4}
