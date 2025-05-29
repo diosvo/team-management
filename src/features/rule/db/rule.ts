@@ -5,11 +5,9 @@ import { InsertRule, RuleTable } from '@/drizzle/schema/rule';
 
 export async function getRule(team_id: string) {
   try {
-    const data = await db.query.RuleTable.findFirst({
+    return await db.query.RuleTable.findFirst({
       where: eq(RuleTable.team_id, team_id),
     });
-
-    return data;
   } catch {
     return null;
   }

@@ -8,7 +8,7 @@ export async function getTeam() {
     return await db.query.TeamTable.findFirst({
       where: eq(TeamTable.is_default, true),
     });
-  } catch (error) {
-    throw error;
+  } catch {
+    return null;
   }
 }
