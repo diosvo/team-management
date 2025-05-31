@@ -7,13 +7,11 @@ import {
   Badge,
   Button,
   ButtonGroup,
-  EmptyState,
   Icon,
   IconButton,
   Pagination,
   Portal,
   Table,
-  VStack,
 } from '@chakra-ui/react';
 import {
   ChevronLeft,
@@ -24,6 +22,7 @@ import {
 } from 'lucide-react';
 
 import { Checkbox } from '@/components/ui/checkbox';
+import { EmptyState } from '@/components/ui/empty-state';
 import { toaster } from '@/components/ui/toaster';
 import Visibility from '@/components/visibility';
 
@@ -207,19 +206,11 @@ export default function RosterTable({ users }: { users: Array<User> }) {
             ) : (
               <Table.Row>
                 <Table.Cell colSpan={columnCount}>
-                  <EmptyState.Root>
-                    <EmptyState.Content>
-                      <EmptyState.Indicator>
-                        <SwatchBook />
-                      </EmptyState.Indicator>
-                      <VStack textAlign="center">
-                        <EmptyState.Title>No users found</EmptyState.Title>
-                        <EmptyState.Description>
-                          Try adjusting your search
-                        </EmptyState.Description>
-                      </VStack>
-                    </EmptyState.Content>
-                  </EmptyState.Root>
+                  <EmptyState
+                    icon={<SwatchBook />}
+                    title="No users found"
+                    description="Try adjusting your search"
+                  />
                 </Table.Cell>
               </Table.Row>
             )}
