@@ -8,7 +8,7 @@ import {
   or,
   SQL,
 } from 'drizzle-orm';
-import { revalidateTag, unstable_cache } from 'next/cache';
+import { unstable_cache } from 'next/cache';
 
 import { db } from '@/drizzle';
 import { InsertUser, User, UserRelations, UserTable } from '@/drizzle/schema';
@@ -18,6 +18,7 @@ import { UserRole } from '@/utils/enum';
 import { hasPermissions } from '@/utils/helper';
 
 import { FilterUsersValues } from '../schemas/user';
+import { userCacheKey, userCacheTag } from './cache';
 
 export async function getUsers({
   query,
@@ -101,43 +102,28 @@ export async function getUserById(user_id: string) {
         return null;
       }
     },
-    [`user-${user_id}`],
+    [userCacheKey(user_id)],
     {
-      tags: [`user:${user_id}`],
+      tags: [userCacheTag(user_id)],
       revalidate: 1800, // 30 minutes
     }
   )(user_id);
 }
 
 export async function insertUser(user: InsertUser) {
-  try {
-    const [data] = await db.insert(UserTable).values(user).returning({
-      user_id: UserTable.user_id,
-    });
+  const [data] = await db.insert(UserTable).values(user).returning({
+    user_id: UserTable.user_id,
+  });
 
-    // Invalidate user cache after insert
-    if (data?.user_id) {
-      revalidateTag(`user:${data.user_id}`);
-    }
-
-    return data;
-  } catch (error) {
-    logger.error(error);
-    return null;
-  }
+  return data;
 }
 
 export async function updateUser(user_id: string, user: Partial<User>) {
   try {
-    const result = await db
+    return await db
       .update(UserTable)
       .set(user)
       .where(eq(UserTable.user_id, user_id));
-
-    // Invalidate user cache after update
-    revalidateTag(`user:${user_id}`);
-
-    return result;
   } catch (error) {
     throw error;
   }
@@ -145,14 +131,7 @@ export async function updateUser(user_id: string, user: Partial<User>) {
 
 export async function deleteUser(user_id: string) {
   try {
-    const result = await db
-      .delete(UserTable)
-      .where(eq(UserTable.user_id, user_id));
-
-    // Invalidate user cache after delete
-    revalidateTag(`user:${user_id}`);
-
-    return result;
+    return await db.delete(UserTable).where(eq(UserTable.user_id, user_id));
   } catch {
     logger.error('Failed to delete user');
     return null;

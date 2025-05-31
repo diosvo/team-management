@@ -70,7 +70,10 @@ export default function Header() {
 
       <Menu.Root>
         <Menu.Trigger focusVisibleRing="none">
-          <Avatar.Root variant="subtle" size={{ base: 'xs', md: 'sm' }}>
+          <Avatar.Root
+            variant="subtle"
+            size={{ base: 'xs', md: 'sm', lg: 'md' }}
+          >
             <Avatar.Fallback name={user.name} />
             <Avatar.Image src={user.image as string} />
             <Float placement="bottom-end" offsetX={1} offsetY={1}>

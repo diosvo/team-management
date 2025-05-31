@@ -9,7 +9,7 @@ import { getTeam } from '@/features/team/actions/team';
 import { CoachPosition, PlayerPosition, UserRole } from '@/utils/enum';
 import { hasPermissions } from '@/utils/helper';
 
-import { revalidateRosterPath } from '../db/cache';
+import { revalidateRosterPath, revalidateUserTag } from '../db/cache';
 import { insertCoach, updateCoach } from '../db/coach';
 import { insertPlayer, updatePlayer } from '../db/player';
 import {
@@ -122,7 +122,7 @@ export async function updateProfile(
       });
     }
 
-    revalidateRosterPath();
+    revalidateUserTag(user_id);
 
     return ResponseFactory.success('Updated information successfully');
   } catch (error) {
