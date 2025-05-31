@@ -3,7 +3,7 @@ import { use } from 'react';
 
 import { getUser } from '@/features/user/actions/auth';
 
-import GeneralInfo from './_components/general-info';
+import PageTitle from '@/components/page-title';
 import PersonalInfo from './_components/personal-info';
 import SystemInfo from './_components/system-info';
 import TeamInfo from './_components/team-info';
@@ -18,7 +18,7 @@ export default function ProfilePage() {
 
   return (
     <VStack gap={6} align="stretch">
-      <GeneralInfo user={user} />
+      <PageTitle>Profile Details</PageTitle>
 
       <Grid templateColumns={{ base: '1fr', lg: 'repeat(2, 1fr)' }} gap={6}>
         <PersonalInfo user={user} />

@@ -37,8 +37,8 @@ export default function SystemInfo({ user }: SystemInfoProps) {
 
   return (
     <Visibility isVisible={isAdmin}>
-      <Card.Root>
-        <Card.Header>
+      <Card.Root _hover={{ shadow: 'sm' }} transition="all 0.2s">
+        <Card.Header backgroundColor="ghostwhite" paddingBlock={4}>
           <Card.Title>System Information</Card.Title>
         </Card.Header>
         <Card.Body>

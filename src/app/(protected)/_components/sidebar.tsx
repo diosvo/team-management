@@ -24,7 +24,7 @@ function LoadingIndicator() {
         size="xs"
         colorPalette="gray"
         marginLeft="auto"
-        borderWidth="1px"
+        borderWidth={1}
       />
     )
   );

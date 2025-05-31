@@ -1,112 +1,112 @@
 'use client';
 
-import { Badge, Card, HStack, Icon, Text, VStack } from '@chakra-ui/react';
+import {
+  Badge,
+  Card,
+  Grid,
+  HStack,
+  IconButton,
+  Input,
+  Text,
+} from '@chakra-ui/react';
 import { formatDistanceToNow } from 'date-fns';
-import { Calendar, Hash, Ruler, Scale, Shield } from 'lucide-react';
+import { Edit, LucideClock9 } from 'lucide-react';
 
+import { Field } from '@/components/ui/field';
 import { User } from '@/drizzle/schema';
-import { UserRole } from '@/utils/enum';
 import { formatDate } from '@/utils/formatter';
+import { colorRole, hasPermissions } from '@/utils/helper';
+import { useState } from 'react';
 
-interface TeamInfoProps {
-  user: User;
-}
-
-interface InfoItemProps {
-  icon: React.ElementType;
-  label: string;
-  value: string | number | null | undefined;
-  suffix?: string;
-}
-
-function InfoItem({ icon, label, value, suffix }: InfoItemProps) {
-  const displayValue = value ? `${value}${suffix || ''}` : 'Not provided';
+export default function TeamInfo({ user }: { user: User }) {
+  const { isAdmin, isPlayer } = hasPermissions(user.role);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
 
   return (
-    <HStack gap={3} align="flex-start">
-      <Icon as={icon} size="md" color="gray.500" mt={0.5} />
-      <VStack gap={0} align="flex-start" flex={1}>
-        <Text fontSize="sm" color="gray.600" fontWeight="medium">
-          {label}
-        </Text>
-        <Text fontSize="md" color={value ? 'inherit' : 'gray.400'}>
-          {displayValue}
-        </Text>
-      </VStack>
-    </HStack>
-  );
-}
-
-export default function TeamInfo({ user }: TeamInfoProps) {
-  const isPlayer = user.role === UserRole.PLAYER;
-
-  return (
-    <Card.Root>
-      <Card.Header>
-        <Card.Title>Team Information</Card.Title>
-      </Card.Header>
+    <Card.Root _hover={{ shadow: 'sm' }} transition="all 0.2s">
+      <HStack
+        justifyContent="space-between"
+        borderBottom={1}
+        borderBottomStyle="solid"
+        borderBottomColor="gray.200"
+        asChild
+      >
+        <Card.Header paddingBlock={2}>
+          <Card.Title>Team Information</Card.Title>
+          <IconButton variant="subtle" onClick={() => setIsEditing(!isEditing)}>
+            <Edit />
+          </IconButton>
+        </Card.Header>
+      </HStack>
       <Card.Body>
-        <VStack gap={4} align="stretch">
-          <HStack gap={3} align="flex-start">
-            <Icon as={Shield} size="md" color="gray.500" mt={0.5} />
-            <VStack gap={0} align="flex-start" flex={1}>
-              <Text fontSize="sm" color="gray.600" fontWeight="medium">
-                Role & Position
-              </Text>
-              <HStack gap={2} wrap="wrap">
-                <Badge variant="outline">{user.role}</Badge>
-                {user.details.position && (
-                  <Badge variant="outline" colorPalette="purple">
-                    {user.details.position}
-                  </Badge>
-                )}
-              </HStack>
-            </VStack>
+        <Grid
+          templateColumns={{
+            base: '1fr',
+            md: 'repeat(2, 1fr)',
+            xl: 'repeat(3, 1fr)',
+          }}
+          gap={4}
+        >
+          <Field label="Jersey Number">
+            {isEditing ? (
+              <Input
+                placeholder="Anynomous"
+                defaultValue={user.details.jersey_number || ''}
+              />
+            ) : user.details.jersey_number ? (
+              <Badge variant="outline" rounded="full">
+                {user.details.jersey_number}
+              </Badge>
+            ) : (
+              '-'
+            )}
+          </Field>
+
+          <Field label="Role">
+            {isEditing && isAdmin ? (
+              <Input placeholder="Anynomous" defaultValue={user.role} />
+            ) : (
+              <Badge
+                variant="subtle"
+                colorPalette={colorRole(user.role)}
+                rounded="full"
+                size="md"
+              >
+                {user.role}
+              </Badge>
+            )}
+          </Field>
+
+          <Field label="Position">
+            {isEditing && isAdmin ? (
+              <Input
+                placeholder="Unknown"
+                defaultValue={user.details.position || ''}
+              />
+            ) : user.details.position ? (
+              <Badge variant="outline" rounded="full">
+                {user.details.position}
+              </Badge>
+            ) : (
+              '-'
+            )}
+          </Field>
+        </Grid>
+
+        {user.join_date && (
+          <HStack gap={1} marginTop="auto">
+            <LucideClock9 size={14} color="GrayText" />
+            <Text color="GrayText">Joined Date:</Text>
+            {formatDate(user.join_date)}
+            <Text fontSize="sm" color="GrayText">
+              (
+              {formatDistanceToNow(user.join_date, {
+                addSuffix: true,
+              })}
+              )
+            </Text>
           </HStack>
-
-          {isPlayer && user.details.jersey_number && (
-            <InfoItem
-              icon={Hash}
-              label="Jersey Number"
-              value={user.details.jersey_number}
-            />
-          )}
-
-          {isPlayer && 'height' in user.details && (
-            <InfoItem
-              icon={Ruler}
-              label="Height"
-              value={user.details.height}
-              suffix=" cm"
-            />
-          )}
-
-          {isPlayer && 'weight' in user.details && (
-            <InfoItem
-              icon={Scale}
-              label="Weight"
-              value={user.details.weight}
-              suffix=" kg"
-            />
-          )}
-
-          {user.join_date && (
-            <HStack gap={3} align="flex-start">
-              <Icon as={Calendar} size="md" color="gray.500" mt={0.5} />
-              <VStack gap={0} align="flex-start" flex={1}>
-                <Text fontSize="sm" color="gray.600" fontWeight="medium">
-                  Joined Team
-                </Text>
-                <VStack gap={1} align="flex-start">
-                  <Text fontSize="md">{formatDate(user.join_date)}</Text>
-                  <Text fontSize="sm" color="gray.500">
-                    {formatDistanceToNow(user.join_date, { addSuffix: true })}
-                  </Text>
-                </VStack>
-              </VStack>
-            </HStack>
-          )}
-        </VStack>
+        )}
       </Card.Body>
     </Card.Root>
   );

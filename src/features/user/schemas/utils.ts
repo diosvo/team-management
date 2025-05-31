@@ -22,6 +22,7 @@ export const USER_SCHEMA_VALIDATION = {
   name: z
     .string()
     .min(6, { message: 'Be at least 6 characters long.' })
+    .max(128, { message: 'Be at most 128 characters long.' })
     .trim()
     .default(''),
   dob: z.string().date().default(DEFAULT_DOB),
@@ -47,6 +48,7 @@ export const USER_SCHEMA_VALIDATION = {
   password: z
     .string()
     .min(8, { message: 'Be at least 8 characters long.' })
+    .max(128, { message: 'Be at most 128 characters long.' })
     .regex(/[a-zA-Z]/, { message: 'Contain at least one letter.' })
     .regex(/[0-9]/, { message: 'Contain at least one number.' })
     .regex(/[^a-zA-Z0-9]/, {

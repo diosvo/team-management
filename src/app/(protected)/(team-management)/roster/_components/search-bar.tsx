@@ -39,7 +39,7 @@ export default function SearchBar() {
       flex="1"
       startElement={
         isPending ? (
-          <Spinner size="xs" colorPalette="gray" borderWidth="1px" />
+          <Spinner size="xs" colorPalette="gray" borderWidth={1} />
         ) : (
           <Search size={14} />
         )
@@ -55,7 +55,7 @@ export default function SearchBar() {
       <Input
         ref={inputRef}
         maxLength={50}
-        borderWidth="1px"
+        borderWidth={1}
         name="search-bar"
         placeholder="Search..."
         css={{ '--focus-color': 'colors.red.200' }}

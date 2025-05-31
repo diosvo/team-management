@@ -1,16 +1,8 @@
 'use client';
 
-import {
-  Avatar,
-  Badge,
-  Card,
-  Circle,
-  Float,
-  HStack,
-  Text,
-  VStack,
-} from '@chakra-ui/react';
+import { Avatar, Card, Circle, Float, Text, VStack } from '@chakra-ui/react';
 
+import PageTitle from '@/components/page-title';
 import { User } from '@/drizzle/schema';
 import { colorState } from '@/utils/helper';
 
@@ -20,7 +12,7 @@ interface GeneralInfoProps {
 
 export default function GeneralInfo({ user }: GeneralInfoProps) {
   return (
-    <Card.Root>
+    <Card.Root _hover={{ shadow: 'sm' }} transition="all 0.2s">
       <Card.Body>
         <VStack gap={6}>
           <Avatar.Root size="2xl" variant="subtle">
@@ -37,35 +29,9 @@ export default function GeneralInfo({ user }: GeneralInfoProps) {
           </Avatar.Root>
 
           <VStack gap={2} textAlign="center">
-            <Text fontSize={{ base: 'xl', md: '2xl' }} fontWeight="bold">
-              {user.name}
-            </Text>
+            <PageTitle>{user.name}</PageTitle>
 
-            <HStack gap={3} wrap="wrap" justify="center">
-              {user.details.jersey_number && (
-                <Badge size="lg" variant="surface" colorPalette="blue">
-                  #{user.details.jersey_number}
-                </Badge>
-              )}
-
-              <Badge size="lg" variant="outline">
-                {user.role}
-              </Badge>
-
-              {user.details.position && (
-                <Badge size="lg" variant="outline" colorPalette="purple">
-                  {user.details.position}
-                </Badge>
-              )}
-            </HStack>
-
-            <Badge
-              size="lg"
-              variant="surface"
-              colorPalette={colorState(user.state)}
-            >
-              {user.state}
-            </Badge>
+            {user.details.jersey_number && <Text color="GrayText">#5</Text>}
           </VStack>
         </VStack>
       </Card.Body>

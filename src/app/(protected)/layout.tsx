@@ -63,7 +63,7 @@ export default function ProtectedLayout({
         gridArea="sidebar"
         width={sidebarWidth}
         position="relative"
-        borderRightWidth="1px"
+        borderRightWidth={1}
         borderRightStyle="solid"
         borderRightColor="gray.200"
         transition="width 0.3s ease"

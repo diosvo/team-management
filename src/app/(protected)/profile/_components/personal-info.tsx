@@ -1,65 +1,94 @@
 'use client';
 
-import { Card, HStack, Icon, Text, VStack } from '@chakra-ui/react';
-import { CalendarDays, CreditCard, Mail, Phone } from 'lucide-react';
+import { useState } from 'react';
+
+import { Card, Grid, HStack, IconButton, Input, Text } from '@chakra-ui/react';
+import { Edit } from 'lucide-react';
+
+import { Field } from '@/components/ui/field';
 
 import { User } from '@/drizzle/schema';
 import { formatDate } from '@/utils/formatter';
 
-interface PersonalInfoProps {
-  user: User;
-}
+export default function PersonalInfo({ user }: { user: User }) {
+  const [isEditing, setIsEditing] = useState<boolean>(false);
 
-interface InfoItemProps {
-  icon: React.ElementType;
-  label: string;
-  value: Nullish<string>;
-}
-
-function InfoItem({ icon, label, value }: InfoItemProps) {
   return (
-    <HStack gap={3} align="flex-start">
-      <Icon as={icon} size="md" color="gray.500" mt={0.5} />
-      <VStack gap={0} align="flex-start" flex={1}>
-        <Text fontSize="sm" color="gray.600" fontWeight="medium">
-          {label}
-        </Text>
-        <Text fontSize="md" color={value ? 'inherit' : 'gray.400'}>
-          {value || 'Not provided'}
-        </Text>
-      </VStack>
-    </HStack>
-  );
-}
-
-export default function PersonalInfo({ user }: PersonalInfoProps) {
-  return (
-    <Card.Root>
-      <Card.Header>
-        <Card.Title>Personal Information</Card.Title>
-      </Card.Header>
+    <Card.Root _hover={{ shadow: 'sm' }} transition="all 0.2s">
+      <HStack
+        justifyContent="space-between"
+        borderBottom={1}
+        borderBottomStyle="solid"
+        borderBottomColor="gray.200"
+        asChild
+      >
+        <Card.Header paddingBlock={2}>
+          <Card.Title>Personal Information</Card.Title>
+          <IconButton variant="subtle" onClick={() => setIsEditing(!isEditing)}>
+            <Edit />
+          </IconButton>
+        </Card.Header>
+      </HStack>
       <Card.Body>
-        <VStack gap={4} align="stretch">
-          <InfoItem icon={Mail} label="Email" value={user.email} />
+        <Grid
+          templateColumns={{
+            base: '1fr',
+            md: 'repeat(2, 1fr)',
+            xl: 'repeat(3, 1fr)',
+          }}
+          gap={4}
+        >
+          <Field required label="Fullname">
+            {isEditing ? (
+              <Input placeholder="Anynomous" defaultValue={user.name} />
+            ) : (
+              <Text>{user.name}</Text>
+            )}
+          </Field>
 
-          <InfoItem
-            icon={CalendarDays}
-            label="Date of Birth"
-            value={user.dob ? formatDate(user.dob) : null}
-          />
+          <Field required label="Email">
+            {isEditing ? (
+              <Input
+                type="email"
+                placeholder="abc@gmail.com"
+                defaultValue={user.email}
+              />
+            ) : (
+              <Text>{user.email}</Text>
+            )}
+          </Field>
 
-          <InfoItem
-            icon={Phone}
-            label="Phone Number"
-            value={user.phone_number}
-          />
+          <Field label="DOB">
+            {isEditing ? (
+              <Input
+                type="date"
+                min="1997-01-01"
+                defaultValue={user.dob as string}
+              />
+            ) : (
+              <Text>{formatDate(user.dob)}</Text>
+            )}
+          </Field>
 
-          <InfoItem
-            icon={CreditCard}
-            label="Citizen ID"
-            value={user.citizen_identification}
-          />
-        </VStack>
+          <Field label="Phone Number">
+            {isEditing ? (
+              <Input max={10} defaultValue={user.phone_number || ''} />
+            ) : (
+              <Text>{user.phone_number || '-'}</Text>
+            )}
+          </Field>
+
+          <Field label="Citizen ID">
+            {isEditing ? (
+              <Input
+                max={10}
+                defaultValue={user.citizen_identification || ''}
+              />
+            ) : (
+              <Text>{user.citizen_identification || '-'}</Text>
+            )}
+          </Field>
+        </Grid>
       </Card.Body>
     </Card.Root>
   );
