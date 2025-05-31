@@ -3,9 +3,11 @@
 import { useState } from 'react';
 
 import { Card, Grid, HStack, IconButton, Input, Text } from '@chakra-ui/react';
-import { Edit } from 'lucide-react';
+import { Edit, Save } from 'lucide-react';
 
+import { CloseButton } from '@/components/ui/close-button';
 import { Field } from '@/components/ui/field';
+import { Tooltip } from '@/components/ui/tooltip';
 
 import { User } from '@/drizzle/schema';
 import { formatDate } from '@/utils/formatter';
@@ -16,17 +18,32 @@ export default function PersonalInfo({ user }: { user: User }) {
   return (
     <Card.Root _hover={{ shadow: 'sm' }} transition="all 0.2s">
       <HStack
-        justifyContent="space-between"
         borderBottom={1}
         borderBottomStyle="solid"
         borderBottomColor="gray.200"
         asChild
       >
         <Card.Header paddingBlock={2}>
-          <Card.Title>Personal Information</Card.Title>
-          <IconButton variant="subtle" onClick={() => setIsEditing(!isEditing)}>
-            <Edit />
-          </IconButton>
+          <Card.Title marginRight="auto">Personal Information</Card.Title>
+          {isEditing ? (
+            <>
+              <CloseButton
+                variant="outline"
+                onClick={() => setIsEditing(false)}
+              />
+              <Tooltip content="Save">
+                <IconButton disabled>
+                  <Save />
+                </IconButton>
+              </Tooltip>
+            </>
+          ) : (
+            <Tooltip content="Edit">
+              <IconButton variant="subtle" onClick={() => setIsEditing(true)}>
+                <Edit />
+              </IconButton>
+            </Tooltip>
+          )}
         </Card.Header>
       </HStack>
       <Card.Body>

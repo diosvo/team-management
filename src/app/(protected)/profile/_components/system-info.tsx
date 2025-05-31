@@ -1,70 +1,49 @@
 'use client';
 
-import { Card, HStack, Icon, Text, VStack } from '@chakra-ui/react';
-import { Clock, Database, Shield, UserPlus } from 'lucide-react';
+import { Card, Grid, HStack, Text } from '@chakra-ui/react';
+import { Clock, UserPlus } from 'lucide-react';
 
-import Visibility from '@/components/visibility';
 import { User } from '@/drizzle/schema';
-import { usePermissions } from '@/hooks/use-permissions';
 import { formatDatetime } from '@/utils/formatter';
 
-interface SystemInfoProps {
-  user: User;
-}
-
 interface InfoItemProps {
-  icon: React.ElementType;
   label: string;
-  value: string;
+  children: React.ReactNode;
+  icon?: React.ElementType;
 }
-
-function InfoItem({ icon, label, value }: InfoItemProps) {
+function InfoItem({ icon: IconComponent, label, children }: InfoItemProps) {
   return (
-    <HStack gap={3} align="flex-start">
-      <Icon as={icon} size="md" color="gray.500" mt={0.5} />
-      <VStack gap={0} align="flex-start" flex={1}>
-        <Text fontSize="sm" color="gray.600" fontWeight="medium">
-          {label}
-        </Text>
-        <Text fontSize="md">{value}</Text>
-      </VStack>
+    <HStack gap={1}>
+      {IconComponent && <IconComponent size={14} color="GrayText" />}
+      <Text color="GrayText">{label}:</Text>
+      {children}
     </HStack>
   );
 }
 
-export default function SystemInfo({ user }: SystemInfoProps) {
-  const { isAdmin } = usePermissions();
-
+export default function SystemInfo({ user }: { user: User }) {
   return (
-    <Visibility isVisible={isAdmin}>
-      <Card.Root _hover={{ shadow: 'sm' }} transition="all 0.2s">
-        <Card.Header backgroundColor="ghostwhite" paddingBlock={4}>
-          <Card.Title>System Information</Card.Title>
-        </Card.Header>
-        <Card.Body>
-          <VStack gap={4} align="stretch">
-            <InfoItem icon={Database} label="User ID" value={user.user_id} />
-
-            <InfoItem
-              icon={Shield}
-              label="Password Status"
-              value={user.password ? 'Configured' : 'Not set'}
-            />
-
-            <InfoItem
-              icon={UserPlus}
-              label="Account Created"
-              value={formatDatetime(user.created_at)}
-            />
-
-            <InfoItem
-              icon={Clock}
-              label="Last Updated"
-              value={formatDatetime(user.updated_at)}
-            />
-          </VStack>
-        </Card.Body>
-      </Card.Root>
-    </Visibility>
+    <Card.Root _hover={{ shadow: 'sm' }} transition="all 0.2s">
+      <Card.Header backgroundColor="ghostwhite" paddingBlock={4}>
+        <Card.Title>System Information</Card.Title>
+      </Card.Header>
+      <Card.Body>
+        <Grid
+          templateColumns={{
+            base: '1fr',
+            md: 'repeat(2, 1fr)',
+            xl: 'repeat(3, 1fr)',
+          }}
+          gap={4}
+        >
+          <InfoItem label="Account Created" icon={UserPlus}>
+            {formatDatetime(user.created_at)}
+          </InfoItem>
+          <InfoItem label="Last Updated" icon={Clock}>
+            {formatDatetime(user.updated_at)}
+          </InfoItem>
+        </Grid>
+      </Card.Body>
+    </Card.Root>
   );
 }

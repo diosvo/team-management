@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+
 import {
   Badge,
   Card,
@@ -10,32 +12,49 @@ import {
   Text,
 } from '@chakra-ui/react';
 import { formatDistanceToNow } from 'date-fns';
-import { Edit, LucideClock9 } from 'lucide-react';
+import { Edit, LucideClock9, Save } from 'lucide-react';
 
+import { CloseButton } from '@/components/ui/close-button';
 import { Field } from '@/components/ui/field';
+import { Tooltip } from '@/components/ui/tooltip';
+
 import { User } from '@/drizzle/schema';
 import { formatDate } from '@/utils/formatter';
 import { colorRole, hasPermissions } from '@/utils/helper';
-import { useState } from 'react';
 
 export default function TeamInfo({ user }: { user: User }) {
-  const { isAdmin, isPlayer } = hasPermissions(user.role);
+  const { isAdmin } = hasPermissions(user.role);
   const [isEditing, setIsEditing] = useState<boolean>(false);
 
   return (
     <Card.Root _hover={{ shadow: 'sm' }} transition="all 0.2s">
       <HStack
-        justifyContent="space-between"
         borderBottom={1}
         borderBottomStyle="solid"
         borderBottomColor="gray.200"
         asChild
       >
         <Card.Header paddingBlock={2}>
-          <Card.Title>Team Information</Card.Title>
-          <IconButton variant="subtle" onClick={() => setIsEditing(!isEditing)}>
-            <Edit />
-          </IconButton>
+          <Card.Title marginRight="auto">Team Information</Card.Title>
+          {isEditing ? (
+            <>
+              <CloseButton
+                variant="outline"
+                onClick={() => setIsEditing(false)}
+              />
+              <Tooltip content="Save">
+                <IconButton disabled>
+                  <Save />
+                </IconButton>
+              </Tooltip>
+            </>
+          ) : (
+            <Tooltip content="Edit">
+              <IconButton variant="subtle" onClick={() => setIsEditing(true)}>
+                <Edit />
+              </IconButton>
+            </Tooltip>
+          )}
         </Card.Header>
       </HStack>
       <Card.Body>
@@ -92,9 +111,10 @@ export default function TeamInfo({ user }: { user: User }) {
             )}
           </Field>
         </Grid>
-
+      </Card.Body>
+      <Card.Footer>
         {user.join_date && (
-          <HStack gap={1} marginTop="auto">
+          <HStack gap={1} marginTop={4}>
             <LucideClock9 size={14} color="GrayText" />
             <Text color="GrayText">Joined Date:</Text>
             {formatDate(user.join_date)}
@@ -107,7 +127,7 @@ export default function TeamInfo({ user }: { user: User }) {
             </Text>
           </HStack>
         )}
-      </Card.Body>
+      </Card.Footer>
     </Card.Root>
   );
 }
