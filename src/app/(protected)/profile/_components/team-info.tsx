@@ -27,7 +27,7 @@ export default function TeamInfo({ user }: { user: User }) {
   const [isEditing, setIsEditing] = useState<boolean>(false);
 
   return (
-    <Card.Root _hover={{ shadow: 'sm' }} transition="all 0.2s">
+    <Card.Root size="sm" _hover={{ shadow: 'sm' }} transition="all 0.2s">
       <HStack
         borderBottom={1}
         borderBottomStyle="solid"
@@ -119,7 +119,7 @@ export default function TeamInfo({ user }: { user: User }) {
       </Card.Body>
       <Card.Footer>
         {user.join_date && (
-          <HStack gap={1} marginTop={4}>
+          <HStack gap={1} marginTop={4} fontSize={14}>
             <LucideClock9 size={14} color="GrayText" />
             <Text color="GrayText">Joined Date:</Text>
             {formatDate(user.join_date)}

@@ -50,7 +50,7 @@ function NavButton({
 
   return (
     <Button
-      size={{ base: 'xs', md: 'sm', lg: 'md' }}
+      size={{ base: 'xs', md: 'sm', mdTo2xl: 'md' }}
       justifyContent={isExpanded ? 'flex-start' : 'center'}
       disabled={disabled}
       variant={isActive ? 'subtle' : 'ghost'}

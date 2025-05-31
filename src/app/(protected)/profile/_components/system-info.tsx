@@ -14,7 +14,7 @@ interface InfoItemProps {
 }
 function InfoItem({ icon: IconComponent, label, children }: InfoItemProps) {
   return (
-    <HStack gap={1}>
+    <HStack gap={1} fontSize={14}>
       {IconComponent && <IconComponent size={14} color="GrayText" />}
       <Text color="GrayText">{label}:</Text>
       {children}
@@ -28,7 +28,7 @@ export default function SystemInfo({ user }: { user: User }) {
   if (!isAdmin) return null;
 
   return (
-    <Card.Root _hover={{ shadow: 'sm' }} transition="all 0.2s">
+    <Card.Root size="sm" _hover={{ shadow: 'sm' }} transition="all 0.2s">
       <Card.Header backgroundColor="ghostwhite" paddingBlock={4}>
         <Card.Title>System Information</Card.Title>
       </Card.Header>

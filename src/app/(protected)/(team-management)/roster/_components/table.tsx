@@ -135,7 +135,7 @@ export default function RosterTable({ users }: { users: Array<User> }) {
                   data-selected={
                     selection.includes(user.user_id) ? '' : undefined
                   }
-                  _hover={{ cursor: 'pointer' }}
+                  _hover={{ cursor: isAdmin ? 'pointer' : 'default' }}
                   onClick={() => {
                     if (isAdmin) {
                       router.replace('/profile/' + user.user_id);

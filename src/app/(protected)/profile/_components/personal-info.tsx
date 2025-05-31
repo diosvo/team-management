@@ -16,7 +16,7 @@ export default function PersonalInfo({ user }: { user: User }) {
   const [isEditing, setIsEditing] = useState<boolean>(false);
 
   return (
-    <Card.Root _hover={{ shadow: 'sm' }} transition="all 0.2s">
+    <Card.Root size="sm" _hover={{ shadow: 'sm' }} transition="all 0.2s">
       <HStack
         borderBottom={1}
         borderBottomStyle="solid"
