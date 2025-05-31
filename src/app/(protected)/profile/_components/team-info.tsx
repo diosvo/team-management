@@ -39,18 +39,23 @@ export default function TeamInfo({ user }: { user: User }) {
           {isEditing ? (
             <>
               <CloseButton
+                size="sm"
                 variant="outline"
                 onClick={() => setIsEditing(false)}
               />
-              <Tooltip content="Save">
-                <IconButton disabled>
+              <Tooltip content="Save" disabled>
+                <IconButton size="sm" disabled>
                   <Save />
                 </IconButton>
               </Tooltip>
             </>
           ) : (
-            <Tooltip content="Edit">
-              <IconButton variant="subtle" onClick={() => setIsEditing(true)}>
+            <Tooltip content="Edit" disabled>
+              <IconButton
+                size="sm"
+                variant="subtle"
+                onClick={() => setIsEditing(true)}
+              >
                 <Edit />
               </IconButton>
             </Tooltip>

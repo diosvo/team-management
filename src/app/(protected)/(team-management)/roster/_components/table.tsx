@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import {
   ActionBar,
@@ -24,7 +24,6 @@ import {
 } from 'lucide-react';
 
 import { Checkbox } from '@/components/ui/checkbox';
-import { dialog } from '@/components/ui/dialog';
 import { toaster } from '@/components/ui/toaster';
 import Visibility from '@/components/visibility';
 
@@ -32,13 +31,13 @@ import { User } from '@/drizzle/schema';
 import { usePermissions } from '@/hooks/use-permissions';
 import { colorState } from '@/utils/helper';
 
-import UserInfo from '@/app/(protected)/_components/user-info';
 import { removeUser } from '@/features/user/actions/user';
 import { formatDate } from '@/utils/formatter';
+import { useRouter } from 'next/navigation';
 
 export default function RosterTable({ users }: { users: Array<User> }) {
+  const router = useRouter();
   const { isAdmin } = usePermissions();
-  const selectionRef = useRef<HTMLDivElement>(null);
 
   const [selection, setSelection] = useState<Array<string>>([]);
   const [pagination, setPagination] = useState({
@@ -137,20 +136,11 @@ export default function RosterTable({ users }: { users: Array<User> }) {
                     selection.includes(user.user_id) ? '' : undefined
                   }
                   _hover={{ cursor: 'pointer' }}
-                  onClick={() =>
-                    dialog.open('profile', {
-                      contentRef: selectionRef,
-                      children: (
-                        <UserInfo
-                          user={user}
-                          canEdit={isAdmin}
-                          isAdmin={isAdmin}
-                          selectionRef={selectionRef}
-                        />
-                      ),
-                      closeOnInteractOutside: true,
-                    })
-                  }
+                  onClick={() => {
+                    if (isAdmin) {
+                      router.replace('/profile/' + user.user_id);
+                    }
+                  }}
                 >
                   <Visibility isVisible={isAdmin}>
                     <>
@@ -284,7 +274,6 @@ export default function RosterTable({ users }: { users: Array<User> }) {
           </ActionBar.Positioner>
         </Portal>
       </ActionBar.Root>
-      <dialog.Viewport />
     </>
   );
 }

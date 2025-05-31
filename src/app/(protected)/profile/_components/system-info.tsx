@@ -4,6 +4,7 @@ import { Card, Grid, HStack, Text } from '@chakra-ui/react';
 import { Clock, UserPlus } from 'lucide-react';
 
 import { User } from '@/drizzle/schema';
+import { usePermissions } from '@/hooks/use-permissions';
 import { formatDatetime } from '@/utils/formatter';
 
 interface InfoItemProps {
@@ -22,6 +23,10 @@ function InfoItem({ icon: IconComponent, label, children }: InfoItemProps) {
 }
 
 export default function SystemInfo({ user }: { user: User }) {
+  const { isAdmin } = usePermissions();
+
+  if (!isAdmin) return null;
+
   return (
     <Card.Root _hover={{ shadow: 'sm' }} transition="all 0.2s">
       <Card.Header backgroundColor="ghostwhite" paddingBlock={4}>
