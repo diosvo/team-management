@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 
 import {
   Badge,
@@ -9,22 +9,70 @@ import {
   HStack,
   IconButton,
   Input,
+  InputGroup,
   Text,
 } from '@chakra-ui/react';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { formatDistanceToNow } from 'date-fns';
 import { Edit, LucideClock9, Save } from 'lucide-react';
+import { useForm } from 'react-hook-form';
 
 import { CloseButton } from '@/components/ui/close-button';
 import { Field } from '@/components/ui/field';
+import { Select } from '@/components/ui/select';
 import { Tooltip } from '@/components/ui/tooltip';
 
 import { User } from '@/drizzle/schema';
+import {
+  CoachPositionsSelection,
+  PlayerPositionsSelection,
+  RoleSelection,
+} from '@/utils/constant';
+import { CoachPosition, PlayerPosition, UserRole } from '@/utils/enum';
 import { formatDate } from '@/utils/formatter';
-import { colorRole, hasPermissions } from '@/utils/helper';
+import { colorRole } from '@/utils/helper';
+
+import { EditTeamInfoSchema } from '@/features/user/schemas/user';
+import { usePermissions } from '@/hooks/use-permissions';
 
 export default function TeamInfo({ user }: { user: User }) {
-  const { isAdmin } = hasPermissions(user.role);
+  const { isAdmin } = usePermissions();
+
+  const [isPending, startTransition] = useTransition();
   const [isEditing, setIsEditing] = useState<boolean>(false);
+
+  const {
+    reset,
+    watch,
+    register,
+    setValue,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(EditTeamInfoSchema),
+    defaultValues: {
+      user: {
+        role: UserRole.GUEST,
+        state: user.state,
+      },
+      player: {
+        jersey_number: user.details.jersey_number,
+      },
+      position: user.details.position,
+    },
+  });
+
+  const selectedRole = watch('user.role');
+
+  useEffect(() => {
+    if (selectedRole === UserRole.GUEST) {
+      setValue('position', undefined);
+    } else if (selectedRole === UserRole.COACH) {
+      setValue('position', CoachPosition.UNKNOWN);
+    } else if (selectedRole === UserRole.PLAYER) {
+      setValue('position', PlayerPosition.UNKNOWN);
+    }
+  }, [selectedRole, setValue]);
 
   return (
     <Card.Root size="sm" _hover={{ shadow: 'sm' }} transition="all 0.2s">
@@ -50,10 +98,17 @@ export default function TeamInfo({ user }: { user: User }) {
               </Tooltip>
             </>
           ) : (
-            <Tooltip content="Edit" disabled>
+            <Tooltip
+              content={
+                isAdmin && user.role === UserRole.SUPER_ADMIN
+                  ? 'Cannot edit Admin role'
+                  : 'Edit'
+              }
+            >
               <IconButton
                 size="sm"
                 variant="subtle"
+                disabled={isAdmin && user.role === UserRole.SUPER_ADMIN}
                 onClick={() => setIsEditing(true)}
               >
                 <Edit />
@@ -71,12 +126,19 @@ export default function TeamInfo({ user }: { user: User }) {
           }}
           gap={4}
         >
-          <Field label="Jersey Number">
+          <Field
+            label="Jersey Number"
+            invalid={!!errors.player?.jersey_number}
+            errorText={errors.player?.jersey_number?.message}
+          >
             {isEditing ? (
-              <Input
-                placeholder="Anynomous"
-                defaultValue={user.details.jersey_number || ''}
-              />
+              <InputGroup startElement={'#'}>
+                <Input
+                  defaultValue={user.details.jersey_number || ''}
+                  disabled={isPending}
+                  {...register('player.jersey_number')}
+                />
+              </InputGroup>
             ) : user.details.jersey_number ? (
               <Badge variant="outline" rounded="full">
                 {user.details.jersey_number}
@@ -86,9 +148,13 @@ export default function TeamInfo({ user }: { user: User }) {
             )}
           </Field>
 
-          <Field label="Role">
+          <Field required label="Role">
             {isEditing && isAdmin ? (
-              <Input placeholder="Anynomous" defaultValue={user.role} />
+              <Select
+                collection={RoleSelection}
+                disabled={isPending}
+                {...register('user.role')}
+              />
             ) : (
               <Badge
                 variant="subtle"
@@ -103,9 +169,14 @@ export default function TeamInfo({ user }: { user: User }) {
 
           <Field label="Position">
             {isEditing && isAdmin ? (
-              <Input
-                placeholder="Unknown"
-                defaultValue={user.details.position || ''}
+              <Select
+                collection={
+                  selectedRole === UserRole.COACH
+                    ? CoachPositionsSelection
+                    : PlayerPositionsSelection
+                }
+                disabled={isPending || selectedRole === UserRole.GUEST}
+                {...register('position')}
               />
             ) : user.details.position ? (
               <Badge variant="outline" rounded="full">

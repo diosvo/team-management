@@ -64,8 +64,9 @@ export const USER_SCHEMA_VALIDATION = {
 export const PLAYER_VALIDATION = {
   position: z.enum(SELECTABLE_PLAYER_POSITIONS).default(PlayerPosition.UNKNOWN),
   jersey_number: z.coerce.number().int().min(0).max(99).nullish(),
-  height: z.coerce.number().int().min(0).max(200).nullish(),
-  weight: z.coerce.number().int().min(0).max(100).nullish(),
+  // Temporrily disabled
+  // height: z.coerce.number().int().min(0).max(200).nullish(),
+  // weight: z.coerce.number().int().min(0).max(100).nullish(),
 };
 
 export const COACH_VALIDATION = {

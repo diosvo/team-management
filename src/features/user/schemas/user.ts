@@ -5,7 +5,7 @@ import {
   PLAYER_VALIDATION,
   USER_SCHEMA_VALIDATION,
 } from './utils';
-const { position: PlayerPosition, ...PlayerSchema } = PLAYER_VALIDATION;
+const { position: PlayerPosition, jersey_number } = PLAYER_VALIDATION;
 const { position: CoachPosition } = COACH_VALIDATION;
 
 const {
@@ -19,7 +19,7 @@ const {
   join_date,
 } = USER_SCHEMA_VALIDATION;
 
-const position = z.union([PlayerPosition, CoachPosition]).optional();
+const position = z.union([PlayerPosition, CoachPosition]).nullish();
 
 export const AddUserSchema = z.object({
   name,
@@ -41,7 +41,16 @@ export const EditProfileSchema = z.object({
       state,
     })
     .default({}),
-  player: z.object(PlayerSchema).default({}),
+  player: z.object({}).default({}),
+  position,
+});
+
+export const EditTeamInfoSchema = z.object({
+  user: z.object({
+    role,
+    state,
+  }),
+  player: z.object({ jersey_number }),
   position,
 });
 
@@ -53,4 +62,5 @@ export const FilterUsersSchema = z.object({
 
 export type AddUserValues = z.infer<typeof AddUserSchema>;
 export type EditProfileValues = z.infer<typeof EditProfileSchema>;
+export type EditTeamInfoValues = z.infer<typeof EditTeamInfoSchema>;
 export type FilterUsersValues = z.infer<typeof FilterUsersSchema>;

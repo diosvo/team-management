@@ -19,7 +19,6 @@ import {
 import { LogOut, PanelRightOpen, UserIcon } from 'lucide-react';
 
 import { logout } from '@/features/user/actions/auth';
-import { usePermissions } from '@/hooks/use-permissions';
 import { useUser } from '@/hooks/use-user';
 
 import { colorState } from '@/utils/helper';
@@ -32,7 +31,6 @@ import Sidebar from './sidebar';
 export default function Header() {
   const { userPromise } = useUser();
   const user = use(userPromise);
-  const { isAdmin } = usePermissions();
 
   const pathname = usePathname();
 
