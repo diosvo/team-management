@@ -11,13 +11,13 @@ import {
   Input,
   InputGroup,
   Text,
-  VStack,
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { formatDistanceToNow } from 'date-fns';
 import { Edit, LucideClock9, Save } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 
+import TextField from '@/components/text-field';
 import { CloseButton } from '@/components/ui/close-button';
 import { Field } from '@/components/ui/field';
 import { Select } from '@/components/ui/select';
@@ -130,12 +130,12 @@ export default function TeamInfo({ user }: { user: User }) {
           gap={4}
         >
           <Visibility isVisible={isPlayer}>
-            <Field
-              label="Jersey Number"
-              invalid={!!errors.player?.jersey_number}
-              errorText={errors.player?.jersey_number?.message}
-            >
-              {isEditing ? (
+            {isEditing ? (
+              <Field
+                label="Jersey Number"
+                invalid={!!errors.player?.jersey_number}
+                errorText={errors.player?.jersey_number?.message}
+              >
                 <InputGroup startElement={'#'}>
                   <Input
                     defaultValue={user.details.jersey_number || ''}
@@ -143,14 +143,18 @@ export default function TeamInfo({ user }: { user: User }) {
                     {...register('player.jersey_number')}
                   />
                 </InputGroup>
-              ) : user.details.jersey_number ? (
-                <Badge variant="outline" rounded="full">
-                  {user.details.jersey_number}
-                </Badge>
-              ) : (
-                '-'
-              )}
-            </Field>
+              </Field>
+            ) : (
+              <TextField label="Jersey Number">
+                {user.details.jersey_number ? (
+                  <Badge variant="outline" rounded="full">
+                    {user.details.jersey_number}
+                  </Badge>
+                ) : (
+                  <Text>-</Text>
+                )}
+              </TextField>
+            )}
           </Visibility>
 
           {isEditing && isAdmin ? (
@@ -162,10 +166,7 @@ export default function TeamInfo({ user }: { user: User }) {
               />
             </Field>
           ) : (
-            <VStack align="start">
-              <Text color="GrayText" fontSize={14}>
-                Role
-              </Text>
+            <TextField label="Role">
               <Badge
                 variant="subtle"
                 colorPalette={colorRole(user.role)}
@@ -173,7 +174,7 @@ export default function TeamInfo({ user }: { user: User }) {
               >
                 {user.role}
               </Badge>
-            </VStack>
+            </TextField>
           )}
 
           {isEditing && isAdmin ? (
@@ -189,35 +190,36 @@ export default function TeamInfo({ user }: { user: User }) {
               />
             </Field>
           ) : (
-            <VStack align="start">
-              <Text color="GrayText" fontSize={14}>
-                Position
-              </Text>
+            <TextField label="Position">
               {user.details.position ? (
                 <Badge variant="outline" rounded="full">
                   {user.details.position}
                 </Badge>
               ) : (
-                '-'
+                <Text>-</Text>
               )}
-            </VStack>
+            </TextField>
           )}
         </Grid>
       </Card.Body>
       <Card.Footer>
         {user.join_date && (
-          <HStack gap={1} marginTop={4} fontSize={14}>
-            <LucideClock9 size={14} color="GrayText" />
-            <Text color="GrayText">Joined Date:</Text>
-            {formatDate(user.join_date)}
-            <Text fontSize="sm" color="GrayText">
-              (
-              {formatDistanceToNow(user.join_date, {
-                addSuffix: true,
-              })}
-              )
+          <TextField
+            label="Joined Date"
+            direction="horizontal"
+            icon={LucideClock9}
+          >
+            <Text>
+              {formatDate(user.join_date)}
+              <Text as="span" fontSize="sm" color="GrayText" marginLeft={1}>
+                (
+                {formatDistanceToNow(user.join_date, {
+                  addSuffix: true,
+                })}
+                )
+              </Text>
             </Text>
-          </HStack>
+          </TextField>
         )}
       </Card.Footer>
     </Card.Root>

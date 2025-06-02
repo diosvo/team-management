@@ -2,34 +2,16 @@
 
 import { useState } from 'react';
 
-import {
-  Card,
-  Grid,
-  HStack,
-  IconButton,
-  Input,
-  Text,
-  VStack,
-} from '@chakra-ui/react';
+import { Card, Grid, HStack, IconButton, Input } from '@chakra-ui/react';
 import { Edit, Save } from 'lucide-react';
 
+import TextField from '@/components/text-field';
 import { CloseButton } from '@/components/ui/close-button';
 import { Field } from '@/components/ui/field';
 import { Tooltip } from '@/components/ui/tooltip';
 
 import { User } from '@/drizzle/schema';
 import { formatDate } from '@/utils/formatter';
-
-const Info = ({ label, value }: { label: string; value: Nullable<string> }) => {
-  return (
-    <VStack align="start">
-      <Text color="GrayText" fontSize={14}>
-        {label}
-      </Text>
-      <Text>{value || '-'}</Text>
-    </VStack>
-  );
-};
 
 export default function PersonalInfo({ user }: { user: User }) {
   const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -84,7 +66,7 @@ export default function PersonalInfo({ user }: { user: User }) {
               <Input placeholder="Anynomous" defaultValue={user.name} />
             </Field>
           ) : (
-            <Info label="Fullname" value={user.name} />
+            <TextField label="Fullname">{user.name || '-'}</TextField>
           )}
 
           {isEditing ? (
@@ -96,7 +78,7 @@ export default function PersonalInfo({ user }: { user: User }) {
               />
             </Field>
           ) : (
-            <Info label="Email" value={user.email} />
+            <TextField label="Email">{user.email || '-'}</TextField>
           )}
 
           {isEditing ? (
@@ -108,7 +90,7 @@ export default function PersonalInfo({ user }: { user: User }) {
               />
             </Field>
           ) : (
-            <Info label="DOB" value={formatDate(user.dob)} />
+            <TextField label="DOB">{formatDate(user.dob) || '-'}</TextField>
           )}
 
           {isEditing ? (
@@ -116,7 +98,9 @@ export default function PersonalInfo({ user }: { user: User }) {
               <Input max={10} defaultValue={user.phone_number || ''} />
             </Field>
           ) : (
-            <Info label="Phone Number" value={user.phone_number} />
+            <TextField label="Phone Number">
+              {user.phone_number || '-'}
+            </TextField>
           )}
 
           {isEditing ? (
@@ -127,7 +111,9 @@ export default function PersonalInfo({ user }: { user: User }) {
               />
             </Field>
           ) : (
-            <Info label="Citizen ID" value={user.citizen_identification} />
+            <TextField label="Citizen ID">
+              {user.citizen_identification || '-'}
+            </TextField>
           )}
         </Grid>
       </Card.Body>

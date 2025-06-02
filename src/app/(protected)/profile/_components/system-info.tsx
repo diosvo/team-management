@@ -1,32 +1,14 @@
 'use client';
 
-import { Card, Grid, HStack, Text } from '@chakra-ui/react';
+import { Card, Grid } from '@chakra-ui/react';
 import { Clock, UserPlus } from 'lucide-react';
 
+import TextField from '@/components/text-field';
+
 import { User } from '@/drizzle/schema';
-import { usePermissions } from '@/hooks/use-permissions';
 import { formatDatetime } from '@/utils/formatter';
 
-interface InfoItemProps {
-  label: string;
-  children: React.ReactNode;
-  icon?: React.ElementType;
-}
-function InfoItem({ icon: IconComponent, label, children }: InfoItemProps) {
-  return (
-    <HStack gap={1} fontSize={14}>
-      {IconComponent && <IconComponent size={14} color="GrayText" />}
-      <Text color="GrayText">{label}:</Text>
-      {children}
-    </HStack>
-  );
-}
-
 export default function SystemInfo({ user }: { user: User }) {
-  const { isAdmin } = usePermissions();
-
-  if (!isAdmin) return null;
-
   return (
     <Card.Root size="sm" _hover={{ shadow: 'sm' }} transition="all 0.2s">
       <Card.Header backgroundColor="ghostwhite" paddingBlock={4}>
@@ -41,12 +23,16 @@ export default function SystemInfo({ user }: { user: User }) {
           }}
           gap={4}
         >
-          <InfoItem label="Account Created" icon={UserPlus}>
+          <TextField
+            label="Account Created"
+            icon={UserPlus}
+            direction="horizontal"
+          >
             {formatDatetime(user.created_at)}
-          </InfoItem>
-          <InfoItem label="Last Updated" icon={Clock}>
+          </TextField>
+          <TextField label="Last Updated" icon={Clock} direction="horizontal">
             {formatDatetime(user.updated_at)}
-          </InfoItem>
+          </TextField>
         </Grid>
       </Card.Body>
     </Card.Root>
