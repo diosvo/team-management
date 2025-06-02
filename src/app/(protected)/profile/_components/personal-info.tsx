@@ -2,7 +2,15 @@
 
 import { useState } from 'react';
 
-import { Card, Grid, HStack, IconButton, Input, Text } from '@chakra-ui/react';
+import {
+  Card,
+  Grid,
+  HStack,
+  IconButton,
+  Input,
+  Text,
+  VStack,
+} from '@chakra-ui/react';
 import { Edit, Save } from 'lucide-react';
 
 import { CloseButton } from '@/components/ui/close-button';
@@ -11,6 +19,17 @@ import { Tooltip } from '@/components/ui/tooltip';
 
 import { User } from '@/drizzle/schema';
 import { formatDate } from '@/utils/formatter';
+
+const Info = ({ label, value }: { label: string; value: Nullable<string> }) => {
+  return (
+    <VStack align="start">
+      <Text color="GrayText" fontSize={14}>
+        {label}
+      </Text>
+      <Text>{value || '-'}</Text>
+    </VStack>
+  );
+};
 
 export default function PersonalInfo({ user }: { user: User }) {
   const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -60,56 +79,56 @@ export default function PersonalInfo({ user }: { user: User }) {
           }}
           gap={4}
         >
-          <Field required label="Fullname">
-            {isEditing ? (
+          {isEditing ? (
+            <Field required label="Fullname">
               <Input placeholder="Anynomous" defaultValue={user.name} />
-            ) : (
-              <Text>{user.name}</Text>
-            )}
-          </Field>
+            </Field>
+          ) : (
+            <Info label="Fullname" value={user.name} />
+          )}
 
-          <Field required label="Email">
-            {isEditing ? (
+          {isEditing ? (
+            <Field required label="Email">
               <Input
                 type="email"
                 placeholder="abc@gmail.com"
                 defaultValue={user.email}
               />
-            ) : (
-              <Text>{user.email}</Text>
-            )}
-          </Field>
+            </Field>
+          ) : (
+            <Info label="Email" value={user.email} />
+          )}
 
-          <Field label="DOB">
-            {isEditing ? (
+          {isEditing ? (
+            <Field label="DOB">
               <Input
                 type="date"
                 min="1997-01-01"
                 defaultValue={user.dob as string}
               />
-            ) : (
-              <Text>{formatDate(user.dob)}</Text>
-            )}
-          </Field>
+            </Field>
+          ) : (
+            <Info label="DOB" value={formatDate(user.dob)} />
+          )}
 
-          <Field label="Phone Number">
-            {isEditing ? (
+          {isEditing ? (
+            <Field label="Phone Number">
               <Input max={10} defaultValue={user.phone_number || ''} />
-            ) : (
-              <Text>{user.phone_number || '-'}</Text>
-            )}
-          </Field>
+            </Field>
+          ) : (
+            <Info label="Phone Number" value={user.phone_number} />
+          )}
 
-          <Field label="Citizen ID">
-            {isEditing ? (
+          {isEditing ? (
+            <Field label="Citizen ID">
               <Input
                 max={10}
                 defaultValue={user.citizen_identification || ''}
               />
-            ) : (
-              <Text>{user.citizen_identification || '-'}</Text>
-            )}
-          </Field>
+            </Field>
+          ) : (
+            <Info label="Citizen ID" value={user.citizen_identification} />
+          )}
         </Grid>
       </Card.Body>
     </Card.Root>

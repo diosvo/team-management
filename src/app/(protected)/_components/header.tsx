@@ -3,7 +3,7 @@
 import NextImage from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { use, useEffect, useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 
 import {
   Avatar,
@@ -19,7 +19,7 @@ import {
 import { LogOut, PanelRightOpen, UserIcon } from 'lucide-react';
 
 import { logout } from '@/features/user/actions/auth';
-import { useUser } from '@/hooks/use-user';
+import { useCurrentUser } from '@/hooks/use-user';
 
 import { colorState } from '@/utils/helper';
 import HeaderLogo from '@assets/images/header-logo.png';
@@ -29,9 +29,7 @@ import { CloseButton } from '@/components/ui/close-button';
 import Sidebar from './sidebar';
 
 export default function Header() {
-  const { userPromise } = useUser();
-  const user = use(userPromise);
-
+  const user = useCurrentUser();
   const pathname = usePathname();
 
   const [open, setOpen] = useState<boolean>(false);

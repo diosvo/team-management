@@ -11,6 +11,7 @@ import {
   Input,
   InputGroup,
   Text,
+  VStack,
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { formatDistanceToNow } from 'date-fns';
@@ -21,6 +22,7 @@ import { CloseButton } from '@/components/ui/close-button';
 import { Field } from '@/components/ui/field';
 import { Select } from '@/components/ui/select';
 import { Tooltip } from '@/components/ui/tooltip';
+import Visibility from '@/components/visibility';
 
 import { User } from '@/drizzle/schema';
 import {
@@ -30,13 +32,14 @@ import {
 } from '@/utils/constant';
 import { CoachPosition, PlayerPosition, UserRole } from '@/utils/enum';
 import { formatDate } from '@/utils/formatter';
-import { colorRole } from '@/utils/helper';
+import { colorRole, hasPermissions } from '@/utils/helper';
 
 import { EditTeamInfoSchema } from '@/features/user/schemas/user';
 import { usePermissions } from '@/hooks/use-permissions';
 
 export default function TeamInfo({ user }: { user: User }) {
   const { isAdmin } = usePermissions();
+  const { isPlayer } = hasPermissions(user.role);
 
   const [isPending, startTransition] = useTransition();
   const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -126,49 +129,55 @@ export default function TeamInfo({ user }: { user: User }) {
           }}
           gap={4}
         >
-          <Field
-            label="Jersey Number"
-            invalid={!!errors.player?.jersey_number}
-            errorText={errors.player?.jersey_number?.message}
-          >
-            {isEditing ? (
-              <InputGroup startElement={'#'}>
-                <Input
-                  defaultValue={user.details.jersey_number || ''}
-                  disabled={isPending}
-                  {...register('player.jersey_number')}
-                />
-              </InputGroup>
-            ) : user.details.jersey_number ? (
-              <Badge variant="outline" rounded="full">
-                {user.details.jersey_number}
-              </Badge>
-            ) : (
-              '-'
-            )}
-          </Field>
+          <Visibility isVisible={isPlayer}>
+            <Field
+              label="Jersey Number"
+              invalid={!!errors.player?.jersey_number}
+              errorText={errors.player?.jersey_number?.message}
+            >
+              {isEditing ? (
+                <InputGroup startElement={'#'}>
+                  <Input
+                    defaultValue={user.details.jersey_number || ''}
+                    disabled={isPending}
+                    {...register('player.jersey_number')}
+                  />
+                </InputGroup>
+              ) : user.details.jersey_number ? (
+                <Badge variant="outline" rounded="full">
+                  {user.details.jersey_number}
+                </Badge>
+              ) : (
+                '-'
+              )}
+            </Field>
+          </Visibility>
 
-          <Field required label="Role">
-            {isEditing && isAdmin ? (
+          {isEditing && isAdmin ? (
+            <Field required label="Role">
               <Select
                 collection={RoleSelection}
                 disabled={isPending}
                 {...register('user.role')}
               />
-            ) : (
+            </Field>
+          ) : (
+            <VStack align="start">
+              <Text color="GrayText" fontSize={14}>
+                Role
+              </Text>
               <Badge
                 variant="subtle"
                 colorPalette={colorRole(user.role)}
                 rounded="full"
-                size="md"
               >
                 {user.role}
               </Badge>
-            )}
-          </Field>
+            </VStack>
+          )}
 
-          <Field label="Position">
-            {isEditing && isAdmin ? (
+          {isEditing && isAdmin ? (
+            <Field label="Position">
               <Select
                 collection={
                   selectedRole === UserRole.COACH
@@ -178,14 +187,21 @@ export default function TeamInfo({ user }: { user: User }) {
                 disabled={isPending || selectedRole === UserRole.GUEST}
                 {...register('position')}
               />
-            ) : user.details.position ? (
-              <Badge variant="outline" rounded="full">
-                {user.details.position}
-              </Badge>
-            ) : (
-              '-'
-            )}
-          </Field>
+            </Field>
+          ) : (
+            <VStack align="start">
+              <Text color="GrayText" fontSize={14}>
+                Position
+              </Text>
+              {user.details.position ? (
+                <Badge variant="outline" rounded="full">
+                  {user.details.position}
+                </Badge>
+              ) : (
+                '-'
+              )}
+            </VStack>
+          )}
         </Grid>
       </Card.Body>
       <Card.Footer>

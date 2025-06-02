@@ -31,12 +31,11 @@ import { usePermissions } from '@/hooks/use-permissions';
 import { colorState } from '@/utils/helper';
 
 import { removeUser } from '@/features/user/actions/user';
-import { formatDate } from '@/utils/formatter';
 import { useRouter } from 'next/navigation';
 
 export default function RosterTable({ users }: { users: Array<User> }) {
   const router = useRouter();
-  const { isAdmin } = usePermissions();
+  const { isAdmin, isGuest } = usePermissions();
 
   const [selection, setSelection] = useState<Array<string>>([]);
   const [pagination, setPagination] = useState({
@@ -61,7 +60,7 @@ export default function RosterTable({ users }: { users: Array<User> }) {
     if (isAdmin) {
       count += 2; // Checkbox and Verified
     }
-    count += 7; // No., Name, DOB, Email, State, Roles, Position
+    count += 6; // No., Name, Email, State, Roles, Position
     return count;
   }, [isAdmin]);
 
@@ -79,6 +78,9 @@ export default function RosterTable({ users }: { users: Array<User> }) {
 
     setSelection([]);
   };
+
+  const mask = (cc: string, num = 4) =>
+    `${cc}`.slice(-num).padStart(`${cc}`.length, '*');
 
   return (
     <>
@@ -113,17 +115,11 @@ export default function RosterTable({ users }: { users: Array<User> }) {
                   </Table.ColumnHeader>
                 </>
               </Visibility>
-              {[
-                'No.',
-                'Name',
-                'DOB',
-                'Email',
-                'State',
-                'Roles',
-                'Position',
-              ].map((column: string) => (
-                <Table.ColumnHeader key={column}>{column}</Table.ColumnHeader>
-              ))}
+              {['No.', 'Name', 'Email', 'State', 'Roles', 'Position'].map(
+                (column: string) => (
+                  <Table.ColumnHeader key={column}>{column}</Table.ColumnHeader>
+                )
+              )}
             </Table.Row>
           </Table.Header>
           <Table.Body>
@@ -134,9 +130,9 @@ export default function RosterTable({ users }: { users: Array<User> }) {
                   data-selected={
                     selection.includes(user.user_id) ? '' : undefined
                   }
-                  _hover={{ cursor: isAdmin ? 'pointer' : 'default' }}
+                  _hover={{ cursor: isGuest ? 'default' : 'pointer' }}
                   onClick={() => {
-                    if (isAdmin) {
+                    if (!isGuest) {
                       router.replace('/profile/' + user.user_id);
                     }
                   }}
@@ -175,9 +171,12 @@ export default function RosterTable({ users }: { users: Array<User> }) {
                     </>
                   </Visibility>
                   <Table.Cell>{user.details.jersey_number ?? '-'}</Table.Cell>
-                  <Table.Cell>{user.name}</Table.Cell>
-                  <Table.Cell> {formatDate(user.dob)}</Table.Cell>
-                  <Table.Cell>{user.email}</Table.Cell>
+                  <Table.Cell>
+                    {isGuest ? mask(user.name, -4) : user.name}
+                  </Table.Cell>
+                  <Table.Cell>
+                    {isGuest ? mask(user.email, -4) : user.email}
+                  </Table.Cell>
                   <Table.Cell>
                     <Badge
                       variant="surface"

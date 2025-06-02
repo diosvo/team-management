@@ -105,7 +105,7 @@ export async function getUserById(user_id: string) {
     [userCacheKey(user_id)],
     {
       tags: [userCacheTag(user_id)],
-      revalidate: 1800, // 30 minutes
+      revalidate: 3600, // 1 hour
     }
   )(user_id);
 }
