@@ -24,7 +24,7 @@ export default function TextField({
   }
 
   return (
-    <VStack align="start">
+    <VStack gap={1} align="start">
       <HStack gap={1}>
         {IconComponent && <IconComponent size={14} color="GrayText" />}
         <Text color="GrayText" fontSize={14}>

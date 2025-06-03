@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { Card, Grid, HStack, IconButton, Input } from '@chakra-ui/react';
 import { Edit, Save } from 'lucide-react';
@@ -13,8 +13,15 @@ import { Tooltip } from '@/components/ui/tooltip';
 import { User } from '@/drizzle/schema';
 import { formatDate } from '@/utils/formatter';
 
-export default function PersonalInfo({ user }: { user: User }) {
+export default function PersonalInfo({
+  user,
+  viewOnly,
+}: {
+  user: User;
+  viewOnly: boolean;
+}) {
   const [isEditing, setIsEditing] = useState<boolean>(false);
+  const canEdit = useMemo(() => !viewOnly, [viewOnly]);
 
   return (
     <Card.Root size="sm" _hover={{ shadow: 'sm' }} transition="all 0.2s">
@@ -40,10 +47,11 @@ export default function PersonalInfo({ user }: { user: User }) {
               </Tooltip>
             </>
           ) : (
-            <Tooltip content="Edit">
+            <Tooltip content={canEdit ? 'Edit' : 'View Only'}>
               <IconButton
                 size="sm"
                 variant="subtle"
+                disabled={!canEdit}
                 onClick={() => setIsEditing(true)}
               >
                 <Edit />

@@ -26,7 +26,7 @@ export default async function ProfilePage({
     redirect(LOGIN_PATH);
   }
 
-  const { isAdmin, isGuest } = hasPermissions(currentUser.role);
+  const { isAdmin, isPlayer, isGuest } = hasPermissions(currentUser.role);
 
   if (isGuest) {
     forbidden();
@@ -39,13 +39,16 @@ export default async function ProfilePage({
     notFound();
   }
 
+  const isOwnProfile = currentUser.user_id === user.user_id;
+  const viewOnly = isPlayer && !isOwnProfile;
+
   return (
     <VStack gap={6} align="stretch">
       <PageTitle>Profile Details</PageTitle>
 
       <Grid templateColumns={{ base: '1fr', lg: 'repeat(2, 1fr)' }} gap={6}>
-        <PersonalInfo user={user} />
-        <TeamInfo user={user} />
+        <PersonalInfo user={user} viewOnly={viewOnly} />
+        <TeamInfo user={user} viewOnly={viewOnly} isOwnProfile={isOwnProfile} />
       </Grid>
 
       <Visibility isVisible={isAdmin}>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useTransition } from 'react';
+import { useMemo, useState, useTransition } from 'react';
 
 import {
   Badge,
@@ -30,19 +30,40 @@ import {
   PlayerPositionsSelection,
   RoleSelection,
 } from '@/utils/constant';
-import { CoachPosition, PlayerPosition, UserRole } from '@/utils/enum';
+import { UserRole } from '@/utils/enum';
 import { formatDate } from '@/utils/formatter';
 import { colorRole, hasPermissions } from '@/utils/helper';
 
 import { EditTeamInfoSchema } from '@/features/user/schemas/user';
 import { usePermissions } from '@/hooks/use-permissions';
 
-export default function TeamInfo({ user }: { user: User }) {
+export default function TeamInfo({
+  user,
+  viewOnly,
+  isOwnProfile,
+}: {
+  user: User;
+  viewOnly: boolean;
+  isOwnProfile: boolean;
+}) {
   const { isAdmin } = usePermissions();
   const { isPlayer } = hasPermissions(user.role);
 
   const [isPending, startTransition] = useTransition();
   const [isEditing, setIsEditing] = useState<boolean>(false);
+
+  const canEdit = useMemo(() => {
+    // Do NOT enable button if:
+    // 1. Current profile is Admin
+    // 2. View only mode
+    if ((isOwnProfile && isAdmin) || viewOnly) return false;
+
+    return true;
+  }, [isOwnProfile, isAdmin, viewOnly]);
+
+  const canEditJerseyNumber = useMemo(() => {
+    return isAdmin || isOwnProfile;
+  }, [isOwnProfile, isAdmin]);
 
   const {
     reset,
@@ -55,7 +76,7 @@ export default function TeamInfo({ user }: { user: User }) {
     resolver: zodResolver(EditTeamInfoSchema),
     defaultValues: {
       user: {
-        role: UserRole.GUEST,
+        role: user.role === UserRole.SUPER_ADMIN ? undefined : user.role,
         state: user.state,
       },
       player: {
@@ -66,16 +87,6 @@ export default function TeamInfo({ user }: { user: User }) {
   });
 
   const selectedRole = watch('user.role');
-
-  useEffect(() => {
-    if (selectedRole === UserRole.GUEST) {
-      setValue('position', undefined);
-    } else if (selectedRole === UserRole.COACH) {
-      setValue('position', CoachPosition.UNKNOWN);
-    } else if (selectedRole === UserRole.PLAYER) {
-      setValue('position', PlayerPosition.UNKNOWN);
-    }
-  }, [selectedRole, setValue]);
 
   return (
     <Card.Root size="sm" _hover={{ shadow: 'sm' }} transition="all 0.2s">
@@ -101,17 +112,11 @@ export default function TeamInfo({ user }: { user: User }) {
               </Tooltip>
             </>
           ) : (
-            <Tooltip
-              content={
-                isAdmin && user.role === UserRole.SUPER_ADMIN
-                  ? 'Cannot edit Admin role'
-                  : 'Edit'
-              }
-            >
+            <Tooltip content={canEdit ? 'Edit' : 'View Only'}>
               <IconButton
                 size="sm"
                 variant="subtle"
-                disabled={isAdmin && user.role === UserRole.SUPER_ADMIN}
+                disabled={!canEdit}
                 onClick={() => setIsEditing(true)}
               >
                 <Edit />
@@ -130,7 +135,7 @@ export default function TeamInfo({ user }: { user: User }) {
           gap={4}
         >
           <Visibility isVisible={isPlayer}>
-            {isEditing ? (
+            {isEditing && canEditJerseyNumber ? (
               <Field
                 label="Jersey Number"
                 invalid={!!errors.player?.jersey_number}
