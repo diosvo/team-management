@@ -25,7 +25,7 @@ export const USER_SCHEMA_VALIDATION = {
     .max(128, { message: 'Be at most 128 characters long.' })
     .trim()
     .default(''),
-  dob: z.string().date().default(DEFAULT_DOB),
+  dob: z.string().date().default(DEFAULT_DOB).nullable(),
   email: z
     .string()
     .email({ message: 'Please enter a valid email.' })

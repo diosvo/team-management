@@ -6,12 +6,11 @@ import { Response, ResponseFactory } from '@/utils/response';
 import { User } from '@/drizzle/schema';
 import { getTeam } from '@/features/team/actions/team';
 
-import { CoachPosition, PlayerPosition, UserRole } from '@/utils/enum';
 import { hasPermissions } from '@/utils/helper';
 
 import { revalidateRosterPath, revalidateUserTag } from '../db/cache';
-import { insertCoach, updateCoach } from '../db/coach';
-import { insertPlayer, updatePlayer } from '../db/player';
+import { insertCoach } from '../db/coach';
+import { insertPlayer } from '../db/player';
 import {
   deleteUser,
   getExistingEmails,
@@ -21,8 +20,8 @@ import {
 } from '../db/user';
 import {
   AddUserValues,
-  EditProfileSchema,
-  EditProfileValues,
+  EditPersonalInfoSchema,
+  EditPersonalInfoValues,
   FilterUsersValues,
 } from '../schemas/user';
 import { generatePasswordToken } from './password-reset-token';
@@ -92,39 +91,22 @@ export async function addUser(
   }
 }
 
-export async function updateProfile(
+export async function updatePersonalInfo(
   user_id: string,
-  user_role: UserRole,
-  values: EditProfileValues
+  values: EditPersonalInfoValues
 ): Promise<Response> {
-  const { data, error } = EditProfileSchema.safeParse(values);
+  const { data, error } = EditPersonalInfoSchema.safeParse(values);
 
   if (error) {
     return ResponseFactory.error(error.message);
   }
 
   try {
-    const { user, player, position } = data;
-
-    await updateUser(user_id, user);
-
-    if (user_role === UserRole.PLAYER) {
-      await updatePlayer({
-        user_id,
-        ...player,
-        position: position as PlayerPosition,
-      });
-    }
-    if (user_role === UserRole.COACH) {
-      await updateCoach({
-        user_id,
-        position: position as CoachPosition,
-      });
-    }
+    await updateUser(user_id, data);
 
     revalidateUserTag(user_id);
 
-    return ResponseFactory.success('Updated information successfully');
+    return ResponseFactory.success('Updated personal information successfully');
   } catch (error) {
     return ResponseFactory.fromError(error as Error);
   }

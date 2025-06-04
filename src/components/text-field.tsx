@@ -15,9 +15,11 @@ export default function TextField({
 }: InfoFieldProps) {
   if (direction === 'horizontal') {
     return (
-      <HStack gap={1} fontSize={14}>
+      <HStack gap={1}>
         {IconComponent && <IconComponent size={14} color="GrayText" />}
-        <Text color="GrayText">{label}:</Text>
+        <Text color="GrayText" fontSize={14}>
+          {label}:
+        </Text>
         {children}
       </HStack>
     );

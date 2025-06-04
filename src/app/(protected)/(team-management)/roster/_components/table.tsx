@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 
 import {
@@ -31,7 +32,6 @@ import { usePermissions } from '@/hooks/use-permissions';
 import { colorState } from '@/utils/helper';
 
 import { removeUser } from '@/features/user/actions/user';
-import { useRouter } from 'next/navigation';
 
 export default function RosterTable({ users }: { users: Array<User> }) {
   const router = useRouter();
@@ -86,7 +86,7 @@ export default function RosterTable({ users }: { users: Array<User> }) {
     <>
       <Table.ScrollArea marginTop={2} marginBottom={4}>
         <Table.Root
-          size={{ base: 'sm', md: 'md' }}
+          size={{ base: 'sm', md: 'lg' }}
           stickyHeader
           interactive={currentData.length > 0}
         >

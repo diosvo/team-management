@@ -31,20 +31,6 @@ export const AddUserSchema = z.object({
   position,
 });
 
-export const EditProfileSchema = z.object({
-  user: z
-    .object({
-      name,
-      dob,
-      phone_number,
-      citizen_identification,
-      state,
-    })
-    .default({}),
-  player: z.object({}).default({}),
-  position,
-});
-
 export const EditTeamInfoSchema = z.object({
   user: z.object({
     role,
@@ -60,7 +46,14 @@ export const FilterUsersSchema = z.object({
   state: z.array(state).default([]),
 });
 
+export const EditPersonalInfoSchema = z.object({
+  name,
+  dob,
+  phone_number,
+  citizen_identification,
+});
+
 export type AddUserValues = z.infer<typeof AddUserSchema>;
-export type EditProfileValues = z.infer<typeof EditProfileSchema>;
-export type EditTeamInfoValues = z.infer<typeof EditTeamInfoSchema>;
 export type FilterUsersValues = z.infer<typeof FilterUsersSchema>;
+export type EditTeamInfoValues = z.infer<typeof EditTeamInfoSchema>;
+export type EditPersonalInfoValues = z.infer<typeof EditPersonalInfoSchema>;
