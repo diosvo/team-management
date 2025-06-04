@@ -1,16 +1,26 @@
 'use server';
 
-import { sendPasswordInstructionEmail } from '@/lib/mail';
-import { Response, ResponseFactory } from '@/utils/response';
-
 import { User } from '@/drizzle/schema';
 import { getTeam } from '@/features/team/actions/team';
+import { sendPasswordInstructionEmail } from '@/lib/mail';
 
+import { CoachPosition, PlayerPosition } from '@/utils/enum';
 import { hasPermissions } from '@/utils/helper';
+import { Response, ResponseFactory } from '@/utils/response';
+
+import {
+  AddUserValues,
+  EditPersonalInfoSchema,
+  EditPersonalInfoValues,
+  EditTeamInfoSchema,
+  EditTeamInfoValues,
+  FilterUsersValues,
+} from '../schemas/user';
+import { generatePasswordToken } from './password-reset-token';
 
 import { revalidateRosterPath, revalidateUserTag } from '../db/cache';
-import { insertCoach } from '../db/coach';
-import { insertPlayer } from '../db/player';
+import { insertCoach, updateCoach } from '../db/coach';
+import { insertPlayer, updatePlayer } from '../db/player';
 import {
   deleteUser,
   getExistingEmails,
@@ -18,13 +28,6 @@ import {
   insertUser,
   updateUser,
 } from '../db/user';
-import {
-  AddUserValues,
-  EditPersonalInfoSchema,
-  EditPersonalInfoValues,
-  FilterUsersValues,
-} from '../schemas/user';
-import { generatePasswordToken } from './password-reset-token';
 
 export async function getRoster(
   params: FilterUsersValues
@@ -107,6 +110,48 @@ export async function updatePersonalInfo(
     revalidateUserTag(user_id);
 
     return ResponseFactory.success('Updated personal information successfully');
+  } catch (error) {
+    return ResponseFactory.fromError(error as Error);
+  }
+}
+
+export async function updateTeamInfo(
+  user_id: string,
+  values: EditTeamInfoValues
+): Promise<Response> {
+  const { data, error } = EditTeamInfoSchema.safeParse(values);
+
+  if (error) {
+    return ResponseFactory.error(error.message);
+  }
+
+  try {
+    const { user: userData, player: playerData, position } = data;
+
+    // Update user
+    await updateUser(user_id, userData);
+
+    // Update role-specific tables based on the user's role
+    const { isPlayer, isCoach } = hasPermissions(userData.role);
+
+    if (isPlayer && playerData) {
+      await updatePlayer({
+        user_id,
+        position: position as PlayerPosition,
+        jersey_number: playerData.jersey_number,
+      });
+    }
+
+    if (isCoach && position) {
+      await updateCoach({
+        user_id,
+        position: position as CoachPosition,
+      });
+    }
+
+    revalidateUserTag(user_id);
+
+    return ResponseFactory.success('Updated team information successfully');
   } catch (error) {
     return ResponseFactory.fromError(error as Error);
   }

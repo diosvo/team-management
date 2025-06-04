@@ -20,7 +20,8 @@ import { useForm } from 'react-hook-form';
 import TextField from '@/components/text-field';
 import { CloseButton } from '@/components/ui/close-button';
 import { Field } from '@/components/ui/field';
-import { Select } from '@/components/ui/select';
+import { SelectField } from '@/components/ui/select';
+import { toaster } from '@/components/ui/toaster';
 import { Tooltip } from '@/components/ui/tooltip';
 import Visibility from '@/components/visibility';
 
@@ -34,7 +35,11 @@ import { UserRole } from '@/utils/enum';
 import { formatDate } from '@/utils/formatter';
 import { colorRole, hasPermissions } from '@/utils/helper';
 
-import { EditTeamInfoSchema } from '@/features/user/schemas/user';
+import { updateTeamInfo } from '@/features/user/actions/user';
+import {
+  EditTeamInfoSchema,
+  EditTeamInfoValues,
+} from '@/features/user/schemas/user';
 import { usePermissions } from '@/hooks/use-permissions';
 
 export default function TeamInfo({
@@ -68,13 +73,13 @@ export default function TeamInfo({
   const {
     reset,
     watch,
+    control,
     register,
     setValue,
     handleSubmit,
-    formState: { errors },
+    formState: { isDirty, isValid, errors },
   } = useForm({
-    resolver: zodResolver(EditTeamInfoSchema),
-    defaultValues: {
+    values: {
       user: {
         role: user.role === UserRole.SUPER_ADMIN ? undefined : user.role,
         state: user.state,
@@ -84,12 +89,57 @@ export default function TeamInfo({
       },
       position: user.details.position,
     },
+    resolver: zodResolver(EditTeamInfoSchema),
   });
 
   const selectedRole = watch('user.role');
 
+  // useEffect(() => {
+  //   if (selectedRole === UserRole.GUEST) {
+  //     setValue('position', undefined);
+  //   } else if (selectedRole === UserRole.COACH) {
+  //     setValue('position', CoachPosition.UNKNOWN);
+  //   } else if (selectedRole === UserRole.PLAYER) {
+  //     setValue('position', PlayerPosition.UNKNOWN);
+  //   }
+  // }, [selectedRole, setValue]);
+
+  const onSubmit = (data: EditTeamInfoValues) => {
+    startTransition(async () => {
+      const id = toaster.create({
+        type: 'loading',
+        description: 'Updating team information...',
+      });
+
+      const { error, message: description } = await updateTeamInfo(
+        user.user_id,
+        data
+      );
+
+      toaster.update(id, {
+        type: error ? 'error' : 'success',
+        description,
+      });
+
+      if (!error) {
+        setIsEditing(false);
+      }
+    });
+  };
+
+  const onCancel = () => {
+    setIsEditing(false);
+    reset();
+  };
+
   return (
-    <Card.Root size="sm" _hover={{ shadow: 'sm' }} transition="all 0.2s">
+    <Card.Root
+      as="form"
+      size="sm"
+      _hover={{ shadow: 'sm' }}
+      transition="all 0.2s"
+      onSubmit={handleSubmit(onSubmit)}
+    >
       <HStack
         borderBottom={1}
         borderBottomStyle="solid"
@@ -100,13 +150,13 @@ export default function TeamInfo({
           <Card.Title marginRight="auto">Team Information</Card.Title>
           {isEditing ? (
             <>
-              <CloseButton
-                size="sm"
-                variant="outline"
-                onClick={() => setIsEditing(false)}
-              />
-              <Tooltip content="Save" disabled>
-                <IconButton size="sm" disabled>
+              <CloseButton size="sm" variant="outline" onClick={onCancel} />
+              <Tooltip content="Save" disabled={isPending}>
+                <IconButton
+                  size="sm"
+                  type="submit"
+                  disabled={!isDirty || !isValid || isPending}
+                >
                   <Save />
                 </IconButton>
               </Tooltip>
@@ -143,7 +193,6 @@ export default function TeamInfo({
               >
                 <InputGroup startElement={'#'}>
                   <Input
-                    defaultValue={user.details.jersey_number || ''}
                     disabled={isPending}
                     {...register('player.jersey_number')}
                   />
@@ -163,11 +212,17 @@ export default function TeamInfo({
           </Visibility>
 
           {isEditing && isAdmin ? (
-            <Field required label="Role">
-              <Select
+            <Field
+              required
+              label="Role"
+              invalid={!!errors.user?.role}
+              errorText={errors.user?.role?.message}
+            >
+              <SelectField
+                name="user.role"
+                control={control}
                 collection={RoleSelection}
                 disabled={isPending}
-                {...register('user.role')}
               />
             </Field>
           ) : (
@@ -183,15 +238,20 @@ export default function TeamInfo({
           )}
 
           {isEditing && isAdmin ? (
-            <Field label="Position">
-              <Select
+            <Field
+              label="Position"
+              invalid={!!errors.position}
+              errorText={errors.position?.message}
+            >
+              <SelectField
+                name="position"
+                control={control}
                 collection={
                   selectedRole === UserRole.COACH
                     ? CoachPositionsSelection
                     : PlayerPositionsSelection
                 }
                 disabled={isPending || selectedRole === UserRole.GUEST}
-                {...register('position')}
               />
             </Field>
           ) : (

@@ -66,6 +66,7 @@ export default function RosterActions() {
           </Button>
         </Visibility>
       </HStack>
+      <dialog.Viewport />
     </VStack>
   );
 }

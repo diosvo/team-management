@@ -141,7 +141,7 @@ export default function RosterTable({ users }: { users: Array<User> }) {
                     <>
                       <Table.Cell onClick={(e) => e.stopPropagation()}>
                         <Checkbox
-                          top="0.5"
+                          top={0.5}
                           aria-label="Select row"
                           checked={selection.includes(user.user_id)}
                           onCheckedChange={(changes) => {
