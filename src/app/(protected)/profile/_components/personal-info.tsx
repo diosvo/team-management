@@ -129,7 +129,13 @@ export default function PersonalInfo({
           }}
           gap={4}
         >
-          <TextField label="Email">{user.email}</TextField>
+          {isEditing ? (
+            <Field label="Email">
+              <Input variant="flushed" value={user.email} disabled />
+            </Field>
+          ) : (
+            <TextField label="Email">{user.email}</TextField>
+          )}
 
           {isEditing ? (
             <Field

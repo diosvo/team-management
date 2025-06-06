@@ -15,11 +15,13 @@ import {
   Select,
   Span,
   Stack,
+  Status,
   Text,
+  VStack,
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { formatDistanceToNow } from 'date-fns';
-import { Edit, LucideClock9, Save } from 'lucide-react';
+import { Activity, Edit, LucideClock9, Save } from 'lucide-react';
 import { Controller, useForm } from 'react-hook-form';
 
 import TextField from '@/components/text-field';
@@ -35,10 +37,11 @@ import {
   CoachPositionsSelection,
   PlayerPositionsSelection,
   RoleSelection,
+  StatesSelection,
 } from '@/utils/constant';
-import { UserRole } from '@/utils/enum';
+import { UserRole, UserState } from '@/utils/enum';
 import { formatDate } from '@/utils/formatter';
-import { colorRole, hasPermissions } from '@/utils/helper';
+import { colorRole, colorState, hasPermissions } from '@/utils/helper';
 
 import { updateTeamInfo } from '@/features/user/actions/user';
 import {
@@ -48,6 +51,10 @@ import {
 
 const roles = createListCollection({
   items: RoleSelection,
+});
+
+const states = createListCollection({
+  items: StatesSelection,
 });
 
 export default function TeamInfo({
@@ -339,25 +346,84 @@ export default function TeamInfo({
           )}
         </Grid>
       </Card.Body>
-      <Card.Footer>
-        {user.join_date && (
-          <TextField
-            label="Joined Date"
-            direction="horizontal"
-            icon={LucideClock9}
-          >
-            <Text>
-              {formatDate(user.join_date)}
-              <Text as="span" fontSize="sm" color="GrayText" marginLeft={1}>
-                (
-                {formatDistanceToNow(user.join_date, {
-                  addSuffix: true,
-                })}
-                )
+
+      <Card.Footer asChild>
+        <VStack align="flex-start" width="max-content">
+          {isEditing && canEdit ? (
+            <Field label="State" errorText={errors.user?.state?.message}>
+              <Controller
+                control={control}
+                name="user.state"
+                render={({ field }) => (
+                  <Select.Root
+                    name={field.name}
+                    value={field.value ? [field.value] : [UserState.UNKNOWN]}
+                    onValueChange={({ value }) => field.onChange(value[0])}
+                    onInteractOutside={() => field.onBlur()}
+                    collection={states}
+                  >
+                    <Select.HiddenSelect />
+                    <Select.Control>
+                      <Select.Trigger>
+                        <Select.ValueText placeholder="State" />
+                      </Select.Trigger>
+                      <Select.IndicatorGroup>
+                        <Select.Indicator />
+                      </Select.IndicatorGroup>
+                    </Select.Control>
+                    <Portal>
+                      <Select.Positioner>
+                        <Select.Content>
+                          {states.items.map((state) => (
+                            <Select.Item item={state} key={state.value}>
+                              <Status.Root
+                                colorPalette={colorState(state.value)}
+                              >
+                                <Status.Indicator />
+                                {state.label}
+                              </Status.Root>
+                              {/* <Select.ItemText>{state.label}</Select.ItemText> */}
+
+                              <Select.ItemIndicator />
+                            </Select.Item>
+                          ))}
+                        </Select.Content>
+                      </Select.Positioner>
+                    </Portal>
+                  </Select.Root>
+                )}
+              />
+            </Field>
+          ) : (
+            <TextField label="State" direction="horizontal" icon={Activity}>
+              <Badge
+                variant="surface"
+                rounded="full"
+                colorPalette={colorState(user.state)}
+              >
+                {user.state}
+              </Badge>
+            </TextField>
+          )}
+          {user.join_date && (
+            <TextField
+              label="Joined Date"
+              direction="horizontal"
+              icon={LucideClock9}
+            >
+              <Text>
+                {formatDate(user.join_date)}
+                <Text as="span" fontSize="sm" color="GrayText" marginLeft={1}>
+                  (
+                  {formatDistanceToNow(user.join_date, {
+                    addSuffix: true,
+                  })}
+                  )
+                </Text>
               </Text>
-            </Text>
-          </TextField>
-        )}
+            </TextField>
+          )}
+        </VStack>
       </Card.Footer>
     </Card.Root>
   );
