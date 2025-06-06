@@ -1,11 +1,13 @@
-import { Skeleton, SkeletonText, Stack } from '@chakra-ui/react';
+import { HStack, Skeleton, VStack } from '@chakra-ui/react';
 
 export default function Loading() {
   return (
-    <Stack gap={8}>
-      PROFILE LOADING
+    <VStack align="stretch" gap={6}>
       <Skeleton height={9} width={36} />
-      <SkeletonText noOfLines={6} gap={4} />
-    </Stack>
+      <HStack gap={6}>
+        <Skeleton height="266px" flex={1} />
+        <Skeleton height="266px" flex={1} />
+      </HStack>
+    </VStack>
   );
 }
