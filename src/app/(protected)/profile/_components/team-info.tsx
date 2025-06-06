@@ -5,27 +5,32 @@ import { useMemo, useState, useTransition } from 'react';
 import {
   Badge,
   Card,
+  createListCollection,
   Grid,
   HStack,
   IconButton,
   Input,
   InputGroup,
+  Portal,
+  Select,
+  Span,
+  Stack,
   Text,
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { formatDistanceToNow } from 'date-fns';
 import { Edit, LucideClock9, Save } from 'lucide-react';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 
 import TextField from '@/components/text-field';
 import { CloseButton } from '@/components/ui/close-button';
 import { Field } from '@/components/ui/field';
-import { SelectField } from '@/components/ui/select';
 import { toaster } from '@/components/ui/toaster';
 import { Tooltip } from '@/components/ui/tooltip';
 import Visibility from '@/components/visibility';
 
 import { User } from '@/drizzle/schema';
+import { usePermissions } from '@/hooks/use-permissions';
 import {
   CoachPositionsSelection,
   PlayerPositionsSelection,
@@ -40,7 +45,10 @@ import {
   EditTeamInfoSchema,
   EditTeamInfoValues,
 } from '@/features/user/schemas/user';
-import { usePermissions } from '@/hooks/use-permissions';
+
+const roles = createListCollection({
+  items: RoleSelection,
+});
 
 export default function TeamInfo({
   user,
@@ -94,15 +102,14 @@ export default function TeamInfo({
 
   const selectedRole = watch('user.role');
 
-  // useEffect(() => {
-  //   if (selectedRole === UserRole.GUEST) {
-  //     setValue('position', undefined);
-  //   } else if (selectedRole === UserRole.COACH) {
-  //     setValue('position', CoachPosition.UNKNOWN);
-  //   } else if (selectedRole === UserRole.PLAYER) {
-  //     setValue('position', PlayerPosition.UNKNOWN);
-  //   }
-  // }, [selectedRole, setValue]);
+  const positions = useMemo(() => {
+    return createListCollection({
+      items:
+        selectedRole === UserRole.COACH
+          ? CoachPositionsSelection
+          : PlayerPositionsSelection,
+    });
+  }, [selectedRole]);
 
   const onSubmit = (data: EditTeamInfoValues) => {
     startTransition(async () => {
@@ -218,11 +225,43 @@ export default function TeamInfo({
               invalid={!!errors.user?.role}
               errorText={errors.user?.role?.message}
             >
-              <SelectField
-                name="user.role"
+              <Controller
                 control={control}
-                collection={RoleSelection}
-                disabled={isPending}
+                name="user.role"
+                render={({ field }) => (
+                  <Select.Root
+                    name={field.name}
+                    value={field.value ? [field.value] : [UserRole.GUEST]}
+                    onValueChange={({ value }) => {
+                      setValue('position', null);
+                      field.onChange(value[0]);
+                    }}
+                    onInteractOutside={() => field.onBlur()}
+                    collection={roles}
+                  >
+                    <Select.HiddenSelect />
+                    <Select.Control>
+                      <Select.Trigger>
+                        <Select.ValueText placeholder="Role" />
+                      </Select.Trigger>
+                      <Select.IndicatorGroup>
+                        <Select.Indicator />
+                      </Select.IndicatorGroup>
+                    </Select.Control>
+                    <Portal>
+                      <Select.Positioner>
+                        <Select.Content>
+                          {roles.items.map((role) => (
+                            <Select.Item item={role} key={role.value}>
+                              {role.label}
+                              <Select.ItemIndicator />
+                            </Select.Item>
+                          ))}
+                        </Select.Content>
+                      </Select.Positioner>
+                    </Portal>
+                  </Select.Root>
+                )}
               />
             </Field>
           ) : (
@@ -243,15 +282,48 @@ export default function TeamInfo({
               invalid={!!errors.position}
               errorText={errors.position?.message}
             >
-              <SelectField
-                name="position"
+              <Controller
                 control={control}
-                collection={
-                  selectedRole === UserRole.COACH
-                    ? CoachPositionsSelection
-                    : PlayerPositionsSelection
-                }
-                disabled={isPending || selectedRole === UserRole.GUEST}
+                name="position"
+                render={({ field }) => (
+                  <Select.Root
+                    name={field.name}
+                    value={field.value ? [field.value] : ['UNKNOWN']}
+                    onValueChange={({ value }) => field.onChange(value[0])}
+                    onInteractOutside={() => field.onBlur()}
+                    collection={positions}
+                    disabled={isPending || selectedRole === UserRole.GUEST}
+                  >
+                    <Select.HiddenSelect />
+                    <Select.Control>
+                      <Select.Trigger>
+                        <Select.ValueText placeholder="Position" />
+                      </Select.Trigger>
+                      <Select.IndicatorGroup>
+                        <Select.Indicator />
+                      </Select.IndicatorGroup>
+                    </Select.Control>
+                    <Portal>
+                      <Select.Positioner>
+                        <Select.Content>
+                          {positions.items.map((position) => (
+                            <Select.Item item={position} key={position.value}>
+                              <Stack gap={0}>
+                                <Select.ItemText>
+                                  {position.label}
+                                </Select.ItemText>
+                                <Span color="fg.muted" textStyle="xs">
+                                  {position.description}
+                                </Span>
+                              </Stack>
+                              <Select.ItemIndicator />
+                            </Select.Item>
+                          ))}
+                        </Select.Content>
+                      </Select.Positioner>
+                    </Portal>
+                  </Select.Root>
+                )}
               />
             </Field>
           ) : (
