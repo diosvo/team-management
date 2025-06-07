@@ -180,20 +180,20 @@ export default function RosterTable({ users }: { users: Array<User> }) {
                   <Table.Cell>
                     <Badge
                       variant="surface"
-                      rounded="full"
+                      borderRadius="full"
                       colorPalette={colorState(user.state)}
                     >
                       {user.state}
                     </Badge>
                   </Table.Cell>
                   <Table.Cell>
-                    <Badge variant="outline" rounded="full">
+                    <Badge variant="outline" borderRadius="full">
                       {user.role}
                     </Badge>
                   </Table.Cell>
                   <Table.Cell>
                     {user.details.position ? (
-                      <Badge variant="outline" rounded="full">
+                      <Badge variant="outline" borderRadius="full">
                         {user.details.position}
                       </Badge>
                     ) : (

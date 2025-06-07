@@ -78,7 +78,7 @@ export default function NewPasswordPage() {
             <Button
               type="submit"
               width="full"
-              rounded="full"
+              borderRadius="full"
               loadingText="Submitting..."
               loading={isPending}
             >

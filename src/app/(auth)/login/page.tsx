@@ -115,7 +115,7 @@ export default function LoginPage() {
           {page === Page.Login && (
             <input type="hidden" name="redirectTo" value={callbackUrl} />
           )}
-          <Button type="submit" rounded="full" loading={isPending}>
+          <Button type="submit" borderRadius="full" loading={isPending}>
             {buttonText[page]}
           </Button>
 

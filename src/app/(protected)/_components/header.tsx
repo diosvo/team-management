@@ -107,7 +107,12 @@ export default function Header() {
 
       <Drawer.Root open={open} onOpenChange={({ open }) => setOpen(open)}>
         <Drawer.Trigger asChild>
-          <IconButton hideFrom="lg" size="sm" variant="outline" rounded="full">
+          <IconButton
+            hideFrom="lg"
+            size="sm"
+            variant="outline"
+            borderRadius="full"
+          >
             <PanelRightOpen />
           </IconButton>
         </Drawer.Trigger>
@@ -119,7 +124,7 @@ export default function Header() {
                 <Sidebar />
               </Drawer.Body>
               <Drawer.CloseTrigger asChild>
-                <CloseButton size="2xs" rounded="full" />
+                <CloseButton size="2xs" borderRadius="full" />
               </Drawer.CloseTrigger>
             </Drawer.Content>
           </Drawer.Positioner>
