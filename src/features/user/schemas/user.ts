@@ -35,6 +35,7 @@ export const EditTeamInfoSchema = z.object({
   user: z.object({
     role,
     state,
+    join_date,
   }),
   player: z.object({ jersey_number }),
   position,

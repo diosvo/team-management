@@ -35,6 +35,7 @@ import { User } from '@/drizzle/schema';
 import { usePermissions } from '@/hooks/use-permissions';
 import {
   CoachPositionsSelection,
+  ESTABLISHED_DATE,
   PlayerPositionsSelection,
   RoleSelection,
   StatesSelection,
@@ -98,6 +99,7 @@ export default function TeamInfo({
       user: {
         role: user.role === UserRole.SUPER_ADMIN ? undefined : user.role,
         state: user.state,
+        join_date: user.join_date,
       },
       player: {
         jersey_number: user.details.jersey_number,
@@ -348,9 +350,15 @@ export default function TeamInfo({
       </Card.Body>
 
       <Card.Footer asChild>
-        <VStack align="flex-start" width="max-content">
-          {isEditing && canEdit ? (
-            <Field label="State" errorText={errors.user?.state?.message}>
+        {isEditing && canEdit ? (
+          <Grid
+            templateColumns={{
+              base: '1fr',
+              md: 'repeat(2, 1fr)',
+            }}
+            gap={4}
+          >
+            <Field label="State">
               <Controller
                 control={control}
                 name="user.state"
@@ -382,8 +390,6 @@ export default function TeamInfo({
                                 <Status.Indicator />
                                 {state.label}
                               </Status.Root>
-                              {/* <Select.ItemText>{state.label}</Select.ItemText> */}
-
                               <Select.ItemIndicator />
                             </Select.Item>
                           ))}
@@ -394,7 +400,18 @@ export default function TeamInfo({
                 )}
               />
             </Field>
-          ) : (
+            <Field label="Join Date">
+              <Input
+                type="date"
+                min={ESTABLISHED_DATE}
+                defaultValue={ESTABLISHED_DATE}
+                disabled={isPending}
+                {...register('user.join_date')}
+              />
+            </Field>
+          </Grid>
+        ) : (
+          <VStack align="flex-start" width="max-content">
             <TextField label="State" direction="horizontal" icon={Activity}>
               <Badge
                 variant="surface"
@@ -404,26 +421,26 @@ export default function TeamInfo({
                 {user.state}
               </Badge>
             </TextField>
-          )}
-          {user.join_date && (
-            <TextField
-              label="Joined Date"
-              direction="horizontal"
-              icon={LucideClock9}
-            >
-              <Text>
-                {formatDate(user.join_date)}
-                <Text as="span" fontSize="sm" color="GrayText" marginLeft={1}>
-                  (
-                  {formatDistanceToNow(user.join_date, {
-                    addSuffix: true,
-                  })}
-                  )
+            {user.join_date && (
+              <TextField
+                label="Joined Date"
+                direction="horizontal"
+                icon={LucideClock9}
+              >
+                <Text>
+                  {formatDate(user.join_date)}
+                  <Text as="span" fontSize="sm" color="GrayText" marginLeft={1}>
+                    (
+                    {formatDistanceToNow(user.join_date, {
+                      addSuffix: true,
+                    })}
+                    )
+                  </Text>
                 </Text>
-              </Text>
-            </TextField>
-          )}
-        </VStack>
+              </TextField>
+            )}
+          </VStack>
+        )}
       </Card.Footer>
     </Card.Root>
   );

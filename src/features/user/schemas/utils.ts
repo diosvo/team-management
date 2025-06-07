@@ -58,7 +58,7 @@ export const USER_SCHEMA_VALIDATION = {
     .default(''),
   state: z.enum(SELECTABLE_STATES).default(UserState.UNKNOWN),
   role: z.enum(SELECTABLE_ROLES).default(UserRole.PLAYER),
-  join_date: z.string().date().default(ESTABLISHED_DATE),
+  join_date: z.string().date().nullable().default(ESTABLISHED_DATE),
 };
 
 export const PLAYER_VALIDATION = {
