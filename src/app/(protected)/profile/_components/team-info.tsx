@@ -38,7 +38,7 @@ import {
   ESTABLISHED_DATE,
   PlayerPositionsSelection,
   RoleSelection,
-  StatesSelection,
+  StateSelection,
 } from '@/utils/constant';
 import { UserRole, UserState } from '@/utils/enum';
 import { formatDate } from '@/utils/formatter';
@@ -55,7 +55,7 @@ const roles = createListCollection({
 });
 
 const states = createListCollection({
-  items: StatesSelection,
+  items: StateSelection,
 });
 
 export default function TeamInfo({
@@ -112,11 +112,13 @@ export default function TeamInfo({
   const selectedRole = watch('user.role');
 
   const positions = useMemo(() => {
+    const mapped = {
+      [UserRole.COACH]: CoachPositionsSelection,
+      [UserRole.PLAYER]: PlayerPositionsSelection,
+      [UserRole.GUEST]: [],
+    };
     return createListCollection({
-      items:
-        selectedRole === UserRole.COACH
-          ? CoachPositionsSelection
-          : PlayerPositionsSelection,
+      items: selectedRole ? mapped[selectedRole] : [],
     });
   }, [selectedRole]);
 
@@ -288,8 +290,7 @@ export default function TeamInfo({
           {isEditing && isAdmin ? (
             <Field
               label="Position"
-              invalid={!!errors.position}
-              errorText={errors.position?.message}
+              disabled={isPending || selectedRole === UserRole.GUEST}
             >
               <Controller
                 control={control}

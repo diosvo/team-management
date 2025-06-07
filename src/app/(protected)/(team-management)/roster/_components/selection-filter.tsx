@@ -15,7 +15,7 @@ import { Filter } from 'lucide-react';
 
 import { Checkbox } from '@/components/ui/checkbox';
 
-import { RoleSelection, StatesSelection } from '@/utils/constant';
+import { RoleSelection, StateSelection } from '@/utils/constant';
 import { SelectableRole, SelectableState } from '@/utils/type';
 
 import { useFilters } from '../_helpers/use-filters';
@@ -96,7 +96,7 @@ export default function SelectionFilter() {
                   }}
                 >
                   <Grid templateColumns="repeat(2, 1fr)" gap={4}>
-                    {StatesSelection.map((item) => (
+                    {StateSelection.map((item) => (
                       <Checkbox
                         key={item.value}
                         value={item.value}

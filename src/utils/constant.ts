@@ -1,7 +1,7 @@
 import { addHours } from 'date-fns';
 
-import { SelectionOption } from '@/components/ui/select';
 import { CoachPosition, PlayerPosition, UserRole, UserState } from './enum';
+import { Selection } from './type';
 
 export const ESTABLISHED_DATE = '2024-02-20';
 export const DEFAULT_DOB = '2000-01-01';
@@ -18,7 +18,7 @@ export const SELECTABLE_ROLES = [
   UserRole.GUEST,
   UserRole.PLAYER,
 ] as const;
-export const RoleSelection: Array<SelectionOption<string>> = [
+export const RoleSelection: Selection<string> = [
   {
     label: 'Player',
     value: UserRole.PLAYER,
@@ -39,7 +39,7 @@ export const SELECTABLE_STATES = [
   UserState.TEMPORARILY_ABSENT,
   UserState.UNKNOWN,
 ] as const;
-export const StatesSelection: Array<SelectionOption<string>> = [
+export const StateSelection: Selection<string> = [
   {
     label: 'Active',
     value: UserState.ACTIVE,
@@ -64,7 +64,7 @@ export const SELECTABLE_COACH_POSITIONS = [
   CoachPosition.ASSISTANT_COACH,
   CoachPosition.UNKNOWN,
 ] as const;
-export const CoachPositionsSelection: Array<SelectionOption<string>> = [
+export const CoachPositionsSelection: Selection<string> = [
   {
     label: 'Head',
     value: CoachPosition.HEAD_COACH,
@@ -89,7 +89,7 @@ export const SELECTABLE_PLAYER_POSITIONS = [
   PlayerPosition.FORWARD,
   PlayerPosition.UNKNOWN,
 ] as const;
-export const PlayerPositionsSelection: Array<SelectionOption<string>> = [
+export const PlayerPositionsSelection: Selection<string> = [
   {
     label: 'PG',
     value: PlayerPosition.POINT_GUARD,

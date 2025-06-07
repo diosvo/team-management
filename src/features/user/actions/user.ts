@@ -65,10 +65,11 @@ export async function addUser(
       );
     }
 
-    const withUser = { user_id: data.user_id };
-
     if (isPlayer) {
-      const player = await insertPlayer(withUser);
+      const player = await insertPlayer({
+        user_id: data.user_id,
+        position: user.position as PlayerPosition,
+      });
 
       if (!player) {
         return ResponseFactory.error('Failed to extend user as player');
@@ -76,7 +77,10 @@ export async function addUser(
     }
 
     if (isCoach) {
-      const coach = await insertCoach(withUser);
+      const coach = await insertCoach({
+        user_id: data.user_id,
+        position: user.position as CoachPosition,
+      });
 
       if (!coach) {
         return ResponseFactory.error('Failed to grant user as coach');
