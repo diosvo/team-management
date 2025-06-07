@@ -22,9 +22,10 @@ export const USER_SCHEMA_VALIDATION = {
   name: z
     .string()
     .min(6, { message: 'Be at least 6 characters long.' })
+    .max(128, { message: 'Be at most 128 characters long.' })
     .trim()
     .default(''),
-  dob: z.string().date().default(DEFAULT_DOB),
+  dob: z.string().date().default(DEFAULT_DOB).nullable(),
   email: z
     .string()
     .email({ message: 'Please enter a valid email.' })
@@ -47,6 +48,7 @@ export const USER_SCHEMA_VALIDATION = {
   password: z
     .string()
     .min(8, { message: 'Be at least 8 characters long.' })
+    .max(128, { message: 'Be at most 128 characters long.' })
     .regex(/[a-zA-Z]/, { message: 'Contain at least one letter.' })
     .regex(/[0-9]/, { message: 'Contain at least one number.' })
     .regex(/[^a-zA-Z0-9]/, {
@@ -56,14 +58,15 @@ export const USER_SCHEMA_VALIDATION = {
     .default(''),
   state: z.enum(SELECTABLE_STATES).default(UserState.UNKNOWN),
   role: z.enum(SELECTABLE_ROLES).default(UserRole.PLAYER),
-  join_date: z.string().date().default(ESTABLISHED_DATE),
+  join_date: z.string().date().nullable().default(ESTABLISHED_DATE),
 };
 
 export const PLAYER_VALIDATION = {
   position: z.enum(SELECTABLE_PLAYER_POSITIONS).default(PlayerPosition.UNKNOWN),
   jersey_number: z.coerce.number().int().min(0).max(99).nullish(),
-  height: z.coerce.number().int().min(0).max(200).nullish(),
-  weight: z.coerce.number().int().min(0).max(100).nullish(),
+  // Temporrily disabled
+  // height: z.coerce.number().int().min(0).max(200).nullish(),
+  // weight: z.coerce.number().int().min(0).max(100).nullish(),
 };
 
 export const COACH_VALIDATION = {

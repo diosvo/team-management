@@ -97,7 +97,7 @@ export default function TextEditor({
   return (
     <Box
       {...(editable
-        ? { borderWidth: '1px', borderColor: 'gray.200', borderRadius: 'md' }
+        ? { borderWidth: 1, borderColor: 'gray.200', borderRadius: 'md' }
         : {})}
     >
       <Visibility isVisible={editable}>

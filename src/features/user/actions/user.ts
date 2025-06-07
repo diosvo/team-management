@@ -1,15 +1,24 @@
 'use server';
 
-import { sendPasswordInstructionEmail } from '@/lib/mail';
-import { Response, ResponseFactory } from '@/utils/response';
-
 import { User } from '@/drizzle/schema';
 import { getTeam } from '@/features/team/actions/team';
+import { sendPasswordInstructionEmail } from '@/lib/mail';
 
-import { CoachPosition, PlayerPosition, UserRole } from '@/utils/enum';
+import { CoachPosition, PlayerPosition } from '@/utils/enum';
 import { hasPermissions } from '@/utils/helper';
+import { Response, ResponseFactory } from '@/utils/response';
 
-import { revalidateRosterPath } from '../db/cache';
+import {
+  AddUserValues,
+  EditPersonalInfoSchema,
+  EditPersonalInfoValues,
+  EditTeamInfoSchema,
+  EditTeamInfoValues,
+  FilterUsersValues,
+} from '../schemas/user';
+import { generatePasswordToken } from './password-reset-token';
+
+import { revalidateRosterPath, revalidateUserTag } from '../db/cache';
 import { insertCoach, updateCoach } from '../db/coach';
 import { insertPlayer, updatePlayer } from '../db/player';
 import {
@@ -19,13 +28,6 @@ import {
   insertUser,
   updateUser,
 } from '../db/user';
-import {
-  AddUserValues,
-  EditProfileSchema,
-  EditProfileValues,
-  FilterUsersValues,
-} from '../schemas/user';
-import { generatePasswordToken } from './password-reset-token';
 
 export async function getRoster(
   params: FilterUsersValues
@@ -63,10 +65,11 @@ export async function addUser(
       );
     }
 
-    const withUser = { user_id: data.user_id };
-
     if (isPlayer) {
-      const player = await insertPlayer(withUser);
+      const player = await insertPlayer({
+        user_id: data.user_id,
+        position: user.position as PlayerPosition,
+      });
 
       if (!player) {
         return ResponseFactory.error('Failed to extend user as player');
@@ -74,7 +77,10 @@ export async function addUser(
     }
 
     if (isCoach) {
-      const coach = await insertCoach(withUser);
+      const coach = await insertCoach({
+        user_id: data.user_id,
+        position: user.position as CoachPosition,
+      });
 
       if (!coach) {
         return ResponseFactory.error('Failed to grant user as coach');
@@ -92,39 +98,64 @@ export async function addUser(
   }
 }
 
-export async function updateProfile(
+export async function updatePersonalInfo(
   user_id: string,
-  user_role: UserRole,
-  values: EditProfileValues
+  values: EditPersonalInfoValues
 ): Promise<Response> {
-  const { data, error } = EditProfileSchema.safeParse(values);
+  const { data, error } = EditPersonalInfoSchema.safeParse(values);
 
   if (error) {
     return ResponseFactory.error(error.message);
   }
 
   try {
-    const { user, player, position } = data;
+    await updateUser(user_id, data);
 
-    await updateUser(user_id, user);
+    revalidateUserTag(user_id);
 
-    if (user_role === UserRole.PLAYER) {
+    return ResponseFactory.success('Updated personal information successfully');
+  } catch (error) {
+    return ResponseFactory.fromError(error as Error);
+  }
+}
+
+export async function updateTeamInfo(
+  user_id: string,
+  values: EditTeamInfoValues
+): Promise<Response> {
+  const { data, error } = EditTeamInfoSchema.safeParse(values);
+
+  if (error) {
+    return ResponseFactory.error(error.message);
+  }
+
+  try {
+    const { user: userData, player: playerData, position } = data;
+
+    // Update user
+    await updateUser(user_id, userData);
+
+    // Update role-specific tables based on the user's role
+    const { isPlayer, isCoach } = hasPermissions(userData.role);
+
+    if (isPlayer && playerData) {
       await updatePlayer({
         user_id,
-        ...player,
         position: position as PlayerPosition,
+        jersey_number: playerData.jersey_number,
       });
     }
-    if (user_role === UserRole.COACH) {
+
+    if (isCoach && position) {
       await updateCoach({
         user_id,
         position: position as CoachPosition,
       });
     }
 
-    revalidateRosterPath();
+    revalidateUserTag(user_id);
 
-    return ResponseFactory.success('Updated information successfully');
+    return ResponseFactory.success('Updated team information successfully');
   } catch (error) {
     return ResponseFactory.fromError(error as Error);
   }

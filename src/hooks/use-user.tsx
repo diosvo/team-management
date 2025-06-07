@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, ReactNode, useContext } from 'react';
+import { createContext, ReactNode, use, useContext } from 'react';
 
 import { User } from '@/drizzle/schema';
 
@@ -10,12 +10,23 @@ type UserContextType = {
 
 const UserContext = createContext<Nullable<UserContextType>>(null);
 
+/**
+ * @description Hook to get the current user in client components
+ */
 export function useUser(): UserContextType {
   const context = useContext(UserContext);
   if (context === null) {
     throw new Error('useUser must be used within a UserProvider');
   }
   return context;
+}
+
+/**
+ * @description Hook to get the resolved current user (blocking)
+ */
+export function useCurrentUser(): Nullable<User> {
+  const { userPromise } = useUser();
+  return use(userPromise);
 }
 
 export function UserProvider({

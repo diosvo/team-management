@@ -1,8 +1,9 @@
 'use client';
 
 import NextImage from 'next/image';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { use, useEffect, useRef, useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 
 import {
   Avatar,
@@ -18,28 +19,21 @@ import {
 import { LogOut, PanelRightOpen, UserIcon } from 'lucide-react';
 
 import { logout } from '@/features/user/actions/auth';
-import { usePermissions } from '@/hooks/use-permissions';
-import { useUser } from '@/hooks/use-user';
+import { useCurrentUser } from '@/hooks/use-user';
 
 import { colorState } from '@/utils/helper';
 import HeaderLogo from '@assets/images/header-logo.png';
 
 import { CloseButton } from '@/components/ui/close-button';
-import { dialog } from '@/components/ui/dialog';
 
 import Sidebar from './sidebar';
-import UserInfo from './user-info';
 
 export default function Header() {
-  const { userPromise } = useUser();
-  const user = use(userPromise);
-  const { isAdmin } = usePermissions();
-
+  const user = useCurrentUser();
   const pathname = usePathname();
 
   const [open, setOpen] = useState<boolean>(false);
   const [isPending, startTransition] = useTransition();
-  const selectionRef = useRef<HTMLDivElement>(null);
 
   const handleLogout = () => {
     startTransition(async () => {
@@ -72,7 +66,10 @@ export default function Header() {
 
       <Menu.Root>
         <Menu.Trigger focusVisibleRing="none">
-          <Avatar.Root variant="subtle" size={{ base: 'xs', md: 'sm' }}>
+          <Avatar.Root
+            variant="subtle"
+            size={{ base: 'xs', md: 'sm', lg: 'md' }}
+          >
             <Avatar.Fallback name={user.name} />
             <Avatar.Image src={user.image as string} />
             <Float placement="bottom-end" offsetX={1} offsetY={1}>
@@ -87,25 +84,11 @@ export default function Header() {
         </Menu.Trigger>
         <Menu.Positioner>
           <Menu.Content>
-            <Menu.Item
-              value="user-info"
-              _hover={{ cursor: 'pointer' }}
-              onClick={() =>
-                dialog.open('profile', {
-                  contentRef: selectionRef,
-                  children: (
-                    <UserInfo
-                      user={user}
-                      canEdit={false}
-                      isAdmin={isAdmin}
-                      selectionRef={selectionRef}
-                    />
-                  ),
-                })
-              }
-            >
-              <UserIcon size={14} />
-              {user.name}
+            <Menu.Item value="user-info" _hover={{ cursor: 'pointer' }} asChild>
+              <Link href={'/profile/' + user.user_id}>
+                <UserIcon size={14} />
+                {user.name}
+              </Link>
             </Menu.Item>
 
             <Menu.Separator />
@@ -142,7 +125,6 @@ export default function Header() {
           </Drawer.Positioner>
         </Portal>
       </Drawer.Root>
-      <dialog.Viewport />
     </HStack>
   );
 }

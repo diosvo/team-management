@@ -1,19 +1,18 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useMemo, useState } from 'react';
 
 import {
   ActionBar,
   Badge,
   Button,
   ButtonGroup,
-  EmptyState,
   Icon,
   IconButton,
   Pagination,
   Portal,
   Table,
-  VStack,
 } from '@chakra-ui/react';
 import {
   ChevronLeft,
@@ -24,7 +23,7 @@ import {
 } from 'lucide-react';
 
 import { Checkbox } from '@/components/ui/checkbox';
-import { dialog } from '@/components/ui/dialog';
+import { EmptyState } from '@/components/ui/empty-state';
 import { toaster } from '@/components/ui/toaster';
 import Visibility from '@/components/visibility';
 
@@ -32,13 +31,11 @@ import { User } from '@/drizzle/schema';
 import { usePermissions } from '@/hooks/use-permissions';
 import { colorState } from '@/utils/helper';
 
-import UserInfo from '@/app/(protected)/_components/user-info';
 import { removeUser } from '@/features/user/actions/user';
-import { formatDate } from '@/utils/formatter';
 
 export default function RosterTable({ users }: { users: Array<User> }) {
-  const { isAdmin } = usePermissions();
-  const selectionRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const { isAdmin, isGuest } = usePermissions();
 
   const [selection, setSelection] = useState<Array<string>>([]);
   const [pagination, setPagination] = useState({
@@ -63,7 +60,7 @@ export default function RosterTable({ users }: { users: Array<User> }) {
     if (isAdmin) {
       count += 2; // Checkbox and Verified
     }
-    count += 7; // No., Name, DOB, Email, State, Roles, Position
+    count += 6; // No., Name, Email, State, Roles, Position
     return count;
   }, [isAdmin]);
 
@@ -82,11 +79,14 @@ export default function RosterTable({ users }: { users: Array<User> }) {
     setSelection([]);
   };
 
+  const mask = (cc: string, num = 4) =>
+    `${cc}`.slice(-num).padStart(`${cc}`.length, '*');
+
   return (
     <>
       <Table.ScrollArea marginTop={2} marginBottom={4}>
         <Table.Root
-          size={{ base: 'sm', md: 'md' }}
+          size={{ base: 'sm', md: 'lg' }}
           stickyHeader
           interactive={currentData.length > 0}
         >
@@ -115,17 +115,11 @@ export default function RosterTable({ users }: { users: Array<User> }) {
                   </Table.ColumnHeader>
                 </>
               </Visibility>
-              {[
-                'No.',
-                'Name',
-                'DOB',
-                'Email',
-                'State',
-                'Roles',
-                'Position',
-              ].map((column: string) => (
-                <Table.ColumnHeader key={column}>{column}</Table.ColumnHeader>
-              ))}
+              {['No.', 'Name', 'Email', 'State', 'Roles', 'Position'].map(
+                (column: string) => (
+                  <Table.ColumnHeader key={column}>{column}</Table.ColumnHeader>
+                )
+              )}
             </Table.Row>
           </Table.Header>
           <Table.Body>
@@ -136,27 +130,18 @@ export default function RosterTable({ users }: { users: Array<User> }) {
                   data-selected={
                     selection.includes(user.user_id) ? '' : undefined
                   }
-                  _hover={{ cursor: 'pointer' }}
-                  onClick={() =>
-                    dialog.open('profile', {
-                      contentRef: selectionRef,
-                      children: (
-                        <UserInfo
-                          user={user}
-                          canEdit={isAdmin}
-                          isAdmin={isAdmin}
-                          selectionRef={selectionRef}
-                        />
-                      ),
-                      closeOnInteractOutside: true,
-                    })
-                  }
+                  _hover={{ cursor: isGuest ? 'default' : 'pointer' }}
+                  onClick={() => {
+                    if (!isGuest) {
+                      router.replace('/profile/' + user.user_id);
+                    }
+                  }}
                 >
                   <Visibility isVisible={isAdmin}>
                     <>
                       <Table.Cell onClick={(e) => e.stopPropagation()}>
                         <Checkbox
-                          top="0.5"
+                          top={0.5}
                           aria-label="Select row"
                           checked={selection.includes(user.user_id)}
                           onCheckedChange={(changes) => {
@@ -186,9 +171,12 @@ export default function RosterTable({ users }: { users: Array<User> }) {
                     </>
                   </Visibility>
                   <Table.Cell>{user.details.jersey_number ?? '-'}</Table.Cell>
-                  <Table.Cell>{user.name}</Table.Cell>
-                  <Table.Cell> {formatDate(user.dob)}</Table.Cell>
-                  <Table.Cell>{user.email}</Table.Cell>
+                  <Table.Cell>
+                    {isGuest ? mask(user.name, -4) : user.name}
+                  </Table.Cell>
+                  <Table.Cell>
+                    {isGuest ? mask(user.email, -4) : user.email}
+                  </Table.Cell>
                   <Table.Cell>
                     <Badge
                       variant="surface"
@@ -217,19 +205,11 @@ export default function RosterTable({ users }: { users: Array<User> }) {
             ) : (
               <Table.Row>
                 <Table.Cell colSpan={columnCount}>
-                  <EmptyState.Root>
-                    <EmptyState.Content>
-                      <EmptyState.Indicator>
-                        <SwatchBook />
-                      </EmptyState.Indicator>
-                      <VStack textAlign="center">
-                        <EmptyState.Title>No users found</EmptyState.Title>
-                        <EmptyState.Description>
-                          Try adjusting your search
-                        </EmptyState.Description>
-                      </VStack>
-                    </EmptyState.Content>
-                  </EmptyState.Root>
+                  <EmptyState
+                    icon={<SwatchBook />}
+                    title="No users found"
+                    description="Try adjusting your search"
+                  />
                 </Table.Cell>
               </Table.Row>
             )}
@@ -284,7 +264,6 @@ export default function RosterTable({ users }: { users: Array<User> }) {
           </ActionBar.Positioner>
         </Portal>
       </ActionBar.Root>
-      <dialog.Viewport />
     </>
   );
 }

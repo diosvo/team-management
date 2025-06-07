@@ -1,5 +1,15 @@
 import { UserRole, UserState } from './enum';
 
+export function colorRole(role: UserRole): string {
+  return role === UserRole.SUPER_ADMIN
+    ? 'orange'
+    : role === UserRole.COACH
+    ? 'purple'
+    : role === UserRole.PLAYER
+    ? 'blue'
+    : 'gray';
+}
+
 export function colorState(state: string): string {
   return state === UserState.ACTIVE
     ? 'green'

@@ -1,12 +1,10 @@
 'use client';
 
-import { useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 
 import { Button, HStack, VStack } from '@chakra-ui/react';
-import { UserRoundPlus } from 'lucide-react';
 
 import PageTitle from '@/components/page-title';
-import { dialog } from '@/components/ui/dialog';
 import Visibility from '@/components/visibility';
 
 import { usePermissions } from '@/hooks/use-permissions';
@@ -20,7 +18,6 @@ export default function RosterActions() {
   const { isAdmin } = usePermissions();
   const { filters, isPending, updateFilters } = useFilters();
 
-  const dialogContentRef = useRef<HTMLDivElement>(null);
   const isFilterEmpty = useMemo(
     () => Object.values(filters).every((value) => value.length === 0),
     [filters]
@@ -52,18 +49,7 @@ export default function RosterActions() {
         <SearchBar />
         <SelectionFilter />
         <Visibility isVisible={isAdmin}>
-          <Button
-            size={{ base: 'sm', md: 'md' }}
-            onClick={() =>
-              dialog.open('add-user', {
-                contentRef: dialogContentRef,
-                children: <AddUser containerRef={dialogContentRef} />,
-              })
-            }
-          >
-            <UserRoundPlus />
-            Add
-          </Button>
+          <AddUser />
         </Visibility>
       </HStack>
     </VStack>

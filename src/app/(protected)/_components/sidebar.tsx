@@ -24,7 +24,7 @@ function LoadingIndicator() {
         size="xs"
         colorPalette="gray"
         marginLeft="auto"
-        borderWidth="1px"
+        borderWidth={1}
       />
     )
   );
@@ -50,7 +50,7 @@ function NavButton({
 
   return (
     <Button
-      size={{ base: 'xs', md: 'sm' }}
+      size={{ base: 'xs', md: 'sm', mdTo2xl: 'md' }}
       justifyContent={isExpanded ? 'flex-start' : 'center'}
       disabled={disabled}
       variant={isActive ? 'subtle' : 'ghost'}
