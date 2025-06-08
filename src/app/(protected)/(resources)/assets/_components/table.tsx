@@ -8,7 +8,6 @@ export default function CategoryTable() {
           <Table.ColumnHeader>Item</Table.ColumnHeader>
           <Table.ColumnHeader>Quantity</Table.ColumnHeader>
           <Table.ColumnHeader>Condition</Table.ColumnHeader>
-          <Table.ColumnHeader>Holder</Table.ColumnHeader>
           <Table.ColumnHeader>Last Checked</Table.ColumnHeader>
         </Table.Row>
       </Table.Header>
@@ -18,7 +17,6 @@ export default function CategoryTable() {
             <Table.Cell>{item.name}</Table.Cell>
             <Table.Cell>{item.category}</Table.Cell>
             <Table.Cell>{item.price}</Table.Cell>
-            <Table.Cell>Dios Vo</Table.Cell>
             <Table.Cell>-</Table.Cell>
           </Table.Row>
         ))}

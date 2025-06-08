@@ -1,11 +1,14 @@
-import { Progress } from '@chakra-ui/react';
+import { HStack, Skeleton, VStack } from '@chakra-ui/react';
 
 export default function Loading() {
   return (
-    <Progress.Root size="xs" value={null} variant="outline" animated striped>
-      <Progress.Track>
-        <Progress.Range />
-      </Progress.Track>
-    </Progress.Root>
+    <VStack align="stretch" gap={6}>
+      <Skeleton height={9} width={36} />
+      <HStack gap={6}>
+        AAAAAAAA
+        <Skeleton height="266px" flex={1} />
+        <Skeleton height="266px" flex={1} />
+      </HStack>
+    </VStack>
   );
 }

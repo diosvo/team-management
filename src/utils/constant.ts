@@ -1,6 +1,13 @@
 import { addHours } from 'date-fns';
 
-import { CoachPosition, PlayerPosition, UserRole, UserState } from './enum';
+import {
+  AssetCategory,
+  AssetCondition,
+  CoachPosition,
+  PlayerPosition,
+  UserRole,
+  UserState,
+} from './enum';
 import { Selection } from './type';
 
 export const ESTABLISHED_DATE = '2024-02-20';
@@ -118,5 +125,51 @@ export const PlayerPositionsSelection: Selection<string> = [
   {
     label: 'Unknown',
     value: PlayerPosition.UNKNOWN,
+  },
+];
+
+export const SELECTABLE_ASSET_CATEGORIES = [
+  AssetCategory.EQUIPMENT,
+  AssetCategory.TRANING,
+  AssetCategory.OTHERS,
+] as const;
+export const AssetCategorySelection: Selection<string> = [
+  {
+    label: 'Equipment',
+    value: AssetCategory.EQUIPMENT,
+    description: 'e.g. Balls',
+  },
+  {
+    label: 'Training',
+    value: AssetCategory.TRANING,
+    description: 'e.g. Cones, Hurdles',
+  },
+  {
+    label: 'Others',
+    value: AssetCategory.OTHERS,
+    description: 'e.g. Uniforms, Jerseys',
+  },
+];
+
+export const SELECTABLE_ASSET_CONDITIONS = [
+  AssetCondition.POOR,
+  AssetCondition.FAIR,
+  AssetCondition.GOOD,
+] as const;
+export const AssetConditionSelection: Selection<string> = [
+  {
+    label: 'Poor',
+    value: AssetCondition.POOR,
+    description: 'e.g. Broken, Damaged',
+  },
+  {
+    label: 'Fair',
+    value: AssetCondition.FAIR,
+    description: 'e.g. Usable, Slightly Worn',
+  },
+  {
+    label: 'Good',
+    value: AssetCondition.GOOD,
+    description: 'e.g. New, Excellent Condition',
   },
 ];

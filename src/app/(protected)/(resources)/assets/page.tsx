@@ -1,6 +1,7 @@
 import PageTitle from '@/components/page-title';
-import { Button, HStack, Input, InputGroup, Kbd } from '@chakra-ui/react';
-import { Plus, Search } from 'lucide-react';
+import { HStack, Input, InputGroup, Kbd } from '@chakra-ui/react';
+import { Search } from 'lucide-react';
+import AddItem from './_components/add-item';
 import AssetList from './_components/list';
 import AssetStats from './_components/stats';
 
@@ -17,10 +18,7 @@ export default function AssetsPage() {
         >
           <Input size={{ base: 'sm', md: 'md' }} placeholder="Search" />
         </InputGroup>
-        <Button size={{ base: 'sm', md: 'md' }}>
-          <Plus size={14} />
-          Add Item
-        </Button>
+        <AddItem />
       </HStack>
 
       <AssetStats />
