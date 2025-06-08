@@ -1,28 +1,45 @@
 import PageTitle from '@/components/page-title';
-import { HStack, Input, InputGroup, Kbd } from '@chakra-ui/react';
-import { Search } from 'lucide-react';
-import AddItem from './_components/add-item';
+
+import { AssetCategory, AssetCondition } from '@/utils/enum';
 import AssetList from './_components/list';
 import AssetStats from './_components/stats';
+
+const MOCK_DATA = {
+  stats: {
+    total_items: 10,
+    need_replacement: 1,
+  },
+  data: {
+    [AssetCategory.EQUIPMENT]: [
+      {
+        asset_id: 'eq-001',
+        name: 'Ball #1',
+        category: AssetCategory.EQUIPMENT,
+        quantity: 1,
+        condition: AssetCondition.GOOD,
+        updated_at: new Date(),
+      },
+    ],
+    [AssetCategory.TRANING]: [
+      {
+        asset_id: 'tr-001',
+        name: 'Cones',
+        category: AssetCategory.TRANING,
+        quantity: 5,
+        condition: AssetCondition.POOR,
+        updated_at: new Date(),
+      },
+    ],
+    [AssetCategory.OTHERS]: [],
+  },
+};
 
 export default function AssetsPage() {
   return (
     <>
-      <HStack>
-        <PageTitle>Assets</PageTitle>
-        <InputGroup
-          width="max-content"
-          marginLeft="auto"
-          startElement={<Search size={14} />}
-          endElement={<Kbd size="sm">Enter</Kbd>}
-        >
-          <Input size={{ base: 'sm', md: 'md' }} placeholder="Search" />
-        </InputGroup>
-        <AddItem />
-      </HStack>
-
-      <AssetStats />
-      <AssetList />
+      <PageTitle>Assets</PageTitle>
+      <AssetStats stats={MOCK_DATA.stats} />
+      <AssetList data={MOCK_DATA.data} />
     </>
   );
 }

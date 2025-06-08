@@ -86,7 +86,7 @@ export default function RosterTable({ users }: { users: Array<User> }) {
     <>
       <Table.ScrollArea marginTop={2} marginBottom={4}>
         <Table.Root
-          size={{ base: 'sm', md: 'lg' }}
+          size={{ base: 'sm', md: 'md' }}
           stickyHeader
           interactive={currentData.length > 0}
         >

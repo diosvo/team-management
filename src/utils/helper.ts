@@ -1,4 +1,4 @@
-import { UserRole, UserState } from './enum';
+import { AssetCondition, UserRole, UserState } from './enum';
 
 export function colorRole(role: UserRole): string {
   return role === UserRole.SUPER_ADMIN
@@ -18,6 +18,14 @@ export function colorState(state: string): string {
     : state === UserState.INACTIVE
     ? 'red'
     : 'gray';
+}
+
+export function colorCondition(condition: string): string {
+  return condition === AssetCondition.GOOD
+    ? 'green'
+    : condition === AssetCondition.FAIR
+    ? 'orange'
+    : 'red';
 }
 
 export function hasPermissions(role: UserRole) {

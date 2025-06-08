@@ -137,17 +137,17 @@ export const AssetCategorySelection: Selection<string> = [
   {
     label: 'Equipment',
     value: AssetCategory.EQUIPMENT,
-    description: 'e.g. Balls',
+    description: 'Balls, Backboards, etc',
   },
   {
     label: 'Training',
     value: AssetCategory.TRANING,
-    description: 'e.g. Cones, Hurdles',
+    description: 'Cones, Hurdles, Jump ropes, etc',
   },
   {
     label: 'Others',
     value: AssetCategory.OTHERS,
-    description: 'e.g. Uniforms, Jerseys',
+    description: 'Uniforms, Jerseys',
   },
 ];
 
@@ -160,16 +160,16 @@ export const AssetConditionSelection: Selection<string> = [
   {
     label: 'Poor',
     value: AssetCondition.POOR,
-    description: 'e.g. Broken, Damaged',
+    description: 'Broken, Damaged',
   },
   {
     label: 'Fair',
     value: AssetCondition.FAIR,
-    description: 'e.g. Usable, Slightly Worn',
+    description: 'Usable, Slightly Worn',
   },
   {
     label: 'Good',
     value: AssetCondition.GOOD,
-    description: 'e.g. New, Excellent Condition',
+    description: 'New, Excellent Condition',
   },
 ];
