@@ -19,6 +19,7 @@ export const AssetTable = pgTable('asset', {
   category: assetCategoryEnum().default(AssetCategory.EQUIPMENT).notNull(),
   quantity: integer().notNull().default(1),
   condition: assetConditionEnum().default(AssetCondition.GOOD).notNull(),
+  note: varchar({ length: 256 }),
   created_at,
   updated_at,
 });
@@ -34,5 +35,4 @@ export type Asset = Omit<
   typeof AssetTable.$inferSelect,
   'team_id' | 'created_at'
 >;
-// export type NullishRule = Nullish<Rule>;
 export type InsertAsset = typeof AssetTable.$inferInsert;

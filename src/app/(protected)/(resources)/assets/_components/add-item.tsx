@@ -11,6 +11,7 @@ import {
   NumberInput,
   Portal,
   RadioGroup,
+  Textarea,
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Plus } from 'lucide-react';
@@ -46,6 +47,7 @@ export default function AddItem() {
       quantity: 1,
       condition: AssetCondition.GOOD,
       category: AssetCategory.EQUIPMENT,
+      note: '',
     },
   });
 
@@ -89,7 +91,7 @@ export default function AddItem() {
               <Dialog.Title>Add Item</Dialog.Title>
             </Dialog.Header>
             <Dialog.Body>
-              <HStack gap={4}>
+              <HStack>
                 <Field required label="Name">
                   <Input placeholder="Ball #" disabled={isPending} />
                 </Field>
@@ -125,6 +127,7 @@ export default function AddItem() {
                     <RadioGroup.Root
                       size="sm"
                       colorPalette="red"
+                      marginTop={2}
                       name={field.name}
                       value={field.value}
                       onValueChange={({ value }) => {
@@ -155,6 +158,7 @@ export default function AddItem() {
                     <RadioGroup.Root
                       size="sm"
                       colorPalette="green"
+                      marginTop={2}
                       name={field.name}
                       value={field.value}
                       onValueChange={({ value }) => {
@@ -176,6 +180,18 @@ export default function AddItem() {
                   )}
                 />
               </Fieldset.Root>
+              <Field
+                label="Note"
+                helperText="Max 256 characters."
+                marginTop={4}
+              >
+                <Textarea
+                  autoresize
+                  maxLength={256}
+                  placeholder="Comment..."
+                  {...register('note')}
+                />
+              </Field>
             </Dialog.Body>
             <Dialog.Footer>
               <Button type="submit" loading={isPending} loadingText="Adding...">

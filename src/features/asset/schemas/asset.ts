@@ -13,6 +13,7 @@ export const AddItemSchema = z.object({
   category: z
     .enum(SELECTABLE_ASSET_CATEGORIES)
     .default(AssetCategory.EQUIPMENT),
+  note: z.string().max(256).optional(),
 });
 
 export type AddItemSchemaValues = z.infer<typeof AddItemSchema>;

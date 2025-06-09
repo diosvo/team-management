@@ -1,8 +1,15 @@
-import PageTitle from '@/components/page-title';
+import { Metadata } from 'next';
 
+import PageTitle from '@/components/page-title';
 import { AssetCategory, AssetCondition } from '@/utils/enum';
+
 import AssetList from './_components/list';
 import AssetStats from './_components/stats';
+
+export const metadata: Metadata = {
+  title: 'Assets',
+  description: 'Assets inventory for the team.',
+};
 
 const MOCK_DATA = {
   stats: {
@@ -18,6 +25,7 @@ const MOCK_DATA = {
         quantity: 1,
         condition: AssetCondition.GOOD,
         updated_at: new Date(),
+        note: 'Used for EQUIPMENT',
       },
     ],
     [AssetCategory.TRANING]: [
@@ -28,6 +36,7 @@ const MOCK_DATA = {
         quantity: 5,
         condition: AssetCondition.POOR,
         updated_at: new Date(),
+        note: 'Used for training',
       },
     ],
     [AssetCategory.OTHERS]: [],
