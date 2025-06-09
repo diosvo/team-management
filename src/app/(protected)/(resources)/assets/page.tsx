@@ -16,31 +16,27 @@ const MOCK_DATA = {
     total_items: 10,
     need_replacement: 1,
   },
-  data: {
-    [AssetCategory.EQUIPMENT]: [
-      {
-        asset_id: 'eq-001',
-        name: 'Ball #1',
-        category: AssetCategory.EQUIPMENT,
-        quantity: 1,
-        condition: AssetCondition.GOOD,
-        updated_at: new Date(),
-        note: 'Used for EQUIPMENT',
-      },
-    ],
-    [AssetCategory.TRANING]: [
-      {
-        asset_id: 'tr-001',
-        name: 'Cones',
-        category: AssetCategory.TRANING,
-        quantity: 5,
-        condition: AssetCondition.POOR,
-        updated_at: new Date(),
-        note: 'Used for training',
-      },
-    ],
-    [AssetCategory.OTHERS]: [],
-  },
+  data: [
+    {
+      asset_id: 'eq-001',
+      name: 'Ball #1',
+      category: AssetCategory.EQUIPMENT,
+      quantity: 1,
+      condition: AssetCondition.GOOD,
+      updated_at: new Date(),
+      note: 'Used for EQUIPMENT',
+    },
+
+    {
+      asset_id: 'tr-001',
+      name: 'Cones',
+      category: AssetCategory.TRANING,
+      quantity: 5,
+      condition: AssetCondition.POOR,
+      updated_at: new Date(),
+      note: 'Used for training',
+    },
+  ],
 };
 
 export default function AssetsPage() {

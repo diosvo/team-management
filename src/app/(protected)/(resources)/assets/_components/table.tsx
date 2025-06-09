@@ -1,17 +1,18 @@
 'use client';
 
+import { useState } from 'react';
+
 import { ActionBar, Badge, Button, Portal, Table } from '@chakra-ui/react';
 import { Box } from 'lucide-react';
 
 import { Asset } from '@/drizzle/schema';
+import { usePermissions } from '@/hooks/use-permissions';
+import { formatDatetime } from '@/utils/formatter';
 import { colorCondition } from '@/utils/helper';
 
 import { Checkbox } from '@/components/ui/checkbox';
 import { EmptyState } from '@/components/ui/empty-state';
 import Visibility from '@/components/visibility';
-import { usePermissions } from '@/hooks/use-permissions';
-import { formatDatetime } from '@/utils/formatter';
-import { useState } from 'react';
 
 export default function CategoryTable({ items }: { items: Array<Asset> }) {
   const { isAdmin } = usePermissions();
@@ -53,16 +54,11 @@ export default function CategoryTable({ items }: { items: Array<Asset> }) {
                   />
                 </Table.ColumnHeader>
               </Visibility>
-              {[
-                'Item',
-                'Quantity',
-                'Condition',
-                'Last Updated',
-                'Note',
-                'Actions',
-              ].map((header) => (
-                <Table.ColumnHeader key={header}>{header}</Table.ColumnHeader>
-              ))}
+              {['Item', 'Quantity', 'Condition', 'Last Updated', 'Note'].map(
+                (header) => (
+                  <Table.ColumnHeader key={header}>{header}</Table.ColumnHeader>
+                )
+              )}
             </Table.Row>
           </Table.Header>
           <Table.Body>
@@ -102,7 +98,7 @@ export default function CategoryTable({ items }: { items: Array<Asset> }) {
               ))
             ) : (
               <Table.Row>
-                <Table.Cell colSpan={5}>
+                <Table.Cell colSpan={isAdmin ? 5 : 4}>
                   <EmptyState icon={<Box />} title="No items found" />
                 </Table.Cell>
               </Table.Row>

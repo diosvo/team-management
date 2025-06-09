@@ -25,7 +25,9 @@ export function colorCondition(condition: string): string {
     ? 'green'
     : condition === AssetCondition.FAIR
     ? 'orange'
-    : 'red';
+    : condition === AssetCondition.POOR
+    ? 'red'
+    : 'gray';
 }
 
 export function hasPermissions(role: UserRole) {
