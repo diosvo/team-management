@@ -253,9 +253,9 @@ export default function RosterTable({ users }: { users: Array<User> }) {
               </ActionBar.SelectionTrigger>
               <ActionBar.Separator />
               <Button
+                size="sm"
                 variant="outline"
                 colorPalette="red"
-                size="sm"
                 onClick={removeUsers}
               >
                 Delete

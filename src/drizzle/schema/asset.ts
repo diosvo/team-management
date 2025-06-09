@@ -35,4 +35,5 @@ export type Asset = Omit<
   typeof AssetTable.$inferSelect,
   'team_id' | 'created_at'
 >;
+export type NullishAsset = Nullish<Asset>;
 export type InsertAsset = typeof AssetTable.$inferInsert;

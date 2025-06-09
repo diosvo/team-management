@@ -17,7 +17,10 @@ export const DEFAULT_DATE_FORMAT = 'yyyy-MM-dd';
 export const LOCALE_DATE_FORMAT = 'dd/MM/yyyy';
 export const LOCALE_DATETIME_FORMAT = LOCALE_DATE_FORMAT + ' HH:mm:ss';
 
-// 1 hour
+// 1 hour in seconds for cache revalidation
+export const CACHE_REVALIDATION_TIME = 3600;
+
+// 1 hour for session expiration
 export const EXPIRES_AT = addHours(new Date(), 1);
 
 export const SELECTABLE_ROLES = [

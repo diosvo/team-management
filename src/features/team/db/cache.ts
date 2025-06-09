@@ -1,5 +1,15 @@
 import { getGlobalTag } from '@/lib/data-cache';
 
-export function getTeamTag() {
+/**
+ * @description Used for storing and retrieving the cached data
+ */
+export function teamCacheKey() {
   return getGlobalTag('team');
+}
+
+/**
+ * @description Used for cache invalidation
+ */
+export function teamCacheTag() {
+  return 'team-default';
 }
