@@ -1,20 +1,16 @@
 'use client';
 
-import { useState } from 'react';
-
 import {
   Button,
   createListCollection,
   HStack,
-  Input,
-  InputGroup,
-  Kbd,
   Portal,
   Select,
   Status,
 } from '@chakra-ui/react';
-import { Filter, Plus, Search } from 'lucide-react';
+import { Filter, Plus } from 'lucide-react';
 
+import SearchInput from '@/components/ui/search-input';
 import Visibility from '@/components/visibility';
 
 import { usePermissions } from '@/hooks/use-permissions';
@@ -36,33 +32,38 @@ const conditions = createListCollection({
   items: [ALL, ...AssetConditionSelection],
 });
 
-export default function SelectionFilter() {
+interface Filters {
+  search: string;
+  category: string;
+  condition: string;
+}
+
+interface SelectionFilterProps {
+  filters: Filters;
+  setFilters: React.Dispatch<React.SetStateAction<Filters>>;
+}
+
+export default function SelectionFilter({
+  filters,
+  setFilters,
+}: SelectionFilterProps) {
   const { isAdmin } = usePermissions();
-  const [filters, setFilters] = useState({
-    search: '',
-    category: ALL.value,
-    condition: ALL.value,
-  });
 
   return (
     <>
       <HStack marginBottom={6}>
-        <InputGroup
-          startElement={<Search size={14} />}
-          endElement={<Kbd size="sm">Enter</Kbd>}
-        >
-          <Input
-            size={{ base: 'sm', md: 'md' }}
-            placeholder="Search"
-            value={filters.search}
-            onChange={(e) =>
-              setFilters((prev) => ({ ...prev, search: e.target.value }))
-            }
-          />
-        </InputGroup>
+        <SearchInput
+          value={filters.search}
+          onValueChange={(value) =>
+            setFilters((prev) => ({ ...prev, search: value }))
+          }
+          onClear={() => {
+            setFilters((prev) => ({ ...prev, search: '' }));
+          }}
+        />
         <Select.Root
           collection={categories}
-          width="3xs"
+          width="2xs"
           defaultValue={[ALL.value]}
           size={{ base: 'sm', md: 'md' }}
           onValueChange={({ value }) =>

@@ -114,8 +114,12 @@ export default function CategoryTable({ items }: { items: Array<Asset> }) {
               ))
             ) : (
               <Table.Row>
-                <Table.Cell colSpan={isAdmin ? 5 : 4}>
-                  <EmptyState icon={<Box />} title="No items found" />
+                <Table.Cell colSpan={isAdmin ? 6 : 5}>
+                  <EmptyState
+                    icon={<Box />}
+                    title="No items found"
+                    description="Try adjusting your search"
+                  />
                 </Table.Cell>
               </Table.Row>
             )}
