@@ -1,19 +1,15 @@
-import { forbidden, notFound, redirect } from 'next/navigation';
+import { redirect } from 'next/navigation';
+import { Suspense } from 'react';
 
-import { Grid, VStack } from '@chakra-ui/react';
+import { Grid, Skeleton, VStack } from '@chakra-ui/react';
 
 import PageTitle from '@/components/page-title';
-import Visibility from '@/components/visibility';
 
 import { LOGIN_PATH } from '@/routes';
-import { hasPermissions } from '@/utils/helper';
 
 import { getUser } from '@/features/user/actions/auth';
-import { getUserById } from '@/features/user/db/user';
 
-import PersonalInfo from '../_components/personal-info';
-import SystemInfo from '../_components/system-info';
-import TeamInfo from '../_components/team-info';
+import ProfileContent from '../_components/profile-content';
 
 export default async function ProfilePage({
   params,
@@ -26,34 +22,24 @@ export default async function ProfilePage({
     redirect(LOGIN_PATH);
   }
 
-  const { isAdmin, isPlayer, isGuest } = hasPermissions(currentUser.role);
-
-  if (isGuest) {
-    forbidden();
-  }
-
   const { id } = await params;
-  const user = await getUserById(id);
-
-  if (!user) {
-    notFound();
-  }
-
-  const isOwnProfile = currentUser.user_id === user.user_id;
-  const viewOnly = isPlayer && !isOwnProfile;
 
   return (
     <VStack gap={6} align="stretch">
       <PageTitle>Profile Details</PageTitle>
 
-      <Grid templateColumns={{ base: '1fr', lg: 'repeat(2, 1fr)' }} gap={6}>
-        <PersonalInfo user={user} viewOnly={viewOnly} />
-        <TeamInfo user={user} viewOnly={viewOnly} isOwnProfile={isOwnProfile} />
-      </Grid>
-
-      <Visibility isVisible={isAdmin}>
-        <SystemInfo user={user} />
-      </Visibility>
+      <Suspense fallback={<ProfileSkeleton />}>
+        <ProfileContent userId={id} currentUser={currentUser} />
+      </Suspense>
     </VStack>
+  );
+}
+
+function ProfileSkeleton() {
+  return (
+    <Grid templateColumns={{ base: '1fr', lg: 'repeat(2, 1fr)' }} gap={6}>
+      <Skeleton height="300px" borderRadius="md" />
+      <Skeleton height="200px" borderRadius="md" />
+    </Grid>
   );
 }
