@@ -7,12 +7,13 @@ import { Box } from 'lucide-react';
 
 import { Asset } from '@/drizzle/schema';
 import { usePermissions } from '@/hooks/use-permissions';
-import { formatDatetime } from '@/utils/formatter';
+import { formatDate } from '@/utils/formatter';
 import { colorCondition } from '@/utils/helper';
 
 import { Checkbox } from '@/components/ui/checkbox';
 import { EmptyState } from '@/components/ui/empty-state';
 import Visibility from '@/components/visibility';
+
 import { UpsertAsset } from './upsert-asset';
 
 export default function CategoryTable({ items }: { items: Array<Asset> }) {
@@ -78,7 +79,6 @@ export default function CategoryTable({ items }: { items: Array<Asset> }) {
                       action: 'Update',
                       item,
                     });
-                    // Handle row click, e.g., open item details
                   }}
                 >
                   <Visibility isVisible={isAdmin}>
@@ -108,7 +108,7 @@ export default function CategoryTable({ items }: { items: Array<Asset> }) {
                       {item.condition}
                     </Badge>
                   </Table.Cell>
-                  <Table.Cell>{formatDatetime(item.updated_at)}</Table.Cell>
+                  <Table.Cell>{formatDate(item.updated_at)}</Table.Cell>
                   <Table.Cell>{item.note}</Table.Cell>
                 </Table.Row>
               ))

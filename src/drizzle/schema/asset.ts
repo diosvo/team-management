@@ -15,11 +15,11 @@ export const AssetTable = pgTable('asset', {
   team_id: uuid()
     .notNull()
     .references(() => TeamTable.team_id, { onDelete: 'cascade' }),
-  name: varchar({ length: 128 }).notNull(),
+  name: varchar({ length: 64 }).notNull(),
   category: assetCategoryEnum().default(AssetCategory.EQUIPMENT).notNull(),
   quantity: integer().notNull().default(1),
   condition: assetConditionEnum().default(AssetCondition.GOOD).notNull(),
-  note: varchar({ length: 256 }),
+  note: varchar({ length: 128 }),
   created_at,
   updated_at,
 });

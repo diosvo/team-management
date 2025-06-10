@@ -32,15 +32,7 @@ import { UpsertAssetSchema } from '@/features/asset/schemas/asset';
 export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
   const [isPending, startTransition] = useTransition();
 
-  const {
-    reset,
-    watch,
-    control,
-    register,
-    setValue,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({
+  const { reset, control, register, handleSubmit } = useForm({
     resolver: zodResolver(UpsertAssetSchema),
     values: {
       name: item.name,
@@ -90,6 +82,7 @@ export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
               <HStack>
                 <Field required label="Name">
                   <Input
+                    maxLength={64}
                     placeholder="Ball #"
                     disabled={isPending}
                     {...register('name')}
@@ -182,12 +175,12 @@ export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
               </Fieldset.Root>
               <Field
                 label="Note"
-                helperText="Max 256 characters."
+                helperText="Max 128 characters."
                 marginTop={4}
               >
                 <Textarea
                   autoresize
-                  maxLength={256}
+                  maxLength={128}
                   placeholder="Comment..."
                   {...register('note')}
                 />

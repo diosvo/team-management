@@ -132,9 +132,8 @@ export default function RosterTable({ users }: { users: Array<User> }) {
                   }
                   _hover={{ cursor: isGuest ? 'default' : 'pointer' }}
                   onClick={() => {
-                    if (!isGuest) {
-                      router.replace('/profile/' + user.user_id);
-                    }
+                    if (isGuest) return;
+                    router.replace('/profile/' + user.user_id);
                   }}
                 >
                   <Visibility isVisible={isAdmin}>
