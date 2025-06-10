@@ -8,7 +8,7 @@ import {
   UserRole,
   UserState,
 } from './enum';
-import { Selection } from './type';
+import { Option, Selection } from './type';
 
 export const ESTABLISHED_DATE = '2024-02-20';
 export const DEFAULT_DOB = '2000-01-01';
@@ -22,6 +22,11 @@ export const CACHE_REVALIDATION_TIME = 3600;
 
 // 1 hour for session expiration
 export const EXPIRES_AT = addHours(new Date(), 1);
+
+export const ALL: Option<string> = {
+  label: 'All',
+  value: 'all',
+};
 
 export const SELECTABLE_ROLES = [
   UserRole.COACH,

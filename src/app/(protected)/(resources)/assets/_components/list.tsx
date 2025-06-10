@@ -3,6 +3,7 @@
 import { useState } from 'react';
 
 import {
+  Button,
   createListCollection,
   HStack,
   Input,
@@ -12,38 +13,27 @@ import {
   Select,
   Status,
 } from '@chakra-ui/react';
-import { Filter, Search } from 'lucide-react';
+import { Filter, Plus, Search } from 'lucide-react';
 
 import Visibility from '@/components/visibility';
 
 import { Asset } from '@/drizzle/schema';
 import { usePermissions } from '@/hooks/use-permissions';
 import {
+  ALL,
   AssetCategorySelection,
   AssetConditionSelection,
 } from '@/utils/constant';
 import { colorCondition } from '@/utils/helper';
 
-import AddItem from './add-item';
 import CategoryTable from './table';
+import { UpsertAsset } from './upsert-asset';
 
 const categories = createListCollection({
-  items: [
-    {
-      label: 'All',
-      value: 'all',
-    },
-    ...AssetCategorySelection,
-  ],
+  items: [ALL, ...AssetCategorySelection],
 });
 const conditions = createListCollection({
-  items: [
-    {
-      label: 'All',
-      value: 'all',
-    },
-    ...AssetConditionSelection,
-  ],
+  items: [ALL, ...AssetConditionSelection],
 });
 
 export default function AssetList({ data }: { data: Array<Asset> }) {
@@ -137,10 +127,28 @@ export default function AssetList({ data }: { data: Array<Asset> }) {
           </Portal>
         </Select.Root>
         <Visibility isVisible={isAdmin}>
-          <AddItem />
+          <Button
+            size={{ base: 'sm', md: 'md' }}
+            onClick={() =>
+              UpsertAsset.open('add-asset', {
+                action: 'Add',
+                item: {
+                  name: '',
+                  quantity: 1,
+                  condition: 'POOR',
+                  category: 'OTHERS',
+                  note: '',
+                },
+              })
+            }
+          >
+            <Plus />
+            Add
+          </Button>
         </Visibility>
       </HStack>
       <CategoryTable items={data} />
+      <UpsertAsset.Viewport />
     </>
   );
 }

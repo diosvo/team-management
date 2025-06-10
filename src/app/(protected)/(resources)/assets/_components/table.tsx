@@ -13,9 +13,10 @@ import { colorCondition } from '@/utils/helper';
 import { Checkbox } from '@/components/ui/checkbox';
 import { EmptyState } from '@/components/ui/empty-state';
 import Visibility from '@/components/visibility';
+import { UpsertAsset } from './upsert-asset';
 
 export default function CategoryTable({ items }: { items: Array<Asset> }) {
-  const { isAdmin } = usePermissions();
+  const { isAdmin, isGuest } = usePermissions();
 
   const [selection, setSelection] = useState<Array<string>>([]);
 
@@ -33,7 +34,11 @@ export default function CategoryTable({ items }: { items: Array<Asset> }) {
   return (
     <>
       <Table.ScrollArea>
-        <Table.Root borderWidth={1} size={{ base: 'sm', md: 'md' }}>
+        <Table.Root
+          borderWidth={1}
+          size={{ base: 'sm', md: 'md' }}
+          interactive={items.length > 0}
+        >
           <Table.Header>
             <Table.Row>
               <Visibility isVisible={isAdmin}>
@@ -64,7 +69,18 @@ export default function CategoryTable({ items }: { items: Array<Asset> }) {
           <Table.Body>
             {items.length > 0 ? (
               items.map((item) => (
-                <Table.Row key={item.asset_id}>
+                <Table.Row
+                  key={item.asset_id}
+                  _hover={{ cursor: isGuest ? 'default' : 'pointer' }}
+                  onClick={() => {
+                    if (isGuest) return;
+                    UpsertAsset.open('update-asset', {
+                      action: 'Update',
+                      item,
+                    });
+                    // Handle row click, e.g., open item details
+                  }}
+                >
                   <Visibility isVisible={isAdmin}>
                     <Table.Cell onClick={(e) => e.stopPropagation()}>
                       <Checkbox

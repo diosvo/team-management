@@ -12,6 +12,7 @@ import {
   Portal,
   RadioGroup,
   Textarea,
+  createOverlay,
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Plus } from 'lucide-react';
@@ -25,11 +26,10 @@ import {
   AssetCategorySelection,
   AssetConditionSelection,
 } from '@/utils/constant';
-import { AssetCategory, AssetCondition } from '@/utils/enum';
 
-import { AddItemSchema } from '@/features/asset/schemas/asset';
+import { UpsertAssetSchema } from '@/features/asset/schemas/asset';
 
-export default function AddItem() {
+export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
   const [isPending, startTransition] = useTransition();
 
   const {
@@ -41,13 +41,13 @@ export default function AddItem() {
     handleSubmit,
     formState: { errors },
   } = useForm({
-    resolver: zodResolver(AddItemSchema),
+    resolver: zodResolver(UpsertAssetSchema),
     values: {
-      name: '',
-      quantity: 1,
-      condition: AssetCondition.GOOD,
-      category: AssetCategory.EQUIPMENT,
-      note: '',
+      name: item.name,
+      quantity: item.quantity,
+      condition: item.condition,
+      category: item.category,
+      note: item.note,
     },
   });
 
@@ -68,18 +68,14 @@ export default function AddItem() {
         description,
       });
 
-      if (!error) reset();
+      if (!error) {
+        reset();
+      }
     });
   };
 
   return (
-    <Dialog.Root lazyMount unmountOnExit>
-      <Dialog.Trigger asChild>
-        <Button size={{ base: 'sm', md: 'md' }}>
-          <Plus />
-          Add
-        </Button>
-      </Dialog.Trigger>
+    <Dialog.Root {...rest}>
       <Portal>
         <Dialog.Backdrop />
         <Dialog.Positioner as="form" onSubmit={handleSubmit(onSubmit)}>
@@ -88,12 +84,16 @@ export default function AddItem() {
               <CloseButton />
             </Dialog.CloseTrigger>
             <Dialog.Header>
-              <Dialog.Title>Add Item</Dialog.Title>
+              <Dialog.Title>{action} Item</Dialog.Title>
             </Dialog.Header>
             <Dialog.Body>
               <HStack>
                 <Field required label="Name">
-                  <Input placeholder="Ball #" disabled={isPending} />
+                  <Input
+                    placeholder="Ball #"
+                    disabled={isPending}
+                    {...register('name')}
+                  />
                 </Field>
                 <Field required label="Quantity">
                   <Controller
@@ -203,4 +203,4 @@ export default function AddItem() {
       </Portal>
     </Dialog.Root>
   );
-}
+});

@@ -6,7 +6,7 @@ import {
 } from '@/utils/constant';
 import { AssetCategory, AssetCondition } from '@/utils/enum';
 
-export const AddItemSchema = z.object({
+export const UpsertAssetSchema = z.object({
   name: z.string().min(0).max(128),
   quantity: z.number().int().min(1).max(100),
   condition: z.enum(SELECTABLE_ASSET_CONDITIONS).default(AssetCondition.GOOD),
@@ -16,4 +16,4 @@ export const AddItemSchema = z.object({
   note: z.string().max(256).optional(),
 });
 
-export type AddItemSchemaValues = z.infer<typeof AddItemSchema>;
+export type UpsertAssetSchemaValues = z.infer<typeof UpsertAssetSchema>;
