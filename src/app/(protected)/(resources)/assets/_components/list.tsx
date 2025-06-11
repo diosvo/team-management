@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import { Asset } from '@/drizzle/schema';
+import { Asset } from '@/drizzle/schema/asset';
 import { ALL } from '@/utils/constant';
 
 import SelectionFilter from './selection-filter';

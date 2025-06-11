@@ -11,7 +11,12 @@ import {
 import { unstable_cache } from 'next/cache';
 
 import { db } from '@/drizzle';
-import { InsertUser, User, UserRelations, UserTable } from '@/drizzle/schema';
+import {
+  InsertUser,
+  User,
+  UserRelations,
+  UserTable,
+} from '@/drizzle/schema/user';
 
 import logger from '@/lib/logger';
 import { CACHE_REVALIDATION_TIME } from '@/utils/constant';

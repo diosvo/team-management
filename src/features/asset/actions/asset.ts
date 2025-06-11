@@ -1,6 +1,6 @@
 'use server';
 
-import { Asset, NullishAsset } from '@/drizzle/schema';
+import { Asset, NullishAsset } from '@/drizzle/schema/asset';
 import { Response, ResponseFactory } from '@/utils/response';
 
 import { getTeam } from '@/features/team/actions/team';

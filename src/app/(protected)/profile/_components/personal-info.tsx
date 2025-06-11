@@ -13,7 +13,7 @@ import { Field } from '@/components/ui/field';
 import { toaster } from '@/components/ui/toaster';
 import { Tooltip } from '@/components/ui/tooltip';
 
-import { User } from '@/drizzle/schema';
+import { User } from '@/drizzle/schema/user';
 import { formatDate } from '@/utils/formatter';
 
 import { updatePersonalInfo } from '@/features/user/actions/user';

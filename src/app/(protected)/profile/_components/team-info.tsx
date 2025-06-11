@@ -31,7 +31,7 @@ import { toaster } from '@/components/ui/toaster';
 import { Tooltip } from '@/components/ui/tooltip';
 import Visibility from '@/components/visibility';
 
-import { User } from '@/drizzle/schema';
+import { User } from '@/drizzle/schema/user';
 import { usePermissions } from '@/hooks/use-permissions';
 import {
   CoachPositionsSelection,

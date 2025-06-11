@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { ActionBar, Badge, Button, Portal, Table } from '@chakra-ui/react';
 import { Box } from 'lucide-react';
 
-import { Asset } from '@/drizzle/schema';
+import { Asset } from '@/drizzle/schema/asset';
 import { usePermissions } from '@/hooks/use-permissions';
 import { formatDate } from '@/utils/formatter';
 import { colorCondition } from '@/utils/helper';

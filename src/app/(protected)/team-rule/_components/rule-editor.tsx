@@ -18,7 +18,7 @@ import { toaster } from '@/components/ui/toaster';
 import { Tooltip } from '@/components/ui/tooltip';
 import Visibility from '@/components/visibility';
 
-import { NullishRule } from '@/drizzle/schema';
+import { NullishRule } from '@/drizzle/schema/rule';
 import { usePermissions } from '@/hooks/use-permissions';
 import { formatDatetime } from '@/utils/formatter';
 

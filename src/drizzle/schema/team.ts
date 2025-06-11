@@ -42,4 +42,5 @@ export const TeamRelations = relations(TeamTable, ({ one, many }) => ({
 }));
 
 export type Team = typeof TeamTable.$inferSelect;
+export type NullishTeam = Nullish<Team>;
 export type InsertTeam = typeof TeamTable.$inferInsert;

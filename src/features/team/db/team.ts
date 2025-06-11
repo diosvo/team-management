@@ -2,17 +2,18 @@ import { eq } from 'drizzle-orm';
 import { unstable_cache } from 'next/cache';
 
 import { db } from '@/drizzle';
-import { TeamTable } from '@/drizzle/schema';
+import { TeamTable } from '@/drizzle/schema/team';
 
 import logger from '@/lib/logger';
-
 import { CACHE_REVALIDATION_TIME } from '@/utils/constant';
+
 import { teamCacheKey, teamCacheTag } from './cache';
 
 export async function getTeam() {
   return await unstable_cache(
     async () => {
       try {
+        logger.info('💥 Fecthing default team.');
         return await db.query.TeamTable.findFirst({
           where: eq(TeamTable.is_default, true),
         });

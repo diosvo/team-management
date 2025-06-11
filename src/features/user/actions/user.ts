@@ -1,6 +1,6 @@
 'use server';
 
-import { User } from '@/drizzle/schema';
+import { User } from '@/drizzle/schema/user';
 import { getTeam } from '@/features/team/actions/team';
 import { sendPasswordInstructionEmail } from '@/lib/mail';
 
