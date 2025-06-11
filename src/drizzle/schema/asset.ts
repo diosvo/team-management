@@ -15,7 +15,7 @@ export const AssetTable = pgTable('asset', {
   team_id: uuid()
     .notNull()
     .references(() => TeamTable.team_id, { onDelete: 'cascade' }),
-  name: varchar({ length: 64 }).notNull(),
+  name: varchar({ length: 64 }).unique().notNull(),
   category: assetCategoryEnum().default(AssetCategory.EQUIPMENT).notNull(),
   quantity: integer().notNull().default(1),
   condition: assetConditionEnum().default(AssetCondition.GOOD).notNull(),
