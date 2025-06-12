@@ -5,15 +5,17 @@ import { useState } from 'react';
 import { ActionBar, Badge, Button, Portal, Table } from '@chakra-ui/react';
 import { Box } from 'lucide-react';
 
+import { Checkbox } from '@/components/ui/checkbox';
+import { EmptyState } from '@/components/ui/empty-state';
+import { toaster } from '@/components/ui/toaster';
+import Visibility from '@/components/visibility';
+
 import { Asset } from '@/drizzle/schema/asset';
 import { usePermissions } from '@/hooks/use-permissions';
 import { formatDate } from '@/utils/formatter';
 import { colorCondition } from '@/utils/helper';
 
-import { Checkbox } from '@/components/ui/checkbox';
-import { EmptyState } from '@/components/ui/empty-state';
-import Visibility from '@/components/visibility';
-
+import { removeAsset } from '@/features/asset/actions/asset';
 import { UpsertAsset } from './upsert-asset';
 
 export default function CategoryTable({ items }: { items: Array<Asset> }) {
@@ -29,6 +31,17 @@ export default function CategoryTable({ items }: { items: Array<Asset> }) {
   const indeterminate = hasSelection && selectionCount < totalCount;
 
   const removeItems = async () => {
+    const results = await Promise.all(selection.map(removeAsset));
+    const hasErrors = results.some(({ error }) => error);
+    const successCount = results.filter((result) => !result.error).length;
+
+    toaster.create({
+      type: hasErrors ? 'warning' : 'success',
+      description: hasErrors
+        ? `Deleted ${successCount} asset(s), but some operations failed.`
+        : `Successfully deleted ${successCount} asset(s).`,
+    });
+
     setSelection([]);
   };
 

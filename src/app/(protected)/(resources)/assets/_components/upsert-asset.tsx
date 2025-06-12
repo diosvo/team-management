@@ -27,7 +27,11 @@ import {
   AssetConditionSelection,
 } from '@/utils/constant';
 
-import { UpsertAssetSchema } from '@/features/asset/schemas/asset';
+import { upsertAsset } from '@/features/asset/actions/asset';
+import {
+  UpsertAssetSchema,
+  UpsertAssetSchemaValues,
+} from '@/features/asset/schemas/asset';
 
 export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
   const [isPending, startTransition] = useTransition();
@@ -43,17 +47,17 @@ export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
     },
   });
 
-  const onSubmit = (data: any) => {
+  const onSubmit = (data: UpsertAssetSchemaValues) => {
     const id = toaster.create({
       type: 'loading',
       description: 'Adding new item to to the asset inventory...',
     });
 
     startTransition(async () => {
-      const { error, message: description } = {
-        error: false,
-        message: 'Item added successfully',
-      };
+      const { error, message: description } = await upsertAsset(
+        item.asset_id,
+        data
+      );
 
       toaster.update(id, {
         type: error ? 'error' : 'success',

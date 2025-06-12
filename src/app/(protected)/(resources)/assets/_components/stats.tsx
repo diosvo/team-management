@@ -1,6 +1,7 @@
+import { useMemo } from 'react';
+
 import { Heading, Icon, SimpleGrid, Text, VStack } from '@chakra-ui/react';
 import { AlertTriangle, Package } from 'lucide-react';
-import { useMemo } from 'react';
 
 export default function AssetStats({
   stats,
