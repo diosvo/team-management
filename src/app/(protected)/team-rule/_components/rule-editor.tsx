@@ -22,7 +22,7 @@ import { NullishRule } from '@/drizzle/schema/rule';
 import { usePermissions } from '@/hooks/use-permissions';
 import { formatDatetime } from '@/utils/formatter';
 
-import { executeRule } from '@/features/rule/actions/rule';
+import { upsertRule } from '@/features/rule/actions/rule';
 
 export default function RuleEditor({ rule }: { rule: NullishRule }) {
   const { isAdmin } = usePermissions();
@@ -45,7 +45,7 @@ export default function RuleEditor({ rule }: { rule: NullishRule }) {
         description: 'Updating rules...',
       });
 
-      const { error, message: description } = await executeRule(content);
+      const { error, message: description } = await upsertRule(content);
 
       toaster.update(id, {
         type: error ? 'error' : 'success',
