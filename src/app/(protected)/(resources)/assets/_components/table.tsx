@@ -73,11 +73,16 @@ export default function CategoryTable({ items }: { items: Array<Asset> }) {
                   />
                 </Table.ColumnHeader>
               </Visibility>
-              {['Item', 'Quantity', 'Condition', 'Last Updated', 'Note'].map(
-                (header) => (
-                  <Table.ColumnHeader key={header}>{header}</Table.ColumnHeader>
-                )
-              )}
+              {[
+                'Item',
+                'Category',
+                'Quantity',
+                'Condition',
+                'Last Updated',
+                'Note',
+              ].map((header) => (
+                <Table.ColumnHeader key={header}>{header}</Table.ColumnHeader>
+              ))}
             </Table.Row>
           </Table.Header>
           <Table.Body>
@@ -111,6 +116,7 @@ export default function CategoryTable({ items }: { items: Array<Asset> }) {
                     </Table.Cell>
                   </Visibility>
                   <Table.Cell>{item.name}</Table.Cell>
+                  <Table.Cell>{item.category}</Table.Cell>
                   <Table.Cell>{item.quantity}</Table.Cell>
                   <Table.Cell>
                     <Badge
@@ -127,7 +133,7 @@ export default function CategoryTable({ items }: { items: Array<Asset> }) {
               ))
             ) : (
               <Table.Row>
-                <Table.Cell colSpan={isAdmin ? 6 : 5}>
+                <Table.Cell colSpan={isAdmin ? 7 : 6}>
                   <EmptyState
                     icon={<Box />}
                     title="No items found"

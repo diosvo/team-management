@@ -1,10 +1,8 @@
 import { getRoster } from '@/features/user/actions/user';
 
-import { Suspense } from 'react';
 import RosterActions from './_components/actions';
 import RosterTable from './_components/table';
 import { parseSearchParams } from './_helpers/parse-params';
-import TableSkeleton from './table-skeleton';
 
 export default async function RosterPage(props: {
   searchParams: Promise<{
@@ -22,9 +20,7 @@ export default async function RosterPage(props: {
   return (
     <>
       <RosterActions />
-      <Suspense fallback={<TableSkeleton />}>
-        <RosterTable users={users} />
-      </Suspense>
+      <RosterTable users={users} />
     </>
   );
 }

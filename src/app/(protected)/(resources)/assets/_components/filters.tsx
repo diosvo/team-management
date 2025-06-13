@@ -22,6 +22,7 @@ import {
 } from '@/utils/constant';
 import { colorCondition } from '@/utils/helper';
 
+import { Tooltip } from '@/components/ui/tooltip';
 import { UpsertAssetSchema } from '@/features/asset/schemas/asset';
 import { UpsertAsset } from './upsert-asset';
 
@@ -83,10 +84,15 @@ export default function Fitlers({ filters, setFilters }: SelectionFilterProps) {
             <Select.Positioner>
               <Select.Content>
                 {categories.items.map((category) => (
-                  <Select.Item item={category} key={category.value}>
-                    {category.label}
-                    <Select.ItemIndicator />
-                  </Select.Item>
+                  <Tooltip
+                    key={category.value}
+                    content={category.description || 'All'}
+                  >
+                    <Select.Item item={category}>
+                      {category.label}
+                      <Select.ItemIndicator />
+                    </Select.Item>
+                  </Tooltip>
                 ))}
               </Select.Content>
             </Select.Positioner>

@@ -155,7 +155,7 @@ export const AssetCategorySelection: Selection<string> = [
   {
     label: 'Others',
     value: AssetCategory.OTHERS,
-    description: 'Uniforms, Jerseys',
+    description: 'Uniforms, Jerseys, etc',
   },
 ];
 

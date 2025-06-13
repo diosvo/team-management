@@ -27,6 +27,7 @@ import {
   AssetConditionSelection,
 } from '@/utils/constant';
 
+import { Tooltip } from '@/components/ui/tooltip';
 import { upsertAsset } from '@/features/asset/actions/asset';
 import {
   UpsertAssetSchema,
@@ -133,13 +134,17 @@ export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
                     >
                       <HStack gap={4}>
                         {AssetCategorySelection.map((item) => (
-                          <RadioGroup.Item key={item.value} value={item.value}>
-                            <RadioGroup.ItemHiddenInput onBlur={field.onBlur} />
-                            <RadioGroup.ItemIndicator />
-                            <RadioGroup.ItemText>
-                              {item.label}
-                            </RadioGroup.ItemText>
-                          </RadioGroup.Item>
+                          <Tooltip key={item.value} content={item.description}>
+                            <RadioGroup.Item value={item.value}>
+                              <RadioGroup.ItemHiddenInput
+                                onBlur={field.onBlur}
+                              />
+                              <RadioGroup.ItemIndicator />
+                              <RadioGroup.ItemText>
+                                {item.label}
+                              </RadioGroup.ItemText>
+                            </RadioGroup.Item>
+                          </Tooltip>
                         ))}
                       </HStack>
                     </RadioGroup.Root>

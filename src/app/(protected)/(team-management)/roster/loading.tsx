@@ -1,6 +1,6 @@
 import { Box, Skeleton, SkeletonText, Stack } from '@chakra-ui/react';
 
-export default function TableSkeleton() {
+export default function Loading() {
   return (
     <Stack>
       <Box>

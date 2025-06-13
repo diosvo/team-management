@@ -31,9 +31,6 @@ export const AssetRelations = relations(AssetTable, ({ one }) => ({
   }),
 }));
 
-export type Asset = Omit<
-  typeof AssetTable.$inferSelect,
-  'team_id' | 'created_at'
->;
+export type Asset = typeof AssetTable.$inferSelect;
 export type NullishAsset = Nullish<Asset>;
 export type InsertAsset = typeof AssetTable.$inferInsert;
