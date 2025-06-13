@@ -15,19 +15,19 @@ import {
   createOverlay,
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Plus } from 'lucide-react';
+import { Save } from 'lucide-react';
 import { Controller, useForm } from 'react-hook-form';
 
 import { CloseButton } from '@/components/ui/close-button';
 import { Field } from '@/components/ui/field';
 import { toaster } from '@/components/ui/toaster';
+import { Tooltip } from '@/components/ui/tooltip';
 
 import {
   AssetCategorySelection,
   AssetConditionSelection,
 } from '@/utils/constant';
 
-import { Tooltip } from '@/components/ui/tooltip';
 import { upsertAsset } from '@/features/asset/actions/asset';
 import {
   UpsertAssetSchema,
@@ -51,7 +51,7 @@ export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
   const onSubmit = (data: UpsertAssetSchemaValues) => {
     const id = toaster.create({
       type: 'loading',
-      description: 'Adding new item to to the asset inventory...',
+      description: 'Saving item to to the asset inventory...',
     });
 
     startTransition(async () => {
@@ -67,6 +67,10 @@ export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
 
       if (!error) {
         reset();
+      }
+
+      if (action === 'Update') {
+        UpsertAsset.close('update-asset');
       }
     });
   };
@@ -197,7 +201,7 @@ export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
             </Dialog.Body>
             <Dialog.Footer>
               <Button type="submit" loading={isPending} loadingText="Adding...">
-                <Plus /> Add
+                <Save /> {action}
               </Button>
             </Dialog.Footer>
           </Dialog.Content>

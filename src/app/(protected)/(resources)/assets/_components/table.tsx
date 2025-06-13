@@ -13,7 +13,7 @@ import Visibility from '@/components/visibility';
 import { Asset } from '@/drizzle/schema/asset';
 import { usePermissions } from '@/hooks/use-permissions';
 import { formatDate } from '@/utils/formatter';
-import { colorCondition } from '@/utils/helper';
+import { colorCategory, colorCondition } from '@/utils/helper';
 
 import { removeAsset } from '@/features/asset/actions/asset';
 import { UpsertAsset } from './upsert-asset';
@@ -116,7 +116,15 @@ export default function CategoryTable({ items }: { items: Array<Asset> }) {
                     </Table.Cell>
                   </Visibility>
                   <Table.Cell>{item.name}</Table.Cell>
-                  <Table.Cell>{item.category}</Table.Cell>
+                  <Table.Cell>
+                    <Badge
+                      variant="outline"
+                      borderRadius="full"
+                      colorPalette={colorCategory(item.category)}
+                    >
+                      {item.category}
+                    </Badge>
+                  </Table.Cell>
                   <Table.Cell>{item.quantity}</Table.Cell>
                   <Table.Cell>
                     <Badge

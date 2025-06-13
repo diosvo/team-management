@@ -1,5 +1,4 @@
 import { redirect } from 'next/navigation';
-import { Suspense } from 'react';
 
 import { VStack } from '@chakra-ui/react';
 
@@ -9,7 +8,6 @@ import { getUser } from '@/features/user/actions/auth';
 import { LOGIN_PATH } from '@/routes';
 
 import ProfileContent from '../_components/profile-content';
-import ProfileSkeleton from '../_components/profile-skeleton';
 
 export default async function ProfilePage({
   params,
@@ -27,10 +25,7 @@ export default async function ProfilePage({
   return (
     <VStack gap={6} align="stretch">
       <PageTitle>Profile Details</PageTitle>
-
-      <Suspense fallback={<ProfileSkeleton />}>
-        <ProfileContent userId={id} currentUser={currentUser} />
-      </Suspense>
+      <ProfileContent user_id={id} current_user={currentUser} />
     </VStack>
   );
 }

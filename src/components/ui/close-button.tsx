@@ -11,7 +11,7 @@ export const CloseButton = React.forwardRef<
 >(function CloseButton(props, ref) {
   return (
     <ChakraIconButton
-      size="xs"
+      size="2xs"
       focusRing="none"
       variant="ghost"
       borderRadius="full"

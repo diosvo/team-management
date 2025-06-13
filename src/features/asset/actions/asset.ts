@@ -8,7 +8,6 @@ import { Asset } from '@/drizzle/schema';
 import {
   deleteAsset,
   getAssets as getAction,
-  getAsset,
   insertAsset,
   updateAsset,
 } from '../db/asset';
@@ -44,9 +43,7 @@ export async function upsertAsset(
   }
 
   try {
-    const existingAsset = await getAsset(asset_id);
-
-    if (existingAsset) {
+    if (asset_id) {
       await updateAsset(asset_id, { ...asset, team_id: team.team_id });
     } else {
       await insertAsset({ ...asset, team_id: team.team_id });

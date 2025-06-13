@@ -147,7 +147,10 @@ export default function Fitlers({ filters, setFilters }: SelectionFilterProps) {
             onClick={() =>
               UpsertAsset.open('add-asset', {
                 action: 'Add',
-                item: getDefaults(UpsertAssetSchema),
+                item: {
+                  ...getDefaults(UpsertAssetSchema),
+                  asset_id: '',
+                },
               })
             }
           >
