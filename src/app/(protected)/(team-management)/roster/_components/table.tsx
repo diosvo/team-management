@@ -27,7 +27,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { toaster } from '@/components/ui/toaster';
 import Visibility from '@/components/visibility';
 
-import { User } from '@/drizzle/schema';
+import { User } from '@/drizzle/schema/user';
 import { usePermissions } from '@/hooks/use-permissions';
 import { colorState } from '@/utils/helper';
 
@@ -86,7 +86,7 @@ export default function RosterTable({ users }: { users: Array<User> }) {
     <>
       <Table.ScrollArea marginTop={2} marginBottom={4}>
         <Table.Root
-          size={{ base: 'sm', md: 'lg' }}
+          size={{ base: 'sm', md: 'md' }}
           stickyHeader
           interactive={currentData.length > 0}
         >
@@ -132,9 +132,8 @@ export default function RosterTable({ users }: { users: Array<User> }) {
                   }
                   _hover={{ cursor: isGuest ? 'default' : 'pointer' }}
                   onClick={() => {
-                    if (!isGuest) {
-                      router.replace('/profile/' + user.user_id);
-                    }
+                    if (isGuest) return;
+                    router.replace('/profile/' + user.user_id);
                   }}
                 >
                   <Visibility isVisible={isAdmin}>
@@ -180,20 +179,20 @@ export default function RosterTable({ users }: { users: Array<User> }) {
                   <Table.Cell>
                     <Badge
                       variant="surface"
-                      rounded="full"
+                      borderRadius="full"
                       colorPalette={colorState(user.state)}
                     >
                       {user.state}
                     </Badge>
                   </Table.Cell>
                   <Table.Cell>
-                    <Badge variant="outline" rounded="full">
+                    <Badge variant="outline" borderRadius="full">
                       {user.role}
                     </Badge>
                   </Table.Cell>
                   <Table.Cell>
                     {user.details.position ? (
-                      <Badge variant="outline" rounded="full">
+                      <Badge variant="outline" borderRadius="full">
                         {user.details.position}
                       </Badge>
                     ) : (
@@ -253,9 +252,9 @@ export default function RosterTable({ users }: { users: Array<User> }) {
               </ActionBar.SelectionTrigger>
               <ActionBar.Separator />
               <Button
+                size="sm"
                 variant="outline"
                 colorPalette="red"
-                size="sm"
                 onClick={removeUsers}
               >
                 Delete

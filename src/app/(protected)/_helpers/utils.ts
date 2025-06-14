@@ -45,12 +45,12 @@ export const SIDEBAR_GROUP = [
     ],
   },
   {
-    title: 'Assets',
+    title: 'Resources',
     items: [
       {
         icon: Package,
-        text: 'Equipment',
-        disabled: true,
+        text: 'Assets',
+        disabled: false,
       },
       {
         icon: Film,

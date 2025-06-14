@@ -1,7 +1,14 @@
 import { addHours } from 'date-fns';
 
-import { CoachPosition, PlayerPosition, UserRole, UserState } from './enum';
-import { Selection } from './type';
+import {
+  AssetCategory,
+  AssetCondition,
+  CoachPosition,
+  PlayerPosition,
+  UserRole,
+  UserState,
+} from './enum';
+import { Option, Selection } from './type';
 
 export const ESTABLISHED_DATE = '2024-02-20';
 export const DEFAULT_DOB = '2000-01-01';
@@ -10,8 +17,16 @@ export const DEFAULT_DATE_FORMAT = 'yyyy-MM-dd';
 export const LOCALE_DATE_FORMAT = 'dd/MM/yyyy';
 export const LOCALE_DATETIME_FORMAT = LOCALE_DATE_FORMAT + ' HH:mm:ss';
 
-// 1 hour
+// 1 hour in seconds for cache revalidation
+export const CACHE_REVALIDATION_TIME = 3600;
+
+// 1 hour for session expiration
 export const EXPIRES_AT = addHours(new Date(), 1);
+
+export const ALL: Option<string> = {
+  label: 'All',
+  value: 'all',
+};
 
 export const SELECTABLE_ROLES = [
   UserRole.COACH,
@@ -118,5 +133,51 @@ export const PlayerPositionsSelection: Selection<string> = [
   {
     label: 'Unknown',
     value: PlayerPosition.UNKNOWN,
+  },
+];
+
+export const SELECTABLE_ASSET_CATEGORIES = [
+  AssetCategory.EQUIPMENT,
+  AssetCategory.TRANING,
+  AssetCategory.OTHERS,
+] as const;
+export const AssetCategorySelection: Selection<string> = [
+  {
+    label: 'Equipment',
+    value: AssetCategory.EQUIPMENT,
+    description: 'Balls, Backboards, etc',
+  },
+  {
+    label: 'Training',
+    value: AssetCategory.TRANING,
+    description: 'Cones, Hurdles, Jump ropes, etc',
+  },
+  {
+    label: 'Others',
+    value: AssetCategory.OTHERS,
+    description: 'Uniforms, Jerseys, etc',
+  },
+];
+
+export const SELECTABLE_ASSET_CONDITIONS = [
+  AssetCondition.POOR,
+  AssetCondition.FAIR,
+  AssetCondition.GOOD,
+] as const;
+export const AssetConditionSelection: Selection<string> = [
+  {
+    label: 'Poor',
+    value: AssetCondition.POOR,
+    description: 'Broken, Damaged',
+  },
+  {
+    label: 'Fair',
+    value: AssetCondition.FAIR,
+    description: 'Usable, Slightly Worn',
+  },
+  {
+    label: 'Good',
+    value: AssetCondition.GOOD,
+    description: 'New, Excellent Condition',
   },
 ];

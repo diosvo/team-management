@@ -2,7 +2,7 @@
 
 import { createContext, ReactNode, use, useContext } from 'react';
 
-import { User } from '@/drizzle/schema';
+import { User } from '@/drizzle/schema/user';
 
 type UserContextType = {
   userPromise: Promise<Nullable<User>>;

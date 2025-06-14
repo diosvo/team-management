@@ -2,7 +2,7 @@
 
 import pg from 'pg';
 
-import { NullishRule } from '@/drizzle/schema';
+import { NullishRule } from '@/drizzle/schema/rule';
 import { Response, ResponseFactory } from '@/utils/response';
 
 import { getTeam } from '@/features/team/actions/team';
@@ -17,7 +17,7 @@ export async function getRule(): Promise<NullishRule> {
   return await getAction(team.team_id);
 }
 
-export async function executeRule(content: string): Promise<Response> {
+export async function upsertRule(content: string): Promise<Response> {
   const team = await getTeam();
 
   if (!team) {

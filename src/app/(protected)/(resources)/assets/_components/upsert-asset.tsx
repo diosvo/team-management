@@ -1,0 +1,212 @@
+'use client';
+
+import { useTransition } from 'react';
+
+import {
+  Button,
+  Dialog,
+  Fieldset,
+  HStack,
+  Input,
+  NumberInput,
+  Portal,
+  RadioGroup,
+  Textarea,
+  createOverlay,
+} from '@chakra-ui/react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Save } from 'lucide-react';
+import { Controller, useForm } from 'react-hook-form';
+
+import { CloseButton } from '@/components/ui/close-button';
+import { Field } from '@/components/ui/field';
+import { toaster } from '@/components/ui/toaster';
+import { Tooltip } from '@/components/ui/tooltip';
+
+import {
+  AssetCategorySelection,
+  AssetConditionSelection,
+} from '@/utils/constant';
+
+import { upsertAsset } from '@/features/asset/actions/asset';
+import {
+  UpsertAssetSchema,
+  UpsertAssetSchemaValues,
+} from '@/features/asset/schemas/asset';
+
+export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
+  const [isPending, startTransition] = useTransition();
+
+  const { reset, control, register, handleSubmit } = useForm({
+    resolver: zodResolver(UpsertAssetSchema),
+    values: {
+      name: item.name,
+      quantity: item.quantity,
+      condition: item.condition,
+      category: item.category,
+      note: item.note,
+    },
+  });
+
+  const onSubmit = (data: UpsertAssetSchemaValues) => {
+    const id = toaster.create({
+      type: 'loading',
+      description: 'Saving item to to the asset inventory...',
+    });
+
+    startTransition(async () => {
+      const { error, message: description } = await upsertAsset(
+        item.asset_id,
+        data
+      );
+
+      toaster.update(id, {
+        type: error ? 'error' : 'success',
+        description,
+      });
+
+      if (!error) {
+        reset();
+      }
+
+      if (action === 'Update') {
+        UpsertAsset.close('update-asset');
+      }
+    });
+  };
+
+  return (
+    <Dialog.Root {...rest}>
+      <Portal>
+        <Dialog.Backdrop />
+        <Dialog.Positioner as="form" onSubmit={handleSubmit(onSubmit)}>
+          <Dialog.Content>
+            <Dialog.CloseTrigger asChild>
+              <CloseButton />
+            </Dialog.CloseTrigger>
+            <Dialog.Header>
+              <Dialog.Title>{action} Item</Dialog.Title>
+            </Dialog.Header>
+            <Dialog.Body>
+              <HStack>
+                <Field required label="Name">
+                  <Input
+                    maxLength={64}
+                    placeholder="Ball #"
+                    disabled={isPending}
+                    {...register('name')}
+                  />
+                </Field>
+                <Field required label="Quantity">
+                  <Controller
+                    name="quantity"
+                    control={control}
+                    render={({ field }) => (
+                      <NumberInput.Root
+                        width="full"
+                        disabled={field.disabled}
+                        name={field.name}
+                        min={1}
+                        max={100}
+                        value={String(field.value)}
+                        onValueChange={({ value }) => {
+                          field.onChange(value);
+                        }}
+                      >
+                        <NumberInput.Control />
+                        <NumberInput.Input onBlur={field.onBlur} />
+                      </NumberInput.Root>
+                    )}
+                  />
+                </Field>
+              </HStack>
+              <Fieldset.Root marginBlock={4}>
+                <Fieldset.Legend color="GrayText">Category</Fieldset.Legend>
+                <Controller
+                  name="category"
+                  control={control}
+                  render={({ field }) => (
+                    <RadioGroup.Root
+                      size="sm"
+                      colorPalette="red"
+                      marginTop={2}
+                      name={field.name}
+                      value={field.value}
+                      onValueChange={({ value }) => {
+                        field.onChange(value);
+                      }}
+                    >
+                      <HStack gap={4}>
+                        {AssetCategorySelection.map((item) => (
+                          <Tooltip key={item.value} content={item.description}>
+                            <RadioGroup.Item value={item.value}>
+                              <RadioGroup.ItemHiddenInput
+                                onBlur={field.onBlur}
+                              />
+                              <RadioGroup.ItemIndicator />
+                              <RadioGroup.ItemText>
+                                {item.label}
+                              </RadioGroup.ItemText>
+                            </RadioGroup.Item>
+                          </Tooltip>
+                        ))}
+                      </HStack>
+                    </RadioGroup.Root>
+                  )}
+                />
+              </Fieldset.Root>
+              <Fieldset.Root>
+                <Fieldset.Legend color="GrayText">Condition</Fieldset.Legend>
+                <Controller
+                  name="condition"
+                  control={control}
+                  render={({ field }) => (
+                    <RadioGroup.Root
+                      size="sm"
+                      colorPalette="green"
+                      marginTop={2}
+                      name={field.name}
+                      value={field.value}
+                      onValueChange={({ value }) => {
+                        field.onChange(value);
+                      }}
+                    >
+                      <HStack gap={4}>
+                        {AssetConditionSelection.map((item) => (
+                          <RadioGroup.Item key={item.value} value={item.value}>
+                            <RadioGroup.ItemHiddenInput onBlur={field.onBlur} />
+                            <RadioGroup.ItemIndicator />
+                            <RadioGroup.ItemText>
+                              {item.label}
+                            </RadioGroup.ItemText>
+                          </RadioGroup.Item>
+                        ))}
+                      </HStack>
+                    </RadioGroup.Root>
+                  )}
+                />
+              </Fieldset.Root>
+              <Field
+                label="Note"
+                helperText="Max 128 characters."
+                marginTop={4}
+              >
+                <Textarea
+                  autoresize
+                  maxLength={128}
+                  placeholder="Comment..."
+                  {...register('note')}
+                />
+              </Field>
+            </Dialog.Body>
+            <Dialog.Footer>
+              <Button type="submit" loading={isPending} loadingText="Adding...">
+                <Save /> {action}
+              </Button>
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Portal>
+    </Dialog.Root>
+  );
+});

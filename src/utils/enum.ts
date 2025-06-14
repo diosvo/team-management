@@ -26,3 +26,15 @@ export enum PlayerPosition {
   FORWARD = 'FORWARD',
   UNKNOWN = 'UNKNOWN',
 }
+
+export enum AssetCategory {
+  EQUIPMENT = 'EQUIPMENT',
+  TRANING = 'TRAINING',
+  OTHERS = 'OTHERS',
+}
+
+export enum AssetCondition {
+  POOR = 'POOR',
+  FAIR = 'FAIR',
+  GOOD = 'GOOD',
+}

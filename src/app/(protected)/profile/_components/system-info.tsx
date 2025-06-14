@@ -5,7 +5,7 @@ import { Clock, UserPlus } from 'lucide-react';
 
 import TextField from '@/components/text-field';
 
-import { User } from '@/drizzle/schema';
+import { User } from '@/drizzle/schema/user';
 import { formatDatetime } from '@/utils/formatter';
 
 export default function SystemInfo({ user }: { user: User }) {

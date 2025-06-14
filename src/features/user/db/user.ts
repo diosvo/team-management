@@ -11,9 +11,15 @@ import {
 import { unstable_cache } from 'next/cache';
 
 import { db } from '@/drizzle';
-import { InsertUser, User, UserRelations, UserTable } from '@/drizzle/schema';
+import {
+  InsertUser,
+  User,
+  UserRelations,
+  UserTable,
+} from '@/drizzle/schema/user';
 
 import logger from '@/lib/logger';
+import { CACHE_REVALIDATION_TIME } from '@/utils/constant';
 import { UserRole } from '@/utils/enum';
 import { hasPermissions } from '@/utils/helper';
 
@@ -105,7 +111,7 @@ export async function getUserById(user_id: string) {
     [userCacheKey(user_id)],
     {
       tags: [userCacheTag(user_id)],
-      revalidate: 3600, // 1 hour
+      revalidate: CACHE_REVALIDATION_TIME,
     }
   )(user_id);
 }

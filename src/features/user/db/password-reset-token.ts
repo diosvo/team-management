@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm';
 
 import { db } from '@/drizzle';
-import { PasswordTokenTable } from '@/drizzle/schema';
+import { PasswordTokenTable } from '@/drizzle/schema/user';
 
 export async function insertPasswordResetToken(
   email: string,

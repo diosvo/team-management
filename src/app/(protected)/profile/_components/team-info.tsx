@@ -31,7 +31,7 @@ import { toaster } from '@/components/ui/toaster';
 import { Tooltip } from '@/components/ui/tooltip';
 import Visibility from '@/components/visibility';
 
-import { User } from '@/drizzle/schema';
+import { User } from '@/drizzle/schema/user';
 import { usePermissions } from '@/hooks/use-permissions';
 import {
   CoachPositionsSelection,
@@ -219,7 +219,7 @@ export default function TeamInfo({
             ) : (
               <TextField label="Jersey Number">
                 {user.details.jersey_number ? (
-                  <Badge variant="outline" rounded="full">
+                  <Badge variant="outline" borderRadius="full">
                     {user.details.jersey_number}
                   </Badge>
                 ) : (
@@ -280,7 +280,7 @@ export default function TeamInfo({
               <Badge
                 variant="subtle"
                 colorPalette={colorRole(user.role)}
-                rounded="full"
+                borderRadius="full"
               >
                 {user.role}
               </Badge>
@@ -339,7 +339,7 @@ export default function TeamInfo({
           ) : (
             <TextField label="Position">
               {user.details.position ? (
-                <Badge variant="outline" rounded="full">
+                <Badge variant="outline" borderRadius="full">
                   {user.details.position}
                 </Badge>
               ) : (
@@ -416,7 +416,7 @@ export default function TeamInfo({
             <TextField label="State" direction="horizontal" icon={Activity}>
               <Badge
                 variant="surface"
-                rounded="full"
+                borderRadius="full"
                 colorPalette={colorState(user.state)}
               >
                 {user.state}
