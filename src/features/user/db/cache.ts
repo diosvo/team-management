@@ -1,6 +1,6 @@
 import { revalidatePath, revalidateTag } from 'next/cache';
 
-import { getIdKey, getIdTag } from '@/lib/data-cache';
+import { getGlobalTag, getIdTag } from '@/lib/data-cache';
 
 export function revalidateRosterPath() {
   return revalidatePath('/roster');
@@ -9,8 +9,8 @@ export function revalidateRosterPath() {
 /**
  * @description Used for storing and retrieving the cached data
  */
-export function userCacheKey(user_id: string) {
-  return getIdKey('user', user_id);
+export function userCacheKey() {
+  return getGlobalTag('user');
 }
 
 /**
