@@ -3,18 +3,18 @@
 import { useState } from 'react';
 
 import {
+  Box,
   Button,
-  createListCollection,
   Dialog,
   HStack,
   Input,
+  List,
   Portal,
-  Select,
-  Stack,
+  Table,
   Text,
   VStack,
 } from '@chakra-ui/react';
-import { Link, Plus, Upload } from 'lucide-react';
+import { Plus, UploadCloud } from 'lucide-react';
 
 import { CloseButton } from '@/components/ui/close-button';
 import { Field } from '@/components/ui/field';
@@ -24,52 +24,31 @@ interface AddTestResultDialogProps {
   onAddResult: (result: {
     player_name: string;
     test_type: string;
-    test_date: string;
     score: number;
     notes?: string;
   }) => void;
+  existingTestDates?: string[]; // Add this to track existing test dates
 }
 
 export default function AddTestResult({
   onAddResult,
+  existingTestDates = [], // Default to empty array
 }: AddTestResultDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [importMethod, setImportMethod] = useState<
-    'manual' | 'excel' | 'google-sheets'
-  >('manual');
   const [formData, setFormData] = useState({
     player_name: '',
     test_type: '',
-    test_date: '',
     score: '',
     notes: '',
   });
   const [googleSheetsUrl, setGoogleSheetsUrl] = useState('');
+  const [selectedTestDate, setSelectedTestDate] = useState('');
 
-  const testTypes = createListCollection({
-    items: [
-      { value: 'Sprint Speed', label: 'Sprint Speed' },
-      { value: 'Endurance', label: 'Endurance' },
-      { value: 'Vertical Jump', label: 'Vertical Jump' },
-      { value: 'Agility', label: 'Agility' },
-      { value: 'Free Throw %', label: 'Free Throw %' },
-      { value: 'Three Point %', label: 'Three Point %' },
-      { value: 'Field Goal %', label: 'Field Goal %' },
-      { value: 'Ball Handling', label: 'Ball Handling' },
-      { value: 'Game IQ', label: 'Game IQ' },
-      { value: 'Decision Making', label: 'Decision Making' },
-      { value: 'Team Play', label: 'Team Play' },
-      { value: 'Defense', label: 'Defense' },
-    ],
-  });
+  // Get today's date in YYYY-MM-DD format for min date validation
+  const today = new Date().toISOString().split('T')[0];
 
   const handleSubmit = () => {
-    if (
-      !formData.player_name ||
-      !formData.test_type ||
-      !formData.test_date ||
-      !formData.score
-    ) {
+    if (!formData.player_name || !formData.test_type || !formData.score) {
       toaster.create({
         type: 'error',
         description: 'Please fill in all required fields',
@@ -80,14 +59,12 @@ export default function AddTestResult({
     onAddResult({
       player_name: formData.player_name,
       test_type: formData.test_type,
-      test_date: formData.test_date,
       score: parseFloat(formData.score),
       notes: formData.notes || undefined,
     });
     setFormData({
       player_name: '',
       test_type: '',
-      test_date: '',
       score: '',
       notes: '',
     });
@@ -106,6 +83,14 @@ export default function AddTestResult({
       toaster.create({
         type: 'error',
         description: 'Please enter a valid Google Sheets URL',
+      });
+      return;
+    }
+
+    if (!selectedTestDate) {
+      toaster.create({
+        type: 'error',
+        description: 'Please select a testing date',
       });
       return;
     }
@@ -144,21 +129,18 @@ export default function AddTestResult({
         {
           player_name: 'David Thompson',
           test_type: 'Sprint Speed',
-          test_date: '2024-06-20',
           score: 87.5,
           notes: 'Imported from Google Sheets',
         },
         {
           player_name: 'Lisa Chen',
           test_type: 'Vertical Jump',
-          test_date: '2024-06-20',
           score: 91.2,
           notes: 'Imported from Google Sheets',
         },
         {
           player_name: 'Marcus Johnson',
           test_type: 'Endurance',
-          test_date: '2024-06-20',
           score: 82.7,
           notes: 'Imported from Google Sheets',
         },
@@ -170,6 +152,7 @@ export default function AddTestResult({
       });
 
       setGoogleSheetsUrl('');
+      setSelectedTestDate('');
       setIsOpen(false);
 
       toaster.create({
@@ -179,320 +162,131 @@ export default function AddTestResult({
     }, 2000);
   };
 
-  const handleExcelUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (!files || files.length === 0) return;
-
-    const file = files[0];
-    if (
-      !file.name.endsWith('.xlsx') &&
-      !file.name.endsWith('.xls') &&
-      !file.name.endsWith('.csv')
-    ) {
-      toaster.create({
-        type: 'error',
-        description:
-          'Please upload a valid Excel file (.xlsx, .xls) or CSV file',
-      });
-      return;
-    }
-
-    toaster.create({
-      type: 'loading',
-      description: 'Processing Excel file...',
-    });
-
-    // Mock implementation - simulate processing
-    // In a real implementation, you would use a library like SheetJS (xlsx)
-    // to parse the Excel file and extract data
-    setTimeout(() => {
-      const mockExcelData = [
-        {
-          player_name: 'Emma Wilson',
-          test_type: 'Agility',
-          test_date: '2024-06-21',
-          score: 88.9,
-          notes: 'Imported from Excel',
-        },
-        {
-          player_name: 'Ryan Martinez',
-          test_type: 'Free Throw %',
-          test_date: '2024-06-21',
-          score: 76.3,
-          notes: 'Imported from Excel',
-        },
-      ];
-
-      // Import each record
-      mockExcelData.forEach((record) => {
-        onAddResult(record);
-      });
-
-      // Clear the input
-      event.target.value = '';
-      setIsOpen(false);
-
-      toaster.create({
-        type: 'success',
-        description: `Successfully imported ${mockExcelData.length} test results from Excel file`,
-      });
-    }, 1500);
-  };
-
   return (
     <Dialog.Root open={isOpen} onOpenChange={(e) => setIsOpen(e.open)}>
       <Dialog.Trigger asChild>
         <Button size={{ base: 'sm', md: 'md' }}>
           <Plus />
-          Add Test Result
+          Import
         </Button>
       </Dialog.Trigger>
 
       <Portal>
         <Dialog.Backdrop />
         <Dialog.Positioner>
-          <Dialog.Content maxWidth="md">
+          <Dialog.Content>
             <Dialog.CloseTrigger asChild>
               <CloseButton />
             </Dialog.CloseTrigger>
             <Dialog.Header>
-              <Dialog.Title>Add Test Result</Dialog.Title>
+              <Dialog.Title>Upload Test Result</Dialog.Title>
             </Dialog.Header>
 
             <Dialog.Body>
-              <VStack align="stretch" gap={6}>
-                {/* Import Method Selection */}
-                <HStack gap={3} wrap="wrap">
-                  <Button
-                    variant={importMethod === 'manual' ? 'solid' : 'outline'}
-                    size="sm"
-                    onClick={() => setImportMethod('manual')}
-                  >
-                    <Plus />
-                    Manual Entry
-                  </Button>
-                  <Button
-                    variant={importMethod === 'excel' ? 'solid' : 'outline'}
-                    size="sm"
-                    onClick={() => setImportMethod('excel')}
-                  >
-                    <Upload />
-                    Excel Upload
-                  </Button>
-                  <Button
-                    variant={
-                      importMethod === 'google-sheets' ? 'solid' : 'outline'
-                    }
-                    size="sm"
-                    onClick={() => setImportMethod('google-sheets')}
-                  >
-                    <Link />
-                    Google Sheets
-                  </Button>
+              <VStack align="stretch">
+                <Text fontSize="sm" color="gray.600">
+                  Import test results directly from a Google Sheets spreadsheet.
+                  <br />
+                  Make sure the sheet is publicly accessible.
+                </Text>
+
+                <HStack>
+                  <Field label="Google Sheets URL" required>
+                    <Input
+                      value={googleSheetsUrl}
+                      onChange={(e) => setGoogleSheetsUrl(e.target.value)}
+                      placeholder="https://docs.google.com/spreadsheets/d/..."
+                    />
+                  </Field>
+
+                  <Field label="Date" maxWidth="max-content" required>
+                    <Input
+                      type="date"
+                      defaultValue={today}
+                      max={today}
+                      value={selectedTestDate}
+                      onChange={(e) => setSelectedTestDate(e.target.value)}
+                    />
+                  </Field>
                 </HStack>
 
-                {importMethod === 'manual' ? (
-                  <Stack gap={4}>
-                    <Field label="Player Name" required>
-                      <Input
-                        value={formData.player_name}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            player_name: e.target.value,
-                          })
-                        }
-                        placeholder="Enter player name"
-                      />
-                    </Field>
+                <VStack
+                  align="stretch"
+                  gap={2}
+                  paddingInline={6}
+                  paddingBlock={2}
+                  backgroundColor="blue.50"
+                  marginBlock={2}
+                  borderRadius="lg"
+                  border="1px solid"
+                  borderColor="blue.100"
+                >
+                  <Text fontSize="sm" fontWeight="semibold" color="blue.800">
+                    Google Sheets Setup:
+                  </Text>
+                  <List.Root as="ol" gap={2}>
+                    <List.Item>
+                      <Text fontSize="sm" color="blue.700">
+                        Create a Google Sheet with the expected format below
+                      </Text>
+                    </List.Item>
+                    <List.Item>
+                      <Text fontSize="sm" color="blue.700">
+                        Share the sheet with "Anyone with the link can view"
+                      </Text>
+                    </List.Item>
+                    <List.Item>
+                      <Text fontSize="sm" color="blue.700">
+                        Copy and paste the share URL here
+                      </Text>
+                    </List.Item>
+                  </List.Root>
+                </VStack>
 
-                    <Field label="Test Type" required>
-                      <Select.Root
-                        collection={testTypes}
-                        value={formData.test_type ? [formData.test_type] : []}
-                        onValueChange={(details) =>
-                          setFormData({
-                            ...formData,
-                            test_type: details.value[0] || '',
-                          })
-                        }
-                      >
-                        <Select.Trigger>
-                          <Select.ValueText placeholder="Select test type" />
-                        </Select.Trigger>
-                        <Select.Content>
-                          {testTypes.items.map((type) => (
-                            <Select.Item key={type.value} item={type}>
-                              {type.label}
-                            </Select.Item>
-                          ))}
-                        </Select.Content>
-                      </Select.Root>
-                    </Field>
-
-                    <Field label="Test Date" required>
-                      <Input
-                        type="date"
-                        value={formData.test_date}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            test_date: e.target.value,
-                          })
-                        }
-                      />
-                    </Field>
-
-                    <Field label="Score" required>
-                      <Input
-                        type="number"
-                        min="0"
-                        max="100"
-                        step="0.1"
-                        value={formData.score}
-                        onChange={(e) =>
-                          setFormData({ ...formData, score: e.target.value })
-                        }
-                        placeholder="Enter score (0-100)"
-                      />
-                    </Field>
-
-                    <Field label="Notes">
-                      <Input
-                        value={formData.notes}
-                        onChange={(e) =>
-                          setFormData({ ...formData, notes: e.target.value })
-                        }
-                        placeholder="Additional notes (optional)"
-                      />
-                    </Field>
-                  </Stack>
-                ) : importMethod === 'excel' ? (
-                  <VStack align="stretch" gap={4}>
-                    <Text fontSize="sm" color="gray.600">
-                      Upload an Excel file with test results. The file should
-                      contain columns: Player Name, Test Type, Test Date, Score,
-                      Notes
-                    </Text>
-
-                    <Field label="Excel File">
-                      <Input
-                        type="file"
-                        accept=".xlsx,.xls,.csv"
-                        onChange={handleExcelUpload}
-                      />
-                    </Field>
-
-                    <VStack
-                      align="stretch"
-                      gap={2}
-                      padding={4}
-                      backgroundColor="gray.50"
-                      borderRadius="md"
-                    >
-                      <Text fontSize="sm" fontWeight="medium">
-                        Expected File Format:
-                      </Text>
-                      <Text fontSize="xs" color="gray.600">
-                        • Column A: Player Name (required)
-                      </Text>
-                      <Text fontSize="xs" color="gray.600">
-                        • Column B: Test Type (required)
-                      </Text>
-                      <Text fontSize="xs" color="gray.600">
-                        • Column C: Test Date (YYYY-MM-DD format)
-                      </Text>
-                      <Text fontSize="xs" color="gray.600">
-                        • Column D: Score (0-100)
-                      </Text>
-                      <Text fontSize="xs" color="gray.600">
-                        • Column E: Notes (optional)
-                      </Text>
-                    </VStack>
-                  </VStack>
-                ) : (
-                  <VStack align="stretch" gap={4}>
-                    <Text fontSize="sm" color="gray.600">
-                      Import test results directly from a Google Sheets
-                      spreadsheet. Make sure the sheet is publicly accessible or
-                      shared with view permissions.
-                    </Text>
-
-                    <Field label="Google Sheets URL" required>
-                      <Input
-                        value={googleSheetsUrl}
-                        onChange={(e) => setGoogleSheetsUrl(e.target.value)}
-                        placeholder="https://docs.google.com/spreadsheets/d/..."
-                      />
-                    </Field>
-
-                    <VStack
-                      align="stretch"
-                      gap={2}
-                      padding={4}
-                      backgroundColor="blue.50"
-                      borderRadius="md"
-                    >
-                      <Text fontSize="sm" fontWeight="medium">
-                        Google Sheets Setup:
-                      </Text>
-                      <Text fontSize="xs" color="gray.600">
-                        1. Create a Google Sheet with the expected format below
-                      </Text>
-                      <Text fontSize="xs" color="gray.600">
-                        2. Share the sheet with "Anyone with the link can view"
-                      </Text>
-                      <Text fontSize="xs" color="gray.600">
-                        3. Copy and paste the share URL here
-                      </Text>
-                    </VStack>
-
-                    <VStack
-                      align="stretch"
-                      gap={2}
-                      padding={4}
-                      backgroundColor="gray.50"
-                      borderRadius="md"
-                    >
-                      <Text fontSize="sm" fontWeight="medium">
-                        Expected Sheet Format:
-                      </Text>
-                      <Text fontSize="xs" color="gray.600">
-                        • Column A: Player Name (required)
-                      </Text>
-                      <Text fontSize="xs" color="gray.600">
-                        • Column B: Test Type (required)
-                      </Text>
-                      <Text fontSize="xs" color="gray.600">
-                        • Column C: Test Date (YYYY-MM-DD format)
-                      </Text>
-                      <Text fontSize="xs" color="gray.600">
-                        • Column D: Score (0-100)
-                      </Text>
-                      <Text fontSize="xs" color="gray.600">
-                        • Column E: Notes (optional)
-                      </Text>
-                      <Text fontSize="xs" color="gray.600">
-                        • First row should contain headers
-                      </Text>
-                    </VStack>
-                  </VStack>
-                )}
+                <Box>
+                  <Text fontSize="sm" marginBottom={4}>
+                    💥 Expected Sheet Format:
+                  </Text>
+                  <Table.Root size="sm" showColumnBorder>
+                    <Table.Header>
+                      <Table.Row>
+                        <Table.ColumnHeader></Table.ColumnHeader>
+                        <Table.ColumnHeader>A</Table.ColumnHeader>
+                        <Table.ColumnHeader>B</Table.ColumnHeader>
+                        <Table.ColumnHeader>C</Table.ColumnHeader>
+                      </Table.Row>
+                    </Table.Header>
+                    <Table.Body>
+                      <Table.Row>
+                        <Table.Cell>1</Table.Cell>
+                        <Table.Cell>Player Name</Table.Cell>
+                        <Table.Cell>Test Type</Table.Cell>
+                        <Table.Cell>Test Date</Table.Cell>
+                      </Table.Row>
+                      <Table.Row backgroundColor="gray.25">
+                        <Table.Cell>2</Table.Cell>
+                        <Table.Cell>John Doe</Table.Cell>
+                        <Table.Cell>Sprint Speed</Table.Cell>
+                        <Table.Cell>2024-06-20</Table.Cell>
+                      </Table.Row>
+                    </Table.Body>
+                  </Table.Root>
+                  <Text
+                    fontSize="sm"
+                    color="GrayText"
+                    fontStyle="italic"
+                    marginTop={4}
+                  >
+                    Row 1 contains headers, data starts from row 2
+                  </Text>
+                </Box>
               </VStack>
             </Dialog.Body>
 
             <Dialog.Footer>
-              <Button variant="outline">Cancel</Button>
-
-              {importMethod === 'manual' && (
-                <Button onClick={handleSubmit}>Add Result</Button>
-              )}
-
-              {importMethod === 'google-sheets' && (
-                <Button onClick={handleGoogleSheetsImport}>
-                  Import from Google Sheets
-                </Button>
-              )}
+              <Button onClick={handleGoogleSheetsImport}>
+                <UploadCloud /> Import
+              </Button>
             </Dialog.Footer>
           </Dialog.Content>
         </Dialog.Positioner>
