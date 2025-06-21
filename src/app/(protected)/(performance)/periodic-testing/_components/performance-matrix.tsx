@@ -18,7 +18,6 @@ interface TestResult {
   test_id: string;
   player_name: string;
   test_type: string;
-  test_date: string;
   score: number;
   previous_score?: number;
   notes?: string;
@@ -34,7 +33,6 @@ interface PlayerTestMatrix {
       score: number;
       previous_score?: number;
       improvement?: number;
-      test_date: string;
       unit: string;
       value_type: string;
     }
@@ -47,8 +45,7 @@ interface TestTypesOverviewProps {
   onUpdateScore?: (
     playerName: string,
     testType: string,
-    newScore: number,
-    testDate: string
+    newScore: number
   ) => void;
 }
 
@@ -109,95 +106,30 @@ export default function TestTypesOverview({
       const player = playerMap.get(result.player_name)!;
       let improvement: number | undefined;
 
-      // Check if we already have data for this test type
-      const existingTest = player.tests[result.test_type];
+      // Calculate improvement if we have a previous score
+      if (result.previous_score !== undefined) {
+        const rawChange = result.score - result.previous_score;
+        const percentChange = (rawChange / result.previous_score) * 100;
 
-      // If we already have a test result, only keep the most recent one for "All Time" view
-      // or use the previous score for improvement calculation
-      if (existingTest) {
-        // If this is a March test and we have January data, calculate improvement
-        if (
-          result.test_date === '2025-03-25' &&
-          existingTest.test_date === '2025-01-25'
-        ) {
-          // Calculate improvement percentage based on test type
-          const rawChange = result.score - existingTest.score;
-          const percentChange = (rawChange / existingTest.score) * 100;
-
-          if (result.value_type === 'time') {
-            // For time-based tests, check if higher or lower is better
-            if (isHigherBetter(result.test_type)) {
-              // For tests like Plank, higher values (longer time) are better
-              improvement = percentChange;
-            } else {
-              // For tests like Beep test, lower values (faster time) are better
-              improvement = -percentChange;
-            }
-          } else {
-            // For count/percentage tests, higher is better
-            // Positive change is improvement, negative change is regression
-            improvement = percentChange;
-          }
-
-          // Update with March data and improvement
-          player.tests[result.test_type] = {
-            score: result.score,
-            previous_score: existingTest.score,
-            improvement,
-            test_date: result.test_date,
-            unit: result.unit,
-            value_type: result.value_type,
-          };
-        } else if (result.test_date > existingTest.test_date) {
-          // Keep the more recent test
-          player.tests[result.test_type] = {
-            score: result.score,
-            previous_score: result.previous_score,
-            improvement: result.previous_score
-              ? (() => {
-                  const rawChange = result.score - result.previous_score;
-                  const percentChange =
-                    (rawChange / result.previous_score) * 100;
-                  if (result.value_type === 'time') {
-                    return isHigherBetter(result.test_type)
-                      ? percentChange
-                      : -percentChange;
-                  } else {
-                    return percentChange;
-                  }
-                })()
-              : undefined,
-            test_date: result.test_date,
-            unit: result.unit,
-            value_type: result.value_type,
-          };
+        if (result.value_type === 'time') {
+          // For time-based tests, check if higher or lower is better
+          improvement = isHigherBetter(result.test_type)
+            ? percentChange
+            : -percentChange;
+        } else {
+          // For count/percentage tests, higher is better
+          improvement = percentChange;
         }
-      } else {
-        // First time seeing this test type for this player
-        if (result.previous_score !== undefined) {
-          const rawChange = result.score - result.previous_score;
-          const percentChange = (rawChange / result.previous_score) * 100;
-
-          if (result.value_type === 'time') {
-            // For time-based tests, check if higher or lower is better
-            improvement = isHigherBetter(result.test_type)
-              ? percentChange
-              : -percentChange;
-          } else {
-            // For count/percentage tests, higher is better
-            improvement = percentChange;
-          }
-        }
-
-        player.tests[result.test_type] = {
-          score: result.score,
-          previous_score: result.previous_score,
-          improvement,
-          test_date: result.test_date,
-          unit: result.unit,
-          value_type: result.value_type,
-        };
       }
+
+      // Always use the latest result (or overwrite if it's the same test type)
+      player.tests[result.test_type] = {
+        score: result.score,
+        previous_score: result.previous_score,
+        improvement,
+        unit: result.unit,
+        value_type: result.value_type,
+      };
     });
 
     // Sort test types by category and then alphabetically
@@ -401,14 +333,8 @@ export default function TestTypesOverview({
     if (newScore && !isNaN(Number(newScore))) {
       const scoreValue = Number(newScore);
 
-      // Find the test date for this specific result
-      const testResult = testResults.find(
-        (result) =>
-          result.player_name === playerName && result.test_type === testType
-      );
-
-      if (testResult && onUpdateScore) {
-        onUpdateScore(playerName, testType, scoreValue, testResult.test_date);
+      if (onUpdateScore) {
+        onUpdateScore(playerName, testType, scoreValue);
       } else {
         console.log(
           `Updating ${playerName}'s ${testType} from ${currentScore} to ${scoreValue}`

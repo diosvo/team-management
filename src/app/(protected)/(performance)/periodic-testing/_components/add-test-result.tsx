@@ -42,10 +42,10 @@ export default function AddTestResult({
     notes: '',
   });
   const [googleSheetsUrl, setGoogleSheetsUrl] = useState('');
-  const [selectedTestDate, setSelectedTestDate] = useState('');
 
   // Get today's date in YYYY-MM-DD format for min date validation
   const today = new Date().toISOString().split('T')[0];
+  const [selectedTestDate, setSelectedTestDate] = useState(today);
 
   const handleSubmit = () => {
     if (!formData.player_name || !formData.test_type || !formData.score) {
@@ -108,14 +108,6 @@ export default function AddTestResult({
       });
       return;
     }
-
-    // Mock implementation - simulate processing multiple test results
-    // In a real implementation, you would:
-    // 1. Extract the spreadsheet ID from the URL (match[1])
-    // 2. Convert to CSV export URL: `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv`
-    // 3. Fetch the CSV data (requires CORS or backend proxy)
-    // 4. Parse CSV and validate data
-    // 5. Call onAddResult for each valid row
 
     toaster.create({
       type: 'loading',
@@ -190,53 +182,54 @@ export default function AddTestResult({
                   Make sure the sheet is publicly accessible.
                 </Text>
 
-                <HStack>
-                  <Field label="Google Sheets URL" required>
-                    <Input
-                      value={googleSheetsUrl}
-                      onChange={(e) => setGoogleSheetsUrl(e.target.value)}
-                      placeholder="https://docs.google.com/spreadsheets/d/..."
-                    />
-                  </Field>
+                <VStack align="stretch" gap={4} marginBlock={2}>
+                  <HStack>
+                    <Field label="Google Sheets URL" required>
+                      <Input
+                        value={googleSheetsUrl}
+                        onChange={(e) => setGoogleSheetsUrl(e.target.value)}
+                        placeholder="https://docs.google.com/spreadsheets/d/..."
+                      />
+                    </Field>
 
-                  <Field label="Date" maxWidth="max-content" required>
-                    <Input
-                      type="date"
-                      defaultValue={today}
-                      max={today}
-                      value={selectedTestDate}
-                      onChange={(e) => setSelectedTestDate(e.target.value)}
-                    />
-                  </Field>
-                </HStack>
+                    <Field label="Date" maxWidth="max-content" required>
+                      <Input
+                        type="date"
+                        max={today}
+                        value={selectedTestDate}
+                        onChange={(e) => setSelectedTestDate(e.target.value)}
+                      />
+                    </Field>
+                  </HStack>
+                </VStack>
 
                 <VStack
                   align="stretch"
                   gap={2}
                   paddingInline={6}
                   paddingBlock={2}
-                  backgroundColor="blue.50"
+                  backgroundColor="gray.50"
                   marginBlock={2}
                   borderRadius="lg"
                   border="1px solid"
-                  borderColor="blue.100"
+                  borderColor="gray.200"
                 >
-                  <Text fontSize="sm" fontWeight="semibold" color="blue.800">
+                  <Text fontSize="sm" fontWeight="semibold" color="gray.700">
                     Google Sheets Setup:
                   </Text>
                   <List.Root as="ol" gap={2}>
                     <List.Item>
-                      <Text fontSize="sm" color="blue.700">
+                      <Text fontSize="sm" color="gray.600">
                         Create a Google Sheet with the expected format below
                       </Text>
                     </List.Item>
                     <List.Item>
-                      <Text fontSize="sm" color="blue.700">
+                      <Text fontSize="sm" color="gray.600">
                         Share the sheet with "Anyone with the link can view"
                       </Text>
                     </List.Item>
                     <List.Item>
-                      <Text fontSize="sm" color="blue.700">
+                      <Text fontSize="sm" color="gray.600">
                         Copy and paste the share URL here
                       </Text>
                     </List.Item>
@@ -245,7 +238,7 @@ export default function AddTestResult({
 
                 <Box>
                   <Text fontSize="sm" marginBottom={4}>
-                    💥 Expected Sheet Format:
+                    💥 Expected for sample format:
                   </Text>
                   <Table.Root size="sm" showColumnBorder>
                     <Table.Header>

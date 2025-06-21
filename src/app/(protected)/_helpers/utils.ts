@@ -39,7 +39,7 @@ export const SIDEBAR_GROUP = [
     items: [
       {
         icon: FileChartColumnIncreasing,
-        text: 'Bi-monthly Testing',
+        text: 'Periodic Testing',
         disabled: false,
       },
     ],

@@ -1,11 +1,11 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Bi-monthly Testing',
+  title: 'Periodic Testing',
   description: 'Performance testing and analytics for team players',
 };
 
-export default function BiMonthlyTestingLayout({
+export default function PeriodicTestingLayout({
   children,
 }: {
   children: React.ReactNode;

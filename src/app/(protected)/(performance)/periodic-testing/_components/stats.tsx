@@ -18,7 +18,7 @@ export default function TestingStats({ stats }: TestingStatsProps) {
   const statCards = useMemo(() => {
     return [
       {
-        label: 'Total Players',
+        label: 'Total Players Joined',
         icon: Users,
         colorScheme: 'blue',
         value: stats.total_players,

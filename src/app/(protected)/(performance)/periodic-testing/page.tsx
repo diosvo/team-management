@@ -144,7 +144,6 @@ const generateCompleteTestData = () => {
     test_id: string;
     player_name: string;
     test_type: string;
-    test_date: string;
     score: number;
     previous_score?: number;
     notes?: string;
@@ -167,7 +166,6 @@ const generateCompleteTestData = () => {
           test_id: testId.toString(),
           player_name: player,
           test_type: testType.name,
-          test_date: '2025-01-25',
           score: jan25Score,
           previous_score: undefined, // No previous score for first test
           notes: 'Baseline test',
@@ -205,7 +203,6 @@ const generateCompleteTestData = () => {
           test_id: testId.toString(),
           player_name: player,
           test_type: testType.name,
-          test_date: '2025-03-25',
           score: mar25Score,
           previous_score: jan25Score,
           notes: notes,
@@ -222,25 +219,18 @@ const generateCompleteTestData = () => {
 
 const mockTestResults = generateCompleteTestData();
 
-export default function BiMonthlyTestingPage() {
-  const [filteredResults, setFilteredResults] = useState(
-    mockTestResults.filter((r) => r.test_date === '2025-03-25')
-  );
-  const [currentDateRange, setCurrentDateRange] = useState('2025-03-25');
+export default function PeriodicTestingPage() {
+  const [filteredResults, setFilteredResults] = useState(mockTestResults);
+  const [currentDateRange, setCurrentDateRange] = useState('');
   const [currentSearchTerm, setCurrentSearchTerm] = useState('');
 
-  // Calculate dynamic stats based on date range and filtered results
+  // Calculate dynamic stats based on filtered results
   const calculateStats = (
     results: typeof mockTestResults,
     dateRange: string
   ) => {
-    // Filter results based on date range (for specific test dates only)
+    // Use all results since we removed test_date
     let filteredByDate = results;
-
-    if (dateRange === '2025-01-25' || dateRange === '2025-03-25') {
-      // Filter for specific test date
-      filteredByDate = results.filter((r) => r.test_date === dateRange);
-    }
 
     // Get unique players from the filtered results
     const uniquePlayers = Array.from(
@@ -314,10 +304,7 @@ export default function BiMonthlyTestingPage() {
   };
 
   const [dynamicStats, setDynamicStats] = useState(
-    calculateStats(
-      mockTestResults.filter((r) => r.test_date === '2025-03-25'),
-      '2025-03-25'
-    )
+    calculateStats(mockTestResults, '')
   );
 
   const handleFilterChange = (filters: {
@@ -329,16 +316,9 @@ export default function BiMonthlyTestingPage() {
     // Store the current search term
     setCurrentSearchTerm(filters.search);
 
-    // Apply date range filter for specific test dates only
-    if (
-      filters.dateRange === '2025-01-25' ||
-      filters.dateRange === '2025-03-25'
-    ) {
-      // Filter for specific test date
-      filtered = filtered.filter((r) => r.test_date === filters.dateRange);
-    }
+    // Since we removed test_date, we don't filter by date anymore
 
-    // Apply search filter after date filtering (for stats calculation)
+    // Apply search filter
     let searchFiltered = [...filtered];
     if (filters.search) {
       searchFiltered = searchFiltered.filter(
@@ -361,7 +341,6 @@ export default function BiMonthlyTestingPage() {
   const handleAddTestResult = (newResult: {
     player_name: string;
     test_type: string;
-    test_date: string;
     score: number;
     notes?: string;
   }) => {
@@ -386,15 +365,12 @@ export default function BiMonthlyTestingPage() {
   const handleUpdateScore = (
     playerName: string,
     testType: string,
-    newScore: number,
-    testDate: string
+    newScore: number
   ) => {
     // Find and update the test result in the mock data
     const resultIndex = mockTestResults.findIndex(
       (result) =>
-        result.player_name === playerName &&
-        result.test_type === testType &&
-        result.test_date === testDate
+        result.player_name === playerName && result.test_type === testType
     );
 
     if (resultIndex !== -1) {
@@ -405,9 +381,7 @@ export default function BiMonthlyTestingPage() {
       const newFilteredResults = [...filteredResults];
       const filteredIndex = newFilteredResults.findIndex(
         (result) =>
-          result.player_name === playerName &&
-          result.test_type === testType &&
-          result.test_date === testDate
+          result.player_name === playerName && result.test_type === testType
       );
 
       if (filteredIndex !== -1) {
@@ -422,7 +396,7 @@ export default function BiMonthlyTestingPage() {
 
   return (
     <VStack align="stretch">
-      <PageTitle>Bi-monthly Testing</PageTitle>
+      <PageTitle>Periodic Testing</PageTitle>
 
       <TestingStats stats={dynamicStats} />
 
