@@ -26,6 +26,15 @@ const pluginSecurityConfigs = [
 const eslintConfig = [
   ...compat.extends('next/core-web-vitals', 'next/typescript'),
   ...pluginSecurityConfigs,
+  {
+    rules: {
+      // for Object destructuring
+      '@typescript-eslint/no-unused-vars': [
+        ERROR,
+        { ignoreRestSiblings: true },
+      ],
+    },
+  },
 ];
 
 export default eslintConfig;

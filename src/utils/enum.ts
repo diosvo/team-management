@@ -38,3 +38,8 @@ export enum AssetCondition {
   FAIR = 'FAIR',
   GOOD = 'GOOD',
 }
+
+export enum GameType {
+  '3x3' = '3x3',
+  '5x5' = '5x5',
+}

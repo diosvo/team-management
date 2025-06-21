@@ -57,6 +57,11 @@ function NavButton({
       color={isActive ? 'inherit' : 'GrayText'}
       paddingInline={isExpanded ? undefined : 2}
       title={isExpanded ? undefined : String(children)}
+      _hover={{
+        _icon: {
+          animation: 'wiggle 1s linear infinite',
+        },
+      }}
       asChild
     >
       {disabled ? (
@@ -65,7 +70,7 @@ function NavButton({
         </div>
       ) : (
         <Link href={href}>
-          {icon && <Icon as={icon} />}
+          <Icon as={icon} />
           {isExpanded && children}
           {isExpanded && <LoadingIndicator />}
         </Link>

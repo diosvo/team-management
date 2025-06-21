@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Geist } from 'next/font/google';
+import { Inter } from 'next/font/google';
 
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
@@ -11,9 +11,9 @@ import { UserProvider } from '@/hooks/use-user';
 
 import './globals.css';
 
-const geist = Geist({
-  subsets: ['latin'],
-  variable: '--font-geist',
+const inter = Inter({
+  subsets: ['latin', 'vietnamese'],
+  variable: '--font-inter',
 });
 
 export const metadata: Metadata = {
@@ -33,7 +33,7 @@ export default function RootLayout({
 
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={geist.className}>
+      <body className={`${inter.variable} ${inter.className}`}>
         <UiProvider>
           <Toaster />
           <UserProvider userPromise={userPromise}>{children}</UserProvider>

@@ -4,6 +4,7 @@ import {
   AssetCategory,
   AssetCondition,
   CoachPosition,
+  GameType,
   PlayerPosition,
   UserRole,
   UserState,
@@ -181,3 +182,12 @@ export const AssetConditionSelection: Selection<string> = [
     description: 'New, Excellent Condition',
   },
 ];
+
+export const GameTypeConfig: Record<GameType, Option<string>> = {
+  [GameType['3x3']]: { label: GameType['3x3'], value: GameType['3x3'], max: 5 },
+  [GameType['5x5']]: {
+    label: GameType['5x5'],
+    value: GameType['5x5'],
+    max: 15,
+  },
+};
