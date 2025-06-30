@@ -145,7 +145,7 @@ export default function RegistrationPageClient({
             <Card.Body>
               <PlayerSelection
                 players={users}
-                maxPalyers={info.maxPlayers}
+                maxPlayers={info.maxPlayers}
                 selection={players}
                 onSelectionChange={setPlayers}
               />

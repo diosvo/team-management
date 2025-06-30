@@ -14,14 +14,14 @@ import { User } from '@/drizzle/schema/user';
 
 interface PlayerSelectionProps {
   players: Array<User>;
-  maxPalyers: number;
+  maxPlayers: number;
   selection: Array<User>;
   onSelectionChange: (selected: Array<User>) => void;
 }
 
 export default function PlayerSelection({
   players,
-  maxPalyers,
+  maxPlayers,
   selection,
   onSelectionChange,
 }: PlayerSelectionProps) {
@@ -54,7 +54,7 @@ export default function PlayerSelection({
       <Combobox.Label>
         Select players
         <Text as="span" fontSize="xs" color="GrayText" marginLeft={2}>
-          (max {maxPalyers})
+          (max {maxPlayers})
         </Text>
       </Combobox.Label>
 
