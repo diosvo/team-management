@@ -54,7 +54,7 @@ export default function SearchInput({
       }
       endElement={
         value ? (
-          <CloseButton onClick={handleClear} />
+          <CloseButton size="2xs" borderRadius="full" onClick={handleClear} />
         ) : (
           <Kbd size="sm">Enter</Kbd>
         )

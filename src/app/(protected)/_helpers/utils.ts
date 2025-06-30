@@ -31,7 +31,7 @@ export const SIDEBAR_GROUP = [
       { icon: Users, text: 'Roster', disabled: false },
       { icon: CalendarDays, text: 'Schedule', disabled: true },
       { icon: BadgeCheck, text: 'Attendance', disabled: true },
-      { icon: FileText, text: 'Registration', disabled: true },
+      { icon: FileText, text: 'Registration', disabled: false },
     ],
   },
   {

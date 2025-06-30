@@ -219,9 +219,7 @@ export default function TeamInfo({
             ) : (
               <TextField label="Jersey Number">
                 {user.details.jersey_number ? (
-                  <Badge variant="outline" borderRadius="full">
-                    {user.details.jersey_number}
-                  </Badge>
+                  '# ' + user.details.jersey_number
                 ) : (
                   <Text>-</Text>
                 )}
