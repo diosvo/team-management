@@ -2,16 +2,18 @@
 
 import { useMemo, useState } from 'react';
 
-import { Button, HStack, Icon, Table, Text, VStack } from '@chakra-ui/react';
 import {
-  ChevronLeft,
-  ChevronRight,
-  Minus,
-  TrendingDown,
-  TrendingUp,
-} from 'lucide-react';
+  ButtonGroup,
+  IconButton,
+  Pagination,
+  Table,
+  Text,
+  VStack,
+} from '@chakra-ui/react';
+import { ChevronLeft, ChevronRight, TrendingUp } from 'lucide-react';
 
 import { EmptyState } from '@/components/ui/empty-state';
+import { Status } from '@/components/ui/status';
 import { Tooltip } from '@/components/ui/tooltip';
 
 interface TestResult {
@@ -78,13 +80,15 @@ const isHigherBetter = (testType: string): boolean => {
   return higherIsBetterTests.includes(testType);
 };
 
-export default function TestTypesOverview({
+export default function PerformanceMatrixTable({
   testResults,
   searchTerm = '',
   onUpdateScore,
 }: TestTypesOverviewProps) {
-  const [currentPage, setCurrentPage] = useState(1);
-  const playersPerPage = 10; // Fixed at 10 players per page
+  const [pagination, setPagination] = useState({
+    page: 1,
+    pageSize: 5,
+  });
 
   const { playerMatrix, allTestTypes, testTypeUnits } = useMemo(() => {
     const playerMap = new Map<string, PlayerTestMatrix>();
@@ -156,49 +160,22 @@ export default function TestTypesOverview({
     };
   }, [testResults]);
 
-  // Filter and paginate players
-  const { filteredPlayers, totalPages, startIndex, endIndex, totalPlayers } =
-    useMemo(() => {
-      // Filter players based on search term
-      const filtered = playerMatrix.filter((player) =>
-        player.player_name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+  const totalCount = playerMatrix.length;
 
-      // Calculate pagination
-      const total = Math.ceil(filtered.length / playersPerPage);
-      const start = (currentPage - 1) * playersPerPage;
-      const end = Math.min(start + playersPerPage, filtered.length);
-      const paginated = filtered.slice(start, end);
+  // Filter players based on search term
+  const filteredPlayers = useMemo(() => {
+    return playerMatrix.filter((player) =>
+      player.player_name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [playerMatrix, searchTerm]);
 
-      return {
-        filteredPlayers: paginated,
-        totalPages: total,
-        startIndex: start + 1,
-        endIndex: end,
-        totalPlayers: filtered.length,
-      };
-    }, [playerMatrix, searchTerm, currentPage, playersPerPage]);
-
-  // Reset to first page when search term changes
-  const handleSearchChange = (value: string) => {
-    setCurrentPage(1);
-  };
-
-  const getCategoryColor = (testType: string) => {
-    const category = getTestCategory(testType);
-    switch (category) {
-      case 'physical':
-        return 'blue';
-      case 'skills':
-        return 'purple';
-      case 'tactical':
-        return 'orange';
-      case 'endurance':
-        return 'green';
-      default:
-        return 'gray';
-    }
-  };
+  // Calculate the players to show for the current page
+  const startIndex = (pagination.page - 1) * pagination.pageSize;
+  const endIndex = Math.min(
+    startIndex + pagination.pageSize,
+    filteredPlayers.length
+  );
+  const currentData = filteredPlayers.slice(startIndex, endIndex);
 
   const getScoreDisplay = (
     testData: PlayerTestMatrix['tests'][string] | undefined,
@@ -225,24 +202,6 @@ export default function TestTypesOverview({
       return 'gray.700';
     };
 
-    const improvementIcon =
-      testData.improvement !== undefined ? (
-        testData.improvement > 0 ? (
-          <Icon color="green.500" size="xs">
-            <TrendingUp />
-          </Icon>
-        ) : testData.improvement < 0 ? (
-          <Icon color="red.500" size="xs">
-            <TrendingDown />
-          </Icon>
-        ) : (
-          <Icon color="gray.500" size="xs">
-            <Minus />
-          </Icon>
-        )
-      ) : null;
-
-    // Calculate tooltip content - show actual difference with units, not percentage
     const calculateTooltipContent = () => {
       if (
         !testData.previous_score ||
@@ -273,9 +232,6 @@ export default function TestTypesOverview({
       if (valueType === 'time') {
         // For time values, show with comma as decimal separator (no unit in cell)
         return score.toFixed(2).replace('.', ',');
-      } else if (unit === '%') {
-        // For percentages, show with % symbol
-        return `${score.toFixed(1)}%`;
       } else {
         // For other counts, show whole number (no unit in cell)
         return Math.round(score).toString();
@@ -285,24 +241,11 @@ export default function TestTypesOverview({
     const cellContent = (
       <VStack
         gap={1}
-        align="center"
-        cursor="pointer"
-        _hover={{
-          backgroundColor: 'bg.muted',
-          '& .improvement-text': {
-            opacity: 1,
-          },
-        }}
-        paddingBlock={1}
-        borderRadius="md"
         onClick={() => handleCellClick(playerName, testType, testData.score)}
       >
-        <HStack gap={1}>
-          <Text color={getScoreColor()} fontSize="sm" fontWeight="medium">
-            {formatScore(testData.score, testData.unit, testData.value_type)}
-          </Text>
-          {improvementIcon}
-        </HStack>
+        <Text color={getScoreColor()} fontSize="sm" fontWeight="medium">
+          {formatScore(testData.score, testData.unit, testData.value_type)}
+        </Text>
       </VStack>
     );
 
@@ -316,7 +259,6 @@ export default function TestTypesOverview({
     };
   };
 
-  // Handle cell click for editing (admin/coach role)
   const handleCellClick = (
     playerName: string,
     testType: string,
@@ -344,70 +286,73 @@ export default function TestTypesOverview({
     }
   };
   return (
-    <VStack align="stretch" gap={6}>
-      <Table.ScrollArea>
-        <Table.Root borderWidth={1} size={{ base: 'sm', md: 'md' }}>
+    <VStack align="stretch">
+      <Table.ScrollArea marginBottom={4}>
+        <Table.Root
+          borderWidth={1}
+          size={{ base: 'sm', md: 'md' }}
+          showColumnBorder
+        >
           <Table.Header>
             <Table.Row>
               <Table.ColumnHeader
                 position="sticky"
                 left={0}
-                backgroundColor="white"
                 zIndex={1}
-                borderRight="1px solid"
-                borderColor="gray.200"
-                minWidth="150px"
+                backgroundColor="white"
               >
                 Player
               </Table.ColumnHeader>
 
-              {allTestTypes.map((testType) => (
-                <Table.ColumnHeader
-                  key={testType}
-                  textAlign="center"
-                  backgroundColor={`${getCategoryColor(testType)}.25`}
-                  minWidth="120px"
-                >
-                  <VStack gap={0}>
-                    <Text fontSize="sm" fontWeight="medium">
-                      {testType}
+              {allTestTypes.map((type) => (
+                <Table.ColumnHeader key={type} textAlign="center">
+                  <Text>
+                    {type}
+                    <Text
+                      as="span"
+                      fontSize="xs"
+                      color="GrayText"
+                      marginLeft={1}
+                      fontWeight="normal"
+                    >
+                      ({testTypeUnits[type]})
                     </Text>
-                    <Text fontSize="xs" color="gray.500" fontWeight="normal">
-                      ({testTypeUnits[testType]})
-                    </Text>
-                  </VStack>
+                  </Text>
                 </Table.ColumnHeader>
               ))}
             </Table.Row>
           </Table.Header>
 
           <Table.Body>
-            {filteredPlayers.length > 0 ? (
-              filteredPlayers.map((player) => (
+            {currentData.length > 0 ? (
+              currentData.map((player) => (
                 <Table.Row key={player.player_name}>
                   <Table.Cell
-                    fontWeight="medium"
                     position="sticky"
                     left={0}
-                    backgroundColor="white"
                     zIndex={1}
-                    borderRight="1px solid"
-                    borderColor="gray.200"
+                    backgroundColor="white"
                   >
                     {player.player_name}
                   </Table.Cell>
 
-                  {allTestTypes.map((testType) => (
+                  {allTestTypes.map((type) => (
                     <Table.Cell
-                      key={`${player.player_name}-${testType}`}
-                      textAlign="center"
-                      backgroundColor={`${getCategoryColor(testType)}.10`}
+                      key={`${player.player_name}-${type}`}
+                      cursor="pointer"
+                      _hover={{
+                        backgroundColor: 'bg.muted',
+                        '& .improvement-text': {
+                          opacity: 1,
+                        },
+                      }}
+                      borderRadius="md"
                     >
                       {
                         getScoreDisplay(
-                          player.tests[testType],
+                          player.tests[type],
                           player.player_name,
-                          testType
+                          type
                         ).element
                       }
                     </Table.Cell>
@@ -420,43 +365,52 @@ export default function TestTypesOverview({
                   <EmptyState
                     icon={<TrendingUp />}
                     title="No test data available"
-                    description="Add test results to see the performance matrix"
+                    description="Try adjusting your search"
                   />
                 </Table.Cell>
               </Table.Row>
             )}
           </Table.Body>
+          <Table.Footer>
+            <Table.Row color="GrayText">
+              <Table.Cell textAlign="center" colSpan={allTestTypes.length + 1}>
+                <Status colorPalette="green">Increment</Status>
+                <Status colorPalette="red" marginInline={4}>
+                  Decrement
+                </Status>
+                <Status colorPalette="gray">Unchanged</Status>
+              </Table.Cell>
+            </Table.Row>
+          </Table.Footer>
         </Table.Root>
       </Table.ScrollArea>
 
-      {/* Pagination - only arrows */}
-      {totalPages > 1 && (
-        <HStack justify="center" gap={4}>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-            disabled={currentPage === 1}
-          >
-            <ChevronLeft size={16} />
-          </Button>
-
-          <Text fontSize="sm" color="gray.600">
-            Page {currentPage} of {totalPages}
-          </Text>
-
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() =>
-              setCurrentPage(Math.min(totalPages, currentPage + 1))
-            }
-            disabled={currentPage === totalPages}
-          >
-            <ChevronRight size={16} />
-          </Button>
-        </HStack>
-      )}
+      <Pagination.Root
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        opacity={filteredPlayers.length > 0 ? 1 : 0}
+        count={filteredPlayers.length}
+        page={pagination.page}
+        pageSize={pagination.pageSize}
+        onPageChange={({ page }) =>
+          setPagination((prev) => ({ ...prev, page }))
+        }
+      >
+        <Pagination.PageText format="long" fontSize={14} />
+        <ButtonGroup variant="ghost" size={{ base: 'xs', sm: 'sm' }}>
+          <Pagination.PrevTrigger asChild>
+            <IconButton aria-label="Previous page">
+              <ChevronLeft />
+            </IconButton>
+          </Pagination.PrevTrigger>
+          <Pagination.NextTrigger asChild>
+            <IconButton aria-label="Next page">
+              <ChevronRight />
+            </IconButton>
+          </Pagination.NextTrigger>
+        </ButtonGroup>
+      </Pagination.Root>
     </VStack>
   );
 }

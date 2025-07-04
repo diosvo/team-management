@@ -7,8 +7,8 @@ import { VStack } from '@chakra-ui/react';
 import PageTitle from '@/components/page-title';
 
 import TestingFilters from './_components/filters';
-import PlayerPerformanceMatrix from './_components/performance-matrix';
 import TestingStats from './_components/stats';
+import PlayerPerformanceMatrix from './_components/table';
 
 // Function to calculate next test date (every 2 months on the 25th)
 const calculateNextTestDate = () => {
@@ -224,89 +224,6 @@ export default function PeriodicTestingPage() {
   const [currentDateRange, setCurrentDateRange] = useState('');
   const [currentSearchTerm, setCurrentSearchTerm] = useState('');
 
-  // Calculate dynamic stats based on filtered results
-  const calculateStats = (
-    results: typeof mockTestResults,
-    dateRange: string
-  ) => {
-    // Use all results since we removed test_date
-    let filteredByDate = results;
-
-    // Get unique players from the filtered results
-    const uniquePlayers = Array.from(
-      new Set(filteredByDate.map((r) => r.player_name))
-    );
-
-    // Calculate completed tests (unique player-test combinations)
-    const uniqueTests = new Set(
-      filteredByDate.map((r) => `${r.player_name}-${r.test_type}`)
-    );
-
-    // Calculate top 3 performers (highest average scores, normalized for test types)
-    const playerAverages = uniquePlayers.map((player) => {
-      const playerResults = filteredByDate.filter(
-        (r) => r.player_name === player
-      );
-
-      if (playerResults.length === 0)
-        return { player_name: player, average_score: 0 };
-
-      // Normalize scores for different test types
-      const normalizedScores = playerResults.map((result) => {
-        if (result.value_type === 'time') {
-          // For time-based tests, convert to a 0-100 scale where lower time = higher score
-          const testTypes = results.filter(
-            (r) => r.test_type === result.test_type
-          );
-          const minTime = Math.min(...testTypes.map((r) => r.score));
-          const maxTime = Math.max(...testTypes.map((r) => r.score));
-          return maxTime > minTime
-            ? ((maxTime - result.score) / (maxTime - minTime)) * 100
-            : 50;
-        } else if (result.unit === '%') {
-          // Percentages are already 0-100
-          return result.score;
-        } else {
-          // For other metrics, normalize to 0-100 scale
-          const testTypes = results.filter(
-            (r) => r.test_type === result.test_type
-          );
-          const minScore = Math.min(...testTypes.map((r) => r.score));
-          const maxScore = Math.max(...testTypes.map((r) => r.score));
-          return maxScore > minScore
-            ? ((result.score - minScore) / (maxScore - minScore)) * 100
-            : 50;
-        }
-      });
-
-      const averageScore =
-        normalizedScores.reduce((sum, score) => sum + score, 0) /
-        normalizedScores.length;
-      return { player_name: player, average_score: averageScore };
-    });
-
-    const topPerformers = playerAverages
-      .sort((a, b) => b.average_score - a.average_score)
-      .slice(0, 3);
-
-    // Calculate top 3 worst performers (lowest average scores)
-    const worstPerformers = playerAverages
-      .sort((a, b) => a.average_score - b.average_score)
-      .slice(0, 3);
-
-    return {
-      total_players: uniquePlayers.length,
-      completed_tests: uniqueTests.size,
-      next_test_in_days: mockStats.next_test_in_days,
-      top_performers: topPerformers,
-      worst_performers: worstPerformers,
-    };
-  };
-
-  const [dynamicStats, setDynamicStats] = useState(
-    calculateStats(mockTestResults, '')
-  );
-
   const handleFilterChange = (filters: {
     search: string;
     dateRange: string;
@@ -332,7 +249,6 @@ export default function PeriodicTestingPage() {
 
     // Update current date range and recalculate stats
     setCurrentDateRange(filters.dateRange);
-    setDynamicStats(calculateStats(searchFiltered, filters.dateRange));
 
     // Pass filtered results to the matrix (it will handle search itself with the searchTerm)
     setFilteredResults(filtered);
@@ -355,11 +271,6 @@ export default function PeriodicTestingPage() {
     // Add to mock data (in real app, this would be an API call)
     mockTestResults.push(testResult);
     setFilteredResults([...filteredResults, testResult]);
-
-    // Recalculate stats
-    setDynamicStats(
-      calculateStats([...filteredResults, testResult], currentDateRange)
-    );
   };
 
   const handleUpdateScore = (
@@ -387,9 +298,6 @@ export default function PeriodicTestingPage() {
       if (filteredIndex !== -1) {
         newFilteredResults[filteredIndex] = { ...mockTestResults[resultIndex] };
         setFilteredResults(newFilteredResults);
-
-        // Recalculate stats
-        setDynamicStats(calculateStats(newFilteredResults, currentDateRange));
       }
     }
   };
@@ -398,7 +306,7 @@ export default function PeriodicTestingPage() {
     <VStack align="stretch">
       <PageTitle>Periodic Testing</PageTitle>
 
-      <TestingStats stats={dynamicStats} />
+      <TestingStats stats={mockStats} />
 
       <TestingFilters
         onFilterChange={handleFilterChange}
