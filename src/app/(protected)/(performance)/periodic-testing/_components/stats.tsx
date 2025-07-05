@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 
 import { Activity, Check, Users } from 'lucide-react';
 
-import Stats from '@/components/stats';
+import Stats, { StatCard } from '@/components/stats';
 
 interface TestingStatsProps {
   stats: {
@@ -15,28 +15,26 @@ interface TestingStatsProps {
 }
 
 export default function TestingStats({ stats }: TestingStatsProps) {
-  const statCards = useMemo(() => {
+  const statCards: Array<StatCard> = useMemo(() => {
     return [
       {
         label: 'Players Joined',
         icon: Users,
-        colorScheme: 'gray',
+        color: 'gray',
         value: stats.total_players,
-        suffix: '',
       },
       {
         label: 'Completed Tests',
         icon: Check,
-        colorScheme: 'green',
+        color: 'green',
         value: stats.completed_tests,
-        suffix: '',
       },
       {
         label: 'Next Test In',
         icon: Activity,
-        colorScheme: 'blue',
+        color: 'blue',
         value: stats.next_test_in_days,
-        suffix: stats.next_test_in_days === 1 ? ' day' : ' days',
+        suffix: 'day',
       },
     ];
   }, [stats]);
