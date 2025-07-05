@@ -2,16 +2,10 @@
 
 import { useMemo, useState } from 'react';
 
-import {
-  ButtonGroup,
-  IconButton,
-  Pagination,
-  Table,
-  Text,
-  VStack,
-} from '@chakra-ui/react';
-import { ChevronLeft, ChevronRight, TrendingUp } from 'lucide-react';
+import { Table, Text, VStack } from '@chakra-ui/react';
+import { TrendingUp } from 'lucide-react';
 
+import Pagination from '@/components/pagination';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Status } from '@/components/ui/status';
 import { Tooltip } from '@/components/ui/tooltip';
@@ -160,8 +154,6 @@ export default function PerformanceMatrixTable({
     };
   }, [testResults]);
 
-  const totalCount = playerMatrix.length;
-
   // Filter players based on search term
   const filteredPlayers = useMemo(() => {
     return playerMatrix.filter((player) =>
@@ -199,7 +191,7 @@ export default function PerformanceMatrixTable({
         if (testData.improvement < 0) return 'red.600';
         return 'gray.600';
       }
-      return 'gray.700';
+      return 'gray.600';
     };
 
     const calculateTooltipContent = () => {
@@ -239,14 +231,14 @@ export default function PerformanceMatrixTable({
     };
 
     const cellContent = (
-      <VStack
-        gap={1}
+      <Text
+        textAlign="center"
+        color={getScoreColor()}
         onClick={() => handleCellClick(playerName, testType, testData.score)}
       >
-        <Text color={getScoreColor()} fontSize="sm" fontWeight="medium">
-          {formatScore(testData.score, testData.unit, testData.value_type)}
-        </Text>
-      </VStack>
+        {formatScore(testData.score, testData.unit, testData.value_type)}
+      </Text>
+      // </Text>
     );
 
     return {
@@ -287,7 +279,7 @@ export default function PerformanceMatrixTable({
   };
   return (
     <VStack align="stretch">
-      <Table.ScrollArea marginBottom={4}>
+      <Table.ScrollArea>
         <Table.Root
           borderWidth={1}
           size={{ base: 'sm', md: 'md' }}
@@ -339,14 +331,10 @@ export default function PerformanceMatrixTable({
                   {allTestTypes.map((type) => (
                     <Table.Cell
                       key={`${player.player_name}-${type}`}
-                      cursor="pointer"
                       _hover={{
+                        cursor: 'pointer',
                         backgroundColor: 'bg.muted',
-                        '& .improvement-text': {
-                          opacity: 1,
-                        },
                       }}
-                      borderRadius="md"
                     >
                       {
                         getScoreDisplay(
@@ -385,32 +373,14 @@ export default function PerformanceMatrixTable({
         </Table.Root>
       </Table.ScrollArea>
 
-      <Pagination.Root
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        opacity={filteredPlayers.length > 0 ? 1 : 0}
+      <Pagination
         count={filteredPlayers.length}
         page={pagination.page}
         pageSize={pagination.pageSize}
         onPageChange={({ page }) =>
           setPagination((prev) => ({ ...prev, page }))
         }
-      >
-        <Pagination.PageText format="long" fontSize={14} />
-        <ButtonGroup variant="ghost" size={{ base: 'xs', sm: 'sm' }}>
-          <Pagination.PrevTrigger asChild>
-            <IconButton aria-label="Previous page">
-              <ChevronLeft />
-            </IconButton>
-          </Pagination.PrevTrigger>
-          <Pagination.NextTrigger asChild>
-            <IconButton aria-label="Next page">
-              <ChevronRight />
-            </IconButton>
-          </Pagination.NextTrigger>
-        </ButtonGroup>
-      </Pagination.Root>
+      />
     </VStack>
   );
 }
