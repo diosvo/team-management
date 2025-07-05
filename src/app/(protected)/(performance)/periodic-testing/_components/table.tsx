@@ -2,13 +2,19 @@
 
 import { useMemo, useState } from 'react';
 
-import { Table, Text, VStack } from '@chakra-ui/react';
+import { Button, HStack, Input, Table, Text, VStack } from '@chakra-ui/react';
 import { TrendingUp } from 'lucide-react';
 
 import Pagination from '@/components/pagination';
 import { EmptyState } from '@/components/ui/empty-state';
+import {
+  PopoverArrow,
+  PopoverBody,
+  PopoverContent,
+  PopoverRoot,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { Status } from '@/components/ui/status';
-import { Tooltip } from '@/components/ui/tooltip';
 
 interface TestResult {
   test_id: string;
@@ -83,6 +89,15 @@ export default function PerformanceMatrixTable({
     page: 1,
     pageSize: 5,
   });
+
+  const [editingCell, setEditingCell] = useState<{
+    playerName: string;
+    testType: string;
+    currentScore: number;
+    isOpen: boolean;
+  } | null>(null);
+
+  const [newScoreValue, setNewScoreValue] = useState('');
 
   const { playerMatrix, allTestTypes, testTypeUnits } = useMemo(() => {
     const playerMap = new Map<string, PlayerTestMatrix>();
@@ -194,13 +209,24 @@ export default function PerformanceMatrixTable({
       return 'gray.600';
     };
 
-    const calculateTooltipContent = () => {
+    // Format score based on value type and unit
+    const formatScore = (score: number, unit: string, valueType: string) => {
+      if (valueType === 'time') {
+        // For time values, show with comma as decimal separator (no unit in cell)
+        return score.toFixed(2).replace('.', ',');
+      } else {
+        // For other counts, show whole number (no unit in cell)
+        return Math.round(score).toString();
+      }
+    };
+
+    const getImprovementDisplay = () => {
       if (
         !testData.previous_score ||
         !testData.improvement ||
         testData.improvement === 0
       ) {
-        return null; // No tooltip for no improvement or zero improvement
+        return null;
       }
 
       // Calculate the actual value difference
@@ -217,36 +243,96 @@ export default function PerformanceMatrixTable({
       return `${sign}${formattedDifference}`;
     };
 
-    const tooltipContent = calculateTooltipContent();
-
-    // Format score based on value type and unit
-    const formatScore = (score: number, unit: string, valueType: string) => {
-      if (valueType === 'time') {
-        // For time values, show with comma as decimal separator (no unit in cell)
-        return score.toFixed(2).replace('.', ',');
-      } else {
-        // For other counts, show whole number (no unit in cell)
-        return Math.round(score).toString();
-      }
-    };
+    const improvementDisplay = getImprovementDisplay();
 
     const cellContent = (
-      <Text
-        textAlign="center"
-        color={getScoreColor()}
-        onClick={() => handleCellClick(playerName, testType, testData.score)}
+      <PopoverRoot
+        open={
+          editingCell?.isOpen &&
+          editingCell.playerName === playerName &&
+          editingCell.testType === testType
+        }
+        onOpenChange={(details) => {
+          if (!details.open) {
+            handleClosePopover();
+          }
+        }}
       >
-        {formatScore(testData.score, testData.unit, testData.value_type)}
-      </Text>
-      // </Text>
+        <PopoverTrigger asChild>
+          <VStack
+            gap={0}
+            onClick={() =>
+              handleCellClick(playerName, testType, testData.score)
+            }
+            cursor="pointer"
+            width="100%"
+            minHeight="40px"
+            justifyContent="center"
+          >
+            <Text
+              textAlign="center"
+              color={getScoreColor()}
+              fontSize="sm"
+              fontWeight="medium"
+            >
+              {formatScore(testData.score, testData.unit, testData.value_type)}
+            </Text>
+            {improvementDisplay && (
+              <Text
+                textAlign="center"
+                fontSize="xs"
+                color="gray.600"
+                fontWeight="medium"
+              >
+                {improvementDisplay}
+              </Text>
+            )}
+          </VStack>
+        </PopoverTrigger>
+        <PopoverContent>
+          <PopoverArrow />
+          <PopoverBody>
+            <VStack gap={4}>
+              <Input
+                value={newScoreValue}
+                onChange={(e) => setNewScoreValue(e.target.value)}
+                placeholder="Enter new score"
+                type="number"
+                step="0.01"
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleScoreUpdate();
+                  } else if (e.key === 'Escape') {
+                    handleClosePopover();
+                  }
+                }}
+              />
+              <HStack justify="flex-end" width="100%">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleClosePopover}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  colorScheme="blue"
+                  size="sm"
+                  onClick={handleScoreUpdate}
+                  disabled={!newScoreValue || isNaN(Number(newScoreValue))}
+                >
+                  Update
+                </Button>
+              </HStack>
+            </VStack>
+          </PopoverBody>
+        </PopoverContent>
+      </PopoverRoot>
     );
 
     return {
-      element: tooltipContent ? (
-        <Tooltip content={tooltipContent}>{cellContent}</Tooltip>
-      ) : (
-        cellContent
-      ),
+      element: cellContent,
       sortValue: testData.score,
     };
   };
@@ -259,23 +345,37 @@ export default function PerformanceMatrixTable({
     // TODO: Add role checking here
     // if (userRole !== 'admin' && userRole !== 'coach') return;
 
-    const newScore = prompt(
-      `Edit ${testType} score for ${playerName}:`,
-      currentScore.toString()
-    );
+    setEditingCell({
+      playerName,
+      testType,
+      currentScore,
+      isOpen: true,
+    });
+    setNewScoreValue(currentScore.toString());
+  };
 
-    if (newScore && !isNaN(Number(newScore))) {
-      const scoreValue = Number(newScore);
-
-      if (onUpdateScore) {
-        onUpdateScore(playerName, testType, scoreValue);
-      } else {
-        console.log(
-          `Updating ${playerName}'s ${testType} from ${currentScore} to ${scoreValue}`
-        );
-        alert('Score update functionality not connected to data source');
-      }
+  const handleScoreUpdate = () => {
+    if (!editingCell || !newScoreValue || isNaN(Number(newScoreValue))) {
+      return;
     }
+
+    const scoreValue = Number(newScoreValue);
+
+    if (onUpdateScore) {
+      onUpdateScore(editingCell.playerName, editingCell.testType, scoreValue);
+    } else {
+      console.log(
+        `Updating ${editingCell.playerName}'s ${editingCell.testType} from ${editingCell.currentScore} to ${scoreValue}`
+      );
+      alert('Score update functionality not connected to data source');
+    }
+
+    handleClosePopover();
+  };
+
+  const handleClosePopover = () => {
+    setEditingCell(null);
+    setNewScoreValue('');
   };
   return (
     <VStack align="stretch">

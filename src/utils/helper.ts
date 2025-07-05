@@ -1,8 +1,9 @@
 import { ColorPalette } from '@chakra-ui/react';
+
 import { AssetCategory, AssetCondition, UserRole, UserState } from './enum';
 
 /**
- * @description Common function to handle null strategy and color mapping
+ * @description Common function to get color mapping based on value
  */
 function getColor<T>(
   value: Nullable<T>,
