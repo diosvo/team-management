@@ -6,7 +6,6 @@ import {
   HStack,
   Portal,
   Select,
-  Status,
 } from '@chakra-ui/react';
 import { Filter, Plus } from 'lucide-react';
 
@@ -22,6 +21,7 @@ import {
 } from '@/utils/constant';
 import { colorCondition } from '@/utils/helper';
 
+import { Status } from '@/components/ui/status';
 import { Tooltip } from '@/components/ui/tooltip';
 import { UpsertAssetSchema } from '@/features/asset/schemas/asset';
 import { UpsertAsset } from './upsert-asset';
@@ -111,9 +111,7 @@ export default function Filters({ filters, setFilters }: SelectionFilterProps) {
           <Select.Control>
             <Select.Trigger>
               <HStack>
-                <Status.Root colorPalette={colorCondition(filters.condition)}>
-                  <Status.Indicator />
-                </Status.Root>
+                <Status colorPalette={colorCondition(filters.condition)} />
                 <Select.ValueText placeholder="Condition" />
               </HStack>
             </Select.Trigger>
@@ -127,11 +125,7 @@ export default function Filters({ filters, setFilters }: SelectionFilterProps) {
                 {conditions.items.map((condition) => (
                   <Select.Item item={condition} key={condition.value}>
                     <HStack>
-                      <Status.Root
-                        colorPalette={colorCondition(condition.value)}
-                      >
-                        <Status.Indicator />
-                      </Status.Root>
+                      <Status colorPalette={colorCondition(condition.value)} />
                       {condition.label}
                       <Select.ItemIndicator />
                     </HStack>

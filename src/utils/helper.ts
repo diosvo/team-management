@@ -1,3 +1,4 @@
+import { ColorPalette } from '@chakra-ui/react';
 import { AssetCategory, AssetCondition, UserRole, UserState } from './enum';
 
 /**
@@ -5,13 +6,13 @@ import { AssetCategory, AssetCondition, UserRole, UserState } from './enum';
  */
 function getColor<T>(
   value: Nullable<T>,
-  colorMap: Record<string, string>
-): string {
+  colorMap: Record<string, ColorPalette>
+): ColorPalette {
   if (value === null) return 'gray';
   return colorMap[value as string];
 }
 
-export function colorRole(role: Nullable<string>): string {
+export function colorRole(role: Nullable<string>): ColorPalette {
   return getColor(role, {
     [UserRole.SUPER_ADMIN]: 'orange',
     [UserRole.COACH]: 'purple',
@@ -19,7 +20,7 @@ export function colorRole(role: Nullable<string>): string {
   });
 }
 
-export function colorState(state: Nullable<string>): string {
+export function colorState(state: Nullable<string>): ColorPalette {
   return getColor(state, {
     [UserState.ACTIVE]: 'green',
     [UserState.TEMPORARILY_ABSENT]: 'orange',
@@ -27,7 +28,7 @@ export function colorState(state: Nullable<string>): string {
   });
 }
 
-export function colorCondition(condition: Nullable<string>): string {
+export function colorCondition(condition: Nullable<string>): ColorPalette {
   return getColor(condition, {
     [AssetCondition.GOOD]: 'green',
     [AssetCondition.FAIR]: 'orange',
@@ -35,7 +36,7 @@ export function colorCondition(condition: Nullable<string>): string {
   });
 }
 
-export function colorCategory(category: Nullable<string>): string {
+export function colorCategory(category: Nullable<string>): ColorPalette {
   return getColor(category, {
     [AssetCategory.EQUIPMENT]: 'purple',
     [AssetCategory.TRANING]: 'blue',

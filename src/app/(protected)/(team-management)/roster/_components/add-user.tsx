@@ -12,7 +12,6 @@ import {
   Select,
   Span,
   Stack,
-  Status,
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Plus, UserRoundPlus } from 'lucide-react';
@@ -32,6 +31,7 @@ import {
 import { UserRole, UserState } from '@/utils/enum';
 import { colorState } from '@/utils/helper';
 
+import { Status } from '@/components/ui/status';
 import { addUser } from '@/features/user/actions/user';
 import { AddUserSchema, AddUserValues } from '@/features/user/schemas/user';
 
@@ -177,12 +177,11 @@ export default function AddUser() {
                             <Select.Content>
                               {StateSelection.map((state) => (
                                 <Select.Item item={state} key={state.value}>
-                                  <Status.Root
+                                  <Status
                                     colorPalette={colorState(state.value)}
                                   >
-                                    <Status.Indicator />
                                     {state.label}
-                                  </Status.Root>
+                                  </Status>
                                   <Select.ItemIndicator />
                                 </Select.Item>
                               ))}
