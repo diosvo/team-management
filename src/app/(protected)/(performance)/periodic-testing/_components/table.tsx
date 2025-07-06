@@ -2,7 +2,15 @@
 
 import { useMemo, useState } from 'react';
 
-import { Button, HStack, Input, Table, Text, VStack } from '@chakra-ui/react';
+import {
+  Button,
+  HStack,
+  Input,
+  Switch,
+  Table,
+  Text,
+  VStack,
+} from '@chakra-ui/react';
 import { TrendingUp } from 'lucide-react';
 
 import Pagination from '@/components/pagination';
@@ -89,6 +97,7 @@ export default function PerformanceMatrixTable({
     page: 1,
     pageSize: 5,
   });
+  const [checked, setChecked] = useState(false);
 
   const [editingCell, setEditingCell] = useState<{
     playerName: string;
@@ -187,17 +196,15 @@ export default function PerformanceMatrixTable({
   const getScoreDisplay = (
     testData: PlayerTestMatrix['tests'][string] | undefined,
     playerName: string,
-    testType: string
+    testType: string,
+    showDetails: boolean
   ) => {
     if (!testData) {
-      return {
-        element: (
-          <Text color="gray.400" fontSize="sm">
-            -
-          </Text>
-        ),
-        sortValue: -1,
-      };
+      return (
+        <Text color="gray.400" fontSize="sm">
+          -
+        </Text>
+      );
     }
 
     const getScoreColor = () => {
@@ -220,7 +227,7 @@ export default function PerformanceMatrixTable({
       }
     };
 
-    const getImprovementDisplay = () => {
+    const improvementDisplay = useMemo(() => {
       if (
         !testData.previous_score ||
         !testData.improvement ||
@@ -241,9 +248,7 @@ export default function PerformanceMatrixTable({
       // Determine the sign based on whether it's an improvement or not
       const sign = testData.improvement > 0 ? '+' : '-';
       return `${sign}${formattedDifference}`;
-    };
-
-    const improvementDisplay = getImprovementDisplay();
+    }, [testData]);
 
     const cellContent = (
       <PopoverRoot
@@ -265,25 +270,12 @@ export default function PerformanceMatrixTable({
               handleCellClick(playerName, testType, testData.score)
             }
             cursor="pointer"
-            width="100%"
-            minHeight="40px"
-            justifyContent="center"
           >
-            <Text
-              textAlign="center"
-              color={getScoreColor()}
-              fontSize="sm"
-              fontWeight="medium"
-            >
+            <Text color={getScoreColor()}>
               {formatScore(testData.score, testData.unit, testData.value_type)}
             </Text>
-            {improvementDisplay && (
-              <Text
-                textAlign="center"
-                fontSize="xs"
-                color="gray.600"
-                fontWeight="medium"
-              >
+            {showDetails && improvementDisplay && (
+              <Text fontSize="xs" color="GrayText">
                 {improvementDisplay}
               </Text>
             )}
@@ -308,7 +300,7 @@ export default function PerformanceMatrixTable({
                   }
                 }}
               />
-              <HStack justify="flex-end" width="100%">
+              <HStack justifyContent="flex-end" width="100%">
                 <Button
                   variant="outline"
                   size="sm"
@@ -317,7 +309,6 @@ export default function PerformanceMatrixTable({
                   Cancel
                 </Button>
                 <Button
-                  colorScheme="blue"
                   size="sm"
                   onClick={handleScoreUpdate}
                   disabled={!newScoreValue || isNaN(Number(newScoreValue))}
@@ -331,10 +322,7 @@ export default function PerformanceMatrixTable({
       </PopoverRoot>
     );
 
-    return {
-      element: cellContent,
-      sortValue: testData.score,
-    };
+    return cellContent;
   };
 
   const handleCellClick = (
@@ -377,6 +365,7 @@ export default function PerformanceMatrixTable({
     setEditingCell(null);
     setNewScoreValue('');
   };
+
   return (
     <VStack align="stretch">
       <Table.ScrollArea>
@@ -436,13 +425,12 @@ export default function PerformanceMatrixTable({
                         backgroundColor: 'bg.muted',
                       }}
                     >
-                      {
-                        getScoreDisplay(
-                          player.tests[type],
-                          player.player_name,
-                          type
-                        ).element
-                      }
+                      {getScoreDisplay(
+                        player.tests[type],
+                        player.player_name,
+                        type,
+                        checked
+                      )}
                     </Table.Cell>
                   ))}
                 </Table.Row>
@@ -460,8 +448,22 @@ export default function PerformanceMatrixTable({
             )}
           </Table.Body>
           <Table.Footer>
-            <Table.Row color="GrayText">
-              <Table.Cell textAlign="center" colSpan={allTestTypes.length + 1}>
+            <Table.Row>
+              <Table.Cell>
+                <Switch.Root
+                  checked={checked}
+                  onCheckedChange={(e) => setChecked(e.checked)}
+                >
+                  <Switch.HiddenInput />
+                  <Switch.Control />
+                  <Switch.Label>Details</Switch.Label>
+                </Switch.Root>
+              </Table.Cell>
+              <Table.Cell
+                textAlign="center"
+                color="GrayText"
+                colSpan={allTestTypes.length}
+              >
                 <Status colorPalette="green">Increment</Status>
                 <Status colorPalette="red" marginInline={4}>
                   Decrement
