@@ -8,6 +8,7 @@ import { Filter } from 'lucide-react';
 import SearchInput from '@/components/ui/search-input';
 
 import AddTestResult from './add-test-result';
+import ManageTestTypes from './manage-test-types';
 
 interface TestingFiltersProps {
   onFilterChange: (filters: { search: string; dateRange: string }) => void;
@@ -17,11 +18,22 @@ interface TestingFiltersProps {
     score: number;
     notes?: string;
   }) => void;
+  onAddMultipleResults: (
+    results: {
+      player_name: string;
+      test_type: string;
+      score: number;
+      notes?: string;
+    }[]
+  ) => void;
+  usedTestTypes?: string[]; // Test types currently being used in results
 }
 
 export default function TestingFilters({
   onFilterChange,
   onAddResult,
+  onAddMultipleResults,
+  usedTestTypes = [],
 }: TestingFiltersProps) {
   const [filters, setFilters] = useState({
     search: '',
@@ -82,9 +94,10 @@ export default function TestingFilters({
           </Select.Positioner>
         </Portal>
       </Select.Root>
+      <ManageTestTypes usedTestTypes={usedTestTypes} />
       <AddTestResult
         onAddResult={onAddResult}
-        existingTestDates={existingTestDates}
+        onAddMultipleResults={onAddMultipleResults}
       />
     </HStack>
   );

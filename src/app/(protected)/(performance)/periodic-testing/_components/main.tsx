@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
+import { useTestResultsStorage } from '../_hooks/use-test-results';
 import TestingFilters from './filters';
 import TestingStats from './stats';
 import PlayerPerformanceMatrix from './table';
@@ -219,6 +220,39 @@ export default function PeriodicTestingPageClient() {
   const [filteredResults, setFilteredResults] = useState(mockTestResults);
   const [currentDateRange, setCurrentDateRange] = useState('');
   const [currentSearchTerm, setCurrentSearchTerm] = useState('');
+  const { getPendingResults, clearPendingResults } = useTestResultsStorage();
+
+  const handleAddMultipleResults = (
+    newResults: {
+      player_name: string;
+      test_type: string;
+      score: number;
+      notes?: string;
+    }[]
+  ) => {
+    const testResults = newResults.map((result, index) => ({
+      test_id: (mockTestResults.length + index + 1).toString(),
+      ...result,
+      previous_score: undefined,
+      unit: 'pts', // Default unit, should be determined by test type
+      value_type: 'count', // Default type, should be determined by test type
+    }));
+
+    // Add to mock data (in real app, this would be an API call)
+    mockTestResults.push(...testResults);
+    setFilteredResults([...filteredResults, ...testResults]);
+  };
+
+  // Load test results from storage on component mount
+  useEffect(() => {
+    const pendingResults = getPendingResults();
+    if (pendingResults && pendingResults.length > 0) {
+      // Process pending results
+      handleAddMultipleResults(pendingResults);
+      // Clear from storage after processing
+      clearPendingResults();
+    }
+  }, []);
 
   const handleFilterChange = (filters: {
     search: string;
@@ -269,6 +303,8 @@ export default function PeriodicTestingPageClient() {
     setFilteredResults([...filteredResults, testResult]);
   };
 
+  // ...existing code...
+
   const handleUpdateScore = (
     playerName: string,
     testType: string,
@@ -298,6 +334,11 @@ export default function PeriodicTestingPageClient() {
     }
   };
 
+  // Calculate used test types from current test results
+  const usedTestTypes = [
+    ...new Set(mockTestResults.map((result) => result.test_type)),
+  ];
+
   return (
     <>
       <TestingStats stats={mockStats} />
@@ -305,6 +346,8 @@ export default function PeriodicTestingPageClient() {
       <TestingFilters
         onFilterChange={handleFilterChange}
         onAddResult={handleAddTestResult}
+        onAddMultipleResults={handleAddMultipleResults}
+        usedTestTypes={usedTestTypes}
       />
 
       <PlayerPerformanceMatrix
