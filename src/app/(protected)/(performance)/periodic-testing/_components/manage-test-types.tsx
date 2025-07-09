@@ -4,218 +4,172 @@ import { useState } from 'react';
 
 import {
   Button,
+  Dialog,
   HStack,
   Input,
+  List,
   Portal,
-  Table,
+  Separator,
   Text,
   VStack,
 } from '@chakra-ui/react';
-import { Plus, Settings, Trash2, X } from 'lucide-react';
+import { FileX, Plus, Settings, Trash2 } from 'lucide-react';
 
+import { CloseButton } from '@/components/ui/close-button';
+import { EmptyState } from '@/components/ui/empty-state';
 import { Field } from '@/components/ui/field';
-import {
-  PopoverArrow,
-  PopoverBody,
-  PopoverContent,
-  PopoverHeader,
-  PopoverRoot,
-  PopoverTrigger,
-} from '@/components/ui/popover';
 import { toaster } from '@/components/ui/toaster';
 
 // Available test types that can be managed
 const INITIAL_TEST_TYPES = [
+  'Beep test',
+  'Plank',
+  'Push-ups',
+  'Run & Slide',
+  'Sit-ups',
   'Sprint Speed',
-  'Endurance',
-  'Vertical Jump',
-  'Agility',
-  'Strength',
-  'Flexibility',
-  'Coordination',
-  'Balance',
-  'Power',
-  'Reaction Time',
 ];
-
-interface ManageTestTypesProps {
-  usedTestTypes?: string[]; // Test types currently being used in results
-}
 
 export default function ManageTestTypes({
   usedTestTypes = [],
-}: ManageTestTypesProps) {
-  const [isOpen, setIsOpen] = useState(false);
+}: {
+  usedTestTypes: Array<string>;
+}) {
   const [testTypes, setTestTypes] = useState<string[]>(INITIAL_TEST_TYPES);
-  const [newTestType, setNewTestType] = useState('');
+  const [name, setName] = useState<string>('');
 
   const handleAddTestType = () => {
-    if (!newTestType.trim()) {
+    if (testTypes.includes(name.trim())) {
       toaster.create({
         type: 'error',
-        description: 'Please enter a test type name',
+        description: 'This test already exists',
       });
       return;
     }
 
-    if (testTypes.includes(newTestType.trim())) {
-      toaster.create({
-        type: 'error',
-        description: 'This test type already exists',
-      });
-      return;
-    }
-
-    setTestTypes((prev) => [...prev, newTestType.trim()]);
-    setNewTestType('');
+    setTestTypes((prev) => [...prev, name.trim()]);
+    setName('');
 
     toaster.create({
       type: 'success',
-      description: 'Test type added successfully',
+      description: `"${name.trim()}" test type successfully`,
     });
   };
 
   const handleRemoveTestType = (testType: string) => {
-    if (usedTestTypes.includes(testType)) {
-      toaster.create({
-        type: 'error',
-        description:
-          'Cannot remove test type that is currently being used in test results',
-      });
-      return;
-    }
-
     setTestTypes((prev) => prev.filter((type) => type !== testType));
 
     toaster.create({
       type: 'success',
-      description: 'Test type removed successfully',
+      description: `"${testType}" test removed successfully`,
     });
   };
 
   const isTestTypeUsed = (testType: string) => usedTestTypes.includes(testType);
 
+  const usedTypes = testTypes.filter((type) => isTestTypeUsed(type));
+  const unusedTypes = testTypes.filter((type) => !isTestTypeUsed(type));
+
   return (
-    <PopoverRoot
-      open={isOpen}
-      onOpenChange={(details) => setIsOpen(details.open)}
-    >
-      <PopoverTrigger asChild>
+    <Dialog.Root size="xs">
+      <Dialog.Trigger asChild>
         <Button variant="outline" size={{ base: 'sm', md: 'md' }}>
           <Settings />
-          Manage Test Types
+          Configure Test Types
         </Button>
-      </PopoverTrigger>
+      </Dialog.Trigger>
 
       <Portal>
-        <PopoverContent maxWidth="600px">
-          <PopoverArrow />
-          <PopoverHeader>
-            <HStack justify="space-between" align="center">
-              <Text fontWeight="semibold" fontSize="lg">
-                Manage Test Types
-              </Text>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => setIsOpen(false)}
-              >
-                <X />
-              </Button>
-            </HStack>
-          </PopoverHeader>
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+          <Dialog.Content>
+            <Dialog.CloseTrigger asChild>
+              <CloseButton />
+            </Dialog.CloseTrigger>
 
-          <PopoverBody>
-            <VStack align="stretch" gap={6}>
-              {/* Add New Test Type */}
-              <VStack align="stretch" gap={4}>
-                <Text fontWeight="semibold">Add New Test Type</Text>
+            <Dialog.Header>
+              <Dialog.Title>Configure Test Types</Dialog.Title>
+            </Dialog.Header>
+
+            <Dialog.Body>
+              <VStack align="stretch" gap={6}>
                 <HStack>
-                  <Field flex={1}>
+                  <Field>
                     <Input
-                      placeholder="Enter test type name"
-                      value={newTestType}
-                      onChange={(e) => setNewTestType(e.target.value)}
+                      placeholder="Enter a name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
                       onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
+                        if (name.trim().length > 0 && e.key === 'Enter') {
                           handleAddTestType();
                         }
                       }}
                     />
                   </Field>
-                  <Button
-                    onClick={handleAddTestType}
-                    disabled={!newTestType.trim()}
-                  >
+                  <Button onClick={handleAddTestType} disabled={!name.trim()}>
                     <Plus />
                     Add
                   </Button>
                 </HStack>
-              </VStack>
 
-              {/* Existing Test Types */}
-              <VStack align="stretch" gap={4}>
-                <Text fontWeight="semibold">Existing Test Types</Text>
-                <Table.Root size="sm">
-                  <Table.Header>
-                    <Table.Row>
-                      <Table.ColumnHeader>Test Type</Table.ColumnHeader>
-                      <Table.ColumnHeader>Status</Table.ColumnHeader>
-                      <Table.ColumnHeader width="80px">
-                        Action
-                      </Table.ColumnHeader>
-                    </Table.Row>
-                  </Table.Header>
-                  <Table.Body>
-                    {testTypes.map((testType) => (
-                      <Table.Row key={testType}>
-                        <Table.Cell>{testType}</Table.Cell>
-                        <Table.Cell>
-                          {isTestTypeUsed(testType) ? (
-                            <Text fontSize="sm" color="orange.600">
-                              In Use
-                            </Text>
-                          ) : (
-                            <Text fontSize="sm" color="gray.500">
-                              Available
-                            </Text>
-                          )}
-                        </Table.Cell>
-                        <Table.Cell>
-                          <Button
-                            size="xs"
-                            variant="ghost"
-                            colorPalette="red"
-                            onClick={() => handleRemoveTestType(testType)}
-                            disabled={isTestTypeUsed(testType)}
-                            title={
-                              isTestTypeUsed(testType)
-                                ? 'Cannot remove test type that is currently in use'
-                                : 'Remove test type'
-                            }
-                          >
-                            <Trash2 />
-                          </Button>
-                        </Table.Cell>
-                      </Table.Row>
-                    ))}
-                  </Table.Body>
-                </Table.Root>
-              </VStack>
+                {unusedTypes.length > 0 && (
+                  <>
+                    <HStack>
+                      <Separator flex={1} />
+                      <Text flexShrink={0} color="tomato">
+                        Unused
+                      </Text>
+                      <Separator flex={1} />
+                    </HStack>
+                    <List.Root variant="plain" align="center" gap={1}>
+                      {unusedTypes.map((name) => (
+                        <List.Item key={name}>
+                          <List.Indicator asChild>
+                            <Button
+                              size="2xs"
+                              variant="ghost"
+                              colorPalette="red"
+                              onClick={() => handleRemoveTestType(name)}
+                            >
+                              <Trash2 />
+                            </Button>
+                          </List.Indicator>
+                          {name}
+                        </List.Item>
+                      ))}
+                    </List.Root>
+                  </>
+                )}
 
-              {usedTestTypes.length > 0 && (
-                <Text fontSize="sm" color="gray.600">
-                  <Text as="span" fontWeight="medium">
-                    Note:
-                  </Text>{' '}
-                  Test types marked as "In Use" cannot be removed as they are
-                  currently being used in test results.
-                </Text>
-              )}
-            </VStack>
-          </PopoverBody>
-        </PopoverContent>
+                {usedTypes.length > 0 && (
+                  <>
+                    <HStack>
+                      <Separator flex={1} />
+                      <Text flexShrink={0}>Being used</Text>
+                      <Separator flex={1} />
+                    </HStack>
+                    <List.Root>
+                      {usedTypes.map((name) => (
+                        <List.Item key={name} marginLeft={4}>
+                          {name}
+                        </List.Item>
+                      ))}
+                    </List.Root>
+                  </>
+                )}
+
+                {unusedTypes.length === 0 && usedTypes.length === 0 && (
+                  <EmptyState
+                    icon={<FileX />}
+                    title="No test types available"
+                    description="Add a new test type to get started"
+                  />
+                )}
+              </VStack>
+            </Dialog.Body>
+          </Dialog.Content>
+        </Dialog.Positioner>
       </Portal>
-    </PopoverRoot>
+    </Dialog.Root>
   );
 }

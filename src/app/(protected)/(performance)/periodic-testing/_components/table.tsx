@@ -59,22 +59,6 @@ interface TestTypesOverviewProps {
   ) => void;
 }
 
-// Helper function to categorize test types
-const getTestCategory = (
-  testType: string
-): 'physical' | 'skills' | 'tactical' | 'endurance' => {
-  const physicalTests = [
-    'Beep test',
-    'Plank',
-    'Run n slide',
-    'Sit-ups',
-    'Push-ups',
-  ];
-
-  if (physicalTests.includes(testType)) return 'physical';
-  return 'physical'; // default - all current tests are physical
-};
-
 // Helper function to determine if higher values are better for a specific test
 const isHigherBetter = (testType: string): boolean => {
   const higherIsBetterTests = [
@@ -82,7 +66,7 @@ const isHigherBetter = (testType: string): boolean => {
     'Plank',
     'Sit-ups',
     'Push-ups',
-    'Run n slide',
+    'Run & Slide',
   ];
 
   return higherIsBetterTests.includes(testType);
@@ -154,26 +138,11 @@ export default function PerformanceMatrixTable({
       };
     });
 
-    // Sort test types by category and then alphabetically
-    const sortedTestTypes = Array.from(testTypesSet).sort((a, b) => {
-      const categoryA = getTestCategory(a);
-      const categoryB = getTestCategory(b);
-
-      if (categoryA !== categoryB) {
-        const categoryOrder = ['physical', 'skills', 'tactical', 'endurance'];
-        return (
-          categoryOrder.indexOf(categoryA) - categoryOrder.indexOf(categoryB)
-        );
-      }
-
-      return a.localeCompare(b);
-    });
-
     return {
       playerMatrix: Array.from(playerMap.values()).sort((a, b) =>
         a.player_name.localeCompare(b.player_name)
       ),
-      allTestTypes: sortedTestTypes,
+      allTestTypes: Array.from(testTypesSet).sort(),
       testTypeUnits: Object.fromEntries(unitMap),
     };
   }, [testResults]);
