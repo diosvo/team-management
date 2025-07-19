@@ -43,3 +43,12 @@ export enum GameType {
   '3x3' = '3x3',
   '5x5' = '5x5',
 }
+
+export enum TestTypeUnit {
+  METERS = 'meters',
+  PERCENT = 'percent',
+  POINTS = 'points',
+  REPS = 'reps',
+  SECONDS = 'seconds',
+  TIMES = 'times',
+}
