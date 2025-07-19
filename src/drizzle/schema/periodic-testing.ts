@@ -16,15 +16,15 @@ import { UserTable } from './user';
 export const testTypeUnitEnum = pgEnum('test_type_unit', TestTypeUnit);
 
 export const TestTypeTable = pgTable('test_type', {
-  type_id: uuid().primaryKey().notNull(),
+  type_id: uuid().defaultRandom().primaryKey(),
   name: varchar({ length: 64 }).notNull(),
-  unit: testTypeUnitEnum().notNull(),
+  unit: testTypeUnitEnum().default(TestTypeUnit.TIMES).notNull(),
   created_at,
   updated_at,
 });
 
 export const TestResultTable = pgTable('test_result', {
-  result_id: uuid().primaryKey().notNull(),
+  result_id: uuid().defaultRandom().primaryKey(),
   user_id: uuid()
     .notNull()
     .references(() => UserTable.user_id, { onDelete: 'cascade' }),

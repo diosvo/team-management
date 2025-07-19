@@ -23,31 +23,11 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Status } from '@/components/ui/status';
-
-interface TestResult {
-  test_id: string;
-  player_name: string;
-  test_type: string;
-  score: number;
-  previous_score?: number;
-  notes?: string;
-  unit: string;
-  value_type: string;
-}
-
-interface PlayerTestMatrix {
-  player_name: string;
-  tests: Record<
-    string,
-    {
-      score: number;
-      previous_score?: number;
-      improvement?: number;
-      unit: string;
-      value_type: string;
-    }
-  >;
-}
+import {
+  PlayerTestMatrix,
+  TransformedTestResult as TestResult,
+} from '@/features/periodic-testing/interfaces';
+import { formatTestScore, isHigherBetter } from '@/utils/test-helpers';
 
 interface TestTypesOverviewProps {
   testResults: Array<TestResult>;
@@ -58,19 +38,6 @@ interface TestTypesOverviewProps {
     newScore: number
   ) => void;
 }
-
-// Helper function to determine if higher values are better for a specific test
-const isHigherBetter = (testType: string): boolean => {
-  const higherIsBetterTests = [
-    'Beep test',
-    'Plank',
-    'Sit-ups',
-    'Push-ups',
-    'Run & Slide',
-  ];
-
-  return higherIsBetterTests.includes(testType);
-};
 
 export default function PerformanceMatrixTable({
   testResults,
@@ -186,17 +153,13 @@ export default function PerformanceMatrixTable({
     };
 
     // Format score based on value type and unit
-    const formatScore = (score: number, unit: string, valueType: string) => {
-      if (valueType === 'time') {
-        // For time values, show with comma as decimal separator (no unit in cell)
-        return score.toFixed(2).replace('.', ',');
-      } else {
-        // For other counts, show whole number (no unit in cell)
-        return Math.round(score).toString();
-      }
-    };
+    const scoreDisplay = formatTestScore(
+      testData.score,
+      testData.unit,
+      testData.value_type
+    );
 
-    const improvementDisplay = useMemo(() => {
+    const getImprovementDisplay = () => {
       if (
         !testData.previous_score ||
         !testData.improvement ||
@@ -217,7 +180,9 @@ export default function PerformanceMatrixTable({
       // Determine the sign based on whether it's an improvement or not
       const sign = testData.improvement > 0 ? '+' : '-';
       return `${sign}${formattedDifference}`;
-    }, [testData]);
+    };
+
+    const improvementDisplay = getImprovementDisplay();
 
     const cellContent = (
       <PopoverRoot
@@ -240,9 +205,7 @@ export default function PerformanceMatrixTable({
             }
             cursor="pointer"
           >
-            <Text color={getScoreColor()}>
-              {formatScore(testData.score, testData.unit, testData.value_type)}
-            </Text>
+            <Text color={getScoreColor()}>{scoreDisplay}</Text>
             {showDetails && improvementDisplay && (
               <Text fontSize="xs" color="GrayText">
                 {improvementDisplay}
@@ -343,36 +306,37 @@ export default function PerformanceMatrixTable({
           size={{ base: 'sm', md: 'md' }}
           showColumnBorder
         >
-          <Table.Header>
-            <Table.Row>
-              <Table.ColumnHeader
-                position="sticky"
-                left={0}
-                zIndex={1}
-                backgroundColor="white"
-              >
-                Player
-              </Table.ColumnHeader>
-
-              {allTestTypes.map((type) => (
-                <Table.ColumnHeader key={type} textAlign="center">
-                  <Text>
-                    {type}
-                    <Text
-                      as="span"
-                      fontSize="xs"
-                      color="GrayText"
-                      marginLeft={1}
-                      fontWeight="normal"
-                    >
-                      ({testTypeUnits[type]})
-                    </Text>
-                  </Text>
+          {filteredPlayers.length > 0 && (
+            <Table.Header>
+              <Table.Row>
+                <Table.ColumnHeader
+                  position="sticky"
+                  left={0}
+                  zIndex={1}
+                  backgroundColor="white"
+                >
+                  Player
                 </Table.ColumnHeader>
-              ))}
-            </Table.Row>
-          </Table.Header>
 
+                {allTestTypes.map((type) => (
+                  <Table.ColumnHeader key={type} textAlign="center">
+                    <Text>
+                      {type}
+                      <Text
+                        as="span"
+                        fontSize="xs"
+                        color="GrayText"
+                        marginLeft={1}
+                        fontWeight="normal"
+                      >
+                        ({testTypeUnits[type]})
+                      </Text>
+                    </Text>
+                  </Table.ColumnHeader>
+                ))}
+              </Table.Row>
+            </Table.Header>
+          )}
           <Table.Body>
             {currentData.length > 0 ? (
               currentData.map((player) => (
@@ -406,7 +370,7 @@ export default function PerformanceMatrixTable({
               ))
             ) : (
               <Table.Row>
-                <Table.Cell colSpan={allTestTypes.length + 1}>
+                <Table.Cell colSpan={allTestTypes.length + 2}>
                   <EmptyState
                     icon={<TrendingUp />}
                     title="No test data available"

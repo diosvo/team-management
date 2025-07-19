@@ -93,10 +93,10 @@ export default function AddTestResultsPage() {
 
   // Handle test type selection
   const handleTestTypeSelection = (values: string[]) => {
-    if (values.length > 7) {
+    if (values.length > 5) {
       toaster.create({
         type: 'warning',
-        description: 'Maximum 7 test types can be selected at once',
+        description: 'Maximum 5 test types can be selected at once',
       });
       return;
     }
