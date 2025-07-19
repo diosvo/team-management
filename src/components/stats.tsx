@@ -1,3 +1,7 @@
+'use client';
+
+import { useMemo } from 'react';
+
 import {
   ColorPalette,
   Heading,
@@ -9,21 +13,32 @@ import {
 import { LucideIcon } from 'lucide-react';
 
 export interface StatCard {
-  label: string;
-  icon: LucideIcon;
-  color: ColorPalette;
-  value: string | number;
-  suffix?: string;
+  data: Record<string, number>;
+  config: Array<{
+    key: string;
+    label: string;
+    icon: LucideIcon;
+    color: ColorPalette;
+    suffix?: string;
+  }>;
 }
 
-export default function Stats({ stats }: { stats: Array<StatCard> }) {
+export default function Stats({ data, config }: StatCard) {
+  const cards = useMemo(() => {
+    return config.map(({ key, icon, ...rest }) => ({
+      ...rest,
+      IconComponent: icon,
+      value: data[key] || 0,
+    }));
+  }, [data, config]);
+
   return (
     <SimpleGrid
       columns={{ base: 1, sm: 2, md: 2, lg: 4 }}
       gap={6}
       marginBlock={6}
     >
-      {stats.map(({ icon: IconComponent, value, label, color, suffix }) => (
+      {cards.map(({ IconComponent, value, label, color, suffix }) => (
         <VStack
           key={label}
           padding={4}

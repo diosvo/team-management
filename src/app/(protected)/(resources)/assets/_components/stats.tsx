@@ -1,10 +1,23 @@
 'use client';
 
-import { useMemo } from 'react';
-
 import { AlertTriangle, Package } from 'lucide-react';
 
-import Stats, { StatCard } from '@/components/stats';
+import Stats from '@/components/stats';
+
+const ASSET_STATS = [
+  {
+    key: 'total_items',
+    label: 'Total Items',
+    icon: Package,
+    color: 'gray' as const,
+  },
+  {
+    key: 'need_replacement',
+    label: 'Need Replacement',
+    icon: AlertTriangle,
+    color: 'red' as const,
+  },
+];
 
 export default function AssetStats({
   stats,
@@ -14,22 +27,5 @@ export default function AssetStats({
     need_replacement: number;
   };
 }) {
-  const statCards: Array<StatCard> = useMemo(() => {
-    return [
-      {
-        label: 'Total Items',
-        icon: Package,
-        color: 'gray',
-        value: stats.total_items,
-      },
-      {
-        label: 'Need Replacement',
-        icon: AlertTriangle,
-        color: 'red',
-        value: stats.need_replacement,
-      },
-    ];
-  }, [stats]);
-
-  return <Stats stats={statCards} />;
+  return <Stats data={stats} config={ASSET_STATS} />;
 }

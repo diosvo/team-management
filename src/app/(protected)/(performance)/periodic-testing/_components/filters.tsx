@@ -46,8 +46,6 @@ export default function TestingFilters({
     onFilterChange(newFilters);
   };
 
-  const existingTestDates = ['2025-01-25', '2025-03-25'];
-
   const dateRanges = createListCollection({
     items: [
       { value: '2025-01-25', label: 'January 25, 2025' },
