@@ -5,7 +5,7 @@ import { VStack } from '@chakra-ui/react';
 import PageTitle from '@/components/page-title';
 
 import { getTestResult } from '@/features/periodic-testing/actions/test-result';
-import TestingStats from './_components/stats';
+import PeriodicTestingPageClient from './_components/main';
 
 export const metadata: Metadata = {
   title: 'Periodic Testing',
@@ -13,24 +13,13 @@ export const metadata: Metadata = {
 };
 
 export default async function PeriodicTestingPage() {
-  // Fetch only essential data on the server
-  // Mappings will be fetched client-side with caching
-  const results = await getTestResult('12/12/2025');
-
-  console.log(results);
+  const result = await getTestResult('12/12/2025');
 
   return (
     <VStack align="stretch">
       <PageTitle>Periodic Testing</PageTitle>
-      <TestingStats
-        stats={{
-          completed_tests: 1,
-          next_test_in_days: 30,
-          total_players: 10,
-        }}
-      />
 
-      {/* <PeriodicTestingPageClient initialData={initialData} /> */}
+      <PeriodicTestingPageClient result={result} />
     </VStack>
   );
 }

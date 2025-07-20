@@ -24,7 +24,7 @@ import { Tooltip } from '@/components/ui/tooltip';
 
 import { User } from '@/drizzle/schema/user';
 
-import { GameTypeConfig } from '@/utils/constant';
+import { GameTypeSelection } from '@/utils/constant';
 import { GameType } from '@/utils/enum';
 
 import ExportButton from './export-button';
@@ -103,7 +103,7 @@ export default function RegistrationPageClient({
                     marginTop={2}
                   >
                     <HStack gap={4} align="start">
-                      {Object.values(GameTypeConfig).map((item) => (
+                      {Object.values(GameTypeSelection).map((item) => (
                         <RadioGroup.Item key={item.value} value={item.value}>
                           <RadioGroup.ItemHiddenInput />
                           <RadioGroup.ItemIndicator />

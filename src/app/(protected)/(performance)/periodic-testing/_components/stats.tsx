@@ -25,7 +25,6 @@ export default function TestingStats({
   stats: {
     total_players: number;
     completed_tests: number;
-    next_test_in_days: number;
   };
 }) {
   return <Stats data={stats} config={TESTING_STATS} />;

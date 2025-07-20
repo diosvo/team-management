@@ -54,7 +54,7 @@ export default function TestingFilters({
   });
 
   return (
-    <HStack alignItems="normal" marginBottom={6}>
+    <HStack marginBottom={6}>
       <SearchInput
         value={filters.search}
         onValueChange={(value: string) => handleFilterChange('search', value)}

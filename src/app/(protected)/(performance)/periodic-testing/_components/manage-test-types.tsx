@@ -1,82 +1,69 @@
 'use client';
 
-import { useState } from 'react';
-
 import {
   Button,
   Dialog,
-  HStack,
+  Fieldset,
   Input,
-  List,
   Portal,
+  RadioGroup,
   Separator,
-  Text,
+  SimpleGrid,
   VStack,
 } from '@chakra-ui/react';
-import { FileX, Plus, Settings, Trash2 } from 'lucide-react';
+import { Plus, RotateCcw, Settings } from 'lucide-react';
 
 import { CloseButton } from '@/components/ui/close-button';
-import { EmptyState } from '@/components/ui/empty-state';
 import { Field } from '@/components/ui/field';
-import { toaster } from '@/components/ui/toaster';
-import {
-  TEST_TYPE_UNITS,
-  TestType,
-  TestTypeUnit,
-} from '@/features/periodic-testing/types';
-import { INITIAL_TEST_TYPES } from '@/utils/constant';
+import { UpsertTestTypeSchema } from '@/features/periodic-testing/schemas/periodic-testing';
+import { getDefaults } from '@/lib/zod';
+import { TestTypeUnitSelection } from '@/utils/constant';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Controller, useForm } from 'react-hook-form';
 
 export default function ManageTestTypes({
   usedTestTypes = [],
 }: {
   usedTestTypes: Array<string>;
 }) {
-  const [testTypes, setTestTypes] = useState<TestType[]>(
-    INITIAL_TEST_TYPES.map((item) => ({
-      name: item.name,
-      unit: item.unit as TestTypeUnit,
-    }))
-  );
-  const [name, setName] = useState<string>('');
-  const [selectedUnit, setSelectedUnit] = useState<TestTypeUnit>('times');
+  const { reset, control, register, handleSubmit } = useForm({
+    resolver: zodResolver(UpsertTestTypeSchema),
+    values: getDefaults(UpsertTestTypeSchema),
+  });
 
-  const handleAddTestType = () => {
-    if (testTypes.some((type) => type.name === name.trim())) {
-      toaster.create({
-        type: 'error',
-        description: 'This test already exists',
-      });
-      return;
-    }
+  // const handleAddTestType = () => {
+  //   if (testTypes.some((type) => type.name === name.trim())) {
+  //     toaster.create({
+  //       type: 'error',
+  //       description: 'This test already exists',
+  //     });
+  //     return;
+  //   }
 
-    const newTestType: TestType = {
-      name: name.trim(),
-      unit: selectedUnit,
-    };
+  //   const newTestType = {
+  //     name: name.trim(),
+  //     unit: selectedUnit,
+  //   };
 
-    setTestTypes((prev) => [...prev, newTestType]);
-    setName('');
+  //   setTestTypes((prev) => [...prev, newTestType]);
+  //   setName('');
 
-    toaster.create({
-      type: 'success',
-      description: `"${name.trim()}" test type added successfully`,
-    });
-  };
+  //   toaster.create({
+  //     type: 'success',
+  //     description: `"${name.trim()}" test type added successfully`,
+  //   });
+  // };
 
-  const handleRemoveTestType = (testType: TestType) => {
-    setTestTypes((prev) => prev.filter((type) => type.name !== testType.name));
+  // const handleRemoveTestType = (testType) => {
+  //   setTestTypes((prev) => prev.filter((type) => type.name !== testType.name));
 
-    toaster.create({
-      type: 'success',
-      description: `"${testType.name}" test removed successfully`,
-    });
-  };
+  //   toaster.create({
+  //     type: 'success',
+  //     description: `"${testType.name}" test removed successfully`,
+  //   });
+  // };
 
-  const isTestTypeUsed = (testType: TestType) =>
-    usedTestTypes.includes(testType.name);
-
-  const usedTypes = testTypes.filter((type) => isTestTypeUsed(type));
-  const unusedTypes = testTypes.filter((type) => !isTestTypeUsed(type));
+  const onSubmit = () => {};
 
   return (
     <Dialog.Root size="xs">
@@ -89,7 +76,7 @@ export default function ManageTestTypes({
 
       <Portal>
         <Dialog.Backdrop />
-        <Dialog.Positioner>
+        <Dialog.Positioner as="form" onSubmit={handleSubmit(onSubmit)}>
           <Dialog.Content>
             <Dialog.CloseTrigger asChild>
               <CloseButton />
@@ -100,113 +87,65 @@ export default function ManageTestTypes({
             </Dialog.Header>
 
             <Dialog.Body>
-              <VStack align="stretch" gap={6}>
-                <VStack align="stretch" gap={4}>
-                  <Field>
-                    <Input
-                      placeholder="Enter test type name"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (name.trim().length > 0 && e.key === 'Enter') {
-                          handleAddTestType();
-                        }
-                      }}
-                    />
-                  </Field>
-
-                  <Field>
-                    <select
-                      value={selectedUnit}
-                      onChange={(e) =>
-                        setSelectedUnit(e.target.value as TestTypeUnit)
-                      }
-                      style={{
-                        width: '100%',
-                        padding: '8px 12px',
-                        borderRadius: '6px',
-                        border: '1px solid #e2e8f0',
-                        fontSize: '14px',
-                        backgroundColor: 'white',
-                      }}
-                    >
-                      {TEST_TYPE_UNITS.map((unit) => (
-                        <option key={unit.value} value={unit.value}>
-                          {unit.label}
-                        </option>
-                      ))}
-                    </select>
-                  </Field>
-
-                  <Button
-                    onClick={handleAddTestType}
-                    disabled={!name.trim()}
-                    width="full"
-                  >
-                    <Plus />
-                    Add Test Type
-                  </Button>
-                </VStack>
-
-                {unusedTypes.length > 0 && (
-                  <>
-                    <HStack>
-                      <Separator flex={1} />
-                      <Text flexShrink={0} color="tomato">
-                        Unused
-                      </Text>
-                      <Separator flex={1} />
-                    </HStack>
-                    <List.Root variant="plain" align="center" gap={1}>
-                      {unusedTypes.map((testType) => (
-                        <List.Item key={testType.name}>
-                          <List.Indicator asChild>
-                            <Button
-                              size="2xs"
-                              variant="ghost"
-                              colorPalette="red"
-                              onClick={() => handleRemoveTestType(testType)}
-                            >
-                              <Trash2 />
-                            </Button>
-                          </List.Indicator>
-                          <Text>
-                            {testType.name} ({testType.unit})
-                          </Text>
-                        </List.Item>
-                      ))}
-                    </List.Root>
-                  </>
-                )}
-
-                {usedTypes.length > 0 && (
-                  <>
-                    <HStack>
-                      <Separator flex={1} />
-                      <Text flexShrink={0}>Being used</Text>
-                      <Separator flex={1} />
-                    </HStack>
-                    <List.Root>
-                      {usedTypes.map((testType) => (
-                        <List.Item key={testType.name} marginLeft={4}>
-                          <Text>
-                            {testType.name} ({testType.unit})
-                          </Text>
-                        </List.Item>
-                      ))}
-                    </List.Root>
-                  </>
-                )}
-
-                {unusedTypes.length === 0 && usedTypes.length === 0 && (
-                  <EmptyState
-                    icon={<FileX />}
-                    title="No test types available"
-                    description="Add a new test type to get started"
+              <VStack gap={4}>
+                <Field required label="Name">
+                  <Input
+                    maxLength={128}
+                    placeholder="Enter test name..."
+                    {...register('name')}
                   />
-                )}
+                </Field>
+                <Fieldset.Root>
+                  <Fieldset.Legend color="GrayText">Unit</Fieldset.Legend>
+                  <Controller
+                    name="unit"
+                    control={control}
+                    render={({ field }) => (
+                      <RadioGroup.Root
+                        size="sm"
+                        colorPalette="green"
+                        marginTop={2}
+                        name={field.name}
+                        value={field.value}
+                        onValueChange={({ value }) => {
+                          field.onChange(value);
+                        }}
+                      >
+                        <SimpleGrid columns={{ base: 1, md: 3 }} gap={2}>
+                          {TestTypeUnitSelection.map((item) => (
+                            <RadioGroup.Item
+                              key={item.value}
+                              value={item.value}
+                            >
+                              <RadioGroup.ItemHiddenInput
+                                onBlur={field.onBlur}
+                              />
+                              <RadioGroup.ItemIndicator />
+                              <RadioGroup.ItemText>
+                                {item.label}
+                              </RadioGroup.ItemText>
+                            </RadioGroup.Item>
+                          ))}
+                        </SimpleGrid>
+                      </RadioGroup.Root>
+                    )}
+                  />
+                </Fieldset.Root>
               </VStack>
             </Dialog.Body>
+
+            {usedTestTypes.length > 0 && <Separator />}
+
+            <Dialog.Footer justifyContent="space-between">
+              <Button variant="outline" colorPalette="red" onClick={reset}>
+                <RotateCcw />
+                Reset
+              </Button>
+              <Button onClick={() => {}}>
+                <Plus />
+                Add
+              </Button>
+            </Dialog.Footer>
           </Dialog.Content>
         </Dialog.Positioner>
       </Portal>

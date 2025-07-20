@@ -6,6 +6,7 @@ import {
   CoachPosition,
   GameType,
   PlayerPosition,
+  TestTypeUnit,
   UserRole,
   UserState,
 } from './enum';
@@ -183,7 +184,7 @@ export const AssetConditionSelection: Selection<string> = [
   },
 ];
 
-export const GameTypeConfig: Record<GameType, Option<string>> = {
+export const GameTypeSelection: Record<GameType, Option<string>> = {
   [GameType['3x3']]: { label: GameType['3x3'], value: GameType['3x3'], max: 5 },
   [GameType['5x5']]: {
     label: GameType['5x5'],
@@ -191,3 +192,38 @@ export const GameTypeConfig: Record<GameType, Option<string>> = {
     max: 15,
   },
 };
+
+export const SELECTABLE_TEST_TYPES = [
+  TestTypeUnit.METERS,
+  TestTypeUnit.PERCENT,
+  TestTypeUnit.POINTS,
+  TestTypeUnit.REPS,
+  TestTypeUnit.SECONDS,
+  TestTypeUnit.TIMES,
+] as const;
+export const TestTypeUnitSelection: Selection<string> = [
+  {
+    label: 'Meters',
+    value: TestTypeUnit.METERS,
+  },
+  {
+    label: 'Percent',
+    value: TestTypeUnit.PERCENT,
+  },
+  {
+    label: 'Points',
+    value: TestTypeUnit.POINTS,
+  },
+  {
+    label: 'Reps',
+    value: TestTypeUnit.REPS,
+  },
+  {
+    label: 'Seconds',
+    value: TestTypeUnit.SECONDS,
+  },
+  {
+    label: 'Times',
+    value: TestTypeUnit.TIMES,
+  },
+];
