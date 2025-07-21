@@ -26,14 +26,14 @@ interface TestingFiltersProps {
       notes?: string;
     }[]
   ) => void;
-  usedTestTypes?: string[]; // Test types currently being used in results
+  testTypes?: string[]; // Test types currently being used in results
 }
 
 export default function TestingFilters({
   onFilterChange,
   onAddResult,
   onAddMultipleResults,
-  usedTestTypes = [],
+  testTypes = [],
 }: TestingFiltersProps) {
   const [filters, setFilters] = useState({
     search: '',
@@ -92,7 +92,7 @@ export default function TestingFilters({
           </Select.Positioner>
         </Portal>
       </Select.Root>
-      <ManageTestTypes usedTestTypes={usedTestTypes} />
+      <ManageTestTypes list={testTypes} />
       <AddTestResult
         onAddResult={onAddResult}
         onAddMultipleResults={onAddMultipleResults}

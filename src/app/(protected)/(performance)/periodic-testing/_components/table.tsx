@@ -27,7 +27,6 @@ export default function PerformanceMatrixTable({
     page: 1,
     pageSize: 5,
   });
-  const [checked, setChecked] = useState(false);
 
   const [editingCell, setEditingCell] = useState<{
     playerName: string;
@@ -109,7 +108,7 @@ export default function PerformanceMatrixTable({
                       color="GrayText"
                       marginLeft={1}
                     >
-                      {unit ? `(${unit})` : ''}
+                      ({unit})
                     </Text>
                   </Table.ColumnHeader>
                 ))}

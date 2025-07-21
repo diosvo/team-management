@@ -1,15 +1,21 @@
 'use client';
 
-import { Check, Users } from 'lucide-react';
+import { Calendar, Check, Users } from 'lucide-react';
 
 import Stats from '@/components/stats';
 
 const TESTING_STATS = [
   {
+    key: 'test_date',
+    label: 'Test Date',
+    icon: Calendar,
+    color: 'gray' as const,
+  },
+  {
     key: 'total_players',
     label: 'Players Joined',
     icon: Users,
-    color: 'gray' as const,
+    color: 'blue' as const,
   },
   {
     key: 'completed_tests',
@@ -23,6 +29,7 @@ export default function TestingStats({
   stats,
 }: {
   stats: {
+    test_date: string;
     total_players: number;
     completed_tests: number;
   };

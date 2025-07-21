@@ -5,9 +5,9 @@ import { InsertTestType, TestTypeTable } from '@/drizzle/schema';
 
 export async function getTestTypes() {
   try {
-    return await db.query.TestTypeTable.findMany();
+    return await db.query.TestTypeTable.findMany({});
   } catch {
-    return null;
+    return [];
   }
 }
 

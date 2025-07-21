@@ -22,7 +22,6 @@ import { ArrowLeft, Save } from 'lucide-react';
 import PageTitle from '@/components/page-title';
 import { Field } from '@/components/ui/field';
 import { toaster } from '@/components/ui/toaster';
-import { useTestResultsStorage } from '../_hooks/use-test-results';
 
 // Available test types that can be selected
 const AVAILABLE_TEST_TYPES = [
@@ -66,7 +65,6 @@ interface TestResult {
 
 export default function AddTestResultsPage() {
   const router = useRouter();
-  const { addResults } = useTestResultsStorage();
   const [selectedTestTypes, setSelectedTestTypes] = useState<string[]>([]);
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
   const [testDate, setTestDate] = useState(
@@ -187,7 +185,7 @@ export default function AddTestResultsPage() {
     }
 
     // Submit results to storage and redirect
-    addResults(results);
+    // addResults(results);
 
     toaster.create({
       type: 'success',

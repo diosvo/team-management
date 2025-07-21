@@ -4,11 +4,13 @@ import {
   Button,
   Dialog,
   Fieldset,
+  HStack,
   Input,
   Portal,
   RadioGroup,
   Separator,
   SimpleGrid,
+  Text,
   VStack,
 } from '@chakra-ui/react';
 import { Plus, RotateCcw, Settings } from 'lucide-react';
@@ -22,9 +24,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
 
 export default function ManageTestTypes({
-  usedTestTypes = [],
+  list = [],
 }: {
-  usedTestTypes: Array<string>;
+  list: Array<string>;
 }) {
   const { reset, control, register, handleSubmit } = useForm({
     resolver: zodResolver(UpsertTestTypeSchema),
@@ -86,12 +88,17 @@ export default function ManageTestTypes({
               <Dialog.Title>Manage Test Types</Dialog.Title>
             </Dialog.Header>
 
-            <Dialog.Body>
+            <Dialog.Body paddingTop={0}>
+              <HStack marginBottom={2}>
+                <Separator flex="1" />
+                <Text flexShrink="0">Add</Text>
+                <Separator flex="1" />
+              </HStack>
               <VStack gap={4}>
                 <Field required label="Name">
                   <Input
                     maxLength={128}
-                    placeholder="Enter test name..."
+                    placeholder="Enter  test name..."
                     {...register('name')}
                   />
                 </Field>
@@ -132,9 +139,43 @@ export default function ManageTestTypes({
                   />
                 </Fieldset.Root>
               </VStack>
-            </Dialog.Body>
 
-            {usedTestTypes.length > 0 && <Separator />}
+              {list.length > 0 && (
+                <>
+                  <HStack marginBottom={2} marginTop={4}>
+                    <Separator flex="1" />
+                    <Text flexShrink="0">All</Text>
+                    <Separator flex="1" />
+                  </HStack>
+                  <SimpleGrid columns={{ base: 1, md: 2 }} gap={2}>
+                    {list.map(({ name, unit }) => (
+                      <Text
+                        key={name}
+                        _hover={{
+                          color: 'tomato',
+                          cursor: 'pointer',
+                          textDecoration: 'line-through',
+                        }}
+                        transition="all 0.2s ease-in-out"
+                      >
+                        {/* <IconButton size="xs" variant="ghost" colorPalette="red">
+                        <Trash2 />
+                      </IconButton> */}
+                        {name}
+                        <Text
+                          as="span"
+                          fontSize="xs"
+                          color="GrayText"
+                          marginLeft={1}
+                        >
+                          ({unit})
+                        </Text>
+                      </Text>
+                    ))}
+                  </SimpleGrid>
+                </>
+              )}
+            </Dialog.Body>
 
             <Dialog.Footer justifyContent="space-between">
               <Button variant="outline" colorPalette="red" onClick={reset}>

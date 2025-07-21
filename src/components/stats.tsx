@@ -13,7 +13,7 @@ import {
 import { LucideIcon } from 'lucide-react';
 
 export interface StatCard {
-  data: Record<string, number>;
+  data: Record<string, string | number>;
   config: Array<{
     key: string;
     label: string;
