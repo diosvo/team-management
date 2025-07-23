@@ -44,7 +44,10 @@ interface SelectionFilterProps {
   setFilters: React.Dispatch<React.SetStateAction<Filters>>;
 }
 
-export default function Filters({ filters, setFilters }: SelectionFilterProps) {
+export default function AssetFilters({
+  filters,
+  setFilters,
+}: SelectionFilterProps) {
   const { isAdmin } = usePermissions();
 
   return (

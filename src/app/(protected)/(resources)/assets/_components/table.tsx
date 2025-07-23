@@ -19,7 +19,7 @@ import { colorCategory, colorCondition } from '@/utils/helper';
 import { removeAsset } from '@/features/asset/actions/asset';
 import { UpsertAsset } from './upsert-asset';
 
-export default function CategoryTable({ items }: { items: Array<Asset> }) {
+export default function AssetTable({ items }: { items: Array<Asset> }) {
   const { isAdmin, isGuest } = usePermissions();
 
   const [selection, setSelection] = useState<Array<string>>([]);

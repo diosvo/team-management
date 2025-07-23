@@ -1,12 +1,11 @@
 import { Metadata } from 'next';
 
-import { VStack } from '@chakra-ui/react';
-
 import PageTitle from '@/components/page-title';
 
 import { getTestResult } from '@/features/periodic-testing/actions/test-result';
 import { getTestTypes } from '@/features/periodic-testing/actions/test-type';
 import PeriodicTestingPageClient from './_components/main';
+import TestingStats from './_components/stats';
 
 export const metadata: Metadata = {
   title: 'Periodic Testing',
@@ -18,10 +17,18 @@ export default async function PeriodicTestingPage() {
   const allTestTypes = await getTestTypes();
 
   return (
-    <VStack align="stretch">
+    <>
       <PageTitle>Periodic Testing</PageTitle>
 
-      <PeriodicTestingPageClient result={result} testTypes={allTestTypes} />
-    </VStack>
+      <>
+        <TestingStats
+          stats={{
+            completed_tests: result.headers.length,
+            total_players: result.players.length,
+          }}
+        />
+        <PeriodicTestingPageClient result={result} testTypes={allTestTypes} />
+      </>
+    </>
   );
 }

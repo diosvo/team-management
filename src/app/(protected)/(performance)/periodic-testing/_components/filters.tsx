@@ -2,42 +2,31 @@
 
 import { useState } from 'react';
 
-import { createListCollection, HStack, Portal, Select } from '@chakra-ui/react';
-import { Filter } from 'lucide-react';
+import {
+  Button,
+  createListCollection,
+  HStack,
+  Menu,
+  Portal,
+  Select,
+} from '@chakra-ui/react';
+import { Filter, Plus, Settings2 } from 'lucide-react';
 
 import SearchInput from '@/components/ui/search-input';
-
-import AddTestResult from './add-test-result';
-import ManageTestTypes from './manage-test-types';
+import { ManageTestTypes } from './manage-test-types';
 
 interface TestingFiltersProps {
-  onFilterChange: (filters: { search: string; dateRange: string }) => void;
-  onAddResult: (result: {
-    player_name: string;
-    test_type: string;
-    score: number;
-    notes?: string;
-  }) => void;
-  onAddMultipleResults: (
-    results: {
-      player_name: string;
-      test_type: string;
-      score: number;
-      notes?: string;
-    }[]
-  ) => void;
-  testTypes?: string[]; // Test types currently being used in results
+  onFilterChange: (filters: { search: string; date: string }) => void;
+  testTypes: Array<{ name: string; unit: string }>;
 }
 
 export default function TestingFilters({
   onFilterChange,
-  onAddResult,
-  onAddMultipleResults,
   testTypes = [],
 }: TestingFiltersProps) {
   const [filters, setFilters] = useState({
     search: '',
-    dateRange: '2025-03-25', // Default to latest date
+    date: '2025-03-25', // Default to latest date
   });
 
   const handleFilterChange = (key: string, value: string) => {
@@ -64,15 +53,15 @@ export default function TestingFilters({
         collection={dateRanges}
         width="xs"
         size={{ base: 'sm', md: 'md' }}
-        value={[filters.dateRange]}
-        onValueChange={({ value }) => handleFilterChange('dateRange', value[0])}
+        value={[filters.date]}
+        onValueChange={({ value }) => handleFilterChange('date', value[0])}
       >
         <Select.HiddenSelect />
         <Select.Control>
           <Select.Trigger>
             <HStack>
               <Filter size={14} />
-              <Select.ValueText placeholder="Category" />
+              <Select.ValueText placeholder="Date" />
             </HStack>
           </Select.Trigger>
           <Select.IndicatorGroup>
@@ -92,11 +81,34 @@ export default function TestingFilters({
           </Select.Positioner>
         </Portal>
       </Select.Root>
-      <ManageTestTypes list={testTypes} />
-      <AddTestResult
-        onAddResult={onAddResult}
-        onAddMultipleResults={onAddMultipleResults}
-      />
+      {/* ADMIN ONLY */}
+      <Menu.Root>
+        <Menu.Trigger asChild>
+          <Button>Actions</Button>
+        </Menu.Trigger>
+        <Portal>
+          <Menu.Positioner>
+            <Menu.Content>
+              <Menu.Item value="add-test-result">
+                <Plus size={14} />
+                Add Result
+              </Menu.Item>
+              <Menu.Item
+                value="manage-test-types"
+                onClick={() =>
+                  ManageTestTypes.open('manage-test-type', {
+                    list: testTypes,
+                  })
+                }
+              >
+                <Settings2 size={14} />
+                Manage Test Types
+              </Menu.Item>
+            </Menu.Content>
+          </Menu.Positioner>
+        </Portal>
+      </Menu.Root>
+      <ManageTestTypes.Viewport />
     </HStack>
   );
 }
