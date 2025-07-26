@@ -4,6 +4,7 @@ import {
   decimal,
   pgEnum,
   pgTable,
+  uniqueIndex,
   uuid,
   varchar,
 } from 'drizzle-orm/pg-core';
@@ -11,17 +12,28 @@ import {
 import { TestTypeUnit } from '@/utils/enum';
 
 import { created_at, updated_at } from '../helpers';
+import { TeamTable } from './team';
 import { UserTable } from './user';
 
 export const testTypeUnitEnum = pgEnum('test_type_unit', TestTypeUnit);
 
-export const TestTypeTable = pgTable('test_type', {
-  type_id: uuid().defaultRandom().primaryKey(),
-  name: varchar({ length: 64 }).unique().notNull(),
-  unit: testTypeUnitEnum().default(TestTypeUnit.TIMES).notNull(),
-  created_at,
-  updated_at,
-});
+export const TestTypeTable = pgTable(
+  'test_type',
+  {
+    type_id: uuid().defaultRandom().primaryKey(),
+    team_id: uuid()
+      .notNull()
+      .references(() => TeamTable.team_id, { onDelete: 'cascade' }),
+    name: varchar({ length: 64 }).unique().notNull(),
+    unit: testTypeUnitEnum().default(TestTypeUnit.TIMES).notNull(),
+    created_at,
+    updated_at,
+  },
+  (table) => [
+    // Ensure name is unique within a team
+    uniqueIndex('team_test_type_name').on(table.team_id, table.name),
+  ]
+);
 
 export const TestResultTable = pgTable('test_result', {
   result_id: uuid().defaultRandom().primaryKey(),
@@ -36,10 +48,6 @@ export const TestResultTable = pgTable('test_result', {
   created_at,
   updated_at,
 });
-
-export const TestTypeRelations = relations(TestTypeTable, ({ many }) => ({
-  results: many(TestResultTable),
-}));
 
 export const TestResultRelations = relations(TestResultTable, ({ one }) => ({
   user: one(UserTable, {

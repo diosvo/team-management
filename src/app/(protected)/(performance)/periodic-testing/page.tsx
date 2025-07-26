@@ -18,15 +18,13 @@ export default async function PeriodicTestingPage() {
   return (
     <>
       <PageTitle>Periodic Testing</PageTitle>
-      <>
-        <TestingStats
-          stats={{
-            completed_tests: result.headers.length,
-            total_players: result.players.length,
-          }}
-        />
-        <TestingResultList result={result} />
-      </>
+      <TestingStats
+        stats={{
+          completed_tests: result.headers.length,
+          total_players: result.players.length,
+        }}
+      />
+      <TestingResultList result={result} />
     </>
   );
 }

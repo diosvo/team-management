@@ -13,8 +13,8 @@ import {
 import { User } from '@/drizzle/schema/user';
 
 interface PlayerSelectionProps {
-  players: Array<User>;
   maxPlayers: number;
+  players: Array<User>;
   selection: Array<User>;
   onSelectionChange: (selected: Array<User>) => void;
 }

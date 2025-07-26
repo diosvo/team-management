@@ -19,6 +19,7 @@ import {
 import { Eye } from 'lucide-react';
 
 import PageTitle from '@/components/page-title';
+import PlayerSelection from '@/components/player-selection';
 import { Field } from '@/components/ui/field';
 import { Tooltip } from '@/components/ui/tooltip';
 
@@ -27,7 +28,6 @@ import { User } from '@/drizzle/schema/user';
 import { GameTypeSelection } from '@/utils/constant';
 import { GameType } from '@/utils/enum';
 
-import PlayerSelection from '@/components/player-selection';
 import ExportButton from './export-button';
 import PreviewForm from './preview-form';
 
