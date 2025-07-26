@@ -27,8 +27,8 @@ import { User } from '@/drizzle/schema/user';
 import { GameTypeSelection } from '@/utils/constant';
 import { GameType } from '@/utils/enum';
 
+import PlayerSelection from '@/components/player-selection';
 import ExportButton from './export-button';
-import PlayerSelection from './player-selection';
 import PreviewForm from './preview-form';
 
 export default function RegistrationPageClient({

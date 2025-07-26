@@ -146,10 +146,7 @@ export default function TestResultTableProps({
             ) : (
               <Table.Row>
                 <Table.Cell colSpan={result.headers.length + 1}>
-                  <EmptyState
-                    icon={<SwatchBook />}
-                    title="No test result in this date found"
-                  />
+                  <EmptyState icon={<SwatchBook />} title="No data found" />
                 </Table.Cell>
               </Table.Row>
             )}

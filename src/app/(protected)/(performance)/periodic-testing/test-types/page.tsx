@@ -1,10 +1,13 @@
-import PageTitle from '@/components/page-title';
-import { Tooltip } from '@/components/ui/tooltip';
-import { getTestTypes } from '@/features/periodic-testing/actions/test-type';
-import { Button, HStack } from '@chakra-ui/react';
-import { MoveLeft } from 'lucide-react';
 import { Metadata } from 'next';
 import Link from 'next/link';
+
+import { Button, HStack } from '@chakra-ui/react';
+import { MoveLeft } from 'lucide-react';
+
+import PageTitle from '@/components/page-title';
+import { Tooltip } from '@/components/ui/tooltip';
+
+import { getTestTypes } from '@/features/periodic-testing/actions/test-type';
 import TestTypesList from './_components/list';
 
 export const metadata: Metadata = {

@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { useState } from 'react';
 
 import {
   Container,
@@ -11,8 +11,6 @@ import {
   useBreakpointValue,
 } from '@chakra-ui/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-
-import Loading from '@/components/loading';
 
 import Header from './_components/header';
 import Sidebar from './_components/sidebar';
@@ -88,14 +86,12 @@ export default function ProtectedLayout({
       </GridItem>
 
       <GridItem gridArea="main" overflow="auto" height="100%">
-        <Suspense fallback={<Loading />}>
-          <Container
-            paddingBlock={4}
-            maxWidth={['vw', 'vw', 'vw', '4xl', '6xl', '8xl']}
-          >
-            {children}
-          </Container>
-        </Suspense>
+        <Container
+          paddingBlock={4}
+          maxWidth={['vw', 'vw', 'vw', '4xl', '6xl', '8xl']}
+        >
+          {children}
+        </Container>
       </GridItem>
     </Grid>
   );
