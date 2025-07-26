@@ -147,11 +147,7 @@ export default function AssetTable({ items }: { items: Array<Asset> }) {
             ) : (
               <Table.Row>
                 <Table.Cell colSpan={isAdmin ? 7 : 6}>
-                  <EmptyState
-                    icon={<Box />}
-                    title="No items found"
-                    description="Try adjusting your search"
-                  />
+                  <EmptyState icon={<Box />} title="No items found" />
                 </Table.Cell>
               </Table.Row>
             )}

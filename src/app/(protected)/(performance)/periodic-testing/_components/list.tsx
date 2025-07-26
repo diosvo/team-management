@@ -3,16 +3,10 @@
 import TestingFilters from './filters';
 import PlayerPerformanceMatrix from './table';
 
-export default function PeriodicTestingPageClient({
-  result,
-  testTypes,
-}: {
-  result: any;
-  testTypes: Array<{ name: string; unit: string }>;
-}) {
+export default function TestingResultList({ result }: { result: any }) {
   return (
     <>
-      <TestingFilters onFilterChange={() => {}} testTypes={testTypes} />
+      <TestingFilters onFilterChange={() => {}} />
       <PlayerPerformanceMatrix
         result={result}
         searchTerm={''}

@@ -196,11 +196,7 @@ export default function RosterTable({ users }: { users: Array<User> }) {
             ) : (
               <Table.Row>
                 <Table.Cell colSpan={columnCount}>
-                  <EmptyState
-                    icon={<SwatchBook />}
-                    title="No users found"
-                    description="Try adjusting your search"
-                  />
+                  <EmptyState icon={<SwatchBook />} title="No users found" />
                 </Table.Cell>
               </Table.Row>
             )}

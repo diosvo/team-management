@@ -1,8 +1,8 @@
 'use server';
 
-import { TestTypeUnit } from '@/utils/enum';
 import { Response, ResponseFactory } from '@/utils/response';
 
+import { revalidateTestTypesPath } from '../db/cache';
 import {
   deleteTestType,
   getTestTypes as getAction,
@@ -10,6 +10,7 @@ import {
   insertTestType,
   updateTestType,
 } from '../db/test-type';
+import { UpsertTestTypeSchemaValues } from '../schemas/periodic-testing';
 
 export async function getTestTypes() {
   return await getAction();
@@ -17,7 +18,7 @@ export async function getTestTypes() {
 
 export async function upsertTestType(
   type_id: string,
-  data: { name: string; unit: TestTypeUnit }
+  data: UpsertTestTypeSchemaValues
 ): Promise<Response> {
   try {
     const existingTestType = await getTestTypeById(type_id);
@@ -27,6 +28,8 @@ export async function upsertTestType(
     } else {
       await insertTestType(data);
     }
+
+    revalidateTestTypesPath();
 
     return ResponseFactory.success('Test type updated successfully');
   } catch (error) {
@@ -44,7 +47,7 @@ export async function removeTestType(type_id: string): Promise<Response> {
 
     await deleteTestType(type.type_id);
 
-    // revalidateRulePath();
+    revalidateTestTypesPath();
 
     return ResponseFactory.success('Test type removed successfully');
   } catch (error) {

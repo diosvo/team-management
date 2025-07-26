@@ -200,7 +200,7 @@ export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
               </Field>
             </Dialog.Body>
             <Dialog.Footer>
-              <Button type="submit" loading={isPending} loadingText="Adding...">
+              <Button type="submit" loading={isPending} loadingText="Saving...">
                 <Save /> {action}
               </Button>
             </Dialog.Footer>

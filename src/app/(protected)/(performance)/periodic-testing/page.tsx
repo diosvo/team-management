@@ -3,8 +3,8 @@ import { Metadata } from 'next';
 import PageTitle from '@/components/page-title';
 
 import { getTestResult } from '@/features/periodic-testing/actions/test-result';
-import { getTestTypes } from '@/features/periodic-testing/actions/test-type';
-import PeriodicTestingPageClient from './_components/main';
+
+import TestingResultList from './_components/list';
 import TestingStats from './_components/stats';
 
 export const metadata: Metadata = {
@@ -14,12 +14,10 @@ export const metadata: Metadata = {
 
 export default async function PeriodicTestingPage() {
   const result = await getTestResult('12/12/2025');
-  const allTestTypes = await getTestTypes();
 
   return (
     <>
       <PageTitle>Periodic Testing</PageTitle>
-
       <>
         <TestingStats
           stats={{
@@ -27,7 +25,7 @@ export default async function PeriodicTestingPage() {
             total_players: result.players.length,
           }}
         />
-        <PeriodicTestingPageClient result={result} testTypes={allTestTypes} />
+        <TestingResultList result={result} />
       </>
     </>
   );

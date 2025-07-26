@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 
 import {
@@ -13,17 +14,18 @@ import {
 import { Filter, Plus, Settings2 } from 'lucide-react';
 
 import SearchInput from '@/components/ui/search-input';
-import { ManageTestTypes } from './manage-test-types';
+import Visibility from '@/components/visibility';
+import { usePermissions } from '@/hooks/use-permissions';
 
 interface TestingFiltersProps {
   onFilterChange: (filters: { search: string; date: string }) => void;
-  testTypes: Array<{ type_id: string; name: string; unit: string }>;
 }
 
 export default function TestingFilters({
   onFilterChange,
-  testTypes = [],
 }: TestingFiltersProps) {
+  const { isAdmin } = usePermissions();
+
   const [filters, setFilters] = useState({
     search: '',
     date: '2025-03-25', // Default to latest date
@@ -81,34 +83,31 @@ export default function TestingFilters({
           </Select.Positioner>
         </Portal>
       </Select.Root>
-      {/* ADMIN ONLY */}
-      <Menu.Root>
-        <Menu.Trigger asChild>
-          <Button>Actions</Button>
-        </Menu.Trigger>
-        <Portal>
-          <Menu.Positioner>
-            <Menu.Content>
-              <Menu.Item value="add-test-result">
-                <Plus size={14} />
-                Add Result
-              </Menu.Item>
-              <Menu.Item
-                value="manage-test-types"
-                onClick={() =>
-                  ManageTestTypes.open('manage-test-type', {
-                    list: testTypes,
-                  })
-                }
-              >
-                <Settings2 size={14} />
-                Manage Test Types
-              </Menu.Item>
-            </Menu.Content>
-          </Menu.Positioner>
-        </Portal>
-      </Menu.Root>
-      <ManageTestTypes.Viewport />
+      <Visibility isVisible={isAdmin}>
+        <Menu.Root>
+          <Menu.Trigger asChild>
+            <Button>Actions</Button>
+          </Menu.Trigger>
+          <Portal>
+            <Menu.Positioner>
+              <Menu.Content>
+                <Link href="/periodic-testing/add-result">
+                  <Menu.Item value="add-test-result">
+                    <Plus size={14} />
+                    Add Result
+                  </Menu.Item>
+                </Link>
+                <Link href="/periodic-testing/test-types">
+                  <Menu.Item value="test-types">
+                    <Settings2 size={14} />
+                    Manage Test Types
+                  </Menu.Item>
+                </Link>
+              </Menu.Content>
+            </Menu.Positioner>
+          </Portal>
+        </Menu.Root>
+      </Visibility>
     </HStack>
   );
 }

@@ -17,7 +17,7 @@ export const testTypeUnitEnum = pgEnum('test_type_unit', TestTypeUnit);
 
 export const TestTypeTable = pgTable('test_type', {
   type_id: uuid().defaultRandom().primaryKey(),
-  name: varchar({ length: 64 }).notNull(),
+  name: varchar({ length: 64 }).unique().notNull(),
   unit: testTypeUnitEnum().default(TestTypeUnit.TIMES).notNull(),
   created_at,
   updated_at,

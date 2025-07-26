@@ -1,11 +1,13 @@
-import { eq } from 'drizzle-orm';
+import { asc, eq } from 'drizzle-orm';
 
 import { db } from '@/drizzle';
 import { InsertTestType, TestTypeTable } from '@/drizzle/schema';
 
 export async function getTestTypes() {
   try {
-    return await db.query.TestTypeTable.findMany({});
+    return await db.query.TestTypeTable.findMany({
+      orderBy: [asc(TestTypeTable.name)],
+    });
   } catch {
     return [];
   }
@@ -13,11 +15,9 @@ export async function getTestTypes() {
 
 export async function getTestTypeById(type_id: string) {
   try {
-    const type = await db.query.TestTypeTable.findFirst({
+    return await db.query.TestTypeTable.findFirst({
       where: eq(TestTypeTable.type_id, type_id),
     });
-
-    return type;
   } catch {
     return null;
   }
@@ -25,9 +25,7 @@ export async function getTestTypeById(type_id: string) {
 
 export async function insertTestType(data: InsertTestType) {
   try {
-    const [type] = await db.insert(TestTypeTable).values(data).returning();
-
-    return type;
+    return await db.insert(TestTypeTable).values(data).returning();
   } catch (error) {
     throw error;
   }
@@ -35,13 +33,10 @@ export async function insertTestType(data: InsertTestType) {
 
 export async function updateTestType(type_id: string, data: InsertTestType) {
   try {
-    const [type] = await db
+    return await db
       .update(TestTypeTable)
       .set(data)
-      .where(eq(TestTypeTable.type_id, type_id))
-      .returning();
-
-    return type;
+      .where(eq(TestTypeTable.type_id, type_id));
   } catch (error) {
     throw error;
   }
@@ -49,13 +44,10 @@ export async function updateTestType(type_id: string, data: InsertTestType) {
 
 export async function deleteTestType(type_id: string) {
   try {
-    const [type] = await db
+    return await db
       .delete(TestTypeTable)
-      .where(eq(TestTypeTable.type_id, type_id))
-      .returning();
-
-    return type;
-  } catch (error) {
-    throw error;
+      .where(eq(TestTypeTable.type_id, type_id));
+  } catch {
+    return null;
   }
 }

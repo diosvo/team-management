@@ -3,13 +3,21 @@
 import { useMemo, useState } from 'react';
 
 import { Table, Text, VStack } from '@chakra-ui/react';
-import { TrendingUp } from 'lucide-react';
+import { SwatchBook } from 'lucide-react';
 
 import Pagination from '@/components/pagination';
 import { EmptyState } from '@/components/ui/empty-state';
 
-interface TestTypesOverviewProps {
-  result: any;
+interface TestResultTableProps {
+  result: {
+    headers: Array<{ name: string; unit: string }>;
+    players: Array<{
+      user_id: string;
+      result_id: string;
+      player_name: string;
+      tests: Record<string, number>;
+    }>;
+  };
   searchTerm?: string;
   onUpdateScore?: (
     playerName: string,
@@ -18,14 +26,14 @@ interface TestTypesOverviewProps {
   ) => void;
 }
 
-export default function PerformanceMatrixTable({
+export default function TestResultTableProps({
   result,
   searchTerm = '',
   onUpdateScore,
-}: TestTypesOverviewProps) {
+}: TestResultTableProps) {
   const [pagination, setPagination] = useState({
     page: 1,
-    pageSize: 5,
+    pageSize: 10,
   });
 
   const [editingCell, setEditingCell] = useState<{
@@ -139,9 +147,8 @@ export default function PerformanceMatrixTable({
               <Table.Row>
                 <Table.Cell colSpan={result.headers.length + 1}>
                   <EmptyState
-                    icon={<TrendingUp />}
-                    title="No test data available"
-                    description="Try adjusting your search"
+                    icon={<SwatchBook />}
+                    title="No test result in this date found"
                   />
                 </Table.Cell>
               </Table.Row>
