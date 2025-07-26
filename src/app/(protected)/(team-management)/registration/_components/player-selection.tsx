@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 
 import {
   Combobox,
@@ -25,7 +25,6 @@ export default function PlayerSelection({
   selection,
   onSelectionChange,
 }: PlayerSelectionProps) {
-  const contentRef = useRef<HTMLDivElement>(null);
   const { contains } = useFilter({ sensitivity: 'base' });
 
   const { collection, filter, reset } = useListCollection({
@@ -67,7 +66,7 @@ export default function PlayerSelection({
       </Combobox.Control>
       <Portal>
         <Combobox.Positioner>
-          <Combobox.Content ref={contentRef}>
+          <Combobox.Content>
             <Combobox.Empty>No players found</Combobox.Empty>
             {collection.items.map((player) => (
               <Combobox.Item item={player} key={player.user_id}>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useTransition } from 'react';
+import { useMemo, useTransition } from 'react';
 
 import {
   Button,
@@ -19,6 +19,7 @@ import { Controller, useForm } from 'react-hook-form';
 
 import { CloseButton } from '@/components/ui/close-button';
 import { Field } from '@/components/ui/field';
+import { Status } from '@/components/ui/status';
 import { toaster } from '@/components/ui/toaster';
 
 import {
@@ -31,13 +32,11 @@ import {
 import { UserRole, UserState } from '@/utils/enum';
 import { colorState } from '@/utils/helper';
 
-import { Status } from '@/components/ui/status';
 import { addUser } from '@/features/user/actions/user';
 import { AddUserSchema, AddUserValues } from '@/features/user/schemas/user';
 
 export default function AddUser() {
   const [isPending, startTransition] = useTransition();
-  const contentRef = useRef<HTMLDivElement>(null);
 
   const {
     reset,
@@ -101,7 +100,7 @@ export default function AddUser() {
       <Portal>
         <Dialog.Backdrop />
         <Dialog.Positioner as="form" onSubmit={handleSubmit(onSubmit)}>
-          <Dialog.Content ref={contentRef}>
+          <Dialog.Content>
             <Dialog.CloseTrigger asChild>
               <CloseButton />
             </Dialog.CloseTrigger>
@@ -172,22 +171,18 @@ export default function AddUser() {
                             <Select.Indicator />
                           </Select.IndicatorGroup>
                         </Select.Control>
-                        <Portal container={contentRef}>
-                          <Select.Positioner>
-                            <Select.Content>
-                              {StateSelection.map((state) => (
-                                <Select.Item item={state} key={state.value}>
-                                  <Status
-                                    colorPalette={colorState(state.value)}
-                                  >
-                                    {state.label}
-                                  </Status>
-                                  <Select.ItemIndicator />
-                                </Select.Item>
-                              ))}
-                            </Select.Content>
-                          </Select.Positioner>
-                        </Portal>
+                        <Select.Positioner>
+                          <Select.Content>
+                            {StateSelection.map((state) => (
+                              <Select.Item item={state} key={state.value}>
+                                <Status colorPalette={colorState(state.value)}>
+                                  {state.label}
+                                </Status>
+                                <Select.ItemIndicator />
+                              </Select.Item>
+                            ))}
+                          </Select.Content>
+                        </Select.Positioner>
                       </Select.Root>
                     )}
                   />
@@ -219,18 +214,16 @@ export default function AddUser() {
                             <Select.Indicator />
                           </Select.IndicatorGroup>
                         </Select.Control>
-                        <Portal container={contentRef}>
-                          <Select.Positioner>
-                            <Select.Content>
-                              {RoleSelection.map((role) => (
-                                <Select.Item item={role} key={role.value}>
-                                  {role.label}
-                                  <Select.ItemIndicator />
-                                </Select.Item>
-                              ))}
-                            </Select.Content>
-                          </Select.Positioner>
-                        </Portal>
+                        <Select.Positioner>
+                          <Select.Content>
+                            {RoleSelection.map((role) => (
+                              <Select.Item item={role} key={role.value}>
+                                {role.label}
+                                <Select.ItemIndicator />
+                              </Select.Item>
+                            ))}
+                          </Select.Content>
+                        </Select.Positioner>
                       </Select.Root>
                     )}
                   />
@@ -261,28 +254,23 @@ export default function AddUser() {
                             <Select.Indicator />
                           </Select.IndicatorGroup>
                         </Select.Control>
-                        <Portal container={contentRef}>
-                          <Select.Positioner>
-                            <Select.Content>
-                              {positions.items.map((position) => (
-                                <Select.Item
-                                  item={position}
-                                  key={position.value}
-                                >
-                                  <Stack gap={0}>
-                                    <Select.ItemText>
-                                      {position.label}
-                                    </Select.ItemText>
-                                    <Span color="fg.muted" textStyle="xs">
-                                      {position.description}
-                                    </Span>
-                                  </Stack>
-                                  <Select.ItemIndicator />
-                                </Select.Item>
-                              ))}
-                            </Select.Content>
-                          </Select.Positioner>
-                        </Portal>
+                        <Select.Positioner>
+                          <Select.Content>
+                            {positions.items.map((position) => (
+                              <Select.Item item={position} key={position.value}>
+                                <Stack gap={0}>
+                                  <Select.ItemText>
+                                    {position.label}
+                                  </Select.ItemText>
+                                  <Span color="fg.muted" textStyle="xs">
+                                    {position.description}
+                                  </Span>
+                                </Stack>
+                                <Select.ItemIndicator />
+                              </Select.Item>
+                            ))}
+                          </Select.Content>
+                        </Select.Positioner>
                       </Select.Root>
                     )}
                   />
