@@ -2,30 +2,28 @@
 
 import {
   Button,
+  createListCollection,
   createOverlay,
   Dialog,
-  Fieldset,
   HStack,
   Input,
   Portal,
-  RadioGroup,
+  Select,
   Separator,
-  SimpleGrid,
   Text,
-  VStack,
 } from '@chakra-ui/react';
-import { Plus, RotateCcw } from 'lucide-react';
-import { useTransition } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Save } from 'lucide-react';
+import { useState, useTransition } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 
 import { CloseButton } from '@/components/ui/close-button';
 import { Field } from '@/components/ui/field';
-
-import { getDefaults } from '@/lib/zod';
-import { TestTypeUnitSelection } from '@/utils/constant';
-import { zodResolver } from '@hookform/resolvers/zod';
-
 import { toaster } from '@/components/ui/toaster';
+
+import { TestTypeUnitSelection } from '@/utils/constant';
+import { TestTypeUnit } from '@/utils/enum';
+
 import { upsertTestType } from '@/features/periodic-testing/actions/test-type';
 import {
   UpsertTestTypeSchema,
@@ -33,12 +31,27 @@ import {
 } from '@/features/periodic-testing/schemas/periodic-testing';
 
 export const ManageTestTypes = createOverlay(
-  ({ list, ...rest }: { list: Array<{ name: string; unit: string }> }) => {
+  ({
+    list,
+    ...rest
+  }: {
+    list: Array<{ type_id: string; name: string; unit: string }>;
+  }) => {
+    const [dataList, setDataList] = useState(list);
     const [isPending, startTransition] = useTransition();
 
-    const { reset, control, register, handleSubmit } = useForm({
+    const {
+      control,
+      reset,
+      register,
+      handleSubmit,
+      formState: { errors },
+    } = useForm({
       resolver: zodResolver(UpsertTestTypeSchema),
-      values: getDefaults(UpsertTestTypeSchema),
+      values: {
+        name: '',
+        unit: TestTypeUnit.SECONDS,
+      },
     });
 
     const onSubmit = (data: UpsertTestTypeSchemaValues) => {
@@ -58,10 +71,7 @@ export const ManageTestTypes = createOverlay(
       });
 
       startTransition(async () => {
-        const { error, message: description } = await upsertTestType(
-          '',
-          data.name
-        );
+        const { error, message: description } = await upsertTestType('', data);
 
         toaster.update(id, {
           type: error ? 'error' : 'success',
@@ -75,7 +85,7 @@ export const ManageTestTypes = createOverlay(
     };
 
     return (
-      <Dialog.Root size="xs" {...rest}>
+      <Dialog.Root size="sm" {...rest}>
         <Portal>
           <Dialog.Backdrop />
           <Dialog.Positioner as="form" onSubmit={handleSubmit(onSubmit)}>
@@ -89,15 +99,63 @@ export const ManageTestTypes = createOverlay(
               </Dialog.Header>
 
               <Dialog.Body paddingTop={0}>
+                <HStack gap={2}>
+                  <Field
+                    required
+                    label="Name"
+                    invalid={!!errors.name}
+                    errorText={errors.name?.message}
+                  >
+                    <Input {...register('name')} disabled={isPending} />
+                  </Field>
+                  <Field required label="Unit">
+                    <Controller
+                      control={control}
+                      name="unit"
+                      render={({ field }) => (
+                        <Select.Root
+                          name={field.name}
+                          value={
+                            field.value ? [field.value] : [TestTypeUnit.SECONDS]
+                          }
+                          onValueChange={({ value }) =>
+                            field.onChange(value[0])
+                          }
+                          onInteractOutside={() => field.onBlur()}
+                          collection={createListCollection({
+                            items: TestTypeUnitSelection,
+                          })}
+                          disabled={isPending}
+                        >
+                          <Select.HiddenSelect />
+                          <Select.Control>
+                            <Select.Trigger>
+                              <Select.ValueText placeholder="Unit" />
+                            </Select.Trigger>
+                            <Select.IndicatorGroup>
+                              <Select.Indicator />
+                            </Select.IndicatorGroup>
+                          </Select.Control>
+                          <Select.Positioner>
+                            <Select.Content>
+                              {TestTypeUnitSelection.map((state) => (
+                                <Select.Item item={state} key={state.value}>
+                                  {state.label}
+                                  <Select.ItemIndicator />
+                                </Select.Item>
+                              ))}
+                            </Select.Content>
+                          </Select.Positioner>
+                        </Select.Root>
+                      )}
+                    />
+                  </Field>
+                </HStack>
                 {list.length > 0 && (
                   <>
-                    <HStack marginBottom={2}>
-                      <Separator flex="1" />
-                      <Text flexShrink="0">All</Text>
-                      <Separator flex="1" />
-                    </HStack>
-                    <SimpleGrid columns={{ base: 1, md: 2 }} gap={2}>
-                      {list.map(({ name, unit }) => (
+                    <Separator marginBlock={4} />
+                    {list.map(({ type_id, name, unit }) => (
+                      <HStack key={type_id} gap={1}>
                         <Text
                           key={name}
                           _hover={{
@@ -117,74 +175,23 @@ export const ManageTestTypes = createOverlay(
                             ({unit})
                           </Text>
                         </Text>
-                      ))}
-                    </SimpleGrid>
+                      </HStack>
+                    ))}
                   </>
                 )}
-                <HStack marginBottom={2}>
-                  <Separator flex={1} />
-                  <Text flexShrink={0}>Add</Text>
-                  <Separator flex={1} />
-                </HStack>
-                <VStack gap={4}>
-                  <Field required label="Name">
-                    <Input
-                      maxLength={128}
-                      placeholder="Enter  test name..."
-                      {...register('name')}
-                    />
-                  </Field>
-                  <Fieldset.Root>
-                    <Fieldset.Legend color="GrayText">Unit</Fieldset.Legend>
-                    <Controller
-                      name="unit"
-                      control={control}
-                      render={({ field }) => (
-                        <RadioGroup.Root
-                          size="sm"
-                          colorPalette="green"
-                          marginTop={2}
-                          name={field.name}
-                          value={field.value}
-                          onValueChange={({ value }) => {
-                            field.onChange(value);
-                          }}
-                        >
-                          <SimpleGrid columns={{ base: 1, md: 3 }} gap={2}>
-                            {TestTypeUnitSelection.map((item) => (
-                              <RadioGroup.Item
-                                key={item.value}
-                                value={item.value}
-                              >
-                                <RadioGroup.ItemHiddenInput
-                                  onBlur={field.onBlur}
-                                />
-                                <RadioGroup.ItemIndicator />
-                                <RadioGroup.ItemText>
-                                  {item.label}
-                                </RadioGroup.ItemText>
-                              </RadioGroup.Item>
-                            ))}
-                          </SimpleGrid>
-                        </RadioGroup.Root>
-                      )}
-                    />
-                  </Fieldset.Root>
-                </VStack>
               </Dialog.Body>
 
-              <Dialog.Footer justifyContent="space-between">
-                <Button variant="outline" colorPalette="red" onClick={reset}>
-                  <RotateCcw />
-                  Reset
-                </Button>
+              <Dialog.Footer>
+                <Text fontStyle="italic" color="GrayText">
+                  Pending changes
+                </Text>
                 <Button
                   type="submit"
                   loading={isPending}
-                  loadingText="Adding..."
+                  loadingText="Saving..."
                 >
-                  <Plus />
-                  Add
+                  <Save />
+                  Save
                 </Button>
               </Dialog.Footer>
             </Dialog.Content>

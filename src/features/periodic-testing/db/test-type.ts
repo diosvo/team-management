@@ -33,11 +33,11 @@ export async function insertTestType(data: InsertTestType) {
   }
 }
 
-export async function updateTestType(type_id: string, name: string) {
+export async function updateTestType(type_id: string, data: InsertTestType) {
   try {
     const [type] = await db
       .update(TestTypeTable)
-      .set({ name })
+      .set(data)
       .where(eq(TestTypeTable.type_id, type_id))
       .returning();
 

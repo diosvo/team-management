@@ -17,7 +17,7 @@ import { ManageTestTypes } from './manage-test-types';
 
 interface TestingFiltersProps {
   onFilterChange: (filters: { search: string; date: string }) => void;
-  testTypes: Array<{ name: string; unit: string }>;
+  testTypes: Array<{ type_id: string; name: string; unit: string }>;
 }
 
 export default function TestingFilters({
