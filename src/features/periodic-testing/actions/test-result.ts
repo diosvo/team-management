@@ -4,7 +4,15 @@ import { revalidatePath } from 'next/cache';
 
 import { Response, ResponseFactory } from '@/utils/response';
 
-import { getTestResultByDate, insertTestResult } from '../db/test-result';
+import {
+  getDates,
+  getTestResultByDate,
+  insertTestResult,
+} from '../db/test-result';
+
+export async function getTestDates() {
+  return getDates();
+}
 
 export async function getTestResult(date: string) {
   return await getTestResultByDate(date);

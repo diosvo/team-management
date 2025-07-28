@@ -14,7 +14,7 @@ import { TestType } from '@/drizzle/schema';
 import { removeTestType } from '@/features/periodic-testing/actions/test-type';
 import { formatDate } from '@/utils/formatter';
 import { formatDistanceToNow } from 'date-fns';
-import { UpsertTestType } from './upsert';
+import { UpsertTestType } from './upsert-type';
 
 export default function TestTypesTable({ data }: { data: Array<TestType> }) {
   const [selection, setSelection] = useState<Array<string>>([]);

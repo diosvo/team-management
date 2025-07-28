@@ -7,7 +7,7 @@ import { Plus } from 'lucide-react';
 import { UpsertTestTypeSchema } from '@/features/periodic-testing/schemas/periodic-testing';
 import { getDefaults } from '@/lib/zod';
 
-import { UpsertTestType } from './upsert';
+import { UpsertTestType } from './upsert-type';
 
 interface SelectionFilterProps {
   search: string;

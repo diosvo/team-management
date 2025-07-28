@@ -1,8 +1,19 @@
-import { eq } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 
 import { db } from '@/drizzle';
 import { InsertTestResult, TestResultTable } from '@/drizzle/schema';
 import logger from '@/lib/logger';
+
+export async function getDates() {
+  try {
+    return await db
+      .selectDistinct({ date: TestResultTable.date })
+      .from(TestResultTable)
+      .orderBy(desc(TestResultTable.date));
+  } catch {
+    return [];
+  }
+}
 
 export async function getTestResultByDate(date: string) {
   const types = new Map<string, string>();
@@ -61,11 +72,8 @@ export async function getTestResultByDate(date: string) {
 
 export async function insertTestResult(data: InsertTestResult) {
   try {
-    const [result] = await db.insert(TestResultTable).values(data).returning();
-
-    return result;
+    return await db.insert(TestResultTable).values(data).returning();
   } catch (error) {
-    console.error('Error inserting test result:', error);
     throw error;
   }
 }
