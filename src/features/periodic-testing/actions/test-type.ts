@@ -2,6 +2,7 @@
 
 import { Response, ResponseFactory } from '@/utils/response';
 
+import { getTeam } from '@/features/team/actions/team';
 import { revalidateTestTypesPath } from '../db/cache';
 import {
   deleteTestType,
@@ -13,6 +14,9 @@ import {
 import { UpsertTestTypeSchemaValues } from '../schemas/periodic-testing';
 
 export async function getTestTypes() {
+  const team = await getTeam();
+  if (!team) return [];
+
   return await getAction();
 }
 
@@ -20,13 +24,22 @@ export async function upsertTestType(
   type_id: string,
   data: UpsertTestTypeSchemaValues
 ): Promise<Response> {
+  const team = await getTeam();
+
+  if (!team) {
+    return ResponseFactory.error('Team not found');
+  }
+
   try {
     const existingTestType = await getTestTypeById(type_id);
 
     if (existingTestType) {
       await updateTestType(existingTestType.type_id, data);
     } else {
-      await insertTestType(data);
+      await insertTestType({
+        ...data,
+        team_id: team.team_id,
+      });
     }
 
     revalidateTestTypesPath();

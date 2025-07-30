@@ -1,5 +1,5 @@
 {
-  "id": "00ce448d-f403-43ae-a6ac-6c52364cf36f",
+  "id": "ce7b2f66-882c-4147-abc3-e673f1034435",
   "prevId": "2c5f0505-b9d5-4a9a-ac39-8b63a6ddf2d6",
   "version": "7",
   "dialect": "postgresql",
@@ -215,7 +215,7 @@
           "columnsTo": [
             "user_id"
           ],
-          "onDelete": "cascade",
+          "onDelete": "no action",
           "onUpdate": "no action"
         },
         "test_result_type_id_test_type_type_id_fk": {
@@ -228,7 +228,7 @@
           "columnsTo": [
             "type_id"
           ],
-          "onDelete": "cascade",
+          "onDelete": "no action",
           "onUpdate": "no action"
         }
       },
@@ -248,6 +248,12 @@
           "primaryKey": true,
           "notNull": true,
           "default": "gen_random_uuid()"
+        },
+        "team_id": {
+          "name": "team_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
         },
         "name": {
           "name": "name",
@@ -277,10 +283,54 @@
           "default": "now()"
         }
       },
-      "indexes": {},
-      "foreignKeys": {},
+      "indexes": {
+        "team_test_type_name": {
+          "name": "team_test_type_name",
+          "columns": [
+            {
+              "expression": "team_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "name",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "test_type_team_id_team_team_id_fk": {
+          "name": "test_type_team_id_team_team_id_fk",
+          "tableFrom": "test_type",
+          "tableTo": "team",
+          "columnsFrom": [
+            "team_id"
+          ],
+          "columnsTo": [
+            "team_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "test_type_name_unique": {
+          "name": "test_type_name_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "name"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -680,7 +730,7 @@
         },
         "role": {
           "name": "role",
-          "type": "user_roles",
+          "type": "user_role",
           "primaryKey": false,
           "notNull": true,
           "default": "'PLAYER'"
@@ -789,8 +839,8 @@
         "UNKNOWN"
       ]
     },
-    "public.user_roles": {
-      "name": "user_roles",
+    "public.user_role": {
+      "name": "user_role",
       "schema": "public",
       "values": [
         "COACH",

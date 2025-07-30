@@ -16,7 +16,7 @@ import { TestResultTable } from './periodic-testing';
 import { InsertPlayer, PlayerTable } from './player';
 import { TeamTable } from './team';
 
-export const userRolesEnum = pgEnum('user_roles', UserRole);
+export const userRolesEnum = pgEnum('user_role', UserRole);
 
 export const userStateEnum = pgEnum('user_state', UserState);
 

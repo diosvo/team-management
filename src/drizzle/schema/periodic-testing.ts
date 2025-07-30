@@ -23,7 +23,7 @@ export const TestTypeTable = pgTable(
     type_id: uuid().defaultRandom().primaryKey(),
     team_id: uuid()
       .notNull()
-      .references(() => TeamTable.team_id, { onDelete: 'cascade' }),
+      .references(() => TeamTable.team_id),
     name: varchar({ length: 64 }).unique().notNull(),
     unit: testTypeUnitEnum().default(TestTypeUnit.TIMES).notNull(),
     created_at,
@@ -39,10 +39,10 @@ export const TestResultTable = pgTable('test_result', {
   result_id: uuid().defaultRandom().primaryKey(),
   user_id: uuid()
     .notNull()
-    .references(() => UserTable.user_id, { onDelete: 'cascade' }),
+    .references(() => UserTable.user_id),
   type_id: uuid()
     .notNull()
-    .references(() => TestTypeTable.type_id, { onDelete: 'cascade' }),
+    .references(() => TestTypeTable.type_id),
   result: decimal({ precision: 10, scale: 3 }).notNull(),
   date: date(),
   created_at,
