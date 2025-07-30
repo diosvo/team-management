@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import {
   Button,
@@ -11,17 +11,25 @@ import {
   Portal,
   Select,
 } from '@chakra-ui/react';
-import { Filter, Plus, Settings2 } from 'lucide-react';
+import {
+  CalendarSearch,
+  ChartNoAxesGantt,
+  Plus,
+  Settings2,
+} from 'lucide-react';
 
 import SearchInput from '@/components/ui/search-input';
 import Visibility from '@/components/visibility';
 import { usePermissions } from '@/hooks/use-permissions';
+import { formatDate } from '@/utils/formatter';
 
 interface TestingFiltersProps {
+  dates: Array<{ date: string }>;
   onFilterChange: (filters: { search: string; date: string }) => void;
 }
 
 export default function TestingFilters({
+  dates = [],
   onFilterChange,
 }: TestingFiltersProps) {
   const { isAdmin } = usePermissions();
@@ -37,12 +45,13 @@ export default function TestingFilters({
     onFilterChange(newFilters);
   };
 
-  const dateRanges = createListCollection({
-    items: [
-      { value: '2025-01-25', label: 'January 25, 2025' },
-      { value: '2025-03-25', label: 'March 25, 2025' },
-    ],
-  });
+  const dateRanges = useMemo(
+    () =>
+      createListCollection({
+        items: dates.map(({ date }) => ({ label: date, value: date })),
+      }),
+    [dates]
+  );
 
   return (
     <HStack marginBottom={6}>
@@ -53,7 +62,7 @@ export default function TestingFilters({
       />
       <Select.Root
         collection={dateRanges}
-        width="xs"
+        width="2xs"
         size={{ base: 'sm', md: 'md' }}
         value={[filters.date]}
         onValueChange={({ value }) => handleFilterChange('date', value[0])}
@@ -62,7 +71,7 @@ export default function TestingFilters({
         <Select.Control>
           <Select.Trigger>
             <HStack>
-              <Filter size={14} />
+              <CalendarSearch size={16} />
               <Select.ValueText placeholder="Date" />
             </HStack>
           </Select.Trigger>
@@ -74,8 +83,8 @@ export default function TestingFilters({
           <Select.Positioner>
             <Select.Content>
               {dateRanges.items.map((date) => (
-                <Select.Item item={date.value} key={date.value}>
-                  {date.label}
+                <Select.Item item={date} key={date.value}>
+                  {formatDate(date.value)}
                   <Select.ItemIndicator />
                 </Select.Item>
               ))}
@@ -86,7 +95,10 @@ export default function TestingFilters({
       <Visibility isVisible={isAdmin}>
         <Menu.Root>
           <Menu.Trigger asChild>
-            <Button>Actions</Button>
+            <Button>
+              <ChartNoAxesGantt />
+              Actions
+            </Button>
           </Menu.Trigger>
           <Portal>
             <Menu.Positioner>

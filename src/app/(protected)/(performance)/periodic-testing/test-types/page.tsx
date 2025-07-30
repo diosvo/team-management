@@ -8,6 +8,10 @@ import PageTitle from '@/components/page-title';
 import { Tooltip } from '@/components/ui/tooltip';
 
 import { getTestTypes } from '@/features/periodic-testing/actions/test-type';
+import { getUser } from '@/features/user/actions/auth';
+import { LOGIN_PATH } from '@/routes';
+import { hasPermissions } from '@/utils/helper';
+import { forbidden, redirect } from 'next/navigation';
 import TestTypesList from './_components/list';
 
 export const metadata: Metadata = {
@@ -17,11 +21,18 @@ export const metadata: Metadata = {
 
 export default async function TestTypesPage() {
   const data = await getTestTypes();
+  const currentUser = await getUser();
 
-  // Prevent user from accessing this page if they are not an admin
-  // if (!isAdmin) {
-  //   forbidden();
-  // }
+  if (!currentUser) {
+    redirect(LOGIN_PATH);
+  }
+
+  const { isGuest, isPlayer } = hasPermissions(currentUser.role);
+
+  // Prevent guest/user from accessing this page
+  if (isGuest || isPlayer) {
+    forbidden();
+  }
 
   return (
     <>
