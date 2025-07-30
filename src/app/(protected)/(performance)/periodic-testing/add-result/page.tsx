@@ -198,10 +198,7 @@ export default async function AddTestResultPage() {
             </Card.Description>
           </Card.Header>
           <Card.Body>
-            <TestResultConfiguration
-              players={players}
-              test_types={test_types}
-            />
+            <TestResultConfiguration players={players} types={test_types} />
           </Card.Body>
         </Card.Root>
         <Card.Root>

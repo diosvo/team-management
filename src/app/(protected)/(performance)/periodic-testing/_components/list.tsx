@@ -5,11 +5,7 @@ import TestingFilters from './filters';
 import TestingStats from './stats';
 import PlayerPerformanceMatrix from './table';
 
-interface TestingResultListProps {
-  dates: Array<string>;
-}
-
-export default function TestingResultList({ dates }: TestingResultListProps) {
+export default function TestingResultList({ dates }: { dates: Array<string> }) {
   const [filters, setFilters] = useState({
     search: '',
     date: dates.length > 0 ? dates[0] : '',

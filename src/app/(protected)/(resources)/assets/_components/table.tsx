@@ -3,7 +3,6 @@
 import { useState } from 'react';
 
 import { ActionBar, Badge, Button, Portal, Table } from '@chakra-ui/react';
-import { Box } from 'lucide-react';
 
 import Pagination from '@/components/pagination';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -147,7 +146,7 @@ export default function AssetTable({ items }: { items: Array<Asset> }) {
             ) : (
               <Table.Row>
                 <Table.Cell colSpan={isAdmin ? 7 : 6}>
-                  <EmptyState icon={<Box />} title="No items found" />
+                  <EmptyState title="No items found" />
                 </Table.Cell>
               </Table.Row>
             )}

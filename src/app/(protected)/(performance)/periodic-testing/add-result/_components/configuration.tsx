@@ -6,10 +6,10 @@ import { useState } from 'react';
 
 export default function TestResultConfiguration({
   players,
-  test_types,
+  types,
 }: {
   players: Array<User>;
-  test_types: Array<TestType>;
+  types: Array<TestType>;
 }) {
   const [selection, setSelection] = useState({
     players: [] as Array<User>,

@@ -1,5 +1,7 @@
-import { EmptyState as ChakraEmptyState, VStack } from '@chakra-ui/react';
 import * as React from 'react';
+
+import { EmptyState as ChakraEmptyState, VStack } from '@chakra-ui/react';
+import { Box } from 'lucide-react';
 
 export interface EmptyStateProps extends ChakraEmptyState.RootProps {
   title: string;
@@ -12,7 +14,7 @@ export const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
     const {
       title,
       description = 'Try adjusting your search',
-      icon,
+      icon = <Box />,
       children,
       ...rest
     } = props;

@@ -2,8 +2,7 @@
 
 import { useState } from 'react';
 
-import { ActionBar, Button, Portal, Table, Text } from '@chakra-ui/react';
-import { Box } from 'lucide-react';
+import { ActionBar, Button, Portal, Table } from '@chakra-ui/react';
 
 import Pagination from '@/components/pagination';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -12,7 +11,7 @@ import { toaster } from '@/components/ui/toaster';
 
 import { TestType } from '@/drizzle/schema';
 import { removeTestType } from '@/features/periodic-testing/actions/test-type';
-import { formatDate } from '@/utils/formatter';
+import { formatDatetime } from '@/utils/formatter';
 import { formatDistanceToNow } from 'date-fns';
 import { UpsertTestType } from './upsert-type';
 
@@ -67,7 +66,7 @@ export default function TestTypesTable({ data }: { data: Array<TestType> }) {
                   }}
                 />
               </Table.ColumnHeader>
-              {['Name', 'Unit', 'Last Updated'].map((header) => (
+              {['Name', 'Unit', 'Last Updated', ''].map((header) => (
                 <Table.ColumnHeader key={header}>{header}</Table.ColumnHeader>
               ))}
             </Table.Row>
@@ -101,29 +100,18 @@ export default function TestTypesTable({ data }: { data: Array<TestType> }) {
                   </Table.Cell>
                   <Table.Cell>{item.name}</Table.Cell>
                   <Table.Cell>{item.unit}</Table.Cell>
-                  <Table.Cell>
-                    <Text>
-                      {formatDate(item.updated_at)}
-                      <Text
-                        as="span"
-                        fontSize="xs"
-                        color="GrayText"
-                        marginLeft={1}
-                      >
-                        (
-                        {formatDistanceToNow(item.updated_at, {
-                          addSuffix: true,
-                        })}
-                        )
-                      </Text>
-                    </Text>
+                  <Table.Cell>{formatDatetime(item.updated_at)}</Table.Cell>
+                  <Table.Cell color="GrayText">
+                    {formatDistanceToNow(item.updated_at, {
+                      addSuffix: true,
+                    })}
                   </Table.Cell>
                 </Table.Row>
               ))
             ) : (
               <Table.Row>
                 <Table.Cell colSpan={4}>
-                  <EmptyState icon={<Box />} title="No data found" />
+                  <EmptyState title="No matching names found" />
                 </Table.Cell>
               </Table.Row>
             )}

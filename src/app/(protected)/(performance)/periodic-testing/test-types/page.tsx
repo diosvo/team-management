@@ -15,7 +15,7 @@ import { forbidden, redirect } from 'next/navigation';
 import TestTypesList from './_components/list';
 
 export const metadata: Metadata = {
-  title: 'Manage Test Types',
+  title: 'Test Types',
   description: 'Manage and configure test types for periodic testing',
 };
 
@@ -29,7 +29,6 @@ export default async function TestTypesPage() {
 
   const { isGuest, isPlayer } = hasPermissions(currentUser.role);
 
-  // Prevent guest/user from accessing this page
   if (isGuest || isPlayer) {
     forbidden();
   }
