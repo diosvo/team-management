@@ -2,31 +2,51 @@
 
 import PlayerSelection from '@/components/player-selection';
 import { TestType, User } from '@/drizzle/schema';
-import { useState } from 'react';
+import { VStack } from '@chakra-ui/react';
+import TestTypesSelection from './test-types-selection';
 
 export default function TestResultConfiguration({
   players,
   types,
+  selection,
+  setSelection,
 }: {
   players: Array<User>;
   types: Array<TestType>;
+  selection: {
+    players: Array<User>;
+    types: Array<TestType>;
+  };
+  setSelection: React.Dispatch<
+    React.SetStateAction<{
+      players: Array<User>;
+      types: Array<TestType>;
+    }>
+  >;
 }) {
-  const [selection, setSelection] = useState({
-    players: [] as Array<User>,
-    testTypes: [] as Array<TestType>,
-  });
-
   return (
-    <PlayerSelection
-      players={players}
-      maxPlayers={players.length}
-      selection={selection.players}
-      onSelectionChange={(selected) => {
-        setSelection((prev) => ({
-          ...prev,
-          players: selected,
-        }));
-      }}
-    />
+    <VStack gap={4}>
+      <PlayerSelection
+        players={players}
+        maxPlayers={players.length}
+        selection={selection.players}
+        onSelectionChange={(selected) => {
+          setSelection((prev) => ({
+            ...prev,
+            players: selected,
+          }));
+        }}
+      />
+      <TestTypesSelection
+        data={types}
+        selection={selection.types}
+        onSelectionChange={(selected) => {
+          setSelection((prev) => ({
+            ...prev,
+            types: selected,
+          }));
+        }}
+      />
+    </VStack>
   );
 }

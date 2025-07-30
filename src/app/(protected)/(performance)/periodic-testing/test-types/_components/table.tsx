@@ -3,6 +3,7 @@
 import { useState } from 'react';
 
 import { ActionBar, Button, Portal, Table } from '@chakra-ui/react';
+import { formatDistanceToNow } from 'date-fns';
 
 import Pagination from '@/components/pagination';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -12,7 +13,7 @@ import { toaster } from '@/components/ui/toaster';
 import { TestType } from '@/drizzle/schema';
 import { removeTestType } from '@/features/periodic-testing/actions/test-type';
 import { formatDatetime } from '@/utils/formatter';
-import { formatDistanceToNow } from 'date-fns';
+
 import { UpsertTestType } from './upsert-type';
 
 export default function TestTypesTable({ data }: { data: Array<TestType> }) {

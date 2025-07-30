@@ -50,10 +50,13 @@ export default function PlayerSelection({
       onValueChange={(details) => onSelectionChange(details.items)}
       onInputValueChange={(e) => filter(e.inputValue)}
     >
-      <Combobox.Label>
+      <Combobox.Label display="flex">
         Select players
         <Text as="span" fontSize="xs" color="GrayText" marginLeft={2}>
           (max {maxPlayers})
+        </Text>
+        <Text as="span" fontSize="xs" color="GrayText" marginLeft="auto">
+          {selection.length} selected
         </Text>
       </Combobox.Label>
 

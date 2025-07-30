@@ -13,14 +13,12 @@ import {
 import { TestType } from '@/drizzle/schema';
 
 interface PlayerSelectionProps {
-  max: number;
   data: Array<TestType>;
   selection: Array<TestType>;
   onSelectionChange: (selected: Array<TestType>) => void;
 }
 
 export default function TestTypesSelection({
-  max,
   data,
   selection,
   onSelectionChange,
@@ -50,10 +48,13 @@ export default function TestTypesSelection({
       onValueChange={(details) => onSelectionChange(details.items)}
       onInputValueChange={(e) => filter(e.inputValue)}
     >
-      <Combobox.Label>
-        Select players
+      <Combobox.Label display="flex">
+        Select types
         <Text as="span" fontSize="xs" color="GrayText" marginLeft={2}>
-          (max {max})
+          (max 5)
+        </Text>
+        <Text as="span" fontSize="xs" color="GrayText" marginLeft="auto">
+          {selection.length} selected
         </Text>
       </Combobox.Label>
 
@@ -67,11 +68,14 @@ export default function TestTypesSelection({
       <Portal>
         <Combobox.Positioner>
           <Combobox.Content>
-            <Combobox.Empty>No players found</Combobox.Empty>
+            <Combobox.Empty>No types found</Combobox.Empty>
             {collection.items.map((item) => (
               <Combobox.Item item={item} key={item.type_id}>
                 <Combobox.ItemText truncate>
-                  {item.name} ({item.unit})
+                  {item.name}{' '}
+                  <Text as="span" fontSize="xs" color="GrayText">
+                    ({item.unit})
+                  </Text>
                 </Combobox.ItemText>
                 <Combobox.ItemIndicator />
               </Combobox.Item>
