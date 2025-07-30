@@ -18,7 +18,7 @@ interface TestResultTableProps {
       tests: Record<string, number>;
     }>;
   };
-  searchTerm?: string;
+  searchTerm: string;
   onUpdateScore?: (
     playerName: string,
     testType: string,
@@ -28,7 +28,7 @@ interface TestResultTableProps {
 
 export default function TestResultTableProps({
   result,
-  searchTerm = '',
+  searchTerm,
   onUpdateScore,
 }: TestResultTableProps) {
   const [pagination, setPagination] = useState({

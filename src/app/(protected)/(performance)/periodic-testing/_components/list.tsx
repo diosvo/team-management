@@ -1,14 +1,20 @@
 'use client';
 
+import { useState } from 'react';
 import TestingFilters from './filters';
 import TestingStats from './stats';
 import PlayerPerformanceMatrix from './table';
 
 interface TestingResultListProps {
-  dates: Array<{ date: string }>;
+  dates: Array<string>;
 }
 
 export default function TestingResultList({ dates }: TestingResultListProps) {
+  const [filters, setFilters] = useState({
+    search: '',
+    date: dates.length > 0 ? dates[0] : '',
+  });
+
   return (
     <>
       <TestingStats
@@ -19,13 +25,13 @@ export default function TestingResultList({ dates }: TestingResultListProps) {
           total_players: 1,
         }}
       />
-      <TestingFilters dates={dates} onFilterChange={() => {}} />
+      <TestingFilters dates={dates} filters={filters} setFilters={setFilters} />
       <PlayerPerformanceMatrix
         result={{
           headers: [],
           players: [],
         }}
-        searchTerm={''}
+        searchTerm={filters.search}
         onUpdateScore={() => {}}
       />
     </>

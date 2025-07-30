@@ -6,10 +6,15 @@ import logger from '@/lib/logger';
 
 export async function getDates() {
   try {
-    return await db
+    const dates = await db
       .selectDistinct({ date: TestResultTable.date })
       .from(TestResultTable)
       .orderBy(desc(TestResultTable.date));
+
+    // Filter out null dates and cast to array string
+    return dates
+      .map(({ date }) => date)
+      .filter((date): date is string => date != null);
   } catch {
     return [];
   }

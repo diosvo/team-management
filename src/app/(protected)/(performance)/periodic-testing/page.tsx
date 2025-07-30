@@ -12,10 +12,7 @@ export const metadata: Metadata = {
 };
 
 export default async function PeriodicTestingPage() {
-  // const result = await getTestResult('12/12/2025');
   const dates = await getTestDates();
-
-  console.log(dates);
 
   return (
     <>

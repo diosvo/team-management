@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 import {
   Button,
@@ -23,32 +23,28 @@ import Visibility from '@/components/visibility';
 import { usePermissions } from '@/hooks/use-permissions';
 import { formatDate } from '@/utils/formatter';
 
+interface Filters {
+  search: string;
+  date: string;
+}
+
 interface TestingFiltersProps {
-  dates: Array<{ date: string }>;
-  onFilterChange: (filters: { search: string; date: string }) => void;
+  dates: Array<string>;
+  filters: Filters;
+  setFilters: React.Dispatch<React.SetStateAction<Filters>>;
 }
 
 export default function TestingFilters({
   dates = [],
-  onFilterChange,
+  filters,
+  setFilters,
 }: TestingFiltersProps) {
   const { isAdmin } = usePermissions();
-
-  const [filters, setFilters] = useState({
-    search: '',
-    date: '2025-03-25', // Default to latest date
-  });
-
-  const handleFilterChange = (key: string, value: string) => {
-    const newFilters = { ...filters, [key]: value };
-    setFilters(newFilters);
-    onFilterChange(newFilters);
-  };
 
   const dateRanges = useMemo(
     () =>
       createListCollection({
-        items: dates.map(({ date }) => ({ label: date, value: date })),
+        items: dates.map((date) => ({ label: date, value: date })),
       }),
     [dates]
   );
@@ -57,15 +53,21 @@ export default function TestingFilters({
     <HStack marginBottom={6}>
       <SearchInput
         value={filters.search}
-        onValueChange={(value: string) => handleFilterChange('search', value)}
-        onClear={() => handleFilterChange('search', '')}
+        onValueChange={(value) =>
+          setFilters((prev) => ({ ...prev, search: value }))
+        }
+        onClear={() => {
+          setFilters((prev) => ({ ...prev, search: '' }));
+        }}
       />
       <Select.Root
         collection={dateRanges}
         width="2xs"
         size={{ base: 'sm', md: 'md' }}
         value={[filters.date]}
-        onValueChange={({ value }) => handleFilterChange('date', value[0])}
+        onValueChange={({ value }) =>
+          setFilters((prev) => ({ ...prev, date: value[0] }))
+        }
       >
         <Select.HiddenSelect />
         <Select.Control>
