@@ -15,9 +15,7 @@ export async function getRule(team_id: string) {
 
 export async function insertRule(data: InsertRule) {
   try {
-    const [rule] = await db.insert(RuleTable).values(data).returning();
-
-    return rule;
+    return await db.insert(RuleTable).values(data).returning();
   } catch (error) {
     throw error;
   }
@@ -25,13 +23,10 @@ export async function insertRule(data: InsertRule) {
 
 export async function updateRule(rule_id: string, content: string) {
   try {
-    const [rule] = await db
+    return await db
       .update(RuleTable)
       .set({ content })
-      .where(eq(RuleTable.rule_id, rule_id))
-      .returning();
-
-    return rule;
+      .where(eq(RuleTable.rule_id, rule_id));
   } catch (error) {
     throw error;
   }
