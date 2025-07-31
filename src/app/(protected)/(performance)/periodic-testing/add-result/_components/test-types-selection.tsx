@@ -10,6 +10,7 @@ import {
   useListCollection,
 } from '@chakra-ui/react';
 
+import { toaster } from '@/components/ui/toaster';
 import { TestType } from '@/drizzle/schema';
 
 interface PlayerSelectionProps {
@@ -17,6 +18,8 @@ interface PlayerSelectionProps {
   selection: Array<TestType>;
   onSelectionChange: (selected: Array<TestType>) => void;
 }
+
+const MAX_VALUE_COUNT = 5;
 
 export default function TestTypesSelection({
   data,
@@ -45,13 +48,21 @@ export default function TestTypesSelection({
       openOnClick
       value={selected}
       collection={collection}
-      onValueChange={(details) => onSelectionChange(details.items)}
+      onValueChange={(details) => {
+        if (details.items.length > MAX_VALUE_COUNT) {
+          toaster.warning({
+            description: `You can only select up to ${MAX_VALUE_COUNT} types.`,
+          });
+          return;
+        }
+        onSelectionChange(details.items);
+      }}
       onInputValueChange={(e) => filter(e.inputValue)}
     >
       <Combobox.Label display="flex">
         Select types
         <Text as="span" fontSize="xs" color="GrayText" marginLeft={2}>
-          (max 5)
+          (max {MAX_VALUE_COUNT})
         </Text>
         <Text as="span" fontSize="xs" color="GrayText" marginLeft="auto">
           {selection.length} selected

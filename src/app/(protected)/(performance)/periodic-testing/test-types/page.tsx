@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
+import { forbidden, redirect } from 'next/navigation';
 
 import { Button, HStack } from '@chakra-ui/react';
 import { MoveLeft } from 'lucide-react';
@@ -7,11 +8,11 @@ import { MoveLeft } from 'lucide-react';
 import PageTitle from '@/components/page-title';
 import { Tooltip } from '@/components/ui/tooltip';
 
-import { getTestTypes } from '@/features/periodic-testing/actions/test-type';
-import { getUser } from '@/features/user/actions/auth';
 import { LOGIN_PATH } from '@/routes';
 import { hasPermissions } from '@/utils/helper';
-import { forbidden, redirect } from 'next/navigation';
+
+import { getTestTypes } from '@/features/periodic-testing/actions/test-type';
+import { getUser } from '@/features/user/actions/auth';
 import TestTypesList from './_components/list';
 
 export const metadata: Metadata = {
@@ -20,18 +21,13 @@ export const metadata: Metadata = {
 };
 
 export default async function TestTypesPage() {
-  const data = await getTestTypes();
   const currentUser = await getUser();
-
-  if (!currentUser) {
-    redirect(LOGIN_PATH);
-  }
+  if (!currentUser) redirect(LOGIN_PATH);
 
   const { isGuest, isPlayer } = hasPermissions(currentUser.role);
+  if (isGuest || isPlayer) forbidden();
 
-  if (isGuest || isPlayer) {
-    forbidden();
-  }
+  const data = await getTestTypes();
 
   return (
     <>

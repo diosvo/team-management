@@ -1,8 +1,13 @@
 'use client';
 
+import { Input, VStack } from '@chakra-ui/react';
+
 import PlayerSelection from '@/components/player-selection';
+import { Field } from '@/components/ui/field';
+
 import { TestType, User } from '@/drizzle/schema';
-import { VStack } from '@chakra-ui/react';
+import { ESTABLISHED_DATE } from '@/utils/constant';
+
 import TestTypesSelection from './test-types-selection';
 
 export default function TestResultConfiguration({
@@ -16,11 +21,13 @@ export default function TestResultConfiguration({
   selection: {
     players: Array<User>;
     types: Array<TestType>;
+    date: string;
   };
   setSelection: React.Dispatch<
     React.SetStateAction<{
       players: Array<User>;
       types: Array<TestType>;
+      date: string;
     }>
   >;
 }) {
@@ -47,6 +54,19 @@ export default function TestResultConfiguration({
           }));
         }}
       />
+      <Field label="Test Date" required>
+        <Input
+          type="date"
+          min={ESTABLISHED_DATE}
+          defaultValue={selection.date}
+          onChange={(e) => {
+            setSelection((prev) => ({
+              ...prev,
+              date: e.target.value,
+            }));
+          }}
+        />
+      </Field>
     </VStack>
   );
 }

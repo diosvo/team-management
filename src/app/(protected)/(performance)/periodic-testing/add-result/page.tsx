@@ -1,3 +1,4 @@
+import { Metadata } from 'next';
 import Link from 'next/link';
 
 import { Button, HStack } from '@chakra-ui/react';
@@ -11,6 +12,11 @@ import { getRoster } from '@/features/user/actions/user';
 import { UserRole, UserState } from '@/utils/enum';
 
 import AddTestResultPageClient from './_components/main';
+
+export const metadata: Metadata = {
+  title: 'Add Test Result',
+  description: 'Add a new test result for periodic testing.',
+};
 
 export default async function AddTestResultPage() {
   const [players, testTypes] = await Promise.all([
@@ -34,7 +40,6 @@ export default async function AddTestResultPage() {
         </Tooltip>
         <PageTitle>Add Test Result</PageTitle>
       </HStack>
-
       <AddTestResultPageClient players={players} testTypes={testTypes} />
     </>
   );
