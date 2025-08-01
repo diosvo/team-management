@@ -1,32 +1,65 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
-import { Input, Table } from '@chakra-ui/react';
+import { NumberInput, Table, Text } from '@chakra-ui/react';
 import { BookUser } from 'lucide-react';
 
 import Pagination from '@/components/pagination';
 import { EmptyState } from '@/components/ui/empty-state';
 
-import { TestType, User } from '@/drizzle/schema';
+import { InsertTestResult, TestType, User } from '@/drizzle/schema';
 
 export default function TestResultTable({
   configuration,
+  onChange,
 }: {
   configuration: {
     players: Array<User>;
     types: Array<TestType>;
     date: string;
   };
+  onChange: (data: Array<InsertTestResult>) => void;
 }) {
   const [pagination, setPagination] = useState({
     page: 1,
     pageSize: 5,
   });
+  const [results, setResults] = useState<Record<string, string>>({});
+
   const hasData = useMemo(
     () => configuration.players.length > 0 && configuration.types.length > 0,
     [configuration.players, configuration.types]
   );
+
+  // Generate a unique key for each player-test combination
+  const getResultKey = (user_id: string, type_id: string) =>
+    `${user_id}-${type_id}`;
+
+  useEffect(() => {
+    if (!hasData) {
+      onChange([]);
+      return;
+    }
+
+    const formattedData: Array<InsertTestResult> = [];
+
+    configuration.players.forEach(({ user_id }) => {
+      configuration.types.forEach(({ type_id }) => {
+        const key = getResultKey(user_id, type_id);
+        const result = results[key] || '0';
+
+        formattedData.push({
+          type_id: type_id,
+          user_id: user_id,
+          result: result,
+          date: configuration.date,
+        });
+      });
+    });
+
+    onChange(formattedData);
+  }, [results, configuration]);
 
   return (
     <>
@@ -36,8 +69,18 @@ export default function TestResultTable({
             <Table.Header>
               <Table.Row>
                 <Table.ColumnHeader>Player Name</Table.ColumnHeader>
-                {configuration.types.map(({ type_id, name }) => (
-                  <Table.ColumnHeader key={type_id}>{name}</Table.ColumnHeader>
+                {configuration.types.map(({ type_id, name, unit }) => (
+                  <Table.ColumnHeader key={type_id}>
+                    {name}
+                    <Text
+                      as="span"
+                      fontSize="xs"
+                      color="GrayText"
+                      marginLeft={1}
+                    >
+                      ({unit})
+                    </Text>
+                  </Table.ColumnHeader>
                 ))}
               </Table.Row>
             </Table.Header>
@@ -47,11 +90,25 @@ export default function TestResultTable({
               configuration.players.map(({ user_id, name }) => (
                 <Table.Row key={user_id}>
                   <Table.Cell>{name}</Table.Cell>
-                  {configuration.types.map(({ type_id }) => (
-                    <Table.Cell key={type_id}>
-                      <Input variant="subtle" />
-                    </Table.Cell>
-                  ))}
+                  {configuration.types.map(({ type_id }) => {
+                    const key = getResultKey(user_id, type_id);
+                    return (
+                      <Table.Cell key={type_id}>
+                        <NumberInput.Root
+                          value={results[key] || '0'}
+                          onValueChange={({ value }) =>
+                            setResults((prev) => ({
+                              ...prev,
+                              [key]: value,
+                            }))
+                          }
+                        >
+                          <NumberInput.Control />
+                          <NumberInput.Input />
+                        </NumberInput.Root>
+                      </Table.Cell>
+                    );
+                  })}
                 </Table.Row>
               ))
             ) : (

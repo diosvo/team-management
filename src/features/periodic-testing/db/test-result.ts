@@ -1,8 +1,15 @@
-import { desc, eq } from 'drizzle-orm';
+import { and, desc, eq } from 'drizzle-orm';
 
 import { db } from '@/drizzle';
 import { InsertTestResult, TestResultTable } from '@/drizzle/schema';
 import logger from '@/lib/logger';
+
+interface PlayerTestResult {
+  result_id: string;
+  user_id: string;
+  player_name: string;
+  tests: Record<string, string>;
+}
 
 export async function getDates() {
   try {
@@ -48,10 +55,9 @@ export async function getTestResultByDate(date: string) {
     });
     const headers = [...types].map(([name, unit]) => ({ name, unit }));
 
-    // Group by player
-    const players = Object.values(
-      results.reduce((acc, result) => {
-        const { user_id, user, result_id, type } = result;
+    const players: Array<PlayerTestResult> = Object.values(
+      results.reduce((acc, data) => {
+        const { result_id, user_id, user, type, result } = data;
 
         acc[user_id] ??= {
           user_id,
@@ -60,9 +66,9 @@ export async function getTestResultByDate(date: string) {
           result_id,
         };
 
-        acc[user_id].tests[type.name] = result.result;
+        acc[user_id].tests[type.name] = result;
         return acc;
-      }, {} as Record<string, any>)
+      }, {} as Record<string, PlayerTestResult>)
     );
 
     return {
@@ -75,9 +81,38 @@ export async function getTestResultByDate(date: string) {
   }
 }
 
-export async function insertTestResult(data: InsertTestResult) {
+export async function getTestResultByUserAndTypeIds(
+  user_id: string,
+  type_id: string
+) {
   try {
-    return await db.insert(TestResultTable).values(data).returning();
+    return await db.query.TestResultTable.findFirst({
+      where: and(
+        eq(TestResultTable.user_id, user_id),
+        eq(TestResultTable.type_id, type_id)
+      ),
+    });
+  } catch (error) {
+    return null;
+  }
+}
+
+export async function insertTestResult(results: Array<InsertTestResult>) {
+  try {
+    return await db.insert(TestResultTable).values(results);
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function updateTestResult(results: Array<InsertTestResult>) {
+  try {
+    return results.map(async (result) => {
+      await db
+        .update(TestResultTable)
+        .set(result)
+        .where(eq(TestResultTable.result_id, result.result_id as string));
+    });
   } catch (error) {
     throw error;
   }

@@ -1,13 +1,14 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
-
+import { InsertTestResult } from '@/drizzle/schema';
 import { Response, ResponseFactory } from '@/utils/response';
 
 import {
   getDates,
   getTestResultByDate,
+  getTestResultByUserAndTypeIds,
   insertTestResult,
+  updateTestResult,
 } from '../db/test-result';
 
 export async function getTestDates() {
@@ -19,22 +20,38 @@ export async function getTestResult(date: string) {
 }
 
 export async function createTestResult(
-  user_id: string,
-  type_id: string,
-  result: string,
-  date: string
+  results: Array<InsertTestResult>
 ): Promise<Response> {
   try {
-    await insertTestResult({
-      user_id,
-      type_id,
-      result,
-      date,
-    });
+    const toCreate: Array<InsertTestResult> = [];
+    const toUpdate: Array<InsertTestResult> = [];
 
-    revalidatePath('/periodic-testing');
+    // Check each result to see if it already exists
+    for (const result of results) {
+      const existing = await getTestResultByUserAndTypeIds(
+        result.user_id,
+        result.type_id
+      );
 
-    return ResponseFactory.success('Test result created successfully');
+      if (existing) {
+        toUpdate.push({ ...result, result_id: existing.result_id });
+      } else {
+        toCreate.push(result);
+      }
+    }
+
+    // Perform batch operations
+    if (toCreate.length > 0) {
+      await insertTestResult(toCreate);
+    }
+
+    if (toUpdate.length > 0) {
+      await updateTestResult(toUpdate);
+    }
+
+    return ResponseFactory.success(
+      `${toCreate.length} created, ${toUpdate.length} updated`
+    );
   } catch (error) {
     return ResponseFactory.fromError(error as Error);
   }

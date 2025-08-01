@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 
 import { Button, HStack } from '@chakra-ui/react';
 import { MoveLeft } from 'lucide-react';
@@ -8,7 +9,10 @@ import PageTitle from '@/components/page-title';
 import { Tooltip } from '@/components/ui/tooltip';
 
 import { getTestTypes } from '@/features/periodic-testing/actions/test-type';
+import { getUser } from '@/features/user/actions/auth';
 import { getRoster } from '@/features/user/actions/user';
+
+import { LOGIN_PATH } from '@/routes';
 import { UserRole, UserState } from '@/utils/enum';
 
 import AddTestResultPageClient from './_components/main';
@@ -19,6 +23,9 @@ export const metadata: Metadata = {
 };
 
 export default async function AddTestResultPage() {
+  const currentUser = await getUser();
+  if (!currentUser) redirect(LOGIN_PATH);
+
   const [players, testTypes] = await Promise.all([
     getRoster({
       query: '',

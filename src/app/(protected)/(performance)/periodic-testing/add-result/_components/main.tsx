@@ -1,15 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 
 import { Button, Card, Highlight, HStack, SimpleGrid } from '@chakra-ui/react';
 import { format } from 'date-fns';
 import { Save } from 'lucide-react';
 
 import StepIndicator from '@/components/step-indicator';
+import { toaster } from '@/components/ui/toaster';
 
-import { TestType, User } from '@/drizzle/schema';
+import { InsertTestResult, TestType, User } from '@/drizzle/schema';
 import { DEFAULT_DATE_FORMAT } from '@/utils/constant';
+
+import { createTestResult } from '@/features/periodic-testing/actions/test-result';
 
 import TestResultConfiguration from './configuration';
 import TestResultTable from './table';
@@ -26,6 +29,31 @@ export default function AddTestResultPageClient({
     types: [] as Array<TestType>,
     date: format(new Date(), DEFAULT_DATE_FORMAT),
   });
+
+  const [isPending, startTransition] = useTransition();
+  const [tableData, setTableData] = useState<Array<InsertTestResult>>([]);
+
+  const onSave = (data: Array<InsertTestResult>) => {
+    const id = toaster.create({
+      type: 'loading',
+      description: 'Saving...',
+    });
+
+    startTransition(async () => {
+      const { error, message: description } = await createTestResult(data);
+
+      toaster.update(id, {
+        type: error ? 'error' : 'success',
+        title: 'Results saved successfully',
+        description,
+      });
+
+      if (!error) {
+        // TODO: Back to the periodic testing page
+        // With the newest result that was just created with the date
+      }
+    });
+  };
 
   return (
     <SimpleGrid
@@ -65,7 +93,13 @@ export default function AddTestResultPageClient({
               Test Result
             </Card.Title>
             <Button
-              disabled={!selection.players.length || !selection.types.length}
+              disabled={
+                !selection.players.length ||
+                !selection.types.length ||
+                !tableData.length ||
+                isPending
+              }
+              onClick={() => onSave(tableData)}
             >
               <Save />
               Save
@@ -73,7 +107,7 @@ export default function AddTestResultPageClient({
           </HStack>
         </Card.Header>
         <Card.Body>
-          <TestResultTable configuration={selection} />
+          <TestResultTable configuration={selection} onChange={setTableData} />
         </Card.Body>
       </Card.Root>
     </SimpleGrid>
