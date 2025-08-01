@@ -62,5 +62,4 @@ export const TestResultRelations = relations(TestResultTable, ({ one }) => ({
 
 export type TestType = typeof TestTypeTable.$inferSelect;
 export type InsertTestType = typeof TestTypeTable.$inferInsert;
-export type TestResult = typeof TestResultTable.$inferSelect;
 export type InsertTestResult = typeof TestResultTable.$inferInsert;

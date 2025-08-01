@@ -4,11 +4,16 @@ import { db } from '@/drizzle';
 import { InsertTestResult, TestResultTable } from '@/drizzle/schema';
 import logger from '@/lib/logger';
 
-interface PlayerTestResult {
+export interface PlayerTestResult {
   result_id: string;
   user_id: string;
   player_name: string;
   tests: Record<string, string>;
+}
+
+export interface TestResult {
+  headers: Array<{ name: string; unit: string }>;
+  players: Array<PlayerTestResult>;
 }
 
 export async function getDates() {

@@ -8,6 +8,7 @@ import {
   getTestResultByDate,
   getTestResultByUserAndTypeIds,
   insertTestResult,
+  TestResult,
   updateTestResult,
 } from '../db/test-result';
 
@@ -15,7 +16,7 @@ export async function getTestDates() {
   return getDates();
 }
 
-export async function getTestResult(date: string) {
+export async function getTestResult(date: string): Promise<TestResult> {
   return await getTestResultByDate(date);
 }
 

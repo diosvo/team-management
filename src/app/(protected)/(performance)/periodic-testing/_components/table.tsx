@@ -7,17 +7,10 @@ import { SwatchBook } from 'lucide-react';
 
 import Pagination from '@/components/pagination';
 import { EmptyState } from '@/components/ui/empty-state';
+import { TestResult } from '@/features/periodic-testing/db/test-result';
 
 interface TestResultTableProps {
-  result: {
-    headers: Array<{ name: string; unit: string }>;
-    players: Array<{
-      user_id: string;
-      result_id: string;
-      player_name: string;
-      tests: Record<string, number>;
-    }>;
-  };
+  result: TestResult;
   searchTerm: string;
   onUpdateScore?: (
     playerName: string,
