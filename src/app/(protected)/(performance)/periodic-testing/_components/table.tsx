@@ -1,94 +1,101 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useTransition } from 'react';
 
-import { Table, Text, VStack } from '@chakra-ui/react';
-import { SwatchBook } from 'lucide-react';
+import {
+  Button,
+  Flex,
+  NumberInput,
+  Table,
+  Text,
+  VStack,
+} from '@chakra-ui/react';
+import { FileUser } from 'lucide-react';
 
 import Pagination from '@/components/pagination';
 import { EmptyState } from '@/components/ui/empty-state';
-import { TestResult } from '@/features/periodic-testing/db/test-result';
+import {
+  PopoverArrow,
+  PopoverBody,
+  PopoverCloseTrigger,
+  PopoverContent,
+  PopoverRoot,
+  PopoverTitle,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 
-interface TestResultTableProps {
-  result: TestResult;
-  searchTerm: string;
-  onUpdateScore?: (
-    playerName: string,
-    testType: string,
-    newScore: number
-  ) => void;
-}
+import { toaster } from '@/components/ui/toaster';
+import { TestResult } from '@/features/periodic-testing/db/test-result';
+import { usePermissions } from '@/hooks/use-permissions';
 
 export default function TestResultTableProps({
   result,
-  searchTerm,
-  onUpdateScore,
-}: TestResultTableProps) {
+}: {
+  result: TestResult;
+}) {
+  const { isGuest, isPlayer } = usePermissions();
+  const [isPending, startTransition] = useTransition();
+
   const [pagination, setPagination] = useState({
     page: 1,
     pageSize: 10,
   });
-
   const [editingCell, setEditingCell] = useState<{
-    playerName: string;
-    testType: string;
-    currentScore: number;
-    isOpen: boolean;
-  } | null>(null);
-
-  const [newScoreValue, setNewScoreValue] = useState('');
-
-  // Filter players based on search term
-  const filteredPlayers = useMemo(() => {
-    return result.players.filter(({ player_name }) =>
-      player_name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [result, searchTerm]);
+    user_id: string;
+    result_id: string;
+    currentScore: string;
+    newScore: string;
+  }>({
+    user_id: '',
+    result_id: '',
+    currentScore: '0',
+    newScore: '0',
+  });
 
   // Calculate the players to show for the current page
   const startIndex = (pagination.page - 1) * pagination.pageSize;
   const endIndex = Math.min(
     startIndex + pagination.pageSize,
-    filteredPlayers.length
+    result.players.length
   );
   const currentData = useMemo(
-    () => filteredPlayers.slice(startIndex, endIndex),
-    [filteredPlayers, startIndex, endIndex]
+    () => result.players.slice(startIndex, endIndex),
+    [result.players, startIndex, endIndex]
   );
 
-  const handleScoreUpdate = () => {
-    if (!editingCell || !newScoreValue || isNaN(Number(newScoreValue))) {
-      return;
-    }
+  console.log(result.players);
 
-    const scoreValue = Number(newScoreValue);
+  const onScoreUpdate = (cell: {
+    user_id: string;
+    result_id: string;
+    currentScore: string;
+    newScore: string;
+  }) => {
+    const id = toaster.create({
+      type: 'loading',
+      description: 'Updating test result...',
+    });
 
-    if (onUpdateScore) {
-      onUpdateScore(editingCell.playerName, editingCell.testType, scoreValue);
-    } else {
-      console.log(
-        `Updating ${editingCell.playerName}'s ${editingCell.testType} from ${editingCell.currentScore} to ${scoreValue}`
-      );
-      alert('Score update functionality not connected to data source');
-    }
+    // TODO: Handle validation for newScore
+    // startTransition(async () => {
+    //   const { error, message: description } = await updateTestResultById({
+    //     result_id: cell.result_id,
+    //     user_id: cell.user_id,
+    //     result: cell.newScore,
+    //   });
 
-    handleClosePopover();
-  };
-
-  const handleClosePopover = () => {
-    setEditingCell(null);
-    setNewScoreValue('');
+    //   toaster.update(id, {
+    //     type: error ? 'error' : 'success',
+    //     description,
+    //   });
+    // });
   };
 
   return (
     <VStack align="stretch">
       <Table.ScrollArea>
-        <Table.Root
-          borderWidth={1}
-          size={{ base: 'sm', md: 'md' }}
-          showColumnBorder
-        >
-          {filteredPlayers.length > 0 && (
+        <Table.Root size={{ base: 'sm', md: 'md' }} showColumnBorder>
+          {result.players.length > 0 && (
             <Table.Header>
               <Table.Row>
                 <Table.ColumnHeader
@@ -118,7 +125,7 @@ export default function TestResultTableProps({
           )}
           <Table.Body>
             {currentData.length > 0 ? (
-              currentData.map(({ user_id, player_name, tests }) => (
+              currentData.map(({ user_id, player_name, tests, result_id }) => (
                 <Table.Row key={user_id}>
                   <Table.Cell
                     position="sticky"
@@ -128,18 +135,72 @@ export default function TestResultTableProps({
                   >
                     {player_name}
                   </Table.Cell>
-
                   {result.headers.map(({ name }) => (
-                    <Table.Cell key={`${user_id}-${name}`} textAlign="center">
-                      {tests[name] || '-'}
-                    </Table.Cell>
+                    <PopoverRoot
+                      key={`${user_id}-${name}`}
+                      lazyMount
+                      unmountOnExit
+                    >
+                      <PopoverTrigger width="full" asChild>
+                        <Table.Cell
+                          textAlign="center"
+                          _hover={{
+                            cursor: isGuest || isPlayer ? 'default' : 'pointer',
+                            backgroundColor:
+                              isGuest || isPlayer ? 'default' : 'gray.100',
+                          }}
+                          onClick={() => {
+                            if (isGuest || isPlayer) return;
+                            setEditingCell({
+                              user_id,
+                              result_id,
+                              currentScore: tests[name] || '0',
+                              newScore: '0',
+                            });
+                          }}
+                        >
+                          {tests[name] || '-'}
+                        </Table.Cell>
+                      </PopoverTrigger>
+                      <PopoverContent>
+                        <PopoverArrow />
+                        <PopoverBody>
+                          <PopoverCloseTrigger />
+                          <PopoverTitle>New value:</PopoverTitle>
+                          <NumberInput.Root
+                            marginBlock={2}
+                            value={editingCell.currentScore}
+                            onValueChange={({ value }) =>
+                              setEditingCell((prev) => ({
+                                ...prev,
+                                newScore: value,
+                              }))
+                            }
+                          >
+                            <NumberInput.Control />
+                            <NumberInput.Input />
+                          </NumberInput.Root>
+                          <Flex justifyContent="flex-end">
+                            <Button
+                              disabled={
+                                editingCell.currentScore ===
+                                  editingCell.newScore || isPending
+                              }
+                              onClick={() => onScoreUpdate(editingCell)}
+                            >
+                              Save
+                            </Button>
+                          </Flex>
+                        </PopoverBody>
+                      </PopoverContent>
+                    </PopoverRoot>
                   ))}
                 </Table.Row>
               ))
             ) : (
               <Table.Row>
                 <Table.Cell colSpan={result.headers.length + 1}>
-                  <EmptyState icon={<SwatchBook />} title="No data found" />
+                  <EmptyState icon={<FileUser />} title="No data found" />
                 </Table.Cell>
               </Table.Row>
             )}
@@ -148,7 +209,7 @@ export default function TestResultTableProps({
       </Table.ScrollArea>
 
       <Pagination
-        count={filteredPlayers.length}
+        count={result.players.length}
         page={pagination.page}
         pageSize={pagination.pageSize}
         onPageChange={({ page }) =>

@@ -45,6 +45,7 @@ export async function getTestResultByDate(date: string) {
         },
         type: {
           columns: {
+            type_id: true,
             name: true,
             unit: true,
           },
@@ -110,14 +111,20 @@ export async function insertTestResult(results: Array<InsertTestResult>) {
   }
 }
 
-export async function updateTestResult(results: Array<InsertTestResult>) {
+export async function updateTestResultById(result: Partial<InsertTestResult>) {
   try {
-    return results.map(async (result) => {
-      await db
-        .update(TestResultTable)
-        .set(result)
-        .where(eq(TestResultTable.result_id, result.result_id as string));
-    });
+    return await db
+      .update(TestResultTable)
+      .set(result)
+      .where(eq(TestResultTable.result_id, result.result_id as string));
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function updateTestResults(results: Array<InsertTestResult>) {
+  try {
+    return results.map(updateTestResultById);
   } catch (error) {
     throw error;
   }

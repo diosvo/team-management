@@ -20,6 +20,7 @@ import {
 
 import SearchInput from '@/components/ui/search-input';
 import Visibility from '@/components/visibility';
+
 import { usePermissions } from '@/hooks/use-permissions';
 import { formatDate } from '@/utils/formatter';
 
@@ -44,7 +45,10 @@ export default function TestingFilters({
   const dateRanges = useMemo(
     () =>
       createListCollection({
-        items: dates.map((date) => ({ label: date, value: date })),
+        items: dates.map((date) => ({
+          label: formatDate(date),
+          value: date,
+        })),
       }),
     [dates]
   );
@@ -86,7 +90,7 @@ export default function TestingFilters({
             <Select.Content>
               {dateRanges.items.map((date) => (
                 <Select.Item item={date} key={date.value}>
-                  {formatDate(date.value)}
+                  {date.label}
                   <Select.ItemIndicator />
                 </Select.Item>
               ))}

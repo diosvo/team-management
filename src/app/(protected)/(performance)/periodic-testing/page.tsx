@@ -22,7 +22,7 @@ export default async function PeriodicTestingPage(props: {
   const searchParams = await props.searchParams;
 
   const dates = await getTestDates();
-  const result = await getTestResult(searchParams.date ?? '');
+  const result = await getTestResult(searchParams.date);
 
   return (
     <>

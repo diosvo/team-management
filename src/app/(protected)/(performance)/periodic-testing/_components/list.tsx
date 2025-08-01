@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { TestResult } from '@/features/periodic-testing/db/test-result';
 
@@ -22,8 +22,14 @@ export default function TestingResultList({
     date: dates.length > 0 ? dates[0] : '',
   });
 
+  const filteredPlayers = useMemo(() => {
+    return result.players.filter(({ player_name }) =>
+      player_name.toLowerCase().includes(filters.search.toLowerCase())
+    );
+  }, [filters.search, result.players]);
+
   useEffect(() => {
-    router.push(`?date=${filters.date}`);
+    router.replace(`?date=${filters.date}`);
   }, [filters.date]);
 
   return (
@@ -36,9 +42,10 @@ export default function TestingResultList({
       />
       <TestingFilters dates={dates} filters={filters} setFilters={setFilters} />
       <PlayerPerformanceMatrix
-        result={result}
-        searchTerm={filters.search}
-        onUpdateScore={() => {}}
+        result={{
+          headers: result.headers,
+          players: filteredPlayers,
+        }}
       />
     </>
   );

@@ -3,13 +3,15 @@
 import { InsertTestResult } from '@/drizzle/schema';
 import { Response, ResponseFactory } from '@/utils/response';
 
+import { revalidatePath } from 'next/cache';
 import {
   getDates,
   getTestResultByDate,
   getTestResultByUserAndTypeIds,
   insertTestResult,
   TestResult,
-  updateTestResult,
+  updateTestResultById as updateAction,
+  updateTestResults,
 } from '../db/test-result';
 
 export async function getTestDates() {
@@ -47,12 +49,26 @@ export async function createTestResult(
     }
 
     if (toUpdate.length > 0) {
-      await updateTestResult(toUpdate);
+      await updateTestResults(toUpdate);
     }
 
     return ResponseFactory.success(
       `${toCreate.length} created, ${toUpdate.length} updated`
     );
+  } catch (error) {
+    return ResponseFactory.fromError(error as Error);
+  }
+}
+
+export async function updateTestResultById(
+  result: Partial<InsertTestResult>
+): Promise<Response> {
+  try {
+    await updateAction(result);
+
+    revalidatePath('/periodic-testing');
+
+    return ResponseFactory.success('Test result updated successfully');
   } catch (error) {
     return ResponseFactory.fromError(error as Error);
   }
