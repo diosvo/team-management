@@ -5,7 +5,7 @@
     "url": "https://www.linkedin.com/in/diosvo/"
   },
   "dependencies": {
-    "@chakra-ui/react": "^3.22.0",
+    "@chakra-ui/react": "^3.24.0",
     "@emotion/react": "^11.14.0",
     "@hookform/resolvers": "^5.0.1",
     "@tiptap/extension-link": "^2.12.0",
