@@ -11,8 +11,9 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { toaster } from '@/components/ui/toaster';
 
 import { TestType } from '@/drizzle/schema';
-import { removeTestType } from '@/features/periodic-testing/actions/test-type';
 import { formatDatetime } from '@/utils/formatter';
+
+import { removeTestType } from '@/features/periodic-testing/actions/test-type';
 
 import { UpsertTestType } from './upsert-type';
 
@@ -34,12 +35,16 @@ export default function TestTypesTable({ data }: { data: Array<TestType> }) {
     const results = await Promise.all(selection.map(removeTestType));
     const hasErrors = results.some(({ error }) => error);
     const successCount = results.filter((result) => !result.error).length;
+    const errorMessages = results
+      .filter(({ error }) => error)
+      .map(({ message }) => message)
+      .join('\n ');
 
     toaster.create({
       type: hasErrors ? 'warning' : 'success',
       description: hasErrors
-        ? `Deleted ${successCount} types(s), but some operations failed.`
-        : `Successfully deleted ${successCount} types(s).`,
+        ? `Deleted ${successCount} type(s), but some operations failed: ${errorMessages}`
+        : `Successfully deleted ${successCount} type(s).`,
     });
 
     setSelection([]);

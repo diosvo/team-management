@@ -1,8 +1,11 @@
 'use server';
 
+import pg from 'pg';
+
 import { Response, ResponseFactory } from '@/utils/response';
 
 import { getTeam } from '@/features/team/actions/team';
+
 import { revalidateTestTypesPath } from '../db/cache';
 import {
   deleteTestType,
@@ -51,19 +54,23 @@ export async function upsertTestType(
 }
 
 export async function removeTestType(type_id: string): Promise<Response> {
+  const type = await getTestTypeById(type_id);
+
+  if (!type) {
+    return ResponseFactory.error('Test type not found');
+  }
+
   try {
-    const type = await getTestTypeById(type_id);
-
-    if (!type) {
-      return ResponseFactory.error('Test type not found');
-    }
-
     await deleteTestType(type.type_id);
 
     revalidateTestTypesPath();
 
     return ResponseFactory.success('Test type removed successfully');
   } catch (error) {
+    // PostgreSQL error code for foreign key violation
+    if (error instanceof pg.DatabaseError && error.code === '23503') {
+      return ResponseFactory.error(`'${type.name}' is in use.`);
+    }
     return ResponseFactory.fromError(error as Error);
   }
 }
