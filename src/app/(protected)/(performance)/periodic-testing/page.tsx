@@ -14,20 +14,26 @@ export const metadata: Metadata = {
   description: 'Performance testing and analytics for team players',
 };
 
-export default async function PeriodicTestingPage(props: {
-  searchParams: Promise<{
-    date: string;
-  }>;
+export default async function PeriodicTestingPage({
+  searchParams,
+}: {
+  searchParams: { date?: string };
 }) {
-  const searchParams = await props.searchParams;
-
+  const { date = '' } = await searchParams;
   const dates = await getTestDates();
-  const result = await getTestResult(searchParams.date);
+
+  // Get date from search params or default to the first available date
+  const selectedDate = date || (dates.length > 0 ? dates[0] : '');
+  const result = await getTestResult(selectedDate);
 
   return (
     <>
       <PageTitle>Periodic Testing</PageTitle>
-      <TestingResultList dates={dates} result={result} />
+      <TestingResultList
+        dates={dates}
+        result={result}
+        initialDate={selectedDate}
+      />
     </>
   );
 }

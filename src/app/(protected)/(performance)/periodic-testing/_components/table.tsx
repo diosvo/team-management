@@ -2,14 +2,7 @@
 
 import { useMemo, useState, useTransition } from 'react';
 
-import {
-  Button,
-  Flex,
-  NumberInput,
-  Table,
-  Text,
-  VStack,
-} from '@chakra-ui/react';
+import { Button, Flex, NumberInput, Table, Text } from '@chakra-ui/react';
 import { FileUser } from 'lucide-react';
 
 import Pagination from '@/components/pagination';
@@ -92,7 +85,7 @@ export default function TestResultTableProps({
   };
 
   return (
-    <VStack align="stretch">
+    <>
       <Table.ScrollArea>
         <Table.Root size={{ base: 'sm', md: 'md' }} showColumnBorder>
           {result.players.length > 0 && (
@@ -127,90 +120,81 @@ export default function TestResultTableProps({
             {currentData.length > 0 ? (
               currentData.map(({ user_id, player_name, tests, result_id }) => (
                 <Table.Row key={user_id}>
-                  <Table.Cell
-                    position="sticky"
-                    left={0}
-                    zIndex={1}
-                    backgroundColor="white"
-                  >
-                    {player_name}
-                  </Table.Cell>
+                  <Table.Cell>{player_name}</Table.Cell>
                   {result.headers.map(({ name }) => {
                     const popoverKey = `${user_id}-${name}`;
                     return (
-                      <PopoverRoot
-                        open={openPopoverKey === popoverKey}
-                        key={popoverKey}
-                        size="xs"
-                        lazyMount
-                        unmountOnExit
-                        onOpenChange={({ open }) => {
-                          setOpenPopoverKey(open ? popoverKey : null);
-
+                      <Table.Cell
+                        key={name}
+                        textAlign="center"
+                        _hover={{
+                          cursor: viewOnly ? 'default' : 'pointer',
+                          backgroundColor: viewOnly ? 'default' : 'gray.100',
+                        }}
+                        onClick={() => {
                           if (viewOnly) return;
-                          if (open) {
-                            setEditingCell({
-                              userId: user_id,
-                              resultId: result_id,
-                              currentScore: tests[name] || '0',
-                              newScore: '0',
-                            });
-                          }
+                          setOpenPopoverKey(popoverKey);
+                          setEditingCell({
+                            userId: user_id,
+                            resultId: result_id,
+                            currentScore: tests[name] || '0',
+                            newScore: tests[name] || '0',
+                          });
                         }}
                       >
-                        <PopoverTrigger width="full" asChild>
-                          <Table.Cell
-                            textAlign="center"
-                            _hover={{
-                              cursor: viewOnly ? 'default' : 'pointer',
-                              backgroundColor: viewOnly
-                                ? 'default'
-                                : 'gray.100',
-                            }}
-                          >
-                            {parseFloat(tests[name]) || '-'}
-                          </Table.Cell>
-                        </PopoverTrigger>
-                        <PopoverContent>
-                          <PopoverArrow />
-                          <PopoverBody>
-                            <PopoverTitle>New score:</PopoverTitle>
-                            <NumberInput.Root
-                              inputMode="decimal"
-                              marginBlock={3}
-                              defaultValue={editingCell.currentScore}
-                              onValueChange={({ value }) => {
-                                setEditingCell((prev) => ({
-                                  ...prev,
-                                  newScore: value,
-                                }));
-                              }}
-                            >
-                              <NumberInput.Control />
-                              <NumberInput.Input />
-                            </NumberInput.Root>
-                            <Flex justifyContent="space-between">
-                              <Button
-                                variant="subtle"
-                                onClick={() => setOpenPopoverKey(null)}
+                        <PopoverRoot
+                          open={openPopoverKey === popoverKey}
+                          size="xs"
+                          lazyMount
+                          unmountOnExit
+                          onOpenChange={({ open }) => {
+                            if (!open) setOpenPopoverKey(null);
+                          }}
+                        >
+                          <PopoverTrigger asChild>
+                            <Text>{parseFloat(tests[name]) || '-'}</Text>
+                          </PopoverTrigger>
+                          <PopoverContent>
+                            <PopoverArrow />
+                            <PopoverBody>
+                              <PopoverTitle>New score:</PopoverTitle>
+                              <NumberInput.Root
+                                inputMode="decimal"
+                                marginBlock={3}
+                                defaultValue={editingCell.currentScore}
+                                onValueChange={({ value }) => {
+                                  setEditingCell((prev) => ({
+                                    ...prev,
+                                    newScore: value,
+                                  }));
+                                }}
                               >
-                                Cancel
-                              </Button>
-                              <Button
-                                disabled={
-                                  parseFloat(editingCell.currentScore) ===
-                                    parseFloat(editingCell.newScore) ||
-                                  editingCell.newScore === '' ||
-                                  isPending
-                                }
-                                onClick={() => onScoreUpdate(editingCell)}
-                              >
-                                Save
-                              </Button>
-                            </Flex>
-                          </PopoverBody>
-                        </PopoverContent>
-                      </PopoverRoot>
+                                <NumberInput.Control />
+                                <NumberInput.Input />
+                              </NumberInput.Root>
+                              <Flex justifyContent="space-between">
+                                <Button
+                                  variant="subtle"
+                                  onClick={() => setOpenPopoverKey(null)}
+                                >
+                                  Cancel
+                                </Button>
+                                <Button
+                                  disabled={
+                                    parseFloat(editingCell.currentScore) ===
+                                      parseFloat(editingCell.newScore) ||
+                                    editingCell.newScore === '' ||
+                                    isPending
+                                  }
+                                  onClick={() => onScoreUpdate(editingCell)}
+                                >
+                                  Save
+                                </Button>
+                              </Flex>
+                            </PopoverBody>
+                          </PopoverContent>
+                        </PopoverRoot>
+                      </Table.Cell>
                     );
                   })}
                 </Table.Row>
@@ -234,6 +218,6 @@ export default function TestResultTableProps({
           setPagination((prev) => ({ ...prev, page }))
         }
       />
-    </VStack>
+    </>
   );
 }
