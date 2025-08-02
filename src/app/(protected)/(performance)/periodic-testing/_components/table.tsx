@@ -17,16 +17,17 @@ import { EmptyState } from '@/components/ui/empty-state';
 import {
   PopoverArrow,
   PopoverBody,
-  PopoverCloseTrigger,
   PopoverContent,
   PopoverRoot,
   PopoverTitle,
   PopoverTrigger,
 } from '@/components/ui/popover';
-
 import { toaster } from '@/components/ui/toaster';
-import { TestResult } from '@/features/periodic-testing/db/test-result';
+
 import { usePermissions } from '@/hooks/use-permissions';
+
+import { updateTestResultById } from '@/features/periodic-testing/actions/test-result';
+import { TestResult } from '@/features/periodic-testing/db/test-result';
 
 export default function TestResultTableProps({
   result,
@@ -35,19 +36,20 @@ export default function TestResultTableProps({
 }) {
   const { isGuest, isPlayer } = usePermissions();
   const [isPending, startTransition] = useTransition();
+  const [openPopoverKey, setOpenPopoverKey] = useState<Nullable<string>>(null);
 
   const [pagination, setPagination] = useState({
     page: 1,
     pageSize: 10,
   });
   const [editingCell, setEditingCell] = useState<{
-    user_id: string;
-    result_id: string;
+    userId: string;
+    resultId: string;
     currentScore: string;
     newScore: string;
   }>({
-    user_id: '',
-    result_id: '',
+    userId: '',
+    resultId: '',
     currentScore: '0',
     newScore: '0',
   });
@@ -62,33 +64,33 @@ export default function TestResultTableProps({
     () => result.players.slice(startIndex, endIndex),
     [result.players, startIndex, endIndex]
   );
-
-  console.log(result.players);
+  const viewOnly = useMemo(() => isGuest || isPlayer, [isGuest, isPlayer]);
 
   const onScoreUpdate = (cell: {
-    user_id: string;
-    result_id: string;
+    userId: string;
+    resultId: string;
     currentScore: string;
     newScore: string;
   }) => {
     const id = toaster.create({
       type: 'loading',
-      description: 'Updating test result...',
+      description: 'Updating score...',
     });
 
-    // TODO: Handle validation for newScore
-    // startTransition(async () => {
-    //   const { error, message: description } = await updateTestResultById({
-    //     result_id: cell.result_id,
-    //     user_id: cell.user_id,
-    //     result: cell.newScore,
-    //   });
+    startTransition(async () => {
+      const { error, message: description } = await updateTestResultById({
+        result_id: cell.resultId,
+        user_id: cell.userId,
+        result: cell.newScore,
+      });
 
-    //   toaster.update(id, {
-    //     type: error ? 'error' : 'success',
-    //     description,
-    //   });
-    // });
+      toaster.update(id, {
+        type: error ? 'error' : 'success',
+        description,
+      });
+
+      if (!error) setOpenPopoverKey(null);
+    });
   };
 
   return (
@@ -135,66 +137,90 @@ export default function TestResultTableProps({
                   >
                     {player_name}
                   </Table.Cell>
-                  {result.headers.map(({ name }) => (
-                    <PopoverRoot
-                      key={`${user_id}-${name}`}
-                      lazyMount
-                      unmountOnExit
-                    >
-                      <PopoverTrigger width="full" asChild>
-                        <Table.Cell
-                          textAlign="center"
-                          _hover={{
-                            cursor: isGuest || isPlayer ? 'default' : 'pointer',
-                            backgroundColor:
-                              isGuest || isPlayer ? 'default' : 'gray.100',
-                          }}
-                          onClick={() => {
-                            if (isGuest || isPlayer) return;
+                  {result.headers.map(({ name }) => {
+                    const popoverKey = `${user_id}-${name}`;
+
+                    return (
+                      <PopoverRoot
+                        open={openPopoverKey === popoverKey}
+                        key={popoverKey}
+                        size="xs"
+                        lazyMount
+                        unmountOnExit
+                        onOpenChange={({ open }) => {
+                          setOpenPopoverKey(open ? popoverKey : null);
+
+                          if (viewOnly) return;
+                          if (open) {
                             setEditingCell({
-                              user_id,
-                              result_id,
+                              userId: user_id,
+                              resultId: result_id,
                               currentScore: tests[name] || '0',
                               newScore: '0',
                             });
-                          }}
-                        >
-                          {tests[name] || '-'}
-                        </Table.Cell>
-                      </PopoverTrigger>
-                      <PopoverContent>
-                        <PopoverArrow />
-                        <PopoverBody>
-                          <PopoverCloseTrigger />
-                          <PopoverTitle>New value:</PopoverTitle>
-                          <NumberInput.Root
-                            marginBlock={2}
-                            value={editingCell.currentScore}
-                            onValueChange={({ value }) =>
-                              setEditingCell((prev) => ({
-                                ...prev,
-                                newScore: value,
-                              }))
-                            }
+                          }
+                        }}
+                      >
+                        <PopoverTrigger width="full" asChild>
+                          <Table.Cell
+                            textAlign="center"
+                            _hover={{
+                              cursor: viewOnly ? 'default' : 'pointer',
+                              backgroundColor: viewOnly
+                                ? 'default'
+                                : 'gray.100',
+                            }}
                           >
-                            <NumberInput.Control />
-                            <NumberInput.Input />
-                          </NumberInput.Root>
-                          <Flex justifyContent="flex-end">
-                            <Button
-                              disabled={
-                                editingCell.currentScore ===
-                                  editingCell.newScore || isPending
-                              }
-                              onClick={() => onScoreUpdate(editingCell)}
+                            {parseFloat(tests[name]) || '-'}
+                          </Table.Cell>
+                        </PopoverTrigger>
+                        <PopoverContent>
+                          <PopoverArrow />
+                          <PopoverBody>
+                            <PopoverTitle>New score:</PopoverTitle>
+                            <NumberInput.Root
+                              inputMode="decimal"
+                              formatOptions={{
+                                style: 'decimal',
+                                minimumFractionDigits: 0,
+                                maximumFractionDigits: 3,
+                              }}
+                              marginBlock={3}
+                              defaultValue={editingCell.currentScore}
+                              onValueChange={({ value }) => {
+                                setEditingCell((prev) => ({
+                                  ...prev,
+                                  newScore: value,
+                                }));
+                              }}
                             >
-                              Save
-                            </Button>
-                          </Flex>
-                        </PopoverBody>
-                      </PopoverContent>
-                    </PopoverRoot>
-                  ))}
+                              <NumberInput.Control />
+                              <NumberInput.Input />
+                            </NumberInput.Root>
+                            <Flex justifyContent="space-between">
+                              <Button
+                                variant="subtle"
+                                onClick={() => setOpenPopoverKey(null)}
+                              >
+                                Cancel
+                              </Button>
+                              <Button
+                                disabled={
+                                  parseFloat(editingCell.currentScore) ===
+                                    parseFloat(editingCell.newScore) ||
+                                  editingCell.newScore === '' ||
+                                  isPending
+                                }
+                                onClick={() => onScoreUpdate(editingCell)}
+                              >
+                                Save
+                              </Button>
+                            </Flex>
+                          </PopoverBody>
+                        </PopoverContent>
+                      </PopoverRoot>
+                    );
+                  })}
                 </Table.Row>
               ))
             ) : (
