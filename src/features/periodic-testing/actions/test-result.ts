@@ -9,7 +9,6 @@ import {
   getTestResultByDate,
   getTestResultByUserAndTypeIds,
   insertTestResult,
-  TestResult,
   updateTestResultById as updateAction,
   updateTestResults,
 } from '../db/test-result';
@@ -18,17 +17,21 @@ export async function getTestDates() {
   return getDates();
 }
 
-export async function getTestResult(date: string): Promise<TestResult> {
+export async function getTestResult(date: string) {
+  if (!date) {
+    return { headers: [], players: [] };
+  }
+
   return await getTestResultByDate(date);
 }
 
 export async function createTestResult(
   results: Array<InsertTestResult>
 ): Promise<Response> {
-  try {
-    const toCreate: Array<InsertTestResult> = [];
-    const toUpdate: Array<InsertTestResult> = [];
+  const toCreate: Array<InsertTestResult> = [];
+  const toUpdate: Array<InsertTestResult> = [];
 
+  try {
     // Check each result to see if it already exists
     for (const result of results) {
       const existing = await getTestResultByUserAndTypeIds(
@@ -44,13 +47,8 @@ export async function createTestResult(
     }
 
     // Perform batch operations
-    if (toCreate.length > 0) {
-      await insertTestResult(toCreate);
-    }
-
-    if (toUpdate.length > 0) {
-      await updateTestResults(toUpdate);
-    }
+    if (toCreate.length > 0) await insertTestResult(toCreate);
+    if (toUpdate.length > 0) await updateTestResults(toUpdate);
 
     return ResponseFactory.success(
       `${toCreate.length} created, ${toUpdate.length} updated`

@@ -1,10 +1,18 @@
+# Branch
+
+Checkk out branch from `main` with format:
+
+```bash
+git checkout -b dev_<ticket_number>
+```
+
 # Component and File Naming Convention
 
 To ensure consistency and clarity across the codebase, follow these conventions for naming React/Next.js components and their files:
 
 ## 1. File Naming
 
-- Use lowercase and hyphen or camelCase for filenames (e.g., `user-list.tsx`, `UserList.tsx`).
+- Use lowercase and hyphen for filenames (e.g., `user-list.tsx`).
 - Base file names on the component's purpose or type. Common base names include:
   - `list` (e.g., `PlayerList.tsx`)
   - `table` (e.g., `TeamStatsTable.tsx`)

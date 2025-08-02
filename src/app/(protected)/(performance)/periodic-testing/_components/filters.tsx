@@ -24,15 +24,12 @@ import Visibility from '@/components/visibility';
 import { usePermissions } from '@/hooks/use-permissions';
 import { formatDate } from '@/utils/formatter';
 
-interface Filters {
-  search: string;
-  date: string;
-}
+import { TestFilters } from '@/features/periodic-testing/schemas/models';
 
 interface TestingFiltersProps {
   dates: Array<string>;
-  filters: Filters;
-  setFilters: React.Dispatch<React.SetStateAction<Filters>>;
+  filters: TestFilters;
+  setFilters: React.Dispatch<React.SetStateAction<TestFilters>>;
 }
 
 export default function TestingFilters({

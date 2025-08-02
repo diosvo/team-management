@@ -43,7 +43,7 @@ export default function TestTypesTable({ data }: { data: Array<TestType> }) {
     toaster.create({
       type: hasErrors ? 'warning' : 'success',
       description: hasErrors
-        ? `Deleted ${successCount} type(s), but some operations failed: ${errorMessages}`
+        ? `${successCount} deleted, but some operations failed: ${errorMessages}`
         : `Successfully deleted ${successCount} type(s).`,
     });
 

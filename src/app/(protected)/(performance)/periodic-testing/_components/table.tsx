@@ -27,7 +27,14 @@ import { toaster } from '@/components/ui/toaster';
 import { usePermissions } from '@/hooks/use-permissions';
 
 import { updateTestResultById } from '@/features/periodic-testing/actions/test-result';
-import { TestResult } from '@/features/periodic-testing/db/test-result';
+import { TestResult } from '@/features/periodic-testing/schemas/models';
+
+interface Cell {
+  userId: string;
+  resultId: string;
+  currentScore: string;
+  newScore: string;
+}
 
 export default function TestResultTableProps({
   result,
@@ -35,6 +42,8 @@ export default function TestResultTableProps({
   result: TestResult;
 }) {
   const { isGuest, isPlayer } = usePermissions();
+  const viewOnly = useMemo(() => isGuest || isPlayer, [isGuest, isPlayer]);
+
   const [isPending, startTransition] = useTransition();
   const [openPopoverKey, setOpenPopoverKey] = useState<Nullable<string>>(null);
 
@@ -42,12 +51,7 @@ export default function TestResultTableProps({
     page: 1,
     pageSize: 10,
   });
-  const [editingCell, setEditingCell] = useState<{
-    userId: string;
-    resultId: string;
-    currentScore: string;
-    newScore: string;
-  }>({
+  const [editingCell, setEditingCell] = useState<Cell>({
     userId: '',
     resultId: '',
     currentScore: '0',
@@ -64,14 +68,8 @@ export default function TestResultTableProps({
     () => result.players.slice(startIndex, endIndex),
     [result.players, startIndex, endIndex]
   );
-  const viewOnly = useMemo(() => isGuest || isPlayer, [isGuest, isPlayer]);
 
-  const onScoreUpdate = (cell: {
-    userId: string;
-    resultId: string;
-    currentScore: string;
-    newScore: string;
-  }) => {
+  const onScoreUpdate = (cell: Cell) => {
     const id = toaster.create({
       type: 'loading',
       description: 'Updating score...',
@@ -139,7 +137,6 @@ export default function TestResultTableProps({
                   </Table.Cell>
                   {result.headers.map(({ name }) => {
                     const popoverKey = `${user_id}-${name}`;
-
                     return (
                       <PopoverRoot
                         open={openPopoverKey === popoverKey}
@@ -180,11 +177,6 @@ export default function TestResultTableProps({
                             <PopoverTitle>New score:</PopoverTitle>
                             <NumberInput.Root
                               inputMode="decimal"
-                              formatOptions={{
-                                style: 'decimal',
-                                minimumFractionDigits: 0,
-                                maximumFractionDigits: 3,
-                              }}
                               marginBlock={3}
                               defaultValue={editingCell.currentScore}
                               onValueChange={({ value }) => {

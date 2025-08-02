@@ -4,17 +4,7 @@ import { db } from '@/drizzle';
 import { InsertTestResult, TestResultTable } from '@/drizzle/schema';
 import logger from '@/lib/logger';
 
-export interface PlayerTestResult {
-  result_id: string;
-  user_id: string;
-  player_name: string;
-  tests: Record<string, string>;
-}
-
-export interface TestResult {
-  headers: Array<{ name: string; unit: string }>;
-  players: Array<PlayerTestResult>;
-}
+import { PlayerTestResult } from '../schemas/models';
 
 export async function getDates() {
   try {
@@ -99,7 +89,7 @@ export async function getTestResultByUserAndTypeIds(
       ),
     });
   } catch (error) {
-    return null;
+    throw error;
   }
 }
 
