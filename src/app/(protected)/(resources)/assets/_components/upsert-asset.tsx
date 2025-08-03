@@ -8,7 +8,6 @@ import {
   Fieldset,
   HStack,
   Input,
-  NumberInput,
   Portal,
   RadioGroup,
   Textarea,
@@ -20,6 +19,10 @@ import { Controller, useForm } from 'react-hook-form';
 
 import { CloseButton } from '@/components/ui/close-button';
 import { Field } from '@/components/ui/field';
+import {
+  NumberInputField,
+  NumberInputRoot,
+} from '@/components/ui/number-input';
 import { toaster } from '@/components/ui/toaster';
 import { Tooltip } from '@/components/ui/tooltip';
 
@@ -102,20 +105,17 @@ export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
                     name="quantity"
                     control={control}
                     render={({ field }) => (
-                      <NumberInput.Root
+                      <NumberInputRoot
                         width="full"
                         disabled={field.disabled}
                         name={field.name}
                         min={1}
                         max={100}
                         value={String(field.value)}
-                        onValueChange={({ value }) => {
-                          field.onChange(value);
-                        }}
+                        onValueChange={({ value }) => field.onChange(value)}
                       >
-                        <NumberInput.Control />
-                        <NumberInput.Input onBlur={field.onBlur} />
-                      </NumberInput.Root>
+                        <NumberInputField onBlur={field.onBlur} />
+                      </NumberInputRoot>
                     )}
                   />
                 </Field>

@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useTransition } from 'react';
 
-import { Button, Flex, NumberInput, Table, Text } from '@chakra-ui/react';
+import { Button, Flex, Table, Text } from '@chakra-ui/react';
 import { FileUser } from 'lucide-react';
 
 import Pagination from '@/components/pagination';
@@ -19,6 +19,10 @@ import { toaster } from '@/components/ui/toaster';
 
 import { usePermissions } from '@/hooks/use-permissions';
 
+import {
+  NumberInputField,
+  NumberInputRoot,
+} from '@/components/ui/number-input';
 import { updateTestResultById } from '@/features/periodic-testing/actions/test-result';
 import { TestResult } from '@/features/periodic-testing/schemas/models';
 
@@ -158,10 +162,10 @@ export default function TestResultTableProps({
                             <PopoverArrow />
                             <PopoverBody>
                               <PopoverTitle>New score:</PopoverTitle>
-                              <NumberInput.Root
-                                inputMode="decimal"
-                                marginBlock={3}
+                              <NumberInputRoot
+                                min={0}
                                 defaultValue={editingCell.currentScore}
+                                marginBlock={3}
                                 onValueChange={({ value }) => {
                                   setEditingCell((prev) => ({
                                     ...prev,
@@ -169,9 +173,8 @@ export default function TestResultTableProps({
                                   }));
                                 }}
                               >
-                                <NumberInput.Control />
-                                <NumberInput.Input />
-                              </NumberInput.Root>
+                                <NumberInputField />
+                              </NumberInputRoot>
                               <Flex justifyContent="space-between">
                                 <Button
                                   variant="subtle"

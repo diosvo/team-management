@@ -2,11 +2,15 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
-import { NumberInput, Table, Text } from '@chakra-ui/react';
+import { Table, Text } from '@chakra-ui/react';
 import { BookUser } from 'lucide-react';
 
 import Pagination from '@/components/pagination';
 import { EmptyState } from '@/components/ui/empty-state';
+import {
+  NumberInputField,
+  NumberInputRoot,
+} from '@/components/ui/number-input';
 
 import { InsertTestResult, TestType, User } from '@/drizzle/schema';
 
@@ -94,7 +98,8 @@ export default function TestResultTable({
                     const key = getResultKey(user_id, type_id);
                     return (
                       <Table.Cell key={type_id}>
-                        <NumberInput.Root
+                        <NumberInputRoot
+                          min={0}
                           value={results[key] || '0'}
                           onValueChange={({ value }) =>
                             setResults((prev) => ({
@@ -103,9 +108,8 @@ export default function TestResultTable({
                             }))
                           }
                         >
-                          <NumberInput.Control />
-                          <NumberInput.Input />
-                        </NumberInput.Root>
+                          <NumberInputField />
+                        </NumberInputRoot>
                       </Table.Cell>
                     );
                   })}
