@@ -107,7 +107,11 @@ export default function AddTestResultPageClient({
           </HStack>
         </Card.Header>
         <Card.Body>
-          <TestResultTable configuration={selection} onChange={setTableData} />
+          <TestResultTable
+            configuration={selection}
+            setSelection={setSelection}
+            onChange={setTableData}
+          />
         </Card.Body>
       </Card.Root>
     </SimpleGrid>

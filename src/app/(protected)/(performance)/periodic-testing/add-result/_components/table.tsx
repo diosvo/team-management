@@ -12,14 +12,25 @@ import {
   NumberInputRoot,
 } from '@/components/ui/number-input';
 
+import { Tooltip } from '@/components/ui/tooltip';
 import { InsertTestResult } from '@/drizzle/schema';
 import { TestConfigurationSelection } from '@/features/periodic-testing/schemas/models';
 
+const removalStyle = {
+  cursor: 'pointer',
+  textDecoration: 'line-through',
+  textDecorationColor: 'red.500',
+};
+
 export default function TestResultTable({
   configuration,
+  setSelection,
   onChange,
 }: {
   configuration: TestConfigurationSelection;
+  setSelection: React.Dispatch<
+    React.SetStateAction<TestConfigurationSelection>
+  >;
   onChange: (data: Array<InsertTestResult>) => void;
 }) {
   const [pagination, setPagination] = useState({
@@ -75,17 +86,34 @@ export default function TestResultTable({
               <Table.Row>
                 <Table.ColumnHeader>Player Name</Table.ColumnHeader>
                 {configuration.types.map(({ type_id, name, unit }) => (
-                  <Table.ColumnHeader key={type_id}>
-                    {name}
-                    <Text
-                      as="span"
-                      fontSize="xs"
-                      color="GrayText"
-                      marginLeft={1}
+                  <Tooltip
+                    key={type_id}
+                    showArrow
+                    content={`Remove "${name}" ?`}
+                    positioning={{ placement: 'top-start' }}
+                  >
+                    <Table.ColumnHeader
+                      _hover={removalStyle}
+                      onClick={() =>
+                        setSelection((prev) => ({
+                          ...prev,
+                          types: prev.types.filter(
+                            (type) => type.type_id !== type_id
+                          ),
+                        }))
+                      }
                     >
-                      ({unit})
-                    </Text>
-                  </Table.ColumnHeader>
+                      {name}
+                      <Text
+                        as="span"
+                        fontSize="xs"
+                        color="GrayText"
+                        marginLeft={1}
+                      >
+                        ({unit})
+                      </Text>
+                    </Table.ColumnHeader>
+                  </Tooltip>
                 ))}
               </Table.Row>
             </Table.Header>
@@ -94,7 +122,26 @@ export default function TestResultTable({
             {hasData ? (
               configuration.players.map(({ user_id, name }) => (
                 <Table.Row key={user_id}>
-                  <Table.Cell>{name}</Table.Cell>
+                  <Tooltip
+                    key={user_id}
+                    showArrow
+                    content={`Remove "${name}" ?`}
+                    positioning={{ placement: 'top-start' }}
+                  >
+                    <Table.Cell
+                      _hover={removalStyle}
+                      onClick={() =>
+                        setSelection((prev) => ({
+                          ...prev,
+                          players: prev.players.filter(
+                            (player) => player.user_id !== user_id
+                          ),
+                        }))
+                      }
+                    >
+                      {name}
+                    </Table.Cell>
+                  </Tooltip>
                   {configuration.types.map(({ type_id }) => {
                     const key = getResultKey(user_id, type_id);
                     return (
