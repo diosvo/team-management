@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useTransition } from 'react';
+import { useCallback, useMemo, useState, useTransition } from 'react';
 
 import { Button, Flex, Table, Text } from '@chakra-ui/react';
 import { FileUser } from 'lucide-react';
@@ -33,11 +33,7 @@ interface Cell {
   newScore: string;
 }
 
-export default function TestResultTableProps({
-  result,
-}: {
-  result: TestResult;
-}) {
+export default function TestResultTable({ result }: { result: TestResult }) {
   const { isGuest, isPlayer } = usePermissions();
   const viewOnly = useMemo(() => isGuest || isPlayer, [isGuest, isPlayer]);
 
@@ -55,16 +51,21 @@ export default function TestResultTableProps({
     newScore: '0',
   });
 
+  // Memoize callbacks to prevent unnecessary re-renders
+  const handlePageChange = useCallback(({ page }: { page: number }) => {
+    setPagination((prev) => ({ ...prev, page }));
+  }, []);
+
   // Calculate the players to show for the current page
-  const startIndex = (pagination.page - 1) * pagination.pageSize;
-  const endIndex = Math.min(
-    startIndex + pagination.pageSize,
-    result.players.length
-  );
-  const currentData = useMemo(
-    () => result.players.slice(startIndex, endIndex),
-    [result.players, startIndex, endIndex]
-  );
+  const currentData = useMemo(() => {
+    const startIndex = (pagination.page - 1) * pagination.pageSize;
+    const endIndex = Math.min(
+      startIndex + pagination.pageSize,
+      result.players.length
+    );
+
+    return result.players.slice(startIndex, endIndex);
+  }, [result.players, pagination]);
 
   const onScoreUpdate = (cell: Cell) => {
     const id = toaster.create({
@@ -217,9 +218,7 @@ export default function TestResultTableProps({
         count={result.players.length}
         page={pagination.page}
         pageSize={pagination.pageSize}
-        onPageChange={({ page }) =>
-          setPagination((prev) => ({ ...prev, page }))
-        }
+        onPageChange={handlePageChange}
       />
     </>
   );

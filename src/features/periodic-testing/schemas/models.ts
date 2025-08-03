@@ -1,3 +1,5 @@
+import { TestType, User } from '@/drizzle/schema';
+
 export interface PlayerTestResult {
   result_id: string;
   user_id: string;
@@ -12,5 +14,11 @@ export interface TestResult {
 
 export interface TestFilters {
   search: string;
+  date: string;
+}
+
+export interface TestConfigurationSelection {
+  players: Array<User>;
+  types: Array<TestType>;
   date: string;
 }

@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 
 import { Button, Card, Highlight, HStack, SimpleGrid } from '@chakra-ui/react';
@@ -9,24 +10,23 @@ import { Save } from 'lucide-react';
 import StepIndicator from '@/components/step-indicator';
 import { toaster } from '@/components/ui/toaster';
 
-import { InsertTestResult, TestType, User } from '@/drizzle/schema';
+import { InsertTestResult } from '@/drizzle/schema';
 import { DEFAULT_DATE_FORMAT } from '@/utils/constant';
 
 import { createTestResult } from '@/features/periodic-testing/actions/test-result';
+import { TestConfigurationSelection } from '@/features/periodic-testing/schemas/models';
 
 import TestResultConfiguration from './configuration';
 import TestResultTable from './table';
 
 export default function AddTestResultPageClient({
   players,
-  testTypes,
-}: {
-  players: Array<User>;
-  testTypes: Array<TestType>;
-}) {
-  const [selection, setSelection] = useState({
-    players: [] as Array<User>,
-    types: [] as Array<TestType>,
+  types,
+}: Omit<TestConfigurationSelection, 'date'>) {
+  const router = useRouter();
+  const [selection, setSelection] = useState<TestConfigurationSelection>({
+    players: [],
+    types: [],
     date: format(new Date(), DEFAULT_DATE_FORMAT),
   });
 
@@ -49,8 +49,8 @@ export default function AddTestResultPageClient({
       });
 
       if (!error) {
-        // TODO: Back to the periodic testing page
-        // With the newest result that was just created with the date
+        // Redirect to the periodic testing page with the selected date
+        router.replace(`/periodic-testing?date=${selection.date}`);
       }
     });
   };
@@ -79,7 +79,7 @@ export default function AddTestResultPageClient({
         <Card.Body>
           <TestResultConfiguration
             players={players}
-            types={testTypes}
+            types={types}
             selection={selection}
             setSelection={setSelection}
           />

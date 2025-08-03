@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { Table, Text } from '@chakra-ui/react';
 import { BookUser } from 'lucide-react';
@@ -12,17 +12,14 @@ import {
   NumberInputRoot,
 } from '@/components/ui/number-input';
 
-import { InsertTestResult, TestType, User } from '@/drizzle/schema';
+import { InsertTestResult } from '@/drizzle/schema';
+import { TestConfigurationSelection } from '@/features/periodic-testing/schemas/models';
 
 export default function TestResultTable({
   configuration,
   onChange,
 }: {
-  configuration: {
-    players: Array<User>;
-    types: Array<TestType>;
-    date: string;
-  };
+  configuration: TestConfigurationSelection;
   onChange: (data: Array<InsertTestResult>) => void;
 }) {
   const [pagination, setPagination] = useState({
@@ -36,9 +33,9 @@ export default function TestResultTable({
     [configuration.players, configuration.types]
   );
 
-  // Generate a unique key for each player-test combination
-  const getResultKey = (user_id: string, type_id: string) =>
-    `${user_id}-${type_id}`;
+  const handlePageChange = useCallback(({ page }: { page: number }) => {
+    setPagination((prev) => ({ ...prev, page }));
+  }, []);
 
   useEffect(() => {
     if (!hasData) {
@@ -64,6 +61,10 @@ export default function TestResultTable({
 
     onChange(formattedData);
   }, [results, configuration]);
+
+  // Generate a unique key for each player-test combination
+  const getResultKey = (user_id: string, type_id: string) =>
+    `${user_id}-${type_id}`;
 
   return (
     <>
@@ -134,9 +135,7 @@ export default function TestResultTable({
         count={configuration.players.length}
         page={pagination.page}
         pageSize={pagination.pageSize}
-        onPageChange={({ page }) =>
-          setPagination((prev) => ({ ...prev, page }))
-        }
+        onPageChange={handlePageChange}
       />
     </>
   );

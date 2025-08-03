@@ -1,8 +1,9 @@
 'use client';
 
-import SearchInput from '@/components/ui/search-input';
 import { Button, HStack } from '@chakra-ui/react';
 import { Plus } from 'lucide-react';
+
+import SearchInput from '@/components/ui/search-input';
 
 import { UpsertTestTypeSchema } from '@/features/periodic-testing/schemas/periodic-testing';
 import { getDefaults } from '@/lib/zod';

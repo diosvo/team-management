@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
+import { forbidden, redirect } from 'next/navigation';
 
 import { Button, HStack } from '@chakra-ui/react';
 import { MoveLeft } from 'lucide-react';
@@ -14,6 +14,7 @@ import { getRoster } from '@/features/user/actions/user';
 
 import { LOGIN_PATH } from '@/routes';
 import { UserRole, UserState } from '@/utils/enum';
+import { hasPermissions } from '@/utils/helper';
 
 import AddTestResultPageClient from './_components/main';
 
@@ -25,6 +26,9 @@ export const metadata: Metadata = {
 export default async function AddTestResultPage() {
   const currentUser = await getUser();
   if (!currentUser) redirect(LOGIN_PATH);
+
+  const { isGuest, isPlayer } = hasPermissions(currentUser.role);
+  if (isGuest || isPlayer) forbidden();
 
   const [players, testTypes] = await Promise.all([
     getRoster({
@@ -47,7 +51,7 @@ export default async function AddTestResultPage() {
         </Tooltip>
         <PageTitle>Add Test Result</PageTitle>
       </HStack>
-      <AddTestResultPageClient players={players} testTypes={testTypes} />
+      <AddTestResultPageClient players={players} types={testTypes} />
     </>
   );
 }

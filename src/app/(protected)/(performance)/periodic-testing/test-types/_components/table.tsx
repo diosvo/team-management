@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { ActionBar, Button, Portal, Table } from '@chakra-ui/react';
 import { formatDistanceToNow } from 'date-fns';
@@ -50,6 +50,10 @@ export default function TestTypesTable({ data }: { data: Array<TestType> }) {
     setSelection([]);
   };
 
+  const handlePageChange = useCallback(({ page }: { page: number }) => {
+    setPagination((prev) => ({ ...prev, page }));
+  }, []);
+
   return (
     <>
       <Table.ScrollArea>
@@ -65,11 +69,11 @@ export default function TestTypesTable({ data }: { data: Array<TestType> }) {
                   top={0.5}
                   aria-label="Select all rows"
                   checked={indeterminate ? 'indeterminate' : selectionCount > 0}
-                  onCheckedChange={(changes) => {
+                  onCheckedChange={(changes) =>
                     setSelection(
                       changes.checked ? data.map(({ type_id }) => type_id) : []
-                    );
-                  }}
+                    )
+                  }
                 />
               </Table.ColumnHeader>
               {['Name', 'Unit', 'Last Updated', ''].map((header) => (
@@ -83,25 +87,25 @@ export default function TestTypesTable({ data }: { data: Array<TestType> }) {
                 <Table.Row
                   key={item.type_id}
                   _hover={{ cursor: 'pointer' }}
-                  onClick={() => {
+                  onClick={() =>
                     UpsertTestType.open('update-test-type', {
                       action: 'Update',
                       item,
-                    });
-                  }}
+                    })
+                  }
                 >
                   <Table.Cell onClick={(e) => e.stopPropagation()}>
                     <Checkbox
                       top={0.5}
                       aria-label="Select row"
                       checked={selection.includes(item.type_id)}
-                      onCheckedChange={(changes) => {
+                      onCheckedChange={(changes) =>
                         setSelection((prev) =>
                           changes.checked
                             ? [...prev, item.type_id]
                             : selection.filter((id) => id !== item.type_id)
-                        );
-                      }}
+                        )
+                      }
                     />
                   </Table.Cell>
                   <Table.Cell>{item.name}</Table.Cell>
@@ -129,9 +133,7 @@ export default function TestTypesTable({ data }: { data: Array<TestType> }) {
         count={data.length}
         page={pagination.page}
         pageSize={pagination.pageSize}
-        onPageChange={({ page }) =>
-          setPagination((prev) => ({ ...prev, page }))
-        }
+        onPageChange={handlePageChange}
       />
 
       <ActionBar.Root open={hasSelection}>
