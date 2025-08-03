@@ -71,7 +71,7 @@ export default function TestResultTable({
     });
 
     onChange(formattedData);
-  }, [results, configuration]);
+  }, [hasData, results, configuration, onChange]);
 
   // Generate a unique key for each player-test combination
   const getResultKey = (user_id: string, type_id: string) =>

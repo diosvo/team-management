@@ -11,6 +11,7 @@ import { Alert } from '@/components/ui/alert';
 import { Field } from '@/components/ui/field';
 
 import { getDefaults } from '@/lib/zod';
+import { DEFAULT_LOGIN_REDIRECT } from '@/routes';
 import { Response } from '@/utils/response';
 import { buttonText, Page, pageTitle } from '../_helpers/utils';
 
@@ -27,7 +28,7 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
 
-  // const callbackUrl = searchParams.get('callbackUrl') || DEFAULT_LOGIN_REDIRECT;
+  const callbackUrl = searchParams.get('callbackUrl') || DEFAULT_LOGIN_REDIRECT;
 
   const {
     register,
@@ -111,9 +112,9 @@ export default function LoginPage() {
             />
           )}
 
-          {/* {page === Page.Login && (
+          {page === Page.Login && (
             <input type="hidden" name="redirectTo" value={callbackUrl} />
-          )} */}
+          )}
           <Button type="submit" borderRadius="full" loading={isPending}>
             {buttonText[page]}
           </Button>

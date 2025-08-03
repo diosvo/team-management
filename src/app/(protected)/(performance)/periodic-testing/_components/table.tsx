@@ -10,6 +10,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import {
   PopoverArrow,
   PopoverBody,
+  PopoverCloseTrigger,
   PopoverContent,
   PopoverRoot,
   PopoverTitle,
@@ -161,6 +162,7 @@ export default function TestResultTable({ result }: { result: TestResult }) {
                           </PopoverTrigger>
                           <PopoverContent>
                             <PopoverArrow />
+                            <PopoverCloseTrigger />
                             <PopoverBody>
                               <PopoverTitle>New score:</PopoverTitle>
                               <NumberInputRoot
@@ -176,13 +178,7 @@ export default function TestResultTable({ result }: { result: TestResult }) {
                               >
                                 <NumberInputField />
                               </NumberInputRoot>
-                              <Flex justifyContent="space-between">
-                                <Button
-                                  variant="subtle"
-                                  onClick={() => setOpenPopoverKey(null)}
-                                >
-                                  Cancel
-                                </Button>
+                              <Flex justifyContent="flex-end">
                                 <Button
                                   disabled={
                                     parseFloat(editingCell.currentScore) ===

@@ -35,7 +35,7 @@ export default function TestingResultList({
 
   useEffect(() => {
     router.push(`?date=${filters.date}`);
-  }, [filters.date]);
+  }, [router, filters.date]);
 
   return (
     <>
