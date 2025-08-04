@@ -5,8 +5,8 @@ import { useState } from 'react';
 import { Asset } from '@/drizzle/schema/asset';
 import { ALL } from '@/utils/constant';
 
-import Filters from './filters';
-import CategoryTable from './table';
+import AssetFilters from './filters';
+import AssetTable from './table';
 
 export default function AssetList({ data }: { data: Array<Asset> }) {
   const [filters, setFilters] = useState({
@@ -29,8 +29,8 @@ export default function AssetList({ data }: { data: Array<Asset> }) {
 
   return (
     <>
-      <Filters filters={filters} setFilters={setFilters} />
-      <CategoryTable items={filteredData} />
+      <AssetFilters filters={filters} setFilters={setFilters} />
+      <AssetTable items={filteredData} />
     </>
   );
 }

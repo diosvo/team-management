@@ -7,21 +7,13 @@ import {
   ActionBar,
   Badge,
   Button,
-  ButtonGroup,
   Icon,
-  IconButton,
-  Pagination,
   Portal,
   Table,
 } from '@chakra-ui/react';
-import {
-  ChevronLeft,
-  ChevronRight,
-  ShieldAlert,
-  ShieldCheck,
-  SwatchBook,
-} from 'lucide-react';
+import { ShieldAlert, ShieldCheck, SwatchBook } from 'lucide-react';
 
+import Pagination from '@/components/pagination';
 import { Checkbox } from '@/components/ui/checkbox';
 import { EmptyState } from '@/components/ui/empty-state';
 import { toaster } from '@/components/ui/toaster';
@@ -204,11 +196,7 @@ export default function RosterTable({ users }: { users: Array<User> }) {
             ) : (
               <Table.Row>
                 <Table.Cell colSpan={columnCount}>
-                  <EmptyState
-                    icon={<SwatchBook />}
-                    title="No users found"
-                    description="Try adjusting your search"
-                  />
+                  <EmptyState icon={<SwatchBook />} title="No users found" />
                 </Table.Cell>
               </Table.Row>
             )}
@@ -216,32 +204,14 @@ export default function RosterTable({ users }: { users: Array<User> }) {
         </Table.Root>
       </Table.ScrollArea>
 
-      <Pagination.Root
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        opacity={totalCount > 0 ? 1 : 0}
+      <Pagination
         count={totalCount}
         page={pagination.page}
         pageSize={pagination.pageSize}
         onPageChange={({ page }) =>
           setPagination((prev) => ({ ...prev, page }))
         }
-      >
-        <Pagination.PageText format="long" fontSize={14} />
-        <ButtonGroup variant="ghost" size={{ base: 'xs', sm: 'sm' }}>
-          <Pagination.PrevTrigger asChild>
-            <IconButton aria-label="Previous page">
-              <ChevronLeft />
-            </IconButton>
-          </Pagination.PrevTrigger>
-          <Pagination.NextTrigger asChild>
-            <IconButton aria-label="Next page">
-              <ChevronRight />
-            </IconButton>
-          </Pagination.NextTrigger>
-        </ButtonGroup>
-      </Pagination.Root>
+      />
 
       <ActionBar.Root open={hasSelection}>
         <Portal>

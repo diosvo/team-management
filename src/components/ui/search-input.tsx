@@ -68,7 +68,7 @@ export default function SearchInput({
         placeholder="Search..."
         borderWidth={1}
         size={{ base: 'sm', md: 'md' }}
-        css={{ '--focus-color': 'colors.red.200' }}
+        css={{ '--focus-color': 'colors.red.300' }}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
       />

@@ -1,17 +1,19 @@
+import { ColorPalette } from '@chakra-ui/react';
+
 import { AssetCategory, AssetCondition, UserRole, UserState } from './enum';
 
 /**
- * @description Common function to handle null strategy and color mapping
+ * @description Returns a color from the provided colorMap based on the given value.
  */
 function getColor<T>(
   value: Nullable<T>,
-  colorMap: Record<string, string>
-): string {
+  colorMap: Record<string, ColorPalette>
+): ColorPalette {
   if (value === null) return 'gray';
-  return colorMap[value as string];
+  return colorMap[value];
 }
 
-export function colorRole(role: Nullable<string>): string {
+export function colorRole(role: string): ColorPalette {
   return getColor(role, {
     [UserRole.SUPER_ADMIN]: 'orange',
     [UserRole.COACH]: 'purple',
@@ -19,7 +21,7 @@ export function colorRole(role: Nullable<string>): string {
   });
 }
 
-export function colorState(state: Nullable<string>): string {
+export function colorState(state: string): ColorPalette {
   return getColor(state, {
     [UserState.ACTIVE]: 'green',
     [UserState.TEMPORARILY_ABSENT]: 'orange',
@@ -27,7 +29,7 @@ export function colorState(state: Nullable<string>): string {
   });
 }
 
-export function colorCondition(condition: Nullable<string>): string {
+export function colorCondition(condition: string): ColorPalette {
   return getColor(condition, {
     [AssetCondition.GOOD]: 'green',
     [AssetCondition.FAIR]: 'orange',
@@ -35,7 +37,7 @@ export function colorCondition(condition: Nullable<string>): string {
   });
 }
 
-export function colorCategory(category: Nullable<string>): string {
+export function colorCategory(category: string): ColorPalette {
   return getColor(category, {
     [AssetCategory.EQUIPMENT]: 'purple',
     [AssetCategory.TRANING]: 'blue',

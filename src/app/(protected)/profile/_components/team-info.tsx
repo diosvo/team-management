@@ -15,7 +15,6 @@ import {
   Select,
   Span,
   Stack,
-  Status,
   Text,
   VStack,
 } from '@chakra-ui/react';
@@ -44,6 +43,7 @@ import { UserRole, UserState } from '@/utils/enum';
 import { formatDate } from '@/utils/formatter';
 import { colorRole, colorState, hasPermissions } from '@/utils/helper';
 
+import { Status } from '@/components/ui/status';
 import { updateTeamInfo } from '@/features/user/actions/user';
 import {
   EditTeamInfoSchema,
@@ -383,12 +383,9 @@ export default function TeamInfo({
                         <Select.Content>
                           {states.items.map((state) => (
                             <Select.Item item={state} key={state.value}>
-                              <Status.Root
-                                colorPalette={colorState(state.value)}
-                              >
-                                <Status.Indicator />
+                              <Status colorPalette={colorState(state.value)}>
                                 {state.label}
-                              </Status.Root>
+                              </Status>
                               <Select.ItemIndicator />
                             </Select.Item>
                           ))}

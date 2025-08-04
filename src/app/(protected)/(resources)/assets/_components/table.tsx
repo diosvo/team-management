@@ -3,8 +3,8 @@
 import { useState } from 'react';
 
 import { ActionBar, Badge, Button, Portal, Table } from '@chakra-ui/react';
-import { Box } from 'lucide-react';
 
+import Pagination from '@/components/pagination';
 import { Checkbox } from '@/components/ui/checkbox';
 import { EmptyState } from '@/components/ui/empty-state';
 import { toaster } from '@/components/ui/toaster';
@@ -18,10 +18,14 @@ import { colorCategory, colorCondition } from '@/utils/helper';
 import { removeAsset } from '@/features/asset/actions/asset';
 import { UpsertAsset } from './upsert-asset';
 
-export default function CategoryTable({ items }: { items: Array<Asset> }) {
+export default function AssetTable({ items }: { items: Array<Asset> }) {
   const { isAdmin, isGuest } = usePermissions();
 
   const [selection, setSelection] = useState<Array<string>>([]);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    pageSize: 5,
+  });
 
   const totalCount = items.length;
   const selectionCount = selection.length;
@@ -142,17 +146,22 @@ export default function CategoryTable({ items }: { items: Array<Asset> }) {
             ) : (
               <Table.Row>
                 <Table.Cell colSpan={isAdmin ? 7 : 6}>
-                  <EmptyState
-                    icon={<Box />}
-                    title="No items found"
-                    description="Try adjusting your search"
-                  />
+                  <EmptyState title="No items found" />
                 </Table.Cell>
               </Table.Row>
             )}
           </Table.Body>
         </Table.Root>
       </Table.ScrollArea>
+
+      <Pagination
+        count={items.length}
+        page={pagination.page}
+        pageSize={pagination.pageSize}
+        onPageChange={({ page }) =>
+          setPagination((prev) => ({ ...prev, page }))
+        }
+      />
 
       <ActionBar.Root open={hasSelection}>
         <Portal>

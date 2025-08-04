@@ -12,10 +12,11 @@ import { UserRole, UserState } from '@/utils/enum';
 
 import { created_at, expires_at, updated_at } from '../helpers';
 import { CoachTable, InsertCoach } from './coach';
+import { TestResultTable } from './periodic-testing';
 import { InsertPlayer, PlayerTable } from './player';
 import { TeamTable } from './team';
 
-export const userRolesEnum = pgEnum('user_roles', UserRole);
+export const userRolesEnum = pgEnum('user_role', UserRole);
 
 export const userStateEnum = pgEnum('user_state', UserState);
 
@@ -40,7 +41,7 @@ export const UserTable = pgTable('user', {
   updated_at,
 });
 
-export const UserRelations = relations(UserTable, ({ one }) => ({
+export const UserRelations = relations(UserTable, ({ one, many }) => ({
   team: one(TeamTable, {
     fields: [UserTable.team_id],
     references: [TeamTable.team_id],
@@ -53,6 +54,7 @@ export const UserRelations = relations(UserTable, ({ one }) => ({
     fields: [UserTable.user_id],
     references: [PlayerTable.user_id],
   }),
+  testResults: many(TestResultTable),
 }));
 
 export const PasswordTokenTable = pgTable('password_token', {

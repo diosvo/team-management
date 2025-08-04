@@ -19,12 +19,11 @@ import {
 } from '@/drizzle/schema/user';
 
 import logger from '@/lib/logger';
-import { CACHE_REVALIDATION_TIME } from '@/utils/constant';
 import { UserRole } from '@/utils/enum';
 import { hasPermissions } from '@/utils/helper';
 
 import { FilterUsersValues } from '../schemas/user';
-import { userCacheKey, userCacheTag } from './cache';
+import { userCacheKey } from './cache';
 
 export async function getUsers({
   query,
@@ -88,33 +87,27 @@ export async function getUserByEmail(email: string) {
   }
 }
 
-export async function getUserById(user_id: string) {
-  return await unstable_cache(
-    async (id: string) => {
-      try {
-        const user = await db.query.UserTable.findFirst({
-          where: eq(UserTable.user_id, id),
-          with: {
-            asCoach: true,
-            asPlayer: true,
-          },
-        });
+export const getUserById = unstable_cache(
+  async (id: string) => {
+    try {
+      const user = await db.query.UserTable.findFirst({
+        where: eq(UserTable.user_id, id),
+        with: {
+          asCoach: true,
+          asPlayer: true,
+        },
+      });
 
-        if (!user) return null;
+      if (!user) return null;
 
-        return enrichUser(user);
-      } catch (error) {
-        logger.error('Failed to fetch user:', error);
-        return null;
-      }
-    },
-    [userCacheKey(user_id)],
-    {
-      tags: [userCacheTag(user_id)],
-      revalidate: CACHE_REVALIDATION_TIME,
+      return enrichUser(user);
+    } catch (error) {
+      logger.error('Failed to fetch user:', error);
+      return null;
     }
-  )(user_id);
-}
+  },
+  [userCacheKey()]
+);
 
 export async function insertUser(user: InsertUser) {
   const [data] = await db.insert(UserTable).values(user).returning({

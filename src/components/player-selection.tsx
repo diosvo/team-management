@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 
 import {
   Combobox,
@@ -13,8 +13,8 @@ import {
 import { User } from '@/drizzle/schema/user';
 
 interface PlayerSelectionProps {
-  players: Array<User>;
   maxPlayers: number;
+  players: Array<User>;
   selection: Array<User>;
   onSelectionChange: (selected: Array<User>) => void;
 }
@@ -25,7 +25,6 @@ export default function PlayerSelection({
   selection,
   onSelectionChange,
 }: PlayerSelectionProps) {
-  const contentRef = useRef<HTMLDivElement>(null);
   const { contains } = useFilter({ sensitivity: 'base' });
 
   const { collection, filter, reset } = useListCollection({
@@ -51,10 +50,13 @@ export default function PlayerSelection({
       onValueChange={(details) => onSelectionChange(details.items)}
       onInputValueChange={(e) => filter(e.inputValue)}
     >
-      <Combobox.Label>
+      <Combobox.Label display="flex">
         Select players
         <Text as="span" fontSize="xs" color="GrayText" marginLeft={2}>
           (max {maxPlayers})
+        </Text>
+        <Text as="span" fontSize="xs" color="GrayText" marginLeft="auto">
+          {selection.length} selected
         </Text>
       </Combobox.Label>
 
@@ -67,7 +69,7 @@ export default function PlayerSelection({
       </Combobox.Control>
       <Portal>
         <Combobox.Positioner>
-          <Combobox.Content ref={contentRef}>
+          <Combobox.Content>
             <Combobox.Empty>No players found</Combobox.Empty>
             {collection.items.map((player) => (
               <Combobox.Item item={player} key={player.user_id}>

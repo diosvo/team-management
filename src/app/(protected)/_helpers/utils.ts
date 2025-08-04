@@ -39,8 +39,8 @@ export const SIDEBAR_GROUP = [
     items: [
       {
         icon: FileChartColumnIncreasing,
-        text: 'Bi-monthly Testing',
-        disabled: true,
+        text: 'Periodic Testing',
+        disabled: false,
       },
     ],
   },
