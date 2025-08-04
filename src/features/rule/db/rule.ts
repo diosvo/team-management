@@ -15,7 +15,7 @@ export async function getRule(team_id: string) {
 
 export async function insertRule(data: InsertRule) {
   try {
-    return await db.insert(RuleTable).values(data).returning();
+    return await db.insert(RuleTable).values(data);
   } catch (error) {
     throw error;
   }

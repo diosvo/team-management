@@ -34,10 +34,7 @@ export async function createTestResult(
   try {
     // Check each result to see if it already exists
     for (const result of results) {
-      const existing = await getTestResultByUserAndTypeIds(
-        result.user_id,
-        result.type_id
-      );
+      const existing = await getTestResultByUserAndTypeIds(result);
 
       if (existing) {
         toUpdate.push({ ...result, result_id: existing.result_id });

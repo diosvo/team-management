@@ -1,4 +1,4 @@
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, gte, lte } from 'drizzle-orm';
 
 import { db } from '@/drizzle';
 import { InsertTestResult, TestResultTable } from '@/drizzle/schema';
@@ -77,15 +77,16 @@ export async function getTestResultByDate(date: string) {
   }
 }
 
-export async function getTestResultByUserAndTypeIds(
-  user_id: string,
-  type_id: string
-) {
+export async function getTestResultByUserAndTypeIds(result: InsertTestResult) {
   try {
     return await db.query.TestResultTable.findFirst({
       where: and(
-        eq(TestResultTable.user_id, user_id),
-        eq(TestResultTable.type_id, type_id)
+        and(
+          gte(TestResultTable.date, result.date!),
+          lte(TestResultTable.date, result.date!)
+        ),
+        eq(TestResultTable.user_id, result.user_id),
+        eq(TestResultTable.type_id, result.type_id)
       ),
     });
   } catch (error) {
@@ -114,7 +115,7 @@ export async function updateTestResultById(result: Partial<InsertTestResult>) {
 
 export async function updateTestResults(results: Array<InsertTestResult>) {
   try {
-    return results.map(updateTestResultById);
+    return await Promise.all(results.map(updateTestResultById));
   } catch (error) {
     throw error;
   }
