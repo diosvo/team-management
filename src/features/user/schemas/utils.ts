@@ -18,47 +18,43 @@ import {
 // date() - YYYY-MM-DD
 
 export const USER_SCHEMA_VALIDATION = {
-  team_id: z.string().uuid(),
+  team_id: z.uuid(),
   name: z
     .string()
-    .min(6, { message: 'Be at least 6 characters long.' })
-    .max(128, { message: 'Be at most 128 characters long.' })
+    .min(6, { error: 'Be at least 6 characters long.' })
+    .max(128, { error: 'Be at most 128 characters long.' })
     .trim()
     .default(''),
-  dob: z.string().date().default(DEFAULT_DOB).nullable(),
-  email: z
-    .string()
-    .email({ message: 'Please enter a valid email.' })
-    .trim()
-    .default(''),
+  dob: z.iso.date().default(DEFAULT_DOB).nullable(),
+  email: z.email({ error: 'Please enter a valid email.' }).default(''),
   phone_number: z.union([
     z
       .string()
-      .length(10, { message: 'Must contain exactly 10 digit.' })
+      .length(10, { error: 'Must contain exactly 10 digit.' })
       .nullish(),
     z.literal(''),
   ]),
   citizen_identification: z.union([
     z
       .string()
-      .length(12, { message: 'Must contain exactly 12 digit.' })
+      .length(12, { error: 'Must contain exactly 12 digit.' })
       .nullish(),
     z.literal(''),
   ]),
   password: z
     .string()
-    .min(8, { message: 'Be at least 8 characters long.' })
-    .max(128, { message: 'Be at most 128 characters long.' })
-    .regex(/[a-zA-Z]/, { message: 'Contain at least one letter.' })
-    .regex(/[0-9]/, { message: 'Contain at least one number.' })
+    .min(8, { error: 'Be at least 8 characters long.' })
+    .max(128, { error: 'Be at most 128 characters long.' })
+    .regex(/[a-zA-Z]/, { error: 'Contain at least one letter.' })
+    .regex(/[0-9]/, { error: 'Contain at least one number.' })
     .regex(/[^a-zA-Z0-9]/, {
-      message: 'Contain at least one special character.',
+      error: 'Contain at least one special character.',
     })
     .trim()
     .default(''),
   state: z.enum(SELECTABLE_STATES).default(UserState.UNKNOWN),
   role: z.enum(SELECTABLE_ROLES).default(UserRole.PLAYER),
-  join_date: z.string().date().nullable().default(ESTABLISHED_DATE),
+  join_date: z.iso.date().nullable().default(ESTABLISHED_DATE),
 };
 
 export const PLAYER_VALIDATION = {

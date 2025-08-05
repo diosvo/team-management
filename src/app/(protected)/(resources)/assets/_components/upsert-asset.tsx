@@ -40,7 +40,13 @@ import {
 export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
   const [isPending, startTransition] = useTransition();
 
-  const { reset, control, register, handleSubmit } = useForm({
+  const {
+    control,
+    reset,
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
     resolver: zodResolver(UpsertAssetSchema),
     values: {
       name: item.name,
@@ -91,8 +97,13 @@ export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
               <Dialog.Title>{action} Item</Dialog.Title>
             </Dialog.Header>
             <Dialog.Body>
-              <HStack>
-                <Field required label="Name">
+              <HStack alignItems="start">
+                <Field
+                  required
+                  label="Name"
+                  invalid={!!errors.name}
+                  errorText={errors.name?.message}
+                >
                   <Input
                     maxLength={64}
                     placeholder="Ball #"
@@ -100,7 +111,12 @@ export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
                     {...register('name')}
                   />
                 </Field>
-                <Field required label="Quantity">
+                <Field
+                  required
+                  label="Quantity"
+                  invalid={!!errors.quantity}
+                  errorText={errors.quantity?.message}
+                >
                   <Controller
                     name="quantity"
                     control={control}
@@ -109,8 +125,6 @@ export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
                         width="full"
                         disabled={field.disabled}
                         name={field.name}
-                        min={1}
-                        max={100}
                         value={String(field.value)}
                         onValueChange={({ value }) => field.onChange(value)}
                       >

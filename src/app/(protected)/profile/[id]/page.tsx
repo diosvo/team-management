@@ -1,3 +1,4 @@
+import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 
 import { VStack } from '@chakra-ui/react';
@@ -9,21 +10,23 @@ import { LOGIN_PATH } from '@/routes';
 
 import ProfileContent from '../_components/profile-content';
 
+export const metadata: Metadata = {
+  title: 'Profile',
+  description: 'View and edit your profile details.',
+};
+
 export default async function ProfilePage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const currentUser = await getUser();
-
-  if (!currentUser) {
-    redirect(LOGIN_PATH);
-  }
+  if (!currentUser) redirect(LOGIN_PATH);
 
   const { id } = await params;
 
   return (
-    <VStack gap={6} align="stretch">
+    <VStack gap={6} alignItems="stretch">
       <PageTitle>Profile Details</PageTitle>
       <ProfileContent user_id={id} current_user={currentUser} />
     </VStack>
