@@ -6,6 +6,7 @@ import { NullishRule } from '@/drizzle/schema/rule';
 import { Response, ResponseFactory } from '@/utils/response';
 
 import { getTeam } from '@/features/team/actions/team';
+import { PgErrorCode } from '@/lib/pg-error-code';
 
 import { revalidateRulePath } from '../db/cache';
 import { getRule as getAction, insertRule, updateRule } from '../db/rule';
@@ -37,7 +38,10 @@ export async function upsertRule(content: string): Promise<Response> {
 
     return ResponseFactory.success('Rule updated successfully');
   } catch (error) {
-    if (error instanceof pg.DatabaseError && error.code === '23505') {
+    if (
+      error instanceof pg.DatabaseError &&
+      error.code === PgErrorCode.UNIQUE_VIOLATION
+    ) {
       return ResponseFactory.error(error.detail);
     }
     return ResponseFactory.fromError(error as Error);

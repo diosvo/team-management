@@ -13,7 +13,6 @@ import SearchInput from '@/components/ui/search-input';
 import Visibility from '@/components/visibility';
 
 import { usePermissions } from '@/hooks/use-permissions';
-import { getDefaults } from '@/lib/zod';
 import {
   ALL,
   AssetCategorySelection,
@@ -23,7 +22,6 @@ import { colorCondition } from '@/utils/helper';
 
 import { Status } from '@/components/ui/status';
 import { Tooltip } from '@/components/ui/tooltip';
-import { UpsertAssetSchema } from '@/features/asset/schemas/asset';
 import { UpsertAsset } from './upsert-asset';
 
 const categories = createListCollection({
@@ -145,7 +143,6 @@ export default function AssetFilters({
               UpsertAsset.open('add-asset', {
                 action: 'Add',
                 item: {
-                  ...getDefaults(UpsertAssetSchema),
                   asset_id: '',
                 },
               })

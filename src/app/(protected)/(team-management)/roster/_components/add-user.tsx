@@ -1,75 +1,39 @@
 'use client';
 
-import { useMemo, useTransition } from 'react';
+import { useRef, useTransition } from 'react';
 
-import {
-  Button,
-  createListCollection,
-  Dialog,
-  Grid,
-  Input,
-  Portal,
-  Select,
-  Span,
-  Stack,
-} from '@chakra-ui/react';
+import { Button, Dialog, Input, Portal, SimpleGrid } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Plus, UserRoundPlus } from 'lucide-react';
-import { Controller, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 
 import { CloseButton } from '@/components/ui/close-button';
 import { Field } from '@/components/ui/field';
-import { Status } from '@/components/ui/status';
 import { toaster } from '@/components/ui/toaster';
+import RolePositionSelection from '@/components/user/role-position-selection';
+import StateSelection from '@/components/user/state-selection';
 
-import {
-  CoachPositionsSelection,
-  DEFAULT_DOB,
-  PlayerPositionsSelection,
-  RoleSelection,
-  StateSelection,
-} from '@/utils/constant';
-import { UserRole, UserState } from '@/utils/enum';
-import { colorState } from '@/utils/helper';
+import { getDefaults } from '@/lib/zod';
 
 import { addUser } from '@/features/user/actions/user';
 import { AddUserSchema, AddUserValues } from '@/features/user/schemas/user';
 
 export default function AddUser() {
+  const contentRef = useRef<HTMLDivElement>(null);
   const [isPending, startTransition] = useTransition();
 
   const {
-    reset,
-    watch,
     control,
+    reset,
     register,
     setValue,
     handleSubmit,
-    formState: { errors },
+    formState: { isValid, errors },
   } = useForm({
+    mode: 'onChange',
     resolver: zodResolver(AddUserSchema),
-    values: {
-      name: '',
-      email: '',
-      dob: DEFAULT_DOB,
-      state: UserState.UNKNOWN,
-      role: UserRole.GUEST,
-      position: null,
-    },
+    defaultValues: getDefaults(AddUserSchema),
   });
-
-  const selectedRole = watch('role');
-
-  const positions = useMemo(() => {
-    const mapped = {
-      [UserRole.COACH]: CoachPositionsSelection,
-      [UserRole.PLAYER]: PlayerPositionsSelection,
-      [UserRole.GUEST]: [],
-    };
-    return createListCollection({
-      items: selectedRole ? mapped[selectedRole] : [],
-    });
-  }, [selectedRole]);
 
   const onSubmit = (data: AddUserValues) => {
     const id = toaster.create({
@@ -100,7 +64,7 @@ export default function AddUser() {
       <Portal>
         <Dialog.Backdrop />
         <Dialog.Positioner as="form" onSubmit={handleSubmit(onSubmit)}>
-          <Dialog.Content>
+          <Dialog.Content ref={contentRef}>
             <Dialog.CloseTrigger asChild>
               <CloseButton />
             </Dialog.CloseTrigger>
@@ -108,20 +72,18 @@ export default function AddUser() {
               <Dialog.Title>Add to Roster</Dialog.Title>
             </Dialog.Header>
             <Dialog.Body>
-              <Grid
-                templateColumns={{
-                  base: '1fr',
-                  md: 'repeat(3, 1fr)',
-                }}
-                gap={4}
-              >
+              <SimpleGrid columns={{ base: 1, md: 3 }} gap={4}>
                 <Field
                   required
                   label="Fullname"
                   invalid={!!errors.name}
                   errorText={errors.name?.message}
                 >
-                  <Input {...register('name')} disabled={isPending} />
+                  <Input
+                    autoComplete="name"
+                    disabled={isPending}
+                    {...register('name')}
+                  />
                 </Field>
                 <Field
                   required
@@ -131,6 +93,7 @@ export default function AddUser() {
                 >
                   <Input
                     type="email"
+                    autoComplete="email"
                     placeholder="abc@gmail.com"
                     disabled={isPending}
                     {...register('email')}
@@ -144,141 +107,36 @@ export default function AddUser() {
                     {...register('dob')}
                   />
                 </Field>
-
-                <Field required label="State">
-                  <Controller
-                    control={control}
-                    name="state"
-                    render={({ field }) => (
-                      <Select.Root
-                        name={field.name}
-                        value={
-                          field.value ? [field.value] : [UserState.UNKNOWN]
-                        }
-                        onValueChange={({ value }) => field.onChange(value[0])}
-                        onInteractOutside={() => field.onBlur()}
-                        collection={createListCollection({
-                          items: StateSelection,
-                        })}
-                        disabled={isPending}
-                      >
-                        <Select.HiddenSelect />
-                        <Select.Control>
-                          <Select.Trigger>
-                            <Select.ValueText placeholder="State" />
-                          </Select.Trigger>
-                          <Select.IndicatorGroup>
-                            <Select.Indicator />
-                          </Select.IndicatorGroup>
-                        </Select.Control>
-                        <Select.Positioner>
-                          <Select.Content>
-                            {StateSelection.map((state) => (
-                              <Select.Item item={state} key={state.value}>
-                                <Status colorPalette={colorState(state.value)}>
-                                  {state.label}
-                                </Status>
-                                <Select.ItemIndicator />
-                              </Select.Item>
-                            ))}
-                          </Select.Content>
-                        </Select.Positioner>
-                      </Select.Root>
-                    )}
-                  />
-                </Field>
-                <Field required label="Role">
-                  <Controller
-                    control={control}
-                    name="role"
-                    render={({ field }) => (
-                      <Select.Root
-                        name={field.name}
-                        value={field.value ? [field.value] : [UserRole.GUEST]}
-                        onValueChange={({ value }) => {
-                          setValue('position', null);
-                          field.onChange(value[0]);
-                        }}
-                        onInteractOutside={() => field.onBlur()}
-                        collection={createListCollection({
-                          items: RoleSelection,
-                        })}
-                        disabled={isPending}
-                      >
-                        <Select.HiddenSelect />
-                        <Select.Control>
-                          <Select.Trigger>
-                            <Select.ValueText placeholder="Role" />
-                          </Select.Trigger>
-                          <Select.IndicatorGroup>
-                            <Select.Indicator />
-                          </Select.IndicatorGroup>
-                        </Select.Control>
-                        <Select.Positioner>
-                          <Select.Content>
-                            {RoleSelection.map((role) => (
-                              <Select.Item item={role} key={role.value}>
-                                {role.label}
-                                <Select.ItemIndicator />
-                              </Select.Item>
-                            ))}
-                          </Select.Content>
-                        </Select.Positioner>
-                      </Select.Root>
-                    )}
-                  />
-                </Field>
-
-                <Field
-                  label="Position"
-                  disabled={isPending || selectedRole === UserRole.GUEST}
-                >
-                  <Controller
-                    control={control}
-                    name="position"
-                    render={({ field }) => (
-                      <Select.Root
-                        name={field.name}
-                        value={field.value ? [field.value] : ['UNKNOWN']}
-                        onValueChange={({ value }) => field.onChange(value[0])}
-                        onInteractOutside={() => field.onBlur()}
-                        collection={positions}
-                        disabled={isPending || selectedRole === UserRole.GUEST}
-                      >
-                        <Select.HiddenSelect />
-                        <Select.Control>
-                          <Select.Trigger>
-                            <Select.ValueText placeholder="Position" />
-                          </Select.Trigger>
-                          <Select.IndicatorGroup>
-                            <Select.Indicator />
-                          </Select.IndicatorGroup>
-                        </Select.Control>
-                        <Select.Positioner>
-                          <Select.Content>
-                            {positions.items.map((position) => (
-                              <Select.Item item={position} key={position.value}>
-                                <Stack gap={0}>
-                                  <Select.ItemText>
-                                    {position.label}
-                                  </Select.ItemText>
-                                  <Span color="fg.muted" textStyle="xs">
-                                    {position.description}
-                                  </Span>
-                                </Stack>
-                                <Select.ItemIndicator />
-                              </Select.Item>
-                            ))}
-                          </Select.Content>
-                        </Select.Positioner>
-                      </Select.Root>
-                    )}
-                  />
-                </Field>
-              </Grid>
+              </SimpleGrid>
+              <SimpleGrid
+                columns={{ base: 1, md: 2 }}
+                templateColumns={{ md: '3fr 6.25fr' }}
+                gap={4}
+                marginTop={4}
+              >
+                <StateSelection
+                  name="state"
+                  control={control}
+                  disabled={isPending}
+                  contentRef={contentRef}
+                />
+                <RolePositionSelection
+                  roleName="role"
+                  positionName="position"
+                  control={control}
+                  disabled={isPending}
+                  contentRef={contentRef}
+                  setValue={setValue}
+                />
+              </SimpleGrid>
             </Dialog.Body>
             <Dialog.Footer>
-              <Button type="submit" loading={isPending} loadingText="Adding...">
+              <Button
+                type="submit"
+                loadingText="Adding..."
+                loading={isPending}
+                disabled={!isValid || isPending}
+              >
                 <Plus /> Add
               </Button>
             </Dialog.Footer>

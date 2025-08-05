@@ -33,11 +33,11 @@ export default function LoginPage() {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { isValid, errors },
     reset,
   } = useForm({
     resolver: zodResolver(LoginSchema),
-    defaultValues: getDefaults(LoginSchema) as LoginValues,
+    defaultValues: getDefaults(LoginSchema),
   });
 
   useEffect(() => {
@@ -115,7 +115,13 @@ export default function LoginPage() {
           {page === Page.Login && (
             <input type="hidden" name="redirectTo" value={callbackUrl} />
           )}
-          <Button type="submit" borderRadius="full" loading={isPending}>
+          <Button
+            type="submit"
+            borderRadius="full"
+            loadingText="Directing..."
+            loading={isPending}
+            disabled={!isValid || isPending}
+          >
             {buttonText[page]}
           </Button>
 

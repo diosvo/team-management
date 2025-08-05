@@ -19,9 +19,9 @@ import {
 import { Eye } from 'lucide-react';
 
 import PageTitle from '@/components/page-title';
-import PlayerSelection from '@/components/player-selection';
 import { Field } from '@/components/ui/field';
 import { Tooltip } from '@/components/ui/tooltip';
+import PlayerSelection from '@/components/user/player-selection';
 
 import { User } from '@/drizzle/schema/user';
 

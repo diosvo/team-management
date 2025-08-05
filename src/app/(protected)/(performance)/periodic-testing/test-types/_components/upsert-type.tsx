@@ -19,8 +19,8 @@ import { CloseButton } from '@/components/ui/close-button';
 import { Field } from '@/components/ui/field';
 import { toaster } from '@/components/ui/toaster';
 
+import { getDefaults } from '@/lib/zod';
 import { TestTypeUnitSelection } from '@/utils/constant';
-import { TestTypeUnit } from '@/utils/enum';
 
 import { upsertTestType } from '@/features/periodic-testing/actions/test-type';
 import {
@@ -36,13 +36,11 @@ export const UpsertTestType = createOverlay(({ action, item, ...rest }) => {
     reset,
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { isValid, errors },
   } = useForm({
+    mode: 'onChange',
     resolver: zodResolver(UpsertTestTypeSchema),
-    values: {
-      name: item.name,
-      unit: TestTypeUnit.SECONDS,
-    },
+    defaultValues: getDefaults(UpsertTestTypeSchema, item),
   });
 
   const onSubmit = (data: UpsertTestTypeSchemaValues) => {
@@ -62,13 +60,8 @@ export const UpsertTestType = createOverlay(({ action, item, ...rest }) => {
         description,
       });
 
-      if (!error) {
-        reset();
-      }
-
-      if (action === 'Update') {
-        UpsertTestType.close('update-test-type');
-      }
+      if (!error) reset();
+      if (action === 'Update') UpsertTestType.close('update-test-type');
     });
   };
 
@@ -105,9 +98,7 @@ export const UpsertTestType = createOverlay(({ action, item, ...rest }) => {
                       marginTop={2}
                       name={field.name}
                       value={field.value}
-                      onValueChange={({ value }) => {
-                        field.onChange(value);
-                      }}
+                      onValueChange={({ value }) => field.onChange(value)}
                     >
                       <SimpleGrid columns={{ base: 1, md: 3 }} gap={2}>
                         {TestTypeUnitSelection.map((item) => (
@@ -126,7 +117,12 @@ export const UpsertTestType = createOverlay(({ action, item, ...rest }) => {
               </Fieldset.Root>
             </Dialog.Body>
             <Dialog.Footer>
-              <Button type="submit" loading={isPending} loadingText="Saving...">
+              <Button
+                type="submit"
+                loadingText="Saving..."
+                loading={isPending}
+                disabled={!isValid || isPending}
+              >
                 <Save /> {action}
               </Button>
             </Dialog.Footer>

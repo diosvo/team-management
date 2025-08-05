@@ -26,6 +26,7 @@ import {
 import { toaster } from '@/components/ui/toaster';
 import { Tooltip } from '@/components/ui/tooltip';
 
+import { getDefaults } from '@/lib/zod';
 import {
   AssetCategorySelection,
   AssetConditionSelection,
@@ -40,15 +41,16 @@ import {
 export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
   const [isPending, startTransition] = useTransition();
 
-  const { reset, control, register, handleSubmit } = useForm({
+  const {
+    control,
+    reset,
+    register,
+    handleSubmit,
+    formState: { isValid, errors },
+  } = useForm({
+    mode: 'onChange',
     resolver: zodResolver(UpsertAssetSchema),
-    values: {
-      name: item.name,
-      quantity: item.quantity,
-      condition: item.condition,
-      category: item.category,
-      note: item.note,
-    },
+    defaultValues: getDefaults(UpsertAssetSchema, item),
   });
 
   const onSubmit = (data: UpsertAssetSchemaValues) => {
@@ -68,13 +70,8 @@ export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
         description,
       });
 
-      if (!error) {
-        reset();
-      }
-
-      if (action === 'Update') {
-        UpsertAsset.close('update-asset');
-      }
+      if (!error) reset();
+      if (action === 'Update') UpsertAsset.close('update-asset');
     });
   };
 
@@ -91,16 +88,25 @@ export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
               <Dialog.Title>{action} Item</Dialog.Title>
             </Dialog.Header>
             <Dialog.Body>
-              <HStack>
-                <Field required label="Name">
+              <HStack alignItems="start">
+                <Field
+                  required
+                  label="Name"
+                  invalid={!!errors.name}
+                  errorText={errors.name?.message}
+                >
                   <Input
-                    maxLength={64}
                     placeholder="Ball #"
                     disabled={isPending}
                     {...register('name')}
                   />
                 </Field>
-                <Field required label="Quantity">
+                <Field
+                  required
+                  label="Quantity"
+                  invalid={!!errors.quantity}
+                  errorText={errors.quantity?.message}
+                >
                   <Controller
                     name="quantity"
                     control={control}
@@ -109,8 +115,6 @@ export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
                         width="full"
                         disabled={field.disabled}
                         name={field.name}
-                        min={1}
-                        max={100}
                         value={String(field.value)}
                         onValueChange={({ value }) => field.onChange(value)}
                       >
@@ -132,9 +136,7 @@ export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
                       marginTop={2}
                       name={field.name}
                       value={field.value}
-                      onValueChange={({ value }) => {
-                        field.onChange(value);
-                      }}
+                      onValueChange={({ value }) => field.onChange(value)}
                     >
                       <HStack gap={4}>
                         {AssetCategorySelection.map((item) => (
@@ -200,7 +202,12 @@ export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
               </Field>
             </Dialog.Body>
             <Dialog.Footer>
-              <Button type="submit" loading={isPending} loadingText="Saving...">
+              <Button
+                type="submit"
+                loadingText="Saving..."
+                loading={isPending}
+                disabled={!isValid || isPending}
+              >
                 <Save /> {action}
               </Button>
             </Dialog.Footer>

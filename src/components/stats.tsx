@@ -47,7 +47,6 @@ export default function Stats({ data, config }: StatCard) {
           textAlign="center"
           borderColor={`${color}.300`}
           backgroundColor={`${color}.50`}
-          position="relative"
           _hover={{
             shadow: 'md',
             transform: 'translateY(-2px)',
