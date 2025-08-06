@@ -1,5 +1,7 @@
 'use server';
 
+import pg from 'pg';
+
 import { User } from '@/drizzle/schema/user';
 import { getTeam } from '@/features/team/actions/team';
 import { sendPasswordInstructionEmail } from '@/lib/mail';
@@ -18,6 +20,7 @@ import {
 } from '../schemas/user';
 import { generatePasswordToken } from './password-reset-token';
 
+import { PgErrorCode } from '@/lib/pg-error-code';
 import { revalidateRosterPath, revalidateUserTag } from '../db/cache';
 import { insertCoach, updateCoach } from '../db/coach';
 import { insertPlayer, updatePlayer } from '../db/player';
@@ -157,6 +160,15 @@ export async function updateTeamInfo(
 
     return ResponseFactory.success('Updated team information successfully');
   } catch (error) {
+    if (
+      error instanceof pg.DatabaseError &&
+      error.code === PgErrorCode.UNIQUE_VIOLATION &&
+      error.constraint === 'player_jersey_number_unique'
+    ) {
+      return ResponseFactory.error(
+        `Jersey number '${data.player.jersey_number}' is already taken.`
+      );
+    }
     return ResponseFactory.fromError(error as Error);
   }
 }
