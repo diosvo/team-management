@@ -1,21 +1,11 @@
 'use client';
 
-import { useMemo, useTransition } from 'react';
+import { useTransition } from 'react';
 
-import {
-  Button,
-  createListCollection,
-  Dialog,
-  Grid,
-  Input,
-  Portal,
-  Select,
-  Span,
-  Stack,
-} from '@chakra-ui/react';
+import { Button, Dialog, Grid, Input, Portal } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Plus, UserRoundPlus } from 'lucide-react';
-import { Controller, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 
 import { CloseButton } from '@/components/ui/close-button';
 import { Field } from '@/components/ui/field';
@@ -24,11 +14,6 @@ import { RoleSelection } from '@/components/user/role-selection';
 import { StateSelection } from '@/components/user/state-selection';
 
 import { getDefaults } from '@/lib/zod';
-import {
-  CoachPositionsSelection,
-  PlayerPositionsSelection,
-} from '@/utils/constant';
-import { UserRole } from '@/utils/enum';
 
 import { addUser } from '@/features/user/actions/user';
 import { AddUserSchema, AddUserValues } from '@/features/user/schemas/user';
@@ -38,36 +23,17 @@ export default function AddUser() {
 
   const {
     reset,
-    watch,
     control,
     register,
-    setValue,
     handleSubmit,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(AddUserSchema),
-    values: {
-      name: '',
-      email: '',
-      dob: DEFAULT_DOB,
-      state: UserState.UNKNOWN,
-      role: UserRole.GUEST,
-      position: null,
-    },
+    values: getDefaults(AddUserSchema) as AddUserValues,
   });
 
-  const selectedRole = watch('role');
-
-  const positions = useMemo(() => {
-    const mapped = {
-      [UserRole.COACH]: CoachPositionsSelection,
-      [UserRole.PLAYER]: PlayerPositionsSelection,
-      [UserRole.GUEST]: [],
-    };
-    return createListCollection({
-      items: selectedRole ? mapped[selectedRole] : [],
-    });
-  }, [selectedRole]);
+  // TODO: get defaults from helper function rather than list out each field once again
+  // console.log(getDefaults(AddUserSchema));
 
   const onSubmit = (data: AddUserValues) => {
     const id = toaster.create({
@@ -149,58 +115,11 @@ export default function AddUser() {
                   disabled={isPending}
                 />
                 <RoleSelection
-                  name="role"
+                  roleName="role"
+                  positionName="position"
                   control={control}
                   disabled={isPending}
-                  onChange={() => setValue('position', null)}
                 />
-
-                <Field
-                  label="Position"
-                  disabled={isPending || selectedRole === UserRole.GUEST}
-                >
-                  <Controller
-                    control={control}
-                    name="position"
-                    render={({ field }) => (
-                      <Select.Root
-                        name={field.name}
-                        value={field.value ? [field.value] : ['UNKNOWN']}
-                        onValueChange={({ value }) => field.onChange(value[0])}
-                        onInteractOutside={() => field.onBlur()}
-                        collection={positions}
-                        disabled={isPending || selectedRole === UserRole.GUEST}
-                      >
-                        <Select.HiddenSelect />
-                        <Select.Control>
-                          <Select.Trigger>
-                            <Select.ValueText placeholder="Position" />
-                          </Select.Trigger>
-                          <Select.IndicatorGroup>
-                            <Select.Indicator />
-                          </Select.IndicatorGroup>
-                        </Select.Control>
-                        <Select.Positioner>
-                          <Select.Content>
-                            {positions.items.map((position) => (
-                              <Select.Item item={position} key={position.value}>
-                                <Stack gap={0}>
-                                  <Select.ItemText>
-                                    {position.label}
-                                  </Select.ItemText>
-                                  <Span color="fg.muted" textStyle="xs">
-                                    {position.description}
-                                  </Span>
-                                </Stack>
-                                <Select.ItemIndicator />
-                              </Select.Item>
-                            ))}
-                          </Select.Content>
-                        </Select.Positioner>
-                      </Select.Root>
-                    )}
-                  />
-                </Field>
               </Grid>
             </Dialog.Body>
             <Dialog.Footer>

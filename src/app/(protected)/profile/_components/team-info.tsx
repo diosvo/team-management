@@ -5,45 +5,35 @@ import { useMemo, useState, useTransition } from 'react';
 import {
   Badge,
   Card,
-  createListCollection,
   Grid,
   HStack,
   IconButton,
   Input,
   InputGroup,
-  Portal,
-  Select,
-  Span,
-  Stack,
   Text,
   VStack,
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { formatDistanceToNow } from 'date-fns';
 import { Activity, Edit, LucideClock9, Save } from 'lucide-react';
-import { Controller, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 
 import TextField from '@/components/text-field';
 import { CloseButton } from '@/components/ui/close-button';
 import { Field } from '@/components/ui/field';
-import { toaster } from '@/components/ui/toaster';
-import { Tooltip } from '@/components/ui/tooltip';
-import Visibility from '@/components/visibility';
-
 import {
   NumberInputField,
   NumberInputRoot,
 } from '@/components/ui/number-input';
+import { toaster } from '@/components/ui/toaster';
+import { Tooltip } from '@/components/ui/tooltip';
 import { RoleSelection } from '@/components/user/role-selection';
 import { StateSelection } from '@/components/user/state-selection';
+import Visibility from '@/components/visibility';
 
 import { User } from '@/drizzle/schema/user';
 import { usePermissions } from '@/hooks/use-permissions';
-import {
-  CoachPositionsSelection,
-  ESTABLISHED_DATE,
-  PlayerPositionsSelection,
-} from '@/utils/constant';
+import { ESTABLISHED_DATE } from '@/utils/constant';
 import { UserRole } from '@/utils/enum';
 import { formatDate } from '@/utils/formatter';
 import { colorRole, colorState, hasPermissions } from '@/utils/helper';
@@ -84,9 +74,7 @@ export default function TeamInfo({
 
   const {
     reset,
-    watch,
     control,
-    getValues,
     register,
     handleSubmit,
     formState: { isDirty, isValid, errors },
@@ -104,25 +92,6 @@ export default function TeamInfo({
     },
     resolver: zodResolver(EditTeamInfoSchema),
   });
-
-  const selectedRole = watch('user.role');
-
-  console.log(
-    'number',
-    getValues('player.jersey_number'),
-    typeof getValues('player.jersey_number')
-  );
-
-  const positions = useMemo(() => {
-    const mapped = {
-      [UserRole.COACH]: CoachPositionsSelection,
-      [UserRole.PLAYER]: PlayerPositionsSelection,
-      [UserRole.GUEST]: [],
-    };
-    return createListCollection({
-      items: selectedRole ? mapped[selectedRole] : [],
-    });
-  }, [selectedRole]);
 
   const onSubmit = (data: EditTeamInfoValues) => {
     startTransition(async () => {
@@ -230,81 +199,32 @@ export default function TeamInfo({
 
           {isEditing && isAdmin ? (
             <RoleSelection
-              name="user.role"
+              roleName="user.role"
+              positionName="position"
               control={control}
               disabled={isPending}
             />
           ) : (
-            <TextField label="Role">
-              <Badge
-                variant="subtle"
-                colorPalette={colorRole(user.role)}
-                borderRadius="full"
-              >
-                {user.role}
-              </Badge>
-            </TextField>
-          )}
-
-          {isEditing && isAdmin ? (
-            <Field
-              label="Position"
-              disabled={isPending || selectedRole === UserRole.GUEST}
-            >
-              <Controller
-                control={control}
-                name="position"
-                render={({ field }) => (
-                  <Select.Root
-                    name={field.name}
-                    value={field.value ? [field.value] : ['UNKNOWN']}
-                    onValueChange={({ value }) => field.onChange(value[0])}
-                    onInteractOutside={() => field.onBlur()}
-                    collection={positions}
-                    disabled={isPending || selectedRole === UserRole.GUEST}
-                  >
-                    <Select.HiddenSelect />
-                    <Select.Control>
-                      <Select.Trigger>
-                        <Select.ValueText placeholder="Position" />
-                      </Select.Trigger>
-                      <Select.IndicatorGroup>
-                        <Select.Indicator />
-                      </Select.IndicatorGroup>
-                    </Select.Control>
-                    <Portal>
-                      <Select.Positioner>
-                        <Select.Content>
-                          {positions.items.map((position) => (
-                            <Select.Item item={position} key={position.value}>
-                              <Stack gap={0}>
-                                <Select.ItemText>
-                                  {position.label}
-                                </Select.ItemText>
-                                <Span color="fg.muted" textStyle="xs">
-                                  {position.description}
-                                </Span>
-                              </Stack>
-                              <Select.ItemIndicator />
-                            </Select.Item>
-                          ))}
-                        </Select.Content>
-                      </Select.Positioner>
-                    </Portal>
-                  </Select.Root>
-                )}
-              />
-            </Field>
-          ) : (
-            <TextField label="Position">
-              {user.details.position ? (
-                <Badge variant="outline" borderRadius="full">
-                  {user.details.position}
+            <>
+              <TextField label="Role">
+                <Badge
+                  variant="subtle"
+                  colorPalette={colorRole(user.role)}
+                  borderRadius="full"
+                >
+                  {user.role}
                 </Badge>
-              ) : (
-                <Text>-</Text>
-              )}
-            </TextField>
+              </TextField>
+              <TextField label="Position">
+                {user.details.position ? (
+                  <Badge variant="outline" borderRadius="full">
+                    {user.details.position}
+                  </Badge>
+                ) : (
+                  <Text>-</Text>
+                )}
+              </TextField>
+            </>
           )}
         </Grid>
       </Card.Body>
