@@ -30,33 +30,29 @@ import { toaster } from '@/components/ui/toaster';
 import { Tooltip } from '@/components/ui/tooltip';
 import Visibility from '@/components/visibility';
 
+import {
+  NumberInputField,
+  NumberInputRoot,
+} from '@/components/ui/number-input';
+import { RoleSelection } from '@/components/user/role-selection';
+import { StateSelection } from '@/components/user/state-selection';
+
 import { User } from '@/drizzle/schema/user';
 import { usePermissions } from '@/hooks/use-permissions';
 import {
   CoachPositionsSelection,
   ESTABLISHED_DATE,
   PlayerPositionsSelection,
-  RoleSelection,
-  StateSelection,
 } from '@/utils/constant';
-import { UserRole, UserState } from '@/utils/enum';
+import { UserRole } from '@/utils/enum';
 import { formatDate } from '@/utils/formatter';
 import { colorRole, colorState, hasPermissions } from '@/utils/helper';
 
-import { Status } from '@/components/ui/status';
 import { updateTeamInfo } from '@/features/user/actions/user';
 import {
   EditTeamInfoSchema,
   EditTeamInfoValues,
 } from '@/features/user/schemas/user';
-
-const roles = createListCollection({
-  items: RoleSelection,
-});
-
-const states = createListCollection({
-  items: StateSelection,
-});
 
 export default function TeamInfo({
   user,
@@ -90,8 +86,8 @@ export default function TeamInfo({
     reset,
     watch,
     control,
+    getValues,
     register,
-    setValue,
     handleSubmit,
     formState: { isDirty, isValid, errors },
   } = useForm({
@@ -110,6 +106,12 @@ export default function TeamInfo({
   });
 
   const selectedRole = watch('user.role');
+
+  console.log(
+    'number',
+    getValues('player.jersey_number'),
+    typeof getValues('player.jersey_number')
+  );
 
   const positions = useMemo(() => {
     const mapped = {
@@ -209,12 +211,11 @@ export default function TeamInfo({
                 invalid={!!errors.player?.jersey_number}
                 errorText={errors.player?.jersey_number?.message}
               >
-                <InputGroup startElement={'#'}>
-                  <Input
-                    disabled={isPending}
-                    {...register('player.jersey_number')}
-                  />
-                </InputGroup>
+                <NumberInputRoot disabled={isPending}>
+                  <InputGroup startElement={'#'}>
+                    <NumberInputField {...register('player.jersey_number')} />
+                  </InputGroup>
+                </NumberInputRoot>
               </Field>
             ) : (
               <TextField label="Jersey Number">
@@ -228,51 +229,11 @@ export default function TeamInfo({
           </Visibility>
 
           {isEditing && isAdmin ? (
-            <Field
-              required
-              label="Role"
-              invalid={!!errors.user?.role}
-              errorText={errors.user?.role?.message}
-            >
-              <Controller
-                control={control}
-                name="user.role"
-                render={({ field }) => (
-                  <Select.Root
-                    name={field.name}
-                    value={field.value ? [field.value] : [UserRole.GUEST]}
-                    onValueChange={({ value }) => {
-                      setValue('position', null);
-                      field.onChange(value[0]);
-                    }}
-                    onInteractOutside={() => field.onBlur()}
-                    collection={roles}
-                  >
-                    <Select.HiddenSelect />
-                    <Select.Control>
-                      <Select.Trigger>
-                        <Select.ValueText placeholder="Role" />
-                      </Select.Trigger>
-                      <Select.IndicatorGroup>
-                        <Select.Indicator />
-                      </Select.IndicatorGroup>
-                    </Select.Control>
-                    <Portal>
-                      <Select.Positioner>
-                        <Select.Content>
-                          {roles.items.map((role) => (
-                            <Select.Item item={role} key={role.value}>
-                              {role.label}
-                              <Select.ItemIndicator />
-                            </Select.Item>
-                          ))}
-                        </Select.Content>
-                      </Select.Positioner>
-                    </Portal>
-                  </Select.Root>
-                )}
-              />
-            </Field>
+            <RoleSelection
+              name="user.role"
+              control={control}
+              disabled={isPending}
+            />
           ) : (
             <TextField label="Role">
               <Badge
@@ -357,45 +318,11 @@ export default function TeamInfo({
             }}
             gap={4}
           >
-            <Field label="State">
-              <Controller
-                control={control}
-                name="user.state"
-                render={({ field }) => (
-                  <Select.Root
-                    name={field.name}
-                    value={field.value ? [field.value] : [UserState.UNKNOWN]}
-                    onValueChange={({ value }) => field.onChange(value[0])}
-                    onInteractOutside={() => field.onBlur()}
-                    collection={states}
-                  >
-                    <Select.HiddenSelect />
-                    <Select.Control>
-                      <Select.Trigger>
-                        <Select.ValueText placeholder="State" />
-                      </Select.Trigger>
-                      <Select.IndicatorGroup>
-                        <Select.Indicator />
-                      </Select.IndicatorGroup>
-                    </Select.Control>
-                    <Portal>
-                      <Select.Positioner>
-                        <Select.Content>
-                          {states.items.map((state) => (
-                            <Select.Item item={state} key={state.value}>
-                              <Status colorPalette={colorState(state.value)}>
-                                {state.label}
-                              </Status>
-                              <Select.ItemIndicator />
-                            </Select.Item>
-                          ))}
-                        </Select.Content>
-                      </Select.Positioner>
-                    </Portal>
-                  </Select.Root>
-                )}
-              />
-            </Field>
+            <StateSelection
+              control={control}
+              name="user.state"
+              disabled={isPending}
+            />
             <Field label="Join Date">
               <Input
                 type="date"
