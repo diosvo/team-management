@@ -10,8 +10,8 @@ import { useForm } from 'react-hook-form';
 import { CloseButton } from '@/components/ui/close-button';
 import { Field } from '@/components/ui/field';
 import { toaster } from '@/components/ui/toaster';
-import { RoleSelection } from '@/components/user/role-selection';
-import { StateSelection } from '@/components/user/state-selection';
+import RolePositionSelection from '@/components/user/role-position-selection';
+import StateSelection from '@/components/user/state-selection';
 
 import { getDefaults } from '@/lib/zod';
 
@@ -114,7 +114,7 @@ export default function AddUser() {
                   control={control}
                   disabled={isPending}
                 />
-                <RoleSelection
+                <RolePositionSelection
                   roleName="role"
                   positionName="position"
                   control={control}

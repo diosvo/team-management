@@ -28,7 +28,7 @@ interface RoleSelectProps<T extends FieldValues> {
   disabled?: boolean;
 }
 
-export function RoleSelection<T extends FieldValues>({
+export default function RolePositionSelection<T extends FieldValues>({
   control,
   roleName,
   positionName,

@@ -19,7 +19,7 @@ interface StateSelectProps<T extends FieldValues> {
   error?: string;
 }
 
-export function StateSelection<T extends FieldValues>({
+export default function StateSelection<T extends FieldValues>({
   control,
   name,
   disabled = false,

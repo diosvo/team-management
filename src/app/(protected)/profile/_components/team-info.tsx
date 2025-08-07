@@ -16,7 +16,7 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod';
 import { formatDistanceToNow } from 'date-fns';
 import { Activity, Edit, LucideClock9, Save } from 'lucide-react';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 
 import TextField from '@/components/text-field';
 import { CloseButton } from '@/components/ui/close-button';
@@ -27,8 +27,8 @@ import {
 } from '@/components/ui/number-input';
 import { toaster } from '@/components/ui/toaster';
 import { Tooltip } from '@/components/ui/tooltip';
-import { RoleSelection } from '@/components/user/role-selection';
-import { StateSelection } from '@/components/user/state-selection';
+import RolePositionSelection from '@/components/user/role-position-selection';
+import StateSelection from '@/components/user/state-selection';
 import Visibility from '@/components/visibility';
 
 import { User } from '@/drizzle/schema/user';
@@ -86,12 +86,14 @@ export default function TeamInfo({
         join_date: user.join_date,
       },
       player: {
-        jersey_number: user.details.jersey_number,
+        jersey_number: user.details.jersey_number ?? undefined,
       },
       position: user.details.position,
     },
     resolver: zodResolver(EditTeamInfoSchema),
   });
+
+  console.log('user errors:', errors); // Debugging line, can be removed later
 
   const onSubmit = (data: EditTeamInfoValues) => {
     startTransition(async () => {
@@ -180,11 +182,27 @@ export default function TeamInfo({
                 invalid={!!errors.player?.jersey_number}
                 errorText={errors.player?.jersey_number?.message}
               >
-                <NumberInputRoot disabled={isPending}>
-                  <InputGroup startElement={'#'}>
-                    <NumberInputField {...register('player.jersey_number')} />
-                  </InputGroup>
-                </NumberInputRoot>
+                <Controller
+                  name="player.jersey_number"
+                  control={control}
+                  render={({ field }) => (
+                    <NumberInputRoot
+                      width="full"
+                      disabled={field.disabled}
+                      name={field.name}
+                      value={String(field.value)}
+                      onValueChange={({ value }) => {
+                        console.log('Jersey Number Value Changed:', value); // Debugging line
+
+                        field.onChange(value);
+                      }}
+                    >
+                      <InputGroup startElement={'#'}>
+                        <NumberInputField onBlur={field.onBlur} />
+                      </InputGroup>
+                    </NumberInputRoot>
+                  )}
+                />
               </Field>
             ) : (
               <TextField label="Jersey Number">
@@ -198,7 +216,7 @@ export default function TeamInfo({
           </Visibility>
 
           {isEditing && isAdmin ? (
-            <RoleSelection
+            <RolePositionSelection
               roleName="user.role"
               positionName="position"
               control={control}
