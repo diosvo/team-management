@@ -59,12 +59,18 @@ export const USER_SCHEMA_VALIDATION = {
 
 export const PLAYER_VALIDATION = {
   position: z.enum(SELECTABLE_PLAYER_POSITIONS).default(PlayerPosition.UNKNOWN),
-  jersey_number: z.coerce
-    .number()
-    .optional()
-    .refine((val) => val === undefined || (val >= 1 && val <= 100), {
-      error: 'Must be between 1 and 100',
-    }),
+  // Handle empty strings before the coercion, unless it automatically converts empty string to 0
+  jersey_number: z
+    .union([
+      z.literal('').transform(() => null),
+      z.literal(null),
+      z.literal(undefined),
+      z.coerce
+        .number()
+        .min(0, 'Must be at least 0.')
+        .max(99, 'Cannot exceed 99.'),
+    ])
+    .optional(),
   // Temporrily disabled
   // height: z.coerce.number().int().min(0).max(200).nullish(),
   // weight: z.coerce.number().int().min(0).max(100).nullish(),

@@ -89,8 +89,6 @@ export default function TeamInfo({
     resolver: zodResolver(EditTeamInfoSchema),
   });
 
-  console.log('user errors:', errors); // Debugging line, can be removed later
-
   const onSubmit = (data: EditTeamInfoValues) => {
     startTransition(async () => {
       const id = toaster.create({
@@ -223,11 +221,7 @@ export default function TeamInfo({
                       disabled={field.disabled}
                       name={field.name}
                       value={String(field.value)}
-                      onValueChange={({ value }) => {
-                        console.log('Jersey Number Value Changed:', value); // Debugging line
-
-                        field.onChange(value);
-                      }}
+                      onValueChange={({ value }) => field.onChange(value)}
                     >
                       <InputGroup startElement={'#'}>
                         <NumberInputField onBlur={field.onBlur} />
