@@ -25,7 +25,7 @@ export const USER_SCHEMA_VALIDATION = {
     .max(128, { error: 'Be at most 128 characters long.' })
     .trim()
     .default(''),
-  dob: z.iso.date().default(DEFAULT_DOB).nullable(),
+  dob: z.iso.date().nullable().default(DEFAULT_DOB),
   email: z.email({ error: 'Please enter a valid email.' }).default(''),
   phone_number: z.union([
     z
@@ -59,7 +59,12 @@ export const USER_SCHEMA_VALIDATION = {
 
 export const PLAYER_VALIDATION = {
   position: z.enum(SELECTABLE_PLAYER_POSITIONS).default(PlayerPosition.UNKNOWN),
-  jersey_number: z.coerce.number().int().min(0).max(99).nullish(),
+  jersey_number: z.coerce
+    .number()
+    .optional()
+    .refine((val) => val === undefined || (val >= 1 && val <= 100), {
+      error: 'Must be between 1 and 100',
+    }),
   // Temporrily disabled
   // height: z.coerce.number().int().min(0).max(200).nullish(),
   // weight: z.coerce.number().int().min(0).max(100).nullish(),

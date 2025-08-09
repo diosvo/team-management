@@ -26,6 +26,7 @@ import {
 import { toaster } from '@/components/ui/toaster';
 import { Tooltip } from '@/components/ui/tooltip';
 
+import { getDefaults } from '@/lib/zod';
 import {
   AssetCategorySelection,
   AssetConditionSelection,
@@ -48,13 +49,7 @@ export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
     formState: { errors },
   } = useForm({
     resolver: zodResolver(UpsertAssetSchema),
-    values: {
-      name: item.name,
-      quantity: item.quantity,
-      condition: item.condition,
-      category: item.category,
-      note: item.note,
-    },
+    defaultValues: getDefaults(UpsertAssetSchema, item),
   });
 
   const onSubmit = (data: UpsertAssetSchemaValues) => {

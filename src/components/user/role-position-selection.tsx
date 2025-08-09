@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 
 import {
   createListCollection,
+  HStack,
   Portal,
   Select,
   Span,
@@ -18,7 +19,7 @@ import {
   PlayerPositionsSelection,
   RoleSelection as RoleItems,
 } from '@/utils/constant';
-import { UserRole } from '@/utils/enum';
+import { PlayerPosition, UserRole } from '@/utils/enum';
 import { Option } from '@/utils/type';
 
 interface RoleSelectProps<T extends FieldValues> {
@@ -43,18 +44,18 @@ export default function RolePositionSelection<T extends FieldValues>({
   );
 
   return (
-    <>
+    <HStack width="inherit">
       <Field required label="Role">
         <Controller
           control={control}
           name={roleName}
-          render={({ field }) => (
+          render={({ field: roleField }) => (
             <Select.Root
               collection={roles}
-              name={field.name}
-              value={field.value ? [field.value] : [UserRole.GUEST]}
-              onValueChange={({ value }) => field.onChange(value[0])}
-              onInteractOutside={() => field.onBlur()}
+              name={roleField.name}
+              value={roleField.value ? [roleField.value] : [UserRole.GUEST]}
+              onValueChange={({ value }) => roleField.onChange(value[0])}
+              onInteractOutside={() => roleField.onBlur()}
               disabled={disabled}
             >
               <Select.HiddenSelect />
@@ -109,7 +110,7 @@ export default function RolePositionSelection<T extends FieldValues>({
           }, [disabled, positions.items.length, selectedRole]);
 
           return (
-            <Field label="Position" disabled={disabledPosition}>
+            <Field label="Position">
               <Controller
                 control={control}
                 name={positionName}
@@ -117,7 +118,9 @@ export default function RolePositionSelection<T extends FieldValues>({
                   <Select.Root
                     name={positionField.name}
                     value={
-                      positionField.value ? [positionField.value] : ['UNKNOWN']
+                      positionField.value
+                        ? [positionField.value]
+                        : [PlayerPosition.UNKNOWN]
                     }
                     onValueChange={({ value }) =>
                       positionField.onChange(value[0])
@@ -161,6 +164,6 @@ export default function RolePositionSelection<T extends FieldValues>({
           );
         }}
       />
-    </>
+    </HStack>
   );
 }

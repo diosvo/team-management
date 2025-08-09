@@ -149,7 +149,7 @@ export async function updateTeamInfo(
     // Update role-specific tables based on the user's role
     const { isPlayer, isCoach } = hasPermissions(userData.role);
 
-    // WIP: Create new player or coach if they don't exist
+    // TODO: Create new player or coach if they don't exist
 
     if (isPlayer && playerData) {
       await updatePlayer({

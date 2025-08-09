@@ -29,11 +29,8 @@ export default function AddUser() {
     formState: { errors },
   } = useForm({
     resolver: zodResolver(AddUserSchema),
-    values: getDefaults(AddUserSchema) as AddUserValues,
+    defaultValues: getDefaults(AddUserSchema),
   });
-
-  // TODO: get defaults from helper function rather than list out each field once again
-  // console.log(getDefaults(AddUserSchema));
 
   const onSubmit = (data: AddUserValues) => {
     const id = toaster.create({

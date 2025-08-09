@@ -8,7 +8,6 @@ import {
   or,
   SQL,
 } from 'drizzle-orm';
-import { unstable_cache } from 'next/cache';
 
 import { db } from '@/drizzle';
 import {
@@ -23,7 +22,6 @@ import { UserRole } from '@/utils/enum';
 import { hasPermissions } from '@/utils/helper';
 
 import { FilterUsersValues } from '../schemas/user';
-import { userCacheKey } from './cache';
 
 export async function getUsers({
   query,
@@ -87,27 +85,25 @@ export async function getUserByEmail(email: string) {
   }
 }
 
-export const getUserById = unstable_cache(
-  async (id: string) => {
-    try {
-      const user = await db.query.UserTable.findFirst({
-        where: eq(UserTable.user_id, id),
-        with: {
-          asCoach: true,
-          asPlayer: true,
-        },
-      });
+export async function getUserById(id: string) {
+  // Temporarily uncache the user (unstable_cache) to ensure we always get the latest data
+  try {
+    const user = await db.query.UserTable.findFirst({
+      where: eq(UserTable.user_id, id),
+      with: {
+        asCoach: true,
+        asPlayer: true,
+      },
+    });
 
-      if (!user) return null;
+    if (!user) return null;
 
-      return enrichUser(user);
-    } catch (error) {
-      logger.error('Failed to fetch user:', error);
-      return null;
-    }
-  },
-  [userCacheKey()]
-);
+    return enrichUser(user);
+  } catch (error) {
+    logger.error('Failed to fetch user:', error);
+    return null;
+  }
+}
 
 export async function insertUser(user: InsertUser) {
   const [data] = await db.insert(UserTable).values(user).returning({

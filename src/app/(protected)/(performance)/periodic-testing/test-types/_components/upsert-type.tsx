@@ -20,13 +20,13 @@ import { Field } from '@/components/ui/field';
 import { toaster } from '@/components/ui/toaster';
 
 import { TestTypeUnitSelection } from '@/utils/constant';
-import { TestTypeUnit } from '@/utils/enum';
 
 import { upsertTestType } from '@/features/periodic-testing/actions/test-type';
 import {
   UpsertTestTypeSchema,
   UpsertTestTypeSchemaValues,
 } from '@/features/periodic-testing/schemas/periodic-testing';
+import { getDefaults } from '@/lib/zod';
 
 export const UpsertTestType = createOverlay(({ action, item, ...rest }) => {
   const [isPending, startTransition] = useTransition();
@@ -39,10 +39,7 @@ export const UpsertTestType = createOverlay(({ action, item, ...rest }) => {
     formState: { errors },
   } = useForm({
     resolver: zodResolver(UpsertTestTypeSchema),
-    values: {
-      name: item.name,
-      unit: TestTypeUnit.SECONDS,
-    },
+    defaultValues: getDefaults(UpsertTestTypeSchema, item),
   });
 
   const onSubmit = (data: UpsertTestTypeSchemaValues) => {

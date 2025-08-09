@@ -10,12 +10,12 @@ import {
   IconButton,
   Input,
   InputGroup,
+  SimpleGrid,
   Text,
-  VStack,
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { formatDistanceToNow } from 'date-fns';
-import { Activity, Edit, LucideClock9, Save } from 'lucide-react';
+import { Activity, Edit, LucideClock9, Save, Shirt } from 'lucide-react';
 import { Controller, useForm } from 'react-hook-form';
 
 import TextField from '@/components/text-field';
@@ -68,10 +68,6 @@ export default function TeamInfo({
     return true;
   }, [isOwnProfile, isAdmin, viewOnly]);
 
-  const canEditJerseyNumber = useMemo(() => {
-    return isAdmin || isOwnProfile;
-  }, [isOwnProfile, isAdmin]);
-
   const {
     reset,
     control,
@@ -79,7 +75,7 @@ export default function TeamInfo({
     handleSubmit,
     formState: { isDirty, isValid, errors },
   } = useForm({
-    values: {
+    defaultValues: {
       user: {
         role: user.role === UserRole.SUPER_ADMIN ? undefined : user.role,
         state: user.state,
@@ -127,8 +123,10 @@ export default function TeamInfo({
     <Card.Root
       as="form"
       size="sm"
-      _hover={{ shadow: 'sm' }}
-      transition="all 0.2s"
+      _hover={{
+        shadow: 'md',
+        transition: 'all 0.2s',
+      }}
       onSubmit={handleSubmit(onSubmit)}
     >
       <HStack
@@ -166,17 +164,51 @@ export default function TeamInfo({
           )}
         </Card.Header>
       </HStack>
-      <Card.Body>
-        <Grid
-          templateColumns={{
-            base: '1fr',
-            md: 'repeat(2, 1fr)',
-            xl: 'repeat(3, 1fr)',
-          }}
-          gap={4}
-        >
-          <Visibility isVisible={isPlayer}>
-            {isEditing && canEditJerseyNumber ? (
+      <Card.Body gap={3}>
+        {isEditing && isAdmin ? (
+          <RolePositionSelection
+            roleName="user.role"
+            positionName="position"
+            control={control}
+            disabled={isPending}
+          />
+        ) : (
+          <SimpleGrid columns={{ base: 1, md: 2 }}>
+            <TextField label="Role">
+              <Badge
+                variant="subtle"
+                colorPalette={colorRole(user.role)}
+                borderRadius="full"
+              >
+                {user.role}
+              </Badge>
+            </TextField>
+            <TextField label="Position">
+              {user.details.position ? (
+                <Badge variant="outline" borderRadius="full">
+                  {user.details.position}
+                </Badge>
+              ) : (
+                <Text>-</Text>
+              )}
+            </TextField>
+          </SimpleGrid>
+        )}
+
+        {isEditing && canEdit ? (
+          <Grid
+            templateColumns={{
+              base: '1fr',
+              md: 'repeat(3, 1fr)',
+            }}
+            gap={2}
+          >
+            <StateSelection
+              control={control}
+              name="user.state"
+              disabled={isPending}
+            />
+            <Visibility isVisible={isPlayer}>
               <Field
                 label="Jersey Number"
                 invalid={!!errors.player?.jersey_number}
@@ -204,63 +236,7 @@ export default function TeamInfo({
                   )}
                 />
               </Field>
-            ) : (
-              <TextField label="Jersey Number">
-                {user.details.jersey_number ? (
-                  '# ' + user.details.jersey_number
-                ) : (
-                  <Text>-</Text>
-                )}
-              </TextField>
-            )}
-          </Visibility>
-
-          {isEditing && isAdmin ? (
-            <RolePositionSelection
-              roleName="user.role"
-              positionName="position"
-              control={control}
-              disabled={isPending}
-            />
-          ) : (
-            <>
-              <TextField label="Role">
-                <Badge
-                  variant="subtle"
-                  colorPalette={colorRole(user.role)}
-                  borderRadius="full"
-                >
-                  {user.role}
-                </Badge>
-              </TextField>
-              <TextField label="Position">
-                {user.details.position ? (
-                  <Badge variant="outline" borderRadius="full">
-                    {user.details.position}
-                  </Badge>
-                ) : (
-                  <Text>-</Text>
-                )}
-              </TextField>
-            </>
-          )}
-        </Grid>
-      </Card.Body>
-
-      <Card.Footer asChild>
-        {isEditing && canEdit ? (
-          <Grid
-            templateColumns={{
-              base: '1fr',
-              md: 'repeat(2, 1fr)',
-            }}
-            gap={4}
-          >
-            <StateSelection
-              control={control}
-              name="user.state"
-              disabled={isPending}
-            />
+            </Visibility>
             <Field label="Join Date">
               <Input
                 type="date"
@@ -272,16 +248,25 @@ export default function TeamInfo({
             </Field>
           </Grid>
         ) : (
-          <VStack align="flex-start" width="max-content">
-            <TextField label="State" direction="horizontal" icon={Activity}>
-              <Badge
-                variant="surface"
-                borderRadius="full"
-                colorPalette={colorState(user.state)}
+          <>
+            <SimpleGrid columns={{ base: 1, md: 2 }}>
+              <TextField label="State" direction="horizontal" icon={Activity}>
+                <Badge
+                  variant="surface"
+                  borderRadius="full"
+                  colorPalette={colorState(user.state)}
+                >
+                  {user.state}
+                </Badge>
+              </TextField>
+              <TextField
+                label="Jersey Number"
+                direction="horizontal"
+                icon={Shirt}
               >
-                {user.state}
-              </Badge>
-            </TextField>
+                {user.details.jersey_number ?? '-'}
+              </TextField>
+            </SimpleGrid>
             {user.join_date && (
               <TextField
                 label="Joined Date"
@@ -300,9 +285,9 @@ export default function TeamInfo({
                 </Text>
               </TextField>
             )}
-          </VStack>
+          </>
         )}
-      </Card.Footer>
+      </Card.Body>
     </Card.Root>
   );
 }
