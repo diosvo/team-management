@@ -2,8 +2,8 @@
 
 import { Input, VStack } from '@chakra-ui/react';
 
-import PlayerSelection from '@/components/player-selection';
 import { Field } from '@/components/ui/field';
+import PlayerSelection from '@/components/user/player-selection';
 
 import { TestType, User } from '@/drizzle/schema';
 import { ESTABLISHED_DATE } from '@/utils/constant';

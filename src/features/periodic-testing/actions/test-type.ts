@@ -5,6 +5,7 @@ import pg from 'pg';
 import { Response, ResponseFactory } from '@/utils/response';
 
 import { getTeam } from '@/features/team/actions/team';
+import { PgErrorCode } from '@/lib/pg-error-code';
 
 import { revalidateTestTypesPath } from '../db/cache';
 import {
@@ -67,8 +68,10 @@ export async function removeTestType(type_id: string): Promise<Response> {
 
     return ResponseFactory.success('Test type removed successfully');
   } catch (error) {
-    // PostgreSQL error code for foreign key violation
-    if (error instanceof pg.DatabaseError && error.code === '23503') {
+    if (
+      error instanceof pg.DatabaseError &&
+      error.code === PgErrorCode.FOREIGN_KEY_VIOLATION
+    ) {
       return ResponseFactory.error(`'${type.name}' is in use.`);
     }
     return ResponseFactory.fromError(error as Error);

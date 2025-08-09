@@ -37,7 +37,7 @@ export default function LoginPage() {
     reset,
   } = useForm({
     resolver: zodResolver(LoginSchema),
-    defaultValues: getDefaults(LoginSchema) as LoginValues,
+    defaultValues: getDefaults(LoginSchema),
   });
 
   useEffect(() => {

@@ -8,7 +8,11 @@ import { AssetCategory, AssetCondition } from '@/utils/enum';
 
 export const UpsertAssetSchema = z.object({
   name: z.string().min(0).max(128),
-  quantity: z.number().int().min(1).max(100).default(1),
+  quantity: z.coerce
+    .number()
+    .min(1, 'Must be at least 1.')
+    .max(100, 'Cannot exceed 100.')
+    .default(1),
   condition: z.enum(SELECTABLE_ASSET_CONDITIONS).default(AssetCondition.GOOD),
   category: z
     .enum(SELECTABLE_ASSET_CATEGORIES)

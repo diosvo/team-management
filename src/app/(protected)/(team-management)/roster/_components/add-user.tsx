@@ -1,36 +1,19 @@
 'use client';
 
-import { useMemo, useTransition } from 'react';
+import { useTransition } from 'react';
 
-import {
-  Button,
-  createListCollection,
-  Dialog,
-  Grid,
-  Input,
-  Portal,
-  Select,
-  Span,
-  Stack,
-} from '@chakra-ui/react';
+import { Button, Dialog, Grid, Input, Portal } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Plus, UserRoundPlus } from 'lucide-react';
-import { Controller, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 
 import { CloseButton } from '@/components/ui/close-button';
 import { Field } from '@/components/ui/field';
-import { Status } from '@/components/ui/status';
 import { toaster } from '@/components/ui/toaster';
+import RolePositionSelection from '@/components/user/role-position-selection';
+import StateSelection from '@/components/user/state-selection';
 
-import {
-  CoachPositionsSelection,
-  DEFAULT_DOB,
-  PlayerPositionsSelection,
-  RoleSelection,
-  StateSelection,
-} from '@/utils/constant';
-import { UserRole, UserState } from '@/utils/enum';
-import { colorState } from '@/utils/helper';
+import { getDefaults } from '@/lib/zod';
 
 import { addUser } from '@/features/user/actions/user';
 import { AddUserSchema, AddUserValues } from '@/features/user/schemas/user';
@@ -40,36 +23,14 @@ export default function AddUser() {
 
   const {
     reset,
-    watch,
     control,
     register,
-    setValue,
     handleSubmit,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(AddUserSchema),
-    values: {
-      name: '',
-      email: '',
-      dob: DEFAULT_DOB,
-      state: UserState.UNKNOWN,
-      role: UserRole.GUEST,
-      position: null,
-    },
+    defaultValues: getDefaults(AddUserSchema),
   });
-
-  const selectedRole = watch('role');
-
-  const positions = useMemo(() => {
-    const mapped = {
-      [UserRole.COACH]: CoachPositionsSelection,
-      [UserRole.PLAYER]: PlayerPositionsSelection,
-      [UserRole.GUEST]: [],
-    };
-    return createListCollection({
-      items: selectedRole ? mapped[selectedRole] : [],
-    });
-  }, [selectedRole]);
 
   const onSubmit = (data: AddUserValues) => {
     const id = toaster.create({
@@ -145,136 +106,17 @@ export default function AddUser() {
                   />
                 </Field>
 
-                <Field required label="State">
-                  <Controller
-                    control={control}
-                    name="state"
-                    render={({ field }) => (
-                      <Select.Root
-                        name={field.name}
-                        value={
-                          field.value ? [field.value] : [UserState.UNKNOWN]
-                        }
-                        onValueChange={({ value }) => field.onChange(value[0])}
-                        onInteractOutside={() => field.onBlur()}
-                        collection={createListCollection({
-                          items: StateSelection,
-                        })}
-                        disabled={isPending}
-                      >
-                        <Select.HiddenSelect />
-                        <Select.Control>
-                          <Select.Trigger>
-                            <Select.ValueText placeholder="State" />
-                          </Select.Trigger>
-                          <Select.IndicatorGroup>
-                            <Select.Indicator />
-                          </Select.IndicatorGroup>
-                        </Select.Control>
-                        <Select.Positioner>
-                          <Select.Content>
-                            {StateSelection.map((state) => (
-                              <Select.Item item={state} key={state.value}>
-                                <Status colorPalette={colorState(state.value)}>
-                                  {state.label}
-                                </Status>
-                                <Select.ItemIndicator />
-                              </Select.Item>
-                            ))}
-                          </Select.Content>
-                        </Select.Positioner>
-                      </Select.Root>
-                    )}
-                  />
-                </Field>
-                <Field required label="Role">
-                  <Controller
-                    control={control}
-                    name="role"
-                    render={({ field }) => (
-                      <Select.Root
-                        name={field.name}
-                        value={field.value ? [field.value] : [UserRole.GUEST]}
-                        onValueChange={({ value }) => {
-                          setValue('position', null);
-                          field.onChange(value[0]);
-                        }}
-                        onInteractOutside={() => field.onBlur()}
-                        collection={createListCollection({
-                          items: RoleSelection,
-                        })}
-                        disabled={isPending}
-                      >
-                        <Select.HiddenSelect />
-                        <Select.Control>
-                          <Select.Trigger>
-                            <Select.ValueText placeholder="Role" />
-                          </Select.Trigger>
-                          <Select.IndicatorGroup>
-                            <Select.Indicator />
-                          </Select.IndicatorGroup>
-                        </Select.Control>
-                        <Select.Positioner>
-                          <Select.Content>
-                            {RoleSelection.map((role) => (
-                              <Select.Item item={role} key={role.value}>
-                                {role.label}
-                                <Select.ItemIndicator />
-                              </Select.Item>
-                            ))}
-                          </Select.Content>
-                        </Select.Positioner>
-                      </Select.Root>
-                    )}
-                  />
-                </Field>
-
-                <Field
-                  label="Position"
-                  disabled={isPending || selectedRole === UserRole.GUEST}
-                >
-                  <Controller
-                    control={control}
-                    name="position"
-                    render={({ field }) => (
-                      <Select.Root
-                        name={field.name}
-                        value={field.value ? [field.value] : ['UNKNOWN']}
-                        onValueChange={({ value }) => field.onChange(value[0])}
-                        onInteractOutside={() => field.onBlur()}
-                        collection={positions}
-                        disabled={isPending || selectedRole === UserRole.GUEST}
-                      >
-                        <Select.HiddenSelect />
-                        <Select.Control>
-                          <Select.Trigger>
-                            <Select.ValueText placeholder="Position" />
-                          </Select.Trigger>
-                          <Select.IndicatorGroup>
-                            <Select.Indicator />
-                          </Select.IndicatorGroup>
-                        </Select.Control>
-                        <Select.Positioner>
-                          <Select.Content>
-                            {positions.items.map((position) => (
-                              <Select.Item item={position} key={position.value}>
-                                <Stack gap={0}>
-                                  <Select.ItemText>
-                                    {position.label}
-                                  </Select.ItemText>
-                                  <Span color="fg.muted" textStyle="xs">
-                                    {position.description}
-                                  </Span>
-                                </Stack>
-                                <Select.ItemIndicator />
-                              </Select.Item>
-                            ))}
-                          </Select.Content>
-                        </Select.Positioner>
-                      </Select.Root>
-                    )}
-                  />
-                </Field>
+                <StateSelection
+                  name="state"
+                  control={control}
+                  disabled={isPending}
+                />
+                <RolePositionSelection
+                  roleName="role"
+                  positionName="position"
+                  control={control}
+                  disabled={isPending}
+                />
               </Grid>
             </Dialog.Body>
             <Dialog.Footer>

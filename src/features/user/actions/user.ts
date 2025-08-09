@@ -1,9 +1,12 @@
 'use server';
 
+import pg from 'pg';
+
 import { User } from '@/drizzle/schema/user';
 import { getTeam } from '@/features/team/actions/team';
-import { sendPasswordInstructionEmail } from '@/lib/mail';
 
+import { sendPasswordInstructionEmail } from '@/lib/mail';
+import { PgErrorCode } from '@/lib/pg-error-code';
 import { CoachPosition, PlayerPosition } from '@/utils/enum';
 import { hasPermissions } from '@/utils/helper';
 import { Response, ResponseFactory } from '@/utils/response';
@@ -24,6 +27,7 @@ import { insertPlayer, updatePlayer } from '../db/player';
 import {
   deleteUser,
   getExistingEmails,
+  getUserById as getUser,
   getUsers,
   insertUser,
   updateUser,
@@ -33,6 +37,13 @@ export async function getRoster(
   params: FilterUsersValues
 ): Promise<Array<User>> {
   return await getUsers(params);
+}
+
+export async function getUserById(user_id: string) {
+  const user = await getUser(user_id);
+  if (!user) return null;
+
+  return user;
 }
 
 export async function addUser(
@@ -138,6 +149,8 @@ export async function updateTeamInfo(
     // Update role-specific tables based on the user's role
     const { isPlayer, isCoach } = hasPermissions(userData.role);
 
+    // TODO: Create new player or coach if they don't exist
+
     if (isPlayer && playerData) {
       await updatePlayer({
         user_id,
@@ -157,6 +170,15 @@ export async function updateTeamInfo(
 
     return ResponseFactory.success('Updated team information successfully');
   } catch (error) {
+    if (
+      error instanceof pg.DatabaseError &&
+      error.code === PgErrorCode.UNIQUE_VIOLATION &&
+      error.constraint === 'player_jersey_number_unique'
+    ) {
+      return ResponseFactory.error(
+        `Jersey number '${data.player.jersey_number}' is already taken.`
+      );
+    }
     return ResponseFactory.fromError(error as Error);
   }
 }
