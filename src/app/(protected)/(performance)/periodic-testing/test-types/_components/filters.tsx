@@ -5,9 +5,6 @@ import { Plus } from 'lucide-react';
 
 import SearchInput from '@/components/ui/search-input';
 
-import { UpsertTestTypeSchema } from '@/features/periodic-testing/schemas/periodic-testing';
-import { getDefaults } from '@/lib/zod';
-
 import { UpsertTestType } from './upsert-type';
 
 interface SelectionFilterProps {
@@ -33,7 +30,6 @@ export default function TestTypesFilters({
             UpsertTestType.open('add-test-type', {
               action: 'Add',
               item: {
-                ...getDefaults(UpsertTestTypeSchema),
                 type_id: '',
               },
             })

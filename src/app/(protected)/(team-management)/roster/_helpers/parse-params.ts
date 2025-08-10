@@ -23,7 +23,7 @@ export function parseSearchParams(
       : [],
   });
 
-  const defaultFilters = getDefaults(FilterUsersSchema) as FilterUsersValues;
+  const defaultFilters = getDefaults(FilterUsersSchema);
   const initialFilters = filters.success ? filters.data : defaultFilters;
 
   return initialFilters;

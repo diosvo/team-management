@@ -14,6 +14,7 @@ import { toaster } from '@/components/ui/toaster';
 import { Tooltip } from '@/components/ui/tooltip';
 
 import { User } from '@/drizzle/schema/user';
+import { getDefaults } from '@/lib/zod';
 import { formatDate } from '@/utils/formatter';
 
 import { updatePersonalInfo } from '@/features/user/actions/user';
@@ -38,15 +39,11 @@ export default function PersonalInfo({
     reset,
     register,
     handleSubmit,
-    formState: { errors, isValid, isDirty },
+    formState: { isValid, isDirty, errors },
   } = useForm({
-    values: {
-      name: user.name,
-      dob: user.dob,
-      phone_number: user.phone_number,
-      citizen_identification: user.citizen_identification,
-    },
+    mode: 'onChange',
     resolver: zodResolver(EditPersonalInfoSchema),
+    defaultValues: getDefaults(EditPersonalInfoSchema, user),
   });
 
   const onSubmit = (data: EditPersonalInfoValues) => {
@@ -81,8 +78,10 @@ export default function PersonalInfo({
     <Card.Root
       as="form"
       size="sm"
-      _hover={{ shadow: 'sm' }}
-      transition="all 0.2s"
+      _hover={{
+        shadow: 'md',
+        transition: 'all 0.2s',
+      }}
       onSubmit={handleSubmit(onSubmit)}
     >
       <HStack
@@ -130,76 +129,64 @@ export default function PersonalInfo({
           gap={4}
         >
           {isEditing ? (
-            <Field label="Email">
-              <Input variant="flushed" value={user.email} disabled />
-            </Field>
+            <>
+              <Field label="Email">
+                <Input variant="flushed" value={user.email} disabled />
+              </Field>
+              <Field
+                required
+                label="Fullname"
+                invalid={!!errors.name}
+                errorText={errors.name?.message}
+              >
+                <Input
+                  placeholder="Anonymous"
+                  disabled={isPending}
+                  {...register('name')}
+                />
+              </Field>
+              <Field
+                label="DOB"
+                invalid={!!errors.dob}
+                errorText={errors.dob?.message}
+              >
+                <Input
+                  type="date"
+                  min="1997-01-01"
+                  disabled={isPending}
+                  {...register('dob')}
+                />
+              </Field>
+              <Field
+                label="Phone Number"
+                invalid={!!errors.phone_number}
+                errorText={errors.phone_number?.message}
+              >
+                <Input disabled={isPending} {...register('phone_number')} />
+              </Field>
+              <Field
+                label="Citizen ID"
+                invalid={!!errors.citizen_identification}
+                errorText={errors.citizen_identification?.message}
+              >
+                <Input
+                  disabled={isPending}
+                  {...register('citizen_identification')}
+                />
+              </Field>
+            </>
           ) : (
-            <TextField label="Email">{user.email}</TextField>
-          )}
-
-          {isEditing ? (
-            <Field
-              required
-              label="Fullname"
-              invalid={!!errors.name}
-              errorText={errors.name?.message}
-            >
-              <Input
-                placeholder="Anonymous"
-                disabled={isPending}
-                {...register('name')}
-              />
-            </Field>
-          ) : (
-            <TextField label="Fullname">{user.name || '-'}</TextField>
-          )}
-
-          {isEditing ? (
-            <Field
-              label="DOB"
-              invalid={!!errors.dob}
-              errorText={errors.dob?.message}
-            >
-              <Input
-                type="date"
-                min="1997-01-01"
-                disabled={isPending}
-                {...register('dob')}
-              />
-            </Field>
-          ) : (
-            <TextField label="DOB">{formatDate(user.dob) || '-'}</TextField>
-          )}
-
-          {isEditing ? (
-            <Field
-              label="Phone Number"
-              invalid={!!errors.phone_number}
-              errorText={errors.phone_number?.message}
-            >
-              <Input disabled={isPending} {...register('phone_number')} />
-            </Field>
-          ) : (
-            <TextField label="Phone Number">
-              {user.phone_number || '-'}
-            </TextField>
-          )}
-
-          {isEditing ? (
-            <Field
-              label="Citizen ID"
-              invalid={!!errors.citizen_identification}
-              errorText={errors.citizen_identification?.message}
-            >
-              <Input
-                disabled={isPending}
-                {...register('citizen_identification')}
-              />
-            </Field>
-          ) : (
-            <TextField label="Citizen ID">
-              {user.citizen_identification || '-'}
-            </TextField>
+            <>
+              <TextField label="Email">{user.email}</TextField>
+              <TextField label="Fullname">{user.name || '-'}</TextField>
+              <TextField label="DOB">{formatDate(user.dob) || '-'}</TextField>
+              <TextField label="Phone Number">
+                {user.phone_number || '-'}
+              </TextField>
+              <TextField label="Citizen ID">
+                {user.citizen_identification || '-'}
+              </TextField>
+            </>
           )}
         </Grid>
       </Card.Body>

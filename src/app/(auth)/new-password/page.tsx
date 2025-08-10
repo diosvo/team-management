@@ -10,6 +10,7 @@ import { useForm } from 'react-hook-form';
 import { Alert } from '@/components/ui/alert';
 import { Field } from '@/components/ui/field';
 
+import { getDefaults } from '@/lib/zod';
 import { LOGIN_PATH } from '@/routes';
 import { Response } from '@/utils/response';
 
@@ -21,12 +22,11 @@ export default function NewPasswordPage() {
     register,
     reset,
     handleSubmit,
-    formState: { errors },
+    formState: { isValid, errors },
   } = useForm({
+    mode: 'onChange',
     resolver: zodResolver(PasswordSchema),
-    defaultValues: {
-      password: '',
-    },
+    defaultValues: getDefaults(PasswordSchema),
   });
 
   const [response, setResponse] = useState<Response>();
@@ -40,9 +40,7 @@ export default function NewPasswordPage() {
       changePassword(value, token as string).then((response: Response) => {
         setResponse(response);
 
-        if (!response.error) {
-          reset({ password: '' });
-        }
+        if (!response.error) reset();
       });
     });
   };
@@ -81,6 +79,7 @@ export default function NewPasswordPage() {
               borderRadius="full"
               loadingText="Submitting..."
               loading={isPending}
+              disabled={!isValid || isPending}
             >
               Submit
             </Button>

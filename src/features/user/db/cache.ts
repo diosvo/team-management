@@ -21,5 +21,6 @@ export function userCacheTag(user_id: string) {
 }
 
 export function revalidateUserTag(user_id: string) {
-  return revalidateTag(userCacheTag(user_id));
+  revalidateTag(userCacheTag(user_id));
+  revalidatePath(`/profile/${user_id}`);
 }

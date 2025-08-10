@@ -5,58 +5,44 @@ import { useMemo, useState, useTransition } from 'react';
 import {
   Badge,
   Card,
-  createListCollection,
   Grid,
   HStack,
   IconButton,
   Input,
   InputGroup,
-  Portal,
-  Select,
-  Span,
-  Stack,
+  SimpleGrid,
   Text,
-  VStack,
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { formatDistanceToNow } from 'date-fns';
-import { Activity, Edit, LucideClock9, Save } from 'lucide-react';
+import { Activity, Edit, LucideClock9, Save, Shirt } from 'lucide-react';
 import { Controller, useForm } from 'react-hook-form';
 
 import TextField from '@/components/text-field';
 import { CloseButton } from '@/components/ui/close-button';
 import { Field } from '@/components/ui/field';
+import {
+  NumberInputField,
+  NumberInputRoot,
+} from '@/components/ui/number-input';
 import { toaster } from '@/components/ui/toaster';
 import { Tooltip } from '@/components/ui/tooltip';
+import RolePositionSelection from '@/components/user/role-position-selection';
+import StateSelection from '@/components/user/state-selection';
 import Visibility from '@/components/visibility';
 
 import { User } from '@/drizzle/schema/user';
 import { usePermissions } from '@/hooks/use-permissions';
-import {
-  CoachPositionsSelection,
-  ESTABLISHED_DATE,
-  PlayerPositionsSelection,
-  RoleSelection,
-  StateSelection,
-} from '@/utils/constant';
-import { UserRole, UserState } from '@/utils/enum';
+import { ESTABLISHED_DATE } from '@/utils/constant';
+import { UserRole } from '@/utils/enum';
 import { formatDate } from '@/utils/formatter';
 import { colorRole, colorState, hasPermissions } from '@/utils/helper';
 
-import { Status } from '@/components/ui/status';
 import { updateTeamInfo } from '@/features/user/actions/user';
 import {
   EditTeamInfoSchema,
   EditTeamInfoValues,
 } from '@/features/user/schemas/user';
-
-const roles = createListCollection({
-  items: RoleSelection,
-});
-
-const states = createListCollection({
-  items: StateSelection,
-});
 
 export default function TeamInfo({
   user,
@@ -82,45 +68,27 @@ export default function TeamInfo({
     return true;
   }, [isOwnProfile, isAdmin, viewOnly]);
 
-  const canEditJerseyNumber = useMemo(() => {
-    return isAdmin || isOwnProfile;
-  }, [isOwnProfile, isAdmin]);
-
   const {
-    reset,
-    watch,
     control,
+    reset,
     register,
     setValue,
     handleSubmit,
     formState: { isDirty, isValid, errors },
   } = useForm({
-    values: {
+    defaultValues: {
       user: {
         role: user.role === UserRole.SUPER_ADMIN ? undefined : user.role,
         state: user.state,
         join_date: user.join_date,
       },
       player: {
-        jersey_number: user.details.jersey_number,
+        jersey_number: user.details.jersey_number ?? undefined,
       },
       position: user.details.position,
     },
     resolver: zodResolver(EditTeamInfoSchema),
   });
-
-  const selectedRole = watch('user.role');
-
-  const positions = useMemo(() => {
-    const mapped = {
-      [UserRole.COACH]: CoachPositionsSelection,
-      [UserRole.PLAYER]: PlayerPositionsSelection,
-      [UserRole.GUEST]: [],
-    };
-    return createListCollection({
-      items: selectedRole ? mapped[selectedRole] : [],
-    });
-  }, [selectedRole]);
 
   const onSubmit = (data: EditTeamInfoValues) => {
     startTransition(async () => {
@@ -139,9 +107,7 @@ export default function TeamInfo({
         description,
       });
 
-      if (!error) {
-        setIsEditing(false);
-      }
+      if (!error) setIsEditing(false);
     });
   };
 
@@ -154,8 +120,10 @@ export default function TeamInfo({
     <Card.Root
       as="form"
       size="sm"
-      _hover={{ shadow: 'sm' }}
-      transition="all 0.2s"
+      _hover={{
+        shadow: 'md',
+        transition: 'all 0.2s',
+      }}
       onSubmit={handleSubmit(onSubmit)}
     >
       <HStack
@@ -193,87 +161,17 @@ export default function TeamInfo({
           )}
         </Card.Header>
       </HStack>
-      <Card.Body>
-        <Grid
-          templateColumns={{
-            base: '1fr',
-            md: 'repeat(2, 1fr)',
-            xl: 'repeat(3, 1fr)',
-          }}
-          gap={4}
-        >
-          <Visibility isVisible={isPlayer}>
-            {isEditing && canEditJerseyNumber ? (
-              <Field
-                label="Jersey Number"
-                invalid={!!errors.player?.jersey_number}
-                errorText={errors.player?.jersey_number?.message}
-              >
-                <InputGroup startElement={'#'}>
-                  <Input
-                    disabled={isPending}
-                    {...register('player.jersey_number')}
-                  />
-                </InputGroup>
-              </Field>
-            ) : (
-              <TextField label="Jersey Number">
-                {user.details.jersey_number ? (
-                  '# ' + user.details.jersey_number
-                ) : (
-                  <Text>-</Text>
-                )}
-              </TextField>
-            )}
-          </Visibility>
-
-          {isEditing && isAdmin ? (
-            <Field
-              required
-              label="Role"
-              invalid={!!errors.user?.role}
-              errorText={errors.user?.role?.message}
-            >
-              <Controller
-                control={control}
-                name="user.role"
-                render={({ field }) => (
-                  <Select.Root
-                    name={field.name}
-                    value={field.value ? [field.value] : [UserRole.GUEST]}
-                    onValueChange={({ value }) => {
-                      setValue('position', null);
-                      field.onChange(value[0]);
-                    }}
-                    onInteractOutside={() => field.onBlur()}
-                    collection={roles}
-                  >
-                    <Select.HiddenSelect />
-                    <Select.Control>
-                      <Select.Trigger>
-                        <Select.ValueText placeholder="Role" />
-                      </Select.Trigger>
-                      <Select.IndicatorGroup>
-                        <Select.Indicator />
-                      </Select.IndicatorGroup>
-                    </Select.Control>
-                    <Portal>
-                      <Select.Positioner>
-                        <Select.Content>
-                          {roles.items.map((role) => (
-                            <Select.Item item={role} key={role.value}>
-                              {role.label}
-                              <Select.ItemIndicator />
-                            </Select.Item>
-                          ))}
-                        </Select.Content>
-                      </Select.Positioner>
-                    </Portal>
-                  </Select.Root>
-                )}
-              />
-            </Field>
-          ) : (
+      <Card.Body gap={3}>
+        {isEditing && isAdmin ? (
+          <RolePositionSelection
+            roleName="user.role"
+            positionName="position"
+            control={control}
+            disabled={isPending}
+            setValue={setValue}
+          />
+        ) : (
+          <SimpleGrid columns={{ base: 1, md: 2 }}>
             <TextField label="Role">
               <Badge
                 variant="subtle"
@@ -283,58 +181,6 @@ export default function TeamInfo({
                 {user.role}
               </Badge>
             </TextField>
-          )}
-
-          {isEditing && isAdmin ? (
-            <Field
-              label="Position"
-              disabled={isPending || selectedRole === UserRole.GUEST}
-            >
-              <Controller
-                control={control}
-                name="position"
-                render={({ field }) => (
-                  <Select.Root
-                    name={field.name}
-                    value={field.value ? [field.value] : ['UNKNOWN']}
-                    onValueChange={({ value }) => field.onChange(value[0])}
-                    onInteractOutside={() => field.onBlur()}
-                    collection={positions}
-                    disabled={isPending || selectedRole === UserRole.GUEST}
-                  >
-                    <Select.HiddenSelect />
-                    <Select.Control>
-                      <Select.Trigger>
-                        <Select.ValueText placeholder="Position" />
-                      </Select.Trigger>
-                      <Select.IndicatorGroup>
-                        <Select.Indicator />
-                      </Select.IndicatorGroup>
-                    </Select.Control>
-                    <Portal>
-                      <Select.Positioner>
-                        <Select.Content>
-                          {positions.items.map((position) => (
-                            <Select.Item item={position} key={position.value}>
-                              <Stack gap={0}>
-                                <Select.ItemText>
-                                  {position.label}
-                                </Select.ItemText>
-                                <Span color="fg.muted" textStyle="xs">
-                                  {position.description}
-                                </Span>
-                              </Stack>
-                              <Select.ItemIndicator />
-                            </Select.Item>
-                          ))}
-                        </Select.Content>
-                      </Select.Positioner>
-                    </Portal>
-                  </Select.Root>
-                )}
-              />
-            </Field>
-          ) : (
             <TextField label="Position">
               {user.details.position ? (
                 <Badge variant="outline" borderRadius="full">
@@ -344,58 +190,47 @@ export default function TeamInfo({
                 <Text>-</Text>
               )}
             </TextField>
-          )}
-        </Grid>
-      </Card.Body>
+          </SimpleGrid>
+        )}
 
-      <Card.Footer asChild>
         {isEditing && canEdit ? (
           <Grid
             templateColumns={{
               base: '1fr',
-              md: 'repeat(2, 1fr)',
+              md: 'repeat(3, 1fr)',
             }}
             gap={4}
           >
-            <Field label="State">
-              <Controller
-                control={control}
-                name="user.state"
-                render={({ field }) => (
-                  <Select.Root
-                    name={field.name}
-                    value={field.value ? [field.value] : [UserState.UNKNOWN]}
-                    onValueChange={({ value }) => field.onChange(value[0])}
-                    onInteractOutside={() => field.onBlur()}
-                    collection={states}
-                  >
-                    <Select.HiddenSelect />
-                    <Select.Control>
-                      <Select.Trigger>
-                        <Select.ValueText placeholder="State" />
-                      </Select.Trigger>
-                      <Select.IndicatorGroup>
-                        <Select.Indicator />
-                      </Select.IndicatorGroup>
-                    </Select.Control>
-                    <Portal>
-                      <Select.Positioner>
-                        <Select.Content>
-                          {states.items.map((state) => (
-                            <Select.Item item={state} key={state.value}>
-                              <Status colorPalette={colorState(state.value)}>
-                                {state.label}
-                              </Status>
-                              <Select.ItemIndicator />
-                            </Select.Item>
-                          ))}
-                        </Select.Content>
-                      </Select.Positioner>
-                    </Portal>
-                  </Select.Root>
-                )}
-              />
-            </Field>
+            <StateSelection
+              control={control}
+              name="user.state"
+              disabled={isPending}
+            />
+            <Visibility isVisible={isPlayer}>
+              <Field
+                label="Jersey Number"
+                invalid={!!errors.player?.jersey_number}
+                errorText={errors.player?.jersey_number?.message}
+              >
+                <Controller
+                  name="player.jersey_number"
+                  control={control}
+                  render={({ field }) => (
+                    <NumberInputRoot
+                      width="full"
+                      disabled={field.disabled}
+                      name={field.name}
+                      value={String(field.value)}
+                      onValueChange={({ value }) => field.onChange(value)}
+                    >
+                      <InputGroup startElement={'#'}>
+                        <NumberInputField onBlur={field.onBlur} />
+                      </InputGroup>
+                    </NumberInputRoot>
+                  )}
+                />
+              </Field>
+            </Visibility>
             <Field label="Join Date">
               <Input
                 type="date"
@@ -407,16 +242,25 @@ export default function TeamInfo({
             </Field>
           </Grid>
         ) : (
-          <VStack align="flex-start" width="max-content">
-            <TextField label="State" direction="horizontal" icon={Activity}>
-              <Badge
-                variant="surface"
-                borderRadius="full"
-                colorPalette={colorState(user.state)}
+          <>
+            <SimpleGrid columns={{ base: 1, md: 2 }}>
+              <TextField label="State" direction="horizontal" icon={Activity}>
+                <Badge
+                  variant="surface"
+                  borderRadius="full"
+                  colorPalette={colorState(user.state)}
+                >
+                  {user.state}
+                </Badge>
+              </TextField>
+              <TextField
+                label="Jersey Number"
+                direction="horizontal"
+                icon={Shirt}
               >
-                {user.state}
-              </Badge>
-            </TextField>
+                {user.details.jersey_number ?? '-'}
+              </TextField>
+            </SimpleGrid>
             {user.join_date && (
               <TextField
                 label="Joined Date"
@@ -435,9 +279,9 @@ export default function TeamInfo({
                 </Text>
               </TextField>
             )}
-          </VStack>
+          </>
         )}
-      </Card.Footer>
+      </Card.Body>
     </Card.Root>
   );
 }
