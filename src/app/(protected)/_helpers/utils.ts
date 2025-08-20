@@ -1,13 +1,13 @@
 import {
   BadgeCheck,
   CalendarDays,
-  Crown,
   Dumbbell,
   FileChartColumnIncreasing,
   FileText,
   Film,
   Home,
   Package,
+  ShieldCheck,
   Users,
 } from 'lucide-react';
 
@@ -63,7 +63,7 @@ export const SIDEBAR_GROUP = [
     title: '',
     items: [
       {
-        icon: Crown,
+        icon: ShieldCheck,
         text: 'Team Rule',
         disabled: false,
       },

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import {
   Box,
@@ -21,6 +21,7 @@ import {
   Link2,
   List,
   ListOrdered,
+  RotateCcw,
   Underline as UnderlineIcon,
 } from 'lucide-react';
 
@@ -39,41 +40,40 @@ import Visibility from './visibility';
 interface TextEditorProps {
   editable: boolean;
   content: string;
+  defaultContent: string;
+  hasChanges: boolean;
   onChange: (content: string) => void;
 }
 
 export default function TextEditor({
   editable,
   content,
+  defaultContent,
+  hasChanges,
   onChange,
 }: TextEditorProps) {
   const [url, setUrl] = useState<string>('');
 
-  const editor = useEditor({
-    editable,
-    content,
-    extensions: [
-      StarterKit,
-      Underline,
-      Link.configure({
-        defaultProtocol: 'https',
-        HTMLAttributes: {
-          class: 'custom-link',
-        },
-        shouldAutoLink: (url) => url.startsWith('https://'),
-      }),
-    ],
-    immediatelyRender: false,
-    onUpdate: ({ editor }) => onChange(editor.getHTML()),
-  });
-
-  useEffect(() => {
-    if (editor) editor.setEditable(editable);
-  }, [editor, editable]);
-
-  useEffect(() => {
-    if (editor) editor.commands.setContent(content);
-  }, [editor, content]);
+  const editor = useEditor(
+    {
+      editable,
+      content,
+      extensions: [
+        StarterKit,
+        Underline,
+        Link.configure({
+          defaultProtocol: 'https',
+          HTMLAttributes: {
+            class: 'custom-link',
+          },
+          shouldAutoLink: (url) => url.startsWith('https://'),
+        }),
+      ],
+      immediatelyRender: false,
+      onUpdate: ({ editor }) => onChange(editor.getHTML()),
+    },
+    [editable]
+  );
 
   // Use Popover for link insertion
   const setLink = () => {
@@ -101,7 +101,7 @@ export default function TextEditor({
         : {})}
     >
       <Visibility isVisible={editable}>
-        <ButtonGroup>
+        <ButtonGroup display="flex">
           <Tooltip content="Bold">
             <IconButton
               size="sm"
@@ -142,7 +142,7 @@ export default function TextEditor({
             </IconButton>
           </Tooltip>
 
-          <Separator orientation="vertical" height="4" />
+          <Separator orientation="vertical" height={4} />
 
           <Tooltip content="Insert Link">
             <PopoverRoot lazyMount unmountOnExit size="xs">
@@ -167,7 +167,7 @@ export default function TextEditor({
                 <PopoverArrow />
                 <PopoverBody>
                   <PopoverTitle fontSize="xs">Link to:</PopoverTitle>
-                  <HStack mb={2}>
+                  <HStack marginBottom={2}>
                     <Input
                       placeholder="https://example.com"
                       name="url-link"
@@ -210,6 +210,9 @@ export default function TextEditor({
               </PopoverContent>
             </PopoverRoot>
           </Tooltip>
+
+          <Separator orientation="vertical" height={4} />
+
           <Tooltip content="Bullet List">
             <IconButton
               size="sm"
@@ -234,6 +237,21 @@ export default function TextEditor({
               }
             >
               <ListOrdered />
+            </IconButton>
+          </Tooltip>
+          <Tooltip content="Reset">
+            <IconButton
+              size="sm"
+              variant="ghost"
+              aria-label="Reset"
+              marginLeft="auto"
+              disabled={!hasChanges}
+              onClick={() => {
+                onChange(defaultContent);
+                editor.commands.setContent(defaultContent);
+              }}
+            >
+              <RotateCcw />
             </IconButton>
           </Tooltip>
         </ButtonGroup>

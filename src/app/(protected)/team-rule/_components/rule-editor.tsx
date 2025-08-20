@@ -2,15 +2,8 @@
 
 import { useEffect, useState, useTransition } from 'react';
 
-import {
-  Button,
-  HStack,
-  Icon,
-  Separator,
-  Text,
-  VStack,
-} from '@chakra-ui/react';
-import { Eye, Pencil, Save, TimerReset } from 'lucide-react';
+import { Button, HStack, Separator, Text, VStack } from '@chakra-ui/react';
+import { Eye, Pencil, Save } from 'lucide-react';
 
 import PageTitle from '@/components/page-title';
 import TextEditor from '@/components/text-editor';
@@ -60,7 +53,7 @@ export default function RuleEditor({ rule }: { rule: NullishRule }) {
   };
 
   return (
-    <VStack align="stretch" gap={6}>
+    <VStack alignItems="stretch" gap={6}>
       <HStack>
         <PageTitle>Team Rule</PageTitle>
         <Visibility isVisible={isAdmin}>
@@ -77,43 +70,47 @@ export default function RuleEditor({ rule }: { rule: NullishRule }) {
                 {isEditing ? <Eye /> : <Pencil />}
               </Button>
             </Tooltip>
+
             <HStack marginLeft="auto">
-              <Text
-                fontSize="sm"
-                color="GrayText"
-                opacity={hasChanges ? 1 : 0}
-                transition="all 0.1s ease-in-out"
-              >
-                Not saved yet
-              </Text>
               <Button
+                hidden={!isEditing || isPending || !hasChanges}
                 size="sm"
-                variant="outline"
-                disabled={isPending || !hasChanges}
-                onClick={() => setContent(defaultContent)}
+                variant="surface"
+                colorPalette="whiteAlpha"
+                onClick={() => {
+                  setIsEditing(!isEditing);
+                  setContent(defaultContent);
+                }}
               >
-                <Icon as={TimerReset} color="tomato" />
-                Reset
+                Cancel
               </Button>
-              <Button
-                size="sm"
-                disabled={isPending || !hasChanges}
-                onClick={onSubmit}
+              <Tooltip
+                showArrow
+                open={hasChanges}
+                content="Not saved yet"
+                positioning={{ placement: 'top' }}
+                contentProps={{ css: { '--tooltip-bg': 'colors.red.500' } }}
               >
-                <Save />
-                Save
-              </Button>
+                <Button
+                  size="sm"
+                  disabled={isPending || !hasChanges}
+                  onClick={onSubmit}
+                >
+                  <Save />
+                  Save
+                </Button>
+              </Tooltip>
             </HStack>
           </>
         </Visibility>
       </HStack>
       <TextEditor
-        // key={resetKey}
         editable={isAdmin && isEditing && !isPending}
+        defaultContent={defaultContent}
         content={content}
+        hasChanges={hasChanges}
         onChange={setContent}
       />
-
       <Separator />
       <Text fontSize="xs" color="GrayText">
         {rule?.updated_at &&
