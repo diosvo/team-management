@@ -59,8 +59,8 @@ export default function RuleEditor({ rule }: { rule: NullishRule }) {
         <Visibility isVisible={isAdmin}>
           <>
             <Tooltip
-              positioning={{ placement: 'right-end' }}
-              content={`${isEditing ? 'Preview' : 'Enable'} editing`}
+              positioning={{ placement: 'top' }}
+              content={`${isEditing ? 'Preview' : 'Write'}`}
             >
               <Button
                 size="2xs"

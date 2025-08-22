@@ -101,7 +101,7 @@ export default function TextEditor({
         : {})}
     >
       <Visibility isVisible={editable}>
-        <ButtonGroup display="flex">
+        <ButtonGroup display="flex" gap={0}>
           <Tooltip content="Bold">
             <IconButton
               size="sm"
