@@ -4,7 +4,7 @@ export default function Loading() {
   return (
     <Stack gap={8}>
       <Skeleton height={9} width={36} />
-      <SkeletonText noOfLines={6} gap={4} />
+      <SkeletonText noOfLines={16} gap={4} />
     </Stack>
   );
 }
