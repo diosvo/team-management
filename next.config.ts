@@ -1,13 +1,17 @@
 import type { NextConfig } from 'next';
 
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+});
+
 const nextConfig: NextConfig = {
   devIndicators: {
     position: 'bottom-right',
   },
   experimental: {
     authInterrupts: true,
-    nodeMiddleware: true,
-    optimizePackageImports: ['@chakra-ui/react'],
+    webpackBuildWorker: true,
+    optimizePackageImports: ['@chakra-ui/react', 'html2canvas', 'jspdf'],
   },
   images: {
     localPatterns: [
@@ -16,8 +20,10 @@ const nextConfig: NextConfig = {
         search: '',
       },
     ],
+    qualities: [25, 50, 75, 100],
+    formats: ['image/webp', 'image/avif'],
   },
-  serverExternalPackages: ['pg'],
+  serverExternalPackages: ['bcryptjs'],
 };
 
-export default nextConfig;
+export default withBundleAnalyzer(nextConfig);

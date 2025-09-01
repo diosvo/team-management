@@ -15,12 +15,7 @@ import {
   getPasswordResetTokenByToken,
 } from '../db/password-reset-token';
 import { getUserByEmail, getUserById, updateUser } from '../db/user';
-import {
-  LoginSchema,
-  LoginValues,
-  PasswordSchema,
-  PasswordValue,
-} from '../schemas/auth';
+import { LoginSchema, LoginValues } from '../schemas/auth';
 import { generatePasswordToken } from './password-reset-token';
 
 export async function login(values: LoginValues) {
@@ -93,15 +88,12 @@ export async function requestResetPassword(values: LoginValues) {
   return ResponseFactory.success('Reset email sent.');
 }
 
-export async function changePassword(value: PasswordValue, token?: string) {
+export async function changePassword(
+  password: string,
+  token: Nullable<string>
+) {
   if (!token) {
     return ResponseFactory.error('Missing token to verify.');
-  }
-
-  const { success, data } = PasswordSchema.safeParse(value);
-
-  if (!success) {
-    return ResponseFactory.error('Password validation failed.');
   }
 
   const existingToken = await getPasswordResetTokenByToken(token);
@@ -113,7 +105,7 @@ export async function changePassword(value: PasswordValue, token?: string) {
   const hasExpired = new Date(existingToken.expires_at) < new Date();
 
   if (hasExpired) {
-    return ResponseFactory.error('Token has expired! ');
+    return ResponseFactory.error('Token has expired!');
   }
 
   const existingUser = await getUserByEmail(existingToken.email);
@@ -124,7 +116,7 @@ export async function changePassword(value: PasswordValue, token?: string) {
 
   try {
     await updateUser(existingUser.user_id, {
-      password: await hash(data.password, 10),
+      password: await hash(password, 10),
     });
     await deletePasswordResetTokenByEmail(existingToken.email);
 

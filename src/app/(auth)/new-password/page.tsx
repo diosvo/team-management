@@ -1,99 +1,144 @@
 'use client';
 
+import NextLink from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useState, useTransition } from 'react';
 
-import { Button, Heading, Input, Link, Stack, VStack } from '@chakra-ui/react';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
+import {
+  Button,
+  Link as ChakraLink,
+  Heading,
+  Input,
+  List,
+  VStack,
+} from '@chakra-ui/react';
+import { CircleCheck, CircleDashed } from 'lucide-react';
 
 import { Alert } from '@/components/ui/alert';
 import { Field } from '@/components/ui/field';
 
-import { getDefaults } from '@/lib/zod';
 import { LOGIN_PATH } from '@/routes';
 import { Response } from '@/utils/response';
 
 import { changePassword } from '@/features/user/actions/auth';
-import { PasswordSchema, PasswordValue } from '@/features/user/schemas/auth';
+
+const PASSWORD_RULES = [
+  {
+    text: 'Be at least 8 characters long',
+    regex: /.{8,}/,
+  },
+  {
+    text: 'Be at most 128 characters long',
+    regex: /^.{8,128}$/,
+  },
+  {
+    text: 'Contain at least one letter',
+    regex: /[a-zA-Z]/,
+  },
+  {
+    text: 'Contain at least one number',
+    regex: /[0-9]/,
+  },
+  {
+    text: 'Contain at least one special character',
+    regex: /[^a-zA-Z0-9]/,
+  },
+] as const;
 
 export default function NewPasswordPage() {
-  const {
-    register,
-    reset,
-    handleSubmit,
-    formState: { isValid, errors },
-  } = useForm({
-    mode: 'onChange',
-    resolver: zodResolver(PasswordSchema),
-    defaultValues: getDefaults(PasswordSchema),
-  });
-
+  const [password, setPassword] = useState<string>('');
   const [response, setResponse] = useState<Response>();
   const [isPending, startTransition] = useTransition();
 
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
 
-  const onSubmit = (value: PasswordValue) => {
-    startTransition(() => {
-      changePassword(value, token as string).then((response: Response) => {
-        setResponse(response);
+  const isValid = PASSWORD_RULES.every((rule) => rule.regex.test(password));
 
-        if (!response.error) reset();
-      });
+  const onSubmit = (value: string) => {
+    startTransition(async () => {
+      const { error, message } = await changePassword(value, token);
+
+      setResponse({ error, message });
+      if (!error) setPassword('');
     });
   };
 
   return (
-    <VStack gap="6" alignItems="center">
+    <VStack gap={6}>
       <Heading textAlign="center" size={{ base: 'xl', md: '2xl' }}>
         Change password
       </Heading>
-      <Stack width="full">
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <Stack gap="6">
-            <Field
-              required
-              label="Password"
-              disabled={isPending}
-              invalid={Boolean(errors.password)}
-              errorText={errors.password?.message}
-            >
-              <Input
-                autoFocus
-                type="password"
-                placeholder="******"
-                {...register('password')}
-              />
-            </Field>
-            {response && (
-              <Alert
-                status={response.error ? 'error' : 'success'}
-                title={response.message}
-              />
-            )}
-            <Button
-              type="submit"
-              width="full"
-              borderRadius="full"
-              loadingText="Submitting..."
-              loading={isPending}
-              disabled={!isValid || isPending}
-            >
-              Submit
-            </Button>
-          </Stack>
-        </form>
-      </Stack>
-      <Link
-        fontSize="sm"
-        fontWeight="500"
-        variant="underline"
-        href={LOGIN_PATH}
+      <VStack
+        as="form"
+        width="full"
+        gap={6}
+        onSubmit={(e) => {
+          e.preventDefault();
+          onSubmit(password);
+        }}
       >
-        Go to login
-      </Link>
+        <>
+          <Field required label="Password" disabled={isPending}>
+            <Input
+              autoFocus
+              value={password}
+              type="password"
+              placeholder="******"
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </Field>
+
+          <List.Root variant="plain" alignSelf="self-start">
+            {PASSWORD_RULES.map((rule, index) => {
+              const matched = rule.regex.test(password);
+              return (
+                <List.Item
+                  key={index}
+                  fontSize="sm"
+                  color={matched ? 'inherit' : 'GrayText'}
+                >
+                  <List.Indicator
+                    asChild
+                    color={matched ? 'green.500' : 'gray.400'}
+                  >
+                    {matched ? (
+                      <CircleCheck size={14} />
+                    ) : (
+                      <CircleDashed size={14} />
+                    )}
+                  </List.Indicator>
+                  {rule.text}
+                </List.Item>
+              );
+            })}
+          </List.Root>
+          {response && (
+            <Alert
+              status={response.error ? 'error' : 'success'}
+              title={response.message}
+            />
+          )}
+          <Button
+            type="submit"
+            width="full"
+            borderRadius="full"
+            loadingText="Submitting..."
+            loading={isPending}
+            disabled={!isValid || isPending}
+          >
+            Submit
+          </Button>
+        </>
+      </VStack>
+      <ChakraLink
+        fontSize="sm"
+        fontWeight={500}
+        textDecoration="underline"
+        asChild
+      >
+        <NextLink href={LOGIN_PATH}>Go back to sign in</NextLink>
+      </ChakraLink>
     </VStack>
   );
 }

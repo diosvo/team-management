@@ -64,8 +64,13 @@ export default function LoginPage() {
         {pageTitle[page]}
       </Heading>
 
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <VStack gap={4} align="stretch">
+      <VStack
+        as="form"
+        gap={4}
+        alignItems="stretch"
+        onSubmit={handleSubmit(onSubmit)}
+      >
+        <>
           <Field
             required
             label="Email"
@@ -73,7 +78,12 @@ export default function LoginPage() {
             invalid={!!errors.email}
             errorText={errors.email?.message}
           >
-            <Input type="email" autoFocus {...register('email')} />
+            <Input
+              type="email"
+              autoFocus
+              autoComplete="email"
+              {...register('email')}
+            />
           </Field>
 
           {page === Page.Login && (
@@ -96,7 +106,7 @@ export default function LoginPage() {
 
               <Link
                 fontSize="sm"
-                fontWeight="500"
+                fontWeight={500}
                 textDecoration="underline"
                 onClick={() => setPage(Page.ResetPassword)}
               >
@@ -129,15 +139,15 @@ export default function LoginPage() {
             <Link
               fontSize="sm"
               alignSelf="center"
-              fontWeight="500"
+              fontWeight={500}
               textDecoration="underline"
               onClick={() => setPage(Page.Login)}
             >
               Go back to sign in
             </Link>
           )}
-        </VStack>
-      </form>
+        </>
+      </VStack>
     </>
   );
 }
