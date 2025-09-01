@@ -14,6 +14,8 @@ import {
 } from '@chakra-ui/react';
 import { LucideProps } from 'lucide-react';
 
+import { Tooltip } from '@/components/ui/tooltip';
+
 import { hrefPath, SIDEBAR_GROUP } from '../_helpers/utils';
 
 function LoadingIndicator() {
@@ -49,33 +51,41 @@ function NavButton({
   const isActive = pathname === href;
 
   return (
-    <Button
-      size={{ base: 'xs', md: 'sm', mdTo2xl: 'md' }}
-      justifyContent={isExpanded ? 'flex-start' : 'center'}
-      disabled={disabled}
-      variant={isActive ? 'subtle' : 'ghost'}
-      color={isActive ? 'inherit' : 'GrayText'}
-      paddingInline={isExpanded ? undefined : 2}
-      title={isExpanded ? undefined : String(children)}
-      _hover={{
-        _icon: {
-          animation: 'wiggle 1s linear infinite',
-        },
-      }}
-      asChild
+    <Tooltip
+      disabled={isExpanded || disabled}
+      content={isExpanded ? undefined : String(children)}
+      positioning={{ placement: 'right' }}
     >
-      {disabled ? (
-        <div>
-          {icon && <Icon as={icon} />} {isExpanded && children}
-        </div>
-      ) : (
-        <Link href={href}>
-          <Icon as={icon} />
-          {isExpanded && children}
-          {isExpanded && <LoadingIndicator />}
-        </Link>
-      )}
-    </Button>
+      <Button
+        size={{ base: 'xs', md: 'sm', mdTo2xl: 'md' }}
+        justifyContent={isExpanded ? 'flex-start' : 'center'}
+        variant={isActive ? 'subtle' : 'ghost'}
+        color={isActive ? 'primary' : 'GrayText'}
+        backgroundColor={isActive ? 'red.50' : undefined}
+        paddingInline={isExpanded ? undefined : 2}
+        _hover={{
+          color: isActive ? 'primary' : 'inherit',
+          backgroundColor: disabled ? undefined : 'red.50',
+          _icon: {
+            animation: 'wiggle 1s linear infinite',
+          },
+        }}
+        disabled={disabled}
+        asChild
+      >
+        {disabled ? (
+          <div>
+            {icon && <Icon as={icon} />} {isExpanded && children}
+          </div>
+        ) : (
+          <Link href={href}>
+            <Icon as={icon} />
+            {isExpanded && children}
+            {isExpanded && <LoadingIndicator />}
+          </Link>
+        )}
+      </Button>
+    </Tooltip>
   );
 }
 
@@ -86,8 +96,8 @@ export default function Sidebar({
 }) {
   return (
     <VStack
-      align="stretch"
       height="full"
+      alignItems="stretch"
       paddingBlock={4}
       paddingInline={2}
       gap={isExpanded ? 6 : 2}
@@ -96,7 +106,7 @@ export default function Sidebar({
       {SIDEBAR_GROUP.map(({ title, items }, index) => (
         <VStack
           key={title}
-          align="stretch"
+          alignItems="stretch"
           marginTop={title ? undefined : 'auto'}
         >
           {isExpanded ? (

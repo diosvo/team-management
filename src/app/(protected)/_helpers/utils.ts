@@ -5,7 +5,7 @@ import {
   FileChartColumnIncreasing,
   FileText,
   Film,
-  Home,
+  LayoutDashboard,
   Package,
   ShieldCheck,
   Users,
@@ -21,7 +21,12 @@ export const SIDEBAR_GROUP = [
   {
     title: 'Overview',
     items: [
-      { icon: Home, text: 'Dashboard', active: true, disabled: false },
+      {
+        icon: LayoutDashboard,
+        text: 'Dashboard',
+        active: true,
+        disabled: false,
+      },
       { icon: Dumbbell, text: 'Training', disabled: true },
     ],
   },

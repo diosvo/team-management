@@ -41,17 +41,6 @@ export const USER_SCHEMA_VALIDATION = {
       .nullish(),
     z.literal(''),
   ]),
-  password: z
-    .string()
-    .min(8, { error: 'Be at least 8 characters long.' })
-    .max(128, { error: 'Be at most 128 characters long.' })
-    .regex(/[a-zA-Z]/, { error: 'Contain at least one letter.' })
-    .regex(/[0-9]/, { error: 'Contain at least one number.' })
-    .regex(/[^a-zA-Z0-9]/, {
-      error: 'Contain at least one special character.',
-    })
-    .trim()
-    .default(''),
   state: z.enum(SELECTABLE_STATES).default(UserState.UNKNOWN),
   role: z.enum(SELECTABLE_ROLES).default(UserRole.PLAYER),
   join_date: z.iso.date().nullable().default(ESTABLISHED_DATE),
