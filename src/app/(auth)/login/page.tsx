@@ -9,6 +9,7 @@ import { FieldErrors, useForm } from 'react-hook-form';
 
 import { Alert } from '@/components/ui/alert';
 import { Field } from '@/components/ui/field';
+import { PasswordInput } from '@/components/ui/password-input';
 
 import { getDefaults } from '@/lib/zod';
 import { DEFAULT_LOGIN_REDIRECT } from '@/routes';
@@ -97,11 +98,7 @@ export default function LoginPage() {
                   (errors as FieldErrors<LoginValues>).password?.message
                 }
               >
-                <Input
-                  type="password"
-                  placeholder="******"
-                  {...register('password')}
-                />
+                <PasswordInput {...register('password')} />
               </Field>
 
               <Link

@@ -63,7 +63,8 @@
     "db:migrate": "drizzle-kit migrate",
     "db:reset": "tsx src/drizzle/scripts/reset.ts",
     "db:studio": "drizzle-kit studio",
-    "dev": "next dev"
+    "dev": "next dev",
+    "lint": "next lint"
   },
   "version": "0.6.0"
 }

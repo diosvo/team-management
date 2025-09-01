@@ -8,7 +8,6 @@ import {
   Button,
   Link as ChakraLink,
   Heading,
-  Input,
   List,
   VStack,
 } from '@chakra-ui/react';
@@ -16,6 +15,7 @@ import { CircleCheck, CircleDashed } from 'lucide-react';
 
 import { Alert } from '@/components/ui/alert';
 import { Field } from '@/components/ui/field';
+import { PasswordInput } from '@/components/ui/password-input';
 
 import { LOGIN_PATH } from '@/routes';
 import { Response } from '@/utils/response';
@@ -24,11 +24,7 @@ import { changePassword } from '@/features/user/actions/auth';
 
 const PASSWORD_RULES = [
   {
-    text: 'Be at least 8 characters long',
-    regex: /.{8,}/,
-  },
-  {
-    text: 'Be at most 128 characters long',
+    text: 'Be between 8 and 128 characters long',
     regex: /^.{8,128}$/,
   },
   {
@@ -80,11 +76,8 @@ export default function NewPasswordPage() {
       >
         <>
           <Field required label="Password" disabled={isPending}>
-            <Input
-              autoFocus
+            <PasswordInput
               value={password}
-              type="password"
-              placeholder="******"
               onChange={(e) => setPassword(e.target.value)}
             />
           </Field>
