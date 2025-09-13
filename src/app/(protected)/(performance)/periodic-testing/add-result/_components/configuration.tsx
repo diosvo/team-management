@@ -1,15 +1,16 @@
 'use client';
 
-import { Input, VStack } from '@chakra-ui/react';
+import { Input, Span, VStack } from '@chakra-ui/react';
 
+import SearchableSelect from '@/components/searchable-select';
 import { Field } from '@/components/ui/field';
 import PlayerSelection from '@/components/user/player-selection';
 
+import useQuery from '@/hooks/use-query';
 import { ESTABLISHED_DATE } from '@/utils/constant';
 
+import { getTestTypes } from '@/features/periodic-testing/actions/test-type';
 import { TestConfigurationSelection } from '@/features/periodic-testing/schemas/models';
-
-import TestTypesSelection from './test-types-selection';
 
 interface TestResultConfigurationProps {
   selection: TestConfigurationSelection;
@@ -22,6 +23,8 @@ export default function TestResultConfiguration({
   selection,
   setSelection,
 }: TestResultConfigurationProps) {
+  const request = useQuery(async () => await getTestTypes());
+
   return (
     <VStack gap={4}>
       <PlayerSelection
@@ -33,8 +36,21 @@ export default function TestResultConfiguration({
           }))
         }
       />
-      <TestTypesSelection
+      <SearchableSelect
+        label="types"
+        request={request}
+        maxItems={5}
         selection={selection.types}
+        itemToString={(item) => item.name}
+        itemToValue={(item) => item.type_id}
+        renderItem={(item) => (
+          <>
+            {item.name}{' '}
+            <Span fontSize="xs" color="GrayText">
+              ({item.unit})
+            </Span>
+          </>
+        )}
         onSelectionChange={(selected) =>
           setSelection((prev) => ({
             ...prev,

@@ -7,7 +7,7 @@ type AsyncState<T> =
   | { status: 'success'; data: T }
   | { status: 'error'; error: Error };
 
-type UseQueryReturn<T> = {
+export type UseQueryReturn<T> = {
   loading: boolean;
   error: Nullable<Error>;
   data: Nullable<T>;
@@ -25,15 +25,11 @@ export default function useQuery<T>(
 
     fn()
       .then((data) => {
-        if (ignore) {
-          return;
-        }
+        if (ignore) return;
         setState({ status: 'success', data });
       })
       .catch((error) => {
-        if (ignore) {
-          return;
-        }
+        if (ignore) return;
         setState({ status: 'error', error });
       });
 

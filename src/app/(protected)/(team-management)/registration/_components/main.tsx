@@ -21,17 +21,17 @@ import CopyButton from './export-button';
 import SelectedPlayers from './selected-players';
 
 export default function RegistrationPageClient() {
-  const [info, setInfo] = useState({
+  const [info] = useState({
     leagueName: '', // TODO: A dropdown that selects "League" name
     maxPlayers: 15,
   });
-  const [players, setPlayers] = useState<Array<User>>([]);
+  const [selection, setSelection] = useState<Array<User>>([]);
 
   return (
     <Stack gap={6}>
       <Flex justify="space-between" alignItems="center">
         <PageTitle>Tournament Registration</PageTitle>
-        <CopyButton players={players} />
+        <CopyButton players={selection} />
       </Flex>
 
       <Stack gap={6}>
@@ -51,8 +51,8 @@ export default function RegistrationPageClient() {
             <Card.Body>
               <PlayerSelection
                 maxPlayers={info.maxPlayers}
-                selection={players}
-                onSelectionChange={setPlayers}
+                selection={selection}
+                onSelectionChange={setSelection}
               />
             </Card.Body>
           </Card.Root>
@@ -65,13 +65,13 @@ export default function RegistrationPageClient() {
                 variant="outline"
                 colorPalette="red"
                 aria-label="Clear"
-                onClick={() => setPlayers([])}
+                onClick={() => setSelection([])}
               >
                 <Trash />
               </IconButton>
             </Card.Header>
             <Card.Body>
-              <SelectedPlayers players={players} />
+              <SelectedPlayers players={selection} />
             </Card.Body>
           </Card.Root>
         </SimpleGrid>
