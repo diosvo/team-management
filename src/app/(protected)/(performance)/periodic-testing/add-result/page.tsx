@@ -8,12 +8,9 @@ import { MoveLeft } from 'lucide-react';
 import PageTitle from '@/components/page-title';
 import { Tooltip } from '@/components/ui/tooltip';
 
-import { getTestTypes } from '@/features/periodic-testing/actions/test-type';
 import { getUser } from '@/features/user/actions/auth';
-import { getRoster } from '@/features/user/actions/user';
 
 import { LOGIN_PATH } from '@/routes';
-import { UserRole, UserState } from '@/utils/enum';
 import { hasPermissions } from '@/utils/helper';
 
 import AddTestResultPageClient from './_components/main';
@@ -30,15 +27,6 @@ export default async function AddTestResultPage() {
   const { isGuest, isPlayer } = hasPermissions(currentUser.role);
   if (isGuest || isPlayer) forbidden();
 
-  const [players, testTypes] = await Promise.all([
-    getRoster({
-      query: '',
-      role: [UserRole.PLAYER],
-      state: [UserState.ACTIVE],
-    }),
-    getTestTypes(),
-  ]);
-
   return (
     <>
       <HStack gap={2} marginBottom={6}>
@@ -51,7 +39,7 @@ export default async function AddTestResultPage() {
         </Tooltip>
         <PageTitle>Add Test Result</PageTitle>
       </HStack>
-      <AddTestResultPageClient players={players} types={testTypes} />
+      <AddTestResultPageClient />
     </>
   );
 }

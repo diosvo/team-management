@@ -13,7 +13,7 @@ import { Field } from '@/components/ui/field';
 import { toaster } from '@/components/ui/toaster';
 import { Tooltip } from '@/components/ui/tooltip';
 
-import { User } from '@/drizzle/schema/user';
+import { useCurrentUser } from '@/hooks/use-user';
 import { getDefaults } from '@/lib/zod';
 import { formatDate } from '@/utils/formatter';
 
@@ -23,16 +23,13 @@ import {
   EditPersonalInfoValues,
 } from '@/features/user/schemas/user';
 
-export default function PersonalInfo({
-  user,
-  viewOnly,
-}: {
-  user: User;
-  viewOnly: boolean;
-}) {
+export default function PersonalInfo({ viewOnly }: { viewOnly: boolean }) {
+  const user = useCurrentUser();
+
   const [isPending, startTransition] = useTransition();
   const [isEditing, setIsEditing] = useState<boolean>(false);
 
+  if (!user) return null;
   const canEdit = useMemo(() => !viewOnly, [viewOnly]);
 
   const {

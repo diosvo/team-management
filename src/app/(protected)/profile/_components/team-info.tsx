@@ -31,34 +31,33 @@ import RolePositionSelection from '@/components/user/role-position-selection';
 import StateSelection from '@/components/user/state-selection';
 import Visibility from '@/components/visibility';
 
-import { User } from '@/drizzle/schema/user';
 import { usePermissions } from '@/hooks/use-permissions';
 import { ESTABLISHED_DATE } from '@/utils/constant';
 import { UserRole } from '@/utils/enum';
 import { formatDate } from '@/utils/formatter';
-import { colorRole, colorState, hasPermissions } from '@/utils/helper';
+import { colorRole, colorState } from '@/utils/helper';
 
 import { updateTeamInfo } from '@/features/user/actions/user';
 import {
   EditTeamInfoSchema,
   EditTeamInfoValues,
 } from '@/features/user/schemas/user';
+import { useCurrentUser } from '@/hooks/use-user';
 
 export default function TeamInfo({
-  user,
   viewOnly,
   isOwnProfile,
 }: {
-  user: User;
   viewOnly: boolean;
   isOwnProfile: boolean;
 }) {
-  const { isAdmin } = usePermissions();
-  const { isPlayer } = hasPermissions(user.role);
+  const user = useCurrentUser();
+  const { isAdmin, isPlayer } = usePermissions();
 
   const [isPending, startTransition] = useTransition();
   const [isEditing, setIsEditing] = useState<boolean>(false);
 
+  if (!user) return null;
   const canEdit = useMemo(() => {
     // Do NOT enable button if:
     // 1. Current profile is Admin

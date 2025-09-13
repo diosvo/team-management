@@ -4,7 +4,9 @@ import { useMemo } from 'react';
 
 import {
   Combobox,
+  HStack,
   Portal,
+  Spinner,
   Text,
   useFilter,
   useListCollection,
@@ -13,24 +15,26 @@ import {
 import { toaster } from '@/components/ui/toaster';
 
 import { TestType } from '@/drizzle/schema';
+import useQuery from '@/hooks/use-query';
 
-interface PlayerSelectionProps {
-  data: Array<TestType>;
+import { getTestTypes } from '@/features/periodic-testing/actions/test-type';
+
+interface TestTypesSelectionProps {
   selection: Array<TestType>;
   onSelectionChange: (selected: Array<TestType>) => void;
 }
 
-const MAX_VALUE_COUNT = 5;
+const MAX_VALUE_COUNT = 5 as const;
 
 export default function TestTypesSelection({
-  data,
   selection,
   onSelectionChange,
-}: PlayerSelectionProps) {
+}: TestTypesSelectionProps) {
+  const request = useQuery(async () => await getTestTypes());
   const { contains } = useFilter({ sensitivity: 'base' });
 
   const { collection, filter, reset } = useListCollection({
-    initialItems: data,
+    initialItems: request.data || [],
     filter: contains,
     // https://chakra-ui.com/docs/components/combobox#custom-objects
     itemToString: (item) => item.name,
@@ -81,17 +85,28 @@ export default function TestTypesSelection({
         <Combobox.Positioner>
           <Combobox.Content>
             <Combobox.Empty>No types found</Combobox.Empty>
-            {collection.items.map((item) => (
-              <Combobox.Item item={item} key={item.type_id}>
-                <Combobox.ItemText truncate>
-                  {item.name}{' '}
-                  <Text as="span" fontSize="xs" color="GrayText">
-                    ({item.unit})
-                  </Text>
-                </Combobox.ItemText>
-                <Combobox.ItemIndicator />
-              </Combobox.Item>
-            ))}
+            {request.loading ? (
+              <HStack padding={2}>
+                <Spinner size="xs" borderWidth={1} />
+                <Text>Loading...</Text>
+              </HStack>
+            ) : request.error ? (
+              <Text padding={2} color="fg.error">
+                {request.error.message}
+              </Text>
+            ) : (
+              collection.items.map((item) => (
+                <Combobox.Item item={item} key={item.type_id}>
+                  <Combobox.ItemText truncate>
+                    {item.name}{' '}
+                    <Text as="span" fontSize="xs" color="GrayText">
+                      ({item.unit})
+                    </Text>
+                  </Combobox.ItemText>
+                  <Combobox.ItemIndicator />
+                </Combobox.Item>
+              ))
+            )}
           </Combobox.Content>
         </Combobox.Positioner>
       </Portal>

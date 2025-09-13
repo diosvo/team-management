@@ -5,7 +5,6 @@ import { Input, VStack } from '@chakra-ui/react';
 import { Field } from '@/components/ui/field';
 import PlayerSelection from '@/components/user/player-selection';
 
-import { TestType, User } from '@/drizzle/schema';
 import { ESTABLISHED_DATE } from '@/utils/constant';
 
 import { TestConfigurationSelection } from '@/features/periodic-testing/schemas/models';
@@ -13,8 +12,6 @@ import { TestConfigurationSelection } from '@/features/periodic-testing/schemas/
 import TestTypesSelection from './test-types-selection';
 
 interface TestResultConfigurationProps {
-  players: Array<User>;
-  types: Array<TestType>;
   selection: TestConfigurationSelection;
   setSelection: React.Dispatch<
     React.SetStateAction<TestConfigurationSelection>
@@ -22,16 +19,12 @@ interface TestResultConfigurationProps {
 }
 
 export default function TestResultConfiguration({
-  players,
-  types,
   selection,
   setSelection,
 }: TestResultConfigurationProps) {
   return (
     <VStack gap={4}>
       <PlayerSelection
-        players={players}
-        maxPlayers={players.length}
         selection={selection.players}
         onSelectionChange={(selected) =>
           setSelection((prev) => ({
@@ -41,7 +34,6 @@ export default function TestResultConfiguration({
         }
       />
       <TestTypesSelection
-        data={types}
         selection={selection.types}
         onSelectionChange={(selected) =>
           setSelection((prev) => ({

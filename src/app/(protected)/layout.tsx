@@ -29,10 +29,6 @@ export default function ProtectedLayout({
   const [isExpanded, setIsExpanded] = useState<boolean>(true);
   const sidebarWidth = isExpanded ? '224px' : '64px';
 
-  const toggleSidebar = () => {
-    setIsExpanded(!isExpanded);
-  };
-
   return (
     <Grid
       height="100vh"
@@ -78,7 +74,7 @@ export default function ProtectedLayout({
           borderTopLeftRadius={0}
           borderBottomLeftRadius={0}
           borderLeftColor="gray.100"
-          onClick={toggleSidebar}
+          onClick={() => setIsExpanded(!isExpanded)}
           title={isExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
         >
           {isExpanded ? <ChevronLeft /> : <ChevronRight />}
