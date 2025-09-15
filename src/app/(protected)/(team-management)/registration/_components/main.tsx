@@ -3,14 +3,15 @@
 import { useState } from 'react';
 
 import {
+  Button,
   Card,
-  Flex,
+  Center,
   Highlight,
-  IconButton,
+  HStack,
+  List,
   SimpleGrid,
   Stack,
 } from '@chakra-ui/react';
-import { Trash } from 'lucide-react';
 
 import PageTitle from '@/components/page-title';
 import PlayerSelection from '@/components/user/player-selection';
@@ -18,7 +19,6 @@ import PlayerSelection from '@/components/user/player-selection';
 import { User } from '@/drizzle/schema/user';
 
 import CopyButton from './export-button';
-import SelectedPlayers from './selected-players';
 
 export default function RegistrationPageClient() {
   const [info] = useState({
@@ -29,10 +29,10 @@ export default function RegistrationPageClient() {
 
   return (
     <Stack gap={6}>
-      <Flex justify="space-between" alignItems="center">
+      <HStack>
         <PageTitle>Tournament Registration</PageTitle>
         <CopyButton players={selection} />
-      </Flex>
+      </HStack>
 
       <Stack gap={6}>
         <SimpleGrid columns={{ base: 1, md: 2 }} gap={6}>
@@ -59,19 +59,49 @@ export default function RegistrationPageClient() {
 
           <Card.Root size="sm">
             <Card.Header>
-              <IconButton
-                marginLeft="auto"
-                size="xs"
-                variant="outline"
-                colorPalette="red"
-                aria-label="Clear"
-                onClick={() => setSelection([])}
-              >
-                <Trash />
-              </IconButton>
+              <HStack>
+                <Card.Title>Selected Players</Card.Title>
+                <Button
+                  size="xs"
+                  variant="ghost"
+                  colorPalette="red"
+                  marginLeft="auto"
+                  disabled={selection.length === 0}
+                  onClick={() => setSelection([])}
+                >
+                  clear all
+                </Button>
+              </HStack>
             </Card.Header>
             <Card.Body>
-              <SelectedPlayers players={selection} />
+              {selection.length > 0 ? (
+                <List.Root paddingInline={4}>
+                  {selection.map(
+                    ({ user_id, name, details: { jersey_number = null } }) => (
+                      <List.Item
+                        key={user_id}
+                        width="max-content"
+                        _hover={{
+                          cursor: 'pointer',
+                          color: 'tomato',
+                          textDecoration: 'line-through',
+                          transition: 'all 0.2s',
+                        }}
+                        onClick={() =>
+                          setSelection((prev) =>
+                            prev.filter(({ user_id: id }) => id !== user_id)
+                          )
+                        }
+                      >
+                        {jersey_number && `${jersey_number} - `}
+                        {name}
+                      </List.Item>
+                    )
+                  )}
+                </List.Root>
+              ) : (
+                <Center>No players selected.</Center>
+              )}
             </Card.Body>
           </Card.Root>
         </SimpleGrid>
