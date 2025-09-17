@@ -1,9 +1,10 @@
 'use client';
 
+import { useMemo } from 'react';
+
 import { Button, Clipboard } from '@chakra-ui/react';
 
 import { User } from '@/drizzle/schema';
-import { useMemo } from 'react';
 
 export default function CopyButton({ players }: { players: Array<User> }) {
   const headers = ['Họ tên', 'Năm sinh', 'CMND', 'Điện thoại', 'Số áo'];

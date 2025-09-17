@@ -1,21 +1,32 @@
-'use server';
+import 'server-only';
 
-import { cache } from 'react';
+import { unstable_cache } from 'next/cache';
 
 import { eq } from 'drizzle-orm';
 
+import logger from '@/lib/logger';
+import { CACHE_REVALIDATION_TIME } from '@/utils/constant';
+
 import { db } from '@/drizzle';
 import { TeamTable } from '@/drizzle/schema/team';
-import logger from '@/lib/logger';
 
-export const getTeam = cache(async () => {
-  logger.info('💥 Fetching default team.');
+import { teamCacheKey, teamCacheTag } from './cache';
 
-  try {
-    return await db.query.TeamTable.findFirst({
-      where: eq(TeamTable.is_default, true),
-    });
-  } catch {
-    return null;
+export const getTeam = unstable_cache(
+  async () => {
+    logger.info('💥 Fetching default team.');
+
+    try {
+      return await db.query.TeamTable.findFirst({
+        where: eq(TeamTable.is_default, true),
+      });
+    } catch {
+      return null;
+    }
+  },
+  [teamCacheKey()],
+  {
+    revalidate: CACHE_REVALIDATION_TIME,
+    tags: [teamCacheTag()],
   }
-});
+);

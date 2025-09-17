@@ -1,15 +1,15 @@
 import { getGlobalTag } from '@/lib/data-cache';
 
 /**
- * @description Used for storing and retrieving the cached data
+ * @description Used for selective revalidation
  */
-export function teamCacheKey() {
+export function teamCacheTag() {
   return getGlobalTag('team');
 }
 
 /**
  * @description Used for cache invalidation
  */
-export function teamCacheTag() {
-  return 'team-default';
+export function teamCacheKey() {
+  return 'default-team';
 }
