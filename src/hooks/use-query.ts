@@ -3,9 +3,14 @@
 import { DependencyList, useEffect, useState } from 'react';
 
 type AsyncState<T> =
+  | { status: 'idle' }
   | { status: 'loading' }
   | { status: 'success'; data: T }
   | { status: 'error'; error: Error };
+
+export type UseQueryOptions = {
+  enabled: boolean;
+};
 
 export type UseQueryReturn<T> = {
   loading: boolean;
@@ -15,11 +20,19 @@ export type UseQueryReturn<T> = {
 
 export default function useQuery<T>(
   fn: () => Promise<T>,
-  deps: DependencyList = []
+  deps: DependencyList = [],
+  options: Partial<UseQueryOptions> = {}
 ): UseQueryReturn<T> {
-  const [state, setState] = useState<AsyncState<T>>({ status: 'loading' });
+  const { enabled = true } = options;
+  const [state, setState] = useState<AsyncState<T>>({ status: 'idle' });
 
   useEffect(() => {
+    // Don't run if disabled
+    if (!enabled) {
+      setState({ status: 'idle' });
+      return;
+    }
+
     let ignore = false;
     setState({ status: 'loading' });
 
@@ -37,7 +50,7 @@ export default function useQuery<T>(
     return () => {
       ignore = true;
     };
-  }, deps);
+  }, [...deps, enabled]);
 
   return {
     loading: state.status === 'loading',

@@ -1,9 +1,10 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
+
 import { InsertTestResult } from '@/drizzle/schema';
 import { Response, ResponseFactory } from '@/utils/response';
 
-import { revalidatePath } from 'next/cache';
 import {
   getDates,
   getTestResultByDate,

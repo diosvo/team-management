@@ -10,6 +10,7 @@ import {
   Menu,
   Portal,
   Select,
+  Spinner,
 } from '@chakra-ui/react';
 import {
   CalendarSearch,
@@ -22,53 +23,54 @@ import SearchInput from '@/components/ui/search-input';
 import Visibility from '@/components/visibility';
 
 import { usePermissions } from '@/hooks/use-permissions';
+import useQuery from '@/hooks/use-query';
 import { formatDate } from '@/utils/formatter';
 
-import { TestFilters } from '@/features/periodic-testing/schemas/models';
+import { getTestDates } from '@/features/periodic-testing/actions/test-result';
+import { usePathname, useRouter } from 'next/navigation';
 
 interface TestingFiltersProps {
-  dates: Array<string>;
-  filters: TestFilters;
-  setFilters: React.Dispatch<React.SetStateAction<TestFilters>>;
+  date: string;
+  search: string;
+  setSearch: React.Dispatch<React.SetStateAction<string>>;
 }
 
 export default function TestingFilters({
-  dates = [],
-  filters,
-  setFilters,
+  date,
+  search,
+  setSearch,
 }: TestingFiltersProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+
   const { isAdmin } = usePermissions();
+  const request = useQuery(async () => await getTestDates());
 
   const dateRanges = useMemo(
     () =>
       createListCollection({
-        items: dates.map((date) => ({
+        items: (request.data ?? []).map((date) => ({
           label: formatDate(date),
           value: date,
         })),
       }),
-    [dates]
+    [request.data]
   );
 
   return (
     <HStack marginBottom={6}>
       <SearchInput
-        value={filters.search}
-        onValueChange={(value) =>
-          setFilters((prev) => ({ ...prev, search: value }))
-        }
-        onClear={() => {
-          setFilters((prev) => ({ ...prev, search: '' }));
-        }}
+        value={search}
+        onValueChange={(value) => setSearch(value)}
+        onClear={() => setSearch('')}
       />
       <Select.Root
         collection={dateRanges}
         width="2xs"
+        value={[date]}
         size={{ base: 'sm', md: 'md' }}
-        value={[filters.date]}
-        onValueChange={({ value }) =>
-          setFilters((prev) => ({ ...prev, date: value[0] }))
-        }
+        disabled={request.loading || !!request.error}
+        onValueChange={({ value }) => router.push(pathname + `?date=${value}`)}
       >
         <Select.HiddenSelect />
         <Select.Control>
@@ -79,6 +81,9 @@ export default function TestingFilters({
             </HStack>
           </Select.Trigger>
           <Select.IndicatorGroup>
+            {request.loading && (
+              <Spinner size="xs" borderWidth={1} color="fg.muted" />
+            )}
             <Select.Indicator />
           </Select.IndicatorGroup>
         </Select.Control>
