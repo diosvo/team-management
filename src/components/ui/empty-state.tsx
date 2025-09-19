@@ -13,7 +13,7 @@ export const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
   function EmptyState(props, ref) {
     const {
       title,
-      description = 'Try adjusting your search',
+      description = 'Try adjusting your filters',
       icon = <Box />,
       children,
       ...rest

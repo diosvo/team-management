@@ -29,9 +29,6 @@ export default function PersonalInfo({ viewOnly }: { viewOnly: boolean }) {
   const [isPending, startTransition] = useTransition();
   const [isEditing, setIsEditing] = useState<boolean>(false);
 
-  if (!user) return null;
-  const canEdit = useMemo(() => !viewOnly, [viewOnly]);
-
   const {
     reset,
     register,
@@ -40,8 +37,11 @@ export default function PersonalInfo({ viewOnly }: { viewOnly: boolean }) {
   } = useForm({
     mode: 'onChange',
     resolver: zodResolver(EditPersonalInfoSchema),
-    defaultValues: getDefaults(EditPersonalInfoSchema, user),
+    defaultValues: getDefaults(EditPersonalInfoSchema, user || {}),
   });
+  const canEdit = useMemo(() => !viewOnly, [viewOnly]);
+
+  if (!user) return null;
 
   const onSubmit = (data: EditPersonalInfoValues) => {
     startTransition(async () => {

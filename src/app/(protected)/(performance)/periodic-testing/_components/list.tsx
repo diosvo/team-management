@@ -1,58 +1,43 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
 import { useMemo, useState } from 'react';
 
-import { SkeletonText } from '@chakra-ui/react';
-
-import { getTestResult } from '@/features/periodic-testing/actions/test-result';
-import useQuery from '@/hooks/use-query';
-
+import { TestResult } from '@/features/periodic-testing/schemas/models';
 import TestingFilters from './filters';
 import TestingStats from './stats';
 import PlayerPerformanceMatrix from './table';
 
-export default function TestingResultList() {
-  const searchParams = useSearchParams();
-  const date = searchParams.get('date') || '';
+export default function TestingResultList({
+  date,
+  result,
+}: {
+  date: string;
+  result: TestResult;
+}) {
   const [search, setSearch] = useState<string>('');
 
-  const { loading, data } = useQuery(
-    async () => await getTestResult(date),
-    [date],
-    {
-      enabled: !!date,
-    }
-  );
-
-  const headers = data?.headers || [];
-  const players = data?.players || [];
-
   const filteredPlayers = useMemo(() => {
+    const players = result.players;
     if (!players || players.length === 0) return [];
     if (!search) return players;
 
     return players.filter(({ player_name }) =>
       player_name.toLowerCase().includes(search.toLowerCase())
     );
-  }, [search, players]);
+  }, [search, result.players]);
 
   return (
     <>
       <TestingStats
         stats={{
-          completed_tests: headers.length,
-          total_players: players.length,
+          completed_tests: result.headers.length,
+          total_players: result.players.length,
         }}
       />
       <TestingFilters date={date} search={search} setSearch={setSearch} />
-      {loading ? (
-        <SkeletonText noOfLines={9} />
-      ) : (
-        <PlayerPerformanceMatrix
-          result={{ headers, players: filteredPlayers }}
-        />
-      )}
+      <PlayerPerformanceMatrix
+        result={{ headers: result.headers, players: filteredPlayers }}
+      />
     </>
   );
 }

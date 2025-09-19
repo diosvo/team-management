@@ -8,7 +8,7 @@ type AsyncState<T> =
   | { status: 'success'; data: T }
   | { status: 'error'; error: Error };
 
-export type UseQueryOptions = {
+type UseQueryOptions = {
   enabled: boolean;
 };
 
@@ -17,7 +17,9 @@ export type UseQueryReturn<T> = {
   error: Nullable<Error>;
   data: Nullable<T>;
 };
-
+/**
+ * @description For fetching data only, not for mutations.
+ */
 export default function useQuery<T>(
   fn: () => Promise<T>,
   deps: DependencyList = [],
@@ -50,7 +52,7 @@ export default function useQuery<T>(
     return () => {
       ignore = true;
     };
-  }, [...deps, enabled]);
+  }, [enabled, ...deps]);
 
   return {
     loading: state.status === 'loading',

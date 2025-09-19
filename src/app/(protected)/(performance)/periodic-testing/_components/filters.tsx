@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 import { useMemo } from 'react';
 
 import {
@@ -27,7 +28,6 @@ import useQuery from '@/hooks/use-query';
 import { formatDate } from '@/utils/formatter';
 
 import { getTestDates } from '@/features/periodic-testing/actions/test-result';
-import { usePathname, useRouter } from 'next/navigation';
 
 interface TestingFiltersProps {
   date: string;
