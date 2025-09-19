@@ -14,13 +14,14 @@ import { teamCacheKey, teamCacheTag } from './cache';
 
 export const getTeam = unstable_cache(
   async () => {
-    logger.info('💥 Fetching default team.');
+    logger.info('💥 Getting default team...');
 
     try {
       return await db.query.TeamTable.findFirst({
         where: eq(TeamTable.is_default, true),
       });
-    } catch {
+    } catch (error) {
+      logger.error('🆘 Failed to get team:', error);
       return null;
     }
   },

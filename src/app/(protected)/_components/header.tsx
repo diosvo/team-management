@@ -82,27 +82,33 @@ export default function Header() {
             </Float>
           </Avatar.Root>
         </Menu.Trigger>
-        <Menu.Positioner>
-          <Menu.Content>
-            <Menu.Item value="user-info" _hover={{ cursor: 'pointer' }} asChild>
-              <Link href={'/profile/' + user.user_id}>
-                <UserIcon size={14} />
-                {user.name}
-              </Link>
-            </Menu.Item>
+        <Portal>
+          <Menu.Positioner>
+            <Menu.Content>
+              <Menu.Item
+                value="user-info"
+                _hover={{ cursor: 'pointer' }}
+                asChild
+              >
+                <Link href={'/profile/' + user.user_id}>
+                  <UserIcon size={14} />
+                  {user.name}
+                </Link>
+              </Menu.Item>
 
-            <Menu.Separator />
+              <Menu.Separator />
 
-            <Menu.Item
-              value="logout"
-              disabled={isPending}
-              _hover={{ cursor: 'pointer' }}
-              onClick={handleLogout}
-            >
-              <LogOut size={14} /> Logout
-            </Menu.Item>
-          </Menu.Content>
-        </Menu.Positioner>
+              <Menu.Item
+                value="logout"
+                disabled={isPending}
+                _hover={{ cursor: 'pointer' }}
+                onClick={handleLogout}
+              >
+                <LogOut size={14} /> Logout
+              </Menu.Item>
+            </Menu.Content>
+          </Menu.Positioner>
+        </Portal>
       </Menu.Root>
 
       <Drawer.Root open={open} onOpenChange={({ open }) => setOpen(open)}>

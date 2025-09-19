@@ -111,18 +111,18 @@ export default function TestingFilters({
           <Portal>
             <Menu.Positioner>
               <Menu.Content>
-                <Link href="/periodic-testing/add-result">
-                  <Menu.Item value="add-test-result">
+                <Menu.Item value="add-test-result" asChild>
+                  <Link href="/periodic-testing/add-result">
                     <Plus size={14} />
                     Add Result
-                  </Menu.Item>
-                </Link>
-                <Link href="/periodic-testing/test-types">
-                  <Menu.Item value="test-types">
+                  </Link>
+                </Menu.Item>
+                <Menu.Item value="test-types" asChild>
+                  <Link href="/periodic-testing/test-types">
                     <Settings2 size={14} />
                     Manage Test Types
-                  </Menu.Item>
-                </Link>
+                  </Link>
+                </Menu.Item>
               </Menu.Content>
             </Menu.Positioner>
           </Portal>

@@ -1,6 +1,6 @@
 'use client';
 
-import { DependencyList, useEffect, useState } from 'react';
+import { DependencyList, useCallback, useEffect, useState } from 'react';
 
 type AsyncState<T> =
   | { status: 'idle' }
@@ -18,7 +18,7 @@ export type UseQueryReturn<T> = {
   data: Nullable<T>;
 };
 /**
- * @description For fetching data only, not for mutations.
+ * @description For fetching data only, NOT for mutations.
  */
 export default function useQuery<T>(
   fn: () => Promise<T>,
@@ -27,6 +27,8 @@ export default function useQuery<T>(
 ): UseQueryReturn<T> {
   const { enabled = true } = options;
   const [state, setState] = useState<AsyncState<T>>({ status: 'idle' });
+
+  const memoizedFn = useCallback(fn, deps);
 
   useEffect(() => {
     // Don't run if disabled
@@ -52,7 +54,7 @@ export default function useQuery<T>(
     return () => {
       ignore = true;
     };
-  }, [enabled, ...deps]);
+  }, [enabled, memoizedFn]);
 
   return {
     loading: state.status === 'loading',
