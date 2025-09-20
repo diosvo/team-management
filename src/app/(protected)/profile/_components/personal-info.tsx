@@ -13,7 +13,7 @@ import { Field } from '@/components/ui/field';
 import { toaster } from '@/components/ui/toaster';
 import { Tooltip } from '@/components/ui/tooltip';
 
-import { User } from '@/drizzle/schema/user';
+import { useCurrentUser } from '@/hooks/use-user';
 import { getDefaults } from '@/lib/zod';
 import { formatDate } from '@/utils/formatter';
 
@@ -23,17 +23,11 @@ import {
   EditPersonalInfoValues,
 } from '@/features/user/schemas/user';
 
-export default function PersonalInfo({
-  user,
-  viewOnly,
-}: {
-  user: User;
-  viewOnly: boolean;
-}) {
+export default function PersonalInfo({ viewOnly }: { viewOnly: boolean }) {
+  const user = useCurrentUser();
+
   const [isPending, startTransition] = useTransition();
   const [isEditing, setIsEditing] = useState<boolean>(false);
-
-  const canEdit = useMemo(() => !viewOnly, [viewOnly]);
 
   const {
     reset,
@@ -43,8 +37,11 @@ export default function PersonalInfo({
   } = useForm({
     mode: 'onChange',
     resolver: zodResolver(EditPersonalInfoSchema),
-    defaultValues: getDefaults(EditPersonalInfoSchema, user),
+    defaultValues: getDefaults(EditPersonalInfoSchema, user || {}),
   });
+  const canEdit = useMemo(() => !viewOnly, [viewOnly]);
+
+  if (!user) return null;
 
   const onSubmit = (data: EditPersonalInfoValues) => {
     startTransition(async () => {

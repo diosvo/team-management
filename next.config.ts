@@ -11,7 +11,7 @@ const nextConfig: NextConfig = {
   experimental: {
     authInterrupts: true,
     webpackBuildWorker: true,
-    optimizePackageImports: ['@chakra-ui/react', 'html2canvas', 'jspdf'],
+    optimizePackageImports: ['@chakra-ui/react'],
   },
   images: {
     localPatterns: [

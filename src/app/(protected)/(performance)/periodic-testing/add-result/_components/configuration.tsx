@@ -1,20 +1,18 @@
 'use client';
 
-import { Input, VStack } from '@chakra-ui/react';
+import { Input, Span, VStack } from '@chakra-ui/react';
 
+import SearchableSelect from '@/components/searchable-select';
 import { Field } from '@/components/ui/field';
 import PlayerSelection from '@/components/user/player-selection';
 
-import { TestType, User } from '@/drizzle/schema';
+import useQuery from '@/hooks/use-query';
 import { ESTABLISHED_DATE } from '@/utils/constant';
 
+import { getTestTypes } from '@/features/periodic-testing/actions/test-type';
 import { TestConfigurationSelection } from '@/features/periodic-testing/schemas/models';
 
-import TestTypesSelection from './test-types-selection';
-
 interface TestResultConfigurationProps {
-  players: Array<User>;
-  types: Array<TestType>;
   selection: TestConfigurationSelection;
   setSelection: React.Dispatch<
     React.SetStateAction<TestConfigurationSelection>
@@ -22,16 +20,14 @@ interface TestResultConfigurationProps {
 }
 
 export default function TestResultConfiguration({
-  players,
-  types,
   selection,
   setSelection,
 }: TestResultConfigurationProps) {
+  const request = useQuery(async () => await getTestTypes());
+
   return (
     <VStack gap={4}>
       <PlayerSelection
-        players={players}
-        maxPlayers={players.length}
         selection={selection.players}
         onSelectionChange={(selected) =>
           setSelection((prev) => ({
@@ -40,9 +36,21 @@ export default function TestResultConfiguration({
           }))
         }
       />
-      <TestTypesSelection
-        data={types}
+      <SearchableSelect
+        label="types"
+        request={request}
+        maxItems={5}
         selection={selection.types}
+        itemToString={(item) => item.name}
+        itemToValue={(item) => item.type_id}
+        renderItem={(item) => (
+          <>
+            {item.name}{' '}
+            <Span fontSize="xs" color="GrayText">
+              ({item.unit})
+            </Span>
+          </>
+        )}
         onSelectionChange={(selected) =>
           setSelection((prev) => ({
             ...prev,

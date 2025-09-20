@@ -31,12 +31,13 @@ import RolePositionSelection from '@/components/user/role-position-selection';
 import StateSelection from '@/components/user/state-selection';
 import Visibility from '@/components/visibility';
 
-import { User } from '@/drizzle/schema/user';
-import { usePermissions } from '@/hooks/use-permissions';
 import { ESTABLISHED_DATE } from '@/utils/constant';
 import { UserRole } from '@/utils/enum';
 import { formatDate } from '@/utils/formatter';
-import { colorRole, colorState, hasPermissions } from '@/utils/helper';
+import { colorRole, colorState } from '@/utils/helper';
+
+import { usePermissions } from '@/hooks/use-permissions';
+import { useCurrentUser } from '@/hooks/use-user';
 
 import { updateTeamInfo } from '@/features/user/actions/user';
 import {
@@ -45,16 +46,14 @@ import {
 } from '@/features/user/schemas/user';
 
 export default function TeamInfo({
-  user,
   viewOnly,
   isOwnProfile,
 }: {
-  user: User;
   viewOnly: boolean;
   isOwnProfile: boolean;
 }) {
-  const { isAdmin } = usePermissions();
-  const { isPlayer } = hasPermissions(user.role);
+  const user = useCurrentUser();
+  const { isAdmin, isPlayer } = usePermissions();
 
   const [isPending, startTransition] = useTransition();
   const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -78,17 +77,19 @@ export default function TeamInfo({
   } = useForm({
     defaultValues: {
       user: {
-        role: user.role === UserRole.SUPER_ADMIN ? undefined : user.role,
-        state: user.state,
-        join_date: user.join_date,
+        role: user?.role === UserRole.SUPER_ADMIN ? undefined : user?.role,
+        state: user?.state,
+        join_date: user?.join_date,
       },
       player: {
-        jersey_number: user.details.jersey_number ?? undefined,
+        jersey_number: user?.details.jersey_number ?? undefined,
       },
-      position: user.details.position,
+      position: user?.details.position,
     },
     resolver: zodResolver(EditTeamInfoSchema),
   });
+
+  if (!user) return null;
 
   const onSubmit = (data: EditTeamInfoValues) => {
     startTransition(async () => {

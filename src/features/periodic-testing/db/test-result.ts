@@ -1,3 +1,5 @@
+'server-only';
+
 import { and, desc, eq, gte, lte } from 'drizzle-orm';
 
 import { db } from '@/drizzle';

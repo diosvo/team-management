@@ -19,10 +19,7 @@ import { TestConfigurationSelection } from '@/features/periodic-testing/schemas/
 import TestResultConfiguration from './configuration';
 import TestResultTable from './table';
 
-export default function AddTestResultPageClient({
-  players,
-  types,
-}: Omit<TestConfigurationSelection, 'date'>) {
+export default function AddTestResultPageClient() {
   const router = useRouter();
   const [selection, setSelection] = useState<TestConfigurationSelection>({
     players: [],
@@ -78,8 +75,6 @@ export default function AddTestResultPageClient({
         </Card.Header>
         <Card.Body>
           <TestResultConfiguration
-            players={players}
-            types={types}
             selection={selection}
             setSelection={setSelection}
           />

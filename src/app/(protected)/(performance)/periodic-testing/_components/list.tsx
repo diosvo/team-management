@@ -1,41 +1,30 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
-import {
-  TestFilters,
-  TestResult,
-} from '@/features/periodic-testing/schemas/models';
-
+import { TestResult } from '@/features/periodic-testing/schemas/models';
 import TestingFilters from './filters';
 import TestingStats from './stats';
 import PlayerPerformanceMatrix from './table';
 
 export default function TestingResultList({
-  dates,
+  date,
   result,
-  initialDate,
 }: {
-  dates: Array<string>;
+  date: string;
   result: TestResult;
-  initialDate: string;
 }) {
-  const router = useRouter();
-  const [filters, setFilters] = useState<TestFilters>({
-    search: '',
-    date: initialDate,
-  });
+  const [search, setSearch] = useState<string>('');
 
   const filteredPlayers = useMemo(() => {
-    return result.players.filter(({ player_name }) =>
-      player_name.toLowerCase().includes(filters.search.toLowerCase())
-    );
-  }, [filters.search, result.players]);
+    const players = result.players;
+    if (!players || players.length === 0) return [];
+    if (!search) return players;
 
-  useEffect(() => {
-    router.push(`?date=${filters.date}`);
-  }, [router, filters.date]);
+    return players.filter(({ player_name }) =>
+      player_name.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [search, result.players]);
 
   return (
     <>
@@ -45,12 +34,9 @@ export default function TestingResultList({
           total_players: result.players.length,
         }}
       />
-      <TestingFilters dates={dates} filters={filters} setFilters={setFilters} />
+      <TestingFilters date={date} search={search} setSearch={setSearch} />
       <PlayerPerformanceMatrix
-        result={{
-          headers: result.headers,
-          players: filteredPlayers,
-        }}
+        result={{ headers: result.headers, players: filteredPlayers }}
       />
     </>
   );

@@ -1,5 +1,6 @@
 'use server';
 
+import { forbidden, notFound } from 'next/navigation';
 import pg from 'pg';
 
 import { User } from '@/drizzle/schema/user';
@@ -11,6 +12,17 @@ import { CoachPosition, PlayerPosition } from '@/utils/enum';
 import { hasPermissions } from '@/utils/helper';
 import { Response, ResponseFactory } from '@/utils/response';
 
+import { revalidateRosterPath, revalidateUserTag } from '../db/cache';
+import { insertCoach, updateCoach } from '../db/coach';
+import { insertPlayer, updatePlayer } from '../db/player';
+import {
+  deleteUser,
+  getExistingEmails,
+  getUserById,
+  getUsers,
+  insertUser,
+  updateUser,
+} from '../db/user';
 import {
   AddUserValues,
   EditPersonalInfoSchema,
@@ -19,19 +31,9 @@ import {
   EditTeamInfoValues,
   FilterUsersValues,
 } from '../schemas/user';
-import { generatePasswordToken } from './password-reset-token';
 
-import { revalidateRosterPath, revalidateUserTag } from '../db/cache';
-import { insertCoach, updateCoach } from '../db/coach';
-import { insertPlayer, updatePlayer } from '../db/player';
-import {
-  deleteUser,
-  getExistingEmails,
-  getUserById as getUser,
-  getUsers,
-  insertUser,
-  updateUser,
-} from '../db/user';
+import { getUser } from './auth';
+import { generatePasswordToken } from './password-reset-token';
 
 export async function getRoster(
   params: FilterUsersValues
@@ -39,11 +41,25 @@ export async function getRoster(
   return await getUsers(params);
 }
 
-export async function getUserById(user_id: string) {
-  const user = await getUser(user_id);
-  if (!user) return null;
+export async function getProfilePermission(id: string) {
+  const [currentUser, targetUser] = await Promise.all([
+    getUser(),
+    getUserById(id),
+  ]);
 
-  return user;
+  if (!targetUser || !currentUser) notFound();
+
+  const { isPlayer, isGuest } = hasPermissions(currentUser.role);
+  if (isGuest) forbidden();
+
+  const isOwnProfile = currentUser.user_id === targetUser.user_id;
+  const viewOnly = isPlayer && !isOwnProfile;
+
+  return {
+    viewOnly,
+    isOwnProfile,
+    lastUpdated: targetUser.updated_at,
+  };
 }
 
 export async function addUser(
