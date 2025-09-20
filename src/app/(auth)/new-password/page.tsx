@@ -2,7 +2,7 @@
 
 import NextLink from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useState } from 'react';
 
 import {
   Button,
@@ -16,11 +16,10 @@ import { CircleCheck, CircleDashed } from 'lucide-react';
 import { Alert } from '@/components/ui/alert';
 import { Field } from '@/components/ui/field';
 import { PasswordInput } from '@/components/ui/password-input';
+import { toaster } from '@/components/ui/toaster';
 
+import authClient from '@/lib/auth-client';
 import { LOGIN_PATH } from '@/routes';
-import { Response } from '@/utils/response';
-
-import { changePassword } from '@/features/user/actions/auth';
 
 const PASSWORD_RULES = [
   {
@@ -43,87 +42,89 @@ const PASSWORD_RULES = [
 
 export default function NewPasswordPage() {
   const [password, setPassword] = useState<string>('');
-  const [response, setResponse] = useState<Response>();
-  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string>();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const searchParams = useSearchParams();
-  const token = searchParams.get('token');
+  const token = searchParams.get('token') ?? '';
 
   const isValid = PASSWORD_RULES.every((rule) => rule.regex.test(password));
 
-  const onSubmit = (value: string) => {
-    startTransition(async () => {
-      const { error, message } = await changePassword(value, token);
-
-      setResponse({ error, message });
-      if (!error) setPassword('');
-    });
-  };
+  async function onSubmit(newPassword: string) {
+    await authClient.resetPassword(
+      {
+        newPassword,
+        token,
+      },
+      {
+        onRequest: () => setIsLoading(true),
+        onError: ({ error }) => setError(error.message),
+        onSuccess: () =>
+          toaster.success({
+            title: 'Create new password successful.',
+          }),
+        onResponse: () => setIsLoading(false),
+      }
+    );
+  }
 
   return (
-    <VStack gap={6}>
+    <VStack
+      as="form"
+      width="full"
+      gap={4}
+      onSubmit={(e) => {
+        e.preventDefault();
+        onSubmit(password);
+      }}
+    >
       <Heading textAlign="center" size={{ base: 'xl', md: '2xl' }}>
-        Change password
+        Create a new password
       </Heading>
-      <VStack
-        as="form"
-        width="full"
-        gap={6}
-        onSubmit={(e) => {
-          e.preventDefault();
-          onSubmit(password);
-        }}
-      >
-        <>
-          <Field required label="Password" disabled={isPending}>
-            <PasswordInput
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </Field>
 
-          <List.Root variant="plain" alignSelf="self-start">
-            {PASSWORD_RULES.map((rule, index) => {
-              const matched = rule.regex.test(password);
-              return (
-                <List.Item
-                  key={index}
-                  fontSize="sm"
-                  color={matched ? 'inherit' : 'GrayText'}
-                >
-                  <List.Indicator
-                    asChild
-                    color={matched ? 'green.500' : 'gray.400'}
-                  >
-                    {matched ? (
-                      <CircleCheck size={14} />
-                    ) : (
-                      <CircleDashed size={14} />
-                    )}
-                  </List.Indicator>
-                  {rule.text}
-                </List.Item>
-              );
-            })}
-          </List.Root>
-          {response && (
-            <Alert
-              status={response.error ? 'error' : 'success'}
-              title={response.message}
-            />
-          )}
-          <Button
-            type="submit"
-            width="full"
-            borderRadius="full"
-            loadingText="Submitting..."
-            loading={isPending}
-            disabled={!isValid || isPending}
-          >
-            Submit
-          </Button>
-        </>
-      </VStack>
+      <Field required label="Password" disabled={isLoading}>
+        <PasswordInput
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+      </Field>
+
+      <List.Root variant="plain" alignSelf="self-start">
+        {PASSWORD_RULES.map((rule, index) => {
+          const matched = rule.regex.test(password);
+          return (
+            <List.Item
+              key={index}
+              fontSize="sm"
+              color={matched ? 'inherit' : 'GrayText'}
+            >
+              <List.Indicator
+                asChild
+                color={matched ? 'green.500' : 'GrayText'}
+              >
+                {matched ? (
+                  <CircleCheck size={14} />
+                ) : (
+                  <CircleDashed size={14} />
+                )}
+              </List.Indicator>
+              {rule.text}
+            </List.Item>
+          );
+        })}
+      </List.Root>
+      {error && <Alert status="error" title={error} />}
+      <Button
+        type="submit"
+        width="full"
+        borderRadius="full"
+        loadingText="Submitting..."
+        loading={isLoading}
+        disabled={!isValid || isLoading}
+      >
+        Submit
+      </Button>
+
       <ChakraLink
         fontSize="sm"
         fontWeight={500}

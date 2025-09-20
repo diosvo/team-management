@@ -1,7 +1,3 @@
-'use client';
-
-import { useMemo } from 'react';
-
 import {
   ColorPalette,
   Heading,
@@ -12,7 +8,7 @@ import {
 } from '@chakra-ui/react';
 import { LucideIcon } from 'lucide-react';
 
-export interface StatCard {
+export type StatCard = {
   data: Record<string, string | number>;
   config: Array<{
     key: string;
@@ -21,20 +17,18 @@ export interface StatCard {
     color: ColorPalette;
     suffix?: string;
   }>;
-}
+};
 
 export default function Stats({ data, config }: StatCard) {
-  const cards = useMemo(() => {
-    return config.map(({ key, icon, ...rest }) => ({
-      ...rest,
-      IconComponent: icon,
-      value: data[key] || 0,
-    }));
-  }, [data, config]);
+  const cards = config.map(({ key, icon, ...rest }) => ({
+    ...rest,
+    IconComponent: icon,
+    value: data[key] || 0,
+  }));
 
   return (
     <SimpleGrid
-      columns={{ base: 1, sm: 2, md: 2, lg: 4 }}
+      columns={{ base: 1, sm: 2, md: 2, lg: 3, xl: 4 }}
       gap={6}
       marginBlock={6}
     >

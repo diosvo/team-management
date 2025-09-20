@@ -2,13 +2,14 @@
 
 import { useRef } from 'react';
 
-import { Input, InputGroup, Kbd, Spinner } from '@chakra-ui/react';
+import { Input, InputGroup, Spinner } from '@chakra-ui/react';
 import { Search } from 'lucide-react';
 
 import { CloseButton } from '@/components/ui/close-button';
 
 interface SearchInputProps {
   value: string;
+  disabled?: boolean;
   maxLength?: number;
   isPending?: boolean;
   onValueChange: (value: string) => void;
@@ -18,6 +19,7 @@ interface SearchInputProps {
 
 export default function SearchInput({
   value,
+  disabled = false,
   maxLength = 64,
   isPending = false,
   onValueChange,
@@ -53,16 +55,15 @@ export default function SearchInput({
         )
       }
       endElement={
-        value ? (
+        value && (
           <CloseButton size="2xs" borderRadius="full" onClick={handleClear} />
-        ) : (
-          <Kbd size="sm">Enter</Kbd>
         )
       }
     >
       <Input
         ref={inputRef}
         value={value}
+        disabled={disabled}
         maxLength={maxLength}
         name="search-input"
         placeholder="Search..."

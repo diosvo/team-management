@@ -1,3 +1,4 @@
+import env from '@/schemas/env';
 import { defineConfig } from 'drizzle-kit';
 
 export default defineConfig({
@@ -7,7 +8,7 @@ export default defineConfig({
   out: './src/drizzle/migrations',
 
   dbCredentials: {
-    url: process.env.DATABASE_URL!,
+    url: env.DATABASE_URL,
   },
 
   casing: 'snake_case',

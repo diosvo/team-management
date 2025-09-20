@@ -1,13 +1,15 @@
+import env from '@/schemas/env';
 import type { NextConfig } from 'next';
 
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
-  enabled: process.env.ANALYZE === 'true',
+  enabled: Boolean(env.ANALYZE_BUILD),
 });
 
 const nextConfig: NextConfig = {
   devIndicators: {
     position: 'bottom-right',
   },
+  cacheComponents: true,
   experimental: {
     authInterrupts: true,
     webpackBuildWorker: true,
@@ -23,7 +25,6 @@ const nextConfig: NextConfig = {
     qualities: [25, 50, 75, 100],
     formats: ['image/webp', 'image/avif'],
   },
-  serverExternalPackages: ['bcryptjs'],
 };
 
 export default withBundleAnalyzer(nextConfig);

@@ -9,7 +9,7 @@ function getColor<T>(
   value: Nullable<T>,
   colorMap: Record<string, ColorPalette>
 ): ColorPalette {
-  if (value === null) return 'gray';
+  if (value == null) return 'gray';
   return colorMap[value];
 }
 
@@ -26,6 +26,7 @@ export function colorState(state: string): ColorPalette {
     [UserState.ACTIVE]: 'green',
     [UserState.TEMPORARILY_ABSENT]: 'orange',
     [UserState.INACTIVE]: 'red',
+    [UserState.UNKNOWN]: 'gray',
   });
 }
 
@@ -40,7 +41,7 @@ export function colorCondition(condition: string): ColorPalette {
 export function colorCategory(category: string): ColorPalette {
   return getColor(category, {
     [AssetCategory.EQUIPMENT]: 'purple',
-    [AssetCategory.TRANING]: 'blue',
+    [AssetCategory.TRAINING]: 'blue',
   });
 }
 

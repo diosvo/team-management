@@ -28,6 +28,11 @@ export const SIDEBAR_GROUP = [
         disabled: false,
       },
       { icon: Dumbbell, text: 'Training', disabled: true },
+      {
+        icon: ShieldCheck,
+        text: 'Team Rule',
+        disabled: false,
+      },
     ],
   },
   {
@@ -61,16 +66,6 @@ export const SIDEBAR_GROUP = [
         icon: Film,
         text: 'Documents',
         disabled: true,
-      },
-    ],
-  },
-  {
-    title: '',
-    items: [
-      {
-        icon: ShieldCheck,
-        text: 'Team Rule',
-        disabled: false,
       },
     ],
   },

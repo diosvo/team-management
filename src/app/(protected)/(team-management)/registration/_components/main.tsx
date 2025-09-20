@@ -77,9 +77,9 @@ export default function RegistrationPageClient() {
               {selection.length > 0 ? (
                 <List.Root paddingInline={4}>
                   {selection.map(
-                    ({ user_id, name, details: { jersey_number = null } }) => (
+                    ({ id, name, details: { jersey_number = null } }) => (
                       <List.Item
-                        key={user_id}
+                        key={id}
                         width="max-content"
                         _hover={{
                           cursor: 'pointer',
@@ -89,7 +89,7 @@ export default function RegistrationPageClient() {
                         }}
                         onClick={() =>
                           setSelection((prev) =>
-                            prev.filter(({ user_id: id }) => id !== user_id)
+                            prev.filter(({ id: player_id }) => id !== player_id)
                           )
                         }
                       >

@@ -6,15 +6,14 @@ import { UserRole, UserState } from '@/utils/enum';
 
 import SearchableSelect from '@/components/searchable-select';
 
-import { getRoster } from '@/features/user/actions/user';
-import { FilterUsersValues } from '@/features/user/schemas/user';
+import { getRoster } from '@/actions/user';
+import { FilterUsersValues } from '@/schemas/user';
 
-interface PlayerSelectionProps {
-  selection: Array<User>;
-  onSelectionChange: (selected: Array<User>) => void;
-  maxPlayers?: number;
-  params?: FilterUsersValues;
-}
+type PlayerSelectionProps = Selector<Array<User>> &
+  Partial<{
+    maxPlayers: number;
+    params: FilterUsersValues;
+  }>;
 
 export default function PlayerSelection({
   params = {
@@ -34,7 +33,7 @@ export default function PlayerSelection({
       request={request}
       maxItems={maxPlayers}
       itemToString={(player) => player.name}
-      itemToValue={(player) => player.user_id}
+      itemToValue={(player) => player.id}
       renderItem={(player) => (
         <>
           {player.details?.jersey_number &&

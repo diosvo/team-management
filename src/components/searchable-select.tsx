@@ -15,16 +15,14 @@ import {
 import { toaster } from '@/components/ui/toaster';
 import { UseQueryReturn } from '@/hooks/use-query';
 
-interface SearchableSelectProps<T> {
+type SearchableSelectProps<T> = Selector<Array<T>> & {
   label: string;
   maxItems?: number;
-  selection: Array<T>;
   request: UseQueryReturn<Array<T>>;
-  onSelectionChange: (selected: Array<T>) => void;
   itemToString: (item: T) => string;
   itemToValue: (item: T) => string;
   renderItem?: (item: T) => React.ReactNode;
-}
+};
 
 export default function SearchableSelect<T>({
   label,

@@ -2,9 +2,9 @@ import { Metadata } from 'next';
 
 import PageTitle from '@/components/page-title';
 
-import { getTestResult } from '@/features/periodic-testing/actions/test-result';
+import { getTestResult } from '@/actions/test-result';
 
-import TestingResultList from './_components/list';
+import TestingResultList from './_components/TestingResultList';
 
 export const metadata: Metadata = {
   title: 'Periodic Testing',

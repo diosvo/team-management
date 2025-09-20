@@ -1,5 +1,3 @@
-import { addHours } from 'date-fns';
-
 import {
   AssetCategory,
   AssetCondition,
@@ -22,8 +20,11 @@ export const LOCALE_DATETIME_FORMAT = LOCALE_DATE_FORMAT + ' HH:mm:ss';
 // 1 hour in seconds for cache revalidation
 export const CACHE_REVALIDATION_TIME = 3600;
 
-// 1 hour for session expiration
-export const EXPIRES_AT = addHours(new Date(), 1);
+export const COOKIE = {
+  prefix: 'sgr',
+  // expires: addHours(new Date(), 1),
+  expires: 60, // 5 minutes in seconds
+};
 
 export const ALL: Option<string> = {
   label: 'All',
@@ -140,7 +141,7 @@ export const PlayerPositionsSelection: Selection<string> = [
 
 export const SELECTABLE_ASSET_CATEGORIES = [
   AssetCategory.EQUIPMENT,
-  AssetCategory.TRANING,
+  AssetCategory.TRAINING,
   AssetCategory.OTHERS,
 ] as const;
 export const AssetCategorySelection: Selection<string> = [
@@ -151,7 +152,7 @@ export const AssetCategorySelection: Selection<string> = [
   },
   {
     label: 'Training',
-    value: AssetCategory.TRANING,
+    value: AssetCategory.TRAINING,
     description: 'Cones, Hurdles, Jump ropes, etc',
   },
   {

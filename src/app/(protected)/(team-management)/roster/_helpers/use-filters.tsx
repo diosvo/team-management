@@ -1,9 +1,15 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { createContext, useContext, useOptimistic, useTransition } from 'react';
+import {
+  createContext,
+  PropsWithChildren,
+  useContext,
+  useOptimistic,
+  useTransition,
+} from 'react';
 
-import { FilterUsersValues } from '@/features/user/schemas/user';
+import { FilterUsersValues } from '@/schemas/user';
 import { parseSearchParams } from './parse-params';
 
 type FilterContextType = {
@@ -14,11 +20,7 @@ type FilterContextType = {
 
 const FilterContext = createContext<FilterContextType | undefined>(undefined);
 
-export default function FilterProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function FilterProvider({ children }: PropsWithChildren) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialFilters = parseSearchParams(
@@ -59,7 +61,7 @@ export default function FilterProvider({
   }
 
   return (
-    <FilterContext.Provider
+    <FilterContext
       value={{
         filters: optimisticFilters,
         isPending,
@@ -67,7 +69,7 @@ export default function FilterProvider({
       }}
     >
       {children}
-    </FilterContext.Provider>
+    </FilterContext>
   );
 }
 

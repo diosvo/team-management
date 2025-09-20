@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1748161283857,
+      "when": 1762620606525,
       "tag": "0000_core_tables",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1749807900426,
-      "tag": "0001_asset_table",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1753852821668,
-      "tag": "0002_periodic_testing_table",
       "breakpoints": true
     }
   ]

@@ -5,8 +5,8 @@ import {
   integer,
   pgEnum,
   pgTable,
+  text,
   uniqueIndex,
-  uuid,
 } from 'drizzle-orm/pg-core';
 
 import { PlayerPosition } from '@/utils/enum';
@@ -19,10 +19,10 @@ export const playerPositionEnum = pgEnum('player_position', PlayerPosition);
 export const PlayerTable = pgTable(
   'player',
   {
-    user_id: uuid()
+    id: text()
       .notNull()
       .primaryKey()
-      .references(() => UserTable.user_id, { onDelete: 'cascade' }),
+      .references(() => UserTable.id, { onDelete: 'cascade' }),
     is_captain: boolean().default(false).notNull(),
     jersey_number: integer().unique(),
     position: playerPositionEnum().default(PlayerPosition.UNKNOWN),
@@ -37,15 +37,15 @@ export const PlayerTable = pgTable(
     check('weight', sql`${table.weight} BETWEEN 0 AND 100`),
     // Ensure that there is only one captain in team
     uniqueIndex('team_captain')
-      .on(table.user_id)
+      .on(table.id)
       .where(sql`${table.is_captain} = true`),
   ]
 );
 
 export const PlayerRelations = relations(PlayerTable, ({ one }) => ({
   user: one(UserTable, {
-    fields: [PlayerTable.user_id],
-    references: [UserTable.user_id],
+    fields: [PlayerTable.id],
+    references: [UserTable.id],
   }),
 }));
 

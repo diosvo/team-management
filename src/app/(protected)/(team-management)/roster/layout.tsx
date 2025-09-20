@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { PropsWithChildren } from 'react';
 
 import FilterProvider from './_helpers/use-filters';
 
@@ -7,10 +8,6 @@ export const metadata: Metadata = {
   description: 'View the team roster',
 };
 
-export default function RosterLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RosterLayout({ children }: PropsWithChildren) {
   return <FilterProvider>{children}</FilterProvider>;
 }

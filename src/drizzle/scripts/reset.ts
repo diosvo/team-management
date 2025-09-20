@@ -1,7 +1,7 @@
 import { sql } from 'drizzle-orm';
 import * as readline from 'readline';
 
-import { db } from '../index';
+import db from '../index';
 
 console.info(
   '🚩 Update `connectionString` in `src/drizzle/index.ts` to database URL before running this script.'

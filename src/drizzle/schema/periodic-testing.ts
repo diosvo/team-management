@@ -4,6 +4,7 @@ import {
   decimal,
   pgEnum,
   pgTable,
+  text,
   uniqueIndex,
   uuid,
   varchar,
@@ -37,9 +38,9 @@ export const TestTypeTable = pgTable(
 
 export const TestResultTable = pgTable('test_result', {
   result_id: uuid().defaultRandom().primaryKey(),
-  user_id: uuid()
+  player_id: text()
     .notNull()
-    .references(() => UserTable.user_id),
+    .references(() => UserTable.id),
   type_id: uuid()
     .notNull()
     .references(() => TestTypeTable.type_id),
@@ -51,8 +52,8 @@ export const TestResultTable = pgTable('test_result', {
 
 export const TestResultRelations = relations(TestResultTable, ({ one }) => ({
   user: one(UserTable, {
-    fields: [TestResultTable.user_id],
-    references: [UserTable.user_id],
+    fields: [TestResultTable.player_id],
+    references: [UserTable.id],
   }),
   type: one(TestTypeTable, {
     fields: [TestResultTable.type_id],
