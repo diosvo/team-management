@@ -48,16 +48,17 @@ export default function PersonalInfo({
         title: 'Updating personal information...',
       });
 
-      const { error, message: title } = await updatePersonalInfo(user.id, data);
+      const { success, message: title } = await updatePersonalInfo(
+        user.id,
+        data
+      );
 
       toaster.update(id, {
-        type: error ? 'error' : 'success',
+        type: success ? 'success' : 'error',
         title,
       });
 
-      if (!error) {
-        setIsEditing(false);
-      }
+      if (success) setIsEditing(false);
     });
   };
 

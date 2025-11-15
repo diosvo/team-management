@@ -1,5 +1,5 @@
 {
-  "id": "3c2d8102-3e60-4032-9a91-dfab4a78be8e",
+  "id": "00015eab-bf97-4eda-9a27-ec46b5377b1f",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -54,15 +54,15 @@
           "primaryKey": false,
           "notNull": false
         },
-        "create_at": {
-          "name": "create_at",
+        "created_at": {
+          "name": "created_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
         },
-        "update_at": {
-          "name": "update_at",
+        "updated_at": {
+          "name": "updated_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
@@ -116,15 +116,15 @@
           "notNull": true,
           "default": "'UNKNOWN'"
         },
-        "create_at": {
-          "name": "create_at",
+        "created_at": {
+          "name": "created_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
         },
-        "update_at": {
-          "name": "update_at",
+        "updated_at": {
+          "name": "updated_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
@@ -188,15 +188,15 @@
           "primaryKey": false,
           "notNull": false
         },
-        "create_at": {
-          "name": "create_at",
+        "created_at": {
+          "name": "created_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
         },
-        "update_at": {
-          "name": "update_at",
+        "updated_at": {
+          "name": "updated_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
@@ -268,15 +268,15 @@
           "notNull": true,
           "default": "'times'"
         },
-        "create_at": {
-          "name": "create_at",
+        "created_at": {
+          "name": "created_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
         },
-        "update_at": {
-          "name": "update_at",
+        "updated_at": {
+          "name": "updated_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
@@ -377,15 +377,15 @@
           "primaryKey": false,
           "notNull": false
         },
-        "create_at": {
-          "name": "create_at",
+        "created_at": {
+          "name": "created_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
         },
-        "update_at": {
-          "name": "update_at",
+        "updated_at": {
+          "name": "updated_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
@@ -475,15 +475,15 @@
           "primaryKey": false,
           "notNull": true
         },
-        "create_at": {
-          "name": "create_at",
+        "created_at": {
+          "name": "created_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
         },
-        "update_at": {
-          "name": "update_at",
+        "updated_at": {
+          "name": "updated_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
@@ -549,15 +549,15 @@
           "notNull": true,
           "default": 2025
         },
-        "create_at": {
-          "name": "create_at",
+        "created_at": {
+          "name": "created_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
         },
-        "update_at": {
-          "name": "update_at",
+        "updated_at": {
+          "name": "updated_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
@@ -672,15 +672,15 @@
           "primaryKey": false,
           "notNull": false
         },
-        "create_at": {
-          "name": "create_at",
+        "created_at": {
+          "name": "created_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
         },
-        "update_at": {
-          "name": "update_at",
+        "updated_at": {
+          "name": "updated_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
@@ -731,15 +731,15 @@
           "primaryKey": false,
           "notNull": true
         },
-        "create_at": {
-          "name": "create_at",
+        "created_at": {
+          "name": "created_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
         },
-        "update_at": {
-          "name": "update_at",
+        "updated_at": {
+          "name": "updated_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
@@ -829,15 +829,15 @@
           "primaryKey": false,
           "notNull": false
         },
-        "create_at": {
-          "name": "create_at",
+        "created_at": {
+          "name": "created_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
         },
-        "update_at": {
-          "name": "update_at",
+        "updated_at": {
+          "name": "updated_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
@@ -946,15 +946,15 @@
           "primaryKey": false,
           "notNull": true
         },
-        "create_at": {
-          "name": "create_at",
+        "created_at": {
+          "name": "created_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
         },
-        "update_at": {
-          "name": "update_at",
+        "updated_at": {
+          "name": "updated_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,

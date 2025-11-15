@@ -46,7 +46,6 @@ export const getUserProfile = withAuth(async (user, target_id: string) => {
   return {
     targetUser,
     viewOnly,
-    isOwnProfile,
   };
 });
 

@@ -34,7 +34,9 @@ _e.g.,_ AssetTable, UpsertRuleSchema
 #### 3️⃣ Components (Singular + Descriptor)
 
 - Located in `_components/` with specific features.
-- Use "PascalCase" (_e.g.,_ AssetList, RuleTable)
+- Use "PascalCase"
+
+_e.g.,_ AssetList, RuleTable
 
 #### 4️⃣ Actions (Context-Based)
 

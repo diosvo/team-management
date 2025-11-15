@@ -1,7 +1,7 @@
 'use client';
 
 import NextLink from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 
 import {
@@ -41,6 +41,7 @@ const PASSWORD_RULES = [
 ] as const;
 
 export default function NewPasswordPage() {
+  const router = useRouter();
   const [password, setPassword] = useState<string>('');
   const [error, setError] = useState<string>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -59,10 +60,12 @@ export default function NewPasswordPage() {
       {
         onRequest: () => setIsLoading(true),
         onError: ({ error }) => setError(error.message),
-        onSuccess: () =>
+        onSuccess: () => {
           toaster.success({
             title: 'Create new password successful.',
-          }),
+          });
+          router.push(LOGIN_PATH);
+        },
         onResponse: () => setIsLoading(false),
       }
     );

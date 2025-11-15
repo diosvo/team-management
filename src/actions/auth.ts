@@ -7,12 +7,13 @@
  * 5. Return success/error state within a message
  */
 
+import { headers } from 'next/headers';
+import { redirect, RedirectType } from 'next/navigation';
+import { cache } from 'react';
+
 import { User } from '@/drizzle/schema';
 import auth from '@/lib/auth';
 import { LOGIN_PATH } from '@/routes';
-import { headers } from 'next/headers';
-import { redirect } from 'next/navigation';
-import { cache } from 'react';
 
 export const getServerSession = cache(
   async () =>
@@ -30,8 +31,8 @@ export function withAuth<T extends Array<unknown>, R>(
     const session = await getServerSession();
 
     if (!session || !session.user) {
-      // Currently, it only works for GET method
-      redirect(LOGIN_PATH);
+      // Currently, it only works for fetching data
+      redirect(LOGIN_PATH, RedirectType.replace);
     }
 
     return serverAction(session.user as User, ...args);

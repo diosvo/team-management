@@ -17,13 +17,9 @@ export const DEFAULT_DATE_FORMAT = 'yyyy-MM-dd';
 export const LOCALE_DATE_FORMAT = 'dd/MM/yyyy';
 export const LOCALE_DATETIME_FORMAT = LOCALE_DATE_FORMAT + ' HH:mm:ss';
 
-// 1 hour in seconds for cache revalidation
-export const CACHE_REVALIDATION_TIME = 3600;
-
 export const COOKIE = {
   prefix: 'sgr',
-  // expires: addHours(new Date(), 1),
-  expires: 60, // 5 minutes in seconds
+  expires: 60 * 60, // 1 hour in seconds
 };
 
 export const ALL: Option<string> = {

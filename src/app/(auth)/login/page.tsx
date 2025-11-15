@@ -32,14 +32,10 @@ export default function LoginPage() {
     formState: { errors },
   } = useForm({
     resolver: zodResolver(LoginSchema),
-    defaultValues: {
-      // getDefaults(LoginSchema),
-      email: 'vtmn1212@gmail.com',
-      password: 'diosvo0321!',
-    },
   });
 
   async function onSubmit(values: LoginValues) {
+    setError(undefined);
     await authClient.signIn.email(
       {
         ...values,

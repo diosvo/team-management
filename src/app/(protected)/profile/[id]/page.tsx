@@ -21,7 +21,7 @@ export default async function ProfilePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const { targetUser, viewOnly, isOwnProfile } = await getUserProfile(id);
+  const { targetUser, viewOnly } = await getUserProfile(id);
 
   return (
     <VStack gap={6} alignItems="stretch">
@@ -29,11 +29,7 @@ export default async function ProfilePage({
 
       <SimpleGrid columns={{ base: 1, lg: 2 }} gap={6}>
         <PersonalInfo user={targetUser} viewOnly={viewOnly} />
-        <TeamInfo
-          user={targetUser}
-          viewOnly={viewOnly}
-          isOwnProfile={isOwnProfile}
-        />
+        <TeamInfo user={targetUser} viewOnly={viewOnly} />
       </SimpleGrid>
 
       <Text fontSize="xs" color="GrayText">

@@ -1,5 +1,3 @@
-'server-only';
-
 import { cacheTag } from 'next/cache';
 
 import {

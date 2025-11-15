@@ -1,8 +1,6 @@
 export interface Response {
   success: boolean;
   message: string;
-  error?: string;
-  errors?: Record<string, Array<string>>;
 }
 
 /**
@@ -20,15 +18,6 @@ export class ResponseFactory {
     return {
       success: false,
       message,
-      errors: undefined,
-    };
-  }
-
-  static errors(message: string, errors: Response['errors']): Response {
-    return {
-      success: false,
-      message,
-      errors,
     };
   }
 

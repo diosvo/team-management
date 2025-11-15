@@ -13,16 +13,16 @@ CREATE TABLE "asset" (
 	"quantity" integer DEFAULT 1 NOT NULL,
 	"condition" "asset_condition" DEFAULT 'GOOD' NOT NULL,
 	"note" varchar(128),
-	"create_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"update_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "asset_name_unique" UNIQUE("name")
 );
 --> statement-breakpoint
 CREATE TABLE "coach" (
 	"id" text PRIMARY KEY NOT NULL,
 	"position" "coach_position" DEFAULT 'UNKNOWN' NOT NULL,
-	"create_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"update_at" timestamp with time zone DEFAULT now() NOT NULL
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "test_result" (
@@ -31,8 +31,8 @@ CREATE TABLE "test_result" (
 	"type_id" uuid NOT NULL,
 	"result" numeric(10, 3) NOT NULL,
 	"date" date,
-	"create_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"update_at" timestamp with time zone DEFAULT now() NOT NULL
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "test_type" (
@@ -40,8 +40,8 @@ CREATE TABLE "test_type" (
 	"team_id" uuid NOT NULL,
 	"name" varchar(64) NOT NULL,
 	"unit" "test_type_unit" DEFAULT 'times' NOT NULL,
-	"create_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"update_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "test_type_name_unique" UNIQUE("name")
 );
 --> statement-breakpoint
@@ -52,8 +52,8 @@ CREATE TABLE "player" (
 	"position" "player_position" DEFAULT 'UNKNOWN',
 	"height" integer,
 	"weight" integer,
-	"create_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"update_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "player_jersey_number_unique" UNIQUE("jersey_number"),
 	CONSTRAINT "jersey_number" CHECK ("player"."jersey_number" BETWEEN 0 AND 99),
 	CONSTRAINT "height" CHECK ("player"."height" BETWEEN 0 AND 200),
@@ -64,8 +64,8 @@ CREATE TABLE "rule" (
 	"rule_id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"team_id" uuid NOT NULL,
 	"content" text NOT NULL,
-	"create_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"update_at" timestamp with time zone DEFAULT now() NOT NULL
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "team" (
@@ -74,8 +74,8 @@ CREATE TABLE "team" (
 	"name" varchar(128) NOT NULL,
 	"email" varchar(128),
 	"establish_year" integer DEFAULT 2025 NOT NULL,
-	"create_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"update_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "team_email_unique" UNIQUE("email"),
 	CONSTRAINT "establish_year" CHECK ("team"."establish_year" BETWEEN 2000 AND date_part('year', CURRENT_DATE))
 );
@@ -92,16 +92,16 @@ CREATE TABLE "account" (
 	"refresh_token_expires_at" timestamp,
 	"scope" text,
 	"password" text,
-	"create_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"update_at" timestamp with time zone DEFAULT now() NOT NULL
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "session" (
 	"id" text PRIMARY KEY NOT NULL,
 	"expires_at" timestamp with time zone NOT NULL,
 	"token" text NOT NULL,
-	"create_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"update_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"ip_address" text,
 	"user_agent" text,
 	"user_id" text NOT NULL,
@@ -114,8 +114,8 @@ CREATE TABLE "user" (
 	"email" text NOT NULL,
 	"email_verified" boolean DEFAULT false NOT NULL,
 	"image" text,
-	"create_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"update_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"team_id" uuid NOT NULL,
 	"dob" date,
 	"phone_number" varchar(10),
@@ -131,8 +131,8 @@ CREATE TABLE "verification" (
 	"identifier" text NOT NULL,
 	"value" text NOT NULL,
 	"expires_at" timestamp NOT NULL,
-	"create_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"update_at" timestamp with time zone DEFAULT now() NOT NULL
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 ALTER TABLE "asset" ADD CONSTRAINT "asset_team_id_team_team_id_fk" FOREIGN KEY ("team_id") REFERENCES "public"."team"("team_id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint

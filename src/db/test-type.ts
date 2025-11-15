@@ -1,5 +1,3 @@
-'server-only';
-
 import { asc, eq } from 'drizzle-orm';
 
 import db from '@/drizzle';

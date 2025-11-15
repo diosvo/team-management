@@ -43,21 +43,14 @@ import { EditTeamInfoSchema, EditTeamInfoValues } from '@/schemas/user';
 export default function TeamInfo({
   user,
   viewOnly,
-  isOwnProfile,
 }: {
   user: User;
   viewOnly: boolean;
-  isOwnProfile: boolean;
 }) {
   const { isAdmin, isPlayer } = usePermissions();
 
   const [isPending, startTransition] = useTransition();
   const [isEditing, setIsEditing] = useState<boolean>(false);
-
-  // Do NOT enable button if:
-  // 1. Current profile is Admin
-  // 2. View only modeF
-  const canEdit = (isOwnProfile && isAdmin) || viewOnly ? false : true;
 
   const {
     control,
@@ -137,11 +130,11 @@ export default function TeamInfo({
               </Tooltip>
             </>
           ) : (
-            <Tooltip content={canEdit ? 'Edit' : 'View Only'}>
+            <Tooltip content={viewOnly ? 'View Only' : 'Edit'}>
               <IconButton
                 size="sm"
                 variant="subtle"
-                disabled={!canEdit}
+                disabled={viewOnly}
                 onClick={() => setIsEditing(true)}
               >
                 <Edit />
@@ -182,7 +175,7 @@ export default function TeamInfo({
           </SimpleGrid>
         )}
 
-        {isEditing && canEdit ? (
+        {isEditing && !viewOnly ? (
           <SimpleGrid
             columns={{
               base: 1,

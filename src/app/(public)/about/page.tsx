@@ -24,7 +24,7 @@ export default function LandingPage() {
       <VStack padding={8}>
         <Container maxWidth="4xl">
           <VStack gap={6}>
-            <PageTitle size="4xl">Tighny but mighty</PageTitle>
+            <PageTitle size="4xl">Tiny but mighty</PageTitle>
             <Text>Our journey of dedication, teamwork, and excellence</Text>
 
             <HStack gap={4}>
@@ -84,7 +84,7 @@ export default function LandingPage() {
                 <Timeline.Indicator />
               </Timeline.Connector>
               <Timeline.Content flex="1">
-                <Timeline.Title>First achivements</Timeline.Title>
+                <Timeline.Title>First achievements</Timeline.Title>
                 <List.Root fontSize="sm" marginLeft="4">
                   <List.Item>Runner up 3x3 VBL</List.Item>
                   <List.Item>

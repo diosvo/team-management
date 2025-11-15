@@ -12,7 +12,7 @@ import { COOKIE } from '@/utils/constant';
 export default async function proxy(req: NextRequest) {
   const currentPath = req.nextUrl.pathname;
   const isProtectedRoute = !PUBLIC_ROUTES.has(currentPath);
-  const isAuthRoute = AUTH_ROUTES.has(currentPath);
+  const isAuthRoute = AUTH_ROUTES.add('/').has(currentPath);
 
   const redirectTo = (path: string) =>
     NextResponse.redirect(new URL(path, req.nextUrl));

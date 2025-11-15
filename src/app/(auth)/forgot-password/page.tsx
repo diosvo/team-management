@@ -1,7 +1,6 @@
 'use client';
 
 import NextLink from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import {
@@ -24,8 +23,7 @@ import authClient from '@/lib/auth-client';
 import { LOGIN_PATH } from '@/routes';
 import { LoginSchema, LoginValues } from '@/schemas/auth';
 
-export default function LoginPage() {
-  const router = useRouter();
+export default function ForgotPasswordPage() {
   const [response, setResponse] = useState<Response>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
 

@@ -10,7 +10,7 @@ import {
   useBreakpointValue,
 } from '@chakra-ui/react';
 
-import Header from './_components/Header';
+import Header from './_components/AppHeader';
 import Sidebar from './_components/Sidebar';
 
 export default function AuthenticatedLayout({ children }: PropsWithChildren) {

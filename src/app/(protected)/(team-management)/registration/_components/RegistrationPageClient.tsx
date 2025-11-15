@@ -18,7 +18,7 @@ import PlayerSelection from '@/components/user/player-selection';
 
 import { User } from '@/drizzle/schema/user';
 
-import CopyButton from './copy-button';
+import CopyButton from './CopyButton';
 
 export default function RegistrationPageClient() {
   const [info] = useState({
