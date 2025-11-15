@@ -27,12 +27,12 @@ export const ALL: Option<string> = {
   value: 'all',
 };
 
-export const SELECTABLE_ROLES = [
+export const SELECTABLE_USER_ROLES = [
   UserRole.COACH,
   UserRole.GUEST,
   UserRole.PLAYER,
-] as const;
-export const RoleSelection: Selection<string> = [
+];
+export const UserRoleSelection: Selection<string> = [
   {
     label: 'Player',
     value: UserRole.PLAYER,
@@ -47,13 +47,13 @@ export const RoleSelection: Selection<string> = [
   },
 ];
 
-export const SELECTABLE_STATES = [
+export const SELECTABLE_USER_STATES = [
   UserState.ACTIVE,
   UserState.INACTIVE,
   UserState.TEMPORARILY_ABSENT,
   UserState.UNKNOWN,
-] as const;
-export const StateSelection: Selection<string> = [
+];
+export const UserStateSelection: Selection<string> = [
   {
     label: 'Active',
     value: UserState.ACTIVE,
@@ -157,6 +157,7 @@ export const AssetCategorySelection: Selection<string> = [
     description: 'Uniforms, Jerseys, etc',
   },
 ];
+export const AssetCategoryValues = [ALL.value, ...SELECTABLE_ASSET_CATEGORIES];
 
 export const SELECTABLE_ASSET_CONDITIONS = [
   AssetCondition.POOR,
@@ -180,6 +181,7 @@ export const AssetConditionSelection: Selection<string> = [
     description: 'New, Excellent Condition',
   },
 ];
+export const AssetConditionValues = [ALL.value, ...SELECTABLE_ASSET_CONDITIONS];
 
 export const GameTypeSelection: Record<GameType, Option<string>> = {
   [GameType['3x3']]: { label: GameType['3x3'], value: GameType['3x3'], max: 5 },

@@ -4,7 +4,7 @@ import db from '@/drizzle';
 import { InsertTestResult, TestResultTable } from '@/drizzle/schema';
 import logger from '../lib/logger';
 
-import { PlayerTestResult } from '@/schemas/models';
+import { PlayerTestResult } from '@/types/periodic-testing';
 
 export async function getDates() {
   try {

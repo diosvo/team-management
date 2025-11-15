@@ -11,7 +11,7 @@ import { getDbErrorMessage } from '@/db/pg-error';
 import { insertPlayer, updatePlayer } from '@/db/player';
 import {
   deleteUser,
-  getExistingEmails,
+  fetchActivePlayers,
   getUserById,
   getUsers,
   updateUser,
@@ -22,15 +22,18 @@ import {
   EditPersonalInfoValues,
   EditTeamInfoSchema,
   EditTeamInfoValues,
-  FilterUsersValues,
 } from '@/schemas/user';
 
 import auth from '@/lib/auth';
 import { withAuth } from './auth';
 import { getCacheTag, revalidate } from './cache';
 
+export const getActivePlayers = withAuth(
+  async ({ team_id }) => await fetchActivePlayers(team_id)
+);
+
 export const getRoster = withAuth(
-  async (_, params: FilterUsersValues) => await getUsers(params)
+  async ({ team_id }) => await getUsers(team_id)
 );
 
 export const getUserProfile = withAuth(async (user, target_id: string) => {
@@ -56,12 +59,6 @@ export const addUser = withAuth(async ({ team_id }, values: AddUserValues) => {
       team_id,
     };
     const { isPlayer, isCoach } = hasPermissions(user.role);
-
-    const existingEmails = await getExistingEmails();
-
-    if (existingEmails.includes(user.email)) {
-      return ResponseFactory.error('Email already exists');
-    }
 
     const data = await auth.api.signUpEmail({
       body: {
@@ -92,7 +89,7 @@ export const addUser = withAuth(async ({ team_id }, values: AddUserValues) => {
       }
     }
 
-    await auth.api.forgetPassword({
+    await auth.api.requestPasswordReset({
       body: {
         email: values.email,
         redirectTo: '/new-password',
@@ -103,7 +100,8 @@ export const addUser = withAuth(async ({ team_id }, values: AddUserValues) => {
 
     return ResponseFactory.success('Sent an email to with instructions');
   } catch (error) {
-    return ResponseFactory.fromError(error as Error);
+    const { message } = getDbErrorMessage(error);
+    return ResponseFactory.error(message);
   }
 });
 

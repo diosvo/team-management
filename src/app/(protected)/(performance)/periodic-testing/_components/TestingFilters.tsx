@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
 import { useMemo } from 'react';
 
 import {
@@ -20,7 +19,7 @@ import {
   Settings2,
 } from 'lucide-react';
 
-import SearchInput from '@/components/ui/search-input';
+import SearchInput from '@/components/SearchInput';
 import Visibility from '@/components/visibility';
 
 import { usePermissions } from '@/hooks/use-permissions';
@@ -28,20 +27,11 @@ import useQuery from '@/hooks/use-query';
 import { formatDate } from '@/utils/formatter';
 
 import { getTestDates } from '@/actions/test-result';
+import { usePeriodicTestingFilters } from '../search-params';
 
-type TestingFiltersProps = Search<string> & {
-  date: string;
-};
-
-export default function TestingFilters({
-  date,
-  search,
-  setSearch,
-}: TestingFiltersProps) {
-  const router = useRouter();
-  const pathname = usePathname();
-
+export default function TestingFilters() {
   const { isAdmin } = usePermissions();
+  const [{ date }, setSearchParams] = usePeriodicTestingFilters();
   const request = useQuery(async () => await getTestDates());
 
   const dateRanges = useMemo(
@@ -59,19 +49,14 @@ export default function TestingFilters({
 
   return (
     <HStack marginBottom={6}>
-      <SearchInput
-        value={search}
-        disabled={disabledFilter}
-        onValueChange={(value) => setSearch(value)}
-        onClear={() => setSearch('')}
-      />
+      <SearchInput disabled={disabledFilter} />
       <Select.Root
         collection={dateRanges}
         width="2xs"
-        value={[date]}
+        value={date ? [date] : []}
         size={{ base: 'sm', md: 'md' }}
         disabled={disabledFilter}
-        onValueChange={({ value }) => router.push(pathname + `?date=${value}`)}
+        onValueChange={({ value }) => setSearchParams({ date: value[0] })}
       >
         <Select.HiddenSelect />
         <Select.Control>

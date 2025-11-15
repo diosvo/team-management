@@ -12,14 +12,14 @@ import { Tooltip } from '@/components/ui/tooltip';
 interface PaginationProps {
   count: number;
   page: number;
-  pageSize: number;
+  pageSize?: number;
   onPageChange: (details: { page: number }) => void;
 }
 
 export default function Pagination({
   count,
   page,
-  pageSize,
+  pageSize = 5,
   onPageChange,
 }: PaginationProps) {
   return (

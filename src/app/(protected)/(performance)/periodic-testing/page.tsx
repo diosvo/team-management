@@ -15,12 +15,14 @@ export default async function PeriodicTestingPage(props: {
   searchParams: Promise<{ date: string }>;
 }) {
   const { date = '' } = await props.searchParams;
+  console.log('Date', date);
+
   const result = await getTestResult(date);
 
   return (
     <>
       <PageTitle>Periodic Testing</PageTitle>
-      <TestingResultList date={date} result={result} />
+      <TestingResultList result={result} />
     </>
   );
 }

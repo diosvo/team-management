@@ -19,33 +19,27 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { toaster } from '@/components/ui/toaster';
 import Visibility from '@/components/visibility';
 
-import { User } from '@/drizzle/schema/user';
 import { usePermissions } from '@/hooks/use-permissions';
+import { paginateData, useCommonParams } from '@/utils/filters';
 import { colorState } from '@/utils/helper';
 
 import { removeUser } from '@/actions/user';
+import { User } from '@/drizzle/schema/user';
 
 export default function RosterTable({ users }: { users: Array<User> }) {
   const router = useRouter();
   const { isAdmin, isGuest } = usePermissions();
+  const [{ page }, setFilters] = useCommonParams();
 
   const [selection, setSelection] = useState<Array<string>>([]);
-  const [pagination, setPagination] = useState({
-    page: 1,
-    pageSize: 10,
-  });
+  const selectionCount = selection.length;
 
   const totalCount = users.length;
-  const selectionCount = selection.length;
+  const currentData = paginateData(users, page);
 
   // Selection
   const hasSelection = selectionCount > 0;
   const indeterminate = hasSelection && selectionCount < totalCount;
-
-  // Calculate the users to show for the current page
-  const startIndex = (pagination.page - 1) * pagination.pageSize;
-  const endIndex = Math.min(startIndex + pagination.pageSize, totalCount);
-  const currentData = users.slice(startIndex, endIndex);
 
   const columnCount = useMemo(() => {
     let count = 0;
@@ -80,7 +74,7 @@ export default function RosterTable({ users }: { users: Array<User> }) {
         <Table.Root
           size={{ base: 'sm', md: 'md' }}
           stickyHeader
-          interactive={currentData.length > 0}
+          interactive={totalCount > 0}
         >
           <Table.Header>
             <Table.Row>
@@ -142,17 +136,9 @@ export default function RosterTable({ users }: { users: Array<User> }) {
                       </Table.Cell>
                       <Table.Cell textAlign="center">
                         {user.emailVerified ? (
-                          <Icon
-                            as={ShieldCheck}
-                            size={{ base: 'sm', md: 'md' }}
-                            color="green.500"
-                          />
+                          <Icon as={ShieldCheck} size="sm" color="green.500" />
                         ) : (
-                          <Icon
-                            as={ShieldAlert}
-                            size={{ base: 'sm', md: 'md' }}
-                            color="orange.500"
-                          />
+                          <Icon as={ShieldAlert} size="sm" color="orange.500" />
                         )}
                       </Table.Cell>
                     </>
@@ -200,15 +186,7 @@ export default function RosterTable({ users }: { users: Array<User> }) {
         </Table.Root>
       </Table.ScrollArea>
 
-      <Pagination
-        count={totalCount}
-        page={pagination.page}
-        pageSize={pagination.pageSize}
-        onPageChange={({ page }) =>
-          setPagination((prev) => ({ ...prev, page }))
-        }
-      />
-
+      <Pagination count={totalCount} page={page} onPageChange={setFilters} />
       <ActionBar.Root open={hasSelection}>
         <Portal>
           <ActionBar.Positioner>

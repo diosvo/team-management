@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 
 import {
   Combobox,
@@ -14,20 +14,28 @@ import {
 
 import { toaster } from '@/components/ui/toaster';
 import { UseQueryReturn } from '@/hooks/use-query';
+import Visibility from './visibility';
 
-type SearchableSelectProps<T> = Selector<Array<T>> & {
-  label: string;
-  maxItems?: number;
-  request: UseQueryReturn<Array<T>>;
-  itemToString: (item: T) => string;
-  itemToValue: (item: T) => string;
-  renderItem?: (item: T) => React.ReactNode;
-};
+type SearchableSelectProps<T> = Selector<Array<T>> &
+  Required<{
+    request: UseQueryReturn<Array<T>>;
+    itemToString: (item: T) => string;
+    itemToValue: (item: T) => string;
+  }> &
+  Partial<{
+    label: string;
+    maxItems: number;
+    placeholder: string;
+    searchOnly: boolean;
+    renderItem: (item: T) => React.ReactNode;
+  }>;
 
 export default function SearchableSelect<T>({
   label,
-  maxItems,
   request,
+  maxItems,
+  placeholder = 'Type to search',
+  searchOnly = false,
   selection,
   onSelectionChange,
   itemToString,
@@ -47,16 +55,6 @@ export default function SearchableSelect<T>({
     set(request.data || []);
   }, [request.data]);
 
-  const max = useMemo(
-    () => maxItems ?? collection.items.length,
-    [maxItems, collection.items.length]
-  );
-
-  const selected = useMemo(
-    () => selection.map(itemToValue),
-    [selection, itemToValue]
-  );
-
   const handleValueChange = (items: Array<T>) => {
     if (maxItems && items.length > maxItems) {
       toaster.warning({
@@ -67,6 +65,8 @@ export default function SearchableSelect<T>({
     onSelectionChange(items);
   };
 
+  const selected = selection.map(itemToValue);
+  const max = maxItems ?? collection.items.length;
   const isOverLimit = maxItems ? selection.length > maxItems : false;
 
   return (
@@ -78,22 +78,24 @@ export default function SearchableSelect<T>({
       onInputValueChange={(e) => filter(e.inputValue)}
       onValueChange={({ items }) => handleValueChange(items)}
     >
-      <Combobox.Label display="flex">
-        Select {label}
-        <Span fontSize="xs" color="GrayText" marginLeft={2}>
-          (max {max})
-        </Span>
-        <Span
-          fontSize="xs"
-          color={isOverLimit ? 'fg.error' : 'GrayText'}
-          marginLeft="auto"
-        >
-          {selection.length} / {max} selected
-        </Span>
-      </Combobox.Label>
+      <Visibility isVisible={!searchOnly}>
+        <Combobox.Label display="flex">
+          Select {label}
+          <Span fontSize="xs" color="GrayText" marginLeft={2}>
+            (max {max})
+          </Span>
+          <Span
+            fontSize="xs"
+            color={isOverLimit ? 'fg.error' : 'GrayText'}
+            marginLeft="auto"
+          >
+            {selection.length} / {max} selected
+          </Span>
+        </Combobox.Label>
+      </Visibility>
 
       <Combobox.Control>
-        <Combobox.Input placeholder="Type to search" />
+        <Combobox.Input placeholder={placeholder} />
         <Combobox.IndicatorGroup>
           <Combobox.ClearTrigger />
           <Combobox.Trigger onClick={reset} />

@@ -1,31 +1,46 @@
 'use client';
 
+import { useMemo } from 'react';
+
 import { AlertTriangle, Package } from 'lucide-react';
 
 import Stats, { type StatCard } from '@/components/stats';
+import { AssetCondition } from '@/utils/enum';
 
-const ASSET_STATS: StatCard['config'] = [
-  {
-    key: 'total_items',
-    label: 'Total Items',
-    icon: Package,
-    color: 'green',
-  },
-  {
-    key: 'need_replacement',
-    label: 'Need Replacement',
-    icon: AlertTriangle,
-    color: 'red',
-  },
-];
+import { useAssetFilters } from '../search-params';
 
-export default function AssetStats({
-  stats,
-}: {
+type AssetStatsProps = {
   stats: {
     total_items: number;
     need_replacement: number;
   };
-}) {
-  return <Stats data={stats} config={ASSET_STATS} />;
+};
+
+export default function AssetStats({ stats }: AssetStatsProps) {
+  const [, setSearchParams] = useAssetFilters();
+
+  const config = useMemo<StatCard['config']>(
+    () => [
+      {
+        key: 'total_items',
+        label: 'Total Items',
+        icon: Package,
+        color: 'green',
+        onClick: () => setSearchParams(null),
+      },
+      {
+        key: 'need_replacement',
+        label: 'Need Replacement',
+        icon: AlertTriangle,
+        color: 'red',
+        onClick: () => {
+          setSearchParams(null);
+          setSearchParams({ condition: AssetCondition.POOR });
+        },
+      },
+    ],
+    []
+  );
+
+  return <Stats data={stats} config={config} />;
 }

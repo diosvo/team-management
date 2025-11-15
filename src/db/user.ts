@@ -1,73 +1,56 @@
 import { cacheTag } from 'next/cache';
 
-import {
-  and,
-  eq,
-  getTableColumns,
-  ilike,
-  inArray,
-  ne,
-  or,
-  SQL,
-} from 'drizzle-orm';
+import { and, eq, ne } from 'drizzle-orm';
 
 import db from '@/drizzle';
 import { User, UserRelations, UserTable } from '@/drizzle/schema/user';
-import { FilterUsersValues } from '@/schemas/user';
 
-import { getCacheTag } from '@/actions/cache';
 import logger from '@/lib/logger';
-import { UserRole } from '@/utils/enum';
+import { UserRole, UserState } from '@/utils/enum';
 import { hasPermissions } from '@/utils/helper';
 
-export async function getUsers({
-  query,
-  role,
-  state,
-}: FilterUsersValues): Promise<Array<User>> {
-  // Always exclude SUPER_ADMIN user
-  const filters: Array<SQL | undefined> = [
-    ne(UserTable.role, UserRole.SUPER_ADMIN),
-  ];
+import { getCacheTag } from '@/actions/cache';
 
-  // Only apply filters if parameters are provided and non-empty
-  if (query && query.trim() !== '')
-    filters.push(
-      or(
-        ilike(UserTable.email, `%${query}%`),
-        ilike(UserTable.name, `%${query}%`)
-      )
-    );
-  if (state && state.length > 0) filters.push(inArray(UserTable.state, state));
-  if (role && role.length > 0) filters.push(inArray(UserTable.role, role));
-
+export async function getUsers(team_id: string): Promise<Array<User>> {
   try {
-    // Use prepared query to improve performance and reusability
-    return await db.transaction(async (tx) => {
-      const users = await tx.query.UserTable.findMany({
-        where: and(...filters),
-        with: {
-          asPlayer: true,
-          asCoach: true,
-        },
-      });
-
-      // Process results in batches for better memory management
-      return users.map(enrichUser);
+    const users = await db.query.UserTable.findMany({
+      where: and(
+        eq(UserTable.team_id, team_id),
+        ne(UserTable.role, UserRole.SUPER_ADMIN)
+      ),
+      with: {
+        asPlayer: true,
+        asCoach: true,
+      },
     });
+
+    return users.map(enrichUser);
   } catch (error) {
     logger.error('An error when fetching users', error);
     return [];
   }
 }
 
-export async function getExistingEmails() {
+export async function fetchActivePlayers(team_id: string) {
+  'use cache';
+  cacheTag(getCacheTag.active_players());
+
   try {
-    const { email } = getTableColumns(UserTable);
-    const data = await db.select({ email }).from(UserTable);
-    return data.map((user) => user.email);
-  } catch {
-    logger.error('An error when getting existing emails');
+    const players = await db.query.UserTable.findMany({
+      where: and(
+        eq(UserTable.team_id, team_id),
+        eq(UserTable.role, UserRole.PLAYER),
+        eq(UserTable.state, UserState.ACTIVE)
+      ),
+      with: {
+        asPlayer: true,
+        asCoach: true,
+      },
+    });
+
+    return players.map(enrichUser);
+  } catch (error) {
+    logger.error('An error when fetching active players', error);
     return [];
   }
 }
@@ -118,18 +101,14 @@ function enrichUser(user: UserRelations): User {
   const { asPlayer, asCoach, ...userData } = user;
   const { isPlayer, isCoach } = hasPermissions(userData.role);
 
-  if (isPlayer) return { ...userData, details: asPlayer };
-  if (isCoach)
-    return {
-      ...userData,
-      details: { ...asCoach, jersey_number: undefined },
-    };
+  const getDetails = () => {
+    if (isPlayer) return asPlayer;
+    if (isCoach) return { ...asCoach, jersey_number: undefined };
+    return { id: userData.id, jersey_number: undefined };
+  };
 
   return {
     ...userData,
-    details: {
-      id: userData.id,
-      jersey_number: undefined,
-    },
+    details: getDetails(),
   };
 }

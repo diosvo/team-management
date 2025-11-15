@@ -4,7 +4,7 @@ import { PropsWithChildren } from 'react';
 
 import { ChakraProvider, createSystem, defaultConfig } from '@chakra-ui/react';
 
-export const system = createSystem(defaultConfig, {
+const system = createSystem(defaultConfig, {
   strictTokens: true,
   theme: {
     tokens: {
@@ -21,6 +21,6 @@ export const system = createSystem(defaultConfig, {
   },
 });
 
-export function Provider({ children }: PropsWithChildren) {
+export default function UiProvider({ children }: PropsWithChildren) {
   return <ChakraProvider value={system}>{children}</ChakraProvider>;
 }

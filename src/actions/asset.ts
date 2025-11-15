@@ -4,17 +4,18 @@ import { ResponseFactory } from '@/utils/response';
 
 import {
   deleteAsset,
-  getAssets as getAction,
+  getAssets as fetchAssets,
   insertAsset,
   updateAsset,
 } from '@/db/asset';
+import { getDbErrorMessage } from '@/db/pg-error';
 import { UpsertAssetSchemaValues } from '@/schemas/asset';
 
 import { withAuth } from './auth';
 import { revalidate } from './cache';
 
 export const getAssets = withAuth(
-  async ({ team_id }) => await getAction(team_id)
+  async ({ team_id }) => await fetchAssets(team_id)
 );
 
 export const upsertAsset = withAuth(
@@ -34,7 +35,8 @@ export const upsertAsset = withAuth(
         `${asset_id ? 'Updated' : 'Added'} asset successfully`
       );
     } catch (error) {
-      return ResponseFactory.fromError(error as Error);
+      const { message } = getDbErrorMessage(error);
+      return ResponseFactory.error(message);
     }
   }
 );

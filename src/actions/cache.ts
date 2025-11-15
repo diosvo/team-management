@@ -1,8 +1,9 @@
 import { revalidatePath, revalidateTag } from 'next/cache';
 
 export const getCacheTag = {
-  user: (userId: string) => `user:${userId}` as const,
-  rule: () => 'team-rule' as const,
+  user: (userId: string) => `user:${userId}`,
+  active_players: () => 'active-players',
+  rule: () => 'team-rule',
 } as const;
 
 // Revalidation functions

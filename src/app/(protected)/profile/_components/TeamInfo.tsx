@@ -26,8 +26,8 @@ import {
 } from '@/components/ui/number-input';
 import { toaster } from '@/components/ui/toaster';
 import { Tooltip } from '@/components/ui/tooltip';
-import RolePositionSelection from '@/components/user/role-position-selection';
-import StateSelection from '@/components/user/state-selection';
+import { RolePositionSelection } from '@/components/user/RolePositionSelection';
+import { ControlledStateSelection } from '@/components/user/StateSelection';
 import Visibility from '@/components/visibility';
 
 import { ESTABLISHED_DATE } from '@/utils/constant';
@@ -183,7 +183,7 @@ export default function TeamInfo({
             }}
             gap={4}
           >
-            <StateSelection
+            <ControlledStateSelection
               control={control}
               name="user.state"
               disabled={isPending}

@@ -16,6 +16,7 @@ export type StatCard = {
     icon: LucideIcon;
     color: ColorPalette;
     suffix?: string;
+    onClick?: () => void;
   }>;
 };
 
@@ -32,7 +33,7 @@ export default function Stats({ data, config }: StatCard) {
       gap={6}
       marginBlock={6}
     >
-      {cards.map(({ IconComponent, value, label, color, suffix }) => (
+      {cards.map(({ IconComponent, value, label, color, suffix, onClick }) => (
         <VStack
           key={label}
           padding={4}
@@ -42,10 +43,12 @@ export default function Stats({ data, config }: StatCard) {
           borderColor={`${color}.300`}
           backgroundColor={`${color}.50`}
           _hover={{
+            cursor: onClick ? 'pointer' : 'default',
             shadow: 'md',
             transform: 'translateY(-2px)',
             transition: 'all 0.2s',
           }}
+          onClick={onClick}
         >
           <Icon color={color} size="xl">
             <IconComponent />

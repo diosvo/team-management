@@ -5,8 +5,8 @@ import {
   ESTABLISHED_DATE,
   SELECTABLE_COACH_POSITIONS,
   SELECTABLE_PLAYER_POSITIONS,
-  SELECTABLE_ROLES,
-  SELECTABLE_STATES,
+  SELECTABLE_USER_ROLES,
+  SELECTABLE_USER_STATES,
 } from '@/utils/constant';
 import {
   CoachPosition,
@@ -41,8 +41,8 @@ export const USER_SCHEMA_VALIDATION = {
       .nullish(),
     z.literal(''),
   ]),
-  state: z.enum(SELECTABLE_STATES).default(UserState.UNKNOWN),
-  role: z.enum(SELECTABLE_ROLES).default(UserRole.PLAYER),
+  state: z.enum(SELECTABLE_USER_STATES).default(UserState.UNKNOWN),
+  role: z.enum(SELECTABLE_USER_ROLES).default(UserRole.PLAYER),
   join_date: z.iso.date().nullable().default(ESTABLISHED_DATE),
 };
 

@@ -7,6 +7,7 @@ import {
   HStack,
   Portal,
   Select,
+  SelectRootProps,
   Span,
   Stack,
 } from '@chakra-ui/react';
@@ -24,21 +25,64 @@ import { Field } from '@/components/ui/field';
 import {
   CoachPositionsSelection,
   PlayerPositionsSelection,
-  RoleSelection as RoleItems,
+  UserRoleSelection,
 } from '@/utils/constant';
 import { PlayerPosition, UserRole } from '@/utils/enum';
 import { Option } from '@/utils/type';
 
-interface RoleSelectProps<T extends FieldValues> {
+type StateRoleProps = Omit<SelectRootProps, 'collection'> &
+  Partial<{
+    placeholder: string;
+    contentRef: React.RefObject<Nullable<HTMLDivElement>>;
+  }>;
+
+const roles = createListCollection({
+  items: UserRoleSelection,
+});
+
+export function RoleSelection({
+  contentRef,
+  placeholder = 'Role',
+  ...props
+}: StateRoleProps) {
+  return (
+    <Select.Root {...props} collection={roles}>
+      <Select.HiddenSelect />
+      <Select.Control>
+        <Select.Trigger>
+          <Select.ValueText placeholder={placeholder} />
+        </Select.Trigger>
+        <Select.IndicatorGroup>
+          {props.multiple && <Select.ClearTrigger />}
+          <Select.Indicator />
+        </Select.IndicatorGroup>
+      </Select.Control>
+      <Portal container={contentRef}>
+        <Select.Positioner>
+          <Select.Content>
+            {roles.items.map((role) => (
+              <Select.Item item={role} key={role.value}>
+                {role.label}
+                <Select.ItemIndicator />
+              </Select.Item>
+            ))}
+          </Select.Content>
+        </Select.Positioner>
+      </Portal>
+    </Select.Root>
+  );
+}
+
+type RoleSelectProps<T extends FieldValues> = {
   control: Control<T>;
   roleName: FieldPath<T>;
   positionName: FieldPath<T>;
   contentRef?: React.RefObject<Nullable<HTMLDivElement>>;
   disabled?: boolean;
   setValue: UseFormSetValue<T>;
-}
+};
 
-export default function RolePositionSelection<T extends FieldValues>({
+export function RolePositionSelection<T extends FieldValues>({
   control,
   roleName,
   positionName,
@@ -46,14 +90,6 @@ export default function RolePositionSelection<T extends FieldValues>({
   disabled = false,
   setValue,
 }: RoleSelectProps<T>) {
-  const roles = useMemo(
-    () =>
-      createListCollection({
-        items: RoleItems,
-      }),
-    []
-  );
-
   const selectedRole = useWatch({
     control,
     name: roleName,
@@ -74,13 +110,8 @@ export default function RolePositionSelection<T extends FieldValues>({
     });
   }, [selectedRole]);
 
-  const disabledPosition = useMemo(() => {
-    return (
-      disabled ||
-      positions.items.length === 0 ||
-      selectedRole === UserRole.GUEST
-    );
-  }, [disabled, positions.items.length, selectedRole]);
+  const disabledPosition =
+    disabled || positions.items.length === 0 || selectedRole === UserRole.GUEST;
 
   // Handle role change and position updates
   useEffect(() => {
@@ -100,37 +131,16 @@ export default function RolePositionSelection<T extends FieldValues>({
         <Controller
           control={control}
           name={roleName}
-          render={({ field: roleField }) => (
-            <Select.Root
-              collection={roles}
-              name={roleField.name}
-              value={roleField.value ? [roleField.value] : [UserRole.GUEST]}
-              onValueChange={({ value }) => roleField.onChange(value[0])}
-              onInteractOutside={() => roleField.onBlur()}
+          render={({ field }) => (
+            <RoleSelection
+              name={field.name}
+              defaultValue={[UserRole.GUEST]}
+              value={[field.value]}
               disabled={disabled}
-            >
-              <Select.HiddenSelect />
-              <Select.Control>
-                <Select.Trigger>
-                  <Select.ValueText placeholder="Role" />
-                </Select.Trigger>
-                <Select.IndicatorGroup>
-                  <Select.Indicator />
-                </Select.IndicatorGroup>
-              </Select.Control>
-              <Portal container={contentRef}>
-                <Select.Positioner>
-                  <Select.Content>
-                    {roles.items.map((role) => (
-                      <Select.Item item={role} key={role.value}>
-                        {role.label}
-                        <Select.ItemIndicator />
-                      </Select.Item>
-                    ))}
-                  </Select.Content>
-                </Select.Positioner>
-              </Portal>
-            </Select.Root>
+              contentRef={contentRef}
+              onInteractOutside={() => field.onBlur()}
+              onValueChange={({ value }) => field.onChange(value[0])}
+            />
           )}
         />
       </Field>
@@ -139,12 +149,12 @@ export default function RolePositionSelection<T extends FieldValues>({
         <Controller
           control={control}
           name={positionName}
-          render={({ field: positionField }) => (
+          render={({ field }) => (
             <Select.Root
-              name={positionField.name}
-              value={[positionField.value]}
-              onValueChange={({ value }) => positionField.onChange(value[0])}
-              onInteractOutside={() => positionField.onBlur()}
+              name={field.name}
+              value={[field.value]}
+              onValueChange={({ value }) => field.onChange(value[0])}
+              onInteractOutside={() => field.onBlur()}
               collection={positions}
               disabled={disabledPosition}
             >

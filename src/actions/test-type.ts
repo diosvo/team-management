@@ -34,7 +34,8 @@ export const upsertTestType = withAuth(
 
       return ResponseFactory.success('Test type updated successfully');
     } catch (error) {
-      return ResponseFactory.fromError(error as Error);
+      const { message } = getDbErrorMessage(error);
+      return ResponseFactory.error(message);
     }
   }
 );
