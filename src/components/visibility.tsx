@@ -1,10 +1,14 @@
-import React from 'react';
+import { Activity, PropsWithChildren } from 'react';
 
-interface VisibilityProps {
+type VisibilityProps = {
   isVisible: boolean;
-  children: React.ReactNode;
-}
+};
 
-export default function Visibility({ isVisible, children }: VisibilityProps) {
-  return isVisible ? React.Children.only(children) : null;
+export default function Visibility({
+  isVisible,
+  children,
+}: PropsWithChildren<VisibilityProps>) {
+  return (
+    <Activity mode={isVisible ? 'visible' : 'hidden'}>{children}</Activity>
+  );
 }

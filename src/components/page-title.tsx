@@ -1,10 +1,11 @@
-import NextImage from 'next/image';
+import { PropsWithChildren } from 'react';
 
-import { Heading, Image } from '@chakra-ui/react';
+import { Heading, HeadingProps, Image } from '@chakra-ui/react';
 
-import Squiggle from '@assets/images/squiggle.svg';
-
-export default function PageTitle({ children }: { children: React.ReactNode }) {
+export default function PageTitle({
+  children,
+  ...props
+}: PropsWithChildren<HeadingProps>) {
   return (
     <Heading
       position="relative"
@@ -14,10 +15,11 @@ export default function PageTitle({ children }: { children: React.ReactNode }) {
       letterSpacing="tight"
       maxWidth="fit-content"
       size={{ base: 'xl', md: '2xl' }}
+      {...props}
     >
       {children}
       <Image position="absolute" loading="lazy" alt="Squiggle" asChild>
-        <NextImage src={Squiggle} alt="Squiggle" />
+        <img src="/squiggle.svg" alt="Squiggle" />
       </Image>
     </Heading>
   );

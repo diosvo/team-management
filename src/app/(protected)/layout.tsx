@@ -1,25 +1,19 @@
 'use client';
 
-import { useState } from 'react';
+import { PropsWithChildren, Suspense, useState } from 'react';
 
 import {
   Container,
   Grid,
   GridItem,
-  IconButton,
   Separator,
   useBreakpointValue,
 } from '@chakra-ui/react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-import Header from './_components/header';
-import Sidebar from './_components/sidebar';
+import Header from './_components/AppHeader';
+import Sidebar from './_components/Sidebar';
 
-export default function ProtectedLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function AuthenticatedLayout({ children }: PropsWithChildren) {
   const smallDevice = useBreakpointValue({
     base: true,
     sm: true,
@@ -45,10 +39,10 @@ export default function ProtectedLayout({
         "sidebar main"
       `
       }
-      transition="all 0.3s ease"
+      transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
     >
       <GridItem gridArea="header">
-        <Header />
+        <Header smallDevice={!!smallDevice} />
         <Separator />
       </GridItem>
 
@@ -57,36 +51,21 @@ export default function ProtectedLayout({
         gridArea="sidebar"
         width={sidebarWidth}
         position="relative"
+        backgroundColor="gray.50"
         borderRightWidth={1}
         borderRightStyle="solid"
         borderRightColor="gray.200"
-        transition="width 0.3s ease"
+        transition="width 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
       >
-        <Sidebar isExpanded={isExpanded} />
-        <IconButton
-          size="sm"
-          variant="outline"
-          position="absolute"
-          zIndex={1}
-          top={4}
-          right="-36px"
-          paddingBlock={6}
-          borderTopLeftRadius={0}
-          borderBottomLeftRadius={0}
-          borderLeftColor="gray.100"
-          onClick={() => setIsExpanded(!isExpanded)}
-          title={isExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
-        >
-          {isExpanded ? <ChevronLeft /> : <ChevronRight />}
-        </IconButton>
+        <Sidebar isExpanded={isExpanded} setIsExpanded={setIsExpanded} />
       </GridItem>
 
       <GridItem gridArea="main" overflow="auto" height="100%">
         <Container
-          paddingBlock={4}
-          maxWidth={['vw', 'vw', 'vw', '4xl', '6xl', '8xl']}
+          paddingBlock={6}
+          maxWidth={['vw', 'vw', 'vw', '5xl', '6xl', '8xl']}
         >
-          {children}
+          <Suspense>{children}</Suspense>
         </Container>
       </GridItem>
     </Grid>

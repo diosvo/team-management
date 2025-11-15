@@ -1,7 +1,7 @@
-import { getRoster } from '@/features/user/actions/user';
+import { getRoster } from '@/actions/user';
 
-import RosterActions from './_components/actions';
-import RosterTable from './_components/table';
+import RosterActions from './_components/RosterActions';
+import RosterTable from './_components/RosterTable';
 import { parseSearchParams } from './_helpers/parse-params';
 
 export default async function RosterPage(props: {

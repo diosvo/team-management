@@ -1,51 +1,66 @@
-# Branch
+# DEVELOPMENT
 
-Checkk out branch from `main` with format:
+## Folder Organization
 
-```bash
-git checkout -b dev_<ticket_number>
+Ensure consistency and clarity across the codebase, follow these conventions for naming React/Next.js components and their files
+
+Quick Decision Tree
+
+```tree
+Is it a...
+├─ Database entity/type? → Singular (Asset, Rule)
+├─ Component? → Singular + Descriptor (AssetList, RuleForm)
+├─ Function fetching many? → Plural (getAssets, getRules)
+├─ Function for one item? → Singular (upsertAsset, deleteRule)
+├─ URL/Route? → Plural (/assets, /rules)
+└─ File name? → Match the primary export (asset.ts, rule.ts)
 ```
 
-# Component and File Naming Convention
+#### 1️⃣ Entity Names (Singular)
 
-To ensure consistency and clarity across the codebase, follow these conventions for naming React/Next.js components and their files:
+Current entities:
 
-## 1. File Naming
+- User (Player | Coach)
+- Team
+- Asset
+- Rule
 
-- Use lowercase and hyphen for filenames (e.g., `user-list.tsx`).
-- Base file names on the component's purpose or type. Common base names include:
-  - `list` (e.g., `PlayerList.tsx`)
-  - `table` (e.g., `TeamStatsTable.tsx`)
-  - `filters` (e.g., `UserFilters.tsx`)
-  - `upsert` (e.g., `AssetUpsert.tsx`)
-  - `form`, `card`, `modal`, etc.
-- Use plural for collections (e.g., `filters`, `stats`).
+#### 2️⃣ Database/ Schema (Singular)
 
-## 2. Component Naming
+- Located in `schemas/`
 
-- Component names should be PascalCase and clearly indicate their function and the entity they affect.
-- Use the pattern `[Entity][Type]` or `[Entity][Action][Type]` for clarity. Examples:
-  - `PlayerList`, `UserProfileCard`, `TeamStatsTable`, `AssetUpsertForm`
-  - For UI elements: `PageTitle`, `TextField`, `Stats`, `Pagination`, `Loading`, `Visibility`, `TextEditor`
-- If a component is generic or utility, use a descriptive name (e.g., `Visibility`, `TextEditor`).
-- For components that wrap or enhance UI primitives, use names that reflect their intent (e.g., `PageTitle` for a styled heading, `TextField` for a labeled field).
+_e.g.,_ AssetTable, UpsertRuleSchema
 
-## 3. Function Naming
+#### 3️⃣ Components (Singular + Descriptor)
 
-- Functions should be named to reflect their action and the entity they affect, e.g., `fetchUserList`, `updatePlayerStats`, `handleAssetUpsert`.
+- Located in `_components/` with specific features.
+- Use "PascalCase"
 
-## 4. Examples from `/src/components`
+_e.g.,_ AssetList, RuleTable
 
-- `PageTitle` (file: `page-title.tsx`): Renders a styled heading with a squiggle underline.
-- `Pagination` (file: `pagination.tsx`): Handles paginated navigation for lists/tables.
-- `Stats` (file: `stats.tsx`): Displays a grid of statistical cards.
-- `TextEditor` (file: `text-editor.tsx`): Rich text editor with formatting controls.
-- `TextField` (file: `text-field.tsx`): Labeled field for displaying text or values.
-- `Visibility` (file: `visibility.tsx`): Conditionally renders children based on visibility.
-- `Loading` (file: `loading.tsx`): Shows a loading progress bar.
+#### 4️⃣ Actions (Context-Based)
 
-## 5. General Guidelines
+- Located in `actions/`.
+- Start with verb
+- Use "camelCase"
 
-- Always use meaningful, descriptive names that reflect the component's or function's purpose.
-- Avoid abbreviations unless they are widely understood.
-- Keep names concise but explicit about their intent and affected entity.
+- Fetching mulitple: Use plural (_e.g.,_ getAssets, getRules)
+- Single entity operations: Use singular (_e.g.,_ upsertAsset, createRule)
+
+## 📦 Database Interactions
+
+Generate a new migration after modifying the database schema:
+
+```bash
+pnpm db:generate --name <desc>
+```
+
+Migrate the database:
+
+```bash
+pnpm db:migrate
+```
+
+## ⭐️ Others
+
+- Check the [snippet directory](https://github.com/chakra-ui/chakra-ui/tree/main/apps/compositions/src/ui) to see Chakra UI changes.

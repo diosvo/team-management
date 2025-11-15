@@ -1,150 +1,104 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
-import { useEffect, useState, useTransition } from 'react';
+import NextLink from 'next/link';
+import { useState } from 'react';
 
-import { Button, Heading, Input, Link, VStack } from '@chakra-ui/react';
+import {
+  Button,
+  Link as ChakraLink,
+  Heading,
+  Input,
+  VStack,
+} from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { FieldErrors, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 
 import { Alert } from '@/components/ui/alert';
 import { Field } from '@/components/ui/field';
 import { PasswordInput } from '@/components/ui/password-input';
 
-import { getDefaults } from '@/lib/zod';
-import { DEFAULT_LOGIN_REDIRECT } from '@/routes';
-import { Response } from '@/utils/response';
-import { buttonText, Page, pageTitle } from '../_helpers/utils';
+import authClient from '@/lib/auth-client';
 
-import {
-  login as loginAction,
-  requestResetPassword,
-} from '@/features/user/actions/auth';
-import { LoginSchema, LoginValues } from '@/features/user/schemas/auth';
+import { DEFAULT_LOGIN_REDIRECT } from '@/routes';
+import { LoginSchema, LoginValues } from '@/schemas/auth';
 
 export default function LoginPage() {
-  const [page, setPage] = useState(Page.Login);
-  const [response, setResponse] = useState<Response>();
-
-  const searchParams = useSearchParams();
-  const [isPending, startTransition] = useTransition();
-
-  const callbackUrl = searchParams.get('callbackUrl') || DEFAULT_LOGIN_REDIRECT;
+  const [error, setError] = useState<string>();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const {
     register,
     handleSubmit,
-    formState: { isValid, errors },
-    reset,
+    formState: { errors },
   } = useForm({
     resolver: zodResolver(LoginSchema),
-    defaultValues: getDefaults(LoginSchema),
   });
 
-  useEffect(() => {
-    reset();
-    setResponse(undefined);
-  }, [page, reset, setResponse]);
-
-  const onSubmit = (data: LoginValues) => {
-    startTransition(() => {
-      const action =
-        page === Page.Login ? loginAction(data) : requestResetPassword(data);
-
-      return action.then(setResponse);
-    });
-  };
+  async function onSubmit(values: LoginValues) {
+    setError(undefined);
+    await authClient.signIn.email(
+      {
+        ...values,
+        callbackURL: DEFAULT_LOGIN_REDIRECT,
+      },
+      {
+        onRequest: () => setIsLoading(true),
+        onError: ({ error }) => setError(error.message || error.statusText),
+        onResponse: () => setIsLoading(false),
+      }
+    );
+  }
 
   return (
-    <>
-      <Heading
-        size={{ base: 'xl', md: '2xl' }}
-        marginBottom={6}
-        textAlign="center"
-      >
-        {pageTitle[page]}
+    <VStack
+      as="form"
+      gap={4}
+      alignItems="stretch"
+      onSubmit={handleSubmit(onSubmit)}
+    >
+      <Heading size={{ base: 'xl', md: '2xl' }} textAlign="center">
+        Sign in to your account
       </Heading>
 
-      <VStack
-        as="form"
-        gap={4}
-        alignItems="stretch"
-        onSubmit={handleSubmit(onSubmit)}
+      <Field
+        required
+        label="Email"
+        disabled={isLoading}
+        invalid={!!errors.email}
+        errorText={errors.email?.message}
       >
-        <>
-          <Field
-            required
-            label="Email"
-            disabled={isPending}
-            invalid={!!errors.email}
-            errorText={errors.email?.message}
-          >
-            <Input
-              type="email"
-              autoFocus
-              autoComplete="email"
-              {...register('email')}
-            />
-          </Field>
+        <Input autoFocus autoComplete="email" {...register('email')} />
+      </Field>
+      <Field
+        required
+        label="Password"
+        disabled={isLoading}
+        invalid={!!errors.password}
+        errorText={errors.password?.message}
+      >
+        <PasswordInput {...register('password')} />
+      </Field>
 
-          {page === Page.Login && (
-            <>
-              <Field
-                required
-                label="Password"
-                disabled={isPending}
-                invalid={!!(errors as FieldErrors<LoginValues>).password}
-                errorText={
-                  (errors as FieldErrors<LoginValues>).password?.message
-                }
-              >
-                <PasswordInput {...register('password')} />
-              </Field>
+      <ChakraLink
+        fontSize="sm"
+        fontWeight={500}
+        textDecoration="underline"
+        asChild
+      >
+        <NextLink href="/forgot-password">Forgot your password?</NextLink>
+      </ChakraLink>
 
-              <Link
-                fontSize="sm"
-                fontWeight={500}
-                textDecoration="underline"
-                onClick={() => setPage(Page.ResetPassword)}
-              >
-                Forgot your password?
-              </Link>
-            </>
-          )}
+      {error && <Alert status="error" title={error} />}
 
-          {response && (
-            <Alert
-              status={response.error ? 'error' : 'success'}
-              title={response.message}
-            />
-          )}
-
-          {page === Page.Login && (
-            <input type="hidden" name="redirectTo" value={callbackUrl} />
-          )}
-          <Button
-            type="submit"
-            borderRadius="full"
-            loadingText="Directing..."
-            loading={isPending}
-            disabled={!isValid || isPending}
-          >
-            {buttonText[page]}
-          </Button>
-
-          {page === Page.ResetPassword && (
-            <Link
-              fontSize="sm"
-              alignSelf="center"
-              fontWeight={500}
-              textDecoration="underline"
-              onClick={() => setPage(Page.Login)}
-            >
-              Go back to sign in
-            </Link>
-          )}
-        </>
-      </VStack>
-    </>
+      <Button
+        type="submit"
+        borderRadius="full"
+        loadingText="Directing..."
+        loading={isLoading}
+        disabled={isLoading}
+      >
+        Sign In
+      </Button>
+    </VStack>
   );
 }

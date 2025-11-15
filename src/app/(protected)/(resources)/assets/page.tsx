@@ -2,9 +2,9 @@ import { Metadata } from 'next';
 
 import PageTitle from '@/components/page-title';
 
-import { getAssets } from '@/features/asset/actions/asset';
-import AssetList from './_components/list';
-import AssetStats from './_components/stats';
+import { getAssets } from '@/actions/asset';
+import AssetList from './_components/AssetList';
+import AssetStats from './_components/AssetStats';
 
 export const metadata: Metadata = {
   title: 'Assets',

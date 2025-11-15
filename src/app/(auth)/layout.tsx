@@ -1,19 +1,17 @@
 import { Metadata } from 'next';
 import Image from 'next/image';
+import { PropsWithChildren } from 'react';
 
-import BackgroundLayer from '@assets/images/bg-layer.jpeg';
 import { Box, Center, Container } from '@chakra-ui/react';
+
+import BackgroundLayer from '@/assets/images/bg-layer.webp';
 
 export const metadata: Metadata = {
   title: 'Auth',
   description: 'Authentication',
 };
 
-export default function LoginLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default async function AuthLayout({ children }: PropsWithChildren) {
   return (
     <Box height="100vh" position="relative">
       <Image

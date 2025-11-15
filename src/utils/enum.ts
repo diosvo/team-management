@@ -29,7 +29,7 @@ export enum PlayerPosition {
 
 export enum AssetCategory {
   EQUIPMENT = 'EQUIPMENT',
-  TRANING = 'TRAINING',
+  TRAINING = 'TRAINING',
   OTHERS = 'OTHERS',
 }
 

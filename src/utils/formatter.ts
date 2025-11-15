@@ -15,3 +15,10 @@ export const formatDatetime = (
 
   return format(datetime, LOCALE_DATETIME_FORMAT);
 };
+
+/**
+ * @description Visualize and test loading states, skeletons, and suspense behavior by artificially introducing latency in data fetching
+ */
+export function mockDelay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}

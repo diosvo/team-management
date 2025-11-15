@@ -1,8 +1,8 @@
 import { HStack, Text, VStack } from '@chakra-ui/react';
+import { PropsWithChildren } from 'react';
 
 interface InfoFieldProps {
   label: string;
-  children: React.ReactNode;
   icon?: React.ElementType;
   direction?: 'horizontal' | 'vertical';
 }
@@ -12,7 +12,7 @@ export default function TextField({
   label,
   children,
   direction = 'vertical',
-}: InfoFieldProps) {
+}: PropsWithChildren<InfoFieldProps>) {
   if (direction === 'horizontal') {
     return (
       <HStack gap={1} fontSize={14}>

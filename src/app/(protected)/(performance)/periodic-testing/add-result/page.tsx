@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { forbidden, redirect } from 'next/navigation';
+import { forbidden } from 'next/navigation';
 
 import { Button, HStack } from '@chakra-ui/react';
 import { MoveLeft } from 'lucide-react';
@@ -8,12 +8,8 @@ import { MoveLeft } from 'lucide-react';
 import PageTitle from '@/components/page-title';
 import { Tooltip } from '@/components/ui/tooltip';
 
-import { getUser } from '@/features/user/actions/auth';
-
-import { LOGIN_PATH } from '@/routes';
-import { hasPermissions } from '@/utils/helper';
-
-import AddTestResultPageClient from './_components/main';
+import { canUpsertTestResult } from '@/actions/test-result';
+import AddTestResultPageClient from './_components/AddTestResultPageClient';
 
 export const metadata: Metadata = {
   title: 'Add Test Result',
@@ -21,11 +17,9 @@ export const metadata: Metadata = {
 };
 
 export default async function AddTestResultPage() {
-  const currentUser = await getUser();
-  if (!currentUser) redirect(LOGIN_PATH);
+  const isAllowed = await canUpsertTestResult();
 
-  const { isGuest, isPlayer } = hasPermissions(currentUser.role);
-  if (isGuest || isPlayer) forbidden();
+  if (!isAllowed) forbidden();
 
   return (
     <>

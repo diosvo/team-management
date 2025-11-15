@@ -1,13 +1,14 @@
 import { Metadata } from 'next';
 
-import { Grid, Text, VStack } from '@chakra-ui/react';
+import { SimpleGrid, Text, VStack } from '@chakra-ui/react';
 
 import PageTitle from '@/components/page-title';
 
-import { getProfilePermission } from '@/features/user/actions/user';
+import { getUserProfile } from '@/actions/user';
 import { formatDatetime } from '@/utils/formatter';
-import PersonalInfo from '../_components/personal-info';
-import TeamInfo from '../_components/team-info';
+
+import PersonalInfo from '../_components/PersonalInfo';
+import TeamInfo from '../_components/TeamInfo';
 
 export const metadata: Metadata = {
   title: 'Profile',
@@ -20,21 +21,19 @@ export default async function ProfilePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const { viewOnly, isOwnProfile, lastUpdated } = await getProfilePermission(
-    id
-  );
+  const { targetUser, viewOnly } = await getUserProfile(id);
 
   return (
     <VStack gap={6} alignItems="stretch">
       <PageTitle>Profile Details</PageTitle>
 
-      <Grid templateColumns={{ base: '1fr', lg: 'repeat(2, 1fr)' }} gap={6}>
-        <PersonalInfo viewOnly={viewOnly} />
-        <TeamInfo viewOnly={viewOnly} isOwnProfile={isOwnProfile} />
-      </Grid>
+      <SimpleGrid columns={{ base: 1, lg: 2 }} gap={6}>
+        <PersonalInfo user={targetUser} viewOnly={viewOnly} />
+        <TeamInfo user={targetUser} viewOnly={viewOnly} />
+      </SimpleGrid>
 
       <Text fontSize="xs" color="GrayText">
-        {`Last updated on ${formatDatetime(lastUpdated)}`}
+        {`Last updated on ${formatDatetime(targetUser.updatedAt)}`}
       </Text>
     </VStack>
   );

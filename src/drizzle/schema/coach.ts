@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm';
-import { pgEnum, pgTable, uuid } from 'drizzle-orm/pg-core';
+import { pgEnum, pgTable, text } from 'drizzle-orm/pg-core';
 
 import { CoachPosition } from '@/utils/enum';
 
@@ -9,10 +9,10 @@ import { UserTable } from './user';
 export const coachPositionEnum = pgEnum('coach_position', CoachPosition);
 
 export const CoachTable = pgTable('coach', {
-  user_id: uuid()
+  id: text()
     .notNull()
     .primaryKey()
-    .references(() => UserTable.user_id, { onDelete: 'cascade' }),
+    .references(() => UserTable.id, { onDelete: 'cascade' }),
   position: coachPositionEnum().default(CoachPosition.UNKNOWN).notNull(),
   created_at,
   updated_at,
@@ -20,8 +20,8 @@ export const CoachTable = pgTable('coach', {
 
 export const CoachRelations = relations(CoachTable, ({ one }) => ({
   user: one(UserTable, {
-    fields: [CoachTable.user_id],
-    references: [UserTable.user_id],
+    fields: [CoachTable.id],
+    references: [UserTable.id],
   }),
 }));
 

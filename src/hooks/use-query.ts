@@ -17,6 +17,7 @@ export type UseQueryReturn<T> = {
   error: Nullable<Error>;
   data: Nullable<T>;
 };
+
 /**
  * @description For fetching data only, NOT for mutations.
  */

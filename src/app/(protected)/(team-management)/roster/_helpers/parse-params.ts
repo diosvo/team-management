@@ -1,11 +1,9 @@
 import { getDefaults } from '@/lib/zod';
 import { SelectableRole, SelectableState } from '@/utils/type';
 
-import {
-  FilterUsersSchema,
-  FilterUsersValues,
-} from '@/features/user/schemas/user';
+import { FilterUsersSchema, FilterUsersValues } from '@/schemas/user';
 
+// Replace with nuqs
 export function parseSearchParams(
   searchParams: Partial<{
     query: string;
