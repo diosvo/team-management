@@ -6,12 +6,13 @@ import {
   HStack,
   Portal,
   Select,
+  Span,
+  Stack,
 } from '@chakra-ui/react';
 import { Filter, Plus } from 'lucide-react';
 
 import SearchInput from '@/components/SearchInput';
 import { Status } from '@/components/ui/status';
-import { Tooltip } from '@/components/ui/tooltip';
 import Visibility from '@/components/visibility';
 
 import { usePermissions } from '@/hooks/use-permissions';
@@ -40,11 +41,13 @@ export default function AssetFilters() {
     <HStack marginBottom={6}>
       <SearchInput />
       <Select.Root
-        width="2xs"
+        width="xs"
         size={{ base: 'sm', md: 'md' }}
         collection={categories}
         value={[category]}
-        onValueChange={({ value }) => setSearchParams({ category: value[0] })}
+        onValueChange={({ value }) =>
+          setSearchParams({ category: value[0], page: 1 })
+        }
       >
         <Select.HiddenSelect />
         <Select.Control>
@@ -62,16 +65,15 @@ export default function AssetFilters() {
           <Select.Positioner>
             <Select.Content>
               {categories.items.map((category) => (
-                <Tooltip
-                  key={category.value}
-                  content={category.description || ALL.label}
-                  positioning={{ placement: 'right-end' }}
-                >
-                  <Select.Item item={category}>
-                    {category.label}
-                    <Select.ItemIndicator />
-                  </Select.Item>
-                </Tooltip>
+                <Select.Item key={category.value} item={category}>
+                  <Stack gap={0}>
+                    <Select.ItemText>{category.label}</Select.ItemText>
+                    <Span color="fg.muted" textStyle="xs">
+                      {category.description}
+                    </Span>
+                  </Stack>
+                  <Select.ItemIndicator />
+                </Select.Item>
               ))}
             </Select.Content>
           </Select.Positioner>
@@ -82,7 +84,9 @@ export default function AssetFilters() {
         size={{ base: 'sm', md: 'md' }}
         collection={conditions}
         value={[condition]}
-        onValueChange={({ value }) => setSearchParams({ condition: value[0] })}
+        onValueChange={({ value }) =>
+          setSearchParams({ condition: value[0], page: 1 })
+        }
       >
         <Select.HiddenSelect />
         <Select.Control>

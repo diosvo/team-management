@@ -2,9 +2,10 @@
 
 import { User } from '@/drizzle/schema';
 
-import { useRosterFilters } from '../search-params';
 import RosterFilters from './RosterFilters';
 import RosterTable from './RosterTable';
+
+import { useRosterFilters } from '../search-params';
 
 export default function RosterList({ users }: { users: Array<User> }) {
   const [{ q, state, role }] = useRosterFilters();

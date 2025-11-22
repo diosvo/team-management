@@ -15,7 +15,7 @@ export default function SearchInput({
   disabled = false,
   maxLength = 64,
 }: SearchInputProps) {
-  const [{ q }, setFilters] = useCommonParams();
+  const [{ q }, setSearchParams] = useCommonParams();
 
   return (
     <InputGroup
@@ -25,7 +25,7 @@ export default function SearchInput({
           <CloseButton
             size="2xs"
             borderRadius="full"
-            onClick={() => setFilters({ q: '' })}
+            onClick={() => setSearchParams({ q: '' })}
           />
         )
       }
@@ -40,7 +40,7 @@ export default function SearchInput({
         borderWidth={1}
         size={{ base: 'sm', md: 'md' }}
         css={{ '--focus-color': 'colors.red.300' }}
-        onChange={(e) => setFilters({ q: e.target.value })}
+        onChange={(e) => setSearchParams({ q: e.target.value })}
       />
     </InputGroup>
   );

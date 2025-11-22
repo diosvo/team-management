@@ -39,7 +39,7 @@ export default function AssetStats({ stats }: AssetStatsProps) {
         },
       },
     ],
-    []
+    [setSearchParams]
   );
 
   return <Stats data={stats} config={config} />;

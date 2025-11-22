@@ -20,6 +20,7 @@ export const LOCALE_DATETIME_FORMAT = LOCALE_DATE_FORMAT + ' HH:mm:ss';
 export const COOKIE = {
   prefix: 'sgr',
   expires: 60 * 60, // 1 hour in seconds
+  maxAge: 10 * 60, // 10 minutes in seconds
 };
 
 export const ALL: Option<string> = {

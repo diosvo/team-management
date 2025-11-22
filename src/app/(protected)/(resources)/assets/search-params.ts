@@ -1,5 +1,5 @@
 import { useQueryStates } from 'nuqs';
-import { type Options, parseAsStringEnum } from 'nuqs/server';
+import { parseAsStringEnum } from 'nuqs/server';
 
 import {
   ALL,
@@ -14,5 +14,4 @@ const searchParams = {
   condition: parseAsStringEnum(AssetConditionValues).withDefault(ALL.value),
 };
 
-export const useAssetFilters = (options: Options = {}) =>
-  useQueryStates(searchParams, options);
+export const useAssetFilters = () => useQueryStates(searchParams);

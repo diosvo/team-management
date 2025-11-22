@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useTransition } from 'react';
+import { useRef, useTransition } from 'react';
 
 import { Button, Dialog, Input, Portal, SimpleGrid } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -32,12 +32,6 @@ export default function AddUser() {
     mode: 'onChange',
     resolver: zodResolver(AddUserSchema),
     defaultValues: getDefaults(AddUserSchema),
-  });
-
-  useEffect(() => {
-    return () => {
-      contentRef.current = null;
-    };
   });
 
   const onSubmit = (data: AddUserValues) => {

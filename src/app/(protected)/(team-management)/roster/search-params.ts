@@ -1,5 +1,5 @@
-import { parseAsArrayOf, parseAsStringEnum, useQueryStates } from 'nuqs';
-import { type Options } from 'nuqs/server';
+import { useQueryStates } from 'nuqs';
+import { parseAsArrayOf, parseAsStringEnum } from 'nuqs/server';
 
 import {
   SELECTABLE_USER_ROLES,
@@ -17,5 +17,4 @@ const searchParams = {
   ),
 };
 
-export const useRosterFilters = (options: Options = {}) =>
-  useQueryStates(searchParams, options);
+export const useRosterFilters = () => useQueryStates(searchParams);

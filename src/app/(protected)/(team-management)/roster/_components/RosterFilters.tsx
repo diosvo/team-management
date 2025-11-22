@@ -8,6 +8,7 @@ import { StateSelection } from '@/components/user/StateSelection';
 import Visibility from '@/components/visibility';
 
 import { usePermissions } from '@/hooks/use-permissions';
+import { UserRole, UserState } from '@/utils/enum';
 
 import { useRosterFilters } from '../search-params';
 import AddUser from './AddUser';
@@ -23,14 +24,18 @@ export default function RosterFilters() {
         multiple
         width="2xs"
         value={state}
-        onValueChange={({ value }) => setSearchParams({ state: value })}
+        onValueChange={({ value }) =>
+          setSearchParams({ state: value as Array<UserState> })
+        }
       />
       <Visibility isVisible={isAdmin}>
         <RoleSelection
           multiple
           width="2xs"
           value={role}
-          onValueChange={({ value }) => setSearchParams({ role: value })}
+          onValueChange={({ value }) =>
+            setSearchParams({ role: value as Array<UserRole> })
+          }
         />
         <AddUser />
       </Visibility>

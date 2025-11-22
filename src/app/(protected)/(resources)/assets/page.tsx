@@ -3,6 +3,7 @@ import { Metadata } from 'next';
 import PageTitle from '@/components/page-title';
 
 import { getAssets } from '@/actions/asset';
+
 import AssetList from './_components/AssetList';
 import AssetStats from './_components/AssetStats';
 

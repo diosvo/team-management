@@ -29,7 +29,7 @@ import { User } from '@/drizzle/schema/user';
 export default function RosterTable({ users }: { users: Array<User> }) {
   const router = useRouter();
   const { isAdmin, isGuest } = usePermissions();
-  const [{ page }, setFilters] = useCommonParams();
+  const [{ page }, setSearchParams] = useCommonParams();
 
   const [selection, setSelection] = useState<Array<string>>([]);
   const selectionCount = selection.length;
@@ -186,7 +186,11 @@ export default function RosterTable({ users }: { users: Array<User> }) {
         </Table.Root>
       </Table.ScrollArea>
 
-      <Pagination count={totalCount} page={page} onPageChange={setFilters} />
+      <Pagination
+        count={totalCount}
+        page={page}
+        onPageChange={setSearchParams}
+      />
       <ActionBar.Root open={hasSelection}>
         <Portal>
           <ActionBar.Positioner>

@@ -12,7 +12,7 @@
   - 🌊 [Winston](https://github.com/winstonjs/winston) for server logging.
   - ⏰ [date-fns](https://date-fns.org/) for datetime manipulation.
   - 💃 Using various parts of a modern frontend stack:
-    - [Charkra UI](https://chakra-ui.com/) for component library.
+    - [Chakra UI](https://chakra-ui.com/) for component library.
     - [React Hook Form](https://react-hook-form.com/) for form handling.
     - [nuqs](https://github.com/47ng/nuqs) for filters state management.
 
@@ -63,10 +63,3 @@ pnpm dev
 ```
 
 Then open your browser at http://localhost:3000/.
-
----
-
-Update with refresh cause errors
-
-- Unexpected Fiber popped.
-- Detected multiple renderers concurrently rendering the same context provider. This is currently unsupported.

@@ -19,7 +19,7 @@ import { TestType } from '@/drizzle/schema';
 import { UpsertTestType } from './UpsertTestType';
 
 export default function TestTypesTable({ data }: { data: Array<TestType> }) {
-  const [{ page }, setFilters] = useCommonParams();
+  const [{ page }, setSearchParams] = useCommonParams();
 
   const [selection, setSelection] = useState<Array<string>>([]);
   const selectionCount = selection.length;
@@ -125,7 +125,11 @@ export default function TestTypesTable({ data }: { data: Array<TestType> }) {
         </Table.Root>
       </Table.ScrollArea>
 
-      <Pagination count={totalCount} page={page} onPageChange={setFilters} />
+      <Pagination
+        count={totalCount}
+        page={page}
+        onPageChange={setSearchParams}
+      />
       <ActionBar.Root open={hasSelection}>
         <Portal>
           <ActionBar.Positioner>

@@ -1,14 +1,15 @@
 import type { Route } from 'next';
+import { useQueryStates } from 'nuqs';
 import {
   createSerializer,
-  type CreateSerializerOptions,
-  Options,
   parseAsInteger,
   parseAsString,
+  type CreateSerializerOptions,
+  type Options,
   type ParserMap,
-  useQueryStates,
-} from 'nuqs';
+} from 'nuqs/server';
 
+// For CSR only
 export const commonParams = {
   page: parseAsInteger.withDefault(1),
   q: parseAsString.withDefault(''),
