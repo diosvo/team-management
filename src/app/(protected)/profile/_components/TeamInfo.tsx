@@ -130,11 +130,11 @@ export default function TeamInfo({
               </Tooltip>
             </>
           ) : (
-            <Tooltip content={viewOnly ? 'View Only' : 'Edit'}>
+            <Tooltip content={viewOnly || isAdmin ? 'View Only' : 'Edit'}>
               <IconButton
                 size="sm"
                 variant="subtle"
-                disabled={viewOnly}
+                disabled={viewOnly || isAdmin}
                 onClick={() => setIsEditing(true)}
               >
                 <Edit />
@@ -217,7 +217,6 @@ export default function TeamInfo({
               <Input
                 type="date"
                 min={ESTABLISHED_DATE}
-                defaultValue={ESTABLISHED_DATE}
                 disabled={isPending}
                 {...register('user.join_date')}
               />

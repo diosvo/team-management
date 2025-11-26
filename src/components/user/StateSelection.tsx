@@ -12,7 +12,6 @@ import { Field } from '@/components/ui/field';
 import { Status } from '@/components/ui/status';
 
 import { UserStateSelection } from '@/utils/constant';
-import { UserState } from '@/utils/enum';
 import { colorState } from '@/utils/helper';
 
 type StateSelectionProps = Omit<SelectRootProps, 'collection'> &
@@ -82,7 +81,7 @@ export function ControlledStateSelection<T extends FieldValues>({
         name={name}
         render={({ field }) => (
           <StateSelection
-            defaultValue={[UserState.UNKNOWN]}
+            value={[field.value]}
             disabled={disabled}
             contentRef={contentRef}
             onInteractOutside={() => field.onBlur()}

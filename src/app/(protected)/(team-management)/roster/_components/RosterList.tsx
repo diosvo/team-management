@@ -11,7 +11,9 @@ export default function RosterList({ users }: { users: Array<User> }) {
   const [{ q, state, role }] = useRosterFilters();
 
   const filteredData = users.filter((user) => {
-    const matchesSearch = user.name.toLowerCase().includes(q.toLowerCase());
+    const matchesSearch =
+      user.name.toLowerCase().includes(q.toLowerCase()) ||
+      user.email.toLowerCase().includes(q.toLowerCase());
     const matchesState = state.length === 0 || state.includes(user.state);
     const matchesRole = role.length === 0 || role.includes(user.role);
 

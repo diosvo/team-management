@@ -161,7 +161,7 @@ export const updateTeamInfo = withAuth(
         });
       }
 
-      getCacheTag.user(user_id);
+      revalidate.user(user_id);
 
       return ResponseFactory.success('Updated team information successfully');
     } catch (error) {

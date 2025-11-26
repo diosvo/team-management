@@ -15,13 +15,13 @@ export default function TestingResultList({ result }: { result: TestResult }) {
   const { headers, players } = result;
 
   const filteredPlayers = useMemo(() => {
-    if (players && players.length === 0) return [];
+    if (players.length === 0) return [];
     if (!q) return players;
 
     return players.filter(({ player_name }) =>
       player_name.toLowerCase().includes(q.toLowerCase())
     );
-  }, [q, result]);
+  }, [q, players]);
 
   return (
     <>

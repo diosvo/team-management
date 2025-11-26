@@ -23,9 +23,9 @@ export default function PlayerSelection({
       maxItems={maxPlayers}
       itemToString={({ name }) => name}
       itemToValue={({ id }) => id}
-      renderItem={({ details: { jersey_number }, name }) => (
+      renderItem={({ details, name }) => (
         <>
-          {jersey_number && `${jersey_number} · `}
+          {details?.jersey_number && `${details.jersey_number} · `}
           {name}
         </>
       )}

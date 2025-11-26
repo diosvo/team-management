@@ -134,7 +134,6 @@ export function RolePositionSelection<T extends FieldValues>({
           render={({ field }) => (
             <RoleSelection
               name={field.name}
-              defaultValue={[UserRole.GUEST]}
               value={[field.value]}
               disabled={disabled}
               contentRef={contentRef}
