@@ -10,12 +10,11 @@ import { useForm } from 'react-hook-form';
 import { CloseButton } from '@/components/ui/close-button';
 import { Field } from '@/components/ui/field';
 import { toaster } from '@/components/ui/toaster';
-import RolePositionSelection from '@/components/user/role-position-selection';
-import StateSelection from '@/components/user/state-selection';
-
-import { getDefaults } from '@/lib/zod';
+import { RolePositionSelection } from '@/components/user/RolePositionSelection';
+import { ControlledStateSelection } from '@/components/user/StateSelection';
 
 import { addUser } from '@/actions/user';
+import { getDefaults } from '@/lib/zod';
 import { AddUserSchema, AddUserValues } from '@/schemas/user';
 
 export default function AddUser() {
@@ -114,7 +113,7 @@ export default function AddUser() {
                 gap={4}
                 marginTop={4}
               >
-                <StateSelection
+                <ControlledStateSelection
                   name="state"
                   control={control}
                   disabled={isPending}

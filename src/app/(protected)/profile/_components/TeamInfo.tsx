@@ -26,8 +26,8 @@ import {
 } from '@/components/ui/number-input';
 import { toaster } from '@/components/ui/toaster';
 import { Tooltip } from '@/components/ui/tooltip';
-import RolePositionSelection from '@/components/user/role-position-selection';
-import StateSelection from '@/components/user/state-selection';
+import { RolePositionSelection } from '@/components/user/RolePositionSelection';
+import { ControlledStateSelection } from '@/components/user/StateSelection';
 import Visibility from '@/components/visibility';
 
 import { ESTABLISHED_DATE } from '@/utils/constant';
@@ -130,11 +130,11 @@ export default function TeamInfo({
               </Tooltip>
             </>
           ) : (
-            <Tooltip content={viewOnly ? 'View Only' : 'Edit'}>
+            <Tooltip content={viewOnly || isAdmin ? 'View Only' : 'Edit'}>
               <IconButton
                 size="sm"
                 variant="subtle"
-                disabled={viewOnly}
+                disabled={viewOnly || isAdmin}
                 onClick={() => setIsEditing(true)}
               >
                 <Edit />
@@ -183,7 +183,7 @@ export default function TeamInfo({
             }}
             gap={4}
           >
-            <StateSelection
+            <ControlledStateSelection
               control={control}
               name="user.state"
               disabled={isPending}
@@ -217,7 +217,6 @@ export default function TeamInfo({
               <Input
                 type="date"
                 min={ESTABLISHED_DATE}
-                defaultValue={ESTABLISHED_DATE}
                 disabled={isPending}
                 {...register('user.join_date')}
               />

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 
 import { ActionBar, Button, Portal, Table } from '@chakra-ui/react';
 import { formatDistanceToNow } from 'date-fns';
@@ -10,22 +10,22 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { EmptyState } from '@/components/ui/empty-state';
 import { toaster } from '@/components/ui/toaster';
 
-import { TestType } from '@/drizzle/schema';
+import { paginateData, useCommonParams } from '@/utils/filters';
 import { formatDatetime } from '@/utils/formatter';
 
 import { removeTestType } from '@/actions/test-type';
+import { TestType } from '@/drizzle/schema';
 
 import { UpsertTestType } from './UpsertTestType';
 
 export default function TestTypesTable({ data }: { data: Array<TestType> }) {
+  const [{ page }, setSearchParams] = useCommonParams();
+
   const [selection, setSelection] = useState<Array<string>>([]);
-  const [pagination, setPagination] = useState({
-    page: 1,
-    pageSize: 5,
-  });
+  const selectionCount = selection.length;
 
   const totalCount = data.length;
-  const selectionCount = selection.length;
+  const currentData = paginateData(data, page);
 
   // Selection
   const hasSelection = selectionCount > 0;
@@ -50,17 +50,13 @@ export default function TestTypesTable({ data }: { data: Array<TestType> }) {
     setSelection([]);
   };
 
-  const handlePageChange = useCallback(({ page }: { page: number }) => {
-    setPagination((prev) => ({ ...prev, page }));
-  }, []);
-
   return (
     <>
       <Table.ScrollArea>
         <Table.Root
           borderWidth={1}
           size={{ base: 'sm', md: 'md' }}
-          interactive={data.length > 0}
+          interactive={totalCount > 0}
         >
           <Table.Header>
             <Table.Row>
@@ -82,8 +78,8 @@ export default function TestTypesTable({ data }: { data: Array<TestType> }) {
             </Table.Row>
           </Table.Header>
           <Table.Body>
-            {data.length > 0 ? (
-              data.map((item) => (
+            {currentData.length > 0 ? (
+              currentData.map((item) => (
                 <Table.Row
                   key={item.type_id}
                   _hover={{ cursor: 'pointer' }}
@@ -130,12 +126,10 @@ export default function TestTypesTable({ data }: { data: Array<TestType> }) {
       </Table.ScrollArea>
 
       <Pagination
-        count={data.length}
-        page={pagination.page}
-        pageSize={pagination.pageSize}
-        onPageChange={handlePageChange}
+        count={totalCount}
+        page={page}
+        onPageChange={setSearchParams}
       />
-
       <ActionBar.Root open={hasSelection}>
         <Portal>
           <ActionBar.Positioner>

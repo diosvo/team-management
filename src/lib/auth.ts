@@ -1,5 +1,5 @@
-import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
+import { betterAuth } from 'better-auth/minimal';
 import { nextCookies } from 'better-auth/next-js';
 import { Resend } from 'resend';
 
@@ -70,6 +70,10 @@ export default betterAuth({
   },
   session: {
     expiresIn: COOKIE.expires,
+    cookieCache: {
+      enabled: true,
+      maxAge: COOKIE.maxAge, // Cache duration in seconds
+    },
   },
   plugins: [
     nextCookies(), // Ensure that it is the last plugin in the array

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Table, Text } from '@chakra-ui/react';
 import { BookUser } from 'lucide-react';
@@ -11,10 +11,12 @@ import {
   NumberInputField,
   NumberInputRoot,
 } from '@/components/ui/number-input';
-
 import { Tooltip } from '@/components/ui/tooltip';
+
+import { TestConfigurationSelection } from '@/types/periodic-testing';
+import { useCommonParams } from '@/utils/filters';
+
 import { InsertTestResult } from '@/drizzle/schema';
-import { TestConfigurationSelection } from '@/schemas/models';
 
 const removalStyle = {
   cursor: 'pointer',
@@ -23,7 +25,7 @@ const removalStyle = {
 };
 
 export default function TestResultTable({
-  configuration,
+  configuration: { players, types, date },
   setSelection,
   onChange,
 }: {
@@ -33,20 +35,10 @@ export default function TestResultTable({
   >;
   onChange: (data: Array<InsertTestResult>) => void;
 }) {
-  const [pagination, setPagination] = useState({
-    page: 1,
-    pageSize: 5,
-  });
+  const [{ page }, setSearchParams] = useCommonParams();
   const [results, setResults] = useState<Record<string, string>>({});
 
-  const hasData = useMemo(
-    () => configuration.players.length > 0 && configuration.types.length > 0,
-    [configuration.players, configuration.types]
-  );
-
-  const handlePageChange = useCallback(({ page }: { page: number }) => {
-    setPagination((prev) => ({ ...prev, page }));
-  }, []);
+  const hasData = players.length > 0 && types.length > 0;
 
   useEffect(() => {
     if (!hasData) {
@@ -56,8 +48,8 @@ export default function TestResultTable({
 
     const formattedData: Array<InsertTestResult> = [];
 
-    configuration.players.forEach(({ id }) => {
-      configuration.types.forEach(({ type_id }) => {
+    players.forEach(({ id }) => {
+      types.forEach(({ type_id }) => {
         const key = getResultKey(id, type_id);
         const result = results[key] || '0';
 
@@ -65,13 +57,13 @@ export default function TestResultTable({
           type_id: type_id,
           player_id: id,
           result: result,
-          date: configuration.date,
+          date,
         });
       });
     });
 
     onChange(formattedData);
-  }, [hasData, results, configuration, onChange]);
+  }, [hasData, results]);
 
   // Generate a unique key for each player-test combination
   const getResultKey = (user_id: string, type_id: string) =>
@@ -85,7 +77,7 @@ export default function TestResultTable({
             <Table.Header>
               <Table.Row>
                 <Table.ColumnHeader>Player Name</Table.ColumnHeader>
-                {configuration.types.map(({ type_id, name, unit }) => (
+                {types.map(({ type_id, name, unit }) => (
                   <Tooltip
                     key={type_id}
                     showArrow
@@ -120,7 +112,7 @@ export default function TestResultTable({
           )}
           <Table.Body>
             {hasData ? (
-              configuration.players.map(({ id, name }) => (
+              players.map(({ id, name }) => (
                 <Table.Row key={id}>
                   <Tooltip
                     key={id}
@@ -142,7 +134,7 @@ export default function TestResultTable({
                       {name}
                     </Table.Cell>
                   </Tooltip>
-                  {configuration.types.map(({ type_id }) => {
+                  {types.map(({ type_id }) => {
                     const key = getResultKey(id, type_id);
                     return (
                       <Table.Cell key={type_id}>
@@ -165,7 +157,7 @@ export default function TestResultTable({
               ))
             ) : (
               <Table.Row>
-                <Table.Cell colSpan={configuration.types.length + 1}>
+                <Table.Cell colSpan={types.length + 1}>
                   <EmptyState
                     icon={<BookUser />}
                     title="No configuration set."
@@ -179,10 +171,10 @@ export default function TestResultTable({
       </Table.ScrollArea>
 
       <Pagination
-        count={configuration.players.length}
-        page={pagination.page}
-        pageSize={pagination.pageSize}
-        onPageChange={handlePageChange}
+        count={players.length}
+        page={page}
+        pageSize={10}
+        onPageChange={setSearchParams}
       />
     </>
   );

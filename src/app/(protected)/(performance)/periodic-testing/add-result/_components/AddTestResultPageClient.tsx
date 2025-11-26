@@ -10,11 +10,11 @@ import { Save } from 'lucide-react';
 import StepIndicator from '@/components/step-indicator';
 import { toaster } from '@/components/ui/toaster';
 
-import { InsertTestResult } from '@/drizzle/schema';
-import { DEFAULT_DATE_FORMAT } from '@/utils/constant';
-
 import { createTestResult } from '@/actions/test-result';
-import { TestConfigurationSelection } from '@/schemas/models';
+import { InsertTestResult } from '@/drizzle/schema';
+
+import { TestConfigurationSelection } from '@/types/periodic-testing';
+import { DEFAULT_DATE_FORMAT } from '@/utils/constant';
 
 import TestResultConfiguration from './TestResultConfiguration';
 import TestResultTable from './TestResultTable';

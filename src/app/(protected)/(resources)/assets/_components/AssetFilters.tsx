@@ -6,12 +6,13 @@ import {
   HStack,
   Portal,
   Select,
+  Span,
+  Stack,
 } from '@chakra-ui/react';
 import { Filter, Plus } from 'lucide-react';
 
-import SearchInput from '@/components/ui/search-input';
+import SearchInput from '@/components/SearchInput';
 import { Status } from '@/components/ui/status';
-import { Tooltip } from '@/components/ui/tooltip';
 import Visibility from '@/components/visibility';
 
 import { usePermissions } from '@/hooks/use-permissions';
@@ -22,6 +23,7 @@ import {
 } from '@/utils/constant';
 import { colorCondition } from '@/utils/helper';
 
+import { useAssetFilters } from '../search-params';
 import { UpsertAsset } from './UpsertAsset';
 
 const categories = createListCollection({
@@ -31,36 +33,20 @@ const conditions = createListCollection({
   items: [ALL, ...AssetConditionSelection],
 });
 
-type AssetFiltersProps = {
-  query: string;
-  category: string;
-  condition: string;
-};
-
-export default function AssetFilters({
-  search,
-  setSearch,
-}: Search<AssetFiltersProps>) {
+export default function AssetFilters() {
   const { isAdmin } = usePermissions();
+  const [{ category, condition }, setSearchParams] = useAssetFilters();
 
   return (
     <HStack marginBottom={6}>
-      <SearchInput
-        value={search.query}
-        onValueChange={(value) =>
-          setSearch((prev) => ({ ...prev, query: value }))
-        }
-        onClear={() => {
-          setSearch((prev) => ({ ...prev, query: '' }));
-        }}
-      />
+      <SearchInput />
       <Select.Root
-        collection={categories}
-        width="2xs"
-        defaultValue={[ALL.value]}
+        width="xs"
         size={{ base: 'sm', md: 'md' }}
+        collection={categories}
+        value={[category]}
         onValueChange={({ value }) =>
-          setSearch((prev) => ({ ...prev, category: value[0] }))
+          setSearchParams({ category: value[0], page: 1 })
         }
       >
         <Select.HiddenSelect />
@@ -79,34 +65,34 @@ export default function AssetFilters({
           <Select.Positioner>
             <Select.Content>
               {categories.items.map((category) => (
-                <Tooltip
-                  key={category.value}
-                  content={category.description || 'All'}
-                >
-                  <Select.Item item={category}>
-                    {category.label}
-                    <Select.ItemIndicator />
-                  </Select.Item>
-                </Tooltip>
+                <Select.Item key={category.value} item={category}>
+                  <Stack gap={0}>
+                    <Select.ItemText>{category.label}</Select.ItemText>
+                    <Span color="fg.muted" textStyle="xs">
+                      {category.description}
+                    </Span>
+                  </Stack>
+                  <Select.ItemIndicator />
+                </Select.Item>
               ))}
             </Select.Content>
           </Select.Positioner>
         </Portal>
       </Select.Root>
       <Select.Root
-        collection={conditions}
         width="3xs"
-        defaultValue={[ALL.value]}
         size={{ base: 'sm', md: 'md' }}
+        collection={conditions}
+        value={[condition]}
         onValueChange={({ value }) =>
-          setSearch((prev) => ({ ...prev, condition: value[0] }))
+          setSearchParams({ condition: value[0], page: 1 })
         }
       >
         <Select.HiddenSelect />
         <Select.Control>
           <Select.Trigger>
             <HStack>
-              <Status colorPalette={colorCondition(search.condition)} />
+              <Status colorPalette={colorCondition(condition)} />
               <Select.ValueText placeholder="Condition" />
             </HStack>
           </Select.Trigger>

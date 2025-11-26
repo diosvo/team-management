@@ -1,26 +1,22 @@
+import { Metadata } from 'next';
+
 import { getRoster } from '@/actions/user';
+import PageTitle from '@/components/page-title';
 
-import RosterActions from './_components/RosterActions';
-import RosterTable from './_components/RosterTable';
-import { parseSearchParams } from './_helpers/parse-params';
+import RosterList from './_components/RosterList';
 
-export default async function RosterPage(props: {
-  searchParams: Promise<{
-    query: string;
-    role: string;
-    state: string;
-  }>;
-}) {
-  const searchParams = await props.searchParams;
-  const params = parseSearchParams(
-    Object.fromEntries(new URLSearchParams(searchParams))
-  );
-  const users = await getRoster(params);
+export const metadata: Metadata = {
+  title: 'Roster',
+  description: 'View the team roster',
+};
+
+export default async function RosterPage() {
+  const users = await getRoster();
 
   return (
     <>
-      <RosterActions />
-      <RosterTable users={users} />
+      <PageTitle>Team Roster</PageTitle>
+      <RosterList users={users} />
     </>
   );
 }

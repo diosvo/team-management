@@ -1,7 +1,7 @@
-import { SELECTABLE_ROLES, SELECTABLE_STATES } from './constant';
+import { SELECTABLE_USER_ROLES, SELECTABLE_USER_STATES } from './constant';
 
-export type SelectableRole = (typeof SELECTABLE_ROLES)[number];
-export type SelectableState = (typeof SELECTABLE_STATES)[number];
+export type SelectableRole = (typeof SELECTABLE_USER_ROLES)[number];
+export type SelectableState = (typeof SELECTABLE_USER_STATES)[number];
 
 export interface Option<T> {
   label: string;

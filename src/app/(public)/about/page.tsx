@@ -13,7 +13,7 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { Facebook, Infinity, Instagram, Music2 } from 'lucide-react';
-import { Timestamp } from '../../(protected)/_components/Timestamp';
+import { Timestamp } from '../../(protected)/_helpers/Timestamp';
 
 export default function LandingPage() {
   return (

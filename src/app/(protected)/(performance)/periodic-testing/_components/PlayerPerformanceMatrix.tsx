@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useState, useTransition } from 'react';
+import { useState, useTransition } from 'react';
 
 import { Button, Flex, Table, Text } from '@chakra-ui/react';
 import { FileUser } from 'lucide-react';
@@ -25,7 +25,8 @@ import { toaster } from '@/components/ui/toaster';
 import { usePermissions } from '@/hooks/use-permissions';
 
 import { updateTestResultById } from '@/actions/test-result';
-import { TestResult } from '@/schemas/models';
+import { TestResult } from '@/types/periodic-testing';
+import { paginateData, useCommonParams } from '@/utils/filters';
 
 type Cell = {
   playerId: string;
@@ -39,16 +40,13 @@ export default function PlayerPerformanceMatrix({
 }: {
   result: TestResult;
 }) {
+  const [{ page }, setSearchParams] = useCommonParams();
   const { isGuest, isPlayer } = usePermissions();
-  const viewOnly = useMemo(() => isGuest || isPlayer, [isGuest, isPlayer]);
+  const viewOnly = isGuest || isPlayer;
 
   const [isPending, startTransition] = useTransition();
   const [openPopoverKey, setOpenPopoverKey] = useState<Nullable<string>>(null);
 
-  const [pagination, setPagination] = useState({
-    page: 1,
-    pageSize: 10,
-  });
   const [editingCell, setEditingCell] = useState<Cell>({
     playerId: '',
     resultId: '',
@@ -56,21 +54,8 @@ export default function PlayerPerformanceMatrix({
     newScore: '0',
   });
 
-  // Memoize callbacks to prevent unnecessary re-renders
-  const handlePageChange = useCallback(({ page }: { page: number }) => {
-    setPagination((prev) => ({ ...prev, page }));
-  }, []);
-
-  // Calculate the players to show for the current page
-  const currentData = useMemo(() => {
-    const startIndex = (pagination.page - 1) * pagination.pageSize;
-    const endIndex = Math.min(
-      startIndex + pagination.pageSize,
-      result.players.length
-    );
-
-    return result.players.slice(startIndex, endIndex);
-  }, [result.players, pagination]);
+  const totalCount = result.players.length;
+  const currentData = paginateData(result.players, page);
 
   const onScoreUpdate = (cell: Cell) => {
     const id = toaster.create({
@@ -98,7 +83,7 @@ export default function PlayerPerformanceMatrix({
     <>
       <Table.ScrollArea>
         <Table.Root size={{ base: 'sm', md: 'md' }} showColumnBorder>
-          {result.players.length > 0 && (
+          {totalCount > 0 && (
             <Table.Header>
               <Table.Row>
                 <Table.ColumnHeader
@@ -208,7 +193,10 @@ export default function PlayerPerformanceMatrix({
             ) : (
               <Table.Row>
                 <Table.Cell colSpan={result.headers.length + 1}>
-                  <EmptyState icon={<FileUser />} title="No data found" />
+                  <EmptyState
+                    icon={<FileUser />}
+                    title="No test result found"
+                  />
                 </Table.Cell>
               </Table.Row>
             )}
@@ -217,10 +205,10 @@ export default function PlayerPerformanceMatrix({
       </Table.ScrollArea>
 
       <Pagination
-        count={result.players.length}
-        page={pagination.page}
-        pageSize={pagination.pageSize}
-        onPageChange={handlePageChange}
+        count={totalCount}
+        page={page}
+        pageSize={10}
+        onPageChange={setSearchParams}
       />
     </>
   );

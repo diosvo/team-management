@@ -14,7 +14,7 @@ import {
 } from '@chakra-ui/react';
 
 import PageTitle from '@/components/page-title';
-import PlayerSelection from '@/components/user/player-selection';
+import PlayerSelection from '@/components/user/PlayerSelection';
 
 import { User } from '@/drizzle/schema/user';
 

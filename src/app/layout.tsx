@@ -4,8 +4,9 @@ import { PropsWithChildren } from 'react';
 
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import { NuqsAdapter } from 'nuqs/adapters/next/app';
 
-import { Provider as UiProvider } from '@/components/ui/provider';
+import UiProvider from '@/components/ui/provider';
 import { Toaster } from '@/components/ui/toaster';
 
 import env from '@/schemas/env';
@@ -28,11 +29,13 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: PropsWithChildren) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geist.variable} ${geist.className}`}>
-        <UiProvider>
-          <Toaster />
-          {children}
-        </UiProvider>
+      <body className={`${geist.variable} ${geist.className} antialiased`}>
+        <NuqsAdapter>
+          <UiProvider>
+            {children}
+            <Toaster />
+          </UiProvider>
+        </NuqsAdapter>
         {/* Vercel plugins */}
         {env.NODE_ENV === 'production' && (
           <>

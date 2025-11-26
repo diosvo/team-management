@@ -8,9 +8,7 @@ export async function getAssets(team_id: string) {
   try {
     const assets = await db.query.AssetTable.findMany({
       where: eq(AssetTable.team_id, team_id),
-      orderBy: (_, { desc, sql }) => [
-        desc(sql`condition = ${AssetCondition.POOR}`),
-      ],
+      orderBy: (_, { desc }) => [desc(AssetTable.updated_at)],
     });
 
     const stats = {

@@ -10,25 +10,25 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { toaster } from '@/components/ui/toaster';
 import Visibility from '@/components/visibility';
 
-import { Asset } from '@/drizzle/schema/asset';
 import { usePermissions } from '@/hooks/use-permissions';
-import { formatDate } from '@/utils/formatter';
+import { paginateData, useCommonParams } from '@/utils/filters';
+import { formatDatetime } from '@/utils/formatter';
 import { colorCategory, colorCondition } from '@/utils/helper';
 
 import { removeAsset } from '@/actions/asset';
+import { Asset } from '@/drizzle/schema/asset';
+
 import { UpsertAsset } from './UpsertAsset';
 
 export default function AssetTable({ items }: { items: Array<Asset> }) {
   const { isAdmin, isGuest } = usePermissions();
+  const [{ page }, setSearchParams] = useCommonParams();
 
   const [selection, setSelection] = useState<Array<string>>([]);
-  const [pagination, setPagination] = useState({
-    page: 1,
-    pageSize: 5,
-  });
+  const selectionCount = selection.length;
 
   const totalCount = items.length;
-  const selectionCount = selection.length;
+  const currentData = paginateData(items, page);
 
   // Selection
   const hasSelection = selectionCount > 0;
@@ -55,7 +55,7 @@ export default function AssetTable({ items }: { items: Array<Asset> }) {
         <Table.Root
           borderWidth={1}
           size={{ base: 'sm', md: 'md' }}
-          interactive={items.length > 0}
+          interactive={totalCount > 0}
         >
           <Table.Header>
             <Table.Row>
@@ -90,8 +90,8 @@ export default function AssetTable({ items }: { items: Array<Asset> }) {
             </Table.Row>
           </Table.Header>
           <Table.Body>
-            {items.length > 0 ? (
-              items.map((item) => (
+            {currentData.length > 0 ? (
+              currentData.map((item) => (
                 <Table.Row
                   key={item.asset_id}
                   _hover={{ cursor: isGuest ? 'default' : 'pointer' }}
@@ -139,7 +139,7 @@ export default function AssetTable({ items }: { items: Array<Asset> }) {
                       {item.condition}
                     </Badge>
                   </Table.Cell>
-                  <Table.Cell>{formatDate(item.updated_at)}</Table.Cell>
+                  <Table.Cell>{formatDatetime(item.updated_at)}</Table.Cell>
                   <Table.Cell>{item.note}</Table.Cell>
                 </Table.Row>
               ))
@@ -155,14 +155,10 @@ export default function AssetTable({ items }: { items: Array<Asset> }) {
       </Table.ScrollArea>
 
       <Pagination
-        count={items.length}
-        page={pagination.page}
-        pageSize={pagination.pageSize}
-        onPageChange={({ page }) =>
-          setPagination((prev) => ({ ...prev, page }))
-        }
+        count={totalCount}
+        page={page}
+        onPageChange={setSearchParams}
       />
-
       <ActionBar.Root open={hasSelection}>
         <Portal>
           <ActionBar.Positioner>

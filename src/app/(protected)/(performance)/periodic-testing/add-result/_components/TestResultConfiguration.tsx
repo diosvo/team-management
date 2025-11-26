@@ -2,15 +2,15 @@
 
 import { Input, Span, VStack } from '@chakra-ui/react';
 
-import SearchableSelect from '@/components/searchable-select';
+import SearchableSelect from '@/components/SearchableSelect';
 import { Field } from '@/components/ui/field';
-import PlayerSelection from '@/components/user/player-selection';
+import PlayerSelection from '@/components/user/PlayerSelection';
 
-import useQuery from '@/hooks/use-query';
+import { TestConfigurationSelection } from '@/types/periodic-testing';
 import { ESTABLISHED_DATE } from '@/utils/constant';
 
 import { getTestTypes } from '@/actions/test-type';
-import { TestConfigurationSelection } from '@/schemas/models';
+import useQuery from '@/hooks/use-query';
 
 type TestResultConfigurationProps = {
   selection: TestConfigurationSelection;
@@ -41,8 +41,8 @@ export default function TestResultConfiguration({
         request={request}
         maxItems={5}
         selection={selection.types}
-        itemToString={(item) => item.name}
-        itemToValue={(item) => item.type_id}
+        itemToString={({ name }) => name}
+        itemToValue={({ type_id }) => type_id}
         renderItem={(item) => (
           <>
             {item.name}{' '}

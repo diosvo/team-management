@@ -3,21 +3,14 @@
 import { Button, HStack } from '@chakra-ui/react';
 import { Plus } from 'lucide-react';
 
-import SearchInput from '@/components/ui/search-input';
+import SearchInput from '@/components/SearchInput';
 
 import { UpsertTestType } from './UpsertTestType';
 
-export default function TestTypesFilters({
-  search,
-  setSearch,
-}: Search<string>) {
+export default function TestTypesFilters() {
   return (
     <HStack marginBottom={6}>
-      <SearchInput
-        value={search}
-        onValueChange={(value) => setSearch(value)}
-        onClear={() => setSearch('')}
-      />
+      <SearchInput />
       <Button
         size={{ base: 'sm', md: 'md' }}
         onClick={() =>
