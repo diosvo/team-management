@@ -47,7 +47,7 @@ export default function ForgotPasswordPage() {
     await authClient.requestPasswordReset(
       {
         email: values.email,
-        redirectTo: LOGIN_PATH,
+        redirectTo: '/new-password',
       },
       {
         onRequest: () => setIsLoading(true),
@@ -55,6 +55,14 @@ export default function ForgotPasswordPage() {
           setResponse({
             success: false,
             message: error.message || error.statusText,
+          });
+        },
+        onSuccess: () => {
+          reset();
+          setResponse({
+            success: true,
+            message:
+              'Password reset instructions have been sent to your email.',
           });
         },
         onResponse: () => setIsLoading(false),

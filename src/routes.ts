@@ -20,7 +20,7 @@ export const AUTH_ROUTES = new Set([
  */
 export const PUBLIC_ROUTES = new Set([
   ...AUTH_ROUTES,
-  '/logo.webp',
+  '/logo.svg',
   '/squiggle.svg',
 ]);
 
