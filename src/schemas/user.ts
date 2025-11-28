@@ -19,8 +19,6 @@ const {
   join_date,
 } = USER_SCHEMA_VALIDATION;
 
-const position = z.union([PlayerPosition, CoachPosition]).nullish();
-
 export const AddUserSchema = z.object({
   name,
   email,
@@ -28,7 +26,7 @@ export const AddUserSchema = z.object({
   role,
   state,
   join_date,
-  position,
+  position: z.union([PlayerPosition, CoachPosition]).nullish(),
 });
 
 export const EditTeamInfoSchema = z.object({
@@ -37,8 +35,8 @@ export const EditTeamInfoSchema = z.object({
     state,
     join_date,
   }),
-  player: z.object({ jersey_number }),
-  position,
+  player: z.object({ jersey_number, position: PlayerPosition.nullish() }),
+  coach: z.object({ position: CoachPosition }),
 });
 
 export const EditPersonalInfoSchema = z.object({

@@ -26,25 +26,31 @@ import {
 
 import auth from '@/lib/auth';
 import { withAuth } from './auth';
-import { getCacheTag, revalidate } from './cache';
+import { revalidate } from './cache';
 
 export const getActivePlayers = withAuth(
-  async ({ team_id }) => await fetchActivePlayers(team_id)
+  async ({ team_id }) => await fetchActivePlayers(team_id),
 );
 
 export const getRoster = withAuth(
-  async ({ team_id }) => await getUsers(team_id)
+  async ({ team_id }) => await getUsers(team_id),
 );
 
 export const getUserProfile = withAuth(async (user, target_id: string) => {
   const targetUser = await getUserById(target_id);
   if (!targetUser) notFound();
 
-  const { isPlayer, isGuest } = hasPermissions(user.role);
+  const { isPlayer, isCoach, isGuest, isAdmin } = hasPermissions(user.role);
   if (isGuest) forbidden();
 
+  // Do NOT enable button if:
+  // 1. Current profile is Admin
+  // 2. View only mode
   const isOwnProfile = user.id === targetUser.id;
-  const viewOnly = isPlayer && !isOwnProfile;
+  const viewOnly =
+    (isAdmin && isOwnProfile) || ((isPlayer || isCoach) && !isOwnProfile);
+
+  console.log(targetUser);
 
   return {
     targetUser,
@@ -116,15 +122,15 @@ export const updatePersonalInfo = withAuth(
     try {
       await updateUser(user_id, data);
 
-      getCacheTag.user(user_id);
+      revalidate.user(user_id);
 
       return ResponseFactory.success(
-        'Updated personal information successfully'
+        'Updated personal information successfully',
       );
     } catch (error) {
       return ResponseFactory.fromError(error as Error);
     }
-  }
+  },
 );
 
 export const updateTeamInfo = withAuth(
@@ -136,7 +142,7 @@ export const updateTeamInfo = withAuth(
     }
 
     try {
-      const { user: userData, player: playerData, position } = data;
+      const { user: userData, player: playerData, coach: coachData } = data;
 
       // Update user
       await updateUser(user_id, userData);
@@ -145,19 +151,19 @@ export const updateTeamInfo = withAuth(
       const { isPlayer, isCoach } = hasPermissions(userData.role);
 
       // TODO: Create new player or coach if they don't exist
+      // Remove the old one when switching role
 
-      if (isPlayer && playerData) {
+      if (isPlayer) {
         await updatePlayer({
           id: user_id,
-          position: position as PlayerPosition,
-          jersey_number: playerData.jersey_number,
+          ...playerData,
         });
       }
 
-      if (isCoach && position) {
+      if (isCoach) {
         await updateCoach({
           id: user_id,
-          position: position as CoachPosition,
+          ...coachData,
         });
       }
 
@@ -169,12 +175,12 @@ export const updateTeamInfo = withAuth(
 
       if (constraint === 'player_jersey_number_unique') {
         return ResponseFactory.error(
-          `Jersey number '${data.player.jersey_number}' is already taken.`
+          `Jersey number '${data.player.jersey_number}' is already taken.`,
         );
       }
       return ResponseFactory.error(message);
     }
-  }
+  },
 );
 
 export const removeUser = withAuth(async (_, user_id: string) => {

@@ -15,7 +15,7 @@ export const Field = React.forwardRef<HTMLDivElement, Partial<FieldProps>>(
     return (
       <ChakraField.Root ref={ref} {...rest}>
         {label && (
-          <ChakraField.Label color="GrayText">
+          <ChakraField.Label>
             {label}
             <ChakraField.RequiredIndicator fallback={optionalText} />
           </ChakraField.Label>
@@ -29,5 +29,5 @@ export const Field = React.forwardRef<HTMLDivElement, Partial<FieldProps>>(
         )}
       </ChakraField.Root>
     );
-  }
+  },
 );

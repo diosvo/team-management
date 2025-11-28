@@ -138,7 +138,7 @@ export default function RosterTable({ users }: { users: Array<User> }) {
                       </Table.Cell>
                     </>
                   </Visibility>
-                  <Table.Cell>{user.details.jersey_number ?? '-'}</Table.Cell>
+                  <Table.Cell>{user.player?.jersey_number ?? '-'}</Table.Cell>
                   <Table.Cell>
                     <Highlight query={q} styles={{ backgroundColor: 'yellow' }}>
                       {isGuest ? mask(user.name, -4) : user.name}
@@ -164,9 +164,9 @@ export default function RosterTable({ users }: { users: Array<User> }) {
                     </Badge>
                   </Table.Cell>
                   <Table.Cell>
-                    {user.details.position ? (
+                    {user.player?.position ? (
                       <Badge variant="outline" borderRadius="full">
-                        {user.details.position}
+                        {user.player.position}
                       </Badge>
                     ) : (
                       '-'

@@ -1,0 +1,161 @@
+'use client';
+
+import { useState } from 'react';
+
+import { Highlight, Table } from '@chakra-ui/react';
+import { MapPinXInside } from 'lucide-react';
+
+import Pagination from '@/components/Pagination';
+import SelectionActionBar from '@/components/SelectionActionBar';
+import { Checkbox } from '@/components/ui/checkbox';
+import { EmptyState } from '@/components/ui/empty-state';
+import { toaster } from '@/components/ui/toaster';
+import Visibility from '@/components/Visibility';
+
+import usePermissions from '@/hooks/use-permissions';
+import { paginateData, useCommonParams } from '@/utils/filters';
+import { formatDatetime } from '@/utils/formatter';
+
+import { removeLocation } from '@/actions/location';
+import { Location } from '@/drizzle/schema';
+
+import { UpsertLocation } from './UpsertLocation';
+
+export default function LocationTable({
+  locations,
+}: {
+  locations: Array<Location>;
+}) {
+  const { isAdmin, isGuest } = usePermissions();
+  const [{ q, page }, setSearchParams] = useCommonParams();
+
+  const [selection, setSelection] = useState<Array<string>>([]);
+  const selectionCount = selection.length;
+
+  const totalCount = locations.length;
+  const currentData = paginateData(locations, page);
+
+  // Selection
+  const hasSelection = selectionCount > 0;
+  const indeterminate = hasSelection && selectionCount < totalCount;
+
+  const removeItems = async () => {
+    const results = await Promise.all(selection.map(removeLocation));
+    const hasErrors = results.some(({ success }) => !success);
+    const successCount = results.filter(({ success }) => success).length;
+
+    toaster.create({
+      type: hasErrors ? 'warning' : 'success',
+      title: hasErrors
+        ? `Deleted ${successCount} locations(s), but some operations failed.`
+        : `Successfully deleted ${successCount} locations(s).`,
+    });
+
+    setSelection([]);
+  };
+
+  return (
+    <>
+      <Table.ScrollArea>
+        <Table.Root
+          borderWidth={1}
+          size={{ base: 'sm', md: 'md' }}
+          interactive={totalCount > 0}
+        >
+          <Table.Header>
+            <Table.Row>
+              <Visibility isVisible={isAdmin}>
+                <Table.ColumnHeader width={6}>
+                  <Checkbox
+                    top={0.5}
+                    aria-label="Select all rows"
+                    checked={
+                      indeterminate ? 'indeterminate' : selectionCount > 0
+                    }
+                    onCheckedChange={(changes) => {
+                      setSelection(
+                        changes.checked
+                          ? locations.map(({ location_id }) => location_id)
+                          : [],
+                      );
+                    }}
+                  />
+                </Table.ColumnHeader>
+              </Visibility>
+              {['Name', 'Address', 'Last Updated'].map((header) => (
+                <Table.ColumnHeader key={header}>{header}</Table.ColumnHeader>
+              ))}
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
+            {currentData.length > 0 ? (
+              currentData.map((item) => (
+                <Table.Row
+                  key={item.location_id}
+                  _hover={{ cursor: isGuest ? 'default' : 'pointer' }}
+                  onClick={() => {
+                    if (isGuest) return;
+                    UpsertLocation.open('update-location', {
+                      action: 'Update',
+                      item,
+                    });
+                  }}
+                >
+                  <Visibility isVisible={isAdmin}>
+                    <Table.Cell onClick={(e) => e.stopPropagation()}>
+                      <Checkbox
+                        top={0.5}
+                        aria-label="Select row"
+                        checked={selection.includes(item.location_id)}
+                        onCheckedChange={(changes) => {
+                          setSelection((prev) =>
+                            changes.checked
+                              ? [...prev, item.location_id]
+                              : selection.filter(
+                                  (id) => id !== item.location_id,
+                                ),
+                          );
+                        }}
+                      />
+                    </Table.Cell>
+                  </Visibility>
+                  <Table.Cell>
+                    <Highlight query={q} styles={{ backgroundColor: 'yellow' }}>
+                      {item.name}
+                    </Highlight>
+                  </Table.Cell>
+                  <Table.Cell>
+                    <Highlight query={q} styles={{ backgroundColor: 'yellow' }}>
+                      {item.address}
+                    </Highlight>
+                  </Table.Cell>
+                  <Table.Cell>{formatDatetime(item.updated_at)}</Table.Cell>
+                </Table.Row>
+              ))
+            ) : (
+              <Table.Row>
+                <Table.Cell colSpan={isAdmin ? 4 : 3}>
+                  <EmptyState
+                    title="No locations found"
+                    icon={<MapPinXInside />}
+                  />
+                </Table.Cell>
+              </Table.Row>
+            )}
+          </Table.Body>
+        </Table.Root>
+      </Table.ScrollArea>
+
+      <Pagination
+        count={totalCount}
+        page={page}
+        onPageChange={setSearchParams}
+      />
+      <SelectionActionBar
+        open={hasSelection}
+        selectionCount={selectionCount}
+        onDelete={removeItems}
+      />
+    </>
+  );
+}

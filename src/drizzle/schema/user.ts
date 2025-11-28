@@ -13,9 +13,8 @@ import {
 import { UserRole, UserState } from '@/utils/enum';
 
 import { created_at, expires_at, updated_at } from '../helpers';
-import { CoachTable, InsertCoach } from './coach';
-import { TestResultTable } from './periodic-testing';
-import { InsertPlayer, PlayerTable } from './player';
+import { Coach, CoachTable } from './coach';
+import { Player, PlayerTable } from './player';
 import { TeamTable } from './team';
 
 export const userRoleEnum = pgEnum('user_role', UserRole);
@@ -39,22 +38,22 @@ export const UserTable = pgTable('user', {
   state: userStateEnum().default(UserState.UNKNOWN).notNull(),
   role: userRoleEnum().default(UserRole.PLAYER).notNull(),
   join_date: date(),
+  leave_date: date(),
 });
 
-export const UserRelations = relations(UserTable, ({ one, many }) => ({
+export const UserRelations = relations(UserTable, ({ one }) => ({
   team: one(TeamTable, {
     fields: [UserTable.team_id],
     references: [TeamTable.team_id],
   }),
-  asCoach: one(CoachTable, {
+  coach: one(CoachTable, {
     fields: [UserTable.id],
     references: [CoachTable.id],
   }),
-  asPlayer: one(PlayerTable, {
+  player: one(PlayerTable, {
     fields: [UserTable.id],
     references: [PlayerTable.id],
   }),
-  testResults: many(TestResultTable),
 }));
 
 export const SessionTable = pgTable('session', {
@@ -98,12 +97,9 @@ export const VerificationTable = pgTable('verification', {
 });
 
 type UserInfo = typeof UserTable.$inferSelect;
-export interface UserRelations extends UserInfo {
-  asPlayer: InsertPlayer;
-  asCoach: InsertCoach;
-}
-export interface User extends UserInfo {
-  // Add `jersey_number` to avoid syntax conflict
-  details: InsertPlayer | (InsertCoach & { jersey_number?: number });
-}
+export type User = UserInfo &
+  Partial<{
+    player: Player;
+    coach: Coach;
+  }>;
 export type InsertUser = typeof UserTable.$inferInsert;

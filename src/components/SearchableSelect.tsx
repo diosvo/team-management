@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 
 import {
   Combobox,
+  ComboboxValueChangeDetails,
   HStack,
   Portal,
   Span,
@@ -17,14 +18,18 @@ import { toaster } from '@/components/ui/toaster';
 import { UseQueryReturn } from '@/hooks/use-query';
 import { capitalize } from '@/utils/formatter';
 
+// Merge with Comboxbox Props later!
 type SearchableSelectProps<T> = Selector<Array<T>> &
   Required<{
     label: string;
     request: UseQueryReturn<Array<T>>;
+    // 🚨 https://chakra-ui.com/docs/components/combobox#custom-objects
     itemToString: (item: T) => string;
     itemToValue: (item: T) => string;
   }> &
   Partial<{
+    required: boolean;
+    invalid: boolean;
     maxItems: number;
     placeholder: string;
     multiple: boolean;
@@ -41,6 +46,8 @@ export default function SearchableSelect<T>({
   maxItems,
   placeholder = 'Type to search',
   selection,
+  required = false,
+  invalid = false,
   disabled = false,
   showHelperText = true,
   contentRef,
@@ -62,7 +69,7 @@ export default function SearchableSelect<T>({
     set(request.data || []);
   }, [request.data]);
 
-  const handleValueChange = (items: Array<T>) => {
+  const handleValueChange = ({ items }: ComboboxValueChangeDetails<T>) => {
     if (maxItems && items.length > maxItems) {
       toaster.warning({
         title: `You can only select up to ${maxItems} items.`,
@@ -72,33 +79,35 @@ export default function SearchableSelect<T>({
     onSelectionChange(items);
   };
 
-  const selected = selection.map(itemToValue);
-  const max = maxItems ?? collection.items.length;
+  const handleInputChange = (details: Combobox.InputValueChangeDetails) => {
+    filter(details.inputValue);
+  };
+
+  const selected = useMemo(() => selection.map(itemToValue), [selection]);
   const isOverLimit = maxItems ? selection.length > maxItems : false;
 
   return (
     <Combobox.Root
+      required={required}
       multiple={multiple}
       openOnClick
+      invalid={invalid || isOverLimit}
       value={selected}
       collection={collection}
       disabled={disabled}
-      onInputValueChange={(e) => filter(e.inputValue)}
-      onValueChange={({ items }) => handleValueChange(items)}
+      onValueChange={handleValueChange}
+      onInputValueChange={handleInputChange}
     >
       <Combobox.Label display="flex">
         {showHelperText ? (
           <>
             Select {label}
-            <Span fontSize="xs" color="GrayText" marginLeft={2}>
-              (max {max})
-            </Span>
             <Span
               fontSize="xs"
               marginLeft="auto"
               color={isOverLimit ? 'fg.error' : 'GrayText'}
             >
-              {selection.length} / {max} selected
+              {selection.length} / {maxItems} selected
             </Span>
           </>
         ) : (

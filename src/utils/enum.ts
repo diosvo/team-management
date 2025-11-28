@@ -22,8 +22,8 @@ export enum PlayerPosition {
   POINT_GUARD = 'POINT_GUARD',
   SHOOTING_GUARD = 'SHOOTING_GUARD',
   SMALL_FORWARD = 'SMALL_FORWARD',
+  POWER_FORWARD = 'POWER_FORWARD',
   CENTER = 'CENTER',
-  FORWARD = 'FORWARD',
   UNKNOWN = 'UNKNOWN',
 }
 
@@ -46,4 +46,23 @@ export enum TestTypeUnit {
   REPS = 'reps',
   SECONDS = 'seconds',
   TIMES = 'times',
+}
+
+export enum LeagueStatus {
+  UPCOMING = 'UPCOMING',
+  ONGOING = 'ONGOING',
+  ENDED = 'ENDED',
+}
+
+export enum MatchStatus {
+  WIN = 'WIN',
+  LOSS = 'LOSS',
+  DRAW = 'DRAW',
+}
+
+export enum Interval {
+  THIS_MONTH = 'this_month',
+  LAST_MONTH = 'last_month',
+  THIS_YEAR = 'this_year',
+  LAST_YEAR = 'last_year',
 }

@@ -3,12 +3,11 @@
 import { useMemo } from 'react';
 
 import { TestResult } from '@/types/periodic-testing';
+import { usePeriodicTestingFilters } from '@/utils/filters';
 
 import PlayerPerformanceMatrix from './PlayerPerformanceMatrix';
 import TestingFilters from './TestingFilters';
 import TestingStats from './TestingStats';
-
-import { usePeriodicTestingFilters } from '../search-params';
 
 export default function TestingResultList({ result }: { result: TestResult }) {
   const [{ q }] = usePeriodicTestingFilters();
@@ -19,7 +18,7 @@ export default function TestingResultList({ result }: { result: TestResult }) {
     if (!q) return players;
 
     return players.filter(({ player_name }) =>
-      player_name.toLowerCase().includes(q.toLowerCase())
+      player_name.toLowerCase().includes(q.toLowerCase()),
     );
   }, [q, players]);
 

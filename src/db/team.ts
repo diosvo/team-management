@@ -1,19 +1,20 @@
 import { eq } from 'drizzle-orm';
-
-import logger from '@/lib/logger';
+import { cacheTag } from 'next/cache';
 
 import db from '@/drizzle';
 import { TeamTable } from '@/drizzle/schema/team';
 
-export async function getTeam() {
-  logger.info('⭐️ Get default team...');
+import { getCacheTag } from '@/actions/cache';
+
+export async function getOtherTeams() {
+  'use cache';
+  cacheTag(getCacheTag.opponents());
 
   try {
-    return await db.query.TeamTable.findFirst({
-      where: eq(TeamTable.is_default, true),
+    return await db.query.TeamTable.findMany({
+      where: eq(TeamTable.is_default, false),
     });
   } catch (error) {
-    logger.error('🆘 Failed to get team:', error);
-    return null;
+    return [];
   }
 }

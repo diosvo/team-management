@@ -6,7 +6,7 @@ const envSchema = z.object({
   DEV_URL: z.url().default('localhost:3000'),
   PRODUCTION_URL: z.url().default('saigon-rovers'),
   DATABASE_URL: z.string().default(''),
-  RESEND_API_KEY: z.string().min(1),
+  RESEND_API_KEY: z.string().min(1).default(''),
 });
 const env = envSchema.parse(process.env);
 

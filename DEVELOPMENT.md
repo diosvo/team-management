@@ -16,6 +16,12 @@ Is it a...
 └─ File name? → Match the primary export (asset.ts, rule.ts)
 ```
 
+### Database Hierarchy
+
+Match → Schedule → Location/League → Team → Players (Roster)
+
+### Naming Conventions
+
 #### 1️⃣ Entity Names (Singular)
 
 Current entities:
@@ -24,6 +30,11 @@ Current entities:
 - Team
 - Asset
 - Rule
+- Match
+- League
+- Location
+- Schedule
+- Periodic Testing
 
 #### 2️⃣ Database/ Schema (Singular)
 
@@ -47,6 +58,18 @@ _e.g.,_ AssetList, RuleTable
 - Fetching mulitple: Use plural (_e.g.,_ getAssets, getRules)
 - Single entity operations: Use singular (_e.g.,_ upsertAsset, createRule)
 
+#### Others
+
+STATUS → Lifecycle/Workflow → One-directional progress
+├─ LeagueStatus (UPCOMING → ONGOING → COMPLETED)
+└─ ScheduleStatus (SCHEDULED → COMPLETED/CANCELLED)
+
+STATE → Condition/Being → Can change in any direction
+└─ UserState (ACTIVE ⟷ INACTIVE ⟷ TEMPORARILY_ABSENT)
+
+CONDITION → Physical/Quality state
+└─ AssetCondition (POOR/FAIR/GOOD)
+
 ## 📦 Database Interactions
 
 Ensure that PostgresSQL (latest version) is running on your local machine, start it via Homebrew:
@@ -65,6 +88,31 @@ Migrate the database:
 
 ```bash
 pnpm db:migrate
+```
+
+### Rule of Thumb 👍🏻
+
+With fields and references - You Own the Foreign Key
+Use when: The current table has the foreign key column.
+Direction: Many-to-One
+
+If YOUR table has the foreign key column:
+
+```ts
+parent: one(ParentTable, {
+  fields: [CurrentTable.parent_id],
+  references: [ParentTable.id],
+});
+```
+
+Without fields and references - Other Table Owns the Foreign Key
+Use when: The OTHER table has the foreign key pointing to this table.
+Direction: One-to-One
+
+// If OTHER table has the foreign key pointing to you:
+
+```ts
+child: one(ChildTable); // or many(ChildTable)
 ```
 
 ## ⭐️ Others

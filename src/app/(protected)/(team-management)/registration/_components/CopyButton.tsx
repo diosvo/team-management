@@ -14,23 +14,17 @@ export default function CopyButton({ players }: { players: Array<User> }) {
       [
         HEADERS.join(','),
         ...players.map(
-          ({
-            name,
-            dob,
-            citizen_identification,
-            phone_number,
-            details: { jersey_number },
-          }) =>
+          ({ name, dob, citizen_identification, phone_number, player }) =>
             [
               name,
               dob ? new Date(dob).getFullYear() : '',
               citizen_identification ?? '',
               phone_number ?? '',
-              jersey_number ?? '',
-            ].join(',')
+              player?.jersey_number ?? '',
+            ].join(','),
         ),
       ].join('\n'),
-    [players]
+    [players],
   );
 
   return (

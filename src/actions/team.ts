@@ -1,6 +1,7 @@
 'use server';
 
-import { getTeam as getAction } from '@/db/team';
-import { cache } from 'react';
+import { withAuth } from './auth';
 
-export const getTeam = cache(async () => await getAction());
+import { getOtherTeams } from '@/db/team';
+
+export const getOpponents = withAuth(getOtherTeams);

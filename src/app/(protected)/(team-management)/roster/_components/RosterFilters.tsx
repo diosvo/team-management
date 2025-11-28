@@ -9,8 +9,8 @@ import Visibility from '@/components/Visibility';
 
 import usePermissions from '@/hooks/use-permissions';
 import { UserRole, UserState } from '@/utils/enum';
+import { useRosterFilters } from '@/utils/filters';
 
-import { useRosterFilters } from '../search-params';
 import AddUser from './AddUser';
 
 export default function RosterFilters() {

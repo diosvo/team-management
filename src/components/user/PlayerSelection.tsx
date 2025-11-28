@@ -13,9 +13,7 @@ import { getActivePlayers } from '@/actions/user';
 
 type PlayerSelectionProps = Selector<Array<User>> &
   Partial<{
-    maxPlayers: number;
     disabled: boolean;
-    showHelperText: boolean;
     contentRef: React.RefObject<Nullable<HTMLDivElement>>;
   }>;
 
@@ -30,7 +28,7 @@ export function SelectedPlayers({
     <Box {...props}>
       {selection.length > 0 ? (
         <List.Root paddingInline={8} paddingBlock={4}>
-          {selection.map(({ id, name, details: { jersey_number = null } }) => (
+          {selection.map(({ id, name, player }) => (
             <List.Item
               key={id}
               width="max-content"
@@ -46,7 +44,7 @@ export function SelectedPlayers({
                 )
               }
             >
-              {jersey_number && `${jersey_number} - `}
+              {player?.jersey_number && `${player.jersey_number} - `}
               {name}
             </List.Item>
           ))}
@@ -64,17 +62,18 @@ export function SelectedPlayers({
 }
 
 export function PlayerSelection(props: PlayerSelectionProps) {
-  const request = useQuery(async () => await getActivePlayers());
+  const request = useQuery(getActivePlayers);
 
   return (
     <SearchableSelect
       label="players"
       request={request}
+      maxItems={15}
       itemToString={({ name }) => name}
       itemToValue={({ id }) => id}
-      renderItem={({ details, name }) => (
+      renderItem={({ player, name }) => (
         <>
-          {details?.jersey_number && `${details.jersey_number} · `}
+          {player?.jersey_number && `${player.jersey_number} · `}
           {name}
         </>
       )}

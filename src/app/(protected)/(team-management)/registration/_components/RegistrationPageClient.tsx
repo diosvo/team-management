@@ -12,20 +12,24 @@ import {
 } from '@chakra-ui/react';
 
 import PageTitle from '@/components/PageTitle';
+import SearchableSelect from '@/components/SearchableSelect';
 import {
   PlayerSelection,
   SelectedPlayers,
 } from '@/components/user/PlayerSelection';
 
+import { League } from '@/drizzle/schema';
 import { User } from '@/drizzle/schema/user';
+
+import { getLeagues } from '@/actions/league';
+import useQuery from '@/hooks/use-query';
 
 import CopyButton from './CopyButton';
 
 export default function RegistrationPageClient() {
-  const [info] = useState({
-    leagueName: '', // TODO: A dropdown that selects "League" name
-    maxPlayers: 15,
-  });
+  const leagues = useQuery(getLeagues);
+
+  const [league, setLeague] = useState<League>();
   const [selection, setSelection] = useState<Array<User>>([]);
 
   return (
@@ -49,11 +53,20 @@ export default function RegistrationPageClient() {
                 </Highlight>
               </Card.Description>
             </Card.Header>
-            <Card.Body>
+            <Card.Body flexDirection="row" gap={4}>
               <PlayerSelection
-                maxPlayers={info.maxPlayers}
                 selection={selection}
                 onSelectionChange={setSelection}
+              />
+              <SearchableSelect
+                multiple={false}
+                showHelperText={false}
+                label="league"
+                request={leagues}
+                selection={league ? [league] : []}
+                itemToString={({ name }) => name}
+                itemToValue={({ league_id }) => league_id}
+                onSelectionChange={(items) => setLeague(items[0])}
               />
             </Card.Body>
           </Card.Root>

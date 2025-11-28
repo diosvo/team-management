@@ -28,9 +28,9 @@ export async function getTestResultByDate(date: string) {
   try {
     const results = await db.query.TestResultTable.findMany({
       with: {
-        user: {
-          columns: {
-            name: true,
+        player: {
+          with: {
+            user: true,
           },
         },
         type: {
@@ -52,19 +52,22 @@ export async function getTestResultByDate(date: string) {
     const headers = [...types].map(([name, unit]) => ({ name, unit }));
 
     const players: Array<PlayerTestResult> = Object.values(
-      results.reduce((acc, data) => {
-        const { result_id, player_id, user, type, result } = data;
+      results.reduce(
+        (acc, data) => {
+          const { result_id, player_id, player, type, result } = data;
 
-        acc[player_id] ??= {
-          player_id,
-          player_name: user.name,
-          tests: {},
-          result_id,
-        };
+          acc[player_id] ??= {
+            player_id,
+            player_name: player.user.name,
+            tests: {},
+            result_id,
+          };
 
-        acc[player_id].tests[type.name] = result;
-        return acc;
-      }, {} as Record<string, PlayerTestResult>)
+          acc[player_id].tests[type.name] = result;
+          return acc;
+        },
+        {} as Record<string, PlayerTestResult>,
+      ),
     );
 
     return {
@@ -83,10 +86,10 @@ export async function getTestResultByUserAndTypeIds(result: InsertTestResult) {
       where: and(
         and(
           gte(TestResultTable.date, result.date!),
-          lte(TestResultTable.date, result.date!)
+          lte(TestResultTable.date, result.date!),
         ),
         eq(TestResultTable.player_id, result.player_id),
-        eq(TestResultTable.type_id, result.type_id)
+        eq(TestResultTable.type_id, result.type_id),
       ),
     });
   } catch (error) {

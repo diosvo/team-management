@@ -7,7 +7,6 @@ import {
   Fieldset,
   Input,
   Portal,
-  RadioGroup,
   SimpleGrid,
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -17,6 +16,7 @@ import { Controller, useForm } from 'react-hook-form';
 
 import { CloseButton } from '@/components/ui/close-button';
 import { Field } from '@/components/ui/field';
+import { Radio, RadioGroup } from '@/components/ui/radio';
 import { toaster } from '@/components/ui/toaster';
 
 import { getDefaults } from '@/lib/zod';
@@ -92,7 +92,7 @@ export const UpsertTestType = createOverlay(({ action, item, ...rest }) => {
                   name="unit"
                   control={control}
                   render={({ field }) => (
-                    <RadioGroup.Root
+                    <RadioGroup
                       size="sm"
                       colorPalette="red"
                       marginTop={2}
@@ -102,16 +102,16 @@ export const UpsertTestType = createOverlay(({ action, item, ...rest }) => {
                     >
                       <SimpleGrid columns={{ base: 1, md: 3 }} gap={2}>
                         {TEST_TYPE_UNIT_SELECTION.map((item) => (
-                          <RadioGroup.Item key={item.value} value={item.value}>
-                            <RadioGroup.ItemHiddenInput onBlur={field.onBlur} />
-                            <RadioGroup.ItemIndicator />
-                            <RadioGroup.ItemText>
-                              {item.label}
-                            </RadioGroup.ItemText>
-                          </RadioGroup.Item>
+                          <Radio
+                            key={item.value}
+                            value={item.value}
+                            onBlur={field.onBlur}
+                          >
+                            {item.label}
+                          </Radio>
                         ))}
                       </SimpleGrid>
-                    </RadioGroup.Root>
+                    </RadioGroup>
                   )}
                 />
               </Fieldset.Root>

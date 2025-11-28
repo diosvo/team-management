@@ -18,7 +18,8 @@ export default function SearchInput(props: InputProps) {
     // Debounce the search input to avoid excessive updates
     const timer = setTimeout(() => {
       if (search !== q) {
-        setSearchParams({ q: search });
+        // Reset to page 1 on new search
+        setSearchParams({ q: search, page: 1 });
       }
     }, 300);
 
