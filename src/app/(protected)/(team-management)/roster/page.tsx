@@ -15,7 +15,7 @@ export default async function RosterPage() {
 
   return (
     <>
-      <PageTitle>Team Roster</PageTitle>
+      <PageTitle title="Team Roster" />
       <RosterList users={users} />
     </>
   );
