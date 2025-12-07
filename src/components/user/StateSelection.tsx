@@ -11,7 +11,7 @@ import { Control, Controller, FieldPath, FieldValues } from 'react-hook-form';
 import { Field } from '@/components/ui/field';
 import { Status } from '@/components/ui/status';
 
-import { UserStateSelection } from '@/utils/constant';
+import { USER_STATE_SELECTION } from '@/utils/constant';
 import { colorState } from '@/utils/helper';
 
 type StateSelectionProps = Omit<SelectRootProps, 'collection'> &
@@ -21,7 +21,7 @@ type StateSelectionProps = Omit<SelectRootProps, 'collection'> &
   }>;
 
 const states = createListCollection({
-  items: UserStateSelection,
+  items: USER_STATE_SELECTION,
 });
 
 export function StateSelection({

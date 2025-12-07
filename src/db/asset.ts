@@ -1,20 +1,28 @@
-import { eq } from 'drizzle-orm';
+import { cacheTag } from 'next/cache';
+
+import { desc, eq } from 'drizzle-orm';
 
 import db from '@/drizzle';
 import { AssetTable, InsertAsset } from '@/drizzle/schema/asset';
+
+import { getCacheTag } from '@/actions/cache';
 import { AssetCondition } from '@/utils/enum';
 
 export async function getAssets(team_id: string) {
+  'use cache';
+  cacheTag(getCacheTag.assets());
+
   try {
-    const assets = await db.query.AssetTable.findMany({
-      where: eq(AssetTable.team_id, team_id),
-      orderBy: (_, { desc }) => [desc(AssetTable.updated_at)],
-    });
+    const assets = await db
+      .select()
+      .from(AssetTable)
+      .where(eq(AssetTable.team_id, team_id))
+      .orderBy(desc(AssetTable.updated_at));
 
     const stats = {
       total_items: assets.reduce((sum, asset) => sum + asset.quantity, 0),
       need_replacement: assets.filter(
-        (asset) => asset.condition === AssetCondition.POOR
+        (asset) => asset.condition === AssetCondition.POOR,
       ).length,
     };
 

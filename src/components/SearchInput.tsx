@@ -1,46 +1,54 @@
 'use client';
 
-import { Input, InputGroup } from '@chakra-ui/react';
+import { useEffect, useRef, useState } from 'react';
+
+import { Input, InputGroup, InputProps } from '@chakra-ui/react';
 import { Search } from 'lucide-react';
 
 import { CloseButton } from '@/components/ui/close-button';
 import { useCommonParams } from '@/utils/filters';
 
-type SearchInputProps = Partial<{
-  disabled: boolean;
-  maxLength: number;
-}>;
-
-export default function SearchInput({
-  disabled = false,
-  maxLength = 64,
-}: SearchInputProps) {
+export default function SearchInput(props: InputProps) {
   const [{ q }, setSearchParams] = useCommonParams();
+  // Manage local state for the search input
+  const [search, setSearch] = useState(q);
+  const inputRef = useRef<Nullable<HTMLInputElement>>(null);
+
+  useEffect(() => {
+    // Debounce the search input to avoid excessive updates
+    const timer = setTimeout(() => {
+      if (search !== q) {
+        setSearchParams({ q: search });
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [search, q]);
+
+  const endElement = search ? (
+    <CloseButton
+      size="2xs"
+      borderRadius="full"
+      onClick={() => {
+        setSearch('');
+        inputRef.current?.focus();
+      }}
+    />
+  ) : undefined;
 
   return (
-    <InputGroup
-      startElement={<Search size={14} />}
-      endElement={
-        q && (
-          <CloseButton
-            size="2xs"
-            borderRadius="full"
-            onClick={() => setSearchParams({ q: '' })}
-          />
-        )
-      }
-    >
+    <InputGroup startElement={<Search size={14} />} endElement={endElement}>
       <Input
         type="search"
-        value={q}
-        disabled={disabled}
-        maxLength={maxLength}
+        value={search}
+        ref={inputRef}
         name="search-input"
         placeholder="Search..."
         borderWidth={1}
         size={{ base: 'sm', md: 'md' }}
         css={{ '--focus-color': 'colors.red.300' }}
-        onChange={(e) => setSearchParams({ q: e.target.value })}
+        onChange={(e) => setSearch(e.target.value)}
+        {...props}
       />
     </InputGroup>
   );

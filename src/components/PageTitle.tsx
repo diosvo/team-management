@@ -1,23 +1,20 @@
-import { PropsWithChildren } from 'react';
+import { Heading, Image } from '@chakra-ui/react';
 
-import { Heading, HeadingProps, Image } from '@chakra-ui/react';
+type PageTitleProps = {
+  title: string;
+};
 
-export default function PageTitle({
-  children,
-  ...props
-}: PropsWithChildren<HeadingProps>) {
+export default function PageTitle({ title }: PageTitleProps) {
   return (
     <Heading
       position="relative"
       color="primary"
       fontStyle="italic"
       fontWeight="bold"
-      letterSpacing="tight"
       maxWidth="fit-content"
       size={{ base: 'xl', md: '2xl' }}
-      {...props}
     >
-      {children}
+      {title}
       <Image position="absolute" loading="lazy" alt="Squiggle" asChild>
         <img src="/squiggle.svg" alt="Squiggle" />
       </Image>

@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 
 import { SimpleGrid, Text, VStack } from '@chakra-ui/react';
 
-import PageTitle from '@/components/page-title';
+import PageTitle from '@/components/PageTitle';
 
 import { getUserProfile } from '@/actions/user';
 import { formatDatetime } from '@/utils/formatter';
@@ -25,7 +25,7 @@ export default async function ProfilePage({
 
   return (
     <VStack gap={6} alignItems="stretch">
-      <PageTitle>Profile Details</PageTitle>
+      <PageTitle title="Profile Details" />
 
       <SimpleGrid columns={{ base: 1, lg: 2 }} gap={6}>
         <PersonalInfo user={targetUser} viewOnly={viewOnly} />

@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 import { getRoster } from '@/actions/user';
-import PageTitle from '@/components/page-title';
+import PageTitle from '@/components/PageTitle';
 
 import RosterList from './_components/RosterList';
 
@@ -15,7 +15,7 @@ export default async function RosterPage() {
 
   return (
     <>
-      <PageTitle>Team Roster</PageTitle>
+      <PageTitle title="Team Roster" />
       <RosterList users={users} />
     </>
   );

@@ -2,10 +2,12 @@
 
 import { useState } from 'react';
 
-import { ActionBar, Button, Portal, Table } from '@chakra-ui/react';
+import { Table } from '@chakra-ui/react';
 import { formatDistanceToNow } from 'date-fns';
 
-import Pagination from '@/components/pagination';
+import Pagination from '@/components/Pagination';
+import SelectionActionBar from '@/components/SelectionActionBar';
+
 import { Checkbox } from '@/components/ui/checkbox';
 import { EmptyState } from '@/components/ui/empty-state';
 import { toaster } from '@/components/ui/toaster';
@@ -67,7 +69,7 @@ export default function TestTypesTable({ data }: { data: Array<TestType> }) {
                   checked={indeterminate ? 'indeterminate' : selectionCount > 0}
                   onCheckedChange={(changes) =>
                     setSelection(
-                      changes.checked ? data.map(({ type_id }) => type_id) : []
+                      changes.checked ? data.map(({ type_id }) => type_id) : [],
                     )
                   }
                 />
@@ -99,7 +101,7 @@ export default function TestTypesTable({ data }: { data: Array<TestType> }) {
                         setSelection((prev) =>
                           changes.checked
                             ? [...prev, item.type_id]
-                            : selection.filter((id) => id !== item.type_id)
+                            : selection.filter((id) => id !== item.type_id),
                         )
                       }
                     />
@@ -130,26 +132,11 @@ export default function TestTypesTable({ data }: { data: Array<TestType> }) {
         page={page}
         onPageChange={setSearchParams}
       />
-      <ActionBar.Root open={hasSelection}>
-        <Portal>
-          <ActionBar.Positioner>
-            <ActionBar.Content>
-              <ActionBar.SelectionTrigger>
-                {selectionCount} selected
-              </ActionBar.SelectionTrigger>
-              <ActionBar.Separator />
-              <Button
-                size="sm"
-                variant="outline"
-                colorPalette="red"
-                onClick={removeItems}
-              >
-                Delete
-              </Button>
-            </ActionBar.Content>
-          </ActionBar.Positioner>
-        </Portal>
-      </ActionBar.Root>
+      <SelectionActionBar
+        open={hasSelection}
+        selectionCount={selectionCount}
+        onDelete={removeItems}
+      />
     </>
   );
 }

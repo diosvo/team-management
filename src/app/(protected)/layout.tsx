@@ -61,10 +61,7 @@ export default function AuthenticatedLayout({ children }: PropsWithChildren) {
       </GridItem>
 
       <GridItem gridArea="main" overflow="auto" height="100%">
-        <Container
-          paddingBlock={6}
-          maxWidth={['vw', 'vw', 'vw', '5xl', '6xl', '8xl']}
-        >
+        <Container paddingBlock={6}>
           <Suspense>{children}</Suspense>
         </Container>
       </GridItem>

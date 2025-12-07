@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 
 import { AlertTriangle, Package } from 'lucide-react';
 
-import Stats, { type StatCard } from '@/components/stats';
+import Stats, { type StatCard } from '@/components/Stats';
 import { AssetCondition } from '@/utils/enum';
 
 import { useAssetFilters } from '../search-params';
@@ -39,7 +39,7 @@ export default function AssetStats({ stats }: AssetStatsProps) {
         },
       },
     ],
-    [setSearchParams]
+    [setSearchParams],
   );
 
   return <Stats data={stats} config={config} />;

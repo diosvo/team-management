@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 
-import PageTitle from '@/components/page-title';
+import PageTitle from '@/components/PageTitle';
 
 import { getAssets } from '@/actions/asset';
 
@@ -17,7 +17,7 @@ export default async function AssetsPage() {
 
   return (
     <>
-      <PageTitle>Assets</PageTitle>
+      <PageTitle title="Assets" />
       <>
         <AssetStats stats={stats} />
         <AssetList data={data} />

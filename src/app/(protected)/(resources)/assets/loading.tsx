@@ -1,8 +1,9 @@
 import { HStack, Skeleton, SkeletonText, VStack } from '@chakra-ui/react';
 
-export default function AssetSkeleton() {
+export default function Loading() {
   return (
-    <VStack align="stretch" gap={6}>
+    <VStack alignItems="stretch" gap={6}>
+      <Skeleton height={9} width={28} />
       <HStack gap={6}>
         <Skeleton width="326px" height="131px" />
         <Skeleton width="326px" height="131px" />

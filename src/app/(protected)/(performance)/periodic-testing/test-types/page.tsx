@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Button, HStack } from '@chakra-ui/react';
 import { MoveLeft } from 'lucide-react';
 
-import PageTitle from '@/components/page-title';
+import PageTitle from '@/components/PageTitle';
 import { Tooltip } from '@/components/ui/tooltip';
 
 import { getTestTypes } from '@/actions/test-type';
@@ -29,7 +29,7 @@ export default async function TestTypesPage() {
             </Link>
           </Button>
         </Tooltip>
-        <PageTitle>Test Types</PageTitle>
+        <PageTitle title="Test Types" />
       </HStack>
       <TestTypesList data={data} />
     </>

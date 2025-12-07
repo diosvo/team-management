@@ -2,7 +2,6 @@ import {
   AssetCategory,
   AssetCondition,
   CoachPosition,
-  GameType,
   PlayerPosition,
   TestTypeUnit,
   UserRole,
@@ -33,7 +32,7 @@ export const SELECTABLE_USER_ROLES = [
   UserRole.GUEST,
   UserRole.PLAYER,
 ];
-export const UserRoleSelection: Selection<string> = [
+export const USER_ROLE_SELECTION: Selection<string> = [
   {
     label: 'Player',
     value: UserRole.PLAYER,
@@ -54,7 +53,7 @@ export const SELECTABLE_USER_STATES = [
   UserState.TEMPORARILY_ABSENT,
   UserState.UNKNOWN,
 ];
-export const UserStateSelection: Selection<string> = [
+export const USER_STATE_SELECTION: Selection<string> = [
   {
     label: 'Active',
     value: UserState.ACTIVE,
@@ -79,7 +78,7 @@ export const SELECTABLE_COACH_POSITIONS = [
   CoachPosition.ASSISTANT_COACH,
   CoachPosition.UNKNOWN,
 ] as const;
-export const CoachPositionsSelection: Selection<string> = [
+export const COACH_POSITIONS_SELECTION: Selection<string> = [
   {
     label: 'Head',
     value: CoachPosition.HEAD_COACH,
@@ -104,7 +103,7 @@ export const SELECTABLE_PLAYER_POSITIONS = [
   PlayerPosition.FORWARD,
   PlayerPosition.UNKNOWN,
 ] as const;
-export const PlayerPositionsSelection: Selection<string> = [
+export const PLAYER_POSITIONS_SELECTION: Selection<string> = [
   {
     label: 'PG',
     value: PlayerPosition.POINT_GUARD,
@@ -141,7 +140,7 @@ export const SELECTABLE_ASSET_CATEGORIES = [
   AssetCategory.TRAINING,
   AssetCategory.OTHERS,
 ] as const;
-export const AssetCategorySelection: Selection<string> = [
+export const ASSET_CATEGORY_SELECTION: Selection<string> = [
   {
     label: 'Equipment',
     value: AssetCategory.EQUIPMENT,
@@ -158,14 +157,17 @@ export const AssetCategorySelection: Selection<string> = [
     description: 'Uniforms, Jerseys, etc',
   },
 ];
-export const AssetCategoryValues = [ALL.value, ...SELECTABLE_ASSET_CATEGORIES];
+export const ASSET_CATEGORY_VALUES = [
+  ALL.value,
+  ...SELECTABLE_ASSET_CATEGORIES,
+];
 
 export const SELECTABLE_ASSET_CONDITIONS = [
   AssetCondition.POOR,
   AssetCondition.FAIR,
   AssetCondition.GOOD,
 ] as const;
-export const AssetConditionSelection: Selection<string> = [
+export const ASSET_CONDITION_SELECTION: Selection<string> = [
   {
     label: 'Poor',
     value: AssetCondition.POOR,
@@ -182,16 +184,10 @@ export const AssetConditionSelection: Selection<string> = [
     description: 'New, Excellent Condition',
   },
 ];
-export const AssetConditionValues = [ALL.value, ...SELECTABLE_ASSET_CONDITIONS];
-
-export const GameTypeSelection: Record<GameType, Option<string>> = {
-  [GameType['3x3']]: { label: GameType['3x3'], value: GameType['3x3'], max: 5 },
-  [GameType['5x5']]: {
-    label: GameType['5x5'],
-    value: GameType['5x5'],
-    max: 15,
-  },
-};
+export const ASSET_CONDITION_VALUES = [
+  ALL.value,
+  ...SELECTABLE_ASSET_CONDITIONS,
+];
 
 export const SELECTABLE_TEST_TYPES = [
   TestTypeUnit.METERS,
@@ -201,7 +197,7 @@ export const SELECTABLE_TEST_TYPES = [
   TestTypeUnit.SECONDS,
   TestTypeUnit.TIMES,
 ] as const;
-export const TestTypeUnitSelection: Selection<string> = [
+export const TEST_TYPE_UNIT_SELECTION: Selection<string> = [
   {
     label: 'Meters',
     value: TestTypeUnit.METERS,

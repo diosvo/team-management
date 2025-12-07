@@ -3,21 +3,16 @@
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 
-import {
-  ActionBar,
-  Badge,
-  Button,
-  Icon,
-  Portal,
-  Table,
-} from '@chakra-ui/react';
+import { Badge, Highlight, Icon, Table } from '@chakra-ui/react';
 import { ShieldAlert, ShieldCheck, SwatchBook } from 'lucide-react';
 
-import Pagination from '@/components/pagination';
+import Pagination from '@/components/Pagination';
+import SelectionActionBar from '@/components/SelectionActionBar';
+
 import { Checkbox } from '@/components/ui/checkbox';
 import { EmptyState } from '@/components/ui/empty-state';
 import { toaster } from '@/components/ui/toaster';
-import Visibility from '@/components/visibility';
+import Visibility from '@/components/Visibility';
 
 import { usePermissions } from '@/hooks/use-permissions';
 import { paginateData, useCommonParams } from '@/utils/filters';
@@ -29,7 +24,7 @@ import { User } from '@/drizzle/schema/user';
 export default function RosterTable({ users }: { users: Array<User> }) {
   const router = useRouter();
   const { isAdmin, isGuest } = usePermissions();
-  const [{ page }, setSearchParams] = useCommonParams();
+  const [{ q, page }, setSearchParams] = useCommonParams();
 
   const [selection, setSelection] = useState<Array<string>>([]);
   const selectionCount = selection.length;
@@ -57,7 +52,7 @@ export default function RosterTable({ users }: { users: Array<User> }) {
 
     toaster.create({
       type: hasErrors ? 'warning' : 'success',
-      description: hasErrors
+      title: hasErrors
         ? `Deleted ${successCount} user(s), but some operations failed.`
         : `Successfully deleted ${successCount} user(s).`,
     });
@@ -89,7 +84,7 @@ export default function RosterTable({ users }: { users: Array<User> }) {
                       }
                       onCheckedChange={(changes) => {
                         setSelection(
-                          changes.checked ? users.map(({ id }) => id) : []
+                          changes.checked ? users.map(({ id }) => id) : [],
                         );
                       }}
                     />
@@ -102,7 +97,7 @@ export default function RosterTable({ users }: { users: Array<User> }) {
               {['No.', 'Name', 'Email', 'State', 'Roles', 'Position'].map(
                 (column: string) => (
                   <Table.ColumnHeader key={column}>{column}</Table.ColumnHeader>
-                )
+                ),
               )}
             </Table.Row>
           </Table.Header>
@@ -129,7 +124,7 @@ export default function RosterTable({ users }: { users: Array<User> }) {
                             setSelection((prev) =>
                               changes.checked
                                 ? [...prev, user.id]
-                                : selection.filter((id) => id !== user.id)
+                                : selection.filter((id) => id !== user.id),
                             );
                           }}
                         />
@@ -145,10 +140,14 @@ export default function RosterTable({ users }: { users: Array<User> }) {
                   </Visibility>
                   <Table.Cell>{user.details.jersey_number ?? '-'}</Table.Cell>
                   <Table.Cell>
-                    {isGuest ? mask(user.name, -4) : user.name}
+                    <Highlight query={q} styles={{ backgroundColor: 'yellow' }}>
+                      {isGuest ? mask(user.name, -4) : user.name}
+                    </Highlight>
                   </Table.Cell>
                   <Table.Cell>
-                    {isGuest ? mask(user.email, -4) : user.email}
+                    <Highlight query={q} styles={{ backgroundColor: 'yellow' }}>
+                      {isGuest ? mask(user.email, -4) : user.email}
+                    </Highlight>
                   </Table.Cell>
                   <Table.Cell>
                     <Badge
@@ -191,26 +190,11 @@ export default function RosterTable({ users }: { users: Array<User> }) {
         page={page}
         onPageChange={setSearchParams}
       />
-      <ActionBar.Root open={hasSelection}>
-        <Portal>
-          <ActionBar.Positioner>
-            <ActionBar.Content>
-              <ActionBar.SelectionTrigger>
-                {selectionCount} selected
-              </ActionBar.SelectionTrigger>
-              <ActionBar.Separator />
-              <Button
-                size="sm"
-                variant="outline"
-                colorPalette="red"
-                onClick={removeUsers}
-              >
-                Delete
-              </Button>
-            </ActionBar.Content>
-          </ActionBar.Positioner>
-        </Portal>
-      </ActionBar.Root>
+      <SelectionActionBar
+        open={hasSelection}
+        selectionCount={selectionCount}
+        onDelete={removeUsers}
+      />
     </>
   );
 }

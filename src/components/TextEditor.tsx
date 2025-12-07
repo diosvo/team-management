@@ -35,7 +35,7 @@ import {
 } from '@/components/ui/popover';
 import { Tooltip } from '@/components/ui/tooltip';
 
-import Visibility from './visibility';
+import Visibility from './Visibility';
 
 interface TextEditorProps {
   editable: boolean;
@@ -72,7 +72,7 @@ export default function TextEditor({
       immediatelyRender: false,
       onUpdate: ({ editor }) => onChange(editor.getHTML()),
     },
-    [editable]
+    [editable],
   );
 
   // Use Popover for link insertion

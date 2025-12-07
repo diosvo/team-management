@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 
 import SearchInput from '@/components/SearchInput';
-import Visibility from '@/components/visibility';
+import Visibility from '@/components/Visibility';
 
 import { usePermissions } from '@/hooks/use-permissions';
 import useQuery from '@/hooks/use-query';
@@ -42,7 +42,7 @@ export default function TestingFilters() {
           value: date,
         })),
       }),
-    [request.data]
+    [request.data],
   );
   const disabledFilter =
     request.loading || !!request.error || dateRanges.items.length === 0;

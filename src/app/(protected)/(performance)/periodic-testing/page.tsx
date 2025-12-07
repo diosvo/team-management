@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 
-import PageTitle from '@/components/page-title';
+import PageTitle from '@/components/PageTitle';
 import TestingResultList from './_components/TestingResultList';
 
 import { getTestResult } from '@/actions/test-result';
@@ -19,7 +19,7 @@ export default async function PeriodicTestingPage({
 
   return (
     <>
-      <PageTitle>Periodic Testing</PageTitle>
+      <PageTitle title="Periodic Testing" />
       <TestingResultList result={result} />
     </>
   );

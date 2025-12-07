@@ -2,13 +2,14 @@
 
 import { useState } from 'react';
 
-import { ActionBar, Badge, Button, Portal, Table } from '@chakra-ui/react';
+import { Badge, Highlight, Table } from '@chakra-ui/react';
 
-import Pagination from '@/components/pagination';
+import Pagination from '@/components/Pagination';
+import SelectionActionBar from '@/components/SelectionActionBar';
 import { Checkbox } from '@/components/ui/checkbox';
 import { EmptyState } from '@/components/ui/empty-state';
 import { toaster } from '@/components/ui/toaster';
-import Visibility from '@/components/visibility';
+import Visibility from '@/components/Visibility';
 
 import { usePermissions } from '@/hooks/use-permissions';
 import { paginateData, useCommonParams } from '@/utils/filters';
@@ -22,7 +23,7 @@ import { UpsertAsset } from './UpsertAsset';
 
 export default function AssetTable({ items }: { items: Array<Asset> }) {
   const { isAdmin, isGuest } = usePermissions();
-  const [{ page }, setSearchParams] = useCommonParams();
+  const [{ q, page }, setSearchParams] = useCommonParams();
 
   const [selection, setSelection] = useState<Array<string>>([]);
   const selectionCount = selection.length;
@@ -41,7 +42,7 @@ export default function AssetTable({ items }: { items: Array<Asset> }) {
 
     toaster.create({
       type: hasErrors ? 'warning' : 'success',
-      description: hasErrors
+      title: hasErrors
         ? `Deleted ${successCount} asset(s), but some operations failed.`
         : `Successfully deleted ${successCount} asset(s).`,
     });
@@ -71,14 +72,14 @@ export default function AssetTable({ items }: { items: Array<Asset> }) {
                       setSelection(
                         changes.checked
                           ? items.map(({ asset_id }) => asset_id)
-                          : []
+                          : [],
                       );
                     }}
                   />
                 </Table.ColumnHeader>
               </Visibility>
               {[
-                'Item',
+                'Name',
                 'Category',
                 'Quantity',
                 'Condition',
@@ -113,13 +114,17 @@ export default function AssetTable({ items }: { items: Array<Asset> }) {
                           setSelection((prev) =>
                             changes.checked
                               ? [...prev, item.asset_id]
-                              : selection.filter((id) => id !== item.asset_id)
+                              : selection.filter((id) => id !== item.asset_id),
                           );
                         }}
                       />
                     </Table.Cell>
                   </Visibility>
-                  <Table.Cell>{item.name}</Table.Cell>
+                  <Table.Cell>
+                    <Highlight query={q} styles={{ backgroundColor: 'yellow' }}>
+                      {item.name}
+                    </Highlight>
+                  </Table.Cell>
                   <Table.Cell>
                     <Badge
                       variant="outline"
@@ -159,26 +164,11 @@ export default function AssetTable({ items }: { items: Array<Asset> }) {
         page={page}
         onPageChange={setSearchParams}
       />
-      <ActionBar.Root open={hasSelection}>
-        <Portal>
-          <ActionBar.Positioner>
-            <ActionBar.Content>
-              <ActionBar.SelectionTrigger>
-                {selectionCount} selected
-              </ActionBar.SelectionTrigger>
-              <ActionBar.Separator />
-              <Button
-                size="sm"
-                variant="outline"
-                colorPalette="red"
-                onClick={removeItems}
-              >
-                Delete
-              </Button>
-            </ActionBar.Content>
-          </ActionBar.Positioner>
-        </Portal>
-      </ActionBar.Root>
+      <SelectionActionBar
+        open={hasSelection}
+        selectionCount={selectionCount}
+        onDelete={removeItems}
+      />
     </>
   );
 }

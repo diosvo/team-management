@@ -2,10 +2,10 @@
 
 import { useState, useTransition } from 'react';
 
-import { Button, Flex, Table, Text } from '@chakra-ui/react';
+import { Button, Flex, Highlight, Table, Text } from '@chakra-ui/react';
 import { FileUser } from 'lucide-react';
 
-import Pagination from '@/components/pagination';
+import Pagination from '@/components/Pagination';
 import { EmptyState } from '@/components/ui/empty-state';
 import {
   NumberInputField,
@@ -40,7 +40,7 @@ export default function PlayerPerformanceMatrix({
 }: {
   result: TestResult;
 }) {
-  const [{ page }, setSearchParams] = useCommonParams();
+  const [{ q, page }, setSearchParams] = useCommonParams();
   const { isGuest, isPlayer } = usePermissions();
   const viewOnly = isGuest || isPlayer;
 
@@ -116,7 +116,14 @@ export default function PlayerPerformanceMatrix({
               currentData.map(
                 ({ player_id, player_name, tests, result_id }) => (
                   <Table.Row key={player_id}>
-                    <Table.Cell>{player_name}</Table.Cell>
+                    <Table.Cell>
+                      <Highlight
+                        query={q}
+                        styles={{ backgroundColor: 'yellow' }}
+                      >
+                        {player_name}
+                      </Highlight>
+                    </Table.Cell>
                     {result.headers.map(({ name }) => {
                       const popoverKey = `${player_id}-${name}`;
                       return (
@@ -188,7 +195,7 @@ export default function PlayerPerformanceMatrix({
                       );
                     })}
                   </Table.Row>
-                )
+                ),
               )
             ) : (
               <Table.Row>

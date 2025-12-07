@@ -5,7 +5,7 @@ import { forbidden } from 'next/navigation';
 import { Button, HStack } from '@chakra-ui/react';
 import { MoveLeft } from 'lucide-react';
 
-import PageTitle from '@/components/page-title';
+import PageTitle from '@/components/PageTitle';
 import { Tooltip } from '@/components/ui/tooltip';
 
 import { canUpsertTestResult } from '@/actions/test-result';
@@ -31,7 +31,7 @@ export default async function AddTestResultPage() {
             </Link>
           </Button>
         </Tooltip>
-        <PageTitle>Add Test Result</PageTitle>
+        <PageTitle title="Add Test Result" />
       </HStack>
       <AddTestResultPageClient />
     </>

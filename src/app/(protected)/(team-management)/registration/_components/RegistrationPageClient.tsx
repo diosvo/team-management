@@ -5,16 +5,17 @@ import { useState } from 'react';
 import {
   Button,
   Card,
-  Center,
   Highlight,
   HStack,
-  List,
   SimpleGrid,
   Stack,
 } from '@chakra-ui/react';
 
-import PageTitle from '@/components/page-title';
-import PlayerSelection from '@/components/user/PlayerSelection';
+import PageTitle from '@/components/PageTitle';
+import {
+  PlayerSelection,
+  SelectedPlayers,
+} from '@/components/user/PlayerSelection';
 
 import { User } from '@/drizzle/schema/user';
 
@@ -30,7 +31,7 @@ export default function RegistrationPageClient() {
   return (
     <Stack gap={6}>
       <HStack>
-        <PageTitle>Tournament Registration</PageTitle>
+        <PageTitle title="Tournament Registration" />
         <CopyButton players={selection} />
       </HStack>
 
@@ -74,34 +75,10 @@ export default function RegistrationPageClient() {
               </HStack>
             </Card.Header>
             <Card.Body>
-              {selection.length > 0 ? (
-                <List.Root paddingInline={4}>
-                  {selection.map(
-                    ({ id, name, details: { jersey_number = null } }) => (
-                      <List.Item
-                        key={id}
-                        width="max-content"
-                        _hover={{
-                          cursor: 'pointer',
-                          color: 'tomato',
-                          textDecoration: 'line-through',
-                          transition: 'all 0.2s',
-                        }}
-                        onClick={() =>
-                          setSelection((prev) =>
-                            prev.filter(({ id: player_id }) => id !== player_id)
-                          )
-                        }
-                      >
-                        {jersey_number && `${jersey_number} - `}
-                        {name}
-                      </List.Item>
-                    )
-                  )}
-                </List.Root>
-              ) : (
-                <Center>No players selected.</Center>
-              )}
+              <SelectedPlayers
+                selection={selection}
+                onSelectionChange={setSelection}
+              />
             </Card.Body>
           </Card.Root>
         </SimpleGrid>

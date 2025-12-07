@@ -2,7 +2,7 @@
 
 import { Check, Users } from 'lucide-react';
 
-import Stats, { type StatCard } from '@/components/stats';
+import Stats, { type StatCard } from '@/components/Stats';
 
 const TESTING_STATS: StatCard['config'] = [
   {
