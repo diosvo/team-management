@@ -56,7 +56,7 @@ export default function RuleEditor({ rule }: { rule: NullishRule }) {
   return (
     <VStack alignItems="stretch" gap={6}>
       <HStack>
-        <PageTitle>Team Rule</PageTitle>
+        <PageTitle title="Team Rule" />
         <Visibility isVisible={isAdmin}>
           <>
             <Tooltip

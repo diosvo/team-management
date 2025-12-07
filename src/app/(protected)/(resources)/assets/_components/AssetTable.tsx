@@ -41,7 +41,7 @@ export default function AssetTable({ items }: { items: Array<Asset> }) {
 
     toaster.create({
       type: hasErrors ? 'warning' : 'success',
-      description: hasErrors
+      title: hasErrors
         ? `Deleted ${successCount} asset(s), but some operations failed.`
         : `Successfully deleted ${successCount} asset(s).`,
     });
@@ -71,7 +71,7 @@ export default function AssetTable({ items }: { items: Array<Asset> }) {
                       setSelection(
                         changes.checked
                           ? items.map(({ asset_id }) => asset_id)
-                          : []
+                          : [],
                       );
                     }}
                   />
@@ -113,7 +113,7 @@ export default function AssetTable({ items }: { items: Array<Asset> }) {
                           setSelection((prev) =>
                             changes.checked
                               ? [...prev, item.asset_id]
-                              : selection.filter((id) => id !== item.asset_id)
+                              : selection.filter((id) => id !== item.asset_id),
                           );
                         }}
                       />

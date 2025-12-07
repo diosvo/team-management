@@ -57,7 +57,7 @@ export default function RosterTable({ users }: { users: Array<User> }) {
 
     toaster.create({
       type: hasErrors ? 'warning' : 'success',
-      description: hasErrors
+      title: hasErrors
         ? `Deleted ${successCount} user(s), but some operations failed.`
         : `Successfully deleted ${successCount} user(s).`,
     });
@@ -89,7 +89,7 @@ export default function RosterTable({ users }: { users: Array<User> }) {
                       }
                       onCheckedChange={(changes) => {
                         setSelection(
-                          changes.checked ? users.map(({ id }) => id) : []
+                          changes.checked ? users.map(({ id }) => id) : [],
                         );
                       }}
                     />
@@ -102,7 +102,7 @@ export default function RosterTable({ users }: { users: Array<User> }) {
               {['No.', 'Name', 'Email', 'State', 'Roles', 'Position'].map(
                 (column: string) => (
                   <Table.ColumnHeader key={column}>{column}</Table.ColumnHeader>
-                )
+                ),
               )}
             </Table.Row>
           </Table.Header>
@@ -129,7 +129,7 @@ export default function RosterTable({ users }: { users: Array<User> }) {
                             setSelection((prev) =>
                               changes.checked
                                 ? [...prev, user.id]
-                                : selection.filter((id) => id !== user.id)
+                                : selection.filter((id) => id !== user.id),
                             );
                           }}
                         />
