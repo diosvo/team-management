@@ -18,8 +18,8 @@ import Visibility from '@/components/Visibility';
 import { usePermissions } from '@/hooks/use-permissions';
 import {
   ALL,
-  AssetCategorySelection,
-  AssetConditionSelection,
+  ASSET_CATEGORY_SELECTION,
+  ASSET_CONDITION_SELECTION,
 } from '@/utils/constant';
 import { colorCondition } from '@/utils/helper';
 
@@ -27,10 +27,10 @@ import { useAssetFilters } from '../search-params';
 import { UpsertAsset } from './UpsertAsset';
 
 const categories = createListCollection({
-  items: [ALL, ...AssetCategorySelection],
+  items: [ALL, ...ASSET_CATEGORY_SELECTION],
 });
 const conditions = createListCollection({
-  items: [ALL, ...AssetConditionSelection],
+  items: [ALL, ...ASSET_CONDITION_SELECTION],
 });
 
 export default function AssetFilters() {

@@ -3,15 +3,15 @@ import { parseAsStringEnum } from 'nuqs/server';
 
 import {
   ALL,
-  AssetCategoryValues,
-  AssetConditionValues,
+  ASSET_CATEGORY_VALUES,
+  ASSET_CONDITION_VALUES,
 } from '@/utils/constant';
 import { commonParams } from '@/utils/filters';
 
 const searchParams = {
   ...commonParams,
-  category: parseAsStringEnum(AssetCategoryValues).withDefault(ALL.value),
-  condition: parseAsStringEnum(AssetConditionValues).withDefault(ALL.value),
+  category: parseAsStringEnum(ASSET_CATEGORY_VALUES).withDefault(ALL.value),
+  condition: parseAsStringEnum(ASSET_CONDITION_VALUES).withDefault(ALL.value),
 };
 
 export const useAssetFilters = () => useQueryStates(searchParams);

@@ -20,7 +20,7 @@ import { Field } from '@/components/ui/field';
 import { toaster } from '@/components/ui/toaster';
 
 import { getDefaults } from '@/lib/zod';
-import { TestTypeUnitSelection } from '@/utils/constant';
+import { TEST_TYPE_UNIT_SELECTION } from '@/utils/constant';
 
 import { upsertTestType } from '@/actions/test-type';
 import {
@@ -52,7 +52,7 @@ export const UpsertTestType = createOverlay(({ action, item, ...rest }) => {
     startTransition(async () => {
       const { success, message: title } = await upsertTestType(
         item.type_id as string,
-        data
+        data,
       );
 
       toaster.update(id, {
@@ -101,7 +101,7 @@ export const UpsertTestType = createOverlay(({ action, item, ...rest }) => {
                       onValueChange={({ value }) => field.onChange(value)}
                     >
                       <SimpleGrid columns={{ base: 1, md: 3 }} gap={2}>
-                        {TestTypeUnitSelection.map((item) => (
+                        {TEST_TYPE_UNIT_SELECTION.map((item) => (
                           <RadioGroup.Item key={item.value} value={item.value}>
                             <RadioGroup.ItemHiddenInput onBlur={field.onBlur} />
                             <RadioGroup.ItemIndicator />

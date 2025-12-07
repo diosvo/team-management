@@ -23,9 +23,9 @@ import {
 import { Field } from '@/components/ui/field';
 
 import {
-  CoachPositionsSelection,
-  PlayerPositionsSelection,
-  UserRoleSelection,
+  COACH_POSITIONS_SELECTION,
+  PLAYER_POSITIONS_SELECTION,
+  USER_ROLE_SELECTION,
 } from '@/utils/constant';
 import { PlayerPosition, UserRole } from '@/utils/enum';
 import { Option } from '@/utils/type';
@@ -37,7 +37,7 @@ type StateRoleProps = Omit<SelectRootProps, 'collection'> &
   }>;
 
 const roles = createListCollection({
-  items: UserRoleSelection,
+  items: USER_ROLE_SELECTION,
 });
 
 export function RoleSelection({
@@ -101,8 +101,8 @@ export function RolePositionSelection<T extends FieldValues>({
 
   const positions = useMemo(() => {
     const mapped = {
-      [UserRole.COACH]: CoachPositionsSelection,
-      [UserRole.PLAYER]: PlayerPositionsSelection,
+      [UserRole.COACH]: COACH_POSITIONS_SELECTION,
+      [UserRole.PLAYER]: PLAYER_POSITIONS_SELECTION,
       [UserRole.GUEST]: [],
     };
     return createListCollection<Option<string>>({
@@ -121,7 +121,7 @@ export function RolePositionSelection<T extends FieldValues>({
       positionName,
       (selectedRole === UserRole.GUEST
         ? undefined
-        : selectedPosition || PlayerPosition.UNKNOWN) as T[typeof positionName]
+        : selectedPosition || PlayerPosition.UNKNOWN) as T[typeof positionName],
     );
   }, [selectedRole]);
 

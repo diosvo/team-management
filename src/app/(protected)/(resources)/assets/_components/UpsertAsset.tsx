@@ -28,8 +28,8 @@ import { Tooltip } from '@/components/ui/tooltip';
 
 import { getDefaults } from '@/lib/zod';
 import {
-  AssetCategorySelection,
-  AssetConditionSelection,
+  ASSET_CATEGORY_SELECTION,
+  ASSET_CONDITION_SELECTION,
 } from '@/utils/constant';
 
 import { upsertAsset } from '@/actions/asset';
@@ -59,7 +59,7 @@ export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
     startTransition(async () => {
       const { success, message: title } = await upsertAsset(
         item.asset_id,
-        data
+        data,
       );
 
       toaster.update(id, {
@@ -136,7 +136,7 @@ export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
                       onValueChange={({ value }) => field.onChange(value)}
                     >
                       <HStack gap={4}>
-                        {AssetCategorySelection.map((item) => (
+                        {ASSET_CATEGORY_SELECTION.map((item) => (
                           <Tooltip key={item.value} content={item.description}>
                             <RadioGroup.Item value={item.value}>
                               <RadioGroup.ItemHiddenInput
@@ -171,7 +171,7 @@ export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
                       }}
                     >
                       <HStack gap={4}>
-                        {AssetConditionSelection.map((item) => (
+                        {ASSET_CONDITION_SELECTION.map((item) => (
                           <RadioGroup.Item key={item.value} value={item.value}>
                             <RadioGroup.ItemHiddenInput onBlur={field.onBlur} />
                             <RadioGroup.ItemIndicator />
