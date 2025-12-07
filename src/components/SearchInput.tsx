@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { Input, InputGroup, InputProps } from '@chakra-ui/react';
 import { Search } from 'lucide-react';
@@ -10,14 +10,31 @@ import { useCommonParams } from '@/utils/filters';
 
 export default function SearchInput(props: InputProps) {
   const [{ q }, setSearchParams] = useCommonParams();
+  // Manage local state for the search input
+  const [search, setSearch] = useState(q);
   const inputRef = useRef<Nullable<HTMLInputElement>>(null);
 
-  const endElement = q ? (
+  useEffect(() => {
+    setSearch(q);
+  }, [q]);
+
+  useEffect(() => {
+    // Debounce the search input to avoid excessive updates
+    const timer = setTimeout(() => {
+      if (search !== q) {
+        setSearchParams({ q: search });
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [search, q]);
+
+  const endElement = search ? (
     <CloseButton
       size="2xs"
       borderRadius="full"
       onClick={() => {
-        setSearchParams({ q: '' });
+        setSearch('');
         inputRef.current?.focus();
       }}
     />
@@ -27,14 +44,14 @@ export default function SearchInput(props: InputProps) {
     <InputGroup startElement={<Search size={14} />} endElement={endElement}>
       <Input
         type="search"
-        value={q}
+        value={search}
         ref={inputRef}
         name="search-input"
         placeholder="Search..."
         borderWidth={1}
         size={{ base: 'sm', md: 'md' }}
         css={{ '--focus-color': 'colors.red.300' }}
-        onChange={(e) => setSearchParams({ q: e.target.value })}
+        onChange={(e) => setSearch(e.target.value)}
         {...props}
       />
     </InputGroup>
