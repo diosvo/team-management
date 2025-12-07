@@ -1,10 +1,10 @@
-import PageTitle from '@/components/page-title';
+import PageTitle from '@/components/PageTitle';
 import { Suspense } from 'react';
 
 export default function DashboardPage() {
   return (
     <>
-      <PageTitle>Dashboard</PageTitle>
+      <PageTitle title="Dashboard" />
       <Suspense fallback={<div>Loading...</div>}>
         <div>Dashboard content goes here.</div>
       </Suspense>

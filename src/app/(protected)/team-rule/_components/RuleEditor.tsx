@@ -5,7 +5,7 @@ import { useEffect, useState, useTransition } from 'react';
 import { Button, HStack, Separator, Text, VStack } from '@chakra-ui/react';
 import { Eye, Pencil, Save } from 'lucide-react';
 
-import PageTitle from '@/components/page-title';
+import PageTitle from '@/components/PageTitle';
 import TextEditor from '@/components/text-editor';
 import { toaster } from '@/components/ui/toaster';
 import { Tooltip } from '@/components/ui/tooltip';

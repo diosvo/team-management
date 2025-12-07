@@ -13,7 +13,7 @@ import {
   Stack,
 } from '@chakra-ui/react';
 
-import PageTitle from '@/components/page-title';
+import PageTitle from '@/components/PageTitle';
 import PlayerSelection from '@/components/user/PlayerSelection';
 
 import { User } from '@/drizzle/schema/user';
@@ -89,14 +89,16 @@ export default function RegistrationPageClient() {
                         }}
                         onClick={() =>
                           setSelection((prev) =>
-                            prev.filter(({ id: player_id }) => id !== player_id)
+                            prev.filter(
+                              ({ id: player_id }) => id !== player_id,
+                            ),
                           )
                         }
                       >
                         {jersey_number && `${jersey_number} - `}
                         {name}
                       </List.Item>
-                    )
+                    ),
                   )}
                 </List.Root>
               ) : (
