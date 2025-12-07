@@ -14,7 +14,7 @@ import {
 
 import { toaster } from '@/components/ui/toaster';
 import { UseQueryReturn } from '@/hooks/use-query';
-import Visibility from './visibility';
+import Visibility from './Visibility';
 
 type SearchableSelectProps<T> = Selector<Array<T>> &
   Required<{

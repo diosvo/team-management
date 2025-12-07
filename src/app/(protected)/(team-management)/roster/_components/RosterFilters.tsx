@@ -5,7 +5,7 @@ import { HStack } from '@chakra-ui/react';
 import SearchInput from '@/components/SearchInput';
 import { RoleSelection } from '@/components/user/RolePositionSelection';
 import { StateSelection } from '@/components/user/StateSelection';
-import Visibility from '@/components/visibility';
+import Visibility from '@/components/Visibility';
 
 import { usePermissions } from '@/hooks/use-permissions';
 import { UserRole, UserState } from '@/utils/enum';

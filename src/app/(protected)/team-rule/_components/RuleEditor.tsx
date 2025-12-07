@@ -6,10 +6,10 @@ import { Button, HStack, Separator, Text, VStack } from '@chakra-ui/react';
 import { Eye, Pencil, Save } from 'lucide-react';
 
 import PageTitle from '@/components/PageTitle';
-import TextEditor from '@/components/text-editor';
+import TextEditor from '@/components/TextEditor';
 import { toaster } from '@/components/ui/toaster';
 import { Tooltip } from '@/components/ui/tooltip';
-import Visibility from '@/components/visibility';
+import Visibility from '@/components/Visibility';
 
 import { NullishRule } from '@/drizzle/schema/rule';
 import { usePermissions } from '@/hooks/use-permissions';

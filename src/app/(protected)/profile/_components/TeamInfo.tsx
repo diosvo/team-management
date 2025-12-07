@@ -17,7 +17,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { Activity, Edit, LucideClock9, Save, Shirt } from 'lucide-react';
 import { Controller, useForm } from 'react-hook-form';
 
-import TextField from '@/components/text-field';
+import TextField from '@/components/TextField';
 import { CloseButton } from '@/components/ui/close-button';
 import { Field } from '@/components/ui/field';
 import {
@@ -28,7 +28,7 @@ import { toaster } from '@/components/ui/toaster';
 import { Tooltip } from '@/components/ui/tooltip';
 import { RolePositionSelection } from '@/components/user/RolePositionSelection';
 import { ControlledStateSelection } from '@/components/user/StateSelection';
-import Visibility from '@/components/visibility';
+import Visibility from '@/components/Visibility';
 
 import { ESTABLISHED_DATE } from '@/utils/constant';
 import { UserRole } from '@/utils/enum';

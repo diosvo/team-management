@@ -5,7 +5,7 @@ import { useState, useTransition } from 'react';
 import { Button, Flex, Table, Text } from '@chakra-ui/react';
 import { FileUser } from 'lucide-react';
 
-import Pagination from '@/components/pagination';
+import Pagination from '@/components/Pagination';
 import { EmptyState } from '@/components/ui/empty-state';
 import {
   NumberInputField,
@@ -188,7 +188,7 @@ export default function PlayerPerformanceMatrix({
                       );
                     })}
                   </Table.Row>
-                )
+                ),
               )
             ) : (
               <Table.Row>

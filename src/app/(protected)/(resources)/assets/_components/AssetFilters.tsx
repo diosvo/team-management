@@ -13,7 +13,7 @@ import { Filter, Plus } from 'lucide-react';
 
 import SearchInput from '@/components/SearchInput';
 import { Status } from '@/components/ui/status';
-import Visibility from '@/components/visibility';
+import Visibility from '@/components/Visibility';
 
 import { usePermissions } from '@/hooks/use-permissions';
 import {

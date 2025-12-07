@@ -7,7 +7,7 @@ import { Button, Card, Highlight, HStack, SimpleGrid } from '@chakra-ui/react';
 import { format } from 'date-fns';
 import { Save } from 'lucide-react';
 
-import StepIndicator from '@/components/step-indicator';
+import StepIndicator from '@/components/StepIndicator';
 import { toaster } from '@/components/ui/toaster';
 
 import { createTestResult } from '@/actions/test-result';

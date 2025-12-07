@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { Table, Text } from '@chakra-ui/react';
 import { BookUser } from 'lucide-react';
 
-import Pagination from '@/components/pagination';
+import Pagination from '@/components/Pagination';
 import { EmptyState } from '@/components/ui/empty-state';
 import {
   NumberInputField,
@@ -90,7 +90,7 @@ export default function TestResultTable({
                         setSelection((prev) => ({
                           ...prev,
                           types: prev.types.filter(
-                            (type) => type.type_id !== type_id
+                            (type) => type.type_id !== type_id,
                           ),
                         }))
                       }
@@ -126,7 +126,7 @@ export default function TestResultTable({
                         setSelection((prev) => ({
                           ...prev,
                           players: prev.players.filter(
-                            (player) => player.id !== id
+                            (player) => player.id !== id,
                           ),
                         }))
                       }

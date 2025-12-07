@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Edit, Save } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 
-import TextField from '@/components/text-field';
+import TextField from '@/components/TextField';
 import { CloseButton } from '@/components/ui/close-button';
 import { Field } from '@/components/ui/field';
 import { toaster } from '@/components/ui/toaster';
@@ -50,7 +50,7 @@ export default function PersonalInfo({
 
       const { success, message: title } = await updatePersonalInfo(
         user.id,
-        data
+        data,
       );
 
       toaster.update(id, {

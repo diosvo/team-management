@@ -4,11 +4,11 @@ import { useState } from 'react';
 
 import { ActionBar, Badge, Button, Portal, Table } from '@chakra-ui/react';
 
-import Pagination from '@/components/pagination';
+import Pagination from '@/components/Pagination';
 import { Checkbox } from '@/components/ui/checkbox';
 import { EmptyState } from '@/components/ui/empty-state';
 import { toaster } from '@/components/ui/toaster';
-import Visibility from '@/components/visibility';
+import Visibility from '@/components/Visibility';
 
 import { usePermissions } from '@/hooks/use-permissions';
 import { paginateData, useCommonParams } from '@/utils/filters';
