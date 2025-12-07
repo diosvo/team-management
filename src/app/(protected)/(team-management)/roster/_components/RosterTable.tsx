@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 
-import { Badge, Icon, Table } from '@chakra-ui/react';
+import { Badge, Highlight, Icon, Table } from '@chakra-ui/react';
 import { ShieldAlert, ShieldCheck, SwatchBook } from 'lucide-react';
 
 import Pagination from '@/components/Pagination';
@@ -24,7 +24,7 @@ import { User } from '@/drizzle/schema/user';
 export default function RosterTable({ users }: { users: Array<User> }) {
   const router = useRouter();
   const { isAdmin, isGuest } = usePermissions();
-  const [{ page }, setSearchParams] = useCommonParams();
+  const [{ q, page }, setSearchParams] = useCommonParams();
 
   const [selection, setSelection] = useState<Array<string>>([]);
   const selectionCount = selection.length;
@@ -140,10 +140,14 @@ export default function RosterTable({ users }: { users: Array<User> }) {
                   </Visibility>
                   <Table.Cell>{user.details.jersey_number ?? '-'}</Table.Cell>
                   <Table.Cell>
-                    {isGuest ? mask(user.name, -4) : user.name}
+                    <Highlight query={q} styles={{ backgroundColor: 'yellow' }}>
+                      {isGuest ? mask(user.name, -4) : user.name}
+                    </Highlight>
                   </Table.Cell>
                   <Table.Cell>
-                    {isGuest ? mask(user.email, -4) : user.email}
+                    <Highlight query={q} styles={{ backgroundColor: 'yellow' }}>
+                      {isGuest ? mask(user.email, -4) : user.email}
+                    </Highlight>
                   </Table.Cell>
                   <Table.Cell>
                     <Badge

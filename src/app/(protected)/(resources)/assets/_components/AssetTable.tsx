@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import { Badge, Table } from '@chakra-ui/react';
+import { Badge, Highlight, Table } from '@chakra-ui/react';
 
 import Pagination from '@/components/Pagination';
 import SelectionActionBar from '@/components/SelectionActionBar';
@@ -23,7 +23,7 @@ import { UpsertAsset } from './UpsertAsset';
 
 export default function AssetTable({ items }: { items: Array<Asset> }) {
   const { isAdmin, isGuest } = usePermissions();
-  const [{ page }, setSearchParams] = useCommonParams();
+  const [{ q, page }, setSearchParams] = useCommonParams();
 
   const [selection, setSelection] = useState<Array<string>>([]);
   const selectionCount = selection.length;
@@ -79,7 +79,7 @@ export default function AssetTable({ items }: { items: Array<Asset> }) {
                 </Table.ColumnHeader>
               </Visibility>
               {[
-                'Item',
+                'Name',
                 'Category',
                 'Quantity',
                 'Condition',
@@ -120,7 +120,11 @@ export default function AssetTable({ items }: { items: Array<Asset> }) {
                       />
                     </Table.Cell>
                   </Visibility>
-                  <Table.Cell>{item.name}</Table.Cell>
+                  <Table.Cell>
+                    <Highlight query={q} styles={{ backgroundColor: 'yellow' }}>
+                      {item.name}
+                    </Highlight>
+                  </Table.Cell>
                   <Table.Cell>
                     <Badge
                       variant="outline"

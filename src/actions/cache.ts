@@ -4,11 +4,15 @@ export const getCacheTag = {
   user: (userId: string) => `user:${userId}`,
   active_players: () => 'active-players',
   rule: () => 'team-rule',
+  assets: () => 'assets',
 } as const;
 
 // Revalidation functions
 export const revalidate = {
-  assets: () => revalidatePath('/assets'),
+  assets: () => {
+    revalidatePath('/assets');
+    revalidateTag(getCacheTag.assets(), 'max');
+  },
   testTypes: () => revalidatePath('/periodic-testing/test-types'),
   roster: () => revalidatePath('/roster'),
   rule: () => {

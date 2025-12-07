@@ -15,10 +15,6 @@ export default function SearchInput(props: InputProps) {
   const inputRef = useRef<Nullable<HTMLInputElement>>(null);
 
   useEffect(() => {
-    setSearch(q);
-  }, [q]);
-
-  useEffect(() => {
     // Debounce the search input to avoid excessive updates
     const timer = setTimeout(() => {
       if (search !== q) {

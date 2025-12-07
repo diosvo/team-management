@@ -1,10 +1,17 @@
+import { cacheTag } from 'next/cache';
+
 import { desc, eq } from 'drizzle-orm';
 
 import db from '@/drizzle';
 import { AssetTable, InsertAsset } from '@/drizzle/schema/asset';
+
+import { getCacheTag } from '@/actions/cache';
 import { AssetCondition } from '@/utils/enum';
 
 export async function getAssets(team_id: string) {
+  'use cache';
+  cacheTag(getCacheTag.assets());
+
   try {
     const assets = await db
       .select()
