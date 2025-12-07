@@ -3,17 +3,12 @@
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 
-import {
-  ActionBar,
-  Badge,
-  Button,
-  Icon,
-  Portal,
-  Table,
-} from '@chakra-ui/react';
+import { Badge, Icon, Table } from '@chakra-ui/react';
 import { ShieldAlert, ShieldCheck, SwatchBook } from 'lucide-react';
 
 import Pagination from '@/components/Pagination';
+import SelectionActionBar from '@/components/SelectionActionBar';
+
 import { Checkbox } from '@/components/ui/checkbox';
 import { EmptyState } from '@/components/ui/empty-state';
 import { toaster } from '@/components/ui/toaster';
@@ -191,26 +186,11 @@ export default function RosterTable({ users }: { users: Array<User> }) {
         page={page}
         onPageChange={setSearchParams}
       />
-      <ActionBar.Root open={hasSelection}>
-        <Portal>
-          <ActionBar.Positioner>
-            <ActionBar.Content>
-              <ActionBar.SelectionTrigger>
-                {selectionCount} selected
-              </ActionBar.SelectionTrigger>
-              <ActionBar.Separator />
-              <Button
-                size="sm"
-                variant="outline"
-                colorPalette="red"
-                onClick={removeUsers}
-              >
-                Delete
-              </Button>
-            </ActionBar.Content>
-          </ActionBar.Positioner>
-        </Portal>
-      </ActionBar.Root>
+      <SelectionActionBar
+        open={hasSelection}
+        selectionCount={selectionCount}
+        onDelete={removeUsers}
+      />
     </>
   );
 }
