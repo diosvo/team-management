@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 
 import db from '@/drizzle';
 import { AssetTable, InsertAsset } from '@/drizzle/schema/asset';
@@ -6,15 +6,16 @@ import { AssetCondition } from '@/utils/enum';
 
 export async function getAssets(team_id: string) {
   try {
-    const assets = await db.query.AssetTable.findMany({
-      where: eq(AssetTable.team_id, team_id),
-      orderBy: (_, { desc }) => [desc(AssetTable.updated_at)],
-    });
+    const assets = await db
+      .select()
+      .from(AssetTable)
+      .where(eq(AssetTable.team_id, team_id))
+      .orderBy(desc(AssetTable.updated_at));
 
     const stats = {
       total_items: assets.reduce((sum, asset) => sum + asset.quantity, 0),
       need_replacement: assets.filter(
-        (asset) => asset.condition === AssetCondition.POOR
+        (asset) => asset.condition === AssetCondition.POOR,
       ).length,
     };
 
