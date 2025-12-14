@@ -6,8 +6,10 @@ env:
 
 on:
   pull_request:
-    types: [opened]
-    branches-ignore: [main]
+    types:
+      - opened
+    branches:
+      - 'dev_*'
 
 jobs:
   unit-test:
