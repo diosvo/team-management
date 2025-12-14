@@ -2,11 +2,18 @@
 
 import { DependencyList, useCallback, useEffect, useState } from 'react';
 
+enum Status {
+  IDLE = 'idle',
+  LOADING = 'loading',
+  SUCCESS = 'success',
+  ERROR = 'error',
+}
+
 type AsyncState<T> =
-  | { status: 'idle' }
-  | { status: 'loading' }
-  | { status: 'success'; data: T }
-  | { status: 'error'; error: Error };
+  | { status: Status.IDLE }
+  | { status: Status.LOADING }
+  | { status: Status.SUCCESS; data: T }
+  | { status: Status.ERROR; error: Error };
 
 type UseQueryOptions = {
   enabled: boolean;
@@ -24,31 +31,31 @@ export type UseQueryReturn<T> = {
 export default function useQuery<T>(
   fn: () => Promise<T>,
   deps: DependencyList = [],
-  options: Partial<UseQueryOptions> = {}
+  options: Partial<UseQueryOptions> = {},
 ): UseQueryReturn<T> {
   const { enabled = true } = options;
-  const [state, setState] = useState<AsyncState<T>>({ status: 'idle' });
+  const [state, setState] = useState<AsyncState<T>>({ status: Status.IDLE });
 
   const memoizedFn = useCallback(fn, deps);
 
   useEffect(() => {
     // Don't run if disabled
     if (!enabled) {
-      setState({ status: 'idle' });
+      setState({ status: Status.IDLE });
       return;
     }
 
     let ignore = false;
-    setState({ status: 'loading' });
+    setState({ status: Status.LOADING });
 
     fn()
       .then((data) => {
         if (ignore) return;
-        setState({ status: 'success', data });
+        setState({ status: Status.SUCCESS, data });
       })
       .catch((error) => {
         if (ignore) return;
-        setState({ status: 'error', error });
+        setState({ status: Status.ERROR, error });
       });
 
     // Cancel calling actions when unmounted or deps change
@@ -58,8 +65,8 @@ export default function useQuery<T>(
   }, [enabled, memoizedFn]);
 
   return {
-    loading: state.status === 'loading',
-    error: state.status === 'error' ? state.error : null,
-    data: state.status === 'success' ? state.data : null,
+    loading: state.status === Status.LOADING,
+    error: state.status === Status.ERROR ? state.error : null,
+    data: state.status === Status.SUCCESS ? state.data : null,
   };
 }

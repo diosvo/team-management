@@ -49,6 +49,12 @@ _e.g.,_ AssetList, RuleTable
 
 ## 📦 Database Interactions
 
+Ensure that PostgresSQL (latest version) is running on your local machine, start it via Homebrew:
+
+```bash
+brew services start postgresql@18
+```
+
 Generate a new migration after modifying the database schema:
 
 ```bash
