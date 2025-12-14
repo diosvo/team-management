@@ -106,10 +106,10 @@ importers:
         specifier: ^5.1.2
         version: 5.1.2(vite@7.2.7(@types/node@25.0.2)(tsx@4.21.0))
       '@vitest/coverage-v8':
-        specifier: 4.0.15
+        specifier: ^4.0.15
         version: 4.0.15(vitest@4.0.15)
       '@vitest/ui':
-        specifier: 4.0.15
+        specifier: ^4.0.15
         version: 4.0.15(vitest@4.0.15)
       date-fns:
         specifier: ^4.1.0

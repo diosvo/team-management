@@ -19,7 +19,7 @@ describe('Visibility', () => {
     expect(content).toHaveStyle('display: block');
   });
 
-  test('do not render children when isVisible is false', () => {
+  test('does not render children when isVisible is false', () => {
     const content = setup(false);
 
     expect(content).toBeInTheDocument();
