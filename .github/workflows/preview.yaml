@@ -1,4 +1,4 @@
-name: Vercel Preview Deployment
+name: 🔍 Preview Deployment
 
 env:
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
@@ -6,24 +6,32 @@ env:
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
-    branches-ignore:
-      - main
+    types: [opened]
+    branches-ignore: [main]
 
 jobs:
-  Deploy-Preview:
+  unit-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - name: 🚚 Setup Node
+        uses: actions/checkout@v5
 
-      - name: Install Vercel CLI and pnpm
+      - name: 🧪 Unit Tests
+        run: pnpm test
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🚚 Setup Node
+        uses: actions/checkout@v5
+
+      - name: 📦 Install Vercel CLI and pnpm
         run: npm install --global vercel@latest pnpm
 
-      - name: Pull Vercel Environment Information
+      - name: 🔽 Pull Vercel Environment Information
         run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
 
-      - name: Build Project Artifacts
+      - name: 🔨 Build Project Artifacts
         run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
 
-      - name: Deploy Project Artifacts to Vercel
+      - name: 🚀 Deploy Project Artifacts to Vercel
         run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}

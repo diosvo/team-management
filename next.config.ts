@@ -1,8 +1,7 @@
-import env from '@/schemas/env';
 import type { NextConfig } from 'next';
 
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
-  enabled: Boolean(env.ANALYZE_BUILD),
+  enabled: process.env.ANALYZE === 'true',
 });
 
 const nextConfig: NextConfig = {
@@ -12,7 +11,6 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   experimental: {
     authInterrupts: true,
-    webpackBuildWorker: true,
     optimizePackageImports: ['@chakra-ui/react'],
   },
   images: {

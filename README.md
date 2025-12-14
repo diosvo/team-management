@@ -3,52 +3,23 @@
 ## 🧑‍💻 Technology Stack
 
 - 🚀 [Next.js](https://nextjs.org/)
-
-  - 🧰 [Drizzle](https://orm.drizzle.team/) as the ORM for migrations and database access.
-  - 🔍 [Zod](https://zod.dev/) and [React Hook Form](https://react-hook-form.com/) for schema validation.
-  - 💾 [Neon](https://vercel.com/marketplace/neon) for PostgresSQL database interaction.
-  - 🔑 Authentication with [Better Auth](https://www.better-auth.com).
-  - 📩 [Resend](https://resend.com/) for email confirmation.
-  - 🌊 [Winston](https://github.com/winstonjs/winston) for server logging.
-  - ⏰ [date-fns](https://date-fns.org/) for datetime manipulation.
-  - 💃 Using various parts of a modern frontend stack:
-    - [Chakra UI](https://chakra-ui.com/) for component library.
-    - [React Hook Form](https://react-hook-form.com/) for form handling.
-    - [nuqs](https://github.com/47ng/nuqs) for filters state management.
-
-- 🔒 Secure password hashing by default.
+- 🧰 [Drizzle](https://orm.drizzle.team/) as the ORM for migrations and database access.
+- 🔍 [zod](https://zod.dev/) and [React Hook Form](https://react-hook-form.com/) for schema validation.
+- 💾 [Neon](https://vercel.com/marketplace/neon) for PostgresSQL database interaction.
+- 🔑 [Better Auth](https://www.better-auth.com) for authentication.
+- 📩 [Resend](https://resend.com/) for email confirmation.
+- 🌊 [winston](https://github.com/winstonjs/winston) for server logging.
+- ⏰ [date-fns](https://date-fns.org/) for datetime manipulation.
+- 💃 Using various parts of a modern frontend stack:
+  - [Chakra UI](https://chakra-ui.com/) for component library.
+  - [nuqs](https://github.com/47ng/nuqs) for filters state management.
+- 🧪 Testing:
+  - [vitest](https://vitest.dev/) for unit and integration tests.
+  - [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/) for component testing.
 - 🚢 [Vercel](http://vercel.com/) for deployment.
-- 🏭 CI/CD based on GitHub Actions.
+- 🏭 CI/CD with GitHub Actions.
 
-## Backend
-
-Ensure that PostgresSQL (latest version) is running on your local machine, start it via Homebrew:
-
-```bash
-brew services start postgresql@18
-```
-
-Generate schema with name
-
-```bash
-pnpm run db:generate --name=<schema_name>
-```
-
-Then migrate the database:
-
-```bash
-pnpm run db:migrate
-```
-
-View the databases directly in admin panels:
-
-```bash
-pnpm db:studio
-```
-
-Then open your browser at https://local.drizzle.studio/.
-
-## Frontend
+## ✨ How to start
 
 Install necessary pnpm packages:
 
@@ -63,3 +34,17 @@ pnpm dev
 ```
 
 Then open your browser at http://localhost:3000/.
+
+## 🧪 Testing
+
+Run all tests with:
+
+```bash
+pnpm test
+```
+
+To check coverage report in Vitest UI, run:
+
+```bash
+pnpm test:ui
+```
