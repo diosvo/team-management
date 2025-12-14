@@ -7,7 +7,7 @@ env:
 on:
   pull_request:
     types: [opened, synchronize, reopened]
-    branches: [main]
+    branches: [main] # Trigger on PRs targeting main branch
 
 jobs:
   unit-test:
@@ -28,20 +28,23 @@ jobs:
       - name: 🧪 Unit Tests
         run: pnpm test
 
-  # build-and-deploy:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: 📥 Checkout Code
-  #       uses: actions/checkout@v5
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v5
 
-  #     - name: 📦 Install Vercel CLI and pnpm
-  #       run: npm install --global vercel@latest pnpm
+      - name: 🚚 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+          cache: true
 
-  #     - name: 🔽 Pull Vercel Environment Information
-  #       run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+      - name: 🔽 Pull Vercel Environment Information
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
 
-  #     - name: 🔨 Build Project Artifacts
-  #       run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+      - name: 🔨 Build Project Artifacts
+        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
 
-  #     - name: 🚀 Deploy Project Artifacts to Vercel
-  #       run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
+      - name: 🚀 Deploy Project Artifacts to Vercel
+        run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
