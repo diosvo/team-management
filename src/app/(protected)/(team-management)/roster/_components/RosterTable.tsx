@@ -14,7 +14,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { toaster } from '@/components/ui/toaster';
 import Visibility from '@/components/Visibility';
 
-import { usePermissions } from '@/hooks/use-permissions';
+import usePermissions from '@/hooks/use-permissions';
 import { paginateData, useCommonParams } from '@/utils/filters';
 import { colorState } from '@/utils/helper';
 

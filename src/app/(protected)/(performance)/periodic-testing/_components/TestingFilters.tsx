@@ -22,7 +22,7 @@ import {
 import SearchInput from '@/components/SearchInput';
 import Visibility from '@/components/Visibility';
 
-import { usePermissions } from '@/hooks/use-permissions';
+import usePermissions from '@/hooks/use-permissions';
 import useQuery from '@/hooks/use-query';
 import { formatDate } from '@/utils/formatter';
 

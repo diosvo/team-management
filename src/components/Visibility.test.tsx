@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react';
+import { render } from '@/test/utilties';
 import Visibility from './Visibility';
 
 describe('Visibility', () => {

@@ -37,7 +37,7 @@ import { colorRole, colorState } from '@/utils/helper';
 
 import { updateTeamInfo } from '@/actions/user';
 import { User } from '@/drizzle/schema';
-import { usePermissions } from '@/hooks/use-permissions';
+import usePermissions from '@/hooks/use-permissions';
 import { EditTeamInfoSchema, EditTeamInfoValues } from '@/schemas/user';
 
 export default function TeamInfo({
