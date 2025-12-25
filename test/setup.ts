@@ -1,70 +1,14 @@
-import '@testing-library/jest-dom';
-import { cleanup } from '@testing-library/react';
-import React from 'react';
-import { afterEach, vi } from 'vitest';
+// 👀 Keep the same order to avoid dependency issues
 
-// ✅ Purpose: Set up global mocks that will be used across multiple tests, typically for simulating browser or package environments in Node.js
+// 1. Global configurations and mocks
+import './setup/global';
 
-// Mock Next.js router
-vi.mock('next/navigation', () => ({
-  useRouter: () => ({
-    push: vi.fn(),
-    replace: vi.fn(),
-    prefetch: vi.fn(),
-    back: vi.fn(),
-    forward: vi.fn(),
-    refresh: vi.fn(),
-    pathname: '/',
-    params: {},
-  }),
-  usePathname: () => '/',
-  useSearchParams: () => new URLSearchParams(),
-}));
+// 2. Next.js specific configurations
+import './setup/next';
 
-// Mock Next.js image component
-vi.mock('next/image', () => ({
-  default: (props: {
-    src: string;
-    alt: string;
-    width?: number;
-    height?: number;
-    className?: string;
-    priority?: boolean;
-    quality?: number;
-    style?: React.CSSProperties;
-  }) => {
-    return React.createElement('img', {
-      ...props,
-      src: props.src,
-      alt: props.alt,
-    });
-  },
-}));
+// 3. Chakra UI specific configurations
+// 🔗 Refer to: https://chakra-ui.com/docs/components/concepts/testing#setup-test-file
+import './setup/chakra-ui';
 
-// Mock Next.js link component
-vi.mock('next/link', () => ({
-  default: (props: {
-    href: string;
-    children: React.ReactNode;
-    className?: string;
-    prefetch?: boolean;
-    replace?: boolean;
-    scroll?: boolean;
-  }) => {
-    return React.createElement(
-      'a',
-      {
-        ...props,
-        href: props.href,
-      },
-      props.children,
-    );
-  },
-}));
-
-// Add any global mocks or setup here
-
-// Run cleanup after each test
-afterEach(() => {
-  cleanup();
-});
+// 4. Third-party libraries configurations
+import './setup/third-parties';
