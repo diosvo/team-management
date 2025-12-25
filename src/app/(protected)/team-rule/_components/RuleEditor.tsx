@@ -12,7 +12,7 @@ import { Tooltip } from '@/components/ui/tooltip';
 import Visibility from '@/components/Visibility';
 
 import { NullishRule } from '@/drizzle/schema/rule';
-import { usePermissions } from '@/hooks/use-permissions';
+import usePermissions from '@/hooks/use-permissions';
 import { formatDatetime } from '@/utils/formatter';
 
 import { upsertRule } from '@/actions/rule';

@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/popover';
 import { toaster } from '@/components/ui/toaster';
 
-import { usePermissions } from '@/hooks/use-permissions';
+import usePermissions from '@/hooks/use-permissions';
 
 import { updateTestResultById } from '@/actions/test-result';
 import { TestResult } from '@/types/periodic-testing';

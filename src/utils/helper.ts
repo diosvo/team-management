@@ -8,7 +8,7 @@ import { AssetCategory, AssetCondition, UserRole, UserState } from './enum';
  */
 function getColor<T>(
   value: Nullable<T>,
-  colorMap: Record<string, ColorPalette>
+  colorMap: Record<string, ColorPalette>,
 ): ColorPalette {
   if (value === ALL.value) return 'blue';
   if (value == null) return 'gray';

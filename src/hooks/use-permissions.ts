@@ -7,7 +7,7 @@ import authClient from '@/lib/auth-client';
 import { UserRole } from '@/utils/enum';
 import { hasPermissions } from '@/utils/helper';
 
-export function usePermissions() {
+export default function usePermissions() {
   const [mounted, setMounted] = useState<boolean>(false);
 
   // Ensure client-side only execution
