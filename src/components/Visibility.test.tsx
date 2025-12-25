@@ -1,4 +1,4 @@
-import { render } from '@/test/utilties';
+import { render } from '@/test/utilities';
 import Visibility from './Visibility';
 
 describe('Visibility', () => {
