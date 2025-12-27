@@ -4,16 +4,6 @@ import { Mock } from 'vitest';
 
 import { paginateData, useCommonParams } from './filters';
 
-// Fix for vi.requireActual: use dynamic import in the mock factory
-vi.mock('nuqs', async () => {
-  const actual = await import('nuqs');
-
-  return {
-    ...actual,
-    useQueryStates: vi.fn(),
-  };
-});
-
 describe('paginateData', () => {
   const mockData = Array.from({ length: 8 }, (_, i) => ({
     id: i + 1,

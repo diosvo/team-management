@@ -1,11 +1,11 @@
 import { HStack, Text, VStack } from '@chakra-ui/react';
 import { PropsWithChildren } from 'react';
 
-interface InfoFieldProps {
+type InfoFieldProps = {
   label: string;
   icon?: React.ElementType;
   direction?: 'horizontal' | 'vertical';
-}
+};
 
 export default function TextField({
   icon: IconComponent,

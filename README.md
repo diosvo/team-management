@@ -16,6 +16,7 @@
 - 🧪 Testing:
   - [Vitest](https://vitest.dev/) for unit and integration tests.
   - [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/) for component testing.
+  - [Axe](https://github.com/nickcolley/jest-axe) for accessibility testing.
 - 🚢 [Vercel](http://vercel.com/) for deployment.
 - 🏭 CI/CD with GitHub Actions.
 

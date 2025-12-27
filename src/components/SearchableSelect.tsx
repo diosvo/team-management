@@ -13,7 +13,6 @@ import {
 } from '@chakra-ui/react';
 
 import { toaster } from '@/components/ui/toaster';
-import Visibility from './Visibility';
 
 import { UseQueryReturn } from '@/hooks/use-query';
 import { capitalize } from '@/utils/formatter';
@@ -30,7 +29,6 @@ type SearchableSelectProps<T> = Selector<Array<T>> &
     placeholder: string;
     multiple: boolean;
     disabled: boolean;
-    searchOnly: boolean;
     showHelperText: boolean;
     contentRef: React.RefObject<Nullable<HTMLDivElement>>;
     renderItem: (item: T) => React.ReactNode;
@@ -42,7 +40,6 @@ export default function SearchableSelect<T>({
   request,
   maxItems,
   placeholder = 'Type to search',
-  searchOnly = false,
   selection,
   disabled = false,
   showHelperText = true,
@@ -89,27 +86,25 @@ export default function SearchableSelect<T>({
       onInputValueChange={(e) => filter(e.inputValue)}
       onValueChange={({ items }) => handleValueChange(items)}
     >
-      <Visibility isVisible={!searchOnly}>
-        <Combobox.Label display="flex">
-          {showHelperText ? (
-            <>
-              Select {label}
-              <Span fontSize="xs" color="GrayText" marginLeft={2}>
-                (max {max})
-              </Span>
-              <Span
-                fontSize="xs"
-                marginLeft="auto"
-                color={isOverLimit ? 'fg.error' : 'GrayText'}
-              >
-                {selection.length} / {max} selected
-              </Span>
-            </>
-          ) : (
-            capitalize(label)
-          )}
-        </Combobox.Label>
-      </Visibility>
+      <Combobox.Label display="flex">
+        {showHelperText ? (
+          <>
+            Select {label}
+            <Span fontSize="xs" color="GrayText" marginLeft={2}>
+              (max {max})
+            </Span>
+            <Span
+              fontSize="xs"
+              marginLeft="auto"
+              color={isOverLimit ? 'fg.error' : 'GrayText'}
+            >
+              {selection.length} / {max} selected
+            </Span>
+          </>
+        ) : (
+          capitalize(label)
+        )}
+      </Combobox.Label>
 
       <Combobox.Control>
         <Combobox.Input placeholder={placeholder} />
