@@ -18,7 +18,7 @@ describe('TextField', () => {
   };
 
   test('should be accessible', async () => {
-    const { container } = setup(1);
+    const { container } = setup();
 
     const result = await axe(container);
     expect(result).toHaveNoViolations();

@@ -8,7 +8,10 @@ export default defineConfig({
     environment: 'jsdom', // Simulate a browser environment
     setupFiles: ['./test/setup.ts'], // Reference a setup file
     globals: true, // Utilities functions (like describe, it, etc.)
-    css: true, // CSS processing during tests,
+    css: true, // CSS processing during tests
+    fakeTimers: {
+      toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval'],
+    },
     coverage: {
       exclude: [
         'test/**',

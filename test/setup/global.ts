@@ -6,12 +6,6 @@ import { afterEach } from 'vitest';
 // ⭕️ Global mocks or setup here
 expect.extend(toHaveNoViolations);
 
-const EXCLUDED_MESSAGES = [
-  '[@zag-js/dismissable]',
-  'act(...)',
-  'not wrapped in act',
-];
-
 // ♻️ Run cleanup after each test
 afterEach(() => {
   cleanup();
