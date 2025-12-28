@@ -37,13 +37,13 @@ import { Tooltip } from '@/components/ui/tooltip';
 
 import Visibility from './Visibility';
 
-interface TextEditorProps {
+type TextEditorProps = {
   editable: boolean;
   content: string;
   defaultContent: string;
   hasChanges: boolean;
   onChange: (content: string) => void;
-}
+};
 
 export default function TextEditor({
   editable,
