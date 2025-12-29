@@ -34,7 +34,15 @@ And start the live server with the following script:
 pnpm dev
 ```
 
-Then open your browser at http://localhost:3000/.
+Then open browser at http://localhost:3000/.
+
+### 📦 Package Analyzer
+
+```bash
+pnpm analyze
+```
+
+Then open browser at http://localhost:4000/.
 
 ## 🧪 Testing
 
