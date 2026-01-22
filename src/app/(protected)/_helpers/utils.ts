@@ -1,13 +1,15 @@
 import {
   BadgeCheck,
-  CalendarDays,
   Dumbbell,
   FileChartColumnIncreasing,
   FileText,
   Film,
+  GamepadDirectional,
   LayoutDashboard,
+  MapPinHouse,
   Package,
   ShieldCheck,
+  Trophy,
   Users,
 } from 'lucide-react';
 
@@ -39,9 +41,9 @@ export const SIDEBAR_GROUP = [
     title: 'Team Management',
     items: [
       { icon: Users, text: 'Roster', disabled: false },
-      { icon: CalendarDays, text: 'Schedule', disabled: true },
       { icon: BadgeCheck, text: 'Attendance', disabled: true },
       { icon: FileText, text: 'Registration', disabled: false },
+      { icon: GamepadDirectional, text: 'Matches', disabled: false },
     ],
   },
   {
@@ -66,6 +68,21 @@ export const SIDEBAR_GROUP = [
         icon: Film,
         text: 'Documents',
         disabled: true,
+      },
+    ],
+  },
+  {
+    title: 'Settings',
+    items: [
+      {
+        icon: Trophy,
+        text: 'Leagues',
+        disabled: false,
+      },
+      {
+        icon: MapPinHouse,
+        text: 'Locations',
+        disabled: false,
       },
     ],
   },

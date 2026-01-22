@@ -2,6 +2,8 @@ import {
   AssetCategory,
   AssetCondition,
   CoachPosition,
+  Interval,
+  LeagueStatus,
   PlayerPosition,
   TestTypeUnit,
   UserRole,
@@ -11,10 +13,13 @@ import { Option, Selection } from './type';
 
 export const ESTABLISHED_DATE = '2024-02-20';
 export const DEFAULT_DOB = '2000-01-01';
+export const CURRENT_DATE = new Date().toISOString().split('T')[0];
 
 export const DEFAULT_DATE_FORMAT = 'yyyy-MM-dd';
 export const LOCALE_DATE_FORMAT = 'dd/MM/yyyy';
-export const LOCALE_DATETIME_FORMAT = LOCALE_DATE_FORMAT + ' HH:mm:ss';
+export const LOCAL_TIME_FORMAT = 'HH:mm:ss';
+export const LOCALE_DATETIME_FORMAT =
+  LOCALE_DATE_FORMAT + ' ' + LOCAL_TIME_FORMAT;
 
 export const COOKIE = {
   prefix: 'sgr',
@@ -26,6 +31,28 @@ export const ALL: Option<string> = {
   label: 'All',
   value: 'all',
 };
+
+export const MONTHS_SELECTION: Selection<number> = Array.from(
+  { length: 12 },
+  (_, i) => ({
+    label: (i + 1).toString(),
+    value: i + 1,
+  }),
+);
+
+export const YEARS_SELECTION: Selection<number> = Array.from(
+  {
+    length:
+      new Date().getFullYear() - new Date(ESTABLISHED_DATE).getFullYear() + 1,
+  },
+  (_, i) => {
+    const year = new Date(ESTABLISHED_DATE).getFullYear() + i;
+    return {
+      label: year.toString(),
+      value: year,
+    };
+  },
+);
 
 export const SELECTABLE_USER_ROLES = [
   UserRole.COACH,
@@ -65,7 +92,7 @@ export const USER_STATE_SELECTION: Selection<string> = [
   {
     label: 'Absent',
     value: UserState.TEMPORARILY_ABSENT,
-    description: 'Temporarily',
+    description: 'Temporarily Absent',
   },
   {
     label: 'Unknown',
@@ -99,8 +126,8 @@ export const SELECTABLE_PLAYER_POSITIONS = [
   PlayerPosition.POINT_GUARD,
   PlayerPosition.SHOOTING_GUARD,
   PlayerPosition.SMALL_FORWARD,
+  PlayerPosition.POWER_FORWARD,
   PlayerPosition.CENTER,
-  PlayerPosition.FORWARD,
   PlayerPosition.UNKNOWN,
 ] as const;
 export const PLAYER_POSITIONS_SELECTION: Selection<string> = [
@@ -120,14 +147,14 @@ export const PLAYER_POSITIONS_SELECTION: Selection<string> = [
     description: 'Small Forward',
   },
   {
+    label: 'PF',
+    value: PlayerPosition.POWER_FORWARD,
+    description: 'Power Forward',
+  },
+  {
     label: 'C',
     value: PlayerPosition.CENTER,
     description: 'Center',
-  },
-  {
-    label: 'F',
-    value: PlayerPosition.FORWARD,
-    description: 'Forward',
   },
   {
     label: 'Unknown',
@@ -188,6 +215,60 @@ export const ASSET_CONDITION_VALUES = [
   ALL.value,
   ...SELECTABLE_ASSET_CONDITIONS,
 ];
+
+export const GAME_TYPE_SELECTION: Selection<string> = [
+  {
+    label: '3x3',
+    value: 'false',
+  },
+  {
+    label: '5x5',
+    value: 'true',
+  },
+];
+
+export const MATCH_INTERVAL_SELECTION: Selection<string> = [
+  {
+    label: 'This month',
+    value: Interval.THIS_MONTH,
+  },
+  {
+    label: 'Last month',
+    value: Interval.LAST_MONTH,
+  },
+  {
+    label: 'This year',
+    value: Interval.THIS_YEAR,
+  },
+  {
+    label: 'Last year',
+    value: Interval.LAST_YEAR,
+  },
+];
+export const MATCH_INTERVAL_VALUES = MATCH_INTERVAL_SELECTION.map(
+  ({ value }) => value,
+);
+
+export const SELECTABLE_LEAGUE_STATUS = [
+  LeagueStatus.UPCOMING,
+  LeagueStatus.ONGOING,
+  LeagueStatus.ENDED,
+] as const;
+export const LEAGUE_STATUS_SELECTION: Selection<string> = [
+  {
+    label: 'Upcoming',
+    value: LeagueStatus.UPCOMING,
+  },
+  {
+    label: 'Ongoing',
+    value: LeagueStatus.ONGOING,
+  },
+  {
+    label: 'Ended',
+    value: LeagueStatus.ENDED,
+  },
+];
+export const LEAGUE_STATUS_VALUES = [ALL.value, ...SELECTABLE_LEAGUE_STATUS];
 
 export const SELECTABLE_TEST_TYPES = [
   TestTypeUnit.METERS,

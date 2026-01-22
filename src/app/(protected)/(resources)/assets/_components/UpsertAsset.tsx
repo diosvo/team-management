@@ -9,7 +9,6 @@ import {
   HStack,
   Input,
   Portal,
-  RadioGroup,
   Textarea,
   createOverlay,
 } from '@chakra-ui/react';
@@ -23,6 +22,7 @@ import {
   NumberInputField,
   NumberInputRoot,
 } from '@/components/ui/number-input';
+import { Radio, RadioGroup } from '@/components/ui/radio';
 import { toaster } from '@/components/ui/toaster';
 import { Tooltip } from '@/components/ui/tooltip';
 
@@ -127,7 +127,7 @@ export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
                   name="category"
                   control={control}
                   render={({ field }) => (
-                    <RadioGroup.Root
+                    <RadioGroup
                       size="sm"
                       colorPalette="red"
                       marginTop={2}
@@ -138,19 +138,13 @@ export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
                       <HStack gap={4}>
                         {ASSET_CATEGORY_SELECTION.map((item) => (
                           <Tooltip key={item.value} content={item.description}>
-                            <RadioGroup.Item value={item.value}>
-                              <RadioGroup.ItemHiddenInput
-                                onBlur={field.onBlur}
-                              />
-                              <RadioGroup.ItemIndicator />
-                              <RadioGroup.ItemText>
-                                {item.label}
-                              </RadioGroup.ItemText>
-                            </RadioGroup.Item>
+                            <Radio value={item.value} onBlur={field.onBlur}>
+                              {item.label}
+                            </Radio>
                           </Tooltip>
                         ))}
                       </HStack>
-                    </RadioGroup.Root>
+                    </RadioGroup>
                   )}
                 />
               </Fieldset.Root>
@@ -160,7 +154,7 @@ export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
                   name="condition"
                   control={control}
                   render={({ field }) => (
-                    <RadioGroup.Root
+                    <RadioGroup
                       size="sm"
                       colorPalette="green"
                       marginTop={2}
@@ -172,16 +166,16 @@ export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
                     >
                       <HStack gap={4}>
                         {ASSET_CONDITION_SELECTION.map((item) => (
-                          <RadioGroup.Item key={item.value} value={item.value}>
-                            <RadioGroup.ItemHiddenInput onBlur={field.onBlur} />
-                            <RadioGroup.ItemIndicator />
-                            <RadioGroup.ItemText>
-                              {item.label}
-                            </RadioGroup.ItemText>
-                          </RadioGroup.Item>
+                          <Radio
+                            key={item.value}
+                            value={item.value}
+                            onBlur={field.onBlur}
+                          >
+                            {item.label}
+                          </Radio>
                         ))}
                       </HStack>
-                    </RadioGroup.Root>
+                    </RadioGroup>
                   )}
                 />
               </Fieldset.Root>

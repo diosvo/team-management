@@ -8,6 +8,7 @@ export const RuleTable = pgTable('rule', {
   rule_id: uuid().primaryKey().defaultRandom(),
   team_id: uuid()
     .notNull()
+    .unique()
     .references(() => TeamTable.team_id, { onDelete: 'cascade' }),
   content: text().notNull(),
   created_at,

@@ -1,7 +1,14 @@
 import { ColorPalette } from '@chakra-ui/react';
 
 import { ALL } from './constant';
-import { AssetCategory, AssetCondition, UserRole, UserState } from './enum';
+import {
+  AssetCategory,
+  AssetCondition,
+  LeagueStatus,
+  MatchStatus,
+  UserRole,
+  UserState,
+} from './enum';
 
 /**
  * @description Returns a color from the provided colorMap based on the given value.
@@ -44,6 +51,22 @@ export function colorCategory(category: string): ColorPalette {
   return getColor(category, {
     [AssetCategory.EQUIPMENT]: 'purple',
     [AssetCategory.TRAINING]: 'blue',
+  });
+}
+
+export function colorLeagueStatus(status: string): ColorPalette {
+  return getColor(status, {
+    [LeagueStatus.UPCOMING]: 'yellow',
+    [LeagueStatus.ONGOING]: 'green',
+    [LeagueStatus.ENDED]: 'red',
+  });
+}
+
+export function colorMatchResult(status: string): ColorPalette {
+  return getColor(status, {
+    [MatchStatus.WIN]: 'green',
+    [MatchStatus.LOSS]: 'red',
+    [MatchStatus.DRAW]: 'gray',
   });
 }
 

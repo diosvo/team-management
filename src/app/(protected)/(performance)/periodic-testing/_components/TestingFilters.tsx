@@ -24,10 +24,10 @@ import Visibility from '@/components/Visibility';
 
 import usePermissions from '@/hooks/use-permissions';
 import useQuery from '@/hooks/use-query';
+import { usePeriodicTestingFilters } from '@/utils/filters';
 import { formatDate } from '@/utils/formatter';
 
 import { getTestDates } from '@/actions/test-result';
-import { usePeriodicTestingFilters } from '../search-params';
 
 export default function TestingFilters() {
   const { isAdmin } = usePermissions();

@@ -33,7 +33,7 @@ import Visibility from '@/components/Visibility';
 import { ESTABLISHED_DATE } from '@/utils/constant';
 import { UserRole } from '@/utils/enum';
 import { formatDate } from '@/utils/formatter';
-import { colorRole, colorState } from '@/utils/helper';
+import { colorRole, colorState, hasPermissions } from '@/utils/helper';
 
 import { updateTeamInfo } from '@/actions/user';
 import { User } from '@/drizzle/schema';
@@ -47,7 +47,8 @@ export default function TeamInfo({
   user: User;
   viewOnly: boolean;
 }) {
-  const { isAdmin, isPlayer } = usePermissions();
+  const { isAdmin } = usePermissions();
+  const { isPlayer, isCoach } = hasPermissions(user.role);
 
   const [isPending, startTransition] = useTransition();
   const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -55,6 +56,7 @@ export default function TeamInfo({
   const {
     control,
     reset,
+    watch,
     register,
     setValue,
     handleSubmit,
@@ -62,19 +64,22 @@ export default function TeamInfo({
   } = useForm({
     defaultValues: {
       user: {
-        role: user?.role === UserRole.SUPER_ADMIN ? undefined : user?.role,
+        role: user?.role === UserRole.SUPER_ADMIN ? undefined : user.role,
         state: user?.state,
         join_date: user?.join_date,
       },
       player: {
-        jersey_number: user?.details.jersey_number ?? undefined,
+        jersey_number: user.player?.jersey_number,
+        position: user.player?.position,
       },
-      position: user?.details.position,
+      coach: {
+        position: user.coach?.position,
+      },
     },
     resolver: zodResolver(EditTeamInfoSchema),
   });
 
-  if (!user) return null;
+  const selectedRole = watch('user.role');
 
   const onSubmit = (data: EditTeamInfoValues) => {
     startTransition(async () => {
@@ -130,11 +135,11 @@ export default function TeamInfo({
               </Tooltip>
             </>
           ) : (
-            <Tooltip content={viewOnly || isAdmin ? 'View Only' : 'Edit'}>
+            <Tooltip content={viewOnly ? 'View Only' : 'Edit'}>
               <IconButton
                 size="sm"
                 variant="subtle"
-                disabled={viewOnly || isAdmin}
+                disabled={viewOnly}
                 onClick={() => setIsEditing(true)}
               >
                 <Edit />
@@ -147,7 +152,11 @@ export default function TeamInfo({
         {isEditing && isAdmin ? (
           <RolePositionSelection
             roleName="user.role"
-            positionName="position"
+            positionName={
+              selectedRole === UserRole.COACH
+                ? 'coach.position'
+                : 'player.position'
+            }
             control={control}
             disabled={isPending}
             setValue={setValue}
@@ -163,15 +172,14 @@ export default function TeamInfo({
                 {user.role}
               </Badge>
             </TextField>
-            <TextField label="Position">
-              {user.details.position ? (
+            <Visibility isVisible={isPlayer || isCoach}>
+              <TextField label="Position">
                 <Badge variant="outline" borderRadius="full">
-                  {user.details.position}
+                  {isPlayer && user.player?.position}
+                  {isCoach && user.coach?.position}
                 </Badge>
-              ) : (
-                <Text>-</Text>
-              )}
-            </TextField>
+              </TextField>
+            </Visibility>
           </SimpleGrid>
         )}
 
@@ -234,13 +242,15 @@ export default function TeamInfo({
                   {user.state}
                 </Badge>
               </TextField>
-              <TextField
-                label="Jersey Number"
-                direction="horizontal"
-                icon={Shirt}
-              >
-                {user.details.jersey_number ?? '-'}
-              </TextField>
+              <Visibility isVisible={isPlayer}>
+                <TextField
+                  label="Jersey Number"
+                  direction="horizontal"
+                  icon={Shirt}
+                >
+                  {user.player?.jersey_number ?? '-'}
+                </TextField>
+              </Visibility>
             </SimpleGrid>
             {user.join_date && (
               <TextField

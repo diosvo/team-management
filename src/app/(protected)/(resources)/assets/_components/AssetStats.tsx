@@ -5,9 +5,9 @@ import { useMemo } from 'react';
 import { AlertTriangle, Package } from 'lucide-react';
 
 import Stats, { type StatCard } from '@/components/Stats';
-import { AssetCondition } from '@/utils/enum';
 
-import { useAssetFilters } from '../search-params';
+import { AssetCondition } from '@/utils/enum';
+import { useAssetFilters } from '@/utils/filters';
 
 type AssetStatsProps = {
   stats: {

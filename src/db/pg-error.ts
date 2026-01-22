@@ -363,11 +363,6 @@ const PostgresErrorHandlers: Record<
       'A foreign key violation occurred. The record you are trying to link does not exist.',
     constraint: error.constraint || null,
   }),
-  [PgErrorCode.INVALID_TEXT_REPRESENTATION]: () => ({
-    message:
-      'The data provided is in an invalid format (e.g., not a valid UUID).',
-    constraint: null,
-  }),
   [PgErrorCode.CHECK_VIOLATION]: (error) => ({
     message: 'A check constraint was violated.',
     constraint: error.constraint || null,

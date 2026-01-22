@@ -8,6 +8,34 @@
       "when": 1763193218285,
       "tag": "0000_core_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1767341115888,
+      "tag": "0001_matches_leagues",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1767516178888,
+      "tag": "0002_remove_schedules",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1768639032202,
+      "tag": "0003_update_match_datetime",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1768639606273,
+      "tag": "0004_update_match_time",
+      "breakpoints": true
     }
   ]
 }

@@ -1,9 +1,15 @@
 import { format } from 'date-fns';
 
-import { capitalize, formatDate, formatDatetime, mockDelay } from './formatter';
+import { capitalize, formatDate, formatDatetime } from './formatter';
 
 vi.mock('date-fns', () => ({
   format: vi.fn(),
+  subMonths: vi.fn(),
+  subYears: vi.fn(),
+  startOfMonth: vi.fn(),
+  endOfMonth: vi.fn(),
+  startOfYear: vi.fn(),
+  endOfYear: vi.fn(),
 }));
 
 describe('formatDate', () => {
@@ -71,39 +77,5 @@ describe('capitalize', () => {
 
   test.each(cases)('capitalizes $input to $expected', ({ input, expected }) => {
     expect(capitalize(input)).toBe(expected);
-  });
-});
-
-describe('mockDelay', () => {
-  beforeEach(() => {
-    vi.useFakeTimers();
-  });
-
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-
-  test('resolves after specified milliseconds', async () => {
-    const promise = mockDelay(1000);
-
-    vi.advanceTimersByTime(999);
-    expect(promise).not.toBe(
-      await Promise.race([promise, Promise.resolve('early')]),
-    );
-
-    vi.advanceTimersByTime(1);
-    await expect(promise).resolves.toBeUndefined();
-  });
-
-  test('works with zero delay', async () => {
-    const promise = mockDelay(0);
-    vi.advanceTimersByTime(0);
-    await expect(promise).resolves.toBeUndefined();
-  });
-
-  test('works with large delay values', async () => {
-    const promise = mockDelay(5000);
-    vi.advanceTimersByTime(5000);
-    await expect(promise).resolves.toBeUndefined();
   });
 });

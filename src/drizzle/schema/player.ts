@@ -6,12 +6,14 @@ import {
   pgEnum,
   pgTable,
   text,
-  uniqueIndex,
 } from 'drizzle-orm/pg-core';
 
 import { PlayerPosition } from '@/utils/enum';
 
 import { created_at, updated_at } from '../helpers';
+import { LeagueTeamRosterTable } from './league';
+import { MatchPlayerStatsTable } from './match';
+import { TestResultTable } from './periodic-testing';
 import { UserTable } from './user';
 
 export const playerPositionEnum = pgEnum('player_position', PlayerPosition);
@@ -35,18 +37,17 @@ export const PlayerTable = pgTable(
     check('jersey_number', sql`${table.jersey_number} BETWEEN 0 AND 99`),
     check('height', sql`${table.height} BETWEEN 0 AND 200`),
     check('weight', sql`${table.weight} BETWEEN 0 AND 100`),
-    // Ensure that there is only one captain in team
-    uniqueIndex('team_captain')
-      .on(table.id)
-      .where(sql`${table.is_captain} = true`),
-  ]
+  ],
 );
 
-export const PlayerRelations = relations(PlayerTable, ({ one }) => ({
+export const PlayerRelations = relations(PlayerTable, ({ one, many }) => ({
   user: one(UserTable, {
     fields: [PlayerTable.id],
     references: [UserTable.id],
   }),
+  league_participations: many(LeagueTeamRosterTable),
+  match_stats: many(MatchPlayerStatsTable),
+  test_results: many(TestResultTable),
 }));
 
 export type Player = typeof PlayerTable.$inferSelect;

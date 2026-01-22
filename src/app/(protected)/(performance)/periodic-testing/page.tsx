@@ -4,7 +4,7 @@ import PageTitle from '@/components/PageTitle';
 import TestingResultList from './_components/TestingResultList';
 
 import { getTestResult } from '@/actions/test-result';
-import { loadPeriodicTestingFilters } from './search-params';
+import { loadPeriodicTestingFilters } from '@/utils/filters';
 
 export const metadata: Metadata = {
   title: 'Periodic Testing',

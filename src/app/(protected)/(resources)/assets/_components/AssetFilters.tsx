@@ -21,9 +21,9 @@ import {
   ASSET_CATEGORY_SELECTION,
   ASSET_CONDITION_SELECTION,
 } from '@/utils/constant';
+import { useAssetFilters } from '@/utils/filters';
 import { colorCondition } from '@/utils/helper';
 
-import { useAssetFilters } from '../search-params';
 import { UpsertAsset } from './UpsertAsset';
 
 const categories = createListCollection({

@@ -86,12 +86,7 @@ function NavButton({
           </div>
         ) : (
           <Link href={href}>
-            <Icon
-              size="sm"
-              strokeWidth={isActive ? 2 : 1.75}
-              fontWeight={isActive ? 500 : 400}
-              as={icon}
-            />
+            <Icon size="sm" fontWeight={isActive ? 500 : 400} as={icon} />
             {isExpanded && children}
             {isExpanded && <LoadingIndicator />}
           </Link>
@@ -163,11 +158,7 @@ export default function Sidebar({
             paddingInline={isExpanded ? undefined : 2}
             onClick={() => setIsExpanded(!isExpanded)}
           >
-            <Icon
-              size="sm"
-              strokeWidth={1.75}
-              as={isExpanded ? PanelRightOpen : PanelLeftOpen}
-            />
+            <Icon size="sm" as={isExpanded ? PanelRightOpen : PanelLeftOpen} />
             {isExpanded && 'Collapse menu'}
           </Button>
         </Tooltip>
