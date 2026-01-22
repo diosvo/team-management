@@ -33,16 +33,27 @@ import { ESTABLISHED_DATE } from '@/utils/constant';
 import { LeagueStatus } from '@/utils/enum';
 
 import { User } from '@/drizzle/schema';
+import useQuery from '@/hooks/use-query';
 import { UpsertLeagueSchema, UpsertLeagueSchemaValues } from '@/schemas/league';
 
-import { upsertLeague } from '@/actions/league';
+import {
+  getPlayersInLeague,
+  upsertLeague,
+  upsertPlayerToLeague,
+} from '@/actions/league';
 
 export const UpsertLeague = createOverlay(({ action, item, ...rest }) => {
-  // const users = useQuery(getActivePlayers)
   const [isPending, startTransition] = useTransition();
 
   const contentRef = useRef<HTMLDivElement>(null);
   const [selection, setSelection] = useState<Array<User>>([]);
+
+  useQuery(async () => {
+    if (action === 'Update' && item.league_id) {
+      const users = await getPlayersInLeague(item.league_id);
+      setSelection(users);
+    }
+  }, [action, item.league_id]);
 
   const {
     reset,
@@ -72,16 +83,34 @@ export const UpsertLeague = createOverlay(({ action, item, ...rest }) => {
     });
 
     startTransition(async () => {
-      const { success, message: title } = await upsertLeague(
-        item.league_id,
-        data,
-      );
-      toaster.update(id, {
-        type: success ? 'success' : 'error',
-        title,
-      });
+      const { success } = await upsertLeague(item.league_id, data);
 
-      if (success) reset();
+      const results = await Promise.all(
+        selection.map(({ id }) => upsertPlayerToLeague(item.league_id, id)),
+      );
+      const errors = results.filter(({ success }) => !success);
+      const hasErrors = errors.length > 0;
+
+      if (success && !hasErrors) {
+        toaster.update(id, {
+          type: 'success',
+          title: 'League information saved successfully.',
+        });
+        reset();
+        setSelection([]);
+      } else if (hasErrors) {
+        toaster.update(id, {
+          type: 'error',
+          title: (
+            <>
+              {errors.map(({ message }, index) => (
+                <p key={index}>{message}</p>
+              ))}
+            </>
+          ),
+        });
+      }
+
       if (action === 'Update') UpsertLeague.close('update-league');
     });
   };

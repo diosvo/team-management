@@ -12,7 +12,11 @@ import { useLeagueFilters } from '@/utils/filters';
 import LeagueFilters from './LeagueFilters';
 import LeagueTable from './LeagueTable';
 
-export default function LeagueList({ leagues }: { leagues: Array<League> }) {
+export default function LeagueList({
+  leagues,
+}: {
+  leagues: Array<League & { player_count: number }>;
+}) {
   const [{ q, status }] = useLeagueFilters();
   const filteredLeagues = useMemo(
     () =>

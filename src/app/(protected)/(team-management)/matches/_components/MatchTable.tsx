@@ -16,7 +16,7 @@ import { MatchWithTeams } from '@/types/match';
 import { LOCALE_DATE_FORMAT } from '@/utils/constant';
 import { paginateData, useMatchFilters } from '@/utils/filters';
 import { formatDatetime } from '@/utils/formatter';
-import { colorMacthResult } from '@/utils/helper';
+import { colorMatchResult } from '@/utils/helper';
 
 import { removeMatch } from '@/actions/match';
 import { UpsertMatch } from './UpsertMatch';
@@ -138,7 +138,7 @@ export default function MatchTable({
                     <Badge
                       variant="surface"
                       borderRadius="full"
-                      colorPalette={colorMacthResult(item.result)}
+                      colorPalette={colorMatchResult(item.result)}
                     >
                       {item.result}
                     </Badge>

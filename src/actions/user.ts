@@ -50,8 +50,6 @@ export const getUserProfile = withAuth(async (user, target_id: string) => {
   const viewOnly =
     (isAdmin && isOwnProfile) || ((isPlayer || isCoach) && !isOwnProfile);
 
-  console.log(targetUser);
-
   return {
     targetUser,
     viewOnly,

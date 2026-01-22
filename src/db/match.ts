@@ -9,6 +9,7 @@ import { TIME_DURATION } from '@/utils/formatter';
 
 import db from '@/drizzle';
 import { InsertMatch, MatchTable } from '@/drizzle/schema';
+import { UpsertMatchSchemaValues } from '@/schemas/match';
 
 export async function getMatches(
   params: MatchSearchParams,
@@ -110,7 +111,10 @@ export async function insertMatch(match: InsertMatch) {
   }
 }
 
-export async function updateMatch(match_id: string, match: any) {
+export async function updateMatch(
+  match_id: string,
+  match: UpsertMatchSchemaValues,
+) {
   try {
     return await db
       .update(MatchTable)

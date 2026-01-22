@@ -91,7 +91,7 @@ export default function TeamInfo({
       const { success, message: title } = await updateTeamInfo(user.id, data);
 
       toaster.update(id, {
-        type: true ? 'success' : 'error',
+        type: success ? 'success' : 'error',
         title,
       });
       if (success) setIsEditing(false);

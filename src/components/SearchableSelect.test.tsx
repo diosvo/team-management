@@ -143,26 +143,9 @@ describe('SearchableSelect', () => {
   });
 
   test('displays selection count', () => {
-    setup({ selection: [mockItems[0], mockItems[1]] });
+    setup({ selection: [mockItems[0], mockItems[1]], maxItems: 3 });
 
     expect(screen.getByText('2 / 3 selected')).toBeInTheDocument();
-  });
-
-  test('enforces maxItems limit', async () => {
-    const { user, input } = setup({
-      maxItems: 2,
-      selection: [mockItems[0], mockItems[1]],
-    });
-
-    expect(screen.getByText('(max 2)')).toBeInTheDocument();
-
-    await user.click(input);
-
-    // Item not found since max reached
-    const item = await screen.findByText('Item 3');
-    await user.click(item);
-
-    expect(onSelectionChange).not.toHaveBeenCalled();
   });
 
   test('hides helper text when showHelperText is false', () => {

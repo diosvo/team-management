@@ -21,13 +21,13 @@ export const getMatches = withAuth(
 
 export const upsertMatch = withAuth(
   async (user, match_id: string, match: UpsertMatchSchemaValues) => {
-    const extened = { ...match, home_team: user.team_id };
+    const extended = { ...match, home_team: user.team_id };
 
     try {
       if (match_id) {
         await updateMatch(match_id, match);
       } else {
-        await insertMatch(extened);
+        await insertMatch(extended);
       }
 
       revalidate.matches();

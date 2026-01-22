@@ -1,7 +1,6 @@
-import { and, count, eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 
 import db from '@/drizzle';
-import { UserTable } from '@/drizzle/schema';
 import {
   InsertLeague,
   LeagueTable,
@@ -14,26 +13,44 @@ export async function getLeagues() {
   // After all leagues have been updated, pass an argument to allow filtering (support Add match result with Upcoming/Ongoing status only)
 
   try {
-    return db.query.LeagueTable.findMany({
-      orderBy: (leagues, { asc }) => [asc(leagues.end_date)],
+    const leagues = await db.query.LeagueTable.findMany({
+      orderBy: (leagues, { desc }) => [desc(leagues.end_date)],
+      with: {
+        team_rosters: {
+          columns: { league_id: true },
+        },
+      },
     });
+
+    return leagues.map((league) => ({
+      ...league,
+      player_count: league.team_rosters.length,
+    }));
   } catch {
     return [];
   }
 }
 
-export async function getLeague(league_id: string) {
+export async function getPlayersInLeague(team_id: string, league_id: string) {
   try {
-    return await db
-      .select({
-        team_id: LeagueTeamRosterTable.team_id,
-        noPlayers: count(LeagueTeamRosterTable.player_id),
-      })
-      .from(LeagueTeamRosterTable)
-      .where(eq(LeagueTeamRosterTable.league_id, league_id))
-      .groupBy(LeagueTeamRosterTable.team_id);
-  } catch {
-    return null;
+    const results = await db.query.LeagueTeamRosterTable.findMany({
+      columns: {},
+      where: and(
+        eq(LeagueTeamRosterTable.team_id, team_id),
+        eq(LeagueTeamRosterTable.league_id, league_id),
+      ),
+      with: {
+        player: {
+          with: {
+            user: true,
+          },
+        },
+      },
+    });
+
+    return results.map(({ player }) => player.user);
+  } catch (error) {
+    throw error;
   }
 }
 
@@ -76,17 +93,13 @@ export async function addPlayerToLeagueRoster(
   league_id: string,
   player_id: string,
 ) {
-  const player = await db.query.UserTable.findFirst({
-    where: and(eq(UserTable.team_id, team_id), eq(UserTable.id, player_id)),
-  });
-
-  if (!player) {
-    throw new Error('Player does not belong to this team');
+  try {
+    return await db.insert(LeagueTeamRosterTable).values({
+      team_id,
+      league_id,
+      player_id,
+    });
+  } catch (error) {
+    throw error;
   }
-
-  return await db.insert(LeagueTeamRosterTable).values({
-    league_id,
-    team_id,
-    player_id,
-  });
 }

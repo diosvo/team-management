@@ -23,7 +23,11 @@ import usePermissions from '@/hooks/use-permissions';
 
 import { UpsertLeague } from './UpsertLeague';
 
-export default function LeagueTable({ leagues }: { leagues: Array<League> }) {
+export default function LeagueTable({
+  leagues,
+}: {
+  leagues: Array<League & { player_count: number }>;
+}) {
   const { isAdmin, isGuest } = usePermissions();
   const [{ q, page }, setSearchParams] = useCommonParams();
 
@@ -86,16 +90,11 @@ export default function LeagueTable({ leagues }: { leagues: Array<League> }) {
                   />
                 </Table.ColumnHeader>
               </Visibility>
-              {[
-                'Name',
-                'Location',
-                'No. Players',
-                'Start Date',
-                'End Date',
-                'Status',
-              ].map((header) => (
-                <Table.ColumnHeader key={header}>{header}</Table.ColumnHeader>
-              ))}
+              {['Name', 'No. Players', 'Start Date', 'End Date', 'Status'].map(
+                (header) => (
+                  <Table.ColumnHeader key={header}>{header}</Table.ColumnHeader>
+                ),
+              )}
             </Table.Row>
           </Table.Header>
           <Table.Body>
@@ -134,10 +133,7 @@ export default function LeagueTable({ leagues }: { leagues: Array<League> }) {
                       {item.name}
                     </Highlight>
                   </Table.Cell>
-                  {/* <Table.Cell>{item.location}</Table.Cell>
-                  <Table.Cell>{item.noPlayers}</Table.Cell> */}
-                  <Table.Cell>A</Table.Cell>
-                  <Table.Cell>12</Table.Cell>
+                  <Table.Cell>{item.player_count}</Table.Cell>
                   <Table.Cell>{formatDate(item.start_date)}</Table.Cell>
                   <Table.Cell>{formatDate(item.end_date)}</Table.Cell>
                   <Table.Cell>

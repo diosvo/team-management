@@ -24,7 +24,7 @@ export async function getLocation(location_id: string) {
 export async function insertLocation(match: InsertLocation) {
   try {
     return await db.insert(LocationTable).values(match).returning({
-      match_id: LocationTable.location_id,
+      location_id: LocationTable.location_id,
     });
   } catch (error) {
     throw error;
