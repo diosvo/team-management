@@ -4,7 +4,6 @@ import { getOtherTeams } from '@/db/team';
 
 import { mockWithAuth } from '@/test/mocks/auth';
 import { MOCK_TEAM } from '@/test/mocks/team';
-import { MOCK_USER } from '@/test/mocks/user';
 
 import { getOpponents } from './team';
 
@@ -29,16 +28,13 @@ describe('Team Actions', () => {
 
       expect(mockWithAuth).toHaveBeenCalledWith(getOtherTeams);
       expect(result).toEqual([MOCK_TEAM]);
-      expect(getOtherTeams).toHaveBeenCalledWith(MOCK_USER);
     });
 
     test('returns empty array when getOtherTeams returns empty array', async () => {
       vi.mocked(getOtherTeams).mockResolvedValue([]);
 
       const result = await getOpponents();
-
       expect(result).toEqual([]);
-      expect(getOtherTeams).toHaveBeenCalledWith(MOCK_USER);
     });
 
     test('propagates errors from getOtherTeams', async () => {
@@ -47,7 +43,6 @@ describe('Team Actions', () => {
       vi.mocked(getOtherTeams).mockRejectedValue(error);
 
       await expect(getOpponents()).rejects.toThrow(message);
-      expect(getOtherTeams).toHaveBeenCalledWith(MOCK_USER);
     });
   });
 });

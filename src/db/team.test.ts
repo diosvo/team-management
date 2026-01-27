@@ -1,5 +1,6 @@
-import { eq } from 'drizzle-orm';
 import { cacheTag } from 'next/cache';
+
+import { eq } from 'drizzle-orm';
 import { vi } from 'vitest';
 
 import { getCacheTag } from '@/actions/cache';
@@ -10,7 +11,6 @@ import { MOCK_TEAM } from '@/test/mocks/team';
 
 import { getOtherTeams } from './team';
 
-// Mock dependencies
 vi.mock('drizzle-orm', () => ({
   eq: vi.fn((field, value) => ({ field, value, type: 'eq' })),
 }));
