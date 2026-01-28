@@ -1,5 +1,3 @@
-import { vi } from 'vitest';
-
 // "ResizeObserver" mock
 global.ResizeObserver = class ResizeObserver {
   observe() {}

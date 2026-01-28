@@ -1,7 +1,6 @@
 import { cacheTag } from 'next/cache';
 
 import { eq } from 'drizzle-orm';
-import { vi } from 'vitest';
 
 import { getCacheTag } from '@/actions/cache';
 import db from '@/drizzle';
@@ -10,10 +9,6 @@ import { TeamTable } from '@/drizzle/schema/team';
 import { MOCK_TEAM } from '@/test/mocks/team';
 
 import { getOtherTeams } from './team';
-
-vi.mock('drizzle-orm', () => ({
-  eq: vi.fn((field, value) => ({ field, value, type: 'eq' })),
-}));
 
 vi.mock('@/drizzle', () => ({
   default: {

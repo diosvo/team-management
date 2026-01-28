@@ -6,6 +6,10 @@ import { afterEach } from 'vitest';
 // ⭕️ Global mocks or setup here
 expect.extend(toHaveNoViolations);
 
+vi.mock('@/db/pg-error', () => ({
+  getDbErrorMessage: vi.fn(),
+}));
+
 // ♻️ Run cleanup after each test
 afterEach(() => {
   cleanup();
