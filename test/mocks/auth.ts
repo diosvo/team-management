@@ -1,5 +1,3 @@
-import { vi } from 'vitest';
-
 import { User } from '@/drizzle/schema';
 import { MOCK_USER } from './user';
 

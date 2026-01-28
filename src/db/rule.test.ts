@@ -1,7 +1,6 @@
 import { cacheTag } from 'next/cache';
 
 import { eq } from 'drizzle-orm';
-import { vi } from 'vitest';
 
 import { getCacheTag } from '@/actions/cache';
 import db from '@/drizzle';

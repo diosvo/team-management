@@ -1,5 +1,3 @@
-import { vi } from 'vitest';
-
 import { getOtherTeams } from '@/db/team';
 
 import { mockWithAuth } from '@/test/mocks/auth';
