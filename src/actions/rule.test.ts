@@ -84,7 +84,7 @@ describe('Rule Actions', () => {
       expect(revalidate.rule).toHaveBeenCalled();
       expect(result).toEqual({
         success: true,
-        message: 'Updated rule successfully.',
+        message: 'Updated rule successfully',
       });
     });
 
@@ -106,7 +106,7 @@ describe('Rule Actions', () => {
       expect(revalidate.rule).toHaveBeenCalled();
       expect(result).toEqual({
         success: true,
-        message: 'Added rule successfully.',
+        message: 'Added rule successfully',
       });
     });
 

@@ -38,7 +38,7 @@ vi.mock('@/drizzle/schema/rule', () => ({
 
 vi.mock('@/actions/cache', () => ({
   getCacheTag: {
-    rule: vi.fn(() => 'rule'),
+    rule: vi.fn(() => 'team-rule'),
   },
 }));
 
@@ -53,7 +53,7 @@ describe('getRule', () => {
     const result = await getRule(MOCK_TEAM.team_id);
 
     expect(result).toEqual(MOCK_RULE);
-    expect(cacheTag).toHaveBeenCalledWith('rule');
+    expect(cacheTag).toHaveBeenCalledWith('team-rule');
     expect(getCacheTag.rule).toHaveBeenCalled();
     // Verify query construction
     expect(eq).toHaveBeenCalledWith(RuleTable.team_id, MOCK_TEAM.team_id);
@@ -89,14 +89,16 @@ describe('insertRule', () => {
   };
 
   test('inserts rule successfully', async () => {
-    const mockValues = vi.fn().mockResolvedValue({ rule_id: 1 });
+    const mockValues = vi
+      .fn()
+      .mockResolvedValue({ rule_id: MOCK_RULE.rule_id });
     vi.mocked(db.insert).mockReturnValue({
       values: mockValues,
     } as unknown as ReturnType<typeof db.insert>);
 
     const result = await insertRule(mockInsertData);
 
-    expect(result).toEqual({ rule_id: 1 });
+    expect(result).toEqual({ rule_id: MOCK_RULE.rule_id });
     // Verify query construction
     expect(db.insert).toHaveBeenCalledWith(RuleTable);
     expect(mockValues).toHaveBeenCalledWith(mockInsertData);

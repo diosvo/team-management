@@ -24,7 +24,7 @@ export const upsertRule = withAuth(async ({ team_id }, content: string) => {
     revalidate.rule();
 
     return ResponseFactory.success(
-      `${existingRule ? 'Updated' : 'Added'} rule successfully.`,
+      `${existingRule ? 'Updated' : 'Added'} rule successfully`,
     );
   } catch (error) {
     const { message } = getDbErrorMessage(error);
