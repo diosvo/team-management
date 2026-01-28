@@ -1,5 +1,10 @@
-import { User } from '@/drizzle/schema';
-import { UserRole, UserState } from '@/utils/enum';
+import { Coach, Player, User } from '@/drizzle/schema';
+import {
+  CoachPosition,
+  PlayerPosition,
+  UserRole,
+  UserState,
+} from '@/utils/enum';
 import { MOCK_TEAM } from './team';
 
 export const MOCK_USER: User = {
@@ -18,4 +23,22 @@ export const MOCK_USER: User = {
   leave_date: null,
   state: UserState.UNKNOWN,
   role: UserRole.GUEST,
+};
+
+export const MOCK_PLAYER: Player = {
+  id: 'player-123',
+  position: PlayerPosition.SHOOTING_GUARD,
+  is_captain: false,
+  height: 171,
+  weight: 68,
+  jersey_number: 9,
+  created_at: new Date('2026-01-01'),
+  updated_at: new Date('2026-01-01'),
+};
+
+export const MOCK_COACH: Coach = {
+  id: 'coach-123',
+  position: CoachPosition.HEAD_COACH,
+  created_at: new Date('2026-01-01'),
+  updated_at: new Date('2026-01-01'),
 };

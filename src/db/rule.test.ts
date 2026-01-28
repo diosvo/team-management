@@ -6,6 +6,12 @@ import { getCacheTag } from '@/actions/cache';
 import db from '@/drizzle';
 import { InsertRule, RuleTable } from '@/drizzle/schema/rule';
 
+import {
+  mockInsertFailure,
+  mockInsertSuccess,
+  mockUpdateFailure,
+  mockUpdateSuccess,
+} from '@/test/db-operations';
 import { MOCK_RULE } from '@/test/mocks/rule';
 import { MOCK_TEAM } from '@/test/mocks/team';
 
@@ -89,12 +95,7 @@ describe('insertRule', () => {
   };
 
   test('inserts rule successfully', async () => {
-    const mockValues = vi
-      .fn()
-      .mockResolvedValue({ rule_id: MOCK_RULE.rule_id });
-    vi.mocked(db.insert).mockReturnValue({
-      values: mockValues,
-    } as unknown as ReturnType<typeof db.insert>);
+    const mockValues = mockInsertSuccess({ rule_id: MOCK_RULE.rule_id });
 
     const result = await insertRule(mockInsertData);
 
@@ -106,12 +107,7 @@ describe('insertRule', () => {
 
   test('throws error when insert fails', async () => {
     const message = 'Insert failed';
-    const error = new Error(message);
-
-    const mockValues = vi.fn().mockRejectedValue(error);
-    vi.mocked(db.insert).mockReturnValue({
-      values: mockValues,
-    } as unknown as ReturnType<typeof db.insert>);
+    mockInsertFailure(message);
 
     await expect(insertRule(mockInsertData)).rejects.toThrow(message);
   });
@@ -125,16 +121,11 @@ describe('updateRule', () => {
   const newContent = 'Updated content';
 
   test('updates rule successfully', async () => {
-    const mockWhere = vi.fn().mockResolvedValue({ rule_id: 1 });
-    const mockSet = vi.fn().mockReturnValue({ where: mockWhere });
-    vi.mocked(db.update).mockReturnValue({
-      set: mockSet,
-    } as unknown as ReturnType<typeof db.update>);
+    const { mockWhere, mockSet } = mockUpdateSuccess({ rule_id: 1 });
 
     const result = await updateRule(MOCK_RULE.rule_id, newContent);
 
     expect(result).toEqual({ rule_id: 1 });
-    // Verify query construction
     expect(db.update).toHaveBeenCalledWith(RuleTable);
     expect(mockSet).toHaveBeenCalledWith({ content: newContent });
     expect(eq).toHaveBeenCalledWith(RuleTable.rule_id, MOCK_RULE.rule_id);
@@ -147,13 +138,7 @@ describe('updateRule', () => {
 
   test('throws error when update fails', async () => {
     const message = 'Update failed';
-    const error = new Error(message);
-
-    const mockWhere = vi.fn().mockRejectedValue(error);
-    const mockSet = vi.fn().mockReturnValue({ where: mockWhere });
-    vi.mocked(db.update).mockReturnValue({
-      set: mockSet,
-    } as unknown as ReturnType<typeof db.update>);
+    mockUpdateFailure(message);
 
     await expect(updateRule(MOCK_RULE.rule_id, newContent)).rejects.toThrow(
       message,
