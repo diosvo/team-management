@@ -8,7 +8,7 @@ import { ResponseFactory } from '@/utils/response';
 import { withAuth } from './auth';
 
 export const getRule = withAuth(
-  async ({ team_id }) => await getAction(team_id)
+  async ({ team_id }) => await getAction(team_id),
 );
 
 export const upsertRule = withAuth(async ({ team_id }, content: string) => {
@@ -23,7 +23,9 @@ export const upsertRule = withAuth(async ({ team_id }, content: string) => {
 
     revalidate.rule();
 
-    return ResponseFactory.success('Rule updated successfully');
+    return ResponseFactory.success(
+      `${existingRule ? 'Updated' : 'Added'} rule successfully.`,
+    );
   } catch (error) {
     const { message } = getDbErrorMessage(error);
     return ResponseFactory.error(message);

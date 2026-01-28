@@ -11,10 +11,6 @@ import { MOCK_TEAM } from '@/test/mocks/team';
 
 import { getOtherTeams } from './team';
 
-vi.mock('drizzle-orm', () => ({
-  eq: vi.fn((field, value) => ({ field, value, type: 'eq' })),
-}));
-
 vi.mock('@/drizzle', () => ({
   default: {
     query: {
