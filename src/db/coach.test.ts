@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm';
 
 import db from '@/drizzle';
-import { CoachTable } from '@/drizzle/schema/coach';
+import { CoachTable, InsertCoach } from '@/drizzle/schema/coach';
 
 import {
   mockInsertFailure,
@@ -63,7 +63,7 @@ describe('updateCoach', () => {
   });
 
   test('updates coach successfully', async () => {
-    const updatedCoach = {
+    const updatedCoach: InsertCoach = {
       ...MOCK_COACH,
       position: CoachPosition.ASSISTANT_COACH,
     };
