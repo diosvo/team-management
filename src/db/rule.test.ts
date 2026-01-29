@@ -68,16 +68,17 @@ describe('getRule', () => {
     });
   });
 
-  test('returns null when database query fails', async () => {
-    const error = new Error('Database error');
-    vi.mocked(db.query.RuleTable.findFirst).mockRejectedValue(error);
-
-    const result = await getRule(MOCK_TEAM.team_id);
-    expect(result).toBeNull();
-  });
-
-  test('returns null when database query throws non-error exception', async () => {
-    vi.mocked(db.query.RuleTable.findFirst).mockRejectedValue('Unknown error');
+  test.each([
+    {
+      description: 'fails',
+      mockError: new Error('Database error'),
+    },
+    {
+      description: 'throws non-error exception',
+      mockError: 'Unknown error',
+    },
+  ])('returns null when database query $description', async ({ mockError }) => {
+    vi.mocked(db.query.RuleTable.findFirst).mockRejectedValue(mockError);
 
     const result = await getRule(MOCK_TEAM.team_id);
     expect(result).toBeNull();
@@ -126,6 +127,7 @@ describe('updateRule', () => {
     const result = await updateRule(MOCK_RULE.rule_id, newContent);
 
     expect(result).toEqual({ rule_id: 1 });
+    // Verify query construction
     expect(db.update).toHaveBeenCalledWith(RuleTable);
     expect(mockSet).toHaveBeenCalledWith({ content: newContent });
     expect(eq).toHaveBeenCalledWith(RuleTable.rule_id, MOCK_RULE.rule_id);

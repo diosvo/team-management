@@ -13,11 +13,10 @@ export async function getAssets(team_id: string) {
   cacheTag(getCacheTag.assets());
 
   try {
-    const assets = await db
-      .select()
-      .from(AssetTable)
-      .where(eq(AssetTable.team_id, team_id))
-      .orderBy(desc(AssetTable.updated_at));
+    const assets = await db.query.AssetTable.findMany({
+      where: eq(AssetTable.team_id, team_id),
+      orderBy: desc(AssetTable.updated_at),
+    });
 
     const stats = {
       total_items: assets.reduce((sum, asset) => sum + asset.quantity, 0),
@@ -38,21 +37,9 @@ export async function getAssets(team_id: string) {
   }
 }
 
-export async function getAsset(asset_id: string) {
-  try {
-    return await db.query.AssetTable.findFirst({
-      where: eq(AssetTable.asset_id, asset_id),
-    });
-  } catch {
-    return null;
-  }
-}
-
 export async function insertAsset(asset: InsertAsset) {
   try {
-    return await db.insert(AssetTable).values(asset).returning({
-      asset_id: AssetTable.asset_id,
-    });
+    return await db.insert(AssetTable).values(asset);
   } catch (error) {
     throw error;
   }
@@ -72,7 +59,7 @@ export async function updateAsset(asset_id: string, asset: InsertAsset) {
 export async function deleteAsset(asset_id: string) {
   try {
     return await db.delete(AssetTable).where(eq(AssetTable.asset_id, asset_id));
-  } catch {
-    return null;
+  } catch (error) {
+    throw error;
   }
 }
