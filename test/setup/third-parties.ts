@@ -7,6 +7,8 @@ vi.mock('nuqs', async () => {
 });
 
 vi.mock('drizzle-orm', () => ({
+  and: vi.fn((...args) => args),
   desc: vi.fn((field) => ({ field, direction: 'desc' })),
   eq: vi.fn((field, value) => ({ field, value, type: 'eq' })),
+  ne: vi.fn((field, value) => ({ field, value, type: 'ne' })),
 }));
