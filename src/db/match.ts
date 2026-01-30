@@ -1,4 +1,4 @@
-import { and, eq, gte, lte } from 'drizzle-orm';
+import { and, desc, eq, gte, lte } from 'drizzle-orm';
 
 import { DataWithStats } from '@/types/common';
 import { MatchStats, MatchWithTeams } from '@/types/match';
@@ -30,7 +30,7 @@ export async function getMatches(
         gte(MatchTable.date, start.toISOString()),
         lte(MatchTable.date, end.toISOString()),
       ),
-      orderBy: (matches, { desc }) => [desc(matches.created_at)],
+      orderBy: desc(MatchTable.updated_at),
     });
 
     const data = matches.map((match) => ({

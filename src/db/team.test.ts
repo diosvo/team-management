@@ -53,18 +53,22 @@ describe('getOtherTeams', () => {
     });
   });
 
-  test('returns empty array when database query fails', async () => {
-    const error = new Error('Database error');
-    vi.mocked(db.query.TeamTable.findMany).mockRejectedValue(error);
+  test.each([
+    {
+      description: 'fails',
+      mockError: new Error('Database error'),
+    },
+    {
+      description: 'throws non-error exception',
+      mockError: 'Duplicated Key',
+    },
+  ])(
+    'returns empty array when database query $description',
+    async ({ mockError }) => {
+      vi.mocked(db.query.TeamTable.findMany).mockRejectedValue(mockError);
 
-    const result = await getOtherTeams();
-    expect(result).toEqual([]);
-  });
-
-  test('returns empty array when database query throws non-error exception', async () => {
-    vi.mocked(db.query.TeamTable.findMany).mockRejectedValue('Duplicated Key');
-
-    const result = await getOtherTeams();
-    expect(result).toEqual([]);
-  });
+      const result = await getOtherTeams();
+      expect(result).toEqual([]);
+    },
+  );
 });
