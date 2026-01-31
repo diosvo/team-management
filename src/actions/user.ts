@@ -18,9 +18,7 @@ import {
 } from '@/db/user';
 import {
   AddUserValues,
-  EditPersonalInfoSchema,
   EditPersonalInfoValues,
-  EditTeamInfoSchema,
   EditTeamInfoValues,
 } from '@/schemas/user';
 
@@ -37,11 +35,11 @@ export const getRoster = withAuth(
 );
 
 export const getUserProfile = withAuth(async (user, target_id: string) => {
-  const targetUser = await getUserById(target_id);
-  if (!targetUser) notFound();
-
   const { isPlayer, isCoach, isGuest, isAdmin } = hasPermissions(user.role);
   if (isGuest) forbidden();
+
+  const targetUser = await getUserById(target_id);
+  if (!targetUser) notFound();
 
   // Do NOT enable button if:
   // 1. Current profile is Admin
@@ -72,25 +70,17 @@ export const addUser = withAuth(async ({ team_id }, values: AddUserValues) => {
     });
 
     if (isPlayer) {
-      const player = await insertPlayer({
+      await insertPlayer({
         id: data.user.id,
         position: user.position as PlayerPosition,
       });
-
-      if (!player) {
-        return ResponseFactory.error('Failed to extend user as player');
-      }
     }
 
     if (isCoach) {
-      const coach = await insertCoach({
+      await insertCoach({
         id: data.user.id,
         position: user.position as CoachPosition,
       });
-
-      if (!coach) {
-        return ResponseFactory.error('Failed to grant user as coach');
-      }
     }
 
     await auth.api.requestPasswordReset({
@@ -111,14 +101,8 @@ export const addUser = withAuth(async ({ team_id }, values: AddUserValues) => {
 
 export const updatePersonalInfo = withAuth(
   async (_, user_id: string, values: EditPersonalInfoValues) => {
-    const { data, error } = EditPersonalInfoSchema.safeParse(values);
-
-    if (error) {
-      return ResponseFactory.error(error.message);
-    }
-
     try {
-      await updateUser(user_id, data);
+      await updateUser(user_id, values);
 
       revalidate.user(user_id);
 
@@ -133,14 +117,8 @@ export const updatePersonalInfo = withAuth(
 
 export const updateTeamInfo = withAuth(
   async (_, user_id: string, values: EditTeamInfoValues) => {
-    const { data, error } = EditTeamInfoSchema.safeParse(values);
-
-    if (error) {
-      return ResponseFactory.error(error.message);
-    }
-
     try {
-      const { user: userData, player: playerData, coach: coachData } = data;
+      const { user: userData, player: playerData, coach: coachData } = values;
 
       // Update user
       await updateUser(user_id, userData);
@@ -173,7 +151,7 @@ export const updateTeamInfo = withAuth(
 
       if (constraint === 'player_jersey_number_unique') {
         return ResponseFactory.error(
-          `Jersey number '${data.player.jersey_number}' is already taken.`,
+          `Jersey number '${values.player.jersey_number}' is already taken`,
         );
       }
       return ResponseFactory.error(message);

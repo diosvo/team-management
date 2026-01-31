@@ -1,6 +1,12 @@
 import React from 'react';
 
 vi.mock('next/navigation', () => ({
+  notFound: vi.fn(() => {
+    throw new Error('NOT_FOUND');
+  }),
+  forbidden: vi.fn(() => {
+    throw new Error('FORBIDDEN');
+  }),
   useRouter: () => ({
     push: vi.fn(),
     replace: vi.fn(),

@@ -10,7 +10,7 @@ import { UserRole, UserState } from '@/utils/enum';
 
 import { getCacheTag } from '@/actions/cache';
 
-export async function getUsers(team_id: string) {
+export async function getUsers(team_id: string): Promise<Array<User>> {
   try {
     const users = await db.query.UserTable.findMany({
       where: and(
@@ -53,7 +53,7 @@ export async function fetchActivePlayers(team_id: string) {
   }
 }
 
-export async function getUserById(id: string) {
+export async function getUserById(id: string): Promise<Nullish<User>> {
   try {
     const user = await db.query.UserTable.findFirst({
       where: eq(UserTable.id, id),
@@ -84,8 +84,7 @@ export async function updateUser(user_id: string, user: Partial<User>) {
 export async function deleteUser(user_id: string) {
   try {
     return await db.delete(UserTable).where(eq(UserTable.id, user_id));
-  } catch {
-    logger.error('Failed to delete user');
-    return null;
+  } catch (error) {
+    throw error;
   }
 }
