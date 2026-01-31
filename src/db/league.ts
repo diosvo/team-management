@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm';
+import { and, desc, eq } from 'drizzle-orm';
 
 import db from '@/drizzle';
 import {
@@ -7,6 +7,7 @@ import {
   LeagueTeamRosterTable,
 } from '@/drizzle/schema/league';
 
+import { User } from '@/drizzle/schema';
 import { UpsertLeagueSchemaValues } from '@/schemas/league';
 
 export async function getLeagues() {
@@ -14,7 +15,7 @@ export async function getLeagues() {
 
   try {
     const leagues = await db.query.LeagueTable.findMany({
-      orderBy: (leagues, { desc }) => [desc(leagues.end_date)],
+      orderBy: desc(LeagueTable.end_date),
       with: {
         team_rosters: {
           columns: { league_id: true },
@@ -31,7 +32,10 @@ export async function getLeagues() {
   }
 }
 
-export async function getPlayersInLeague(team_id: string, league_id: string) {
+export async function getPlayersInLeague(
+  team_id: string,
+  league_id: string,
+): Promise<Array<User>> {
   try {
     const results = await db.query.LeagueTeamRosterTable.findMany({
       columns: {},
@@ -56,9 +60,7 @@ export async function getPlayersInLeague(team_id: string, league_id: string) {
 
 export async function insertLeague(league: InsertLeague) {
   try {
-    return await db.insert(LeagueTable).values(league).returning({
-      league_id: LeagueTable.league_id,
-    });
+    return await db.insert(LeagueTable).values(league);
   } catch (error) {
     throw error;
   }
@@ -83,8 +85,8 @@ export async function deleteLeague(league_id: string) {
     return await db
       .delete(LeagueTable)
       .where(eq(LeagueTable.league_id, league_id));
-  } catch {
-    return null;
+  } catch (error) {
+    throw error;
   }
 }
 

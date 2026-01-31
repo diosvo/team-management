@@ -1,13 +1,30 @@
 import { ALL } from './constant';
-import { AssetCategory, AssetCondition, UserRole, UserState } from './enum';
+import {
+  AssetCategory,
+  AssetCondition,
+  LeagueStatus,
+  MatchStatus,
+  UserRole,
+  UserState,
+} from './enum';
 
 import {
   colorCategory,
   colorCondition,
+  colorLeagueStatus,
+  colorMatchResult,
   colorRole,
   colorState,
   hasPermissions,
 } from './helper';
+
+function invalidColor(key: string) {
+  return [
+    { [key]: null, expected: 'gray' },
+    { [key]: undefined, expected: 'gray' },
+    { [key]: 'other', expected: undefined },
+  ];
+}
 
 describe('colorRole', () => {
   const cases = [
@@ -15,9 +32,7 @@ describe('colorRole', () => {
     { role: UserRole.COACH, expected: 'purple' },
     { role: UserRole.PLAYER, expected: 'blue' },
     { role: ALL.value, expected: 'blue' },
-    { role: null, expected: 'gray' },
-    { role: undefined, expected: 'gray' },
-    { role: 'unknown', expected: undefined },
+    ...invalidColor('role'),
   ];
 
   test.each(cases)('returns $expected for $role', ({ role, expected }) => {
@@ -32,9 +47,7 @@ describe('colorState', () => {
     { state: UserState.INACTIVE, expected: 'red' },
     { state: UserState.UNKNOWN, expected: 'gray' },
     { state: ALL.value, expected: 'blue' },
-    { state: null, expected: 'gray' },
-    { state: undefined, expected: 'gray' },
-    { state: 'invalid', expected: undefined },
+    ...invalidColor('state'),
   ];
 
   test.each(cases)('returns $expected for $state', ({ state, expected }) => {
@@ -48,9 +61,7 @@ describe('colorCondition', () => {
     { condition: AssetCondition.FAIR, expected: 'orange' },
     { condition: AssetCondition.POOR, expected: 'red' },
     { condition: ALL.value, expected: 'blue' },
-    { condition: null, expected: 'gray' },
-    { condition: undefined, expected: 'gray' },
-    { condition: 'damaged', expected: undefined },
+    ...invalidColor('condition'),
   ];
 
   test.each(cases)(
@@ -66,9 +77,7 @@ describe('colorCategory', () => {
     { category: AssetCategory.EQUIPMENT, expected: 'purple' },
     { category: AssetCategory.TRAINING, expected: 'blue' },
     { category: ALL.value, expected: 'blue' },
-    { category: null, expected: 'gray' },
-    { category: undefined, expected: 'gray' },
-    { category: 'other', expected: undefined },
+    ...invalidColor('category'),
   ];
 
   test.each(cases)(
@@ -77,6 +86,32 @@ describe('colorCategory', () => {
       expect(colorCategory(category as string)).toBe(expected);
     },
   );
+});
+
+describe('colorLeagueStatus', () => {
+  const cases = [
+    { status: LeagueStatus.UPCOMING, expected: 'yellow' },
+    { status: LeagueStatus.ONGOING, expected: 'green' },
+    { status: LeagueStatus.ENDED, expected: 'red' },
+    ...invalidColor('status'),
+  ];
+
+  test.each(cases)('returns $expected for $status', ({ status, expected }) => {
+    expect(colorLeagueStatus(status as string)).toBe(expected);
+  });
+});
+
+describe('colorMatchResult', () => {
+  const cases = [
+    { status: MatchStatus.WIN, expected: 'green' },
+    { status: MatchStatus.LOSS, expected: 'red' },
+    { status: MatchStatus.DRAW, expected: 'gray' },
+    ...invalidColor('status'),
+  ];
+
+  test.each(cases)('returns $expected for $status', ({ status, expected }) => {
+    expect(colorMatchResult(status as string)).toBe(expected);
+  });
 });
 
 describe('hasPermissions', () => {

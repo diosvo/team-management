@@ -85,27 +85,9 @@ export async function getMatches(
   }
 }
 
-export async function getMatch(match_id: string) {
-  try {
-    return await db.query.MatchTable.findFirst({
-      where: eq(MatchTable.match_id, match_id),
-      with: {
-        home_team: { columns: { name: true } },
-        away_team: { columns: { name: true } },
-        league: { columns: { name: true } },
-        location: { columns: { name: true, address: true } },
-      },
-    });
-  } catch {
-    return null;
-  }
-}
-
 export async function insertMatch(match: InsertMatch) {
   try {
-    return await db.insert(MatchTable).values(match).returning({
-      match_id: MatchTable.match_id,
-    });
+    return await db.insert(MatchTable).values(match);
   } catch (error) {
     throw error;
   }
@@ -128,7 +110,7 @@ export async function updateMatch(
 export async function deleteMatch(match_id: string) {
   try {
     return await db.delete(MatchTable).where(eq(MatchTable.match_id, match_id));
-  } catch {
-    return null;
+  } catch (error) {
+    throw error;
   }
 }
