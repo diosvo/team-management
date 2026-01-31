@@ -12,7 +12,7 @@ import { MOCK_TEAM } from './team';
 export const MOCK_USER_INPUT: Omit<AddUserValues, 'role'> = {
   name: 'Dios Vo',
   email: 'vtmn1212@gmail.com',
-  dob: '12/12/1999',
+  dob: '1999-12-12',
   state: UserState.ACTIVE,
   join_date: '2024-02-20',
 };

@@ -339,7 +339,10 @@ describe('User Actions', () => {
     });
 
     test('handles jersey number constraint error', async () => {
-      vi.mocked(updateDbUser).mockRejectedValue(new Error(errorMessage));
+      vi.mocked(updateDbUser).mockResolvedValue({
+        ...mockResult,
+        command: 'UPDATE',
+      });
       vi.mocked(updatePlayer).mockRejectedValue({
         code: '23505',
         detail: 'Key (jersey_number)=(9) already exists.',
