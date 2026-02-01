@@ -21,8 +21,9 @@ import { revalidate } from './cache';
 
 export const getLeagues = withAuth(fetchLeagues);
 
-export const getPlayersInLeague = withAuth(async (user, league_id: string) =>
-  fetchPlayersInLeague(user.team_id, league_id),
+export const getPlayersInLeague = withAuth(
+  async (user, league_id: string) =>
+    await fetchPlayersInLeague(user.team_id, league_id),
 );
 
 export const upsertLeague = withAuth(
