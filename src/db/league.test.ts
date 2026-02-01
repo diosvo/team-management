@@ -6,6 +6,7 @@ import {
   LeagueTable,
   LeagueTeamRosterTable,
 } from '@/drizzle/schema/league';
+import { UpsertLeagueSchemaValues } from '@/schemas/league';
 
 import {
   mockDeleteFailure,
@@ -18,8 +19,6 @@ import {
 import { MOCK_LEAGUE, MOCK_LEAGUE_INPUT } from '@/test/mocks/league';
 import { MOCK_TEAM } from '@/test/mocks/team';
 import { MOCK_PLAYER, MOCK_USER } from '@/test/mocks/user';
-
-import { UpsertLeagueSchemaValues } from '@/schemas/league';
 
 import {
   addPlayerToLeagueRoster,

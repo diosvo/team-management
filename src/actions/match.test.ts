@@ -6,10 +6,13 @@ import {
   updateMatch as updateDbMatch,
 } from '@/db/match';
 import { getDbErrorMessage } from '@/db/pg-error';
-
 import { UpsertMatchSchemaValues } from '@/schemas/match';
+
 import { mockWithAuth } from '@/test/mocks/auth';
+import { MOCK_MATCH, MOCK_MATCH_RESPONSE } from '@/test/mocks/match';
 import { MOCK_USER } from '@/test/mocks/user';
+
+import { Interval } from '@/utils/enum';
 import { MatchSearchParams } from '@/utils/filters';
 
 import { getMatches, removeMatch, upsertMatch } from './match';
@@ -35,30 +38,7 @@ vi.mock('@/db/pg-error', () => ({
   getDbErrorMessage: vi.fn(),
 }));
 
-const MOCK_MATCH_RESPONSE = {
-  stats: {
-    total_matches: 2,
-    win_streak: 1,
-    avg_win_rate: 50,
-    avg_points_per_game: 87.5,
-  },
-  data: [
-    {
-      match_id: 'match-1',
-      home_team_score: 85,
-      away_team_score: 80,
-      result: 'WIN',
-    },
-    {
-      match_id: 'match-2',
-      home_team_score: 75,
-      away_team_score: 80,
-      result: 'LOSS',
-    },
-  ],
-};
-
-const MOCK_MATCH_ID = 'match-123';
+const MOCK_MATCH_ID = MOCK_MATCH.match_id;
 
 describe('Match Actions', () => {
   const mockResult = {
@@ -75,7 +55,7 @@ describe('Match Actions', () => {
   describe('getMatches', () => {
     const mockParams: MatchSearchParams = {
       is5x5: true,
-      interval: 'THIS_MONTH',
+      interval: Interval.THIS_MONTH,
       page: 1,
       q: '',
     };

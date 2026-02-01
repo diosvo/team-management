@@ -3,6 +3,7 @@ import { and, desc, eq, gte, lte } from 'drizzle-orm';
 import db from '@/drizzle';
 import { InsertMatch, MatchTable } from '@/drizzle/schema';
 
+import { UpsertMatchSchemaValues } from '@/schemas/match';
 import { Interval, MatchStatus } from '@/utils/enum';
 import { MatchSearchParams } from '@/utils/filters';
 import { TIME_DURATION } from '@/utils/formatter';
@@ -15,11 +16,9 @@ import {
   mockUpdateFailure,
   mockUpdateSuccess,
 } from '@/test/db-operations';
-
-import { UpsertMatchSchemaValues } from '@/schemas/match';
-
 import { MOCK_MATCH, MOCK_MATCH_INPUT } from '@/test/mocks/match';
 import { MOCK_AWAY_TEAM, MOCK_TEAM } from '@/test/mocks/team';
+
 import { deleteMatch, getMatches, insertMatch, updateMatch } from './match';
 
 vi.mock('@/drizzle', () => ({
@@ -51,29 +50,6 @@ vi.mock('@/drizzle/schema', () => ({
     updated_at: 'updated_at',
   },
 }));
-
-vi.mock('@/utils/formatter', () => {
-  const now = new Date('2024-01-15');
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const endOfMonth = new Date(
-    now.getFullYear(),
-    now.getMonth() + 1,
-    0,
-    23,
-    59,
-    59,
-    999,
-  );
-
-  return {
-    TIME_DURATION: {
-      [Interval.THIS_MONTH]: {
-        start: startOfMonth,
-        end: endOfMonth,
-      },
-    },
-  };
-});
 
 describe('getMatches', () => {
   beforeEach(() => {

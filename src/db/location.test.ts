@@ -11,8 +11,8 @@ import {
   mockUpdateFailure,
   mockUpdateSuccess,
 } from '@/test/db-operations';
-
 import { MOCK_LOCATION } from '@/test/mocks/location';
+
 import {
   deleteLocation,
   getLocations,
