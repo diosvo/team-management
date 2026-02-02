@@ -5,14 +5,12 @@ import { and, eq, ne } from 'drizzle-orm';
 import db from '@/drizzle';
 import { User, UserTable } from '@/drizzle/schema/user';
 
-import logger from '@/lib/logger';
-import { UserRole, UserState } from '@/utils/enum';
-
 import { getCacheTag } from '@/actions/cache';
+import { UserRole, UserState } from '@/utils/enum';
 
 export async function getUsers(team_id: string): Promise<Array<User>> {
   try {
-    const users = await db.query.UserTable.findMany({
+    return await db.query.UserTable.findMany({
       where: and(
         eq(UserTable.team_id, team_id),
         ne(UserTable.role, UserRole.SUPER_ADMIN),
@@ -22,10 +20,7 @@ export async function getUsers(team_id: string): Promise<Array<User>> {
         coach: true,
       },
     });
-
-    return users;
-  } catch (error) {
-    logger.error('An error when fetching users', error);
+  } catch {
     return [];
   }
 }
@@ -35,7 +30,7 @@ export async function fetchActivePlayers(team_id: string) {
   cacheTag(getCacheTag.active_players());
 
   try {
-    const players = await db.query.UserTable.findMany({
+    return await db.query.UserTable.findMany({
       where: and(
         eq(UserTable.team_id, team_id),
         eq(UserTable.role, UserRole.PLAYER),
@@ -45,46 +40,29 @@ export async function fetchActivePlayers(team_id: string) {
         player: true,
       },
     });
-
-    return players;
-  } catch (error) {
-    logger.error('An error when fetching active players', error);
+  } catch {
     return [];
   }
 }
 
 export async function getUserById(id: string): Promise<Nullish<User>> {
   try {
-    const user = await db.query.UserTable.findFirst({
+    return await db.query.UserTable.findFirst({
       where: eq(UserTable.id, id),
       with: {
         coach: true,
         player: true,
       },
     });
-
-    return user;
-  } catch (error) {
-    logger.error('Failed to fetch user:', error);
+  } catch {
     return null;
   }
 }
 
 export async function updateUser(user_id: string, user: Partial<User>) {
-  try {
-    return await db
-      .update(UserTable)
-      .set(user)
-      .where(eq(UserTable.id, user_id));
-  } catch (error) {
-    throw error;
-  }
+  return await db.update(UserTable).set(user).where(eq(UserTable.id, user_id));
 }
 
 export async function deleteUser(user_id: string) {
-  try {
-    return await db.delete(UserTable).where(eq(UserTable.id, user_id));
-  } catch (error) {
-    throw error;
-  }
+  return await db.delete(UserTable).where(eq(UserTable.id, user_id));
 }

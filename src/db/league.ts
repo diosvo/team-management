@@ -53,41 +53,29 @@ export async function getPlayersInLeague(
     });
 
     return results.map(({ player }) => player.user);
-  } catch (error) {
-    throw error;
+  } catch {
+    return [];
   }
 }
 
 export async function insertLeague(league: InsertLeague) {
-  try {
-    return await db.insert(LeagueTable).values(league);
-  } catch (error) {
-    throw error;
-  }
+  return await db.insert(LeagueTable).values(league);
 }
 
 export async function updateLeague(
   league_id: string,
   league: UpsertLeagueSchemaValues,
 ) {
-  try {
-    return await db
-      .update(LeagueTable)
-      .set(league)
-      .where(eq(LeagueTable.league_id, league_id));
-  } catch (error) {
-    throw error;
-  }
+  return await db
+    .update(LeagueTable)
+    .set(league)
+    .where(eq(LeagueTable.league_id, league_id));
 }
 
 export async function deleteLeague(league_id: string) {
-  try {
-    return await db
-      .delete(LeagueTable)
-      .where(eq(LeagueTable.league_id, league_id));
-  } catch (error) {
-    throw error;
-  }
+  return await db
+    .delete(LeagueTable)
+    .where(eq(LeagueTable.league_id, league_id));
 }
 
 export async function addPlayerToLeagueRoster(
@@ -95,13 +83,9 @@ export async function addPlayerToLeagueRoster(
   league_id: string,
   player_id: string,
 ) {
-  try {
-    return await db.insert(LeagueTeamRosterTable).values({
-      team_id,
-      league_id,
-      player_id,
-    });
-  } catch (error) {
-    throw error;
-  }
+  return await db.insert(LeagueTeamRosterTable).values({
+    team_id,
+    league_id,
+    player_id,
+  });
 }

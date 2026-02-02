@@ -62,9 +62,8 @@ describe('getRule', () => {
     expect(cacheTag).toHaveBeenCalledWith('team-rule');
     expect(getCacheTag.rule).toHaveBeenCalled();
     // Verify query construction
-    expect(eq).toHaveBeenCalledWith(RuleTable.team_id, MOCK_TEAM.team_id);
     expect(db.query.RuleTable.findFirst).toHaveBeenCalledWith({
-      where: { field: RuleTable.team_id, value: MOCK_TEAM.team_id, type: 'eq' },
+      where: eq(RuleTable.team_id, MOCK_TEAM.team_id),
     });
   });
 

@@ -14,33 +14,21 @@ export async function getLocations() {
 }
 
 export async function insertLocation(match: InsertLocation) {
-  try {
-    return await db.insert(LocationTable).values(match);
-  } catch (error) {
-    throw error;
-  }
+  return await db.insert(LocationTable).values(match);
 }
 
 export async function updateLocation(
   location_id: string,
   match: InsertLocation,
 ) {
-  try {
-    return await db
-      .update(LocationTable)
-      .set(match)
-      .where(eq(LocationTable.location_id, location_id));
-  } catch (error) {
-    throw error;
-  }
+  return await db
+    .update(LocationTable)
+    .set(match)
+    .where(eq(LocationTable.location_id, location_id));
 }
 
 export async function deleteLocation(location_id: string) {
-  try {
-    return await db
-      .delete(LocationTable)
-      .where(eq(LocationTable.location_id, location_id));
-  } catch (error) {
-    throw error;
-  }
+  return await db
+    .delete(LocationTable)
+    .where(eq(LocationTable.location_id, location_id));
 }

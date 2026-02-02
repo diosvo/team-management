@@ -5,7 +5,6 @@ import { getCacheTag } from '@/actions/cache';
 import db from '@/drizzle';
 import { User, UserTable } from '@/drizzle/schema/user';
 
-import logger from '@/lib/logger';
 import { UserRole, UserState } from '@/utils/enum';
 
 import {
@@ -63,12 +62,6 @@ vi.mock('@/actions/cache', () => ({
   },
 }));
 
-vi.mock('@/lib/logger', () => ({
-  default: {
-    error: vi.fn(),
-  },
-}));
-
 describe('getUsers', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -82,14 +75,11 @@ describe('getUsers', () => {
 
     expect(result).toEqual(mockUsers);
     // Verify query construction
-    expect(and).toHaveBeenCalledWith(
-      { field: UserTable.team_id, value: MOCK_TEAM.team_id, type: 'eq' },
-      { field: UserTable.role, value: UserRole.SUPER_ADMIN, type: 'ne' },
-    );
-    expect(eq).toHaveBeenCalledWith(UserTable.team_id, MOCK_TEAM.team_id);
-    expect(ne).toHaveBeenCalledWith(UserTable.role, UserRole.SUPER_ADMIN);
     expect(db.query.UserTable.findMany).toHaveBeenCalledWith({
-      where: expect.any(Object),
+      where: and(
+        eq(UserTable.team_id, MOCK_TEAM.team_id),
+        ne(UserTable.role, UserRole.SUPER_ADMIN),
+      ),
       with: {
         player: true,
         coach: true,
@@ -104,10 +94,6 @@ describe('getUsers', () => {
     const result = await getUsers(MOCK_TEAM.team_id);
 
     expect(result).toEqual([]);
-    expect(logger.error).toHaveBeenCalledWith(
-      'An error when fetching users',
-      error,
-    );
   });
 });
 
@@ -126,13 +112,12 @@ describe('fetchActivePlayers', () => {
     expect(cacheTag).toHaveBeenCalledWith('active-players');
     expect(getCacheTag.active_players).toHaveBeenCalled();
     // Verify query construction
-    expect(and).toHaveBeenCalledWith(
-      { field: UserTable.team_id, value: MOCK_TEAM.team_id, type: 'eq' },
-      { field: UserTable.role, value: UserRole.PLAYER, type: 'eq' },
-      { field: UserTable.state, value: UserState.ACTIVE, type: 'eq' },
-    );
     expect(db.query.UserTable.findMany).toHaveBeenCalledWith({
-      where: expect.any(Object),
+      where: and(
+        eq(UserTable.team_id, MOCK_TEAM.team_id),
+        eq(UserTable.role, UserRole.PLAYER),
+        eq(UserTable.state, UserState.ACTIVE),
+      ),
       with: {
         player: true,
       },
@@ -146,10 +131,6 @@ describe('fetchActivePlayers', () => {
     const result = await fetchActivePlayers(MOCK_TEAM.team_id);
 
     expect(result).toEqual([]);
-    expect(logger.error).toHaveBeenCalledWith(
-      'An error when fetching active players',
-      error,
-    );
   });
 });
 
@@ -184,7 +165,6 @@ describe('getUserById', () => {
     const result = await getUserById(MOCK_PLAYER.id);
 
     expect(result).toBeNull();
-    expect(logger.error).toHaveBeenCalledWith('Failed to fetch user:', error);
   });
 });
 

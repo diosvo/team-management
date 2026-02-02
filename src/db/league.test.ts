@@ -161,15 +161,16 @@ describe('getPlayersInLeague', () => {
     });
   });
 
-  test('throws error when database query fails', async () => {
-    const message = 'Database error';
-    vi.mocked(db.query.LeagueTeamRosterTable.findMany).mockRejectedValue(
-      new Error(message),
+  test('returns empty array when database query fails', async () => {
+    const error = new Error('Database error');
+    vi.mocked(db.query.LeagueTeamRosterTable.findMany).mockRejectedValue(error);
+
+    const result = await getPlayersInLeague(
+      MOCK_TEAM.team_id,
+      MOCK_LEAGUE.league_id,
     );
 
-    await expect(
-      getPlayersInLeague(MOCK_TEAM.team_id, MOCK_LEAGUE.league_id),
-    ).rejects.toThrow(message);
+    expect(result).toEqual([]);
   });
 });
 

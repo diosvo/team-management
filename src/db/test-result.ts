@@ -2,7 +2,6 @@ import { and, desc, eq, gte, lte } from 'drizzle-orm';
 
 import db from '@/drizzle';
 import { InsertTestResult, TestResultTable } from '@/drizzle/schema';
-import logger from '../lib/logger';
 
 import { PlayerTestResult } from '@/types/periodic-testing';
 
@@ -75,7 +74,6 @@ export async function getTestResultByDate(date: string) {
       players,
     };
   } catch (error) {
-    logger.error('Error fetching test results:', error);
     return { headers: [], players: [] };
   }
 }
@@ -92,34 +90,22 @@ export async function getTestResultByUserAndTypeIds(result: InsertTestResult) {
         eq(TestResultTable.type_id, result.type_id),
       ),
     });
-  } catch (error) {
-    throw error;
+  } catch {
+    return null;
   }
 }
 
 export async function insertTestResult(results: Array<InsertTestResult>) {
-  try {
-    return await db.insert(TestResultTable).values(results);
-  } catch (error) {
-    throw error;
-  }
+  return await db.insert(TestResultTable).values(results);
 }
 
 export async function updateTestResultById(result: Partial<InsertTestResult>) {
-  try {
-    return await db
-      .update(TestResultTable)
-      .set(result)
-      .where(eq(TestResultTable.result_id, result.result_id as string));
-  } catch (error) {
-    throw error;
-  }
+  return await db
+    .update(TestResultTable)
+    .set(result)
+    .where(eq(TestResultTable.result_id, result.result_id as string));
 }
 
 export async function updateTestResults(results: Array<InsertTestResult>) {
-  try {
-    return await Promise.all(results.map(updateTestResultById));
-  } catch (error) {
-    throw error;
-  }
+  return await Promise.all(results.map(updateTestResultById));
 }

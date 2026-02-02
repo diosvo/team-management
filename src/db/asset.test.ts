@@ -75,15 +75,9 @@ describe('getAssets', () => {
     expect(cacheTag).toHaveBeenCalledWith('assets');
     expect(getCacheTag.assets).toHaveBeenCalled();
     // Verify query construction
-    expect(eq).toHaveBeenCalledWith(AssetTable.team_id, MOCK_TEAM.team_id);
-    expect(desc).toHaveBeenCalledWith(AssetTable.updated_at);
     expect(db.query.AssetTable.findMany).toHaveBeenCalledWith({
-      where: {
-        field: AssetTable.team_id,
-        value: MOCK_TEAM.team_id,
-        type: 'eq',
-      },
-      orderBy: { field: AssetTable.updated_at, direction: 'desc' },
+      where: eq(AssetTable.team_id, MOCK_TEAM.team_id),
+      orderBy: desc(AssetTable.updated_at),
     });
   });
 

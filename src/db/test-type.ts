@@ -26,33 +26,21 @@ export async function getTestTypeById(type_id: string) {
 }
 
 export async function insertTestType(data: InsertTestType) {
-  try {
-    return await db.insert(TestTypeTable).values(data);
-  } catch (error) {
-    throw error;
-  }
+  return await db.insert(TestTypeTable).values(data);
 }
 
 export async function updateTestType(
   type_id: string,
-  data: UpsertTestTypeSchemaValues
+  data: UpsertTestTypeSchemaValues,
 ) {
-  try {
-    return await db
-      .update(TestTypeTable)
-      .set(data)
-      .where(eq(TestTypeTable.type_id, type_id));
-  } catch (error) {
-    throw error;
-  }
+  return await db
+    .update(TestTypeTable)
+    .set(data)
+    .where(eq(TestTypeTable.type_id, type_id));
 }
 
 export async function deleteTestType(type_id: string) {
-  try {
-    return await db
-      .delete(TestTypeTable)
-      .where(eq(TestTypeTable.type_id, type_id));
-  } catch (error) {
-    throw error;
-  }
+  return await db
+    .delete(TestTypeTable)
+    .where(eq(TestTypeTable.type_id, type_id));
 }

@@ -4,20 +4,12 @@ import db from '@/drizzle';
 import { CoachTable, InsertCoach } from '@/drizzle/schema/coach';
 
 export async function insertCoach(coach: InsertCoach) {
-  try {
-    return await db.insert(CoachTable).values(coach);
-  } catch (error) {
-    throw error;
-  }
+  return await db.insert(CoachTable).values(coach);
 }
 
 export async function updateCoach(coach: InsertCoach) {
-  try {
-    return await db
-      .update(CoachTable)
-      .set(coach)
-      .where(eq(CoachTable.id, coach.id));
-  } catch (error) {
-    throw error;
-  }
+  return await db
+    .update(CoachTable)
+    .set(coach)
+    .where(eq(CoachTable.id, coach.id));
 }

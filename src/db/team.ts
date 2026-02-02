@@ -14,7 +14,7 @@ export async function getOtherTeams() {
     return await db.query.TeamTable.findMany({
       where: eq(TeamTable.is_default, false),
     });
-  } catch (error) {
+  } catch {
     return [];
   }
 }

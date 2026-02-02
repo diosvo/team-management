@@ -31,7 +31,7 @@ import { ControlledStateSelection } from '@/components/user/StateSelection';
 import Visibility from '@/components/Visibility';
 
 import { ESTABLISHED_DATE } from '@/utils/constant';
-import { UserRole } from '@/utils/enum';
+import { CoachPosition, PlayerPosition, UserRole } from '@/utils/enum';
 import { formatDate } from '@/utils/formatter';
 import { colorRole, colorState, hasPermissions } from '@/utils/helper';
 
@@ -175,8 +175,9 @@ export default function TeamInfo({
             <Visibility isVisible={isPlayer || isCoach}>
               <TextField label="Position">
                 <Badge variant="outline" borderRadius="full">
-                  {isPlayer && user.player?.position}
-                  {isCoach && user.coach?.position}
+                  {isPlayer &&
+                    (user.player?.position || PlayerPosition.UNKNOWN)}
+                  {isCoach && (user.coach?.position || CoachPosition.UNKNOWN)}
                 </Badge>
               </TextField>
             </Visibility>

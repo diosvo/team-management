@@ -49,31 +49,4 @@ describe('ResponseFactory', () => {
       },
     );
   });
-
-  describe('fromError', () => {
-    const cases = [
-      {
-        with: 'provided message',
-        error: new Error('Custom error message'),
-        expected: 'Custom error message',
-      },
-      {
-        with: 'default message',
-        error: new Error(''),
-        expected: 'An unknown error occurred.',
-      },
-    ];
-
-    test.each(cases)(
-      'returns error response from Error object with $with',
-      ({ error, expected }) => {
-        const result = ResponseFactory.fromError(error);
-
-        expect(result).toEqual({
-          success: false,
-          message: expected,
-        });
-      },
-    );
-  });
 });

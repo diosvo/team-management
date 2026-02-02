@@ -20,8 +20,4 @@ export class ResponseFactory {
       message,
     };
   }
-
-  static fromError(error: Error): Response {
-    return this.error(error.message || 'An unknown error occurred.');
-  }
 }
