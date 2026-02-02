@@ -20,20 +20,12 @@ export async function getRule(team_id: string) {
 }
 
 export async function insertRule(data: InsertRule) {
-  try {
-    return await db.insert(RuleTable).values(data);
-  } catch (error) {
-    throw error;
-  }
+  return await db.insert(RuleTable).values(data);
 }
 
 export async function updateRule(rule_id: string, content: string) {
-  try {
-    return await db
-      .update(RuleTable)
-      .set({ content })
-      .where(eq(RuleTable.rule_id, rule_id));
-  } catch (error) {
-    throw error;
-  }
+  return await db
+    .update(RuleTable)
+    .set({ content })
+    .where(eq(RuleTable.rule_id, rule_id));
 }

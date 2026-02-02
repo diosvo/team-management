@@ -47,9 +47,8 @@ describe('getOtherTeams', () => {
     expect(cacheTag).toHaveBeenCalledWith('opponents');
     expect(getCacheTag.opponents).toHaveBeenCalled();
     // Verify query construction
-    expect(eq).toHaveBeenCalledWith(TeamTable.is_default, false);
     expect(db.query.TeamTable.findMany).toHaveBeenCalledWith({
-      where: { field: TeamTable.is_default, value: false, type: 'eq' },
+      where: eq(TeamTable.is_default, false),
     });
   });
 

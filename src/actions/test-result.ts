@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 
 import { InsertTestResult } from '@/drizzle/schema';
 
+import { getDbErrorMessage } from '@/db/pg-error';
 import {
   getDates,
   getTestResultByDate,
@@ -55,12 +56,13 @@ export const createTestResult = withAuth(
       if (toUpdate.length > 0) await updateTestResults(toUpdate);
 
       return ResponseFactory.success(
-        `${toCreate.length} created, ${toUpdate.length} updated`
+        `${toCreate.length} created, ${toUpdate.length} updated`,
       );
     } catch (error) {
-      return ResponseFactory.fromError(error as Error);
+      const { message } = getDbErrorMessage(error);
+      return ResponseFactory.error(message);
     }
-  }
+  },
 );
 
 export const updateTestResultById = withAuth(
@@ -72,7 +74,8 @@ export const updateTestResultById = withAuth(
 
       return ResponseFactory.success('Test result updated successfully');
     } catch (error) {
-      return ResponseFactory.fromError(error as Error);
+      const { message } = getDbErrorMessage(error);
+      return ResponseFactory.error(message);
     }
-  }
+  },
 );

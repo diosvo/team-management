@@ -38,28 +38,16 @@ export async function getAssets(team_id: string) {
 }
 
 export async function insertAsset(asset: InsertAsset) {
-  try {
-    return await db.insert(AssetTable).values(asset);
-  } catch (error) {
-    throw error;
-  }
+  return await db.insert(AssetTable).values(asset);
 }
 
 export async function updateAsset(asset_id: string, asset: InsertAsset) {
-  try {
-    return await db
-      .update(AssetTable)
-      .set(asset)
-      .where(eq(AssetTable.asset_id, asset_id));
-  } catch (error) {
-    throw error;
-  }
+  return await db
+    .update(AssetTable)
+    .set(asset)
+    .where(eq(AssetTable.asset_id, asset_id));
 }
 
 export async function deleteAsset(asset_id: string) {
-  try {
-    return await db.delete(AssetTable).where(eq(AssetTable.asset_id, asset_id));
-  } catch (error) {
-    throw error;
-  }
+  return await db.delete(AssetTable).where(eq(AssetTable.asset_id, asset_id));
 }

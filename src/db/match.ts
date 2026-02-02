@@ -86,31 +86,19 @@ export async function getMatches(
 }
 
 export async function insertMatch(match: InsertMatch) {
-  try {
-    return await db.insert(MatchTable).values(match);
-  } catch (error) {
-    throw error;
-  }
+  return await db.insert(MatchTable).values(match);
 }
 
 export async function updateMatch(
   match_id: string,
   match: UpsertMatchSchemaValues,
 ) {
-  try {
-    return await db
-      .update(MatchTable)
-      .set(match)
-      .where(eq(MatchTable.match_id, match_id));
-  } catch (error) {
-    throw error;
-  }
+  return await db
+    .update(MatchTable)
+    .set(match)
+    .where(eq(MatchTable.match_id, match_id));
 }
 
 export async function deleteMatch(match_id: string) {
-  try {
-    return await db.delete(MatchTable).where(eq(MatchTable.match_id, match_id));
-  } catch (error) {
-    throw error;
-  }
+  return await db.delete(MatchTable).where(eq(MatchTable.match_id, match_id));
 }

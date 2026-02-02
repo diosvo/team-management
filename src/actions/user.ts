@@ -110,7 +110,8 @@ export const updatePersonalInfo = withAuth(
         'Updated personal information successfully',
       );
     } catch (error) {
-      return ResponseFactory.fromError(error as Error);
+      const { message } = getDbErrorMessage(error);
+      return ResponseFactory.error(message);
     }
   },
 );
