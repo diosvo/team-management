@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Badge, Highlight, Table } from '@chakra-ui/react';
 
@@ -12,7 +12,7 @@ import { toaster } from '@/components/ui/toaster';
 import Visibility from '@/components/Visibility';
 
 import usePermissions from '@/hooks/use-permissions';
-import { paginateData, useCommonParams } from '@/utils/filters';
+import { paginateData, useAssetFilters } from '@/utils/filters';
 import { formatDatetime } from '@/utils/formatter';
 import { colorCategory, colorCondition } from '@/utils/helper';
 
@@ -23,10 +23,14 @@ import { UpsertAsset } from './UpsertAsset';
 
 export default function AssetTable({ items }: { items: Array<Asset> }) {
   const { isAdmin, isGuest } = usePermissions();
-  const [{ q, page }, setSearchParams] = useCommonParams();
+  const [{ q, page, category, condition }, setSearchParams] = useAssetFilters();
 
   const [selection, setSelection] = useState<Array<string>>([]);
   const selectionCount = selection.length;
+
+  useEffect(() => {
+    setSelection([]);
+  }, [category, condition]);
 
   const totalCount = items.length;
   const currentData = paginateData(items, page);

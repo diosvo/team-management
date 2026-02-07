@@ -41,7 +41,7 @@ export const SIDEBAR_GROUP = [
     title: 'Team Management',
     items: [
       { icon: Users, text: 'Roster', disabled: false },
-      { icon: BadgeCheck, text: 'Attendance', disabled: true },
+      { icon: BadgeCheck, text: 'Attendance', disabled: false },
       { icon: FileText, text: 'Registration', disabled: false },
       { icon: GamepadDirectional, text: 'Matches', disabled: false },
     ],

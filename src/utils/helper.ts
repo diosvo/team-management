@@ -4,6 +4,7 @@ import { ALL } from './constant';
 import {
   AssetCategory,
   AssetCondition,
+  AttendanceStatus,
   LeagueStatus,
   MatchStatus,
   UserRole,
@@ -67,6 +68,14 @@ export function colorMatchResult(status: string): ColorPalette {
     [MatchStatus.WIN]: 'green',
     [MatchStatus.LOSS]: 'red',
     [MatchStatus.DRAW]: 'gray',
+  });
+}
+
+export function colorAttendanceStatus(status: string): ColorPalette {
+  return getColor(status, {
+    [AttendanceStatus.ON_TIME]: 'green',
+    [AttendanceStatus.ABSENT]: 'red',
+    [AttendanceStatus.LATE]: 'orange',
   });
 }
 

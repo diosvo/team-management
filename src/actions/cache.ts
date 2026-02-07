@@ -41,4 +41,7 @@ export const revalidate = {
     revalidatePath(`/profile/${userId}`);
     revalidateTag(getCacheTag.user(userId), 'max');
   },
+  attendances: () => {
+    revalidatePath('/attendance');
+  },
 } as const;

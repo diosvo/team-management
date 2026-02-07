@@ -1,6 +1,7 @@
 import {
   AssetCategory,
   AssetCondition,
+  AttendanceStatus,
   CoachPosition,
   Interval,
   LeagueStatus,
@@ -227,7 +228,7 @@ export const GAME_TYPE_SELECTION: Selection<string> = [
   },
 ];
 
-export const MATCH_INTERVAL_SELECTION: Selection<string> = [
+export const INTERVAL_SELECTION: Selection<string> = [
   {
     label: 'This month',
     value: Interval.THIS_MONTH,
@@ -245,9 +246,7 @@ export const MATCH_INTERVAL_SELECTION: Selection<string> = [
     value: Interval.LAST_YEAR,
   },
 ];
-export const MATCH_INTERVAL_VALUES = MATCH_INTERVAL_SELECTION.map(
-  ({ value }) => value,
-);
+export const INTERVAL_VALUES = INTERVAL_SELECTION.map(({ value }) => value);
 
 export const SELECTABLE_LEAGUE_STATUS = [
   LeagueStatus.UPCOMING,
@@ -269,6 +268,30 @@ export const LEAGUE_STATUS_SELECTION: Selection<string> = [
   },
 ];
 export const LEAGUE_STATUS_VALUES = [ALL.value, ...SELECTABLE_LEAGUE_STATUS];
+
+export const SELECTABLE_ATTENDANCE_STATUS = [
+  AttendanceStatus.ON_TIME,
+  AttendanceStatus.LATE,
+  AttendanceStatus.ABSENT,
+] as const;
+export const ATTENDANCE_STATUS_SELECTION: Selection<string> = [
+  {
+    label: 'On Time',
+    value: AttendanceStatus.ON_TIME,
+  },
+  {
+    label: 'Late',
+    value: AttendanceStatus.LATE,
+  },
+  {
+    label: 'Absent',
+    value: AttendanceStatus.ABSENT,
+  },
+];
+export const ATTENDANCE_STATUS_VALUES = [
+  ALL.value,
+  ...SELECTABLE_ATTENDANCE_STATUS,
+];
 
 export const SELECTABLE_TEST_TYPES = [
   TestTypeUnit.METERS,

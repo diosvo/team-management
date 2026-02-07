@@ -13,8 +13,10 @@ import {
   ALL,
   ASSET_CATEGORY_VALUES,
   ASSET_CONDITION_VALUES,
+  ATTENDANCE_STATUS_VALUES,
+  CURRENT_DATE,
+  INTERVAL_VALUES,
   LEAGUE_STATUS_VALUES,
-  MATCH_INTERVAL_VALUES,
   SELECTABLE_USER_ROLES,
   SELECTABLE_USER_STATES,
 } from './constant';
@@ -55,11 +57,16 @@ const leagueSearchParams = {
 const matchSearchParams = {
   ...commonParams,
   is5x5: parseAsBoolean.withDefault(true),
-  interval: parseAsStringEnum(MATCH_INTERVAL_VALUES).withDefault(
-    Interval.THIS_YEAR,
-  ),
+  interval: parseAsStringEnum(INTERVAL_VALUES).withDefault(Interval.THIS_YEAR),
 };
 
+const attendanceSearchParams = {
+  ...commonParams,
+  date: parseAsString.withDefault(CURRENT_DATE),
+  status: parseAsStringEnum(ATTENDANCE_STATUS_VALUES).withDefault(ALL.value),
+};
+
+/* 👯‍♂️ Client 👯‍♂️ */
 export const useCommonParams = (options: Options = {}) =>
   useQueryStates(commonParams, options);
 export const useRosterFilters = () => useQueryStates(rosterSearchParams);
@@ -70,14 +77,23 @@ export const usePeriodicTestingFilters = () =>
   });
 export const useLeagueFilters = () => useQueryStates(leagueSearchParams);
 export const useMatchFilters = () => useQueryStates(matchSearchParams);
+export const useAttendanceFilters = () =>
+  useQueryStates(attendanceSearchParams, {
+    shallow: false,
+  });
 
+/* 🌩️ Server 🌩️ */
 export const loadPeriodicTestingFilters = createLoader(
   periodicTestingSearchParams,
 );
 export const loadMatchFilters = createLoader(matchSearchParams);
+export const loadAttendanceFilters = createLoader(attendanceSearchParams);
 
 export type MatchSearchParams = Awaited<ReturnType<typeof loadMatchFilters>>;
 export type MatchSearchParamsKeys = keyof typeof matchSearchParams;
+export type AttendanceSearchParams = Awaited<
+  ReturnType<typeof loadAttendanceFilters>
+>;
 
 export function paginateData<T>(
   data: Array<T>,

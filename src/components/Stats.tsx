@@ -1,3 +1,7 @@
+'use client';
+
+import { useMemo } from 'react';
+
 import {
   ColorPalette,
   Heading,
@@ -20,12 +24,23 @@ export type StatCard = {
   }>;
 };
 
+const cardHoverStyle = {
+  cursor: 'pointer',
+  shadow: 'md',
+  transform: 'translateY(-2px)',
+  transition: 'all 0.2s',
+};
+
 export default function Stats({ data, config }: StatCard) {
-  const cards = config.map(({ key, icon, ...rest }) => ({
-    ...rest,
-    IconComponent: icon,
-    value: data[key] || 0,
-  }));
+  const cards = useMemo(
+    () =>
+      config.map(({ key, icon, ...rest }) => ({
+        ...rest,
+        IconComponent: icon,
+        value: data[key] || 0,
+      })),
+    [config, data],
+  );
 
   return (
     <SimpleGrid
@@ -42,12 +57,7 @@ export default function Stats({ data, config }: StatCard) {
           textAlign="center"
           borderColor={`${color}.300`}
           backgroundColor={`${color}.50`}
-          _hover={{
-            cursor: onClick ? 'pointer' : 'default',
-            shadow: 'md',
-            transform: 'translateY(-2px)',
-            transition: 'all 0.2s',
-          }}
+          _hover={onClick && cardHoverStyle}
           onClick={onClick}
         >
           <Icon color={color} size="xl">
@@ -60,8 +70,8 @@ export default function Stats({ data, config }: StatCard) {
                 {typeof value === 'string'
                   ? suffix
                   : value < 2
-                  ? `${suffix}`
-                  : `${suffix}s`}
+                    ? `${suffix}`
+                    : `${suffix}s`}
               </Text>
             )}
           </Heading>
