@@ -1,7 +1,6 @@
 'use server';
 
 import { AttendanceStatus } from '@/utils/enum';
-import { AttendanceSearchParams } from '@/utils/filters';
 import { ResponseFactory } from '@/utils/response';
 
 import {
@@ -17,8 +16,7 @@ import { withAuth } from './auth';
 import { revalidate } from './cache';
 
 export const getAttendanceByDate = withAuth(
-  async ({ team_id }, params: AttendanceSearchParams) =>
-    await fetchAttendance(team_id, params.date),
+  async ({ team_id }, date: string) => await fetchAttendance(team_id, date),
 );
 
 export const submitLeave = withAuth(

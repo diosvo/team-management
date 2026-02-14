@@ -2,6 +2,7 @@ import { ALL } from './constant';
 import {
   AssetCategory,
   AssetCondition,
+  AttendanceStatus,
   LeagueStatus,
   MatchStatus,
   UserRole,
@@ -9,6 +10,7 @@ import {
 } from './enum';
 
 import {
+  colorAttendanceStatus,
   colorCategory,
   colorCondition,
   colorLeagueStatus,
@@ -111,6 +113,19 @@ describe('colorMatchResult', () => {
 
   test.each(cases)('returns $expected for $status', ({ status, expected }) => {
     expect(colorMatchResult(status as string)).toBe(expected);
+  });
+});
+
+describe('colorAttendanceStatus', () => {
+  const cases = [
+    { status: AttendanceStatus.ON_TIME, expected: 'green' },
+    { status: AttendanceStatus.ABSENT, expected: 'red' },
+    { status: AttendanceStatus.LATE, expected: 'orange' },
+    ...invalidColor('status'),
+  ];
+
+  test.each(cases)('returns $expected for $status', ({ status, expected }) => {
+    expect(colorAttendanceStatus(status as string)).toBe(expected);
   });
 });
 

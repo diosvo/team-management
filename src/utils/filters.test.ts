@@ -2,7 +2,18 @@ import { renderHook } from '@testing-library/react';
 import * as nuqs from 'nuqs';
 import { Mock } from 'vitest';
 
-import { paginateData, useCommonParams } from './filters';
+import { MOCK_ATTENDANCE_DATE } from '@/test/mocks/attendance';
+
+import { ALL } from './constant';
+import { AttendanceStatus } from './enum';
+
+import {
+  loadAttendanceFilters,
+  paginateData,
+  useCommonParams,
+} from './filters';
+
+/* ================== Utility Functions ================== */
 
 describe('paginateData', () => {
   const mockData = Array.from({ length: 8 }, (_, i) => ({
@@ -77,41 +88,95 @@ describe('paginateData', () => {
   });
 });
 
-describe('useCommonParams', () => {
+/* ================== Client-Side Hooks ================== */
+
+describe('Client-Side Filter Hooks', () => {
   afterEach(() => {
     vi.clearAllMocks();
   });
 
-  test('calls useQueryStates with commonParams and default options', () => {
-    const mockReturn = { page: 1, q: '' };
-    (nuqs.useQueryStates as unknown as Mock).mockReturnValue(mockReturn);
+  describe('useCommonParams', () => {
+    test('calls useQueryStates with commonParams and default options', () => {
+      const mockReturn = { page: 1, q: '' };
+      (nuqs.useQueryStates as unknown as Mock).mockReturnValue(mockReturn);
 
-    const { result } = renderHook(() => useCommonParams());
+      const { result } = renderHook(() => useCommonParams());
 
-    expect(nuqs.useQueryStates).toHaveBeenCalledWith(
-      expect.objectContaining({
-        page: expect.anything(),
-        q: expect.anything(),
-      }),
-      {},
-    );
-    expect(result.current).toBe(mockReturn);
+      expect(nuqs.useQueryStates).toHaveBeenCalledWith(
+        expect.objectContaining({
+          page: expect.anything(),
+          q: expect.anything(),
+        }),
+        {},
+      );
+      expect(result.current).toBe(mockReturn);
+    });
+
+    test('calls useQueryStates with provided options', () => {
+      const mockReturn = { page: 2, q: 'test' };
+      const options = { shallow: true };
+      (nuqs.useQueryStates as unknown as Mock).mockReturnValue(mockReturn);
+
+      const { result } = renderHook(() => useCommonParams(options));
+
+      expect(nuqs.useQueryStates).toHaveBeenCalledWith(
+        expect.objectContaining({
+          page: expect.anything(),
+          q: expect.anything(),
+        }),
+        options,
+      );
+      expect(result.current).toBe(mockReturn);
+    });
   });
+});
 
-  test('calls useQueryStates with provided options', () => {
-    const mockReturn = { page: 2, q: 'test' };
-    const options = { shallow: true };
-    (nuqs.useQueryStates as unknown as Mock).mockReturnValue(mockReturn);
+/* ================== Server-Side Loaders ================== */
 
-    const { result } = renderHook(() => useCommonParams(options));
+describe('Server-Side Filter Loaders', () => {
+  describe('loadAttendanceFilters', () => {
+    test('loads attendance filters with default values', async () => {
+      const result = await loadAttendanceFilters(new URLSearchParams());
 
-    expect(nuqs.useQueryStates).toHaveBeenCalledWith(
-      expect.objectContaining({
-        page: expect.anything(),
-        q: expect.anything(),
-      }),
-      options,
-    );
-    expect(result.current).toBe(mockReturn);
+      expect(result).toEqual(
+        expect.objectContaining({
+          page: 1,
+          q: '',
+          status: ALL.value,
+        }),
+      );
+      expect(result.date).toBeDefined(); // CURRENT_DATE is injected
+    });
+
+    test('loads attendance filters with provided values', async () => {
+      const params = new URLSearchParams({
+        page: '4',
+        q: 'dios',
+        date: MOCK_ATTENDANCE_DATE,
+        status: AttendanceStatus.ABSENT,
+      });
+      const result = await loadAttendanceFilters(params);
+
+      expect(result.page).toBe(4);
+      expect(result.q).toBe('dios');
+      expect(result.date).toBe(MOCK_ATTENDANCE_DATE);
+      expect(result.status).toBe(AttendanceStatus.ABSENT);
+    });
+
+    test('handles multiple status values correctly', async () => {
+      const result = await loadAttendanceFilters(
+        new URLSearchParams({ status: AttendanceStatus.ON_TIME }),
+      );
+
+      expect(result.status).toBe(AttendanceStatus.ON_TIME);
+    });
+
+    test('uses default status when invalid value provided', async () => {
+      const result = await loadAttendanceFilters(
+        new URLSearchParams({ status: 'invalid_status' }),
+      );
+
+      expect(result.status).toBe(ALL.value);
+    });
   });
 });
