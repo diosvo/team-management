@@ -1,13 +1,16 @@
 import { ActionBar, Button, Portal } from '@chakra-ui/react';
+import { Trash2 } from 'lucide-react';
+import { PropsWithChildren } from 'react';
 
-type SelectionActionBarProps = {
+type SelectionActionBarProps = PropsWithChildren<{
   open: boolean;
   selectionCount: number;
   onDelete: () => void;
-};
+}>;
 
 export default function SelectionActionBar({
   open,
+  children,
   selectionCount,
   onDelete,
 }: SelectionActionBarProps) {
@@ -20,12 +23,14 @@ export default function SelectionActionBar({
               {selectionCount} selected
             </ActionBar.SelectionTrigger>
             <ActionBar.Separator />
+            {children}
             <Button
               size="sm"
               variant="outline"
               colorPalette="red"
               onClick={onDelete}
             >
+              <Trash2 />
               Delete
             </Button>
           </ActionBar.Content>

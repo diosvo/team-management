@@ -10,10 +10,7 @@ import {
 } from '@chakra-ui/react';
 import { CalendarSearch, DraftingCompass, Plus } from 'lucide-react';
 
-import {
-  GAME_TYPE_SELECTION,
-  MATCH_INTERVAL_SELECTION,
-} from '@/utils/constant';
+import { GAME_TYPE_SELECTION, INTERVAL_SELECTION } from '@/utils/constant';
 
 import { MatchSearchParamsKeys, useMatchFilters } from '@/utils/filters';
 import { UpsertMatch } from './UpsertMatch';
@@ -22,7 +19,7 @@ const types = createListCollection({
   items: GAME_TYPE_SELECTION,
 });
 const dates = createListCollection({
-  items: MATCH_INTERVAL_SELECTION,
+  items: INTERVAL_SELECTION,
 });
 
 export default function MatchesFilters() {

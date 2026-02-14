@@ -9,8 +9,9 @@ import {
 } from 'drizzle-orm/pg-core';
 
 import { PlayerPosition } from '@/utils/enum';
-
 import { created_at, updated_at } from '../helpers';
+
+import { AttendanceTable } from './attendance';
 import { LeagueTeamRosterTable } from './league';
 import { MatchPlayerStatsTable } from './match';
 import { TestResultTable } from './periodic-testing';
@@ -48,6 +49,7 @@ export const PlayerRelations = relations(PlayerTable, ({ one, many }) => ({
   league_participations: many(LeagueTeamRosterTable),
   match_stats: many(MatchPlayerStatsTable),
   test_results: many(TestResultTable),
+  attendance: many(AttendanceTable),
 }));
 
 export type Player = typeof PlayerTable.$inferSelect;

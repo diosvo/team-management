@@ -68,7 +68,7 @@ export function PlayerSelection(props: PlayerSelectionProps) {
     <SearchableSelect
       label="players"
       request={request}
-      maxItems={15}
+      maxItems={request.data ? request.data.length : undefined}
       itemToString={({ name }) => name}
       itemToValue={({ id }) => id}
       renderItem={({ player, name }) => (

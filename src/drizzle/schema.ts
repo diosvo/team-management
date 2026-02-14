@@ -1,4 +1,5 @@
 export * from './schema/asset';
+export * from './schema/attendance';
 export * from './schema/coach';
 export * from './schema/league';
 export * from './schema/location';
