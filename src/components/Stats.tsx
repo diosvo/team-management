@@ -57,7 +57,7 @@ export default function Stats({ data, config }: StatCard) {
           textAlign="center"
           borderColor={`${color}.300`}
           backgroundColor={`${color}.50`}
-          _hover={onClick && cardHoverStyle}
+          _hover={onClick ? cardHoverStyle : undefined}
           onClick={onClick}
         >
           <Icon color={color} size="xl">

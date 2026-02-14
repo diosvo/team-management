@@ -90,7 +90,7 @@ export default function AttendanceTable({
       selection.map((attendance_id) => updateStatus(attendance_id, newStatus)),
     );
     const successCount = results.filter(({ success }) => success).length;
-    const hasErrors = successCount < 1;
+    const hasErrors = results.some(({ success }) => !success);
 
     toaster.create({
       type: hasErrors ? 'warning' : 'success',
@@ -157,9 +157,7 @@ export default function AttendanceTable({
                           setSelection((prev) =>
                             changes.checked
                               ? [...prev, item.attendance_id]
-                              : selection.filter(
-                                  (id) => id !== item.attendance_id,
-                                ),
+                              : prev.filter((id) => id !== item.attendance_id),
                           );
                         }}
                       />

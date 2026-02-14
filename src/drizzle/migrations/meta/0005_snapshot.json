@@ -127,7 +127,7 @@
           "type": "attendance_status",
           "primaryKey": false,
           "notNull": true,
-          "default": "'PRESENT'"
+          "default": "'ON_TIME'"
         },
         "date": {
           "name": "date",
@@ -1645,7 +1645,7 @@
       "name": "attendance_status",
       "schema": "public",
       "values": [
-        "PRESENT",
+        "ON_TIME",
         "ABSENT",
         "LATE",
         "INJURED"

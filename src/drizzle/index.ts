@@ -1,12 +1,13 @@
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 
+import env from '@/schemas/env';
 import * as schema from './schema';
 
 // Initialize the driver
 const pool = new Pool({
   max: 1,
-  connectionString: 'postgresql://diosvo:@localhost:5432/saigon-rovers',
+  connectionString: env.DATABASE_URL,
 });
 
 const db = drizzle({

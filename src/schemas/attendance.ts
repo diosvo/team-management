@@ -5,6 +5,7 @@ import { z } from 'zod';
 export const UpsertAttendanceSchema = z.object({
   player_id: z.string().default(''),
   date: z.iso.date(),
+  status: z.enum(SELECTABLE_ATTENDANCE_STATUS).default(AttendanceStatus.ABSENT),
   reason: z
     .string()
     .max(128, { error: 'Be at most 128 characters long.' })
