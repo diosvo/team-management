@@ -79,6 +79,12 @@ export function colorAttendanceStatus(status: string): ColorPalette {
   });
 }
 
+export function colorPlayerRank(rate: number): ColorPalette {
+  if (rate >= 80) return 'green';
+  if (rate >= 50) return 'orange';
+  return 'red';
+}
+
 export function hasPermissions(role: UserRole) {
   return {
     isAdmin: role === UserRole.SUPER_ADMIN,

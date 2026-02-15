@@ -65,6 +65,11 @@ const attendanceSearchParams = {
   status: parseAsStringEnum(ATTENDANCE_STATUS_VALUES).withDefault(ALL.value),
 };
 
+const analyticsSearchParams = {
+  ...commonParams,
+  interval: parseAsStringEnum(INTERVAL_VALUES).withDefault(Interval.THIS_MONTH),
+};
+
 /* ================== 👯‍♂️ Client-Side Hooks 👯‍♂️ ================== */
 
 export const useCommonParams = (options: Options = {}) =>
@@ -81,6 +86,10 @@ export const useAttendanceFilters = () =>
   useQueryStates(attendanceSearchParams, {
     shallow: false,
   });
+export const useTrainingFilters = () =>
+  useQueryStates(analyticsSearchParams, {
+    shallow: false,
+  });
 
 /* ================== 🌩️ Server-Side Loaders 🌩️ ================== */
 
@@ -89,6 +98,7 @@ export const loadPeriodicTestingFilters = createLoader(
 );
 export const loadMatchFilters = createLoader(matchSearchParams);
 export const loadAttendanceFilters = createLoader(attendanceSearchParams);
+export const loadAnalyticsFilters = createLoader(analyticsSearchParams);
 
 export type MatchSearchParams = Awaited<ReturnType<typeof loadMatchFilters>>;
 export type MatchSearchParamsKeys = keyof typeof matchSearchParams;

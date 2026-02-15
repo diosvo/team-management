@@ -9,12 +9,33 @@ import {
   subYears,
 } from 'date-fns';
 
-import { LOCALE_DATE_FORMAT, LOCALE_DATETIME_FORMAT } from './constant';
+import {
+  DEFAULT_DAY_FORMAT,
+  DEFAULT_TIME_FORMAT,
+  LOCALE_DATE_FORMAT,
+  LOCALE_DATETIME_FORMAT,
+} from './constant';
 import { Interval } from './enum';
+
+export function formatDay(
+  date: Nullish<Date | string>,
+  dFormat = DEFAULT_DAY_FORMAT,
+): string {
+  if (!date) return '-';
+  return format(date, dFormat);
+}
 
 export function formatDate(date: Nullish<Date | string>): string {
   if (!date) return '-';
   return format(date, LOCALE_DATE_FORMAT);
+}
+
+export function formatTime(
+  datetime: Nullish<Date | string>,
+  tFormat = DEFAULT_TIME_FORMAT,
+): string {
+  if (!datetime) return '-';
+  return format(datetime, tFormat);
 }
 
 export function formatDatetime(

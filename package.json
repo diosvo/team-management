@@ -5,7 +5,8 @@
     "url": "https://www.linkedin.com/in/diosvo/"
   },
   "dependencies": {
-    "@chakra-ui/react": "^3.31.0",
+    "@chakra-ui/charts": "^3.33.0",
+    "@chakra-ui/react": "^3.33.0",
     "@emotion/react": "^11.14.0",
     "@hookform/resolvers": "^5.2.2",
     "@tiptap/extension-link": "^3.15.3",
@@ -23,6 +24,7 @@
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "react-hook-form": "^7.71.0",
+    "recharts": "^3.7.0",
     "resend": "^6.7.0",
     "uuid": "^13.0.0",
     "winston": "^3.19.0",

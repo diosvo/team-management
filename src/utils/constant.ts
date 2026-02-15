@@ -1,3 +1,4 @@
+import { IntervalValues } from '@/types/common';
 import {
   AssetCategory,
   AssetCondition,
@@ -16,11 +17,13 @@ export const ESTABLISHED_DATE = '2024-02-20';
 export const DEFAULT_DOB = '2000-01-01';
 export const CURRENT_DATE = new Date().toISOString().split('T')[0];
 
+export const DEFAULT_DAY_FORMAT = 'EEEE';
 export const DEFAULT_DATE_FORMAT = 'yyyy-MM-dd';
 export const LOCALE_DATE_FORMAT = 'dd/MM/yyyy';
-export const LOCAL_TIME_FORMAT = 'HH:mm:ss';
+export const DEFAULT_TIME_FORMAT = 'h:mm a';
+export const LOCALE_TIME_FORMAT = 'HH:mm:ss';
 export const LOCALE_DATETIME_FORMAT =
-  LOCALE_DATE_FORMAT + ' ' + LOCAL_TIME_FORMAT;
+  LOCALE_DATE_FORMAT + ' ' + LOCALE_TIME_FORMAT;
 
 export const COOKIE = {
   prefix: 'sgr',
@@ -228,7 +231,7 @@ export const GAME_TYPE_SELECTION: Selection<string> = [
   },
 ];
 
-export const INTERVAL_SELECTION: Selection<string> = [
+export const INTERVAL_SELECTION: Selection<IntervalValues> = [
   {
     label: 'This month',
     value: Interval.THIS_MONTH,
