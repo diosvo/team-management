@@ -46,10 +46,6 @@ vi.mock('@/actions/cache', () => ({
   },
 }));
 
-vi.mock('@/db/pg-error', () => ({
-  getDbErrorMessage: vi.fn(),
-}));
-
 vi.mock('date-fns', () => ({
   isFuture: vi.fn(),
   isPast: vi.fn(),

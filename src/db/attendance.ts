@@ -40,7 +40,7 @@ export async function getAttendanceByDate(
     ).length;
     const absent_count = total_records - on_time_count - late_count;
     const present_rate = total_records
-      ? (on_time_count / total_records) * 100
+      ? ((on_time_count + late_count) / total_records) * 100
       : 0;
 
     return {

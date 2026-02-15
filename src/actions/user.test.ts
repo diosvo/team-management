@@ -68,10 +68,6 @@ vi.mock('@/actions/cache', () => ({
   },
 }));
 
-vi.mock('@/db/pg-error', () => ({
-  getDbErrorMessage: vi.fn(),
-}));
-
 vi.mock('@/lib/auth', () => ({
   default: {
     api: {

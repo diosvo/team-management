@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 
 export default async function AttendancePage(props: PageProps<'/attendance'>) {
   const params = await loadAttendanceFilters(props.searchParams);
-  const { data, stats } = await getAttendanceByDate(params);
+  const { data, stats } = await getAttendanceByDate(params.date);
 
   return (
     <>

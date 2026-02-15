@@ -34,10 +34,6 @@ vi.mock('@/actions/cache', () => ({
   },
 }));
 
-vi.mock('@/db/pg-error', () => ({
-  getDbErrorMessage: vi.fn(),
-}));
-
 const MOCK_MATCH_ID = MOCK_MATCH.match_id;
 
 describe('Match Actions', () => {

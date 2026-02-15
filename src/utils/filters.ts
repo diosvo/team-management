@@ -22,7 +22,6 @@ import {
 } from './constant';
 import { Interval } from './enum';
 
-// For CSR only
 export const commonParams = {
   page: parseAsInteger.withDefault(1),
   q: parseAsString.withDefault(''),
@@ -66,7 +65,8 @@ const attendanceSearchParams = {
   status: parseAsStringEnum(ATTENDANCE_STATUS_VALUES).withDefault(ALL.value),
 };
 
-/* 👯‍♂️ Client 👯‍♂️ */
+/* ================== 👯‍♂️ Client-Side Hooks 👯‍♂️ ================== */
+
 export const useCommonParams = (options: Options = {}) =>
   useQueryStates(commonParams, options);
 export const useRosterFilters = () => useQueryStates(rosterSearchParams);
@@ -82,7 +82,8 @@ export const useAttendanceFilters = () =>
     shallow: false,
   });
 
-/* 🌩️ Server 🌩️ */
+/* ================== 🌩️ Server-Side Loaders 🌩️ ================== */
+
 export const loadPeriodicTestingFilters = createLoader(
   periodicTestingSearchParams,
 );
@@ -94,6 +95,8 @@ export type MatchSearchParamsKeys = keyof typeof matchSearchParams;
 export type AttendanceSearchParams = Awaited<
   ReturnType<typeof loadAttendanceFilters>
 >;
+
+/* ================== ⛽️ Utility Functions ⛽️ ================== */
 
 export function paginateData<T>(
   data: Array<T>,
