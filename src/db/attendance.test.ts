@@ -57,6 +57,8 @@ vi.mock('@/drizzle/schema/attendance', () => ({
   },
 }));
 
+const MOCK_ATTENDANCE_ID = MOCK_ATTENDANCE_ON_TIME.attendance_id;
+
 describe('getAttendanceByDate', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -168,16 +170,16 @@ describe('updateAttendance', () => {
 
   test('updates attendance successfully', async () => {
     const { mockWhere, mockSet } = mockUpdateSuccess({
-      attendance_id: MOCK_ATTENDANCE_ON_TIME.attendance_id,
+      attendance_id: MOCK_ATTENDANCE_ID,
     });
 
     const result = await updateAttendance(
-      MOCK_ATTENDANCE_ON_TIME.attendance_id,
+      MOCK_ATTENDANCE_ID,
       updatedAttendance,
     );
 
     expect(result).toEqual({
-      attendance_id: MOCK_ATTENDANCE_ON_TIME.attendance_id,
+      attendance_id: MOCK_ATTENDANCE_ID,
     });
 
     // Verify query construction
@@ -185,11 +187,11 @@ describe('updateAttendance', () => {
     expect(mockSet).toHaveBeenCalledWith(updatedAttendance);
     expect(eq).toHaveBeenCalledWith(
       AttendanceTable.attendance_id,
-      MOCK_ATTENDANCE_ON_TIME.attendance_id,
+      MOCK_ATTENDANCE_ID,
     );
     expect(mockWhere).toHaveBeenCalledWith({
       field: AttendanceTable.attendance_id,
-      value: MOCK_ATTENDANCE_ON_TIME.attendance_id,
+      value: MOCK_ATTENDANCE_ID,
       type: 'eq',
     });
   });
@@ -199,10 +201,7 @@ describe('updateAttendance', () => {
     mockUpdateFailure(message);
 
     await expect(
-      updateAttendance(
-        MOCK_ATTENDANCE_ON_TIME.attendance_id,
-        updatedAttendance,
-      ),
+      updateAttendance(MOCK_ATTENDANCE_ID, updatedAttendance),
     ).rejects.toThrow(message);
   });
 });
@@ -214,26 +213,24 @@ describe('deleteAttendance', () => {
 
   test('deletes attendance successfully', async () => {
     const mockWhere = mockDeleteSuccess({
-      attendance_id: MOCK_ATTENDANCE_ON_TIME.attendance_id,
+      attendance_id: MOCK_ATTENDANCE_ID,
     });
 
-    const result = await deleteAttendance(
-      MOCK_ATTENDANCE_ON_TIME.attendance_id,
-    );
+    const result = await deleteAttendance(MOCK_ATTENDANCE_ID);
 
     expect(result).toEqual({
-      attendance_id: MOCK_ATTENDANCE_ON_TIME.attendance_id,
+      attendance_id: MOCK_ATTENDANCE_ID,
     });
 
     // Verify query construction
     expect(db.delete).toHaveBeenCalledWith(AttendanceTable);
     expect(eq).toHaveBeenCalledWith(
       AttendanceTable.attendance_id,
-      MOCK_ATTENDANCE_ON_TIME.attendance_id,
+      MOCK_ATTENDANCE_ID,
     );
     expect(mockWhere).toHaveBeenCalledWith({
       field: AttendanceTable.attendance_id,
-      value: MOCK_ATTENDANCE_ON_TIME.attendance_id,
+      value: MOCK_ATTENDANCE_ID,
       type: 'eq',
     });
   });
@@ -242,8 +239,6 @@ describe('deleteAttendance', () => {
     const message = 'Delete failed';
     mockDeleteFailure(message);
 
-    await expect(
-      deleteAttendance(MOCK_ATTENDANCE_ON_TIME.attendance_id),
-    ).rejects.toThrow(message);
+    await expect(deleteAttendance(MOCK_ATTENDANCE_ID)).rejects.toThrow(message);
   });
 });

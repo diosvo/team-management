@@ -44,6 +44,8 @@ vi.mock('@/actions/cache', () => ({
   },
 }));
 
+const MOCK_ATTENDANCE_ID = MOCK_ATTENDANCE_ON_TIME.attendance_id;
+
 describe('Attendance Actions', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -178,7 +180,6 @@ describe('Attendance Actions', () => {
   });
 
   describe('updateStatus', () => {
-    const attendanceId = MOCK_ATTENDANCE_ON_TIME.attendance_id;
     const newStatus = AttendanceStatus.LATE;
 
     test('updates attendance status successfully and revalidates cache', async () => {
@@ -187,9 +188,9 @@ describe('Attendance Actions', () => {
         command: 'UPDATE',
       });
 
-      const result = await updateStatus(attendanceId, newStatus);
+      const result = await updateStatus(MOCK_ATTENDANCE_ID, newStatus);
 
-      expect(updateAttendance).toHaveBeenCalledWith(attendanceId, {
+      expect(updateAttendance).toHaveBeenCalledWith(MOCK_ATTENDANCE_ID, {
         status: newStatus,
       });
       expect(revalidate.attendances).toHaveBeenCalled();
@@ -207,9 +208,9 @@ describe('Attendance Actions', () => {
         constraint: null,
       });
 
-      const result = await updateStatus(attendanceId, newStatus);
+      const result = await updateStatus(MOCK_ATTENDANCE_ID, newStatus);
 
-      const shortId = attendanceId.slice(0, 8);
+      const shortId = MOCK_ATTENDANCE_ID.slice(0, 8);
       expect(revalidate.attendances).not.toHaveBeenCalled();
       expect(result).toEqual({
         success: false,
@@ -225,9 +226,9 @@ describe('Attendance Actions', () => {
         constraint: null,
       });
 
-      const result = await updateStatus(attendanceId, newStatus);
+      const result = await updateStatus(MOCK_ATTENDANCE_ID, newStatus);
 
-      const shortId = attendanceId.slice(0, 8);
+      const shortId = MOCK_ATTENDANCE_ID.slice(0, 8);
       expect(result).toEqual({
         success: false,
         message: `${errorMessage} (id: ${shortId})`,
@@ -236,17 +237,15 @@ describe('Attendance Actions', () => {
   });
 
   describe('removeAttendance', () => {
-    const attendanceId = MOCK_ATTENDANCE_ON_TIME.attendance_id;
-
     test('deletes attendance successfully and revalidates cache', async () => {
       vi.mocked(deleteAttendance).mockResolvedValue({
         ...mockResult,
         command: 'DELETE',
       });
 
-      const result = await removeAttendance(attendanceId);
+      const result = await removeAttendance(MOCK_ATTENDANCE_ID);
 
-      expect(deleteAttendance).toHaveBeenCalledWith(attendanceId);
+      expect(deleteAttendance).toHaveBeenCalledWith(MOCK_ATTENDANCE_ID);
       expect(revalidate.attendances).toHaveBeenCalled();
       expect(result).toEqual({
         success: true,
@@ -262,10 +261,10 @@ describe('Attendance Actions', () => {
         constraint: null,
       });
 
-      const result = await removeAttendance(attendanceId);
+      const result = await removeAttendance(MOCK_ATTENDANCE_ID);
 
-      const shortId = attendanceId.slice(0, 8);
-      expect(deleteAttendance).toHaveBeenCalledWith(attendanceId);
+      const shortId = MOCK_ATTENDANCE_ID.slice(0, 8);
+      expect(deleteAttendance).toHaveBeenCalledWith(MOCK_ATTENDANCE_ID);
       expect(revalidate.attendances).not.toHaveBeenCalled();
       expect(result).toEqual({
         success: false,
@@ -284,9 +283,9 @@ describe('Attendance Actions', () => {
         constraint: 'fk_constraint',
       });
 
-      const result = await removeAttendance(attendanceId);
+      const result = await removeAttendance(MOCK_ATTENDANCE_ID);
 
-      const shortId = attendanceId.slice(0, 8);
+      const shortId = MOCK_ATTENDANCE_ID.slice(0, 8);
       expect(result).toEqual({
         success: false,
         message: `${errorMessage} (id: ${shortId})`,
@@ -301,9 +300,9 @@ describe('Attendance Actions', () => {
         constraint: null,
       });
 
-      const result = await removeAttendance(attendanceId);
+      const result = await removeAttendance(MOCK_ATTENDANCE_ID);
 
-      const shortId = attendanceId.slice(0, 8);
+      const shortId = MOCK_ATTENDANCE_ID.slice(0, 8);
       expect(result).toEqual({
         success: false,
         message: `${errorMessage} (id: ${shortId})`,

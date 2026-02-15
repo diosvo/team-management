@@ -29,10 +29,6 @@ vi.mock('@/actions/cache', () => ({
   },
 }));
 
-vi.mock('@/db/pg-error', () => ({
-  getDbErrorMessage: vi.fn(),
-}));
-
 describe('Location Actions', () => {
   const mockResult = {
     rows: [],
