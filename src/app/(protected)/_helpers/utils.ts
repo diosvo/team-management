@@ -1,6 +1,6 @@
 import {
   BadgeCheck,
-  Dumbbell,
+  ChartArea,
   FileChartColumnIncreasing,
   FileText,
   Film,
@@ -10,7 +10,7 @@ import {
   Package,
   ShieldCheck,
   Trophy,
-  Users,
+  UsersRound,
 } from 'lucide-react';
 
 export const hrefPath = (text: string): string => {
@@ -29,7 +29,7 @@ export const SIDEBAR_GROUP = [
         active: true,
         disabled: false,
       },
-      { icon: Dumbbell, text: 'Training', disabled: true },
+      { icon: ChartArea, text: 'Analytics', disabled: false },
       {
         icon: ShieldCheck,
         text: 'Team Rule',
@@ -40,7 +40,7 @@ export const SIDEBAR_GROUP = [
   {
     title: 'Team Management',
     items: [
-      { icon: Users, text: 'Roster', disabled: false },
+      { icon: UsersRound, text: 'Roster', disabled: false },
       { icon: BadgeCheck, text: 'Attendance', disabled: false },
       { icon: FileText, text: 'Registration', disabled: false },
       { icon: GamepadDirectional, text: 'Matches', disabled: false },

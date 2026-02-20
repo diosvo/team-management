@@ -3,7 +3,6 @@ import NextImage from 'next/image';
 import { HStack, Image } from '@chakra-ui/react';
 
 import HeaderLogo from '@/assets/images/header-logo.webp';
-import Visibility from '@/components/Visibility';
 
 import AccountMenu from './AccountMenu';
 import MobileSidebar from './MobileSidebar';
@@ -32,7 +31,7 @@ export default function Header({ smallDevice }: { smallDevice: boolean }) {
       </Image>
 
       <AccountMenu />
-      <Visibility isVisible={smallDevice} children={<MobileSidebar />} />
+      {smallDevice && <MobileSidebar />}
     </HStack>
   );
 }

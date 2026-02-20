@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import { Badge, Highlight, Table } from '@chakra-ui/react';
+import { Badge, Highlight, HStack, Span, Table } from '@chakra-ui/react';
 
 import Pagination from '@/components/Pagination';
 import SelectionActionBar from '@/components/SelectionActionBar';
@@ -13,9 +13,8 @@ import Visibility from '@/components/Visibility';
 
 import usePermissions from '@/hooks/use-permissions';
 import { MatchWithTeams } from '@/types/match';
-import { LOCALE_DATE_FORMAT } from '@/utils/constant';
 import { paginateData, useMatchFilters } from '@/utils/filters';
-import { formatDatetime } from '@/utils/formatter';
+import { formatDate, formatDay } from '@/utils/formatter';
 import { colorMatchResult } from '@/utils/helper';
 
 import { removeMatch } from '@/actions/match';
@@ -51,6 +50,8 @@ export default function MatchTable({
 
     setSelection([]);
   };
+
+  console.log(currentData);
 
   return (
     <>
@@ -145,10 +146,13 @@ export default function MatchTable({
                   </Table.Cell>
                   <Table.Cell>{item.location?.name || '-'}</Table.Cell>
                   <Table.Cell>
-                    {formatDatetime(
-                      new Date(`${item.date}T${item.time}`),
-                      `${LOCALE_DATE_FORMAT} - EEEE · h:mm a`,
-                    )}
+                    <HStack gap={1}>
+                      <Span fontSize="sm">{formatDay(item.date)}</Span>
+                      <Span color="gray.400">&bull;</Span>
+                      <Span fontSize="sm">{formatDate(item.date)}</Span>
+                      <Span color="gray.400">&bull;</Span>
+                      <Span fontSize="sm">{item.time}</Span>
+                    </HStack>
                   </Table.Cell>
                 </Table.Row>
               ))
