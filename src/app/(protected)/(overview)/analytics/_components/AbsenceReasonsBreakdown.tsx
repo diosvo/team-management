@@ -29,7 +29,7 @@ export default function AbsenceReasonsBreakdown({
       </Card.Header>
       <Card.Body>
         {reasons.length ? (
-          <Chart.Root marginInline="auto" chart={chart}>
+          <Chart.Root maxHeight="xs" chart={chart}>
             <PieChart responsive>
               <Pie
                 data={reasons}

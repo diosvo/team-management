@@ -1,9 +1,9 @@
-import { MOCK_LOCATION } from '@/test/mocks/location';
-import { MOCK_TEAM } from '@/test/mocks/team';
 import { AttendanceWithPlayer } from '@/types/attendance';
 import { AttendanceStatus } from '@/utils/enum';
 
-// Generate attendance records for past sessions
+import { MOCK_LOCATION } from './location';
+import { MOCK_TEAM } from './team';
+
 export const MOCK_TRAINING_HISTORY: Array<AttendanceWithPlayer> = [
   // Feb 15, 2026 (Great attendance)
   {
@@ -364,17 +364,16 @@ export const MOCK_UPCOMING_SESSIONS = [
   },
 ];
 
-// Training stats calculated from the history
-// This Week (Feb 9-15): 2 sessions (Feb 11, 13, 15)
+// This Week (Feb 9-15): 3 sessions (Feb 11, 13, 15)
 // - Feb 15: 6 players (5 on-time, 1 late) = 100% present
 // - Feb 13: 6 players (4 on-time, 1 late, 1 absent) = 83.3% present
 // - Feb 11: 6 players (3 on-time, 1 late, 2 absent) = 66.7% present
-// Average attendance: (6 + 5 + 4) / 3 = 5 players per session
-// Recovery days: Feb 6→8 (2 days), 8→11 (3 days), 11→13 (2 days), 13→15 (2 days) = avg 2.25 days
+// Average attendance (for Feb 11, 13, 15): (4 + 5 + 6) / 3 = 5 players per session
+// Recovery days: Feb 15→13 (2 days), 13→11 (2 days) = avg 2 days
 export const MOCK_TRAINING_STATS = {
   total_sessions: 3,
-  avg_attendance: 5.0,
-  avg_recovery_days: 2.3,
+  avg_attendance: 5,
+  avg_recovery_days: 2,
 };
 
 // Attendance trend for chart

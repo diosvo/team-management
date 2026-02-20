@@ -108,10 +108,10 @@ export async function getPlayersAttendanceSummary(
     return {
       top_performers: records
         .filter(({ attendance_rate }) => attendance_rate >= 80)
-        .splice(0, 3),
+        .slice(0, 3),
       need_attention: records
         .filter(({ attendance_rate }) => attendance_rate < 50)
-        .splice(0, 3),
+        .slice(0, 3),
     };
   } catch {
     return {

@@ -14,10 +14,10 @@ import Visibility from '@/components/Visibility';
 import usePermissions from '@/hooks/use-permissions';
 import { MatchWithTeams } from '@/types/match';
 import { paginateData, useMatchFilters } from '@/utils/filters';
+import { formatDate, formatDay } from '@/utils/formatter';
 import { colorMatchResult } from '@/utils/helper';
 
 import { removeMatch } from '@/actions/match';
-import { formatDate, formatDay, formatTime } from '@/utils/formatter';
 import { UpsertMatch } from './UpsertMatch';
 
 export default function MatchTable({
@@ -50,6 +50,8 @@ export default function MatchTable({
 
     setSelection([]);
   };
+
+  console.log(currentData);
 
   return (
     <>
@@ -149,7 +151,7 @@ export default function MatchTable({
                       <Span color="gray.400">&bull;</Span>
                       <Span fontSize="sm">{formatDate(item.date)}</Span>
                       <Span color="gray.400">&bull;</Span>
-                      <Span fontSize="sm">{formatTime(item.date)}</Span>
+                      <Span fontSize="sm">{item.time}</Span>
                     </HStack>
                   </Table.Cell>
                 </Table.Row>

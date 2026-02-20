@@ -22,9 +22,8 @@ export default function SummaryStats({
       return { total_sessions: 0, avg_attendance: 0, avg_recovery_days: 0 };
     }
 
-    const avg_attendance = (
-      records.reduce((sum, { attended }) => sum + attended, 0) / total_sessions
-    ).toFixed(1);
+    const avg_attendance =
+      records.reduce((sum, { attended }) => sum + attended, 0) / total_sessions;
 
     const gaps = records
       .slice(0, -1)
@@ -35,13 +34,16 @@ export default function SummaryStats({
         ),
       );
 
-    const avg_recovery_days = (
+    const avg_recovery_days =
       gaps.length > 0
         ? gaps.reduce((sum, day) => sum + day, 0) / gaps.length
-        : 0
-    ).toFixed(1);
+        : 0;
 
-    return { total_sessions, avg_attendance, avg_recovery_days };
+    return {
+      total_sessions,
+      avg_attendance: Math.round(avg_attendance),
+      avg_recovery_days: Math.round(avg_recovery_days),
+    };
   }, [records]);
 
   const config: StatCard['config'] = [

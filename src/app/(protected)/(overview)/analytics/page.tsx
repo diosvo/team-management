@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 
-import { HStack, SimpleGrid } from '@chakra-ui/react';
+import { GridItem, HStack, SimpleGrid } from '@chakra-ui/react';
 
 import PageTitle from '@/components/PageTitle';
 
@@ -17,7 +17,6 @@ import AttendanceHistory from './_components/AttendanceHistory';
 import AttendanceTrend from './_components/AttendanceTrend';
 import PlayerAttendanceRanking from './_components/PlayerAttendanceRanking';
 import SummaryStats from './_components/SummaryStats';
-import UpcomingSessions from './_components/UpcomingSessions';
 
 export const metadata: Metadata = {
   title: 'Analytics',
@@ -41,14 +40,17 @@ export default async function AnalyticsPage(props: PageProps<'/analytics'>) {
       <SummaryStats records={attendanceHistory} />
 
       <SimpleGrid columns={{ base: 1, lg: 3 }} gap={6} marginBottom={6}>
-        <UpcomingSessions />
-        <PlayerAttendanceRanking records={attendanceSummary} />
-        <AbsenceReasonsBreakdown reasons={mostAbsenceReasons} />
+        <GridItem colSpan={2}>
+          <AttendanceHistory records={attendanceHistory} />
+        </GridItem>
+        <GridItem colSpan={1}>
+          <PlayerAttendanceRanking records={attendanceSummary} />
+        </GridItem>
       </SimpleGrid>
 
       <SimpleGrid columns={{ base: 1, lg: 2 }} gap={6}>
         <AttendanceTrend records={attendanceHistory} />
-        <AttendanceHistory records={attendanceHistory} />
+        <AbsenceReasonsBreakdown reasons={mostAbsenceReasons} />
       </SimpleGrid>
     </>
   );

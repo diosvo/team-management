@@ -32,7 +32,6 @@ export default function Header({ smallDevice }: { smallDevice: boolean }) {
 
       <AccountMenu />
       {smallDevice && <MobileSidebar />}
-      {/* <Visibility isVisible={smallDevice} children={<MobileSidebar />} /> */}
     </HStack>
   );
 }

@@ -67,7 +67,7 @@ export default function PlayerAttendanceRanking({
   ];
 
   return (
-    <Card.Root>
+    <Card.Root height="full">
       <Card.Header>
         <Card.Title>Player Attendance Rankings</Card.Title>
         <Card.Description>

@@ -9,11 +9,12 @@ import {
   Text,
   VStack,
 } from '@chakra-ui/react';
-import { isToday, parseISO } from 'date-fns';
+import { format, isToday, parseISO } from 'date-fns';
 import { MapPin } from 'lucide-react';
 
-import { MOCK_UPCOMING_SESSIONS } from '@/test/mocks/analytics.ts';
-import { formatDate, formatDay, formatTime } from '@/utils/formatter';
+import { MOCK_UPCOMING_SESSIONS } from '@/test/mocks/analytics';
+import { DEFAULT_TIME_FORMAT } from '@/utils/constant';
+import { formatDate, formatDay } from '@/utils/formatter';
 
 // TODO: Fetch with actual data when TrainingSession feature is ready
 export default function UpcomingSessions() {
@@ -21,7 +22,7 @@ export default function UpcomingSessions() {
     <Card.Root>
       <Card.Header>
         <Card.Title>Upcoming Sessions</Card.Title>
-        <Card.Description>Next 3 training sessions from today</Card.Description>
+        <Card.Description>Next 3 training sessions</Card.Description>
       </Card.Header>
       <Card.Body>
         <VStack align="stretch" gap={4}>
@@ -49,7 +50,9 @@ export default function UpcomingSessions() {
                     <Span color="gray.400">&bull;</Span>
                     <Span fontSize="sm">{formatDate(date)}</Span>
                     <Span color="gray.400">&bull;</Span>
-                    <Span fontSize="sm">{formatTime(date)}</Span>
+                    <Span fontSize="sm">
+                      {format(date, DEFAULT_TIME_FORMAT)}
+                    </Span>
                     {isTodaySession && (
                       <Badge
                         marginLeft="auto"
