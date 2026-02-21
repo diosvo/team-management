@@ -1,6 +1,12 @@
 import { AttendanceWithPlayer } from '@/types/attendance';
 import { AttendanceStatus } from '@/utils/enum';
 
+import {
+  AbsenceReason,
+  AttendanceHistoryRecord,
+  PlayerSessionSummary,
+  PlayerStats,
+} from '@/types/analytics';
 import { MOCK_LOCATION } from './location';
 import { MOCK_TEAM } from './team';
 
@@ -384,4 +390,233 @@ export const MOCK_ATTENDANCE_TREND = [
   { date: '2026-02-11', attended: 4, absent: 2, total: 6 }, // 66.7%
   { date: '2026-02-13', attended: 5, absent: 1, total: 6 }, // 83.3%
   { date: '2026-02-15', attended: 6, absent: 0, total: 6 }, // 100%
+];
+
+export const MOCK_ATTENDANCE_HISTORY: Array<AttendanceHistoryRecord> = [
+  {
+    date: 'February 15, 2026',
+    short_date: 'Feb 15',
+    day: 'Saturday',
+    total: 6,
+    on_time: 5,
+    late: 1,
+    absent: 0,
+    attended: 6,
+    present_rate: 100,
+  },
+  {
+    date: 'February 13, 2026',
+    short_date: 'Feb 13',
+    day: 'Thursday',
+    total: 6,
+    on_time: 4,
+    late: 1,
+    absent: 1,
+    attended: 5,
+    present_rate: 83,
+  },
+  {
+    date: 'February 11, 2026',
+    short_date: 'Feb 11',
+    day: 'Tuesday',
+    total: 6,
+    on_time: 3,
+    late: 1,
+    absent: 2,
+    attended: 4,
+    present_rate: 67,
+  },
+];
+
+export const MOCK_PLAYERS_ATTENDANCE_SUMMARY: PlayerSessionSummary = {
+  top_performers: [
+    {
+      player_name: 'John Smith',
+      attended: 5,
+      total_sessions: 5,
+      attendance_rate: 100,
+    },
+    {
+      player_name: 'Sarah Johnson',
+      attended: 5,
+      total_sessions: 5,
+      attendance_rate: 100,
+    },
+    {
+      player_name: 'Emma Brown',
+      attended: 5,
+      total_sessions: 5,
+      attendance_rate: 100,
+    },
+  ],
+  need_attention: [
+    {
+      player_name: 'Tom Wilson',
+      attended: 2,
+      total_sessions: 5,
+      attendance_rate: 40,
+    },
+  ],
+};
+
+export const MOCK_ABSENCE_REASONS: Array<AbsenceReason> = [
+  {
+    name: 'Sick',
+    count: 1,
+    percentage: 25,
+    color: '#E53E3E',
+  },
+  {
+    name: 'Family Emergency',
+    count: 1,
+    percentage: 25,
+    color: '#38A169',
+  },
+  {
+    name: 'Work',
+    count: 1,
+    percentage: 25,
+    color: '#D2D4D7',
+  },
+  {
+    name: 'Meeting ran late',
+    count: 2,
+    percentage: 50,
+    color: '#D2D4D7',
+  },
+];
+
+export const MOCK_PLAYER_RECORDS_FULL: Array<PlayerStats> = [
+  {
+    player_name: 'John Smith',
+    attended: 5,
+    total_sessions: 5,
+    attendance_rate: 100,
+  },
+  {
+    player_name: 'Sarah Johnson',
+    attended: 5,
+    total_sessions: 5,
+    attendance_rate: 100,
+  },
+  {
+    player_name: 'Emma Brown',
+    attended: 5,
+    total_sessions: 5,
+    attendance_rate: 100,
+  },
+  {
+    player_name: 'Tom Wilson',
+    attended: 2,
+    total_sessions: 5,
+    attendance_rate: 40,
+  },
+  {
+    player_name: 'Mike Davis',
+    attended: 4,
+    total_sessions: 5,
+    attendance_rate: 80,
+  },
+];
+
+export const MOCK_PLAYER_RECORDS_TOP_PERFORMERS: Array<PlayerStats> = [
+  {
+    player_name: 'Player A',
+    attended: 5,
+    total_sessions: 5,
+    attendance_rate: 100,
+  },
+  {
+    player_name: 'Player B',
+    attended: 4,
+    total_sessions: 5,
+    attendance_rate: 80,
+  },
+  {
+    player_name: 'Player C',
+    attended: 3,
+    total_sessions: 5,
+    attendance_rate: 60,
+  },
+];
+
+export const MOCK_PLAYER_RECORDS_NEED_ATTENTION: Array<PlayerStats> = [
+  {
+    player_name: 'Player A',
+    attended: 5,
+    total_sessions: 5,
+    attendance_rate: 100,
+  },
+  {
+    player_name: 'Player B',
+    attended: 2,
+    total_sessions: 5,
+    attendance_rate: 40,
+  },
+  {
+    player_name: 'Player C',
+    attended: 1,
+    total_sessions: 5,
+    attendance_rate: 20,
+  },
+];
+
+export const MOCK_PLAYER_RECORDS_MANY_TOP: Array<PlayerStats> = [
+  {
+    player_name: 'Player 1',
+    attended: 5,
+    total_sessions: 5,
+    attendance_rate: 100,
+  },
+  {
+    player_name: 'Player 2',
+    attended: 5,
+    total_sessions: 5,
+    attendance_rate: 100,
+  },
+  {
+    player_name: 'Player 3',
+    attended: 5,
+    total_sessions: 5,
+    attendance_rate: 90,
+  },
+  {
+    player_name: 'Player 4',
+    attended: 4,
+    total_sessions: 5,
+    attendance_rate: 80,
+  },
+  {
+    player_name: 'Player 5',
+    attended: 4,
+    total_sessions: 5,
+    attendance_rate: 80,
+  },
+];
+
+export const MOCK_PLAYER_RECORDS_MANY_NEED_ATTENTION: Array<PlayerStats> = [
+  {
+    player_name: 'Player 1',
+    attended: 2,
+    total_sessions: 5,
+    attendance_rate: 40,
+  },
+  {
+    player_name: 'Player 2',
+    attended: 2,
+    total_sessions: 5,
+    attendance_rate: 40,
+  },
+  {
+    player_name: 'Player 3',
+    attended: 1,
+    total_sessions: 5,
+    attendance_rate: 20,
+  },
+  {
+    player_name: 'Player 4',
+    attended: 1,
+    total_sessions: 5,
+    attendance_rate: 20,
+  },
 ];
