@@ -15,6 +15,7 @@ import {
   colorCondition,
   colorLeagueStatus,
   colorMatchResult,
+  colorPlayerRank,
   colorRole,
   colorState,
   hasPermissions,
@@ -126,6 +127,18 @@ describe('colorAttendanceStatus', () => {
 
   test.each(cases)('returns $expected for $status', ({ status, expected }) => {
     expect(colorAttendanceStatus(status as string)).toBe(expected);
+  });
+});
+
+describe('colorPlayerRank', () => {
+  const cases = [
+    { value: 80, expected: 'green' },
+    { value: 50, expected: 'orange' },
+    { value: 0, expected: 'red' },
+  ];
+
+  test.each(cases)('returns $expected for $value', ({ value, expected }) => {
+    expect(colorPlayerRank(value as number)).toBe(expected);
   });
 });
 

@@ -1,6 +1,7 @@
 import { format } from 'date-fns';
 
-import { capitalize, formatDate, formatDatetime } from './formatter';
+import { DEFAULT_DAY_FORMAT, LOCALE_DATE_FORMAT } from './constant';
+import { capitalize, formatDate, formatDatetime, formatDay } from './formatter';
 
 vi.mock('date-fns', () => ({
   format: vi.fn(),
@@ -11,6 +12,25 @@ vi.mock('date-fns', () => ({
   startOfYear: vi.fn(),
   endOfYear: vi.fn(),
 }));
+
+describe('formatDay', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  test('returns "-" when date is null or undefined', () => {
+    expect(formatDay(null)).toBe('-');
+    expect(formatDay(undefined)).toBe('-');
+  });
+
+  test('formats day correctly', () => {
+    const date = new Date('1999-12-12');
+    vi.mocked(format).mockReturnValue('Sunday');
+
+    expect(formatDay(date)).toBe('Sunday');
+    expect(format).toHaveBeenCalledWith(date, DEFAULT_DAY_FORMAT);
+  });
+});
 
 describe('formatDate', () => {
   beforeEach(() => {
@@ -27,7 +47,7 @@ describe('formatDate', () => {
     vi.mocked(format).mockReturnValue('12/12/1999');
 
     expect(formatDate(date)).toBe('12/12/1999');
-    expect(format).toHaveBeenCalledWith(date, expect.any(String));
+    expect(format).toHaveBeenCalledWith(date, LOCALE_DATE_FORMAT);
   });
 
   test('formats date string correctly', () => {
@@ -35,7 +55,7 @@ describe('formatDate', () => {
     vi.mocked(format).mockReturnValue('12/12/1999');
 
     expect(formatDate(dateString)).toBe('12/12/1999');
-    expect(format).toHaveBeenCalledWith(dateString, expect.any(String));
+    expect(format).toHaveBeenCalledWith(dateString, LOCALE_DATE_FORMAT);
   });
 });
 

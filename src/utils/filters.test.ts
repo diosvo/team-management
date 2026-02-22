@@ -4,10 +4,11 @@ import { Mock } from 'vitest';
 
 import { MOCK_ATTENDANCE_DATE } from '@/test/mocks/attendance';
 
-import { ALL } from './constant';
-import { AttendanceStatus } from './enum';
+import { ALL, INTERVAL_VALUES } from './constant';
+import { AttendanceStatus, Interval } from './enum';
 
 import {
+  loadAnalyticsFilters,
   loadAttendanceFilters,
   paginateData,
   useCommonParams,
@@ -177,6 +178,50 @@ describe('Server-Side Filter Loaders', () => {
       );
 
       expect(result.status).toBe(ALL.value);
+    });
+  });
+
+  describe('loadAnalyticsFilters', () => {
+    test('loads analytics filters with default values', async () => {
+      const result = await loadAnalyticsFilters(new URLSearchParams());
+
+      expect(result).toEqual(
+        expect.objectContaining({
+          page: 1,
+          q: '',
+          interval: Interval.THIS_MONTH,
+        }),
+      );
+    });
+
+    test('loads analytics filters with provided values', async () => {
+      const params = new URLSearchParams({
+        page: '3',
+        q: 'dios',
+        interval: Interval.THIS_YEAR,
+      });
+      const result = await loadAnalyticsFilters(params);
+
+      expect(result.page).toBe(3);
+      expect(result.q).toBe('dios');
+      expect(result.interval).toBe(Interval.THIS_YEAR);
+    });
+
+    test('handles all interval values correctly', async () => {
+      for (const interval of INTERVAL_VALUES) {
+        const result = await loadAnalyticsFilters(
+          new URLSearchParams({ interval }),
+        );
+        expect(result.interval).toBe(interval);
+      }
+    });
+
+    test('uses default interval when invalid value provided', async () => {
+      const result = await loadAnalyticsFilters(
+        new URLSearchParams({ interval: 'invalid_interval' }),
+      );
+
+      expect(result.interval).toBe(Interval.THIS_MONTH);
     });
   });
 });

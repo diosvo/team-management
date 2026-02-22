@@ -20,7 +20,6 @@ export interface AbsenceReason {
   name: string;
   count: number;
   percentage: number;
-  color: string;
 }
 
 export interface AttendanceHistoryRecord {
