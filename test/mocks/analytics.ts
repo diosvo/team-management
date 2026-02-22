@@ -464,25 +464,21 @@ export const MOCK_ABSENCE_REASONS: Array<AbsenceReason> = [
     name: 'Sick',
     count: 1,
     percentage: 25,
-    color: '#E53E3E',
   },
   {
     name: 'Family Emergency',
     count: 1,
     percentage: 25,
-    color: '#38A169',
   },
   {
     name: 'Work',
     count: 1,
     percentage: 25,
-    color: '#D2D4D7',
   },
   {
     name: 'Meeting ran late',
     count: 2,
     percentage: 50,
-    color: '#D2D4D7',
   },
 ];
 

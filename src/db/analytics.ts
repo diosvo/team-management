@@ -11,61 +11,80 @@ import db from '@/drizzle';
 import { UserTable } from '@/drizzle/schema';
 import { AttendanceTable } from '@/drizzle/schema/attendance';
 
+const COUNTED_STATUSES = [
+  AttendanceStatus.ON_TIME,
+  AttendanceStatus.LATE,
+  AttendanceStatus.ABSENT,
+] as const;
+const ATTENDED_STATUSES = [
+  AttendanceStatus.ON_TIME,
+  AttendanceStatus.LATE,
+] as const;
+const REASON_STATUSES = [
+  AttendanceStatus.ABSENT,
+  AttendanceStatus.LATE,
+] as const;
+
 function toChar(format: string) {
   return sql<string>`TO_CHAR(${AttendanceTable.date}, ${format})`;
 }
 
-function populatePercentage(value: SQL<number>, total: SQL<number>) {
-  return sql<number>`ROUND(${value} * 100 / ${total})`;
+function calculatePercentage(value: SQL<number>, total: SQL<number>) {
+  return sql<number>`ROUND((${value} * 100.0 / NULLIF(${total}, 0))::numeric, 1)`.mapWith(
+    Number,
+  );
 }
 
-function countTotalSql(condition: SQL) {
-  return sql`SUM(CASE WHEN ${condition} THEN 1 ELSE 0 END)`.mapWith(Number);
+function countWhen(condition: SQL) {
+  return sql<number>`SUM(CASE WHEN ${condition} THEN 1 ELSE 0 END)`.mapWith(
+    Number,
+  );
 }
 
-function countStatusSql(status: AttendanceStatusValues) {
-  return countTotalSql(sql`${AttendanceTable.status} = ${status}`);
+function countStatus(status: AttendanceStatusValues) {
+  return countWhen(eq(AttendanceTable.status, status as AttendanceStatus));
+}
+
+function getDateRangeFilter(team_id: string, interval: IntervalValues) {
+  const { start, end } = TIME_DURATION[interval];
+
+  return and(
+    eq(AttendanceTable.team_id, team_id),
+    gte(AttendanceTable.date, start.toISOString()),
+    lte(AttendanceTable.date, end.toISOString()),
+  );
+}
+
+function getTotalCountSql() {
+  return countWhen(inArray(AttendanceTable.status, COUNTED_STATUSES));
+}
+
+function getAttendedCountSql() {
+  return countWhen(inArray(AttendanceTable.status, ATTENDED_STATUSES));
 }
 
 export async function getTeamAttendanceHistory(
   team_id: string,
   interval: IntervalValues,
 ) {
-  const { start, end } = TIME_DURATION[interval];
-
   try {
-    const dateSql = toChar(LOCALE_DATE_FORMAT);
-    const shortDateSql = toChar('Mon DD');
-    const daySql = toChar('FMDay');
-
-    const totalCountSql = countTotalSql(
-      sql`${AttendanceTable.status} IN (${AttendanceStatus.ON_TIME}, ${AttendanceStatus.LATE}, ${AttendanceStatus.ABSENT})`,
-    );
-    const attendedCountSql = countTotalSql(
-      sql`${AttendanceTable.status} IN (${AttendanceStatus.ON_TIME}, ${AttendanceStatus.LATE})`,
-    );
-    const presentRateSql = populatePercentage(attendedCountSql, totalCountSql);
+    const totalCountSql = getTotalCountSql();
+    const attendedCountSql = getAttendedCountSql();
 
     return await db
       .select({
-        date: dateSql,
-        short_date: shortDateSql,
-        day: daySql,
+        date: toChar(LOCALE_DATE_FORMAT),
+        short_date: toChar('Mon DD'),
+        day: toChar('FMDay'),
         total: totalCountSql,
-        on_time: countStatusSql(AttendanceStatus.ON_TIME),
-        late: countStatusSql(AttendanceStatus.LATE),
-        absent: countStatusSql(AttendanceStatus.ABSENT),
+        on_time: countStatus(AttendanceStatus.ON_TIME),
+        late: countStatus(AttendanceStatus.LATE),
+        absent: countStatus(AttendanceStatus.ABSENT),
         attended: attendedCountSql,
-        present_rate: presentRateSql,
+        present_rate: calculatePercentage(attendedCountSql, totalCountSql),
       })
       .from(AttendanceTable)
-      .where(
-        and(
-          eq(AttendanceTable.team_id, team_id),
-          gte(AttendanceTable.date, start.toISOString()),
-          lte(AttendanceTable.date, end.toISOString()),
-        ),
-      )
+      .where(getDateRangeFilter(team_id, interval))
       .groupBy(AttendanceTable.date)
       .orderBy(desc(AttendanceTable.date));
   } catch {
@@ -77,32 +96,20 @@ export async function getPlayersAttendanceSummary(
   team_id: string,
   interval: IntervalValues,
 ) {
-  const { start, end } = TIME_DURATION[interval];
-
   try {
-    const totalCountSql = countTotalSql(
-      sql`${AttendanceTable.status} IN (${AttendanceStatus.ON_TIME}, ${AttendanceStatus.LATE}, ${AttendanceStatus.ABSENT})`,
-    );
-    const attendedCountSql = countTotalSql(
-      sql`${AttendanceTable.status} IN (${AttendanceStatus.ON_TIME}, ${AttendanceStatus.LATE})`,
-    );
+    const totalCountSql = getTotalCountSql();
+    const attendedCountSql = getAttendedCountSql();
 
     const records = await db
       .select({
         player_name: UserTable.name,
         attended: attendedCountSql,
         total_sessions: totalCountSql,
-        attendance_rate: populatePercentage(attendedCountSql, totalCountSql),
+        attendance_rate: calculatePercentage(attendedCountSql, totalCountSql),
       })
       .from(AttendanceTable)
       .leftJoin(UserTable, eq(AttendanceTable.player_id, UserTable.id))
-      .where(
-        and(
-          eq(AttendanceTable.team_id, team_id),
-          gte(AttendanceTable.date, start.toISOString()),
-          lte(AttendanceTable.date, end.toISOString()),
-        ),
-      )
+      .where(getDateRangeFilter(team_id, interval))
       .groupBy(AttendanceTable.player_id, UserTable.name);
 
     return {
@@ -125,38 +132,28 @@ export async function getMostCommonAbsenceReasons(
   team_id: string,
   interval: IntervalValues,
 ) {
-  const { start, end } = TIME_DURATION[interval];
-
   try {
     const reasonSql = sql<string>`COALESCE(NULLIF(${AttendanceTable.reason}, ''), 'Unknown')`;
+    const countSql = count();
 
     return await db
       .select({
         name: reasonSql,
-        count: count(),
-        percentage: populatePercentage(count(), sql`SUM(${count()}) OVER ()`),
-        color: sql<string>`CASE 
-          WHEN ${reasonSql} = 'Sick' THEN '#E53E3E'
-          WHEN ${reasonSql} = 'Personal' THEN '#D69E2E'
-          WHEN ${reasonSql} = 'Family Emergency' THEN '#38A169'
-          WHEN ${reasonSql} = 'Travel' THEN '#3182CE'
-          ELSE '#D2D4D7'
-        END`,
+        count: countSql,
+        percentage: calculatePercentage(
+          countSql,
+          sql`SUM(${countSql}) OVER ()`,
+        ),
       })
       .from(AttendanceTable)
       .where(
         and(
-          eq(AttendanceTable.team_id, team_id),
-          inArray(AttendanceTable.status, [
-            AttendanceStatus.ABSENT,
-            AttendanceStatus.LATE,
-          ]),
-          gte(AttendanceTable.date, start.toISOString()),
-          lte(AttendanceTable.date, end.toISOString()),
+          getDateRangeFilter(team_id, interval),
+          inArray(AttendanceTable.status, REASON_STATUSES),
         ),
       )
       .groupBy(reasonSql)
-      .orderBy(desc(count()))
+      .orderBy(desc(countSql))
       .limit(5);
   } catch {
     return [];

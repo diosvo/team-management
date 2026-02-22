@@ -10,17 +10,25 @@ import {
 
 import { withAuth } from './auth';
 
-export const getAttendanceHistory = withAuth(
-  async ({ team_id }, date: IntervalValues) =>
-    await getTeamAttendanceHistory(team_id, date),
+/**
+ * @description Factory function that creates analytics actions with interval parameter
+ */
+function createAnalyticsAction<T>(
+  fetcher: (team_id: string, interval: IntervalValues) => Promise<T>,
+) {
+  return withAuth(async ({ team_id }, interval: IntervalValues) =>
+    fetcher(team_id, interval),
+  );
+}
+
+export const getAttendanceHistory = createAnalyticsAction(
+  getTeamAttendanceHistory,
 );
 
-export const getAttendanceSummary = withAuth(
-  async ({ team_id }, date: IntervalValues) =>
-    await getPlayersAttendanceSummary(team_id, date),
+export const getAttendanceSummary = createAnalyticsAction(
+  getPlayersAttendanceSummary,
 );
 
-export const getMostAbsenceReasons = withAuth(
-  async ({ team_id }, date: IntervalValues) =>
-    await getMostCommonAbsenceReasons(team_id, date),
+export const getMostAbsenceReasons = createAnalyticsAction(
+  getMostCommonAbsenceReasons,
 );
