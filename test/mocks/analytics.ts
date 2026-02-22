@@ -463,22 +463,22 @@ export const MOCK_ABSENCE_REASONS: Array<AbsenceReason> = [
   {
     name: 'Sick',
     count: 1,
-    percentage: 25,
+    percentage: 20,
   },
   {
     name: 'Family Emergency',
     count: 1,
-    percentage: 25,
+    percentage: 20,
   },
   {
     name: 'Work',
     count: 1,
-    percentage: 25,
+    percentage: 20,
   },
   {
     name: 'Meeting ran late',
     count: 2,
-    percentage: 50,
+    percentage: 40,
   },
 ];
 
@@ -574,7 +574,7 @@ export const MOCK_PLAYER_RECORDS_MANY_TOP: Array<PlayerStats> = [
     player_name: 'Player 3',
     attended: 5,
     total_sessions: 5,
-    attendance_rate: 90,
+    attendance_rate: 100,
   },
   {
     player_name: 'Player 4',

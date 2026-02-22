@@ -1,5 +1,3 @@
-import { vi } from 'vitest';
-
 import db from '@/drizzle';
 
 // Helper to create a thenable object that can be both awaited and have methods

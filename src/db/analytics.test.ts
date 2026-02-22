@@ -1,5 +1,3 @@
-import { vi } from 'vitest';
-
 import db from '@/drizzle';
 import { AttendanceTable } from '@/drizzle/schema/attendance';
 
@@ -85,15 +83,7 @@ describe('getTeamAttendanceHistory', () => {
   ])(
     'returns empty array when database query $description',
     async ({ mockError }) => {
-      vi.mocked(db.select).mockReturnValue({
-        from: vi.fn().mockReturnValue({
-          where: vi.fn().mockReturnValue({
-            groupBy: vi.fn().mockReturnValue({
-              orderBy: vi.fn().mockRejectedValue(mockError),
-            }),
-          }),
-        }),
-      } as unknown as ReturnType<typeof db.select>);
+      mockSelectFailure(mockError);
 
       const result = await getTeamAttendanceHistory(
         MOCK_TEAM.team_id,

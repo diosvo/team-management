@@ -137,7 +137,7 @@ describe('colorPlayerRank', () => {
     { value: 0, expected: 'red' },
   ];
 
-  test.each(cases)('returns $expected for $status', ({ value, expected }) => {
+  test.each(cases)('returns $expected for $value', ({ value, expected }) => {
     expect(colorPlayerRank(value as number)).toBe(expected);
   });
 });
