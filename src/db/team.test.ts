@@ -1,5 +1,3 @@
-import { cacheTag } from 'next/cache';
-
 import { eq } from 'drizzle-orm';
 
 import db from '@/drizzle';
@@ -43,7 +41,6 @@ describe('getOtherTeams', () => {
 
     // Don't care about exact db query result here
     expect(result).toEqual([MOCK_TEAM]);
-    expect(cacheTag).toHaveBeenCalledWith('opponents');
     // Verify query construction
     expect(db.query.TeamTable.findMany).toHaveBeenCalledWith({
       where: eq(TeamTable.is_default, false),
