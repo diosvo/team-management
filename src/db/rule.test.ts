@@ -2,7 +2,6 @@ import { cacheTag } from 'next/cache';
 
 import { eq } from 'drizzle-orm';
 
-import { getCacheTag } from '@/actions/cache';
 import db from '@/drizzle';
 import { InsertRule, RuleTable } from '@/drizzle/schema/rule';
 
@@ -43,8 +42,8 @@ vi.mock('@/drizzle/schema/rule', () => ({
 }));
 
 vi.mock('@/actions/cache', () => ({
-  getCacheTag: {
-    rule: vi.fn(() => 'team-rule'),
+  CACHE_TAG: {
+    RULE: 'team-rule',
   },
 }));
 
@@ -60,7 +59,6 @@ describe('getRule', () => {
 
     expect(result).toEqual(MOCK_RULE);
     expect(cacheTag).toHaveBeenCalledWith('team-rule');
-    expect(getCacheTag.rule).toHaveBeenCalled();
     // Verify query construction
     expect(db.query.RuleTable.findFirst).toHaveBeenCalledWith({
       where: eq(RuleTable.team_id, MOCK_TEAM.team_id),

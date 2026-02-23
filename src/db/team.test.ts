@@ -2,7 +2,6 @@ import { cacheTag } from 'next/cache';
 
 import { eq } from 'drizzle-orm';
 
-import { getCacheTag } from '@/actions/cache';
 import db from '@/drizzle';
 import { TeamTable } from '@/drizzle/schema/team';
 
@@ -27,8 +26,8 @@ vi.mock('@/drizzle/schema/team', () => ({
 }));
 
 vi.mock('@/actions/cache', () => ({
-  getCacheTag: {
-    opponents: vi.fn(() => 'opponents'),
+  CACHE_TAG: {
+    OPPONENTS: 'opponents',
   },
 }));
 
@@ -45,7 +44,6 @@ describe('getOtherTeams', () => {
     // Don't care about exact db query result here
     expect(result).toEqual([MOCK_TEAM]);
     expect(cacheTag).toHaveBeenCalledWith('opponents');
-    expect(getCacheTag.opponents).toHaveBeenCalled();
     // Verify query construction
     expect(db.query.TeamTable.findMany).toHaveBeenCalledWith({
       where: eq(TeamTable.is_default, false),

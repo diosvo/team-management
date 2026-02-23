@@ -1,7 +1,5 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
-
 import { InsertTestResult } from '@/drizzle/schema';
 
 import { getDbErrorMessage } from '@/db/pg-error';
@@ -16,7 +14,9 @@ import {
 
 import { hasPermissions } from '@/utils/helper';
 import { ResponseFactory } from '@/utils/response';
+
 import { withAuth } from './auth';
+import { revalidate } from './cache';
 
 export const canUpsertTestResult = withAuth(async (user) => {
   const { isAdmin } = hasPermissions(user.role);
@@ -70,7 +70,7 @@ export const updateTestResultById = withAuth(
     try {
       await updateAction(result);
 
-      revalidatePath('/periodic-testing');
+      revalidate.testResults();
 
       return ResponseFactory.success('Test result updated successfully');
     } catch (error) {

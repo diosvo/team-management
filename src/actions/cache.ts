@@ -1,47 +1,42 @@
 import { revalidatePath, revalidateTag } from 'next/cache';
 
-export const getCacheTag = {
-  user: (userId: string) => `user:${userId}`,
-  active_players: () => 'active-players',
-  rule: () => 'team-rule',
-  assets: () => 'assets',
-  locations: () => 'locations',
-  matches: () => 'matches',
-  leagues: () => 'leagues',
-  team: () => 'team',
-  opponents: () => 'opponents',
+/**
+ * @description Cache tags used in `db/` with `'use cache'` + `cacheTag()`
+ * @link https://nextjs.org/docs/app/api-reference/directives/use-cache
+ */
+export const CACHE_TAG = {
+  ASSETS: 'assets',
+  LEAGUES: 'leagues',
+  LOCATIONS: 'locations',
+  RULE: 'team-rule',
 } as const;
 
-// Revalidation functions
-// https://nextjs.org/docs/app/api-reference/functions/revalidateTag
+/**
+ * @link https://nextjs.org/docs/app/api-reference/functions/revalidateTag
+ */
 export const revalidate = {
+  // Cached entities
   assets: () => {
     revalidatePath('/assets');
-    revalidateTag(getCacheTag.assets(), 'max');
-  },
-  locations: () => {
-    revalidatePath('/locations');
-    revalidateTag(getCacheTag.locations(), 'max');
-  },
-  matches: () => {
-    revalidatePath('/matches');
-    revalidateTag(getCacheTag.matches(), 'max');
+    revalidateTag(CACHE_TAG.ASSETS, 'max');
   },
   leagues: () => {
     revalidatePath('/leagues');
-    revalidateTag(getCacheTag.leagues(), 'max');
+    revalidateTag(CACHE_TAG.LEAGUES, 'max');
   },
-  testTypes: () => revalidatePath('/periodic-testing/test-types'),
-  roster: () => revalidatePath('/roster'),
+  locations: () => {
+    revalidatePath('/locations');
+    revalidateTag(CACHE_TAG.LOCATIONS, 'max');
+  },
   rule: () => {
     revalidatePath('/team-rule');
-    revalidateTag(getCacheTag.rule(), 'max');
+    revalidateTag(CACHE_TAG.RULE, 'max');
   },
-  user: (userId: string) => {
-    revalidatePath(`/profile/${userId}`);
-    revalidateTag(getCacheTag.user(userId), 'max');
-  },
-  attendances: () => {
-    revalidatePath('/attendance');
-  },
+  // Non-cached entities (revalidatePath only)
+  attendances: () => revalidatePath('/attendance'),
+  matches: () => revalidatePath('/matches'),
+  roster: () => revalidatePath('/roster'),
+  testResults: () => revalidatePath('/periodic-testing'),
+  testTypes: () => revalidatePath('/periodic-testing/test-types'),
+  user: (userId: string) => revalidatePath(`/profile/${userId}`),
 } as const;

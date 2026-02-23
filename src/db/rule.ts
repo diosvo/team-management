@@ -2,13 +2,13 @@ import { cacheTag } from 'next/cache';
 
 import { eq } from 'drizzle-orm';
 
-import { getCacheTag } from '@/actions/cache';
+import { CACHE_TAG } from '@/actions/cache';
 import db from '@/drizzle';
 import { InsertRule, RuleTable } from '@/drizzle/schema/rule';
 
 export async function getRule(team_id: string) {
   'use cache';
-  cacheTag(getCacheTag.rule());
+  cacheTag(CACHE_TAG.RULE);
 
   try {
     return await db.query.RuleTable.findFirst({

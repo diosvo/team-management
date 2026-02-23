@@ -5,12 +5,12 @@ import { desc, eq } from 'drizzle-orm';
 import db from '@/drizzle';
 import { AssetTable, InsertAsset } from '@/drizzle/schema/asset';
 
-import { getCacheTag } from '@/actions/cache';
+import { CACHE_TAG } from '@/actions/cache';
 import { AssetCondition } from '@/utils/enum';
 
 export async function getAssets(team_id: string) {
   'use cache';
-  cacheTag(getCacheTag.assets());
+  cacheTag(CACHE_TAG.ASSETS);
 
   try {
     const assets = await db.query.AssetTable.findMany({
