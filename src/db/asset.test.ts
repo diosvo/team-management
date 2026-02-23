@@ -4,8 +4,6 @@ import { cacheTag } from 'next/cache';
 import db from '@/drizzle';
 import { AssetTable, InsertAsset } from '@/drizzle/schema/asset';
 
-import { getCacheTag } from '@/actions/cache';
-
 import {
   mockDeleteFailure,
   mockDeleteSuccess,
@@ -53,8 +51,8 @@ vi.mock('@/drizzle/schema/asset', () => ({
 }));
 
 vi.mock('@/actions/cache', () => ({
-  getCacheTag: {
-    assets: vi.fn(() => 'assets'),
+  CACHE_TAG: {
+    ASSETS: 'assets',
   },
 }));
 
@@ -73,7 +71,6 @@ describe('getAssets', () => {
       data: [MOCK_ASSET],
     });
     expect(cacheTag).toHaveBeenCalledWith('assets');
-    expect(getCacheTag.assets).toHaveBeenCalled();
     // Verify query construction
     expect(db.query.AssetTable.findMany).toHaveBeenCalledWith({
       where: eq(AssetTable.team_id, MOCK_TEAM.team_id),

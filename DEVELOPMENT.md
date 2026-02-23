@@ -92,6 +92,8 @@ pnpm db:migrate
 
 ### Rule of Thumb 👍🏻
 
+1. Database relationships
+
 With fields and references - You Own the Foreign Key
 Use when: The current table has the foreign key column.
 Direction: Many-to-One
@@ -114,6 +116,16 @@ Direction: One-to-One
 ```ts
 child: one(ChildTable); // or many(ChildTable)
 ```
+
+2. 'use cache' + `cacheTag()`
+
+Use when all 3 conditions are met:
+
+- Stable data — doesn't change on every request (_e.g._, locations, leagues, opponents)
+- No/few parameters — avoids cache key explosion
+  - getLocations() has zero params ✅
+  - getMatches(is5x5, interval) has many ❌)
+- Clear invalidation — A server action that calls revalidateTag() after every mutation.
 
 ## ⭐️ Others
 

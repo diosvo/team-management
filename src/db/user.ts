@@ -1,11 +1,8 @@
-import { cacheTag } from 'next/cache';
-
 import { and, eq, ne } from 'drizzle-orm';
 
 import db from '@/drizzle';
 import { User, UserTable } from '@/drizzle/schema/user';
 
-import { getCacheTag } from '@/actions/cache';
 import { UserRole, UserState } from '@/utils/enum';
 
 export async function getUsers(team_id: string): Promise<Array<User>> {
@@ -26,9 +23,6 @@ export async function getUsers(team_id: string): Promise<Array<User>> {
 }
 
 export async function fetchActivePlayers(team_id: string) {
-  'use cache';
-  cacheTag(getCacheTag.active_players());
-
   try {
     return await db.query.UserTable.findMany({
       where: and(

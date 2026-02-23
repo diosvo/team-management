@@ -1,7 +1,5 @@
 import { and, eq, ne } from 'drizzle-orm';
-import { cacheTag } from 'next/cache';
 
-import { getCacheTag } from '@/actions/cache';
 import db from '@/drizzle';
 import { User, UserTable } from '@/drizzle/schema/user';
 
@@ -56,12 +54,6 @@ vi.mock('@/drizzle/schema/user', () => ({
   },
 }));
 
-vi.mock('@/actions/cache', () => ({
-  getCacheTag: {
-    active_players: vi.fn(() => 'active-players'),
-  },
-}));
-
 describe('getUsers', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -109,8 +101,6 @@ describe('fetchActivePlayers', () => {
     const result = await fetchActivePlayers(MOCK_TEAM.team_id);
 
     expect(result).toEqual(mockPlayers);
-    expect(cacheTag).toHaveBeenCalledWith('active-players');
-    expect(getCacheTag.active_players).toHaveBeenCalled();
     // Verify query construction
     expect(db.query.UserTable.findMany).toHaveBeenCalledWith({
       where: and(
