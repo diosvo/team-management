@@ -72,3 +72,10 @@ export enum Interval {
   THIS_YEAR = 'this_year',
   LAST_YEAR = 'last_year',
 }
+
+export enum SessionStatus {
+  SCHEDULED = 'SCHEDULED',
+  ACTIVE = 'ACTIVE',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED',
+}

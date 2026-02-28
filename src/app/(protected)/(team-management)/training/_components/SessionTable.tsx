@@ -1,8 +1,16 @@
 'use client';
 
+import NextLink from 'next/link';
 import { useState } from 'react';
 
-import { Badge, Highlight, HStack, Span, Table } from '@chakra-ui/react';
+import {
+  Badge,
+  Link as ChakraLink,
+  HStack,
+  Span,
+  Table,
+} from '@chakra-ui/react';
+import { CirclePile } from 'lucide-react';
 
 import Pagination from '@/components/Pagination';
 import SelectionActionBar from '@/components/SelectionActionBar';
@@ -12,34 +20,34 @@ import { toaster } from '@/components/ui/toaster';
 import Visibility from '@/components/Visibility';
 
 import usePermissions from '@/hooks/use-permissions';
-import { MatchWithTeams } from '@/types/match';
-import { paginateData, useMatchFilters } from '@/utils/filters';
+import { TrainingSessionWithDetails } from '@/types/training-session';
+
+import { paginateData, useTrainingFilters } from '@/utils/filters';
 import { formatDate, formatDay } from '@/utils/formatter';
-import { colorMatchResult } from '@/utils/helper';
+import { colorSessionStatus } from '@/utils/helper';
 
-import { removeMatch } from '@/actions/match';
-import { UpsertMatch } from './UpsertMatch';
+import { deleteTrainingSession } from '@/actions/training-session';
+import { UpsertSession } from './UpsertSession';
 
-export default function MatchTable({
-  matches,
+export default function SessionTable({
+  sessions,
 }: {
-  matches: Array<MatchWithTeams>;
+  sessions: Array<TrainingSessionWithDetails>;
 }) {
   const { isAdmin, isGuest } = usePermissions();
-  const [{ q, page }, setSearchParams] = useMatchFilters();
+  const [{ page }, setSearchParams] = useTrainingFilters();
 
   const [selection, setSelection] = useState<Array<string>>([]);
   const selectionCount = selection.length;
 
-  const totalCount = matches.length;
-  const currentData = paginateData(matches, page);
+  const totalCount = sessions.length;
+  const currentData = paginateData(sessions, page);
 
-  // Selection
   const hasSelection = selectionCount > 0;
   const indeterminate = hasSelection && selectionCount < totalCount;
 
   const removeItems = async () => {
-    const results = await Promise.all(selection.map(removeMatch));
+    const results = await Promise.all(selection.map(deleteTrainingSession));
     const hasErrors = results.some(({ success }) => !success);
     const successCount = results.filter(({ success }) => success).length;
 
@@ -72,39 +80,31 @@ export default function MatchTable({
                     onCheckedChange={(changes) => {
                       setSelection(
                         changes.checked
-                          ? matches.map(({ match_id }) => match_id)
+                          ? sessions.map(({ session_id }) => session_id)
                           : [],
                       );
                     }}
                   />
                 </Table.ColumnHeader>
               </Visibility>
-              {[
-                'Opponent',
-                'League',
-                'Score',
-                'Result',
-                'Location',
-                'Date',
-              ].map((header) => (
-                <Table.ColumnHeader key={header}>{header}</Table.ColumnHeader>
-              ))}
+              {['Date', 'Time', 'Location', 'Status', 'Present Rate'].map(
+                (header) => (
+                  <Table.ColumnHeader key={header}>{header}</Table.ColumnHeader>
+                ),
+              )}
             </Table.Row>
           </Table.Header>
           <Table.Body>
             {currentData.length > 0 ? (
               currentData.map((item) => (
                 <Table.Row
-                  key={item.match_id}
+                  key={item.session_id}
                   _hover={{ cursor: isGuest ? 'default' : 'pointer' }}
-                  onClick={() => {
+                  onClick={(e) => {
                     if (isGuest) return;
-                    UpsertMatch.open('update-match', {
+                    UpsertSession.open('update-session', {
                       action: 'Update',
-                      item: {
-                        ...item,
-                        away_team: item.away_team.team_id,
-                      },
+                      item,
                     });
                   }}
                 >
@@ -113,51 +113,79 @@ export default function MatchTable({
                       <Checkbox
                         top={0.5}
                         aria-label="Select row"
-                        checked={selection.includes(item.match_id)}
+                        checked={selection.includes(item.session_id)}
                         onCheckedChange={(changes) => {
                           setSelection((prev) =>
                             changes.checked
-                              ? [...prev, item.match_id]
-                              : selection.filter((id) => id !== item.match_id),
+                              ? [...prev, item.session_id]
+                              : selection.filter(
+                                  (id) => id !== item.session_id,
+                                ),
                           );
                         }}
                       />
                     </Table.Cell>
                   </Visibility>
                   <Table.Cell>
-                    <Highlight query={q} styles={{ backgroundColor: 'yellow' }}>
-                      {item.away_team.name}
-                    </Highlight>
+                    <ChakraLink variant="underline" colorPalette="blue" asChild>
+                      <NextLink
+                        href={{
+                          pathname: '/attendance',
+                          query: { date: item.date },
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <HStack>
+                          <Span>{formatDay(item.date)}</Span>
+                          <Span color="gray.400">&bull;</Span>
+                          <Span>{formatDate(item.date)}</Span>
+                        </HStack>
+                      </NextLink>
+                    </ChakraLink>
                   </Table.Cell>
-                  <Table.Cell>{item.league?.name || '-'}</Table.Cell>
                   <Table.Cell>
-                    {item.home_team_score} - {item.away_team_score}
+                    <HStack gap={1}>
+                      <Span>{item.start_time}</Span>
+                      <Span color="gray.400">&rarr;</Span>
+                      <Span>{item.end_time}</Span>
+                    </HStack>
+                  </Table.Cell>
+                  <Table.Cell>
+                    {item.location?.name ? (
+                      <ChakraLink
+                        variant="underline"
+                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                          item.location.name,
+                        )}`}
+                        target="_blank"
+                        colorPalette="pink"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {item.location.name}
+                      </ChakraLink>
+                    ) : (
+                      '-'
+                    )}
                   </Table.Cell>
                   <Table.Cell>
                     <Badge
                       variant="surface"
                       borderRadius="full"
-                      colorPalette={colorMatchResult(item.result)}
+                      colorPalette={colorSessionStatus(item.status)}
                     >
-                      {item.result}
+                      {item.status}
                     </Badge>
                   </Table.Cell>
-                  <Table.Cell>{item.location?.name || '-'}</Table.Cell>
-                  <Table.Cell>
-                    <HStack gap={1}>
-                      <Span fontSize="sm">{formatDay(item.date)}</Span>
-                      <Span color="gray.400">&bull;</Span>
-                      <Span fontSize="sm">{formatDate(item.date)}</Span>
-                      <Span color="gray.400">&bull;</Span>
-                      <Span fontSize="sm">{item.time}</Span>
-                    </HStack>
-                  </Table.Cell>
+                  <Table.Cell>{item.present_rate}</Table.Cell>
                 </Table.Row>
               ))
             ) : (
               <Table.Row>
-                <Table.Cell colSpan={isAdmin ? 7 : 6}>
-                  <EmptyState title="No matches found" />
+                <Table.Cell colSpan={isAdmin ? 6 : 5}>
+                  <EmptyState
+                    title="No training sessions found"
+                    icon={<CirclePile />}
+                  />
                 </Table.Cell>
               </Table.Row>
             )}

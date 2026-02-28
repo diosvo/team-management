@@ -8,4 +8,5 @@ export * from './schema/periodic-testing';
 export * from './schema/player';
 export * from './schema/rule';
 export * from './schema/team';
+export * from './schema/training';
 export * from './schema/user';

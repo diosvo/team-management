@@ -7,14 +7,14 @@ import Pagination from '@/components/Pagination';
 import { EmptyState } from '@/components/ui/empty-state';
 
 import { AttendanceHistoryRecord } from '@/types/analytics';
-import { paginateData, useTrainingFilters } from '@/utils/filters';
+import { paginateData, useDashboardFilters } from '@/utils/filters';
 
 export default function AttendanceHistory({
   records,
 }: {
   records: Array<AttendanceHistoryRecord>;
 }) {
-  const [{ page }, setSearchParams] = useTrainingFilters();
+  const [{ page }, setSearchParams] = useDashboardFilters();
   const currentData = paginateData(records, page);
 
   return (

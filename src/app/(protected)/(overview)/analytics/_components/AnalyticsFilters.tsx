@@ -11,14 +11,14 @@ import { CalendarSearch } from 'lucide-react';
 
 import { INTERVAL_SELECTION } from '@/utils/constant';
 
-import { MatchSearchParamsKeys, useTrainingFilters } from '@/utils/filters';
+import { MatchSearchParamsKeys, useDashboardFilters } from '@/utils/filters';
 
 const dates = createListCollection({
   items: INTERVAL_SELECTION,
 });
 
 export default function AnalyticsFilters() {
-  const [{ interval }, setSearchParams] = useTrainingFilters();
+  const [{ interval }, setSearchParams] = useDashboardFilters();
 
   const handleSearchParams = (key: MatchSearchParamsKeys, value: string) => {
     setSearchParams({ [key]: value, page: 1 }, { shallow: false });

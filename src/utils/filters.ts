@@ -19,6 +19,7 @@ import {
   LEAGUE_STATUS_VALUES,
   SELECTABLE_USER_ROLES,
   SELECTABLE_USER_STATES,
+  SESSION_STATUS_VALUES,
 } from './constant';
 import { Interval } from './enum';
 
@@ -70,6 +71,12 @@ const analyticsSearchParams = {
   interval: parseAsStringEnum(INTERVAL_VALUES).withDefault(Interval.THIS_MONTH),
 };
 
+const trainingSearchParams = {
+  ...commonParams,
+  interval: parseAsStringEnum(INTERVAL_VALUES).withDefault(Interval.THIS_MONTH),
+  status: parseAsStringEnum(SESSION_STATUS_VALUES).withDefault(ALL.value),
+};
+
 /* ================== 👯‍♂️ Client-Side Hooks 👯‍♂️ ================== */
 
 export const useCommonParams = (options: Options = {}) =>
@@ -87,6 +94,10 @@ export const useAttendanceFilters = () =>
     shallow: false,
   });
 export const useTrainingFilters = () =>
+  useQueryStates(trainingSearchParams, {
+    shallow: false,
+  });
+export const useDashboardFilters = () =>
   useQueryStates(analyticsSearchParams, {
     shallow: false,
   });
@@ -99,9 +110,16 @@ export const loadPeriodicTestingFilters = createLoader(
 export const loadMatchFilters = createLoader(matchSearchParams);
 export const loadAttendanceFilters = createLoader(attendanceSearchParams);
 export const loadAnalyticsFilters = createLoader(analyticsSearchParams);
+export const loadTrainingFilters = createLoader(trainingSearchParams);
+
+/* ================== 🧮 Types & Enums 🧮 ================== */
 
 export type MatchSearchParams = Awaited<ReturnType<typeof loadMatchFilters>>;
 export type MatchSearchParamsKeys = keyof typeof matchSearchParams;
+export type TrainingSearchParams = Awaited<
+  ReturnType<typeof loadTrainingFilters>
+>;
+export type TrainingSearchParamsKeys = keyof typeof trainingSearchParams;
 export type AttendanceSearchParams = Awaited<
   ReturnType<typeof loadAttendanceFilters>
 >;
