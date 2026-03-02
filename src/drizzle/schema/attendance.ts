@@ -14,6 +14,7 @@ import { AttendanceStatus } from '@/utils/enum';
 import { created_at, updated_at } from '../helpers';
 import { PlayerTable } from './player';
 import { TeamTable } from './team';
+import { TrainingSessionTable } from './training';
 
 export const attendanceStatusEnum = pgEnum(
   'attendance_status',
@@ -30,6 +31,9 @@ export const AttendanceTable = pgTable(
     player_id: text()
       .notNull()
       .references(() => PlayerTable.id, { onDelete: 'cascade' }),
+    session_id: uuid().references(() => TrainingSessionTable.session_id, {
+      onDelete: 'set null',
+    }),
     status: attendanceStatusEnum().notNull().default(AttendanceStatus.ON_TIME),
     date: date().notNull(),
     reason: varchar({ length: 128 }),
@@ -47,9 +51,9 @@ export const AttendanceRelations = relations(AttendanceTable, ({ one }) => ({
     fields: [AttendanceTable.player_id],
     references: [PlayerTable.id],
   }),
-  team: one(TeamTable, {
-    fields: [AttendanceTable.team_id],
-    references: [TeamTable.team_id],
+  training_session: one(TrainingSessionTable, {
+    fields: [AttendanceTable.session_id],
+    references: [TrainingSessionTable.session_id],
   }),
 }));
 

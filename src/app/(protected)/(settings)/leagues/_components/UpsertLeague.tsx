@@ -15,7 +15,6 @@ import {
   createOverlay,
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { isBefore } from 'date-fns';
 import { Save } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 
@@ -69,21 +68,21 @@ export const UpsertLeague = createOverlay(({ action, item, ...rest }) => {
   const disabledField = isPending || isReadonly;
 
   const onSubmit = (data: UpsertLeagueSchemaValues) => {
-    if (isBefore(data.end_date, data.start_date)) {
-      toaster.error({
-        type: 'error',
-        title: 'End date must be after start date.',
-      });
-      return;
-    }
-
     const id = toaster.create({
       type: 'loading',
       title: 'Saving league information...',
     });
 
     startTransition(async () => {
-      const { success } = await upsertLeague(item.league_id, data);
+      const { success, message } = await upsertLeague(item.league_id, data);
+
+      if (action === 'Add') {
+        toaster.update(id, {
+          type: success ? 'success' : 'error',
+          title: message,
+        });
+        reset();
+      }
 
       const results = await Promise.all(
         selection.map(({ id }) => upsertPlayerToLeague(item.league_id, id)),
@@ -155,8 +154,14 @@ export const UpsertLeague = createOverlay(({ action, item, ...rest }) => {
                     {...register('name')}
                   />
                 </Field>
-                <HStack>
-                  <Field required label="Start Date" disabled={isReadonly}>
+                <HStack alignItems="start">
+                  <Field
+                    required
+                    label="Start Date"
+                    disabled={isReadonly}
+                    invalid={!!errors.start_date}
+                    errorText={errors.start_date?.message}
+                  >
                     <Input
                       type="date"
                       min={ESTABLISHED_DATE}
@@ -164,7 +169,13 @@ export const UpsertLeague = createOverlay(({ action, item, ...rest }) => {
                       {...register('start_date')}
                     />
                   </Field>
-                  <Field required label="End Date" disabled={isReadonly}>
+                  <Field
+                    required
+                    label="End Date"
+                    disabled={isReadonly}
+                    invalid={!!errors.end_date}
+                    errorText={errors.end_date?.message}
+                  >
                     <Input
                       type="date"
                       min={ESTABLISHED_DATE}

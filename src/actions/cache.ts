@@ -36,6 +36,7 @@ export const revalidate = {
   attendances: () => revalidatePath('/attendance'),
   matches: () => revalidatePath('/matches'),
   roster: () => revalidatePath('/roster'),
+  sessions: () => revalidatePath('/training'),
   testResults: () => revalidatePath('/periodic-testing'),
   testTypes: () => revalidatePath('/periodic-testing/test-types'),
   user: (userId: string) => revalidatePath(`/profile/${userId}`),

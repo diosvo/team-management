@@ -14,6 +14,7 @@ export const MOCK_TRAINING_HISTORY: Array<AttendanceWithPlayer> = [
   // Feb 15, 2026 (Great attendance)
   {
     attendance_id: 'att-001',
+    session_id: 'session-001',
     player_id: 'player-001',
     team_id: MOCK_TEAM.team_id,
     date: '2026-02-15',
@@ -25,6 +26,7 @@ export const MOCK_TRAINING_HISTORY: Array<AttendanceWithPlayer> = [
   },
   {
     attendance_id: 'att-002',
+    session_id: 'session-001',
     player_id: 'player-002',
     team_id: MOCK_TEAM.team_id,
     date: '2026-02-15',
@@ -36,6 +38,7 @@ export const MOCK_TRAINING_HISTORY: Array<AttendanceWithPlayer> = [
   },
   {
     attendance_id: 'att-003',
+    session_id: 'session-001',
     player_id: 'player-003',
     team_id: MOCK_TEAM.team_id,
     date: '2026-02-15',
@@ -47,6 +50,7 @@ export const MOCK_TRAINING_HISTORY: Array<AttendanceWithPlayer> = [
   },
   {
     attendance_id: 'att-004',
+    session_id: 'session-001',
     player_id: 'player-004',
     team_id: MOCK_TEAM.team_id,
     date: '2026-02-15',
@@ -58,6 +62,7 @@ export const MOCK_TRAINING_HISTORY: Array<AttendanceWithPlayer> = [
   },
   {
     attendance_id: 'att-005',
+    session_id: 'session-001',
     player_id: 'player-005',
     team_id: MOCK_TEAM.team_id,
     date: '2026-02-15',
@@ -69,6 +74,7 @@ export const MOCK_TRAINING_HISTORY: Array<AttendanceWithPlayer> = [
   },
   {
     attendance_id: 'att-006',
+    session_id: 'session-001',
     player_id: 'player-006',
     team_id: MOCK_TEAM.team_id,
     date: '2026-02-15',
@@ -82,6 +88,7 @@ export const MOCK_TRAINING_HISTORY: Array<AttendanceWithPlayer> = [
   // Feb 13, 2026 (Good attendance)
   {
     attendance_id: 'att-007',
+    session_id: 'session-002',
     player_id: 'player-001',
     team_id: MOCK_TEAM.team_id,
     date: '2026-02-13',
@@ -93,6 +100,7 @@ export const MOCK_TRAINING_HISTORY: Array<AttendanceWithPlayer> = [
   },
   {
     attendance_id: 'att-008',
+    session_id: 'session-002',
     player_id: 'player-002',
     team_id: MOCK_TEAM.team_id,
     date: '2026-02-13',
@@ -104,6 +112,7 @@ export const MOCK_TRAINING_HISTORY: Array<AttendanceWithPlayer> = [
   },
   {
     attendance_id: 'att-009',
+    session_id: 'session-002',
     player_id: 'player-003',
     team_id: MOCK_TEAM.team_id,
     date: '2026-02-13',
@@ -115,6 +124,7 @@ export const MOCK_TRAINING_HISTORY: Array<AttendanceWithPlayer> = [
   },
   {
     attendance_id: 'att-010',
+    session_id: 'session-002',
     player_id: 'player-004',
     team_id: MOCK_TEAM.team_id,
     date: '2026-02-13',
@@ -126,6 +136,7 @@ export const MOCK_TRAINING_HISTORY: Array<AttendanceWithPlayer> = [
   },
   {
     attendance_id: 'att-011',
+    session_id: 'session-002',
     player_id: 'player-005',
     team_id: MOCK_TEAM.team_id,
     date: '2026-02-13',
@@ -137,6 +148,7 @@ export const MOCK_TRAINING_HISTORY: Array<AttendanceWithPlayer> = [
   },
   {
     attendance_id: 'att-012',
+    session_id: 'session-002',
     player_id: 'player-006',
     team_id: MOCK_TEAM.team_id,
     date: '2026-02-13',
@@ -150,6 +162,7 @@ export const MOCK_TRAINING_HISTORY: Array<AttendanceWithPlayer> = [
   // Feb 11, 2026 (Moderate attendance)
   {
     attendance_id: 'att-013',
+    session_id: 'session-003',
     player_id: 'player-001',
     team_id: MOCK_TEAM.team_id,
     date: '2026-02-11',
@@ -161,6 +174,7 @@ export const MOCK_TRAINING_HISTORY: Array<AttendanceWithPlayer> = [
   },
   {
     attendance_id: 'att-014',
+    session_id: 'session-003',
     player_id: 'player-002',
     team_id: MOCK_TEAM.team_id,
     date: '2026-02-11',
@@ -172,6 +186,7 @@ export const MOCK_TRAINING_HISTORY: Array<AttendanceWithPlayer> = [
   },
   {
     attendance_id: 'att-015',
+    session_id: 'session-003',
     player_id: 'player-003',
     team_id: MOCK_TEAM.team_id,
     date: '2026-02-11',
@@ -183,6 +198,7 @@ export const MOCK_TRAINING_HISTORY: Array<AttendanceWithPlayer> = [
   },
   {
     attendance_id: 'att-016',
+    session_id: 'session-003',
     player_id: 'player-004',
     team_id: MOCK_TEAM.team_id,
     date: '2026-02-11',
@@ -194,6 +210,7 @@ export const MOCK_TRAINING_HISTORY: Array<AttendanceWithPlayer> = [
   },
   {
     attendance_id: 'att-017',
+    session_id: 'session-003',
     player_id: 'player-005',
     team_id: MOCK_TEAM.team_id,
     date: '2026-02-11',
@@ -205,6 +222,7 @@ export const MOCK_TRAINING_HISTORY: Array<AttendanceWithPlayer> = [
   },
   {
     attendance_id: 'att-018',
+    session_id: 'session-003',
     player_id: 'player-006',
     team_id: MOCK_TEAM.team_id,
     date: '2026-02-11',
@@ -218,6 +236,7 @@ export const MOCK_TRAINING_HISTORY: Array<AttendanceWithPlayer> = [
   // Feb 08, 2026 (Excellent attendance)
   {
     attendance_id: 'att-019',
+    session_id: 'session-004',
     player_id: 'player-001',
     team_id: MOCK_TEAM.team_id,
     date: '2026-02-08',
@@ -229,6 +248,7 @@ export const MOCK_TRAINING_HISTORY: Array<AttendanceWithPlayer> = [
   },
   {
     attendance_id: 'att-020',
+    session_id: 'session-004',
     player_id: 'player-002',
     team_id: MOCK_TEAM.team_id,
     date: '2026-02-08',
@@ -240,6 +260,7 @@ export const MOCK_TRAINING_HISTORY: Array<AttendanceWithPlayer> = [
   },
   {
     attendance_id: 'att-021',
+    session_id: 'session-004',
     player_id: 'player-003',
     team_id: MOCK_TEAM.team_id,
     date: '2026-02-08',
@@ -251,6 +272,7 @@ export const MOCK_TRAINING_HISTORY: Array<AttendanceWithPlayer> = [
   },
   {
     attendance_id: 'att-022',
+    session_id: 'session-004',
     player_id: 'player-004',
     team_id: MOCK_TEAM.team_id,
     date: '2026-02-08',
@@ -262,6 +284,7 @@ export const MOCK_TRAINING_HISTORY: Array<AttendanceWithPlayer> = [
   },
   {
     attendance_id: 'att-023',
+    session_id: 'session-004',
     player_id: 'player-005',
     team_id: MOCK_TEAM.team_id,
     date: '2026-02-08',
@@ -273,6 +296,7 @@ export const MOCK_TRAINING_HISTORY: Array<AttendanceWithPlayer> = [
   },
   {
     attendance_id: 'att-024',
+    session_id: 'session-004',
     player_id: 'player-006',
     team_id: MOCK_TEAM.team_id,
     date: '2026-02-08',
@@ -286,6 +310,7 @@ export const MOCK_TRAINING_HISTORY: Array<AttendanceWithPlayer> = [
   // Feb 06, 2026 (Good attendance)
   {
     attendance_id: 'att-025',
+    session_id: 'session-005',
     player_id: 'player-001',
     team_id: MOCK_TEAM.team_id,
     date: '2026-02-06',
@@ -297,6 +322,7 @@ export const MOCK_TRAINING_HISTORY: Array<AttendanceWithPlayer> = [
   },
   {
     attendance_id: 'att-026',
+    session_id: 'session-005',
     player_id: 'player-002',
     team_id: MOCK_TEAM.team_id,
     date: '2026-02-06',
@@ -308,6 +334,7 @@ export const MOCK_TRAINING_HISTORY: Array<AttendanceWithPlayer> = [
   },
   {
     attendance_id: 'att-027',
+    session_id: 'session-005',
     player_id: 'player-003',
     team_id: MOCK_TEAM.team_id,
     date: '2026-02-06',
@@ -319,6 +346,7 @@ export const MOCK_TRAINING_HISTORY: Array<AttendanceWithPlayer> = [
   },
   {
     attendance_id: 'att-028',
+    session_id: 'session-005',
     player_id: 'player-004',
     team_id: MOCK_TEAM.team_id,
     date: '2026-02-06',
@@ -330,6 +358,7 @@ export const MOCK_TRAINING_HISTORY: Array<AttendanceWithPlayer> = [
   },
   {
     attendance_id: 'att-029',
+    session_id: 'session-005',
     player_id: 'player-005',
     team_id: MOCK_TEAM.team_id,
     date: '2026-02-06',
@@ -341,6 +370,7 @@ export const MOCK_TRAINING_HISTORY: Array<AttendanceWithPlayer> = [
   },
   {
     attendance_id: 'att-030',
+    session_id: 'session-005',
     player_id: 'player-006',
     team_id: MOCK_TEAM.team_id,
     date: '2026-02-06',

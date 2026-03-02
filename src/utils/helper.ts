@@ -7,6 +7,7 @@ import {
   AttendanceStatus,
   LeagueStatus,
   MatchStatus,
+  SessionStatus,
   UserRole,
   UserState,
 } from './enum';
@@ -76,6 +77,15 @@ export function colorAttendanceStatus(status: string): ColorPalette {
     [AttendanceStatus.ON_TIME]: 'green',
     [AttendanceStatus.ABSENT]: 'red',
     [AttendanceStatus.LATE]: 'orange',
+  });
+}
+
+export function colorSessionStatus(status: string): ColorPalette {
+  return getColor(status, {
+    [SessionStatus.SCHEDULED]: 'yellow',
+    [SessionStatus.ACTIVE]: 'green',
+    [SessionStatus.COMPLETED]: 'gray',
+    [SessionStatus.CANCELLED]: 'red',
   });
 }
 

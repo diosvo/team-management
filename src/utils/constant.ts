@@ -7,6 +7,7 @@ import {
   Interval,
   LeagueStatus,
   PlayerPosition,
+  SessionStatus,
   TestTypeUnit,
   UserRole,
   UserState,
@@ -295,6 +296,32 @@ export const ATTENDANCE_STATUS_VALUES = [
   ALL.value,
   ...SELECTABLE_ATTENDANCE_STATUS,
 ];
+
+export const SELECTABLE_SESSION_STATUS = [
+  SessionStatus.SCHEDULED,
+  SessionStatus.ACTIVE,
+  SessionStatus.COMPLETED,
+  SessionStatus.CANCELLED,
+] as const;
+export const SESSION_STATUS_SELECTION: Selection<string> = [
+  {
+    label: 'Scheduled',
+    value: SessionStatus.SCHEDULED,
+  },
+  {
+    label: 'Active',
+    value: SessionStatus.ACTIVE,
+  },
+  {
+    label: 'Completed',
+    value: SessionStatus.COMPLETED,
+  },
+  {
+    label: 'Cancelled',
+    value: SessionStatus.CANCELLED,
+  },
+];
+export const SESSION_STATUS_VALUES = [ALL.value, ...SELECTABLE_SESSION_STATUS];
 
 export const SELECTABLE_TEST_TYPES = [
   TestTypeUnit.METERS,

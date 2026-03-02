@@ -3,6 +3,7 @@ import { and, eq, ne } from 'drizzle-orm';
 import db from '@/drizzle';
 import { User, UserTable } from '@/drizzle/schema/user';
 
+import { CoachTable } from '@/drizzle/schema';
 import { UserRole, UserState } from '@/utils/enum';
 
 export async function getUsers(team_id: string): Promise<Array<User>> {
@@ -36,6 +37,25 @@ export async function fetchActivePlayers(team_id: string) {
     });
   } catch {
     return [];
+  }
+}
+
+export async function getTeamHeadCoach(team_id: string) {
+  try {
+    const coach = await db
+      .select({
+        id: UserTable.id,
+        name: UserTable.name,
+      })
+      .from(UserTable)
+      .leftJoin(CoachTable, eq(CoachTable.id, UserTable.id))
+      .where(
+        and(eq(UserTable.team_id, team_id), eq(UserTable.role, UserRole.COACH)),
+      );
+
+    return coach ? coach[0] : null;
+  } catch {
+    return null;
   }
 }
 

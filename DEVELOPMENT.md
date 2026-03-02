@@ -35,6 +35,8 @@ Current entities:
 - Location
 - Schedule
 - Periodic Testing
+- Attendance
+- Training Session
 
 #### 2️⃣ Database/ Schema (Singular)
 

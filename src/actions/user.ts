@@ -12,8 +12,8 @@ import { insertPlayer, updatePlayer } from '@/db/player';
 import {
   deleteUser,
   fetchActivePlayers,
+  getUsers as fetchUsers,
   getUserById,
-  getUsers,
   updateUser,
 } from '@/db/user';
 import {
@@ -30,8 +30,12 @@ export const getActivePlayers = withAuth(
   async ({ team_id }) => await fetchActivePlayers(team_id),
 );
 
+export const getUsers = withAuth(
+  async ({ team_id }) => await fetchUsers(team_id),
+);
+
 export const getRoster = withAuth(
-  async ({ team_id }) => await getUsers(team_id),
+  async ({ team_id }) => await fetchUsers(team_id),
 );
 
 export const getUserProfile = withAuth(async (user, target_id: string) => {

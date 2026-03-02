@@ -1,6 +1,7 @@
 import {
   BadgeCheck,
   ChartArea,
+  Dumbbell,
   FileChartColumnIncreasing,
   FileText,
   Film,
@@ -41,6 +42,7 @@ export const SIDEBAR_GROUP = [
     title: 'Team Management',
     items: [
       { icon: UsersRound, text: 'Roster', disabled: false },
+      { icon: Dumbbell, text: 'Training', disabled: false },
       { icon: BadgeCheck, text: 'Attendance', disabled: false },
       { icon: FileText, text: 'Registration', disabled: false },
       { icon: GamepadDirectional, text: 'Matches', disabled: false },
