@@ -40,7 +40,7 @@ export default function SessionFilters() {
   };
 
   return (
-    <SimpleGrid columns={3} gap={3}>
+    <SimpleGrid columns={isAdmin ? 3 : 2} gap={3}>
       <Visibility isVisible={isAdmin}>
         <Button
           onClick={() =>

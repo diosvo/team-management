@@ -6,7 +6,7 @@ import * as schema from './schema';
 // Initialize the driver
 const pool = new Pool({
   max: 1,
-  connectionString: 'postgresql://diosvo:@localhost:5432/saigon-rovers',
+  connectionString: process.env.DATABASE_URL,
 });
 
 const db = drizzle({

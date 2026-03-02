@@ -78,7 +78,7 @@ export const UpsertLeague = createOverlay(({ action, item, ...rest }) => {
 
       if (action === 'Add') {
         toaster.update(id, {
-          type: 'success',
+          type: success ? 'success' : 'error',
           title: message,
         });
         reset();

@@ -4,7 +4,7 @@ import { HStack } from '@chakra-ui/react';
 
 import PageTitle from '@/components/PageTitle';
 
-import { getTrainingSessions } from '@/actions/training-session';
+import { getSessions } from '@/actions/training-session';
 import { loadTrainingFilters } from '@/utils/filters';
 
 import SessionFilters from './_components/SessionFilters';
@@ -20,7 +20,7 @@ export default async function TrainingSessionsPage(
   props: PageProps<'/training'>,
 ) {
   const params = await loadTrainingFilters(props.searchParams);
-  const { stats, data } = await getTrainingSessions(params);
+  const { stats, data } = await getSessions(params);
 
   return (
     <>

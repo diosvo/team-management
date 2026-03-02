@@ -26,7 +26,7 @@ import { paginateData, useTrainingFilters } from '@/utils/filters';
 import { formatDate, formatDay } from '@/utils/formatter';
 import { colorSessionStatus } from '@/utils/helper';
 
-import { deleteTrainingSession } from '@/actions/training-session';
+import { removeSession } from '@/actions/training-session';
 import { UpsertSession } from './UpsertSession';
 
 export default function SessionTable({
@@ -47,13 +47,13 @@ export default function SessionTable({
   const indeterminate = hasSelection && selectionCount < totalCount;
 
   const removeItems = async () => {
-    const results = await Promise.all(selection.map(deleteTrainingSession));
+    const results = await Promise.all(selection.map(removeSession));
     const hasErrors = results.some(({ success }) => !success);
     const successCount = results.filter(({ success }) => success).length;
 
     toaster.create({
       type: hasErrors ? 'error' : 'success',
-      title: `Successfully deleted ${successCount} match(es).`,
+      title: `Successfully deleted ${successCount} session(s).`,
     });
 
     setSelection([]);

@@ -25,10 +25,10 @@ import { toaster } from '@/components/ui/toaster';
 import useQuery from '@/hooks/use-query';
 import { getDefaults } from '@/lib/zod';
 import { ESTABLISHED_DATE } from '@/utils/constant';
-import { formatDatetime } from '@/utils/formatter';
+import { formatDatetime, formatDay } from '@/utils/formatter';
 
 import { getLocations } from '@/actions/location';
-import { createTrainingSession } from '@/actions/training-session';
+import { upsertSession } from '@/actions/training-session';
 import {
   UpsertSessionSchema,
   UpsertSessionSchemaValues,
@@ -42,6 +42,7 @@ export const UpsertSession = createOverlay(({ action, item, ...rest }) => {
 
   const {
     control,
+    watch,
     reset,
     register,
     handleSubmit,
@@ -58,7 +59,7 @@ export const UpsertSession = createOverlay(({ action, item, ...rest }) => {
     });
 
     startTransition(async () => {
-      const { success, message } = await createTrainingSession(data);
+      const { success, message } = await upsertSession(item.session_id, data);
 
       toaster.update(id, {
         type: success ? 'success' : 'error',
@@ -97,7 +98,7 @@ export const UpsertSession = createOverlay(({ action, item, ...rest }) => {
                   />
                 </Field>
                 <Field disabled readOnly label="Day">
-                  <Input variant="flushed" value="Thursday" />
+                  <Input variant="flushed" value={formatDay(watch('date'))} />
                 </Field>
                 <Field
                   required

@@ -4,7 +4,7 @@ import db from '@/drizzle';
 import { User, UserTable } from '@/drizzle/schema/user';
 
 import { CoachTable } from '@/drizzle/schema';
-import { CoachPosition, UserRole, UserState } from '@/utils/enum';
+import { UserRole, UserState } from '@/utils/enum';
 
 export async function getUsers(team_id: string): Promise<Array<User>> {
   try {
@@ -42,16 +42,18 @@ export async function fetchActivePlayers(team_id: string) {
 
 export async function getTeamHeadCoach(team_id: string) {
   try {
-    return await db.query.UserTable.findFirst({
-      where: and(
-        eq(UserTable.team_id, team_id),
-        eq(UserTable.role, UserRole.COACH),
-        eq(CoachTable.position, CoachPosition.HEAD_COACH),
-      ),
-      with: {
-        coach: true,
-      },
-    });
+    const coach = await db
+      .select({
+        id: UserTable.id,
+        name: UserTable.name,
+      })
+      .from(UserTable)
+      .leftJoin(CoachTable, eq(CoachTable.id, UserTable.id))
+      .where(
+        and(eq(UserTable.team_id, team_id), eq(UserTable.role, UserRole.COACH)),
+      );
+
+    return coach ? coach[0] : null;
   } catch {
     return null;
   }

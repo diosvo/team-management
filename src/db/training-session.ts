@@ -14,7 +14,7 @@ import {
   TrainingSessionWithDetails,
 } from '@/types/training-session';
 
-export async function getTrainingSessions(
+export async function getSessions(
   team_id: string,
   params: TrainingSearchParams,
 ): Promise<DataWithStats<TrainingSessionWithDetails, TrainingSessionStats>> {
@@ -60,8 +60,8 @@ export async function getTrainingSessions(
       const present_count = session.attendances.filter(
         ({ status }) => status !== AttendanceStatus.ABSENT,
       ).length;
-      const rate = (
-        Math.round(present_count / total_attendances) * 100
+      const rate = Math.round(
+        (present_count / total_attendances) * 100,
       ).toFixed(1);
 
       return {
@@ -78,8 +78,10 @@ export async function getTrainingSessions(
       ({ status }) => status === SessionStatus.COMPLETED,
     ).length;
     const avg_attendance =
-      data.reduce((acc, session) => acc + session.attendance_count, 0) /
-      data.length;
+      data.length > 0
+        ? data.reduce((acc, session) => acc + session.attendance_count, 0) /
+          data.length
+        : 0;
     const total_hours = data.reduce((acc, session) => {
       const start = new Date(`1970-01-01T${session.start_time}Z`);
       const end = new Date(`1970-01-01T${session.end_time}Z`);
@@ -108,11 +110,11 @@ export async function getTrainingSessions(
   }
 }
 
-export async function insertTrainingSession(values: InsertTrainingSession) {
+export async function insertSession(values: InsertTrainingSession) {
   return db.insert(TrainingSessionTable).values(values).returning();
 }
 
-export async function updateTrainingSession(
+export async function updateSession(
   session_id: string,
   values: Partial<InsertTrainingSession>,
 ) {
@@ -123,7 +125,7 @@ export async function updateTrainingSession(
     .returning();
 }
 
-export async function deleteTrainingSession(session_id: string) {
+export async function deleteSession(session_id: string) {
   return db
     .delete(TrainingSessionTable)
     .where(eq(TrainingSessionTable.session_id, session_id))

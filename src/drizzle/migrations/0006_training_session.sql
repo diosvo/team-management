@@ -12,7 +12,6 @@ CREATE TABLE "training_session" (
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );--> statement-breakpoint
 ALTER TABLE "attendance" ADD COLUMN "session_id" uuid;--> statement-breakpoint
-ALTER TABLE "attendance" ADD COLUMN "arrival_time" timestamp with time zone;--> statement-breakpoint
 ALTER TABLE "training_session" ADD CONSTRAINT "training_session_team_id_team_team_id_fk" FOREIGN KEY ("team_id") REFERENCES "public"."team"("team_id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "training_session" ADD CONSTRAINT "training_session_coach_id_user_id_fk" FOREIGN KEY ("coach_id") REFERENCES "public"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "training_session" ADD CONSTRAINT "training_session_location_id_location_location_id_fk" FOREIGN KEY ("location_id") REFERENCES "public"."location"("location_id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
