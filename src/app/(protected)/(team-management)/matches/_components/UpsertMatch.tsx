@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useTransition } from 'react';
+import { useState, useTransition } from 'react';
 
 import {
   Badge,
@@ -18,6 +18,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Save } from 'lucide-react';
 import { Controller, useForm } from 'react-hook-form';
 
+import LocationSelection from '@/components/common/LocationSelection';
 import SearchableSelect from '@/components/SearchableSelect';
 import { CloseButton } from '@/components/ui/close-button';
 import { Field } from '@/components/ui/field';
@@ -26,33 +27,24 @@ import { Switch } from '@/components/ui/switch';
 import { toaster } from '@/components/ui/toaster';
 import Visibility from '@/components/Visibility';
 
-import { CURRENT_DATE, ESTABLISHED_DATE } from '@/utils/constant';
+import { CACHE_KEY, CURRENT_DATE, ESTABLISHED_DATE } from '@/utils/constant';
 import { formatDatetime } from '@/utils/formatter';
 import { colorLeagueStatus } from '@/utils/helper';
 
-import useQuery from '@/hooks/use-query';
 import { getDefaults } from '@/lib/zod';
 import { UpsertMatchSchema, UpsertMatchSchemaValues } from '@/schemas/match';
 
 import { getLeagues } from '@/actions/league';
-import { getLocations } from '@/actions/location';
 import { upsertMatch } from '@/actions/match';
 import { getOpponents } from '@/actions/team';
 
 export const UpsertMatch = createOverlay(({ action, item, ...rest }) => {
-  const contentRef = useRef<HTMLDivElement>(null);
   const [isPending, startTransition] = useTransition();
-  const [isLeague, setIsLeague] = useState<boolean>(
-    action === 'Update' && !!item.league_id,
-  );
-
-  // Filter out ended leagues after data migration finished
-  const leagues = useQuery(getLeagues);
-  const opponents = useQuery(getOpponents);
-  const locations = useQuery(getLocations);
+  const [isLeague, setIsLeague] = useState<boolean>(!!item.league_id);
 
   const {
     control,
+    watch,
     reset,
     register,
     handleSubmit,
@@ -95,7 +87,7 @@ export const UpsertMatch = createOverlay(({ action, item, ...rest }) => {
             <Dialog.Header>
               <Dialog.Title>{action} result</Dialog.Title>
             </Dialog.Header>
-            <Dialog.Body ref={contentRef}>
+            <Dialog.Body>
               <VStack alignItems="stretch" gap={4}>
                 <Controller
                   name="is_5x5"
@@ -126,75 +118,48 @@ export const UpsertMatch = createOverlay(({ action, item, ...rest }) => {
                   League Match
                 </Switch>
                 <Visibility isVisible={isLeague}>
-                  <Controller
+                  <SearchableSelect
+                    controlledMode
+                    multiple={false}
                     control={control}
                     name="league_id"
-                    render={({ field }) => {
-                      const selected = leagues.data?.find(
-                        (league) => league.league_id === field.value,
-                      );
-
-                      return (
-                        <SearchableSelect
-                          multiple={false}
-                          showHelperText={false}
-                          label="league"
-                          request={leagues}
-                          contentRef={contentRef}
-                          disabled={isPending}
-                          invalid={!!errors.league_id}
-                          selection={selected ? [selected] : []}
-                          itemToString={({ name }) => name}
-                          itemToValue={({ league_id }) => league_id}
-                          renderItem={(item) => (
-                            <HStack>
-                              {item.name}
-                              <Badge
-                                size="xs"
-                                variant="outline"
-                                marginLeft="auto"
-                                borderRadius="full"
-                                colorPalette={colorLeagueStatus(item.status)}
-                              >
-                                {item.status}
-                              </Badge>
-                            </HStack>
-                          )}
-                          onSelectionChange={(items) => {
-                            field.onChange(items[0]?.league_id || '');
-                          }}
-                        />
-                      );
+                    label={CACHE_KEY.LEAGUES}
+                    action={getLeagues}
+                    fieldProps={{
+                      required: isLeague,
+                      disabled: isPending,
                     }}
+                    itemToString={({ name }) => name}
+                    itemToValue={({ league_id }) => league_id}
+                    renderItem={(item) => (
+                      <HStack>
+                        {item.name}
+                        <Badge
+                          size="xs"
+                          variant="outline"
+                          marginLeft="auto"
+                          borderRadius="full"
+                          colorPalette={colorLeagueStatus(item.status)}
+                        >
+                          {item.status}
+                        </Badge>
+                      </HStack>
+                    )}
                   />
                 </Visibility>
-                <Controller
+                <SearchableSelect
+                  controlledMode
+                  multiple={false}
                   control={control}
                   name="away_team"
-                  render={({ field }) => {
-                    const selected = opponents.data?.find(
-                      (opponent) => opponent.team_id === field.value,
-                    );
-
-                    return (
-                      <SearchableSelect
-                        required
-                        multiple={false}
-                        showHelperText={false}
-                        label="opponent"
-                        request={opponents}
-                        contentRef={contentRef}
-                        disabled={isPending}
-                        invalid={!!errors.away_team}
-                        selection={selected ? [selected] : []}
-                        itemToString={({ name }) => name}
-                        itemToValue={({ team_id }) => team_id}
-                        onSelectionChange={(items) => {
-                          field.onChange(items[0]?.team_id || '');
-                        }}
-                      />
-                    );
+                  label={CACHE_KEY.OPPONENTS}
+                  action={getOpponents}
+                  fieldProps={{
+                    required: true,
+                    disabled: isPending,
                   }}
+                  itemToString={({ name }) => name}
+                  itemToValue={({ team_id }) => team_id}
                 />
                 <HStack>
                   <Field required label="Date" disabled={isPending}>
@@ -215,33 +180,7 @@ export const UpsertMatch = createOverlay(({ action, item, ...rest }) => {
                     />
                   </Field>
                 </HStack>
-                <Controller
-                  control={control}
-                  name="location_id"
-                  render={({ field }) => {
-                    const selected = locations.data?.find(
-                      (opponent) => opponent.location_id === field.value,
-                    );
-
-                    return (
-                      <SearchableSelect
-                        multiple={false}
-                        showHelperText={false}
-                        label="location"
-                        request={locations}
-                        contentRef={contentRef}
-                        disabled={isPending}
-                        invalid={!!errors.location_id}
-                        selection={selected ? [selected] : []}
-                        itemToString={({ name }) => name}
-                        itemToValue={({ location_id }) => location_id}
-                        onSelectionChange={(items) => {
-                          field.onChange(items[0]?.location_id || '');
-                        }}
-                      />
-                    );
-                  }}
-                />
+                <LocationSelection control={control} isDisabled={isPending} />
                 <HStack alignItems="start">
                   <Field
                     label="Our Score"

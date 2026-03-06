@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { useSWRConfig } from 'swr';
 
 import {
   Badge,
@@ -30,8 +31,13 @@ import { RolePositionSelection } from '@/components/user/RolePositionSelection';
 import { ControlledStateSelection } from '@/components/user/StateSelection';
 import Visibility from '@/components/Visibility';
 
-import { ESTABLISHED_DATE } from '@/utils/constant';
-import { CoachPosition, PlayerPosition, UserRole } from '@/utils/enum';
+import { CACHE_KEY, ESTABLISHED_DATE } from '@/utils/constant';
+import {
+  CoachPosition,
+  PlayerPosition,
+  UserRole,
+  UserState,
+} from '@/utils/enum';
 import { formatDate } from '@/utils/formatter';
 import { colorRole, colorState, hasPermissions } from '@/utils/helper';
 
@@ -52,6 +58,7 @@ export default function TeamInfo({
 
   const [isPending, startTransition] = useTransition();
   const [isEditing, setIsEditing] = useState<boolean>(false);
+  const { mutate } = useSWRConfig();
 
   const {
     control,
@@ -94,7 +101,12 @@ export default function TeamInfo({
         type: success ? 'success' : 'error',
         title,
       });
-      if (success) setIsEditing(false);
+
+      if (success) {
+        setIsEditing(false);
+
+        if (data.user.state === UserState.ACTIVE) mutate(CACHE_KEY.PLAYERS);
+      }
     });
   };
 

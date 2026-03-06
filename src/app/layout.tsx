@@ -8,6 +8,7 @@ import { NuqsAdapter } from 'nuqs/adapters/next/app';
 
 import UiProvider from '@/components/ui/provider';
 import { Toaster } from '@/components/ui/toaster';
+import SWRProvider from '@/providers/SWRProvider';
 
 import env from '@/schemas/env';
 import './globals.css';
@@ -30,12 +31,14 @@ export default function RootLayout({ children }: PropsWithChildren) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${geist.variable} ${geist.className} antialiased`}>
-        <NuqsAdapter>
-          <UiProvider>
-            {children}
-            <Toaster />
-          </UiProvider>
-        </NuqsAdapter>
+        <SWRProvider>
+          <NuqsAdapter>
+            <UiProvider>
+              {children}
+              <Toaster />
+            </UiProvider>
+          </NuqsAdapter>
+        </SWRProvider>
         {/* Vercel plugins */}
         {env.NODE_ENV === 'production' && (
           <>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useTransition } from 'react';
+import { useSWRConfig } from 'swr';
 
 import {
   Button,
@@ -18,14 +19,17 @@ import { CloseButton } from '@/components/ui/close-button';
 import { Field } from '@/components/ui/field';
 import { toaster } from '@/components/ui/toaster';
 
-import { upsertLocation } from '@/actions/location';
 import { getDefaults } from '@/lib/zod';
+import { CACHE_KEY } from '@/utils/constant';
+
+import { upsertLocation } from '@/actions/location';
 import {
   UpsertLocationSchema,
   UpsertLocationSchemaValues,
 } from '@/schemas/location';
 
 export const UpsertLocation = createOverlay(({ action, item, ...rest }) => {
+  const { mutate } = useSWRConfig();
   const [isPending, startTransition] = useTransition();
 
   const {
@@ -55,7 +59,10 @@ export const UpsertLocation = createOverlay(({ action, item, ...rest }) => {
         title,
       });
 
-      if (success) reset();
+      if (success) {
+        reset();
+        mutate(CACHE_KEY.LOCATIONS);
+      }
       if (action === 'Update') UpsertLocation.close('update-location');
     });
   };

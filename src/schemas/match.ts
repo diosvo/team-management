@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const UpsertMatchSchema = z.object({
   is_5x5: z.boolean().default(true),
-  league_id: z.uuid().nullable(),
+  league_id: z.uuid().nullable().default(null),
   location_id: z.uuid().nullable(),
   date: z.iso.date(),
   time: z.iso.time(),

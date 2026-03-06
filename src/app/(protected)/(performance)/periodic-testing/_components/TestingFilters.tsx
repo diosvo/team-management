@@ -18,12 +18,12 @@ import {
   Plus,
   Settings2,
 } from 'lucide-react';
+import useSWRImmutable from 'swr/immutable';
 
 import SearchInput from '@/components/SearchInput';
 import Visibility from '@/components/Visibility';
 
 import usePermissions from '@/hooks/use-permissions';
-import useQuery from '@/hooks/use-query';
 import { usePeriodicTestingFilters } from '@/utils/filters';
 import { formatDate } from '@/utils/formatter';
 
@@ -32,20 +32,23 @@ import { getTestDates } from '@/actions/test-result';
 export default function TestingFilters() {
   const { isAdmin } = usePermissions();
   const [{ date }, setSearchParams] = usePeriodicTestingFilters();
-  const request = useQuery(async () => await getTestDates());
+  const {
+    isValidating,
+    data = [],
+    error,
+  } = useSWRImmutable('test-dates', getTestDates);
 
   const dateRanges = useMemo(
     () =>
       createListCollection({
-        items: (request.data ?? []).map((date) => ({
+        items: data.map((date) => ({
           label: formatDate(date),
           value: date,
         })),
       }),
-    [request.data],
+    [data],
   );
-  const disabledFilter =
-    request.loading || !!request.error || dateRanges.items.length === 0;
+  const disabledFilter = isValidating || !!error || data.length === 0;
 
   return (
     <HStack marginBottom={6}>
@@ -67,7 +70,7 @@ export default function TestingFilters() {
             </HStack>
           </Select.Trigger>
           <Select.IndicatorGroup>
-            {request.loading && (
+            {isValidating && (
               <Spinner size="xs" borderWidth={1} color="fg.muted" />
             )}
             <Select.Indicator />

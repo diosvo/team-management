@@ -10,6 +10,7 @@ import {
   useBreakpointValue,
 } from '@chakra-ui/react';
 
+import Loading from '@/components/Loading';
 import Header from './_components/AppHeader';
 import Sidebar from './_components/Sidebar';
 
@@ -17,7 +18,7 @@ export default function AuthenticatedLayout({ children }: PropsWithChildren) {
   const smallDevice = useBreakpointValue({
     base: true,
     sm: true,
-    md: true,
+    md: false,
     lg: false,
   });
   const [isExpanded, setIsExpanded] = useState<boolean>(true);
@@ -62,7 +63,7 @@ export default function AuthenticatedLayout({ children }: PropsWithChildren) {
 
       <GridItem gridArea="main" overflow="auto" height="100%">
         <Container paddingBlock={6}>
-          <Suspense>{children}</Suspense>
+          <Suspense fallback={<Loading />}>{children}</Suspense>
         </Container>
       </GridItem>
     </Grid>

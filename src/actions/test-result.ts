@@ -24,7 +24,7 @@ export const canUpsertTestResult = withAuth(async (user) => {
   return isAdmin;
 });
 
-export const getTestDates = withAuth(async () => await getDates());
+export const getTestDates = withAuth(getDates);
 
 export const getTestResult = withAuth(async (_, date: string) => {
   if (!date) {

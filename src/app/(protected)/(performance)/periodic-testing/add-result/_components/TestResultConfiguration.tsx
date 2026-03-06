@@ -10,7 +10,6 @@ import { TestConfigurationSelection } from '@/types/periodic-testing';
 import { ESTABLISHED_DATE } from '@/utils/constant';
 
 import { getTestTypes } from '@/actions/test-type';
-import useQuery from '@/hooks/use-query';
 
 type TestResultConfigurationProps = {
   selection: TestConfigurationSelection;
@@ -23,8 +22,6 @@ export default function TestResultConfiguration({
   selection,
   setSelection,
 }: TestResultConfigurationProps) {
-  const request = useQuery(async () => await getTestTypes());
-
   return (
     <VStack gap={4}>
       <PlayerSelection
@@ -37,10 +34,13 @@ export default function TestResultConfiguration({
         }
       />
       <SearchableSelect
+        controlledMode={false}
+        multiple={true}
         label="types"
-        request={request}
+        action={getTestTypes}
         maxItems={5}
-        selection={selection.types}
+        value={selection.types}
+        fieldProps={{ required: true }}
         itemToString={({ name }) => name}
         itemToValue={({ type_id }) => type_id}
         renderItem={(item) => (
@@ -51,7 +51,7 @@ export default function TestResultConfiguration({
             </Span>
           </>
         )}
-        onSelectionChange={(selected) =>
+        onChange={(selected) =>
           setSelection((prev) => ({
             ...prev,
             types: selected,

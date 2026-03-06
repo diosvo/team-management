@@ -1,36 +1,60 @@
 'use client';
 
-import { Box, BoxProps, List } from '@chakra-ui/react';
-import { UserX } from 'lucide-react';
+import { useCallback } from 'react';
+
+import { Box, BoxProps, List, Span } from '@chakra-ui/react';
+import { UserRoundX } from 'lucide-react';
 
 import { User } from '@/drizzle/schema/user';
-import useQuery from '@/hooks/use-query';
 
 import SearchableSelect from '@/components/SearchableSelect';
 import { EmptyState } from '@/components/ui/empty-state';
 
 import { getActivePlayers } from '@/actions/user';
+import { CACHE_KEY } from '@/utils/constant';
 
-type PlayerSelectionProps = Selector<Array<User>> &
-  Partial<{
-    disabled: boolean;
-    contentRef: React.RefObject<Nullable<HTMLDivElement>>;
-  }>;
+type UserSelector = Selector<Array<User>>;
 
-type SelectedPlayers = Selector<Array<User>> & BoxProps;
+export function PlayerSelection({
+  selection,
+  onSelectionChange,
+}: UserSelector) {
+  return (
+    <SearchableSelect
+      controlledMode={false}
+      multiple={true}
+      label={CACHE_KEY.PLAYERS}
+      action={getActivePlayers}
+      fieldProps={{ required: true }}
+      itemToString={({ name }) => name}
+      itemToValue={({ id }) => id}
+      renderItem={PlayerItem}
+      value={selection}
+      onChange={onSelectionChange}
+    />
+  );
+}
 
 export function SelectedPlayers({
   selection,
   onSelectionChange,
   ...props
-}: SelectedPlayers) {
+}: UserSelector & BoxProps) {
+  const handleRemovePlayer = useCallback(
+    (id: string) =>
+      onSelectionChange(
+        selection.filter(({ id: player_id }) => id !== player_id),
+      ),
+    [selection],
+  );
+
   return (
     <Box {...props}>
       {selection.length > 0 ? (
-        <List.Root paddingInline={8} paddingBlock={4}>
-          {selection.map(({ id, name, player }) => (
+        <List.Root paddingInline={6} paddingBlock={4}>
+          {selection.map((user: User) => (
             <List.Item
-              key={id}
+              key={user.id}
               width="max-content"
               _hover={{
                 cursor: 'pointer',
@@ -38,14 +62,9 @@ export function SelectedPlayers({
                 textDecoration: 'line-through',
                 transition: 'all 0.2s',
               }}
-              onClick={() =>
-                onSelectionChange(
-                  selection.filter(({ id: player_id }) => id !== player_id),
-                )
-              }
+              onClick={() => handleRemovePlayer(user.id)}
             >
-              {player?.jersey_number && `${player.jersey_number} - `}
-              {name}
+              {PlayerItem(user)}
             </List.Item>
           ))}
         </List.Root>
@@ -53,31 +72,20 @@ export function SelectedPlayers({
         <EmptyState
           size="sm"
           title="No players selected"
-          icon={<UserX />}
-          description=""
+          icon={<UserRoundX />}
         />
       )}
     </Box>
   );
 }
 
-export function PlayerSelection(props: PlayerSelectionProps) {
-  const request = useQuery(getActivePlayers);
-
+function PlayerItem(user: User) {
   return (
-    <SearchableSelect
-      label="players"
-      request={request}
-      maxItems={request.data ? request.data.length : undefined}
-      itemToString={({ name }) => name}
-      itemToValue={({ id }) => id}
-      renderItem={({ player, name }) => (
-        <>
-          {player?.jersey_number && `${player.jersey_number} · `}
-          {name}
-        </>
-      )}
-      {...props}
-    />
+    <>
+      <Span color="GrayText">
+        {user.player?.jersey_number && `${user.player.jersey_number} - `}
+      </Span>
+      {user.name}
+    </>
   );
 }

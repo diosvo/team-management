@@ -1,6 +1,7 @@
 import {
   BadgeCheck,
   ChartArea,
+  DatabaseZap,
   Dumbbell,
   FileChartColumnIncreasing,
   FileText,
@@ -18,6 +19,7 @@ export const hrefPath = (text: string): string => {
   return '/' + text.toLowerCase().replace(/\s+/g, '-');
 };
 
+// Implement sidebar with specific role
 // disabled = true when the feature is not implemented yet
 
 export const SIDEBAR_GROUP = [
@@ -30,6 +32,7 @@ export const SIDEBAR_GROUP = [
         active: true,
         disabled: false,
       },
+      // Move to Dashboard later
       { icon: ChartArea, text: 'Analytics', disabled: false },
       {
         icon: ShieldCheck,
@@ -70,6 +73,11 @@ export const SIDEBAR_GROUP = [
         icon: Film,
         text: 'Documents',
         disabled: true,
+      },
+      {
+        icon: DatabaseZap,
+        text: 'Cache Store',
+        disabled: false,
       },
     ],
   },

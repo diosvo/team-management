@@ -32,6 +32,28 @@ export const COOKIE = {
   maxAge: 10 * 60, // 10 minutes in seconds
 };
 
+/**
+ * @description Cache keys used with `useSWR`
+ */
+export const CACHE_KEY = {
+  LEAGUES: 'leagues',
+  PLAYERS_IN_LEAGUE: (league_id: number) => `players-in-league-${league_id}`,
+  LOCATIONS: 'locations',
+  OPPONENTS: 'opponents',
+  PLAYERS: 'active_players',
+} as const;
+
+/**
+ * @description Cache tags used in `db/` with `'use cache'` + `cacheTag()`
+ * @link https://nextjs.org/docs/app/api-reference/directives/use-cache
+ */
+export const CACHE_TAG = {
+  ASSETS: 'assets',
+  LEAGUES: 'leagues',
+  LOCATIONS: 'locations',
+  RULE: 'team-rule',
+} as const;
+
 export const ALL: Option<string> = {
   label: 'All',
   value: 'all',

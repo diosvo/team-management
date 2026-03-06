@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useTransition } from 'react';
+import { useTransition } from 'react';
 
 import {
   Button,
@@ -10,24 +10,20 @@ import {
   Input,
   Portal,
   SimpleGrid,
-  Span,
-  Stack,
   Text,
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Save } from 'lucide-react';
-import { Controller, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 
-import SearchableSelect from '@/components/SearchableSelect';
+import LocationSelection from '@/components/common/LocationSelection';
 import { Field } from '@/components/ui/field';
 import { toaster } from '@/components/ui/toaster';
 
-import useQuery from '@/hooks/use-query';
 import { getDefaults } from '@/lib/zod';
 import { ESTABLISHED_DATE } from '@/utils/constant';
 import { formatDatetime, formatDay } from '@/utils/formatter';
 
-import { getLocations } from '@/actions/location';
 import { upsertSession } from '@/actions/training-session';
 import {
   UpsertSessionSchema,
@@ -35,10 +31,7 @@ import {
 } from '@/schemas/training';
 
 export const UpsertSession = createOverlay(({ action, item, ...rest }) => {
-  const contentRef = useRef<HTMLDivElement>(null);
   const [isPending, startTransition] = useTransition();
-
-  const locations = useQuery(getLocations);
 
   const {
     control,
@@ -83,7 +76,7 @@ export const UpsertSession = createOverlay(({ action, item, ...rest }) => {
             <Dialog.Header>
               <Dialog.Title>{action} Session</Dialog.Title>
             </Dialog.Header>
-            <Dialog.Body ref={contentRef}>
+            <Dialog.Body>
               <SimpleGrid columns={2} gap={3} mb={4}>
                 <Field
                   required
@@ -117,41 +110,7 @@ export const UpsertSession = createOverlay(({ action, item, ...rest }) => {
                   <Input type="time" {...register('end_time')} />
                 </Field>
               </SimpleGrid>
-              <Controller
-                control={control}
-                name="location_id"
-                render={({ field }) => {
-                  const selected = locations.data?.find(
-                    (location) => location.location_id === field.value,
-                  );
-
-                  return (
-                    <SearchableSelect
-                      multiple={false}
-                      showHelperText={false}
-                      label="location"
-                      request={locations}
-                      contentRef={contentRef}
-                      disabled={isPending}
-                      invalid={!!errors.location_id}
-                      selection={selected ? [selected] : []}
-                      itemToString={({ name }) => name}
-                      itemToValue={({ location_id }) => location_id}
-                      renderItem={(item) => (
-                        <Stack>
-                          {item.name}
-                          <Span color="fg.muted" fontSize="xs">
-                            {item.address}
-                          </Span>
-                        </Stack>
-                      )}
-                      onSelectionChange={(items) =>
-                        field.onChange(items[0]?.location_id)
-                      }
-                    />
-                  );
-                }}
-              />
+              <LocationSelection control={control} isDisabled={isPending} />
             </Dialog.Body>
             <Dialog.Footer justifyContent="space-between">
               <Text fontSize="xs" color="GrayText">

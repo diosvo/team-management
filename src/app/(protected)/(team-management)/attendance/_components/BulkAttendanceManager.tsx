@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useTransition } from 'react';
+import { useState, useTransition } from 'react';
 
 import {
   Button,
@@ -18,6 +18,7 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ClipboardCheck, SaveAll } from 'lucide-react';
 import { useFieldArray, useForm } from 'react-hook-form';
+import useSWRImmutable from 'swr/immutable';
 
 import { Checkbox } from '@/components/ui/checkbox';
 import { Field } from '@/components/ui/field';
@@ -31,7 +32,6 @@ import { AttendanceStatus } from '@/utils/enum';
 import { useAttendanceFilters } from '@/utils/filters';
 
 import { User } from '@/drizzle/schema';
-import useQuery from '@/hooks/use-query';
 
 import { submitLeave } from '@/actions/attendance';
 import { getActivePlayers } from '@/actions/user';
@@ -42,11 +42,11 @@ import {
 
 export default function BulkAttendanceManager() {
   const [, setSearchParams] = useAttendanceFilters();
-  const { data: activePlayers } = useQuery(getActivePlayers);
+  const { data: activePlayers = [] } =
+    useSWRImmutable<Array<User>>(getActivePlayers);
   const [selection, setSelection] = useState<Array<User>>([]);
 
   const [open, setOpen] = useState<boolean>(false);
-  const contentRef = useRef<HTMLDivElement>(null);
   const [isPending, startTransition] = useTransition();
 
   const {
@@ -106,7 +106,7 @@ export default function BulkAttendanceManager() {
   const onSubmit = (values: BulkAttendanceSchemaValues) => {
     const parsed = BulkAttendanceSchema.parse(values);
 
-    if (parsed.attendances.length === 0 && activePlayers) {
+    if (parsed.attendances.length === 0 && activePlayers.length > 0) {
       parsed.attendances = activePlayers.map((player) => ({
         player_id: player.id,
         status: AttendanceStatus.ON_TIME,
@@ -190,7 +190,6 @@ export default function BulkAttendanceManager() {
                     />
                   </Field>
                   <PlayerSelection
-                    contentRef={contentRef}
                     selection={selection}
                     onSelectionChange={handlePlayersChange}
                   />

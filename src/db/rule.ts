@@ -2,9 +2,10 @@ import { cacheTag } from 'next/cache';
 
 import { eq } from 'drizzle-orm';
 
-import { CACHE_TAG } from '@/actions/cache';
 import db from '@/drizzle';
 import { InsertRule, RuleTable } from '@/drizzle/schema/rule';
+
+import { CACHE_TAG } from '@/utils/constant';
 
 export async function getRule(team_id: string) {
   'use cache';

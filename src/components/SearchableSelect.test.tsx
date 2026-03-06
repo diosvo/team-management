@@ -1,217 +1,429 @@
 import { axe } from 'jest-axe';
+import { useForm } from 'react-hook-form';
+import { SWRConfig } from 'swr';
 
-import { UseQueryReturn } from '@/hooks/use-query';
 import { renderWithUI, screen, waitFor } from '@/test/utilities';
 
 import SearchableSelect from './SearchableSelect';
-
-// 👀 Use findBy to wait for items to appear
 
 type MockItem = {
   id: string;
   name: string;
 };
 
+const mockItems: Array<MockItem> = [
+  { id: '1', name: 'Item 1' },
+  { id: '2', name: 'Item 2' },
+  { id: '3', name: 'Item 3' },
+];
+
+const mockAction = vi.fn().mockResolvedValue(mockItems);
+
+const itemToString = (item: MockItem) => item.name;
+const itemToValue = (item: MockItem) => item.id;
+
+const baseProps = {
+  label: 'items',
+  action: mockAction,
+  itemToString,
+  itemToValue,
+};
+
+// Wraps the given UI in an isolated SWR cache to prevent test cross-contamination
+const withFreshSWR = (ui: React.ReactElement) => (
+  <SWRConfig value={{ provider: () => new Map() }}>{ui}</SWRConfig>
+);
+
 describe('SearchableSelect', () => {
-  const onSelectionChange = vi.fn();
-
-  const mockItems: Array<MockItem> = [
-    { id: '1', name: 'Item 1' },
-    { id: '2', name: 'Item 2' },
-    { id: '3', name: 'Item 3' },
-  ];
-
-  const mockRequest: UseQueryReturn<Array<MockItem>> = {
-    data: mockItems,
-    loading: false,
-    error: null,
-  };
-
-  const defaultProps = {
-    label: 'items',
-    placeholder: 'Type to search',
-    request: mockRequest,
-    selection: [],
-    onSelectionChange,
-    itemToString: (item: MockItem) => item.name,
-    itemToValue: (item: MockItem) => item.id,
-  };
-
-  const setup = (overrides = {}) => {
-    const props = { ...defaultProps, ...overrides };
-    const view = renderWithUI(<SearchableSelect {...props} />);
-    const input = screen.getByPlaceholderText(props.placeholder);
-
-    return {
-      ...view,
-      input,
-    };
-  };
-
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  test('should be accessible', async () => {
-    const { container } = setup();
+  describe('uncontrolled mode', () => {
+    describe('multiple', () => {
+      const onChange = vi.fn();
 
-    const result = await axe(container);
-    expect(result).toHaveNoViolations();
-  });
+      const defaultProps = {
+        ...baseProps,
+        controlledMode: false as const,
+        multiple: true as const,
+        value: [] as Array<MockItem>,
+        onChange,
+      };
 
-  test('renders with label and placeholder', () => {
-    const { input } = setup();
+      const setup = (overrides = {}) =>
+        renderWithUI(
+          withFreshSWR(<SearchableSelect {...defaultProps} {...overrides} />),
+        );
 
-    expect(screen.getByText(/Select items/)).toBeInTheDocument();
-    expect(input).toBeInTheDocument();
-  });
+      test('should be accessible', async () => {
+        const { container } = setup();
+        await waitFor(() => expect(mockAction).toHaveBeenCalled());
 
-  test('renders custom placeholder', () => {
-    setup({ placeholder: 'Custom placeholder' });
+        const result = await axe(container);
+        expect(result).toHaveNoViolations();
+      });
 
-    expect(
-      screen.getByPlaceholderText('Custom placeholder'),
-    ).toBeInTheDocument();
-  });
+      test('renders with label', async () => {
+        setup();
+        await waitFor(() => expect(mockAction).toHaveBeenCalled());
+        expect(screen.getByText(/Select items/)).toBeInTheDocument();
+      });
 
-  test('displays loading state', () => {
-    setup({
-      request: { ...mockRequest, loading: true },
+      test('displays empty state when no items found', async () => {
+        const emptyAction = vi.fn().mockResolvedValue([]);
+        const { user } = setup({ action: emptyAction });
+
+        await waitFor(() => expect(emptyAction).toHaveBeenCalled());
+
+        await user.click(screen.getByPlaceholderText('Type to search'));
+        expect(screen.getByText('No items found.')).toBeInTheDocument();
+      });
+
+      test('renders items when dropdown is opened', async () => {
+        const { user } = setup();
+
+        await waitFor(() => expect(mockAction).toHaveBeenCalled());
+
+        await user.click(screen.getByPlaceholderText('Type to search'));
+
+        expect(await screen.findByText('Item 1')).toBeInTheDocument();
+        expect(screen.getByText('Item 2')).toBeInTheDocument();
+        expect(screen.getByText('Item 3')).toBeInTheDocument();
+      });
+
+      test('filters items based on input', async () => {
+        const { user } = setup();
+
+        await waitFor(() => expect(mockAction).toHaveBeenCalled());
+
+        const input = screen.getByPlaceholderText('Type to search');
+        await user.click(input);
+        await screen.findByText('Item 1');
+
+        await user.type(input, '1');
+
+        await waitFor(() => {
+          expect(screen.getByText('Item 1')).toBeInTheDocument();
+          expect(screen.queryByText('Item 2')).not.toBeInTheDocument();
+        });
+      });
+
+      test('calls onChange with the selected items', async () => {
+        const { user } = setup();
+
+        await waitFor(() => expect(mockAction).toHaveBeenCalled());
+
+        await user.click(screen.getByPlaceholderText('Type to search'));
+        await user.click(await screen.findByText('Item 1'));
+
+        expect(onChange).toHaveBeenCalledWith([mockItems[0]]);
+      });
+
+      test('shows maxItems warning and does not call onChange when limit exceeded', async () => {
+        const { user } = setup({
+          maxItems: 2,
+          value: [mockItems[0], mockItems[1]],
+        });
+
+        await waitFor(() => expect(mockAction).toHaveBeenCalled());
+
+        await user.click(screen.getByPlaceholderText('Type to search'));
+        await user.click(await screen.findByText('Item 3'));
+
+        expect(onChange).not.toHaveBeenCalled();
+      });
+
+      test('renders custom items with renderItem prop', async () => {
+        const renderItem = (item: MockItem) => <div>Custom: {item.name}</div>;
+        const { user } = setup({ renderItem });
+
+        await waitFor(() => expect(mockAction).toHaveBeenCalled());
+
+        await user.click(screen.getByPlaceholderText('Type to search'));
+
+        expect(await screen.findByText('Custom: Item 1')).toBeInTheDocument();
+      });
     });
 
-    expect(screen.getByText('Loading...')).toBeInTheDocument();
+    describe('single', () => {
+      const onChange = vi.fn();
+
+      const defaultProps = {
+        ...baseProps,
+        controlledMode: false as const,
+        multiple: false as const,
+        value: null as Nullable<MockItem>,
+        onChange,
+      };
+
+      const setup = (overrides = {}) =>
+        renderWithUI(
+          withFreshSWR(<SearchableSelect {...defaultProps} {...overrides} />),
+        );
+
+      test('should be accessible', async () => {
+        const { container } = setup();
+        await waitFor(() => expect(mockAction).toHaveBeenCalled());
+
+        const result = await axe(container);
+        expect(result).toHaveNoViolations();
+      });
+
+      test('renders with label', async () => {
+        setup();
+        await waitFor(() => expect(mockAction).toHaveBeenCalled());
+        expect(screen.getByText(/Select items/)).toBeInTheDocument();
+      });
+
+      test('displays empty state when no items found', async () => {
+        const emptyAction = vi.fn().mockResolvedValue([]);
+        const { user } = setup({ action: emptyAction });
+
+        await waitFor(() => expect(emptyAction).toHaveBeenCalled());
+
+        await user.click(screen.getByPlaceholderText('Type to search'));
+        expect(screen.getByText('No items found.')).toBeInTheDocument();
+      });
+
+      test('renders items when dropdown is opened', async () => {
+        const { user } = setup();
+
+        await waitFor(() => expect(mockAction).toHaveBeenCalled());
+
+        await user.click(screen.getByPlaceholderText('Type to search'));
+
+        expect(await screen.findByText('Item 1')).toBeInTheDocument();
+        expect(screen.getByText('Item 2')).toBeInTheDocument();
+        expect(screen.getByText('Item 3')).toBeInTheDocument();
+      });
+
+      test('calls onChange with a single item (not an array)', async () => {
+        const { user } = setup();
+
+        await waitFor(() => expect(mockAction).toHaveBeenCalled());
+
+        await user.click(screen.getByPlaceholderText('Type to search'));
+        await user.click(await screen.findByText('Item 1'));
+
+        expect(onChange).toHaveBeenCalledWith(mockItems[0]);
+      });
+    });
   });
 
-  test('displays error state', () => {
-    const errorMessage = 'Failed to load items';
-    setup({
-      request: {
-        ...mockRequest,
-        loading: false,
-        error: new Error(errorMessage),
-      },
+  describe('controlled mode', () => {
+    describe('multiple', () => {
+      type FormValues = { field: string[] };
+
+      const ControlledMultiple = () => {
+        const { control } = useForm<FormValues>({
+          defaultValues: { field: [] },
+        });
+        return (
+          <SearchableSelect
+            {...baseProps}
+            controlledMode={true}
+            multiple={true}
+            control={control}
+            name="field"
+          />
+        );
+      };
+
+      const setup = () => renderWithUI(withFreshSWR(<ControlledMultiple />));
+
+      test('renders with label', async () => {
+        setup();
+        await waitFor(() => expect(mockAction).toHaveBeenCalled());
+        expect(screen.getByText(/Select items/)).toBeInTheDocument();
+      });
+
+      test('renders items when dropdown is opened', async () => {
+        const { user } = setup();
+
+        await waitFor(() => expect(mockAction).toHaveBeenCalled());
+
+        await user.click(screen.getByPlaceholderText('Type to search'));
+
+        expect(await screen.findByText('Item 1')).toBeInTheDocument();
+        expect(screen.getByText('Item 2')).toBeInTheDocument();
+        expect(screen.getByText('Item 3')).toBeInTheDocument();
+      });
+
+      test('updates form value with string IDs on selection', async () => {
+        const ControlledMultipleWithDisplay = () => {
+          const { control, watch } = useForm<FormValues>({
+            defaultValues: { field: [] },
+          });
+          const value = watch('field');
+          return (
+            <>
+              <SearchableSelect
+                {...baseProps}
+                controlledMode={true}
+                multiple={true}
+                control={control}
+                name="field"
+              />
+              <div data-testid="form-value">{JSON.stringify(value)}</div>
+            </>
+          );
+        };
+
+        const { user } = renderWithUI(
+          withFreshSWR(<ControlledMultipleWithDisplay />),
+        );
+
+        await waitFor(() => expect(mockAction).toHaveBeenCalled());
+
+        await user.click(screen.getByPlaceholderText('Type to search'));
+        await user.click(await screen.findByText('Item 1'));
+
+        expect(screen.getByTestId('form-value')).toHaveTextContent('["1"]');
+      });
+
+      test('shows field validation error', async () => {
+        const ControlledMultipleWithError = () => {
+          const { control, setError } = useForm<FormValues>({
+            defaultValues: { field: [] },
+          });
+          return (
+            <>
+              <button
+                onClick={() =>
+                  setError('field', { message: 'Field is required' })
+                }
+              >
+                Trigger Error
+              </button>
+              <SearchableSelect
+                {...baseProps}
+                controlledMode={true}
+                multiple={true}
+                control={control}
+                name="field"
+              />
+            </>
+          );
+        };
+
+        const { user } = renderWithUI(
+          withFreshSWR(<ControlledMultipleWithError />),
+        );
+
+        await user.click(screen.getByText('Trigger Error'));
+
+        expect(
+          await screen.findByText('Field is required'),
+        ).toBeInTheDocument();
+      });
     });
 
-    expect(screen.getByText(errorMessage)).toBeInTheDocument();
-  });
+    describe('single', () => {
+      type FormValues = { field: string | null };
 
-  test('displays empty state when no items found', async () => {
-    const { user, input } = setup({ request: { ...mockRequest, data: [] } });
+      const ControlledSingle = () => {
+        const { control } = useForm<FormValues>({
+          defaultValues: { field: null },
+        });
+        return (
+          <SearchableSelect
+            {...baseProps}
+            controlledMode={true}
+            multiple={false}
+            control={control}
+            name="field"
+          />
+        );
+      };
 
-    await user.click(input);
+      const setup = () => renderWithUI(withFreshSWR(<ControlledSingle />));
 
-    expect(screen.getByText('No items found.')).toBeInTheDocument();
-  });
+      test('renders with label', async () => {
+        setup();
+        await waitFor(() => expect(mockAction).toHaveBeenCalled());
+        expect(screen.getByText(/Select items/)).toBeInTheDocument();
+      });
 
-  test('renders items when dropdown is opened', async () => {
-    const { user, input } = setup();
+      test('renders items when dropdown is opened', async () => {
+        const { user } = setup();
 
-    await user.click(input);
+        await waitFor(() => expect(mockAction).toHaveBeenCalled());
 
-    expect(await screen.findByText('Item 1')).toBeInTheDocument();
-    expect(screen.getByText('Item 2')).toBeInTheDocument();
-    expect(screen.getByText('Item 3')).toBeInTheDocument();
-  });
+        await user.click(screen.getByPlaceholderText('Type to search'));
 
-  test('filters items based on input', async () => {
-    const { user, input } = setup();
+        expect(await screen.findByText('Item 1')).toBeInTheDocument();
+        expect(screen.getByText('Item 2')).toBeInTheDocument();
+        expect(screen.getByText('Item 3')).toBeInTheDocument();
+      });
 
-    await user.click(input);
+      test('updates form value with a single string ID on selection', async () => {
+        const ControlledSingleWithDisplay = () => {
+          const { control, watch } = useForm<FormValues>({
+            defaultValues: { field: null },
+          });
+          const value = watch('field');
+          return (
+            <>
+              <SearchableSelect
+                {...baseProps}
+                controlledMode={true}
+                multiple={false}
+                control={control}
+                name="field"
+              />
+              <div data-testid="form-value">{JSON.stringify(value)}</div>
+            </>
+          );
+        };
 
-    await screen.findByText('Item 1');
-    expect(screen.getByText('Item 2')).toBeInTheDocument();
-    expect(screen.getByText('Item 3')).toBeInTheDocument();
+        const { user } = renderWithUI(
+          withFreshSWR(<ControlledSingleWithDisplay />),
+        );
 
-    // Type to filter,
-    // but don't clear first as it may lose the collection
-    await user.type(input, '1');
+        await waitFor(() => expect(mockAction).toHaveBeenCalled());
 
-    await waitFor(() => {
-      expect(screen.getByText('Item 1')).toBeInTheDocument();
+        await user.click(screen.getByPlaceholderText('Type to search'));
+        await user.click(await screen.findByText('Item 1'));
+
+        expect(screen.getByTestId('form-value')).toHaveTextContent('"1"');
+      });
+
+      test('shows field validation error', async () => {
+        const ControlledSingleWithError = () => {
+          const { control, setError } = useForm<FormValues>({
+            defaultValues: { field: null },
+          });
+          return (
+            <>
+              <button
+                onClick={() =>
+                  setError('field', { message: 'Field is required' })
+                }
+              >
+                Trigger Error
+              </button>
+              <SearchableSelect
+                {...baseProps}
+                controlledMode={true}
+                multiple={false}
+                control={control}
+                name="field"
+              />
+            </>
+          );
+        };
+
+        const { user } = renderWithUI(
+          withFreshSWR(<ControlledSingleWithError />),
+        );
+
+        await user.click(screen.getByText('Trigger Error'));
+
+        expect(
+          await screen.findByText('Field is required'),
+        ).toBeInTheDocument();
+      });
     });
-  });
-
-  test('calls onSelectionChange when item is selected', async () => {
-    const { user, input } = setup();
-
-    await user.click(input);
-
-    const item = await screen.findByText('Item 1');
-    await user.click(item);
-
-    expect(onSelectionChange).toHaveBeenCalledWith([mockItems[0]]);
-  });
-
-  test('displays selection count', () => {
-    setup({ selection: [mockItems[0], mockItems[1]], maxItems: 3 });
-
-    expect(screen.getByText('2 / 3 selected')).toBeInTheDocument();
-  });
-
-  test('hides helper text when showHelperText is false', () => {
-    setup({ showHelperText: false });
-
-    expect(screen.queryByText(/max/)).not.toBeInTheDocument();
-    expect(screen.getByText('Items')).toBeInTheDocument();
-  });
-
-  test('disables component when disabled prop is true', () => {
-    const { input } = setup({ disabled: true });
-
-    expect(input).toBeDisabled();
-  });
-
-  test('supports single selection mode', async () => {
-    const { user, input } = setup({ multiple: false });
-
-    await user.click(input);
-
-    const item = await screen.findByText('Item 1');
-    await user.click(item);
-
-    expect(onSelectionChange).toHaveBeenCalledWith([mockItems[0]]);
-  });
-
-  test('renders custom items with renderItem prop', async () => {
-    const renderItem = (item: MockItem) => <div>Custom: {item.name}</div>;
-    const { user, input } = setup({ renderItem });
-
-    await user.click(input);
-
-    const item = await screen.findByText('Custom: Item 1');
-    expect(item).toBeInTheDocument();
-  });
-
-  test('clears selection with clear trigger', async () => {
-    const { user, container } = setup({
-      selection: [mockItems[0]],
-    });
-
-    const clearButton = container.querySelector(
-      '[aria-label="Clear value"]',
-    ) as HTMLButtonElement;
-
-    if (clearButton && !clearButton.hidden) {
-      await user.click(clearButton);
-      expect(onSelectionChange).toHaveBeenCalled();
-    }
-  });
-
-  test('updates items when request data changes', () => {
-    const { rerender } = setup();
-
-    const newItems: Array<MockItem> = [
-      { id: '4', name: 'Item 4' },
-      { id: '5', name: 'Item 5' },
-    ];
-
-    rerender(
-      <SearchableSelect
-        {...defaultProps}
-        request={{ ...mockRequest, data: newItems }}
-      />,
-    );
-
-    expect(defaultProps.onSelectionChange).not.toHaveBeenCalled();
   });
 });
