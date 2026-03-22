@@ -5,7 +5,7 @@ import { asc, eq } from 'drizzle-orm';
 import db from '@/drizzle';
 import { InsertLocation, LocationTable } from '@/drizzle/schema';
 
-import { CACHE_TAG } from '@/actions/cache';
+import { CACHE_TAG } from '@/utils/constant';
 
 export async function getLocations() {
   'use cache';

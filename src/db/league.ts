@@ -11,7 +11,7 @@ import {
 } from '@/drizzle/schema/league';
 import { UpsertLeagueSchemaValues } from '@/schemas/league';
 
-import { CACHE_TAG } from '@/actions/cache';
+import { CACHE_TAG } from '@/utils/constant';
 
 export async function getLeagues() {
   'use cache';

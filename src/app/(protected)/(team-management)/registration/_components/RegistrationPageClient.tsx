@@ -22,13 +22,11 @@ import { League } from '@/drizzle/schema';
 import { User } from '@/drizzle/schema/user';
 
 import { getLeagues } from '@/actions/league';
-import useQuery from '@/hooks/use-query';
 
+import { CACHE_KEY } from '@/utils/constant';
 import CopyButton from './CopyButton';
 
 export default function RegistrationPageClient() {
-  const leagues = useQuery(getLeagues);
-
   const [league, setLeague] = useState<League>();
   const [selection, setSelection] = useState<Array<User>>([]);
 
@@ -59,14 +57,14 @@ export default function RegistrationPageClient() {
                 onSelectionChange={setSelection}
               />
               <SearchableSelect
+                controlledMode={false}
                 multiple={false}
-                showHelperText={false}
-                label="league"
-                request={leagues}
-                selection={league ? [league] : []}
+                label={CACHE_KEY.LEAGUES}
+                action={getLeagues}
+                value={league ?? null}
                 itemToString={({ name }) => name}
                 itemToValue={({ league_id }) => league_id}
-                onSelectionChange={(items) => setLeague(items[0])}
+                onChange={(item) => setLeague(item ?? undefined)}
               />
             </Card.Body>
           </Card.Root>

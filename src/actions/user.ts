@@ -26,9 +26,10 @@ import auth from '@/lib/auth';
 import { withAuth } from './auth';
 import { revalidate } from './cache';
 
-export const getActivePlayers = withAuth(
-  async ({ team_id }) => await fetchActivePlayers(team_id),
-);
+export const getActivePlayers = withAuth(async ({ team_id }) => {
+  if (!team_id) return [];
+  return await fetchActivePlayers(team_id);
+});
 
 export const getUsers = withAuth(
   async ({ team_id }) => await fetchUsers(team_id),

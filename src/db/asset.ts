@@ -5,7 +5,7 @@ import { desc, eq } from 'drizzle-orm';
 import db from '@/drizzle';
 import { AssetTable, InsertAsset } from '@/drizzle/schema/asset';
 
-import { CACHE_TAG } from '@/actions/cache';
+import { CACHE_TAG } from '@/utils/constant';
 import { AssetCondition } from '@/utils/enum';
 
 export async function getAssets(team_id: string) {

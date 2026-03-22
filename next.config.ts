@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
   },
   cacheComponents: true,
   experimental: {
+    cachedNavigations: true, // required: cacheComponents=true
     authInterrupts: true,
     optimizePackageImports: ['@chakra-ui/react'],
   },

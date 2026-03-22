@@ -1,6 +1,8 @@
 'use client';
 
-import { useRef, useState, useTransition } from 'react';
+import { useEffect, useRef, useState, useTransition } from 'react';
+import { useSWRConfig } from 'swr';
+import useSWRImmutable from 'swr/immutable';
 
 import {
   Badge,
@@ -28,11 +30,10 @@ import {
 import Visibility from '@/components/Visibility';
 
 import { getDefaults } from '@/lib/zod';
-import { ESTABLISHED_DATE } from '@/utils/constant';
+import { CACHE_KEY, ESTABLISHED_DATE } from '@/utils/constant';
 import { LeagueStatus } from '@/utils/enum';
 
 import { User } from '@/drizzle/schema';
-import useQuery from '@/hooks/use-query';
 import { UpsertLeagueSchema, UpsertLeagueSchemaValues } from '@/schemas/league';
 
 import {
@@ -42,17 +43,22 @@ import {
 } from '@/actions/league';
 
 export const UpsertLeague = createOverlay(({ action, item, ...rest }) => {
+  const { mutate } = useSWRConfig();
   const [isPending, startTransition] = useTransition();
 
   const contentRef = useRef<HTMLDivElement>(null);
   const [selection, setSelection] = useState<Array<User>>([]);
 
-  useQuery(async () => {
-    if (action === 'Update' && item.league_id) {
-      const users = await getPlayersInLeague(item.league_id);
-      setSelection(users);
-    }
-  }, [action, item.league_id]);
+  const { data: playersInLeague } = useSWRImmutable(
+    action === 'Update' && item.league_id
+      ? CACHE_KEY.PLAYERS_IN_LEAGUE(item.league_id)
+      : null,
+    () => getPlayersInLeague(item.league_id),
+  );
+
+  useEffect(() => {
+    if (playersInLeague) setSelection(playersInLeague);
+  }, [playersInLeague]);
 
   const {
     reset,
@@ -81,7 +87,9 @@ export const UpsertLeague = createOverlay(({ action, item, ...rest }) => {
           type: success ? 'success' : 'error',
           title: message,
         });
+
         reset();
+        mutate(CACHE_KEY.LEAGUES);
       }
 
       const results = await Promise.all(
@@ -95,8 +103,10 @@ export const UpsertLeague = createOverlay(({ action, item, ...rest }) => {
           type: 'success',
           title: 'League information saved successfully.',
         });
+
         reset();
         setSelection([]);
+        mutate(CACHE_KEY.PLAYERS_IN_LEAGUE(item.league_id));
       } else if (hasErrors) {
         toaster.update(id, {
           type: 'error',
@@ -195,7 +205,6 @@ export const UpsertLeague = createOverlay(({ action, item, ...rest }) => {
                 </Field>
                 <Visibility isVisible={!isReadonly}>
                   <PlayerSelection
-                    contentRef={contentRef}
                     selection={selection}
                     onSelectionChange={setSelection}
                   />

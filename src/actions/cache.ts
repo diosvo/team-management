@@ -1,15 +1,6 @@
 import { revalidatePath, revalidateTag } from 'next/cache';
 
-/**
- * @description Cache tags used in `db/` with `'use cache'` + `cacheTag()`
- * @link https://nextjs.org/docs/app/api-reference/directives/use-cache
- */
-export const CACHE_TAG = {
-  ASSETS: 'assets',
-  LEAGUES: 'leagues',
-  LOCATIONS: 'locations',
-  RULE: 'team-rule',
-} as const;
+import { CACHE_TAG } from '@/utils/constant';
 
 /**
  * @link https://nextjs.org/docs/app/api-reference/functions/revalidateTag
