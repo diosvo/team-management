@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import useSWRImmutable from 'swr/immutable';
 
 import {
   Button,
@@ -18,7 +19,6 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ClipboardCheck, SaveAll } from 'lucide-react';
 import { useFieldArray, useForm } from 'react-hook-form';
-import useSWRImmutable from 'swr/immutable';
 
 import { Checkbox } from '@/components/ui/checkbox';
 import { Field } from '@/components/ui/field';
@@ -27,7 +27,12 @@ import { Tooltip } from '@/components/ui/tooltip';
 import { PlayerSelection } from '@/components/user/PlayerSelection';
 import Visibility from '@/components/Visibility';
 
-import { ALL, CURRENT_DATE, ESTABLISHED_DATE } from '@/utils/constant';
+import {
+  ALL,
+  CACHE_KEY,
+  CURRENT_DATE,
+  ESTABLISHED_DATE,
+} from '@/utils/constant';
 import { AttendanceStatus } from '@/utils/enum';
 import { useAttendanceFilters } from '@/utils/filters';
 
@@ -42,8 +47,10 @@ import {
 
 export default function BulkAttendanceManager() {
   const [, setSearchParams] = useAttendanceFilters();
-  const { data: activePlayers = [] } =
-    useSWRImmutable<Array<User>>(getActivePlayers);
+  const { data: activePlayers = [] } = useSWRImmutable<Array<User>>(
+    CACHE_KEY.PLAYERS,
+    getActivePlayers,
+  );
   const [selection, setSelection] = useState<Array<User>>([]);
 
   const [open, setOpen] = useState<boolean>(false);

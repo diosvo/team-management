@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useMemo } from 'react';
+import useSWRImmutable from 'swr/immutable';
 
 import {
   Button,
@@ -18,7 +19,6 @@ import {
   Plus,
   Settings2,
 } from 'lucide-react';
-import useSWRImmutable from 'swr/immutable';
 
 import SearchInput from '@/components/SearchInput';
 import Visibility from '@/components/Visibility';

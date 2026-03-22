@@ -37,10 +37,10 @@ export const COOKIE = {
  */
 export const CACHE_KEY = {
   LEAGUES: 'leagues',
-  PLAYERS_IN_LEAGUE: (league_id: number) => `players-in-league-${league_id}`,
   LOCATIONS: 'locations',
   OPPONENTS: 'opponents',
-  PLAYERS: 'active_players',
+  PLAYERS: 'players',
+  PLAYERS_IN_LEAGUE: (league_id: string) => `players-in-league-${league_id}`,
 } as const;
 
 /**

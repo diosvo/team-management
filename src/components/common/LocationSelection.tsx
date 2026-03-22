@@ -1,3 +1,5 @@
+'use client';
+
 import { Span, Stack } from '@chakra-ui/react';
 
 import SearchableSelect, { SearchableSelectProps } from '../SearchableSelect';

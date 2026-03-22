@@ -1,8 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { SWRGlobalConfig } from 'swr';
-import useSWRImmutable from 'swr/immutable';
+import useSWR, { SWRConfiguration } from 'swr';
 
 import {
   Combobox,
@@ -31,7 +30,7 @@ type BaseProps<T> = Required<{
     maxItems: number;
     fieldProps: Partial<FieldProps>;
     rootProps: Partial<Omit<Combobox.RootProps, 'multiple'>>;
-    swrOptions: SWRGlobalConfig;
+    swrOptions: SWRConfiguration;
     renderItem: (item: T) => React.ReactNode;
   }>;
 
@@ -87,10 +86,15 @@ export default function SearchableSelect<
   TFieldValues extends FieldValues = any,
 >(props: SearchableSelectProps<T, TFieldValues>) {
   // https://swr.vercel.app/docs/revalidation#disable-automatic-revalidations
-  const { data, isLoading, isValidating, error } = useSWRImmutable(
+  const { data, isLoading, isValidating, error } = useSWR(
     props.label,
     props.action,
-    props.swrOptions,
+    {
+      revalidateIfStale: false,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      ...props.swrOptions,
+    },
   );
   const allItems = data ?? [];
 

@@ -7,7 +7,7 @@ import HeaderLogo from '@/assets/images/header-logo.webp';
 import AccountMenu from './AccountMenu';
 import MobileSidebar from './MobileSidebar';
 
-export default function Header({ smallDevice }: { smallDevice: boolean }) {
+export default function Header() {
   return (
     <HStack
       alignItems="center"
@@ -31,7 +31,7 @@ export default function Header({ smallDevice }: { smallDevice: boolean }) {
       </Image>
 
       <AccountMenu />
-      {smallDevice && <MobileSidebar />}
+      <MobileSidebar />
     </HStack>
   );
 }

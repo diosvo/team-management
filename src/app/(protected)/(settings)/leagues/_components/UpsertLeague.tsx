@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from 'react';
 import { useSWRConfig } from 'swr';
+import useSWRImmutable from 'swr/immutable';
 
 import {
   Badge,
@@ -40,7 +41,6 @@ import {
   upsertLeague,
   upsertPlayerToLeague,
 } from '@/actions/league';
-import useSWRImmutable from 'swr/immutable';
 
 export const UpsertLeague = createOverlay(({ action, item, ...rest }) => {
   const { mutate } = useSWRConfig();
@@ -49,18 +49,16 @@ export const UpsertLeague = createOverlay(({ action, item, ...rest }) => {
   const contentRef = useRef<HTMLDivElement>(null);
   const [selection, setSelection] = useState<Array<User>>([]);
 
+  const { data: playersInLeague } = useSWRImmutable(
+    action === 'Update' && item.league_id
+      ? CACHE_KEY.PLAYERS_IN_LEAGUE(item.league_id)
+      : null,
+    () => getPlayersInLeague(item.league_id),
+  );
+
   useEffect(() => {
-    if (action === 'Update' && item.league_id) {
-      const { data } = useSWRImmutable(
-        CACHE_KEY.PLAYERS_IN_LEAGUE(item.league_id),
-        getPlayersInLeague,
-        {
-          isVisible: () => action === 'Update' && !!item.league_id,
-        },
-      );
-      setSelection(data || []);
-    }
-  }, [action, item.league_id]);
+    if (playersInLeague) setSelection(playersInLeague);
+  }, [playersInLeague]);
 
   const {
     reset,
