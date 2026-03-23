@@ -18,6 +18,21 @@ export default defineConfig({
         '**/*.config.*',
         '**/snapshot-tests/**',
         '**/coverage/**',
+        // Pure data/type definitions
+        '**/utils/constant.ts',
+        '**/utils/enum.ts',
+        '**/utils/type.ts',
+        // Drizzle ORM setup & schema definitions
+        '**/drizzle/**',
+        // Zod schema declarations
+        '**/schemas/**',
+        // Auth library setup
+        '**/lib/auth.ts',
+        '**/lib/auth-client.ts',
+        // App wiring & config
+        '**/proxy.ts',
+        '**/routes.ts',
+        '**/providers/**',
       ],
     },
   },
