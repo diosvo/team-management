@@ -74,4 +74,6 @@ vi.mock('next/link', () => ({
 
 vi.mock('next/cache', () => ({
   cacheTag: vi.fn(),
+  revalidatePath: vi.fn(),
+  revalidateTag: vi.fn(),
 }));
