@@ -1,16 +1,9 @@
-import { cacheTag } from 'next/cache';
-
 import { asc, eq } from 'drizzle-orm';
 
 import db from '@/drizzle';
 import { InsertLocation, LocationTable } from '@/drizzle/schema';
 
-import { CACHE_TAG } from '@/utils/constant';
-
 export async function getLocations() {
-  'use cache';
-  cacheTag(CACHE_TAG.LOCATIONS);
-
   try {
     return await db.query.LocationTable.findMany({
       orderBy: asc(LocationTable.name),
