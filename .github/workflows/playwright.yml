@@ -1,0 +1,39 @@
+name: 🧪 End-To-End Testing
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+
+jobs:
+  # ✨ Temporarily disabled to speed up development; will be enabled once a real database or alternative setup is established to prevent conflicts in production.
+  e2e-tests:
+    timeout-minutes: 60
+    if: ${{ false }} # This condition ensures the job is always skipped
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🚚 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+          cache: true
+
+      - name: 📦 Install dependencies
+        run: pnpm install
+
+      - name: 🎭 Install Playwright Browsers
+        run: pnpm exec playwright install --with-deps
+
+      - name: 🧪 Run Playwright tests
+        run: pnpm exec playwright test
+
+      - name: 📊 Upload Playwright Report
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30

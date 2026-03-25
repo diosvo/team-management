@@ -29,7 +29,7 @@ export default function LoginPage() {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isValid },
   } = useForm({
     resolver: zodResolver(LoginSchema),
   });
@@ -45,7 +45,7 @@ export default function LoginPage() {
         onRequest: () => setIsLoading(true),
         onError: ({ error }) => setError(error.message || error.statusText),
         onResponse: () => setIsLoading(false),
-      }
+      },
     );
   }
 
@@ -95,7 +95,7 @@ export default function LoginPage() {
         borderRadius="full"
         loadingText="Directing..."
         loading={isLoading}
-        disabled={isLoading}
+        disabled={!isValid || isLoading}
       >
         Sign In
       </Button>
