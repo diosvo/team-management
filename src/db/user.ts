@@ -52,7 +52,7 @@ export async function getTeamHeadCoach(team_id: string) {
         and(eq(UserTable.team_id, team_id), eq(UserTable.role, UserRole.COACH)),
       );
 
-    return coach ? coach[0] : null;
+    return coach.length > 0 ? coach[0] : null;
   } catch {
     return null;
   }

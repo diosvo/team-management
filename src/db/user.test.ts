@@ -94,6 +94,14 @@ describe('getTeamHeadCoach', () => {
     );
   });
 
+  test('returns null when query succeeds but no coach exists', async () => {
+    mockSelectSuccess([]);
+
+    const result = await getTeamHeadCoach(MOCK_TEAM.team_id);
+
+    expect(result).toBeNull();
+  });
+
   test('returns null when database query fails', async () => {
     mockSelectFailure('Database error');
 
