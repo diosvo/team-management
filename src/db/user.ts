@@ -1,9 +1,8 @@
 import { and, eq, ne } from 'drizzle-orm';
 
 import db from '@/drizzle';
-import { User, UserTable } from '@/drizzle/schema/user';
+import { CoachTable, User, UserTable } from '@/drizzle/schema';
 
-import { CoachTable } from '@/drizzle/schema';
 import { UserRole, UserState } from '@/utils/enum';
 
 export async function getUsers(team_id: string): Promise<Array<User>> {
