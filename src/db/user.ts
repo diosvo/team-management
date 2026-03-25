@@ -1,9 +1,8 @@
 import { and, eq, ne } from 'drizzle-orm';
 
 import db from '@/drizzle';
-import { User, UserTable } from '@/drizzle/schema/user';
+import { CoachTable, User, UserTable } from '@/drizzle/schema';
 
-import { CoachTable } from '@/drizzle/schema';
 import { UserRole, UserState } from '@/utils/enum';
 
 export async function getUsers(team_id: string): Promise<Array<User>> {
@@ -53,7 +52,7 @@ export async function getTeamHeadCoach(team_id: string) {
         and(eq(UserTable.team_id, team_id), eq(UserTable.role, UserRole.COACH)),
       );
 
-    return coach ? coach[0] : null;
+    return coach.length > 0 ? coach[0] : null;
   } catch {
     return null;
   }

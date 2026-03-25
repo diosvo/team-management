@@ -5,6 +5,7 @@ import {
   AttendanceStatus,
   LeagueStatus,
   MatchStatus,
+  SessionStatus,
   UserRole,
   UserState,
 } from './enum';
@@ -17,6 +18,7 @@ import {
   colorMatchResult,
   colorPlayerRank,
   colorRole,
+  colorSessionStatus,
   colorState,
   hasPermissions,
 } from './helper';
@@ -127,6 +129,20 @@ describe('colorAttendanceStatus', () => {
 
   test.each(cases)('returns $expected for $status', ({ status, expected }) => {
     expect(colorAttendanceStatus(status as string)).toBe(expected);
+  });
+});
+
+describe('colorSessionStatus', () => {
+  const cases = [
+    { status: SessionStatus.SCHEDULED, expected: 'yellow' },
+    { status: SessionStatus.ACTIVE, expected: 'green' },
+    { status: SessionStatus.COMPLETED, expected: 'gray' },
+    { status: SessionStatus.CANCELLED, expected: 'red' },
+    ...invalidColor('status'),
+  ];
+
+  test.each(cases)('returns $expected for $status', ({ status, expected }) => {
+    expect(colorSessionStatus(status as string)).toBe(expected);
   });
 });
 

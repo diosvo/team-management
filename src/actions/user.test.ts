@@ -34,6 +34,7 @@ import {
   getActivePlayers,
   getRoster,
   getUserProfile,
+  getUsers,
   removeUser,
   updatePersonalInfo,
   updateTeamInfo,
@@ -98,6 +99,18 @@ describe('User Actions', () => {
 
       expect(fetchActivePlayers).toHaveBeenCalledWith(MOCK_TEAM.team_id);
       expect(result).toEqual([MOCK_USER_WITH_PLAYER]);
+    });
+  });
+
+  describe('getUsers', () => {
+    test('calls getUsers with team_id', async () => {
+      const mockUsers = [MOCK_USER_WITH_PLAYER, MOCK_USER_WITH_COACH];
+      vi.mocked(getDbUsers).mockResolvedValue(mockUsers);
+
+      const result = await getUsers();
+
+      expect(getDbUsers).toHaveBeenCalledWith(MOCK_TEAM.team_id);
+      expect(result).toEqual(mockUsers);
     });
   });
 

@@ -1,19 +1,22 @@
 import { and, eq, ne } from 'drizzle-orm';
 
 import db from '@/drizzle';
-import { User, UserTable } from '@/drizzle/schema/user';
+import { CoachTable, User, UserTable } from '@/drizzle/schema';
 
 import { UserRole, UserState } from '@/utils/enum';
 
 import {
   mockDeleteFailure,
   mockDeleteSuccess,
+  mockSelectFailure,
+  mockSelectSuccess,
   mockUpdateFailure,
   mockUpdateSuccess,
 } from '@/test/db-operations';
 import { MOCK_TEAM } from '@/test/mocks/team';
 import {
   MOCK_PLAYER,
+  MOCK_USER,
   MOCK_USER_WITH_COACH,
   MOCK_USER_WITH_PLAYER,
 } from '@/test/mocks/user';
@@ -21,6 +24,7 @@ import {
 import {
   deleteUser,
   fetchActivePlayers,
+  getTeamHeadCoach,
   getUserById,
   getUsers,
   updateUser,
@@ -34,6 +38,7 @@ vi.mock('@/drizzle', () => ({
         findFirst: vi.fn(),
       },
     },
+    select: vi.fn(),
     update: vi.fn(() => ({
       set: vi.fn(() => ({
         where: vi.fn(),
@@ -45,14 +50,66 @@ vi.mock('@/drizzle', () => ({
   },
 }));
 
-vi.mock('@/drizzle/schema/user', () => ({
+vi.mock('@/drizzle/schema', () => ({
   UserTable: {
     team_id: 'team_id',
     id: 'id',
+    name: 'name',
     role: 'role',
     state: 'state',
   },
+  CoachTable: {
+    id: 'coach_id',
+  },
 }));
+
+describe('getTeamHeadCoach', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  test('returns first coach when database query succeeds', async () => {
+    const mockCoach = [{ id: MOCK_USER.id, name: MOCK_USER.name }];
+    const { mockFrom, mockLeftJoin, mockWhereWithGroupBy } =
+      mockSelectSuccess(mockCoach);
+
+    const result = await getTeamHeadCoach(MOCK_TEAM.team_id);
+
+    expect(result).toEqual(mockCoach[0]);
+    // Verify query construction
+    expect(db.select).toHaveBeenCalledWith({
+      id: UserTable.id,
+      name: UserTable.name,
+    });
+    expect(mockFrom).toHaveBeenCalledWith(UserTable);
+    expect(mockLeftJoin).toHaveBeenCalledWith(
+      CoachTable,
+      eq(CoachTable.id, UserTable.id),
+    );
+    expect(mockWhereWithGroupBy).toHaveBeenCalledWith(
+      and(
+        eq(UserTable.team_id, MOCK_TEAM.team_id),
+        eq(UserTable.role, UserRole.COACH),
+      ),
+    );
+  });
+
+  test('returns null when query succeeds but no coach exists', async () => {
+    mockSelectSuccess([]);
+
+    const result = await getTeamHeadCoach(MOCK_TEAM.team_id);
+
+    expect(result).toBeNull();
+  });
+
+  test('returns null when database query fails', async () => {
+    mockSelectFailure('Database error');
+
+    const result = await getTeamHeadCoach(MOCK_TEAM.team_id);
+
+    expect(result).toBeNull();
+  });
+});
 
 describe('getUsers', () => {
   beforeEach(() => {
