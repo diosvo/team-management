@@ -5,14 +5,20 @@ import { revalidatePath } from 'next/cache';
  */
 export const revalidate = {
   // Cached entities (use cache tag + revalidatePath)
+  leagues: () => {
+    revalidatePath('/leagues');
+    // revalidateTag(CACHE_TAG.LEAGUES, 'max');  // temp turn-off
+  },
+  locations: () => {
+    revalidatePath('/locations');
+    // revalidateTag(CACHE_TAG.LOCATIONS, 'max');
+  },
   rule: () => {
     revalidatePath('/team-rule');
-    // revalidateTag(CACHE_TAG.RULE, 'max'); // temp turn-off
+    // revalidateTag(CACHE_TAG.RULE, 'max');
   },
   // Non-cached entities (revalidatePath only)
   assets: () => revalidatePath('/assets'),
-  leagues: () => revalidatePath('/leagues'),
-  locations: () => revalidatePath('/locations'),
   attendances: () => revalidatePath('/attendance'),
   matches: () => revalidatePath('/matches'),
   roster: () => revalidatePath('/roster'),
