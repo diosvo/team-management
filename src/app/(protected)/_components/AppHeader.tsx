@@ -1,11 +1,17 @@
+'use client';
+
+import dynamic from 'next/dynamic';
 import NextImage from 'next/image';
 
-import { HStack, Image } from '@chakra-ui/react';
+import { HStack, Image, SkeletonCircle } from '@chakra-ui/react';
 
 import HeaderLogo from '@/assets/images/header-logo.webp';
 
-import AccountMenu from './AccountMenu';
-import MobileSidebar from './MobileSidebar';
+const AccountMenu = dynamic(() => import('./AccountMenu'), {
+  ssr: false,
+  loading: () => <SkeletonCircle size={8} />,
+});
+const MobileSidebar = dynamic(() => import('./MobileSidebar'), { ssr: false });
 
 export default function Header() {
   return (

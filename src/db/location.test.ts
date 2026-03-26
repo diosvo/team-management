@@ -1,5 +1,4 @@
 import { asc, eq } from 'drizzle-orm';
-import { cacheTag } from 'next/cache';
 
 import db from '@/drizzle';
 import { InsertLocation, LocationTable } from '@/drizzle/schema';
@@ -49,12 +48,6 @@ vi.mock('@/drizzle/schema', () => ({
   },
 }));
 
-vi.mock('@/actions/cache', () => ({
-  CACHE_TAG: {
-    LOCATIONS: 'locations',
-  },
-}));
-
 describe('getLocations', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -68,7 +61,6 @@ describe('getLocations', () => {
     const result = await getLocations();
 
     expect(result).toEqual([MOCK_LOCATION]);
-    expect(cacheTag).toHaveBeenCalledWith('locations');
     // Verify query construction
     expect(db.query.LocationTable.findMany).toHaveBeenCalledWith({
       orderBy: asc(LocationTable.name),

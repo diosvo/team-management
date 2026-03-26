@@ -1,5 +1,3 @@
-import { cacheTag } from 'next/cache';
-
 import { and, desc, eq } from 'drizzle-orm';
 
 import db from '@/drizzle';
@@ -11,12 +9,7 @@ import {
 } from '@/drizzle/schema/league';
 import { UpsertLeagueSchemaValues } from '@/schemas/league';
 
-import { CACHE_TAG } from '@/utils/constant';
-
 export async function getLeagues() {
-  'use cache';
-  cacheTag(CACHE_TAG.LEAGUES);
-
   // After all leagues have been updated, pass an argument to allow filtering (support Add match result with Upcoming/Ongoing status only)
 
   try {

@@ -1,5 +1,4 @@
 import { and, desc, eq } from 'drizzle-orm';
-import { cacheTag } from 'next/cache';
 
 import db from '@/drizzle';
 import {
@@ -66,12 +65,6 @@ vi.mock('@/drizzle/schema/league', () => ({
   },
 }));
 
-vi.mock('@/actions/cache', () => ({
-  CACHE_TAG: {
-    LEAGUES: 'leagues',
-  },
-}));
-
 describe('getLeagues', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -97,7 +90,6 @@ describe('getLeagues', () => {
         player_count: 2,
       },
     ]);
-    expect(cacheTag).toHaveBeenCalledWith('leagues');
     // Validate query construction
     expect(db.query.LeagueTable.findMany).toHaveBeenCalledWith({
       orderBy: desc(LeagueTable.end_date),

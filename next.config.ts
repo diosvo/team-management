@@ -4,9 +4,7 @@ const nextConfig: NextConfig = {
   devIndicators: {
     position: 'bottom-right',
   },
-  cacheComponents: true,
   experimental: {
-    cachedNavigations: true, // required: cacheComponents=true
     authInterrupts: true,
     optimizePackageImports: ['@chakra-ui/react'],
   },

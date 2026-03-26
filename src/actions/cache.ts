@@ -1,29 +1,24 @@
-import { revalidatePath, revalidateTag } from 'next/cache';
-
-import { CACHE_TAG } from '@/utils/constant';
+import { revalidatePath } from 'next/cache';
 
 /**
- * @link https://nextjs.org/docs/app/api-reference/functions/revalidateTag
+ * @link https://nextjs.org/docs/app/api-reference/functions/revalidatePath
  */
 export const revalidate = {
-  // Cached entities
-  assets: () => {
-    revalidatePath('/assets');
-    revalidateTag(CACHE_TAG.ASSETS, 'max');
-  },
+  // Cached entities (use cache tag + revalidatePath)
   leagues: () => {
     revalidatePath('/leagues');
-    revalidateTag(CACHE_TAG.LEAGUES, 'max');
+    // revalidateTag(CACHE_TAG.LEAGUES, 'max');  // temp turn-off
   },
   locations: () => {
     revalidatePath('/locations');
-    revalidateTag(CACHE_TAG.LOCATIONS, 'max');
+    // revalidateTag(CACHE_TAG.LOCATIONS, 'max');
   },
   rule: () => {
     revalidatePath('/team-rule');
-    revalidateTag(CACHE_TAG.RULE, 'max');
+    // revalidateTag(CACHE_TAG.RULE, 'max');
   },
   // Non-cached entities (revalidatePath only)
+  assets: () => revalidatePath('/assets'),
   attendances: () => revalidatePath('/attendance'),
   matches: () => revalidatePath('/matches'),
   roster: () => revalidatePath('/roster'),

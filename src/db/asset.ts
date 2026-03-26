@@ -1,17 +1,11 @@
-import { cacheTag } from 'next/cache';
-
 import { desc, eq } from 'drizzle-orm';
 
 import db from '@/drizzle';
 import { AssetTable, InsertAsset } from '@/drizzle/schema/asset';
 
-import { CACHE_TAG } from '@/utils/constant';
 import { AssetCondition } from '@/utils/enum';
 
 export async function getAssets(team_id: string) {
-  'use cache';
-  cacheTag(CACHE_TAG.ASSETS);
-
   try {
     const assets = await db.query.AssetTable.findMany({
       where: eq(AssetTable.team_id, team_id),

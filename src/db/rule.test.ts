@@ -1,5 +1,3 @@
-import { cacheTag } from 'next/cache';
-
 import { eq } from 'drizzle-orm';
 
 import db from '@/drizzle';
@@ -41,12 +39,6 @@ vi.mock('@/drizzle/schema/rule', () => ({
   },
 }));
 
-vi.mock('@/actions/cache', () => ({
-  CACHE_TAG: {
-    RULE: 'team-rule',
-  },
-}));
-
 describe('getRule', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -58,7 +50,6 @@ describe('getRule', () => {
     const result = await getRule(MOCK_TEAM.team_id);
 
     expect(result).toEqual(MOCK_RULE);
-    expect(cacheTag).toHaveBeenCalledWith('team-rule');
     // Verify query construction
     expect(db.query.RuleTable.findFirst).toHaveBeenCalledWith({
       where: eq(RuleTable.team_id, MOCK_TEAM.team_id),
