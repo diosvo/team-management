@@ -3,9 +3,9 @@ import { and, desc, eq, gte, lte } from 'drizzle-orm';
 import db from '@/drizzle';
 import { InsertTestResult, TestResultTable } from '@/drizzle/schema';
 
-import { PlayerTestResult } from '@/types/periodic-testing';
+import { PlayerTestResult, TestResult } from '@/types/periodic-testing';
 
-export async function getDates() {
+export async function getDates(): Promise<Array<string>> {
   try {
     const dates = await db
       .selectDistinct({ date: TestResultTable.date })
@@ -21,7 +21,7 @@ export async function getDates() {
   }
 }
 
-export async function getTestResultByDate(date: string) {
+export async function getTestResultByDate(date: string): Promise<TestResult> {
   const types = new Map<string, string>();
 
   try {
