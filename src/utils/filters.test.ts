@@ -4,14 +4,25 @@ import { Mock } from 'vitest';
 
 import { MOCK_ATTENDANCE_DATE } from '@/test/mocks/attendance';
 
-import { ALL, INTERVAL_VALUES } from './constant';
-import { AttendanceStatus, Interval } from './enum';
+import { ALL, INTERVAL_VALUES, SESSION_STATUS_VALUES } from './constant';
+import { AttendanceStatus, Interval, SessionStatus } from './enum';
 
 import {
   loadAnalyticsFilters,
   loadAttendanceFilters,
+  loadMatchFilters,
+  loadPeriodicTestingFilters,
+  loadTrainingFilters,
   paginateData,
+  useAssetFilters,
+  useAttendanceFilters,
   useCommonParams,
+  useDashboardFilters,
+  useLeagueFilters,
+  useMatchFilters,
+  usePeriodicTestingFilters,
+  useRosterFilters,
+  useTrainingFilters,
 } from './filters';
 
 /* ================== Utility Functions ================== */
@@ -130,6 +141,174 @@ describe('Client-Side Filter Hooks', () => {
       expect(result.current).toBe(mockReturn);
     });
   });
+
+  describe('useRosterFilters', () => {
+    test('calls useQueryStates with roster params', () => {
+      const mockReturn = [{ page: 1, q: '', role: [], state: [] }, vi.fn()];
+      (nuqs.useQueryStates as unknown as Mock).mockReturnValue(mockReturn);
+
+      const { result } = renderHook(() => useRosterFilters());
+
+      expect(nuqs.useQueryStates).toHaveBeenCalledWith(
+        expect.objectContaining({
+          page: expect.anything(),
+          q: expect.anything(),
+          role: expect.anything(),
+          state: expect.anything(),
+        }),
+      );
+      expect(result.current).toBe(mockReturn);
+    });
+  });
+
+  describe('useAssetFilters', () => {
+    test('calls useQueryStates with asset params', () => {
+      const mockReturn = [
+        { page: 1, q: '', category: ALL.value, condition: ALL.value },
+        vi.fn(),
+      ];
+      (nuqs.useQueryStates as unknown as Mock).mockReturnValue(mockReturn);
+
+      const { result } = renderHook(() => useAssetFilters());
+
+      expect(nuqs.useQueryStates).toHaveBeenCalledWith(
+        expect.objectContaining({
+          page: expect.anything(),
+          q: expect.anything(),
+          category: expect.anything(),
+          condition: expect.anything(),
+        }),
+      );
+      expect(result.current).toBe(mockReturn);
+    });
+  });
+
+  describe('useLeagueFilters', () => {
+    test('calls useQueryStates with league params', () => {
+      const mockReturn = [{ page: 1, q: '', status: ALL.value }, vi.fn()];
+      (nuqs.useQueryStates as unknown as Mock).mockReturnValue(mockReturn);
+
+      const { result } = renderHook(() => useLeagueFilters());
+
+      expect(nuqs.useQueryStates).toHaveBeenCalledWith(
+        expect.objectContaining({
+          page: expect.anything(),
+          q: expect.anything(),
+          status: expect.anything(),
+        }),
+      );
+      expect(result.current).toBe(mockReturn);
+    });
+  });
+
+  describe('useMatchFilters', () => {
+    test('calls useQueryStates with match params', () => {
+      const mockReturn = [
+        { page: 1, q: '', is5x5: true, interval: Interval.THIS_YEAR },
+        vi.fn(),
+      ];
+      (nuqs.useQueryStates as unknown as Mock).mockReturnValue(mockReturn);
+
+      const { result } = renderHook(() => useMatchFilters());
+
+      expect(nuqs.useQueryStates).toHaveBeenCalledWith(
+        expect.objectContaining({
+          page: expect.anything(),
+          q: expect.anything(),
+          is5x5: expect.anything(),
+          interval: expect.anything(),
+        }),
+      );
+      expect(result.current).toBe(mockReturn);
+    });
+  });
+
+  describe('useAttendanceFilters', () => {
+    test('calls useQueryStates with attendance params and shallow: false', () => {
+      const mockReturn = [
+        { page: 1, q: '', date: '', status: ALL.value },
+        vi.fn(),
+      ];
+      (nuqs.useQueryStates as unknown as Mock).mockReturnValue(mockReturn);
+
+      const { result } = renderHook(() => useAttendanceFilters());
+
+      expect(nuqs.useQueryStates).toHaveBeenCalledWith(
+        expect.objectContaining({
+          page: expect.anything(),
+          q: expect.anything(),
+          date: expect.anything(),
+          status: expect.anything(),
+        }),
+        { shallow: false },
+      );
+      expect(result.current).toBe(mockReturn);
+    });
+  });
+
+  describe('useTrainingFilters', () => {
+    test('calls useQueryStates with training params and shallow: false', () => {
+      const mockReturn = [
+        { page: 1, q: '', interval: Interval.THIS_MONTH, status: ALL.value },
+        vi.fn(),
+      ];
+      (nuqs.useQueryStates as unknown as Mock).mockReturnValue(mockReturn);
+
+      const { result } = renderHook(() => useTrainingFilters());
+
+      expect(nuqs.useQueryStates).toHaveBeenCalledWith(
+        expect.objectContaining({
+          page: expect.anything(),
+          q: expect.anything(),
+          interval: expect.anything(),
+          status: expect.anything(),
+        }),
+        { shallow: false },
+      );
+      expect(result.current).toBe(mockReturn);
+    });
+  });
+
+  describe('useDashboardFilters', () => {
+    test('calls useQueryStates with analytics params and shallow: false', () => {
+      const mockReturn = [
+        { page: 1, q: '', interval: Interval.THIS_MONTH },
+        vi.fn(),
+      ];
+      (nuqs.useQueryStates as unknown as Mock).mockReturnValue(mockReturn);
+
+      const { result } = renderHook(() => useDashboardFilters());
+
+      expect(nuqs.useQueryStates).toHaveBeenCalledWith(
+        expect.objectContaining({
+          page: expect.anything(),
+          q: expect.anything(),
+          interval: expect.anything(),
+        }),
+        { shallow: false },
+      );
+      expect(result.current).toBe(mockReturn);
+    });
+  });
+
+  describe('usePeriodicTestingFilters', () => {
+    test('calls useQueryStates with periodic testing params and shallow: false', () => {
+      const mockReturn = [{ page: 1, q: '', date: '' }, vi.fn()];
+      (nuqs.useQueryStates as unknown as Mock).mockReturnValue(mockReturn);
+
+      const { result } = renderHook(() => usePeriodicTestingFilters());
+
+      expect(nuqs.useQueryStates).toHaveBeenCalledWith(
+        expect.objectContaining({
+          page: expect.anything(),
+          q: expect.anything(),
+          date: expect.anything(),
+        }),
+        { shallow: false },
+      );
+      expect(result.current).toBe(mockReturn);
+    });
+  });
 });
 
 /* ================== Server-Side Loaders ================== */
@@ -143,10 +322,10 @@ describe('Server-Side Filter Loaders', () => {
         expect.objectContaining({
           page: 1,
           q: '',
+          date: expect.any(String),
           status: ALL.value,
         }),
       );
-      expect(result.date).toBeDefined(); // CURRENT_DATE is injected
     });
 
     test('loads attendance filters with provided values', async () => {
@@ -158,10 +337,14 @@ describe('Server-Side Filter Loaders', () => {
       });
       const result = await loadAttendanceFilters(params);
 
-      expect(result.page).toBe(4);
-      expect(result.q).toBe('dios');
-      expect(result.date).toBe(MOCK_ATTENDANCE_DATE);
-      expect(result.status).toBe(AttendanceStatus.ABSENT);
+      expect(result).toEqual(
+        expect.objectContaining({
+          page: 4,
+          q: 'dios',
+          date: MOCK_ATTENDANCE_DATE,
+          status: AttendanceStatus.ABSENT,
+        }),
+      );
     });
 
     test('handles multiple status values correctly', async () => {
@@ -169,7 +352,9 @@ describe('Server-Side Filter Loaders', () => {
         new URLSearchParams({ status: AttendanceStatus.ON_TIME }),
       );
 
-      expect(result.status).toBe(AttendanceStatus.ON_TIME);
+      expect(result).toEqual(
+        expect.objectContaining({ status: AttendanceStatus.ON_TIME }),
+      );
     });
 
     test('uses default status when invalid value provided', async () => {
@@ -177,7 +362,7 @@ describe('Server-Side Filter Loaders', () => {
         new URLSearchParams({ status: 'invalid_status' }),
       );
 
-      expect(result.status).toBe(ALL.value);
+      expect(result).toEqual(expect.objectContaining({ status: ALL.value }));
     });
   });
 
@@ -202,9 +387,13 @@ describe('Server-Side Filter Loaders', () => {
       });
       const result = await loadAnalyticsFilters(params);
 
-      expect(result.page).toBe(3);
-      expect(result.q).toBe('dios');
-      expect(result.interval).toBe(Interval.THIS_YEAR);
+      expect(result).toEqual(
+        expect.objectContaining({
+          page: 3,
+          q: 'dios',
+          interval: Interval.THIS_YEAR,
+        }),
+      );
     });
 
     test('handles all interval values correctly', async () => {
@@ -212,7 +401,7 @@ describe('Server-Side Filter Loaders', () => {
         const result = await loadAnalyticsFilters(
           new URLSearchParams({ interval }),
         );
-        expect(result.interval).toBe(interval);
+        expect(result).toEqual(expect.objectContaining({ interval }));
       }
     });
 
@@ -221,7 +410,145 @@ describe('Server-Side Filter Loaders', () => {
         new URLSearchParams({ interval: 'invalid_interval' }),
       );
 
-      expect(result.interval).toBe(Interval.THIS_MONTH);
+      expect(result).toEqual(
+        expect.objectContaining({ interval: Interval.THIS_MONTH }),
+      );
+    });
+  });
+
+  describe('loadPeriodicTestingFilters', () => {
+    test('loads periodic testing filters with default values', async () => {
+      const result = await loadPeriodicTestingFilters(new URLSearchParams());
+
+      expect(result).toEqual(
+        expect.objectContaining({
+          page: 1,
+          q: '',
+          date: '',
+        }),
+      );
+    });
+
+    test('loads periodic testing filters with provided values', async () => {
+      const params = new URLSearchParams({
+        page: '2',
+        q: 'sprint',
+        date: '2026-03-01',
+      });
+      const result = await loadPeriodicTestingFilters(params);
+
+      expect(result).toEqual(
+        expect.objectContaining({
+          page: 2,
+          q: 'sprint',
+          date: '2026-03-01',
+        }),
+      );
+    });
+  });
+
+  describe('loadMatchFilters', () => {
+    test('loads match filters with default values', async () => {
+      const result = await loadMatchFilters(new URLSearchParams());
+
+      expect(result).toEqual(
+        expect.objectContaining({
+          page: 1,
+          q: '',
+          is5x5: true,
+          interval: Interval.THIS_YEAR,
+        }),
+      );
+    });
+
+    test('loads match filters with provided values', async () => {
+      const params = new URLSearchParams({
+        page: '2',
+        q: 'finals',
+        is5x5: 'false',
+        interval: Interval.LAST_YEAR,
+      });
+      const result = await loadMatchFilters(params);
+
+      expect(result).toEqual(
+        expect.objectContaining({
+          page: 2,
+          q: 'finals',
+          is5x5: false,
+          interval: Interval.LAST_YEAR,
+        }),
+      );
+    });
+
+    test('uses default interval when invalid value provided', async () => {
+      const result = await loadMatchFilters(
+        new URLSearchParams({ interval: 'invalid_interval' }),
+      );
+
+      expect(result).toEqual(
+        expect.objectContaining({ interval: Interval.THIS_YEAR }),
+      );
+    });
+  });
+
+  describe('loadTrainingFilters', () => {
+    test('loads training filters with default values', async () => {
+      const result = await loadTrainingFilters(new URLSearchParams());
+
+      expect(result).toEqual(
+        expect.objectContaining({
+          page: 1,
+          q: '',
+          interval: Interval.THIS_MONTH,
+          status: ALL.value,
+        }),
+      );
+    });
+
+    test('loads training filters with provided values', async () => {
+      const params = new URLSearchParams({
+        page: '5',
+        q: 'cardio',
+        interval: Interval.LAST_MONTH,
+        status: SessionStatus.COMPLETED,
+      });
+      const result = await loadTrainingFilters(params);
+
+      expect(result).toEqual(
+        expect.objectContaining({
+          page: 5,
+          q: 'cardio',
+          interval: Interval.LAST_MONTH,
+          status: SessionStatus.COMPLETED,
+        }),
+      );
+    });
+
+    test('handles all session status values correctly', async () => {
+      for (const status of SESSION_STATUS_VALUES) {
+        const result = await loadTrainingFilters(
+          new URLSearchParams({ status }),
+        );
+        expect(result).toEqual(expect.objectContaining({ status }));
+      }
+    });
+
+    test('uses default status when invalid value provided', async () => {
+      const result = await loadTrainingFilters(
+        new URLSearchParams({ status: 'invalid_status' }),
+      );
+
+      expect(result).toEqual(expect.objectContaining({ status: ALL.value }));
+    });
+
+    test('uses default interval when invalid value provided', async () => {
+      const result = await loadTrainingFilters(
+        new URLSearchParams({ interval: 'invalid_interval' }),
+      );
+
+      expect(result).toEqual(
+        expect.objectContaining({ interval: Interval.THIS_MONTH }),
+      );
     });
   });
 });
