@@ -162,6 +162,29 @@ export function mockInsertFailure(errorMessage: string) {
   return mockValues;
 }
 
+export function mockInsertReturningSuccess(returnValue: unknown) {
+  const mockReturning = vi.fn().mockResolvedValue(returnValue);
+  const mockValues = vi.fn().mockReturnValue({ returning: mockReturning });
+
+  vi.mocked(db.insert).mockReturnValue({
+    values: mockValues,
+  } as unknown as ReturnType<typeof db.insert>);
+
+  return { mockValues, mockReturning };
+}
+
+export function mockInsertReturningFailure(errorMessage: string) {
+  const error = new Error(errorMessage);
+  const mockReturning = vi.fn().mockRejectedValue(error);
+  const mockValues = vi.fn().mockReturnValue({ returning: mockReturning });
+
+  vi.mocked(db.insert).mockReturnValue({
+    values: mockValues,
+  } as unknown as ReturnType<typeof db.insert>);
+
+  return { mockValues, mockReturning };
+}
+
 export function mockUpdateSuccess(returnValue: unknown) {
   const mockWhere = vi.fn().mockResolvedValue(returnValue);
   const mockSet = vi.fn().mockReturnValue({ where: mockWhere });
@@ -171,6 +194,18 @@ export function mockUpdateSuccess(returnValue: unknown) {
   } as unknown as ReturnType<typeof db.update>);
 
   return { mockWhere, mockSet };
+}
+
+export function mockUpdateReturningSuccess(returnValue: unknown) {
+  const mockReturning = vi.fn().mockResolvedValue(returnValue);
+  const mockWhere = vi.fn().mockReturnValue({ returning: mockReturning });
+  const mockSet = vi.fn().mockReturnValue({ where: mockWhere });
+
+  vi.mocked(db.update).mockReturnValue({
+    set: mockSet,
+  } as unknown as ReturnType<typeof db.update>);
+
+  return { mockSet, mockWhere, mockReturning };
 }
 
 export function mockUpdateFailure(errorMessage: string) {
@@ -185,6 +220,19 @@ export function mockUpdateFailure(errorMessage: string) {
   return { mockWhere, mockSet };
 }
 
+export function mockUpdateReturningFailure(errorMessage: string) {
+  const error = new Error(errorMessage);
+  const mockReturning = vi.fn().mockRejectedValue(error);
+  const mockWhere = vi.fn().mockReturnValue({ returning: mockReturning });
+  const mockSet = vi.fn().mockReturnValue({ where: mockWhere });
+
+  vi.mocked(db.update).mockReturnValue({
+    set: mockSet,
+  } as unknown as ReturnType<typeof db.update>);
+
+  return { mockSet, mockWhere, mockReturning };
+}
+
 export function mockDeleteSuccess(returnValue: unknown) {
   const mockWhere = vi.fn().mockResolvedValue(returnValue);
   vi.mocked(db.delete).mockReturnValue({
@@ -194,12 +242,36 @@ export function mockDeleteSuccess(returnValue: unknown) {
   return mockWhere;
 }
 
+export function mockDeleteReturningSuccess(returnValue: unknown) {
+  const mockReturning = vi.fn().mockResolvedValue(returnValue);
+  const mockWhere = vi.fn().mockReturnValue({ returning: mockReturning });
+
+  vi.mocked(db.delete).mockReturnValue({
+    where: mockWhere,
+  } as unknown as ReturnType<typeof db.delete>);
+
+  return { mockWhere, mockReturning };
+}
+
 export function mockDeleteFailure(errorMessage: string) {
   const error = new Error(errorMessage);
   const mockWhere = vi.fn().mockRejectedValue(error);
+
   vi.mocked(db.delete).mockReturnValue({
     where: mockWhere,
   } as unknown as ReturnType<typeof db.delete>);
 
   return mockWhere;
+}
+
+export function mockDeleteReturningFailure(errorMessage: string) {
+  const error = new Error(errorMessage);
+  const mockReturning = vi.fn().mockRejectedValue(error);
+  const mockWhere = vi.fn().mockReturnValue({ returning: mockReturning });
+
+  vi.mocked(db.delete).mockReturnValue({
+    where: mockWhere,
+  } as unknown as ReturnType<typeof db.delete>);
+
+  return { mockWhere, mockReturning };
 }

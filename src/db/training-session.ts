@@ -41,9 +41,7 @@ export async function getSessions(
           columns: { name: true },
         },
         coach: {
-          columns: {
-            id: true,
-          },
+          columns: { id: true },
         },
         attendances: {
           columns: { attendance_id: true, status: true },

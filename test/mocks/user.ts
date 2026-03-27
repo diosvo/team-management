@@ -53,6 +53,11 @@ export const MOCK_COACH: Coach = {
   updated_at: new Date('2026-01-01'),
 };
 
+export const MOCK_COACH_WITH_NAME: Coach & { name: string } = {
+  ...MOCK_COACH,
+  name: MOCK_USER_INPUT.name,
+};
+
 export const MOCK_USER_WITH_PLAYER = {
   ...MOCK_USER,
   player: MOCK_PLAYER,
