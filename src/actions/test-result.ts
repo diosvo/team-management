@@ -12,21 +12,23 @@ import {
   updateTestResults,
 } from '@/db/test-result';
 
-import { hasPermissions } from '@/utils/helper';
 import { ResponseFactory } from '@/utils/response';
 
-import { withAuth } from './auth';
+import { withAuth, withResource } from './auth';
 import { revalidate } from './cache';
 
-export const canUpsertTestResult = withAuth(async (user) => {
-  const { isAdmin } = hasPermissions(user.role);
+const periodicTesting = withResource('periodic-testing');
 
-  return isAdmin;
-});
+export const canCreateTestResult = periodicTesting(
+  ['create'],
+  async function canUpsert() {
+    return true;
+  },
+);
 
 export const getTestDates = withAuth(getDates);
 
-export const getTestResult = withAuth(async (_, date: string) => {
+export const getTestResult = withAuth(async (_: unknown, date: string) => {
   if (!date) {
     return { headers: [], players: [] };
   }
@@ -34,8 +36,9 @@ export const getTestResult = withAuth(async (_, date: string) => {
   return await getTestResultByDate(date);
 });
 
-export const createTestResult = withAuth(
-  async (_, results: Array<InsertTestResult>) => {
+export const createTestResult = periodicTesting(
+  ['create'],
+  async function create(_, results: Array<InsertTestResult>) {
     const toCreate: Array<InsertTestResult> = [];
     const toUpdate: Array<InsertTestResult> = [];
 
@@ -65,8 +68,9 @@ export const createTestResult = withAuth(
   },
 );
 
-export const updateTestResultById = withAuth(
-  async (_, result: Partial<InsertTestResult>) => {
+export const updateTestResultById = periodicTesting(
+  ['edit'],
+  async function updateById(_, result: Partial<InsertTestResult>) {
     try {
       await updateAction(result);
 

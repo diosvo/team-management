@@ -20,7 +20,6 @@ import {
   colorRole,
   colorSessionStatus,
   colorState,
-  hasPermissions,
 } from './helper';
 
 function invalidColor(key: string) {
@@ -156,52 +155,4 @@ describe('colorPlayerRank', () => {
   test.each(cases)('returns $expected for $value', ({ value, expected }) => {
     expect(colorPlayerRank(value as number)).toBe(expected);
   });
-});
-
-describe('hasPermissions', () => {
-  const cases = [
-    {
-      role: UserRole.SUPER_ADMIN,
-      expected: {
-        isAdmin: true,
-        isPlayer: false,
-        isCoach: false,
-        isGuest: false,
-      },
-    },
-    {
-      role: UserRole.PLAYER,
-      expected: {
-        isAdmin: false,
-        isPlayer: true,
-        isCoach: false,
-        isGuest: false,
-      },
-    },
-    {
-      role: UserRole.COACH,
-      expected: {
-        isAdmin: false,
-        isPlayer: false,
-        isCoach: true,
-        isGuest: false,
-      },
-    },
-    {
-      role: UserRole.GUEST,
-      expected: {
-        isAdmin: false,
-        isPlayer: false,
-        isCoach: false,
-        isGuest: true,
-      },
-    },
-  ];
-
-  test.each(cases)(
-    'returns correct permissions for $role',
-    ({ role, expected }) => {
-      expect(hasPermissions(role)).toEqual(expected);
-    },
-  );
 });

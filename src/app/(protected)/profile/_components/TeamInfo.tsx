@@ -39,7 +39,7 @@ import {
   UserState,
 } from '@/utils/enum';
 import { formatDate } from '@/utils/formatter';
-import { colorRole, colorState, hasPermissions } from '@/utils/helper';
+import { colorRole, colorState } from '@/utils/helper';
 
 import { updateTeamInfo } from '@/actions/user';
 import { User } from '@/drizzle/schema';
@@ -53,8 +53,7 @@ export default function TeamInfo({
   user: User;
   viewOnly: boolean;
 }) {
-  const { isAdmin } = usePermissions();
-  const { isPlayer, isCoach } = hasPermissions(user.role);
+  const { isAdmin, isPlayer, isCoach } = usePermissions();
 
   const [isPending, startTransition] = useTransition();
   const [isEditing, setIsEditing] = useState<boolean>(false);

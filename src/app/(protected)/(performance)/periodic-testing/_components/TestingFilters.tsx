@@ -20,8 +20,8 @@ import {
   Settings2,
 } from 'lucide-react';
 
+import Authorized from '@/components/Authorized';
 import SearchInput from '@/components/SearchInput';
-import Visibility from '@/components/Visibility';
 
 import usePermissions from '@/hooks/use-permissions';
 import { usePeriodicTestingFilters } from '@/utils/filters';
@@ -89,7 +89,7 @@ export default function TestingFilters() {
           </Select.Positioner>
         </Portal>
       </Select.Root>
-      <Visibility isVisible={isAdmin}>
+      <Authorized action="create">
         <Menu.Root>
           <Menu.Trigger asChild>
             <Button>
@@ -116,7 +116,7 @@ export default function TestingFilters() {
             </Menu.Positioner>
           </Portal>
         </Menu.Root>
-      </Visibility>
+      </Authorized>
     </HStack>
   );
 }

@@ -23,7 +23,7 @@ import { User } from '@/drizzle/schema/user';
 
 export default function RosterTable({ users }: { users: Array<User> }) {
   const router = useRouter();
-  const { isAdmin, isGuest } = usePermissions();
+  const { isAdmin, isCaptain, isGuest } = usePermissions();
   const [{ q, page }, setSearchParams] = useCommonParams();
 
   const [selection, setSelection] = useState<Array<string>>([]);
@@ -73,7 +73,7 @@ export default function RosterTable({ users }: { users: Array<User> }) {
         >
           <Table.Header>
             <Table.Row>
-              <Visibility isVisible={isAdmin}>
+              <Visibility isVisible={isAdmin || isCaptain}>
                 <>
                   <Table.ColumnHeader width={6}>
                     <Checkbox
@@ -113,30 +113,28 @@ export default function RosterTable({ users }: { users: Array<User> }) {
                     router.replace('/profile/' + user.id);
                   }}
                 >
-                  <Visibility isVisible={isAdmin}>
-                    <>
-                      <Table.Cell onClick={(e) => e.stopPropagation()}>
-                        <Checkbox
-                          top={0.5}
-                          aria-label="Select row"
-                          checked={selection.includes(user.id)}
-                          onCheckedChange={(changes) => {
-                            setSelection((prev) =>
-                              changes.checked
-                                ? [...prev, user.id]
-                                : selection.filter((id) => id !== user.id),
-                            );
-                          }}
-                        />
-                      </Table.Cell>
-                      <Table.Cell textAlign="center">
-                        {user.emailVerified ? (
-                          <Icon as={ShieldCheck} size="sm" color="green.500" />
-                        ) : (
-                          <Icon as={ShieldAlert} size="sm" color="orange.500" />
-                        )}
-                      </Table.Cell>
-                    </>
+                  <Visibility isVisible={isAdmin || isCaptain}>
+                    <Table.Cell onClick={(e) => e.stopPropagation()}>
+                      <Checkbox
+                        top={0.5}
+                        aria-label="Select row"
+                        checked={selection.includes(user.id)}
+                        onCheckedChange={(changes) => {
+                          setSelection((prev) =>
+                            changes.checked
+                              ? [...prev, user.id]
+                              : selection.filter((id) => id !== user.id),
+                          );
+                        }}
+                      />
+                    </Table.Cell>
+                    <Table.Cell textAlign="center">
+                      {user.emailVerified ? (
+                        <Icon as={ShieldCheck} size="sm" color="green.500" />
+                      ) : (
+                        <Icon as={ShieldAlert} size="sm" color="orange.500" />
+                      )}
+                    </Table.Cell>
                   </Visibility>
                   <Table.Cell>{user.player?.jersey_number ?? '-'}</Table.Cell>
                   <Table.Cell>

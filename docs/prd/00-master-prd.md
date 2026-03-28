@@ -16,9 +16,13 @@ Teams often track key operational info in spreadsheets/chats, causing:
 
 Provide a centralized, role-based hub where users can view and (when authorized) manage team data and workflows.
 
+- Application is a private team portal
+- Users are trusted team members (invited via email by admin)
+- The role set is small and static
+
 ## 2. Target Users
 
-- **GUEST:** limited read-only access
+- **GUEST:** limited read-only access / Different database with mock data?
 - **PLAYER:** participant
 - **COACH:** coaching staff
 - **SUPER_ADMIN:** global/admin operations
@@ -33,10 +37,7 @@ Provide a centralized, role-based hub where users can view and (when authorized)
 
 ## 4. Feature Map (High-level)
 
-This is a high-level map; details live in Feature Specs.
-
-- Assets → `features/05-assets.md`
-- (Add Feature 01–10 links here as you complete them.)
+This is a high-level map; details live in [`Feature Specs`](./features/README.md) docs.
 
 ## 5. Product Principles (Shared UX expectations)
 
@@ -53,7 +54,7 @@ This is a high-level map; details live in Feature Specs.
 
 ### Audit / Logging (optional)
 
-- For privileged actions (create/edit/delete), capture: actor role, team context, timestamp.
+- [ ] For privileged actions (create/edit/delete), capture: actor role, team context, timestamp.
 
 ## 7. Non-Functional Requirements
 

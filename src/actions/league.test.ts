@@ -14,7 +14,11 @@ import { revalidate } from '@/actions/cache';
 import { UpsertLeagueSchemaValues } from '@/schemas/league';
 import { LeagueStatus } from '@/utils/enum';
 
-import { mockWithAuth } from '@/test/mocks/auth';
+import {
+  mockWithAuth,
+  mockWithResource,
+  mockWithResourceAction,
+} from '@/test/mocks/auth';
 import { MOCK_LEAGUE, MOCK_LEAGUE_INPUT } from '@/test/mocks/league';
 import { MOCK_TEAM } from '@/test/mocks/team';
 import { MOCK_USER, MOCK_USER_WITH_PLAYER } from '@/test/mocks/user';
@@ -29,6 +33,7 @@ import {
 
 vi.mock('./auth', () => ({
   withAuth: mockWithAuth,
+  withResource: mockWithResource,
 }));
 
 vi.mock('@/db/league', () => ({
@@ -50,6 +55,33 @@ vi.mock('date-fns', () => ({
   isFuture: vi.fn(),
   isPast: vi.fn(),
 }));
+
+describe('permissions', () => {
+  test('scopes to the leagues resource', () => {
+    expect(mockWithResource).toHaveBeenCalledWith('leagues');
+  });
+
+  test('upsertLeague requires create and edit actions', () => {
+    expect(mockWithResourceAction).toHaveBeenCalledWith(
+      ['create', 'edit'],
+      expect.objectContaining({ name: 'upsert' }),
+    );
+  });
+
+  test('upsertPlayerToLeague requires create and edit actions', () => {
+    expect(mockWithResourceAction).toHaveBeenCalledWith(
+      ['create', 'edit'],
+      expect.objectContaining({ name: 'upsertPlayer' }),
+    );
+  });
+
+  test('removeLeague requires delete action', () => {
+    expect(mockWithResourceAction).toHaveBeenCalledWith(
+      ['delete'],
+      expect.objectContaining({ name: 'remove' }),
+    );
+  });
+});
 
 describe('League Actions', () => {
   const mockResult = {

@@ -7,13 +7,18 @@ import {
 } from '@/db/location';
 import { getDbErrorMessage } from '@/db/pg-error';
 
-import { mockWithAuth } from '@/test/mocks/auth';
+import {
+  mockWithAuth,
+  mockWithResource,
+  mockWithResourceAction,
+} from '@/test/mocks/auth';
 import { MOCK_LOCATION } from '@/test/mocks/location';
 
 import { getLocations, removeLocation, upsertLocation } from './location';
 
 vi.mock('./auth', () => ({
   withAuth: mockWithAuth,
+  withResource: mockWithResource,
 }));
 
 vi.mock('@/db/location', () => ({
@@ -28,6 +33,26 @@ vi.mock('@/actions/cache', () => ({
     locations: vi.fn(),
   },
 }));
+
+describe('permissions', () => {
+  test('scopes to the locations resource', () => {
+    expect(mockWithResource).toHaveBeenCalledWith('locations');
+  });
+
+  test('upsertLocation requires create and edit actions', () => {
+    expect(mockWithResourceAction).toHaveBeenCalledWith(
+      ['create', 'edit'],
+      expect.objectContaining({ name: 'upsert' }),
+    );
+  });
+
+  test('removeLocation requires delete action', () => {
+    expect(mockWithResourceAction).toHaveBeenCalledWith(
+      ['delete'],
+      expect.objectContaining({ name: 'remove' }),
+    );
+  });
+});
 
 describe('Location Actions', () => {
   const mockResult = {

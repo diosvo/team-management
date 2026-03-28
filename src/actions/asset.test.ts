@@ -8,13 +8,18 @@ import {
 import { getDbErrorMessage } from '@/db/pg-error';
 
 import { MOCK_ASSET, MOCK_ASSET_INPUT } from '@/test/mocks/asset';
-import { mockWithAuth } from '@/test/mocks/auth';
+import {
+  mockWithAuth,
+  mockWithResource,
+  mockWithResourceAction,
+} from '@/test/mocks/auth';
 import { MOCK_TEAM } from '@/test/mocks/team';
 
 import { getAssets, removeAsset, upsertAsset } from './asset';
 
 vi.mock('./auth', () => ({
   withAuth: mockWithAuth,
+  withResource: mockWithResource,
 }));
 
 vi.mock('@/db/asset', () => ({
@@ -37,6 +42,26 @@ const MOCK_ASSETS_RESPONSE = {
   },
   data: [MOCK_ASSET],
 };
+
+describe('permissions', () => {
+  test('scopes to the assets resource', () => {
+    expect(mockWithResource).toHaveBeenCalledWith('assets');
+  });
+
+  test('upsertAsset requires create and edit actions', () => {
+    expect(mockWithResourceAction).toHaveBeenCalledWith(
+      ['create', 'edit'],
+      expect.objectContaining({ name: 'upsert' }),
+    );
+  });
+
+  test('removeAsset requires delete action', () => {
+    expect(mockWithResourceAction).toHaveBeenCalledWith(
+      ['delete'],
+      expect.objectContaining({ name: 'remove' }),
+    );
+  });
+});
 
 describe('Asset Actions', () => {
   beforeEach(() => {

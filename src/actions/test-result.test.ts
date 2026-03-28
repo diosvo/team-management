@@ -11,7 +11,11 @@ import {
   updateTestResults,
 } from '@/db/test-result';
 
-import { mockWithAuth } from '@/test/mocks/auth';
+import {
+  mockWithAuth,
+  mockWithResource,
+  mockWithResourceAction,
+} from '@/test/mocks/auth';
 import {
   MOCK_TEST_RESULT,
   MOCK_TEST_RESULT_DATE,
@@ -20,7 +24,6 @@ import {
 } from '@/test/mocks/periodic-testing';
 
 import {
-  canUpsertTestResult,
   createTestResult,
   getTestDates,
   getTestResult,
@@ -29,6 +32,7 @@ import {
 
 vi.mock('./auth', () => ({
   withAuth: mockWithAuth,
+  withResource: mockWithResource,
 }));
 
 vi.mock('@/db/test-result', () => ({
@@ -46,6 +50,26 @@ vi.mock('@/actions/cache', () => ({
   },
 }));
 
+describe('permissions', () => {
+  test('scopes to the periodic-testing resource', () => {
+    expect(mockWithResource).toHaveBeenCalledWith('periodic-testing');
+  });
+
+  test('createTestResult requires create action', () => {
+    expect(mockWithResourceAction).toHaveBeenCalledWith(
+      ['create'],
+      expect.objectContaining({ name: 'create' }),
+    );
+  });
+
+  test('updateTestResultById requires edit action', () => {
+    expect(mockWithResourceAction).toHaveBeenCalledWith(
+      ['edit'],
+      expect.objectContaining({ name: 'updateById' }),
+    );
+  });
+});
+
 describe('Test Result Actions', () => {
   const mockResult = {
     rows: [],
@@ -56,15 +80,6 @@ describe('Test Result Actions', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-  });
-
-  describe('canUpsertTestResult', () => {
-    test('returns false for non-admin user', async () => {
-      // MOCK_USER has role PLAYER, so isAdmin = false
-      const result = await canUpsertTestResult();
-
-      expect(result).toBe(false);
-    });
   });
 
   describe('getTestDates', () => {

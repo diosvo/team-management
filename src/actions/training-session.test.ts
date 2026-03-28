@@ -9,7 +9,11 @@ import {
 import { getTeamHeadCoach } from '@/db/user';
 import { UpsertSessionSchemaValues } from '@/schemas/training';
 
-import { mockWithAuth } from '@/test/mocks/auth';
+import {
+  mockWithAuth,
+  mockWithResource,
+  mockWithResourceAction,
+} from '@/test/mocks/auth';
 import { MOCK_TEAM } from '@/test/mocks/team';
 import {
   MOCK_TRAINING_SESSION,
@@ -30,6 +34,7 @@ import {
 
 vi.mock('./auth', () => ({
   withAuth: mockWithAuth,
+  withResource: mockWithResource,
 }));
 
 vi.mock('@/db/training-session', () => ({
@@ -50,6 +55,26 @@ vi.mock('@/actions/cache', () => ({
 }));
 
 const MOCK_SESSION_ID = MOCK_TRAINING_SESSION.session_id;
+
+describe('permissions', () => {
+  test('scopes to the training resource', () => {
+    expect(mockWithResource).toHaveBeenCalledWith('training');
+  });
+
+  test('upsertSession requires create and edit actions', () => {
+    expect(mockWithResourceAction).toHaveBeenCalledWith(
+      ['create', 'edit'],
+      expect.objectContaining({ name: 'upsert' }),
+    );
+  });
+
+  test('removeSession requires delete action', () => {
+    expect(mockWithResourceAction).toHaveBeenCalledWith(
+      ['delete'],
+      expect.objectContaining({ name: 'remove' }),
+    );
+  });
+});
 
 describe('Training Session Actions', () => {
   beforeEach(() => {

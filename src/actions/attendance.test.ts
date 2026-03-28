@@ -13,7 +13,11 @@ import {
   MOCK_ATTENDANCE_ON_TIME,
   MOCK_ATTENDANCE_RESPONSE,
 } from '@/test/mocks/attendance';
-import { mockWithAuth } from '@/test/mocks/auth';
+import {
+  mockWithAuth,
+  mockWithResource,
+  mockWithResourceAction,
+} from '@/test/mocks/auth';
 import { MOCK_TEAM } from '@/test/mocks/team';
 
 import { AttendanceStatus } from '@/utils/enum';
@@ -27,6 +31,7 @@ import {
 
 vi.mock('./auth', () => ({
   withAuth: mockWithAuth,
+  withResource: mockWithResource,
 }));
 
 vi.mock('@/db/attendance', () => ({
@@ -43,6 +48,33 @@ vi.mock('@/actions/cache', () => ({
 }));
 
 const MOCK_ATTENDANCE_ID = MOCK_ATTENDANCE_ON_TIME.attendance_id;
+
+describe('permissions', () => {
+  test('scopes to the attendance resource', () => {
+    expect(mockWithResource).toHaveBeenCalledWith('attendance');
+  });
+
+  test('submitLeave requires create action', () => {
+    expect(mockWithResourceAction).toHaveBeenCalledWith(
+      ['create'],
+      expect.objectContaining({ name: 'submit' }),
+    );
+  });
+
+  test('updateStatus requires edit action', () => {
+    expect(mockWithResourceAction).toHaveBeenCalledWith(
+      ['edit'],
+      expect.objectContaining({ name: 'update' }),
+    );
+  });
+
+  test('removeAttendance requires delete action', () => {
+    expect(mockWithResourceAction).toHaveBeenCalledWith(
+      ['delete'],
+      expect.objectContaining({ name: 'remove' }),
+    );
+  });
+});
 
 describe('Attendance Actions', () => {
   beforeEach(() => {

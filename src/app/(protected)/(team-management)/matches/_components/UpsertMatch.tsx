@@ -25,7 +25,6 @@ import { Field } from '@/components/ui/field';
 import { NumberInputField } from '@/components/ui/number-input';
 import { Switch } from '@/components/ui/switch';
 import { toaster } from '@/components/ui/toaster';
-import Visibility from '@/components/Visibility';
 
 import { CACHE_KEY, CURRENT_DATE, ESTABLISHED_DATE } from '@/utils/constant';
 import { formatDatetime } from '@/utils/formatter';
@@ -37,6 +36,8 @@ import { UpsertMatchSchema, UpsertMatchSchemaValues } from '@/schemas/match';
 import { getLeagues } from '@/actions/league';
 import { upsertMatch } from '@/actions/match';
 import { getOpponents } from '@/actions/team';
+import Authorized from '@/components/Authorized';
+import Visibility from '@/components/Visibility';
 
 export const UpsertMatch = createOverlay(({ action, item, ...rest }) => {
   const [isPending, startTransition] = useTransition();
@@ -117,36 +118,38 @@ export const UpsertMatch = createOverlay(({ action, item, ...rest }) => {
                 >
                   League Match
                 </Switch>
-                <Visibility isVisible={isLeague}>
-                  <SearchableSelect
-                    controlledMode
-                    multiple={false}
-                    control={control}
-                    name="league_id"
-                    label={CACHE_KEY.LEAGUES}
-                    action={getLeagues}
-                    fieldProps={{
-                      required: isLeague,
-                      disabled: isPending,
-                    }}
-                    itemToString={({ name }) => name}
-                    itemToValue={({ league_id }) => league_id}
-                    renderItem={(item) => (
-                      <HStack>
-                        {item.name}
-                        <Badge
-                          size="xs"
-                          variant="outline"
-                          marginLeft="auto"
-                          borderRadius="full"
-                          colorPalette={colorLeagueStatus(item.status)}
-                        >
-                          {item.status}
-                        </Badge>
-                      </HStack>
-                    )}
-                  />
-                </Visibility>
+                <Authorized action="edit">
+                  <Visibility isVisible={isLeague}>
+                    <SearchableSelect
+                      controlledMode
+                      multiple={false}
+                      control={control}
+                      name="league_id"
+                      label={CACHE_KEY.LEAGUES}
+                      action={getLeagues}
+                      fieldProps={{
+                        required: isLeague,
+                        disabled: isPending,
+                      }}
+                      itemToString={({ name }) => name}
+                      itemToValue={({ league_id }) => league_id}
+                      renderItem={(item) => (
+                        <HStack>
+                          {item.name}
+                          <Badge
+                            size="xs"
+                            variant="outline"
+                            marginLeft="auto"
+                            borderRadius="full"
+                            colorPalette={colorLeagueStatus(item.status)}
+                          >
+                            {item.status}
+                          </Badge>
+                        </HStack>
+                      )}
+                    />
+                  </Visibility>
+                </Authorized>
                 <SearchableSelect
                   controlledMode
                   multiple={false}

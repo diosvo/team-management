@@ -3,7 +3,7 @@ import { redirect, RedirectType } from 'next/navigation';
 
 import auth from '@/lib/auth';
 import { LOGIN_PATH } from '@/routes';
-import { MOCK_USER } from '@/test/mocks/user';
+import { MOCK_PLAYER, MOCK_USER } from '@/test/mocks/user';
 
 import { getServerSession, withAuth } from './auth';
 
@@ -23,7 +23,10 @@ const createMockSession = (): Session => ({
     ipAddress: null,
     userAgent: 'vitest',
   },
-  user: MOCK_USER,
+  user: {
+    ...MOCK_USER,
+    ...MOCK_PLAYER,
+  },
 });
 
 vi.mock('@/lib/auth', () => ({
@@ -88,7 +91,11 @@ describe('Auth Actions', () => {
 
       const result = await wrappedAction('arg1', 'arg2');
 
-      expect(mockServerAction).toHaveBeenCalledWith(MOCK_USER, 'arg1', 'arg2');
+      expect(mockServerAction).toHaveBeenCalledWith(
+        { ...MOCK_USER, ...MOCK_PLAYER },
+        'arg1',
+        'arg2',
+      );
       expect(result).toEqual({ success: true });
       expect(redirect).not.toHaveBeenCalled();
     });
@@ -149,7 +156,7 @@ describe('Auth Actions', () => {
       await wrappedAction(arg1, arg2, arg3, arg4);
 
       expect(mockServerAction).toHaveBeenCalledWith(
-        MOCK_USER,
+        { ...MOCK_USER, ...MOCK_PLAYER },
         arg1,
         arg2,
         arg3,

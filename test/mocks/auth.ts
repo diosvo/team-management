@@ -14,3 +14,14 @@ export const createMockWithAuth = () => {
 };
 
 export const mockWithAuth = createMockWithAuth();
+
+export const mockWithResourceAction = vi.fn(
+  <T extends Array<unknown>, R>(
+    _actions: Array<string>,
+    serverAction: (user: User, ...args: T) => Promise<R>,
+  ) =>
+    async (...args: T): Promise<R> =>
+      serverAction(MOCK_USER, ...args),
+);
+
+export const mockWithResource = vi.fn(() => mockWithResourceAction);

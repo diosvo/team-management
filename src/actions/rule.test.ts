@@ -6,7 +6,11 @@ import {
   updateRule as updateDbRule,
 } from '@/db/rule';
 
-import { mockWithAuth } from '@/test/mocks/auth';
+import {
+  mockWithAuth,
+  mockWithResource,
+  mockWithResourceAction,
+} from '@/test/mocks/auth';
 import { MOCK_RULE } from '@/test/mocks/rule';
 import { MOCK_TEAM } from '@/test/mocks/team';
 
@@ -14,6 +18,7 @@ import { getRule, upsertRule } from './rule';
 
 vi.mock('./auth', () => ({
   withAuth: mockWithAuth,
+  withResource: mockWithResource,
 }));
 
 vi.mock('@/db/rule', () => ({
@@ -27,6 +32,19 @@ vi.mock('@/actions/cache', () => ({
     rule: vi.fn(),
   },
 }));
+
+describe('permissions', () => {
+  test('scopes to the team-rule resource', () => {
+    expect(mockWithResource).toHaveBeenCalledWith('team-rule');
+  });
+
+  test('upsertRule requires create and edit actions', () => {
+    expect(mockWithResourceAction).toHaveBeenCalledWith(
+      ['create', 'edit'],
+      expect.objectContaining({ name: 'upsert' }),
+    );
+  });
+});
 
 describe('Rule Actions', () => {
   beforeEach(() => {

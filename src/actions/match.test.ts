@@ -8,7 +8,11 @@ import {
 import { getDbErrorMessage } from '@/db/pg-error';
 import { UpsertMatchSchemaValues } from '@/schemas/match';
 
-import { mockWithAuth } from '@/test/mocks/auth';
+import {
+  mockWithAuth,
+  mockWithResource,
+  mockWithResourceAction,
+} from '@/test/mocks/auth';
 import { MOCK_MATCH, MOCK_MATCH_RESPONSE } from '@/test/mocks/match';
 import { MOCK_USER } from '@/test/mocks/user';
 
@@ -19,6 +23,7 @@ import { getMatches, removeMatch, upsertMatch } from './match';
 
 vi.mock('./auth', () => ({
   withAuth: mockWithAuth,
+  withResource: mockWithResource,
 }));
 
 vi.mock('@/db/match', () => ({
@@ -35,6 +40,26 @@ vi.mock('@/actions/cache', () => ({
 }));
 
 const MOCK_MATCH_ID = MOCK_MATCH.match_id;
+
+describe('permissions', () => {
+  test('scopes to the matches resource', () => {
+    expect(mockWithResource).toHaveBeenCalledWith('matches');
+  });
+
+  test('upsertMatch requires create and edit actions', () => {
+    expect(mockWithResourceAction).toHaveBeenCalledWith(
+      ['create', 'edit'],
+      expect.objectContaining({ name: 'upsert' }),
+    );
+  });
+
+  test('removeMatch requires delete action', () => {
+    expect(mockWithResourceAction).toHaveBeenCalledWith(
+      ['delete'],
+      expect.objectContaining({ name: 'remove' }),
+    );
+  });
+});
 
 describe('Match Actions', () => {
   const mockResult = {
