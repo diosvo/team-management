@@ -20,7 +20,9 @@ import { LucideProps, PanelLeftOpen, PanelRightOpen } from 'lucide-react';
 
 import { Tooltip } from '@/components/ui/tooltip';
 
-import { hrefPath, SIDEBAR_GROUP } from '../_helpers/utils';
+import usePermissions from '@/hooks/use-permissions';
+
+import { SIDEBAR_GROUP } from '../_helpers/utils';
 
 const BUTTON_CONFIG = {
   size: { base: 'xs', md: 'sm', mdTo2xl: 'md' },
@@ -31,6 +33,12 @@ const BUTTON_CONFIG = {
     },
   },
 } as const;
+
+function resourceToName(resource: string) {
+  return resource
+    .replace(/-/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
 
 function LoadingIndicator() {
   const { pending } = useLinkStatus();
@@ -103,6 +111,8 @@ export default function Sidebar({
   isExpanded: boolean;
   setIsExpanded: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
+  const { can } = usePermissions();
+
   return (
     <VStack
       height="full"
@@ -111,37 +121,39 @@ export default function Sidebar({
       paddingInline={2}
       gap={isExpanded ? 6 : 2}
     >
-      {SIDEBAR_GROUP.map(({ title, items }) => (
-        <VStack key={title} alignItems="stretch">
-          {isExpanded ? (
-            <Text
-              fontSize={9}
-              color="gray.700"
-              letterSpacing="wider"
-              marginLeft={{ base: 3, md: 4 }}
-            >
-              {title.toUpperCase()}
-            </Text>
-          ) : (
-            <Separator />
-          )}
+      {SIDEBAR_GROUP.map(({ title, items }) => {
+        const visibleItems = items.filter(({ resource }) =>
+          can(resource, 'view'),
+        );
+        if (visibleItems.length === 0) return null;
 
-          {items.map(({ text, icon, disabled }) => {
-            const path = hrefPath(text);
-            return (
+        return (
+          <VStack key={title} alignItems="stretch">
+            {isExpanded ? (
+              <Text
+                fontSize={9}
+                color="gray.700"
+                letterSpacing="wider"
+                marginLeft={{ base: 3, md: 4 }}
+              >
+                {title.toUpperCase()}
+              </Text>
+            ) : (
+              <Separator />
+            )}
+            {visibleItems.map(({ resource, icon }) => (
               <NavButton
-                key={text}
-                href={path}
+                key={resource}
+                href={resource}
                 icon={icon}
-                disabled={disabled}
                 isExpanded={isExpanded}
               >
-                {text}
+                {resourceToName(resource)}
               </NavButton>
-            );
-          })}
-        </VStack>
-      ))}
+            ))}
+          </VStack>
+        );
+      })}
       <VStack marginTop="auto" alignItems="stretch">
         <Separator marginInline={-2} />
         <Tooltip

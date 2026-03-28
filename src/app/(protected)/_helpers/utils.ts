@@ -15,85 +15,52 @@ import {
   UsersRound,
 } from 'lucide-react';
 
-export const hrefPath = (text: string): string => {
-  return '/' + text.toLowerCase().replace(/\s+/g, '-');
+import type { Resource } from '@/utils/permissions';
+
+export type SidebarGroup = {
+  title: string;
+  items: Array<{
+    icon: typeof LayoutDashboard;
+    resource: Resource;
+  }>;
 };
 
-// Implement sidebar with specific role
-// disabled = true when the feature is not implemented yet
-
-export const SIDEBAR_GROUP = [
+export const SIDEBAR_GROUP: Array<SidebarGroup> = [
   {
     title: 'Overview',
     items: [
-      {
-        icon: LayoutDashboard,
-        text: 'Dashboard',
-        active: true,
-        disabled: false,
-      },
-      // Move to Dashboard later
-      { icon: ChartArea, text: 'Analytics', disabled: false },
-      {
-        icon: ShieldCheck,
-        text: 'Team Rule',
-        disabled: false,
-      },
+      { icon: LayoutDashboard, resource: 'dashboard' },
+      { icon: ChartArea, resource: 'analytics' },
+      { icon: ShieldCheck, resource: 'team-rule' },
     ],
   },
   {
     title: 'Team Management',
     items: [
-      { icon: UsersRound, text: 'Roster', disabled: false },
-      { icon: Dumbbell, text: 'Training', disabled: false },
-      { icon: BadgeCheck, text: 'Attendance', disabled: false },
-      { icon: FileText, text: 'Registration', disabled: false },
-      { icon: GamepadDirectional, text: 'Matches', disabled: false },
+      { icon: UsersRound, resource: 'roster' },
+      { icon: Dumbbell, resource: 'training' },
+      { icon: BadgeCheck, resource: 'attendance' },
+      { icon: FileText, resource: 'registration' },
+      { icon: GamepadDirectional, resource: 'matches' },
     ],
   },
   {
     title: 'Performance',
-    items: [
-      {
-        icon: FileChartColumnIncreasing,
-        text: 'Periodic Testing',
-        disabled: false,
-      },
-    ],
+    items: [{ icon: FileChartColumnIncreasing, resource: 'periodic-testing' }],
   },
   {
     title: 'Resources',
     items: [
-      {
-        icon: Package,
-        text: 'Assets',
-        disabled: false,
-      },
-      {
-        icon: Film,
-        text: 'Documents',
-        disabled: true,
-      },
-      {
-        icon: DatabaseZap,
-        text: 'Cache Store',
-        disabled: false,
-      },
+      { icon: Package, resource: 'assets' },
+      { icon: Film, resource: 'documents' },
+      { icon: DatabaseZap, resource: 'cache-store' },
     ],
   },
   {
     title: 'Settings',
     items: [
-      {
-        icon: Trophy,
-        text: 'Leagues',
-        disabled: false,
-      },
-      {
-        icon: MapPinHouse,
-        text: 'Locations',
-        disabled: false,
-      },
+      { icon: Trophy, resource: 'leagues' },
+      { icon: MapPinHouse, resource: 'locations' },
     ],
   },
 ];

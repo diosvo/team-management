@@ -3,8 +3,10 @@
 import { getDbErrorMessage } from '@/db/pg-error';
 import { ResponseFactory } from '@/utils/response';
 
-import { withAuth } from './auth';
+import { withAuth, withResource } from './auth';
 import { revalidate } from './cache';
+
+const matches = withResource('matches');
 
 import {
   deleteMatch,
@@ -19,7 +21,8 @@ export const getMatches = withAuth(
   async (_, params: MatchSearchParams) => await fetchMatches(params),
 );
 
-export const upsertMatch = withAuth(
+export const upsertMatch = matches(
+  'edit',
   async (user, match_id: string, match: UpsertMatchSchemaValues) => {
     const extended = { ...match, home_team: user.team_id };
 
@@ -42,7 +45,7 @@ export const upsertMatch = withAuth(
   },
 );
 
-export const removeMatch = withAuth(async (_, match_id: string) => {
+export const removeMatch = matches('delete', async (_, match_id: string) => {
   try {
     await deleteMatch(match_id);
 

@@ -1,14 +1,31 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import authClient from '@/lib/auth-client';
-
 import { UserRole } from '@/utils/enum';
-import { hasPermissions } from '@/utils/helper';
+import {
+  defineAbility,
+  hasPermissions,
+  type Action,
+  type Permission,
+  type Resource,
+} from '@/utils/permissions';
+
+import { User } from '@/drizzle/schema';
+
+const DEFAULT_PERMISSIONS = {
+  isAdmin: false,
+  isPlayer: false,
+  isCoach: false,
+  isGuest: false,
+  can: (_resource: Resource, _action: Action) => false,
+  canAll: (_perms: Array<Permission>) => false,
+  canAny: (_perms: Array<Permission>) => false,
+} as const;
 
 export default function usePermissions() {
-  const [mounted, setMounted] = useState<boolean>(false);
+  const [mounted, setMounted] = useState(false);
 
   // Ensure client-side only execution
   useEffect(() => {
@@ -16,16 +33,22 @@ export default function usePermissions() {
   }, []);
 
   const { data, isPending } = authClient.useSession();
+  const user = data?.user as User;
+  const role = user?.role as UserRole;
+  const ready = mounted && !isPending && !!data?.session && !!role;
 
-  // Return default permissions during SSR or while mounting
-  if (!mounted || isPending || !data?.session) {
+  return useMemo(() => {
+    // Return default permissions during SSR or while mounting
+    if (!ready || !role) return DEFAULT_PERMISSIONS;
+
+    const ability = defineAbility(role, user?.is_captain);
+
     return {
-      isAdmin: false,
-      isPlayer: false,
-      isCoach: false,
-      isGuest: false,
+      ...hasPermissions(role),
+      can: (resource: Resource, action: Action) =>
+        ability.can(`${resource}:${action}`),
+      canAll: ability.canAll,
+      canAny: ability.canAny,
     };
-  }
-
-  return hasPermissions(data.user.role as UserRole);
+  }, [ready, role]);
 }
