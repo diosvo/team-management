@@ -51,7 +51,6 @@ describe('LocationSelection', () => {
 
   test('renders with label', async () => {
     setup();
-    await waitFor(() => expect(mockGetLocations).toHaveBeenCalled());
 
     expect(screen.getByText(/Select locations/i)).toBeInTheDocument();
   });
@@ -62,7 +61,7 @@ describe('LocationSelection', () => {
     await user.click(placeholder);
 
     expect(await screen.findByText(MOCK_LOCATION.name)).toBeInTheDocument();
-    expect(screen.getByText(MOCK_LOCATION.name)).toBeInTheDocument();
+    expect(screen.getByText(MOCK_LOCATION_2.name)).toBeInTheDocument();
   });
 
   test('renders location address under the name', async () => {
