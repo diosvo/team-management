@@ -9,15 +9,15 @@ export default defineConfig({
     setupFiles: ['./test/setup.ts'], // Reference a setup file
     globals: true, // Utilities functions (like describe, it, etc.)
     css: true, // CSS processing during tests
+    exclude: ['node_modules', 'dist'],
     coverage: {
       exclude: [
+        'coverage/**',
         'test/**',
-        'vite.*.ts',
         '**/*.d.ts',
-        '**/*.test.*',
         '**/*.config.*',
-        '**/snapshot-tests/**',
-        '**/coverage/**',
+        // Chakra UI components (already well-tested by Chakra)
+        '**/components/ui/**',
         // Pure data/type definitions
         '**/utils/constant.ts',
         '**/utils/enum.ts',
