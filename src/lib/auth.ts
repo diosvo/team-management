@@ -3,9 +3,9 @@ import { betterAuth } from 'better-auth/minimal';
 import { nextCookies } from 'better-auth/next-js';
 import { Resend } from 'resend';
 
-import env from '@/schemas/env';
 import { COOKIE } from '@/utils/constant';
 import { UserRole, UserState } from '@/utils/enum';
+import env from '@env';
 
 import db from '@/drizzle';
 import {

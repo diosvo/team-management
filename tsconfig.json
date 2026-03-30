@@ -13,7 +13,8 @@
     "paths": {
       "@/*": ["./src/*"],
       "@/assets/*": ["./assets/*"],
-      "@/test/*": ["./test/*"]
+      "@/test/*": ["./test/*"],
+      "@env": ["./env.config.ts"]
     },
     "plugins": [
       {

@@ -9,7 +9,7 @@ import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import UiProvider from '@/components/ui/provider';
 import { Toaster } from '@/components/ui/toaster';
 
-import env from '@/schemas/env';
+import env from '@env';
 import './globals.css';
 
 const geist = Geist({
