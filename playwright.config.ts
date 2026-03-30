@@ -10,7 +10,12 @@ export default defineConfig({
   // Artifacts folder where screenshots, videos, and traces are stored.
   outputDir: 'test-results/',
   // https://playwright.dev/docs/test-reporters#html-reporter
-  reporter: [['html', { open: 'always', outputFolder: 'playwright/report' }]],
+  reporter: [
+    [
+      'html',
+      { open: env.CI ? 'never' : 'always', outputFolder: 'playwright/report' },
+    ],
+  ],
 
   // Run local dev server before starting the tests:
   // https://playwright.dev/docs/test-advanced#launching-a-development-web-server-during-the-tests
@@ -42,7 +47,7 @@ export default defineConfig({
       testDir: 'e2e/auth',
     },
 
-    // #region Setup project > Authenticated users(s)
+    // #region Setup project > Authenticated user(s)
     { name: 'setup', testMatch: 'e2e/setup/auth.ts' },
     {
       name: 'admin',

@@ -71,4 +71,4 @@ To open Playwright Test Runner UI, run:
 pnpm e2e:ui
 ```
 
-Notice that run `e2e/setup/auth.ts` test first to generate auth state for specific role before running other tests that require authentication.
+Note: run the `e2e/setup/auth.ts` project first to generate auth state for a role before running tests that require authentication.

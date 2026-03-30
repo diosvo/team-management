@@ -29,7 +29,7 @@ export default function LoginPage() {
   const {
     register,
     handleSubmit,
-    formState: { errors, isValid },
+    formState: { errors },
   } = useForm({
     resolver: zodResolver(LoginSchema),
   });
@@ -95,7 +95,7 @@ export default function LoginPage() {
         borderRadius="full"
         loadingText="Directing..."
         loading={isLoading}
-        disabled={!isValid || isLoading}
+        disabled={isLoading}
       >
         Sign In
       </Button>
