@@ -6,6 +6,9 @@ loadEnvConfig(pwd);
 
 // Set a default value to avoid building issues on Vercel
 const envSchema = z.object({
+  NODE_ENV: z
+    .enum(['development', 'test', 'production'])
+    .default('development'),
   CI: z.coerce.boolean().default(false),
   DEV_URL: z.url().default('http://localhost:3000'),
   PRODUCTION_URL: z.url().default('http://localhost:3000'),
