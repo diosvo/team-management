@@ -45,7 +45,7 @@ export default function LoginPage() {
         onRequest: () => setIsLoading(true),
         onError: ({ error }) => setError(error.message || error.statusText),
         onResponse: () => setIsLoading(false),
-      }
+      },
     );
   }
 
