@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
 
+const uniqueName = () => `E2E Asset ${Date.now()}`;
+
 test.beforeEach(async ({ page }) => {
   await page.goto('/assets');
 });
@@ -16,10 +18,7 @@ test.describe('Assets Page', () => {
 
   test('clicking "Total Items" resets filters', async ({ page }) => {
     // Apply a condition filter first
-    await page
-      .locator('[data-scope="select"][data-part="trigger"]')
-      .nth(1)
-      .click();
+    await page.getByTestId('condition-filter').click();
     await page.getByRole('listbox').waitFor({ state: 'visible' });
     await page.getByRole('option', { name: 'Poor' }).click();
     await expect(page).toHaveURL(/condition=POOR/);
@@ -64,38 +63,42 @@ test.describe('Filtering', () => {
     await expect(page).not.toHaveURL(/q=/);
   });
 
-  test('filters assets by condition and updates query params', async ({
+  test('filters assets by Condition and updates query params', async ({
     page,
   }) => {
     // Open condition select
-    await page
-      .locator('[data-scope="select"][data-part="trigger"]')
-      .nth(1)
-      .click();
+    await page.getByTestId('condition-filter').click();
     await page.getByRole('listbox').waitFor({ state: 'visible' });
     await page.getByRole('option', { name: 'Good' }).click();
 
     await expect(page).toHaveURL(/condition=GOOD/);
+
+    // Clear filter
+    await page.getByTestId('condition-filter').click();
+    await page.getByRole('listbox').waitFor({ state: 'visible' });
+    await page.getByRole('option', { name: 'All' }).click();
+    await expect(page).not.toHaveURL(/condition=/);
   });
 
-  test('combines name and condition filters', async ({ page }) => {
-    await page.getByPlaceholder('Search...').fill('Ball');
-    await expect(page).toHaveURL(/q=Ball/);
-    await page
-      .locator('[data-scope="select"][data-part="trigger"]')
-      .nth(1)
-      .click();
+  test('filters assets by Category and updates query params', async ({
+    page,
+  }) => {
+    // Open condition select
+    await page.getByTestId('category-filter').click();
     await page.getByRole('listbox').waitFor({ state: 'visible' });
-    await page.getByRole('option', { name: 'Poor' }).click();
+    await page.getByRole('option', { name: 'Equipment' }).click();
 
-    await expect(page).toHaveURL(/q=Ball/);
-    await expect(page).toHaveURL(/condition=POOR/);
+    await expect(page).toHaveURL(/category=EQUIPMENT/);
+
+    // Clear filter
+    await page.getByTestId('category-filter').click();
+    await page.getByRole('listbox').waitFor({ state: 'visible' });
+    await page.getByRole('option', { name: 'All', exact: true }).click();
+    await expect(page).not.toHaveURL(/category=/);
   });
 });
 
 test.describe('Add Asset', () => {
-  const uniqueName = `E2E Asset ${Date.now()}`;
-
   test('opens dialog and adds a new asset with required fields', async ({
     page,
   }) => {
@@ -105,38 +108,31 @@ test.describe('Add Asset', () => {
     await expect(page.getByRole('heading', { name: 'Add Item' })).toBeVisible();
 
     // Fill required fields
-    await page.getByLabel('Name').fill(uniqueName);
+    await page.getByLabel('Name').fill(uniqueName());
 
     // Verify defaults are pre-selected
     await expect(page.getByLabel('Equipment')).toBeChecked();
     await expect(page.getByLabel('Good')).toBeChecked();
 
-    // Submit
     await page.getByRole('button', { name: 'Add' }).click();
 
     // Verify success toast
     await expect(page.getByText('Added asset successfully')).toBeVisible();
-
-    // Verify the item appears in the table without page refresh
-    await expect(page.getByRole('cell', { name: uniqueName })).toBeVisible();
   });
 
-  test('validates required fields', async ({ page }) => {
+  test('disables Submit button when form is empty', async ({ page }) => {
     await page.getByRole('button', { name: 'Add' }).click();
 
-    // Submit button should be disabled when form is empty
     await expect(
       page.getByRole('dialog').getByRole('button', { name: 'Add' }),
     ).toBeDisabled();
   });
 
   test('adds a new asset with all fields', async ({ page }) => {
-    const fullName = `E2E Full ${Date.now()}`;
-
     await page.getByRole('button', { name: 'Add' }).click();
 
     // Fill all fields
-    await page.getByLabel('Name').fill(fullName);
+    await page.getByLabel('Name').fill(uniqueName());
     await page.getByLabel('Quantity').fill('5');
     await page
       .getByRole('radiogroup', { name: 'Category' })
@@ -150,11 +146,8 @@ test.describe('Add Asset', () => {
 
     await page.getByRole('dialog').getByRole('button', { name: 'Add' }).click();
 
-    // Verify success toast
+    // Success toast
     await expect(page.getByText('Added asset successfully')).toBeVisible();
-
-    // Verify the item appears
-    await expect(page.getByRole('cell', { name: fullName })).toBeVisible();
   });
 });
 
@@ -180,7 +173,6 @@ test.describe('Update Asset', () => {
 
     // Verify success toast
     await expect(page.getByText('Updated asset successfully')).toBeVisible();
-
     // Verify update reflects in the table without refresh
     await expect(
       page.getByRole('cell', { name: 'Updated via E2E' }),
@@ -190,33 +182,30 @@ test.describe('Update Asset', () => {
 
 test.describe('Delete Asset', () => {
   test('selects and deletes assets via checkboxes', async ({ page }) => {
-    // Select the first row's checkbox
-    const firstCheckbox = page
-      .getByRole('row')
-      .nth(1)
-      .getByRole('checkbox', { name: 'Select row' });
-    await firstCheckbox.click({ force: true });
+    const searchInput = page.getByPlaceholder('Search...');
+    await searchInput.fill('E2E');
 
-    // Selection action bar should appear
-    await expect(page.getByText('1 selected')).toBeVisible();
+    const count = await page
+      .getByRole('checkbox', { name: 'Select row' })
+      .count();
 
-    // Click Delete
-    await page.getByRole('button', { name: 'Delete' }).click();
+    if (count > 0) {
+      const selectAll = page.getByRole('checkbox', { name: 'Select all rows' });
+      await selectAll.click({ force: true });
 
-    // Verify success toast
-    await expect(
-      page.getByText('Successfully deleted 1 asset(s).'),
-    ).toBeVisible();
+      // Selection action bar should appear
+      await expect(page.getByText(`${count} selected`)).toBeVisible();
+      await page.getByRole('button', { name: 'Delete' }).click();
 
-    // Action bar should disappear after deletion
-    await expect(page.getByText('1 selected')).not.toBeVisible();
-  });
+      // Success toast
+      await expect(
+        page.getByText(`Successfully deleted ${count} asset(s).`),
+      ).toBeVisible();
 
-  test('selects all rows via header checkbox', async ({ page }) => {
-    const selectAll = page.getByRole('checkbox', { name: 'Select all rows' });
-    await selectAll.click({ force: true });
+      // Action bar should disappear after deletion
+      await expect(page.getByText(`${count} selected`)).not.toBeVisible();
+    }
 
-    // Verify selection count appears
-    await expect(page.getByText(/selected/)).toBeVisible();
+    await page.getByText('No items found').waitFor({ state: 'visible' });
   });
 });

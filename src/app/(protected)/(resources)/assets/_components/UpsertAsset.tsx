@@ -67,10 +67,8 @@ export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
         title,
       });
 
-      if (success) {
-        reset();
-        UpsertAsset.close(action === 'Update' ? 'update-asset' : 'add-asset');
-      }
+      if (success) reset();
+      if (action === 'Update') UpsertAsset.close('update-asset');
     });
   };
 

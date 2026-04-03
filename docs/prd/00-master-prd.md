@@ -22,7 +22,7 @@ Provide a centralized, role-based hub where users can view and (when authorized)
 - **PLAYER:** participant
 - **COACH:** coaching staff
 - **SUPER_ADMIN:** global/admin operations
-- **Captain (PLAYER flag):** elevated permissions within a team (see [Roles](./01-roles-permissions.md))
+- **Captain (PLAYER flag):** elevated permissions within a team
 
 ## 3. Primary Use Cases (Jobs-to-be-done)
 

@@ -1,6 +1,9 @@
 import env from '@env';
 import { defineConfig, devices } from '@playwright/test';
 
+// ⭕️ DEVELOPMENT: Verify each step carefully to avoid impacting the database.
+// Create → Edit → Delete
+
 // Reference: https://playwright.dev/docs/test-configuration
 export default defineConfig({
   // Timeout per test

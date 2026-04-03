@@ -37,6 +37,13 @@ export default function AssetFilters() {
   const { isAdmin } = usePermissions();
   const [{ category, condition }, setSearchParams] = useAssetFilters();
 
+  const handleValueChange = (
+    type: 'category' | 'condition',
+    value: Array<string>,
+  ) => {
+    setSearchParams({ [type]: value[0], page: 1 });
+  };
+
   return (
     <HStack marginBottom={6}>
       <SearchInput />
@@ -45,9 +52,8 @@ export default function AssetFilters() {
         size={{ base: 'sm', md: 'md' }}
         collection={categories}
         value={[category]}
-        onValueChange={({ value }) =>
-          setSearchParams({ category: value[0], page: 1 })
-        }
+        data-testid="category-filter"
+        onValueChange={({ value }) => handleValueChange('category', value)}
       >
         <Select.HiddenSelect />
         <Select.Control>
@@ -84,9 +90,8 @@ export default function AssetFilters() {
         size={{ base: 'sm', md: 'md' }}
         collection={conditions}
         value={[condition]}
-        onValueChange={({ value }) =>
-          setSearchParams({ condition: value[0], page: 1 })
-        }
+        data-testid="condition-filter"
+        onValueChange={({ value }) => handleValueChange('condition', value)}
       >
         <Select.HiddenSelect />
         <Select.Control>

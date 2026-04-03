@@ -3,19 +3,19 @@
 ## 1. Summary
 
 - **Assets** page lets users view team assets and key metrics.
-- Specific-roles (SUPER_ADMIN and Captain) can add, edit, and delete assets.
+- Specific roles (SUPER_ADMIN and Captain) can add, edit, and delete assets.
 
 ## 2. Goals / Metrics
 
 ### Goals
 
-- Users can find assets quickly by name/ condition.
+- Users can find assets quickly by name or condition.
 - Captains/admins can keep inventory accurate with minimal effort.
 
 ### Metrics
 
 - The total number of assets.
-- The number of assets need to be replaced (condition = “Poor”).
+- The number of assets that need to be replaced (condition = "Poor").
 
 ## 3. Users & Permissions
 
@@ -37,7 +37,7 @@
 
 ### View & filter
 
-- Metrics section shows total assets and assets needing replacement. Click on metric filters the list.
+- The Metrics section shows total assets and assets needing replacement. Clicking a metric card filters the list.
 - List view shows assets and supports filtering by:
   - name (text)
   - category (select)
@@ -62,7 +62,7 @@
 
 ### Viewing
 
-- **FR-1:** All roles can view assets list.
+- **FR-1:** All roles can view the assets list.
 - **FR-2:** All roles can view asset metrics section.
 
 ### Filtering + query params
