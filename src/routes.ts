@@ -28,3 +28,23 @@ export const PUBLIC_ROUTES = new Set([
  * The default redirect path after logging in.
  */
 export const DEFAULT_LOGIN_REDIRECT = '/dashboard' as const;
+
+/**
+ * All resources in the application that permissions can be applied to.
+ */
+export const RESOURCES = [
+  'dashboard',
+  'analytics',
+  'team-rule',
+  'roster',
+  'training',
+  'attendance',
+  'registration',
+  'matches',
+  'periodic-testing',
+  'assets',
+  'documents',
+  'cache-store',
+  'leagues',
+  'locations',
+] as const;

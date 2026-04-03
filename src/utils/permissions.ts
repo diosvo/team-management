@@ -1,41 +1,25 @@
+import { RESOURCES } from '@/routes';
 import { UserRole } from '@/utils/enum';
 
-export const RESOURCES: Array<string> = [
-  'dashboard',
-  'analytics',
-  'team-rule',
-  'roster',
-  'training',
-  'attendance',
-  'registration',
-  'matches',
-  'periodic-testing',
-  'assets',
-  'documents',
-  'cache-store',
-  'leagues',
-  'locations',
-] as const;
+const ALL_ACTIONS = ['view', 'create', 'edit', 'delete'] as const;
+
+export type Action = (typeof ALL_ACTIONS)[number];
 export type Resource = (typeof RESOURCES)[number];
 
-const ALL_ACTIONS: Array<string> = [
-  'view',
-  'create',
-  'edit',
-  'delete',
-] as const;
-export type Action = (typeof ALL_ACTIONS)[number];
-
 /**
- * @description Each role defines which resources it can access and what actions it can perform.
+ * Each role defines which resources it can access and what actions it can perform.
  */
 const PERMISSIONS: Record<
   UserRole,
   Partial<Record<Resource, Array<Action>>>
 > = {
-  [UserRole.SUPER_ADMIN]: Object.fromEntries(
-    RESOURCES.map((resource) => [resource, ALL_ACTIONS]),
-  ),
+  // [UserRole.SUPER_ADMIN]: Object.fromEntries(
+  //   RESOURCES.map((resource) => [resource, ALL_ACTIONS]),
+  // ),
+  [UserRole.SUPER_ADMIN]: {
+    dashboard: ['view'],
+    analytics: ['edit'],
+  },
   [UserRole.COACH]: {
     dashboard: ['view'],
     analytics: ['view'],

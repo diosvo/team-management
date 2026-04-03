@@ -17,7 +17,7 @@ import {
 
 import type { Resource } from '@/utils/permissions';
 
-export type SidebarGroup = {
+type SidebarGroup = {
   title: string;
   items: Array<{
     icon: typeof LayoutDashboard;

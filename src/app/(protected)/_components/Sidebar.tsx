@@ -19,9 +19,7 @@ import {
 import { LucideProps, PanelLeftOpen, PanelRightOpen } from 'lucide-react';
 
 import { Tooltip } from '@/components/ui/tooltip';
-
 import usePermissions from '@/hooks/use-permissions';
-
 import { SIDEBAR_GROUP } from '../_helpers/utils';
 
 const BUTTON_CONFIG = {
@@ -112,6 +110,10 @@ export default function Sidebar({
   setIsExpanded: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const { can } = usePermissions();
+  const visibleItems = SIDEBAR_GROUP.flatMap(({ title, items }) => {
+    const filtered = items.filter(({ resource }) => can(resource, 'view'));
+    return filtered.length > 0 ? [{ title, items: filtered }] : [];
+  });
 
   return (
     <VStack
@@ -121,39 +123,32 @@ export default function Sidebar({
       paddingInline={2}
       gap={isExpanded ? 6 : 2}
     >
-      {SIDEBAR_GROUP.map(({ title, items }) => {
-        const visibleItems = items.filter(({ resource }) =>
-          can(resource, 'view'),
-        );
-        if (visibleItems.length === 0) return null;
-
-        return (
-          <VStack key={title} alignItems="stretch">
-            {isExpanded ? (
-              <Text
-                fontSize={9}
-                color="gray.700"
-                letterSpacing="wider"
-                marginLeft={{ base: 3, md: 4 }}
-              >
-                {title.toUpperCase()}
-              </Text>
-            ) : (
-              <Separator />
-            )}
-            {visibleItems.map(({ resource, icon }) => (
-              <NavButton
-                key={resource}
-                href={resource}
-                icon={icon}
-                isExpanded={isExpanded}
-              >
-                {resourceToName(resource)}
-              </NavButton>
-            ))}
-          </VStack>
-        );
-      })}
+      {visibleItems.map(({ title, items }) => (
+        <VStack key={title} alignItems="stretch">
+          {isExpanded ? (
+            <Text
+              fontSize={9}
+              color="gray.700"
+              letterSpacing="wider"
+              marginLeft={{ base: 3, md: 4 }}
+            >
+              {title.toUpperCase()}
+            </Text>
+          ) : (
+            <Separator />
+          )}
+          {items.map(({ resource, icon }) => (
+            <NavButton
+              key={resource}
+              href={resource}
+              icon={icon}
+              isExpanded={isExpanded}
+            >
+              {resourceToName(resource)}
+            </NavButton>
+          ))}
+        </VStack>
+      ))}
       <VStack marginTop="auto" alignItems="stretch">
         <Separator marginInline={-2} />
         <Tooltip

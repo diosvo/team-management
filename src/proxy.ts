@@ -1,15 +1,16 @@
 import { getCookieCache, getSessionCookie } from 'better-auth/cookies';
-import { type NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 import {
   AUTH_ROUTES,
   DEFAULT_LOGIN_REDIRECT,
   LOGIN_PATH,
   PUBLIC_ROUTES,
+  RESOURCES,
 } from '@/routes';
 import { COOKIE } from '@/utils/constant';
 import { UserRole } from '@/utils/enum';
-import { can, RESOURCES } from '@/utils/permissions';
+import { can } from '@/utils/permissions';
 
 /**
  * Resolves the current pathname to a `Resource` using prefix matching.
