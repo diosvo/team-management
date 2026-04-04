@@ -5,12 +5,12 @@ import { useState } from 'react';
 import { Badge, Highlight, Table } from '@chakra-ui/react';
 import { CircuitBoard } from 'lucide-react';
 
+import Authorized from '@/components/Authorized';
 import Pagination from '@/components/Pagination';
 import SelectionActionBar from '@/components/SelectionActionBar';
 import { Checkbox } from '@/components/ui/checkbox';
 import { EmptyState } from '@/components/ui/empty-state';
 import { toaster } from '@/components/ui/toaster';
-import Visibility from '@/components/Visibility';
 
 import { LeagueStatus } from '@/utils/enum';
 import { paginateData, useCommonParams } from '@/utils/filters';
@@ -71,7 +71,7 @@ export default function LeagueTable({
         >
           <Table.Header>
             <Table.Row>
-              <Visibility isVisible={isAdmin}>
+              <Authorized action="delete">
                 <Table.ColumnHeader width={6}>
                   <Checkbox
                     top={0.5}
@@ -89,7 +89,7 @@ export default function LeagueTable({
                     }}
                   />
                 </Table.ColumnHeader>
-              </Visibility>
+              </Authorized>
               {['Name', 'No. Players', 'Start Date', 'End Date', 'Status'].map(
                 (header) => (
                   <Table.ColumnHeader key={header}>{header}</Table.ColumnHeader>
@@ -111,7 +111,7 @@ export default function LeagueTable({
                     });
                   }}
                 >
-                  <Visibility isVisible={isAdmin}>
+                  <Authorized action="delete">
                     <Table.Cell onClick={(e) => e.stopPropagation()}>
                       <Checkbox
                         top={0.5}
@@ -127,7 +127,7 @@ export default function LeagueTable({
                         }}
                       />
                     </Table.Cell>
-                  </Visibility>
+                  </Authorized>
                   <Table.Cell>
                     <Highlight query={q} styles={{ backgroundColor: 'yellow' }}>
                       {item.name}

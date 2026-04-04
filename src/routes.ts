@@ -47,4 +47,5 @@ export const RESOURCES = [
   'cache-store',
   'leagues',
   'locations',
+  'profile',
 ] as const;

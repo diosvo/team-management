@@ -14,8 +14,14 @@ import { cache } from 'react';
 import { User } from '@/drizzle/schema';
 import auth from '@/lib/auth';
 import { LOGIN_PATH } from '@/routes';
+
 import { UserRole } from '@/utils/enum';
-import { can, type Action, type Resource } from '@/utils/permissions';
+import {
+  defineAbility,
+  Permission,
+  type Action,
+  type Resource,
+} from '@/utils/permissions';
 
 export const getServerSession = cache(
   async () =>
@@ -41,55 +47,32 @@ export function withAuth<T extends Array<unknown>, R>(
   };
 }
 
-/**
- * Wraps a server action with both authentication and permission checks.
- * Calls `forbidden()` if the user lacks the required permission.
- */
 export function withPermission<T extends Array<unknown>, R>(
   resource: Resource,
-  action: Action,
+  actions: Array<Action>,
   serverAction: (user: User, ...args: T) => Promise<R>,
 ): ServerAction<T, R> {
   return withAuth(async (user, ...args: T) => {
-    if (!can(user.role as UserRole, resource, action)) {
-      forbidden();
-    }
-    return serverAction(user, ...args);
+    const ability = defineAbility(user.role as UserRole, user.is_captain);
+    const hasPermission = ability.canAny(
+      actions.map((action) => `${resource}:${action}` as Permission),
+    );
+
+    return hasPermission ? serverAction(user, ...args) : forbidden();
   });
 }
 
 /**
- * Creates a resource-scoped permission wrapper.
- *
  * Usage:
+ * ```js
  *   const roster = withResource('roster');
- *   export const addUser = roster('create', async (user, values) => { ... });
- *   export const removeUser = roster('delete', async (user, id) => { ... });
+ *   export const addUser = roster(['create'], async (user, values) => { ... });
+ *   export const removeUser = roster(['delete'], async (user, id) => { ... });
+ * ```
  */
 export function withResource(resource: Resource) {
   return <T extends Array<unknown>, R>(
-    action: Action,
+    actions: Array<Action>,
     serverAction: (user: User, ...args: T) => Promise<R>,
-  ): ServerAction<T, R> => withPermission(resource, action, serverAction);
-}
-
-/**
- * Guard for server components / pages.
- * Checks auth + permission, calls `forbidden()` if denied.
- *
- * Usage in a page:
- *   await authorize('roster', 'create');
- */
-export async function authorize(resource: Resource, action: Action) {
-  const session = await getServerSession();
-
-  if (!session?.user) {
-    redirect(LOGIN_PATH, RedirectType.replace);
-  }
-
-  if (!can(session.user.role as UserRole, resource, action)) {
-    forbidden();
-  }
-
-  return session.user as User;
+  ): ServerAction<T, R> => withPermission(resource, actions, serverAction);
 }

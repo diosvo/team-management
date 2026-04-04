@@ -5,16 +5,16 @@ import { HStack } from '@chakra-ui/react';
 import SearchInput from '@/components/SearchInput';
 import { RoleSelection } from '@/components/user/RolePositionSelection';
 import { StateSelection } from '@/components/user/StateSelection';
-import Visibility from '@/components/Visibility';
 
 import usePermissions from '@/hooks/use-permissions';
 import { UserRole, UserState } from '@/utils/enum';
 import { useRosterFilters } from '@/utils/filters';
 
+import Visibility from '@/components/Visibility';
 import AddUser from './AddUser';
 
 export default function RosterFilters() {
-  const { isAdmin } = usePermissions();
+  const { isAdmin, isCaptain } = usePermissions();
   const [{ state, role }, setSearchParams] = useRosterFilters();
 
   return (
@@ -28,7 +28,7 @@ export default function RosterFilters() {
           setSearchParams({ state: value as Array<UserState> })
         }
       />
-      <Visibility isVisible={isAdmin}>
+      <Visibility isVisible={isAdmin || isCaptain}>
         <RoleSelection
           multiple
           width="2xs"

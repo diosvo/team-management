@@ -19,6 +19,7 @@ const DEFAULT_PERMISSIONS = {
   isPlayer: false,
   isCoach: false,
   isGuest: false,
+  isCaptain: false,
   can: (_resource: Resource, _action: Action) => false,
   canAll: (_perms: Array<Permission>) => false,
   canAny: (_perms: Array<Permission>) => false,
@@ -41,10 +42,12 @@ export default function usePermissions() {
     // Return default permissions during SSR or while mounting
     if (!ready || !role) return DEFAULT_PERMISSIONS;
 
-    const ability = defineAbility(role, user?.is_captain);
+    const isCaptain = user?.is_captain ?? false;
+    const ability = defineAbility(role, isCaptain);
 
     return {
       ...hasPermissions(role),
+      isCaptain,
       can: (resource: Resource, action: Action) =>
         ability.can(`${resource}:${action}`),
       canAll: ability.canAll,

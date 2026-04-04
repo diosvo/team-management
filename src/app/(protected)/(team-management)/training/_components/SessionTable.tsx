@@ -12,12 +12,12 @@ import {
 } from '@chakra-ui/react';
 import { CirclePile } from 'lucide-react';
 
+import Authorized from '@/components/Authorized';
 import Pagination from '@/components/Pagination';
 import SelectionActionBar from '@/components/SelectionActionBar';
 import { Checkbox } from '@/components/ui/checkbox';
 import { EmptyState } from '@/components/ui/empty-state';
 import { toaster } from '@/components/ui/toaster';
-import Visibility from '@/components/Visibility';
 
 import usePermissions from '@/hooks/use-permissions';
 import { TrainingSessionWithDetails } from '@/types/training-session';
@@ -29,12 +29,14 @@ import { colorSessionStatus } from '@/utils/helper';
 import { removeSession } from '@/actions/training-session';
 import { UpsertSession } from './UpsertSession';
 
+const headers = ['Date', 'Time', 'Location', 'Status', 'Present Rate'] as const;
+
 export default function SessionTable({
   sessions,
 }: {
   sessions: Array<TrainingSessionWithDetails>;
 }) {
-  const { isAdmin, isGuest } = usePermissions();
+  const { isGuest } = usePermissions();
   const [{ page }, setSearchParams] = useTrainingFilters();
 
   const [selection, setSelection] = useState<Array<string>>([]);
@@ -69,7 +71,7 @@ export default function SessionTable({
         >
           <Table.Header>
             <Table.Row>
-              <Visibility isVisible={isAdmin}>
+              <Authorized action="delete">
                 <Table.ColumnHeader width={6}>
                   <Checkbox
                     top={0.5}
@@ -86,12 +88,10 @@ export default function SessionTable({
                     }}
                   />
                 </Table.ColumnHeader>
-              </Visibility>
-              {['Date', 'Time', 'Location', 'Status', 'Present Rate'].map(
-                (header) => (
-                  <Table.ColumnHeader key={header}>{header}</Table.ColumnHeader>
-                ),
-              )}
+              </Authorized>
+              {headers.map((header) => (
+                <Table.ColumnHeader key={header}>{header}</Table.ColumnHeader>
+              ))}
             </Table.Row>
           </Table.Header>
           <Table.Body>
@@ -108,7 +108,7 @@ export default function SessionTable({
                     });
                   }}
                 >
-                  <Visibility isVisible={isAdmin}>
+                  <Authorized action="delete">
                     <Table.Cell onClick={(e) => e.stopPropagation()}>
                       <Checkbox
                         top={0.5}
@@ -125,7 +125,7 @@ export default function SessionTable({
                         }}
                       />
                     </Table.Cell>
-                  </Visibility>
+                  </Authorized>
                   <Table.Cell>
                     <ChakraLink variant="underline" colorPalette="blue" asChild>
                       <NextLink
@@ -181,7 +181,7 @@ export default function SessionTable({
               ))
             ) : (
               <Table.Row>
-                <Table.Cell colSpan={isAdmin ? 6 : 5}>
+                <Table.Cell colSpan={headers.length + 1}>
                   <EmptyState
                     title="No training sessions found"
                     icon={<CirclePile />}

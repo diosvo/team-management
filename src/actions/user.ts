@@ -27,7 +27,7 @@ import { withAuth, withResource } from './auth';
 import { revalidate } from './cache';
 
 const roster = withResource('roster');
-const user = withResource('user');
+const user = withResource('profile');
 
 export const getActivePlayers = withAuth(async ({ team_id }) => {
   if (!team_id) return [];

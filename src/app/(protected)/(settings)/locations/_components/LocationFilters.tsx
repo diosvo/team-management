@@ -3,20 +3,16 @@
 import { Button, HStack } from '@chakra-ui/react';
 import { Plus } from 'lucide-react';
 
+import Authorized from '@/components/Authorized';
 import SearchInput from '@/components/SearchInput';
-import Visibility from '@/components/Visibility';
-
-import usePermissions from '@/hooks/use-permissions';
 
 import { UpsertLocation } from './UpsertLocation';
 
 export default function LocationFilters() {
-  const { isAdmin } = usePermissions();
-
   return (
     <HStack marginBlock={6}>
       <SearchInput />
-      <Visibility isVisible={isAdmin}>
+      <Authorized action="create">
         <Button
           size={{ base: 'sm', md: 'md' }}
           onClick={() =>
@@ -31,7 +27,7 @@ export default function LocationFilters() {
           <Plus />
           Add
         </Button>
-      </Visibility>
+      </Authorized>
       <UpsertLocation.Viewport />
     </HStack>
   );

@@ -19,6 +19,8 @@ const PERMISSIONS: Record<
   [UserRole.SUPER_ADMIN]: {
     dashboard: ['view'],
     analytics: ['edit'],
+    assets: ['view', 'create'],
+    roster: ['view'],
   },
   [UserRole.COACH]: {
     dashboard: ['view'],
@@ -91,7 +93,7 @@ export function hasPermissions(role: UserRole) {
 /**
  * Creates an ability object bound to a specific role.
  *
- * @example:
+ * @example
  * ```js
  *   const ability = defineAbility(UserRole.COACH);
  *   ability.can('roster:view'); // true

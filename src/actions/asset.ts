@@ -21,7 +21,7 @@ export const getAssets = withAuth(
 );
 
 export const upsertAsset = assets(
-  'edit',
+  ['create', 'edit'],
   async (user, asset_id: string, asset: UpsertAssetSchemaValues) => {
     const newData = { ...asset, team_id: user.team_id };
 
@@ -44,7 +44,7 @@ export const upsertAsset = assets(
   },
 );
 
-export const removeAsset = assets('delete', async (_, asset_id: string) => {
+export const removeAsset = assets(['delete'], async (_, asset_id: string) => {
   try {
     await deleteAsset(asset_id);
 

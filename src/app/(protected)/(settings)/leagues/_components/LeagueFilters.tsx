@@ -10,8 +10,8 @@ import {
 } from '@chakra-ui/react';
 import { Crosshair, Filter, Plus } from 'lucide-react';
 
+import Authorized from '@/components/Authorized';
 import SearchInput from '@/components/SearchInput';
-import Visibility from '@/components/Visibility';
 import { Status } from '@/components/ui/status';
 import { toaster } from '@/components/ui/toaster';
 import { Tooltip } from '@/components/ui/tooltip';
@@ -99,7 +99,7 @@ export default function LeagueFilters({
           </Select.Positioner>
         </Portal>
       </Select.Root>
-      <Visibility isVisible={isAdmin}>
+      <Authorized action="update">
         <Tooltip
           content={
             endedLeagues.length > 0 ? (
@@ -140,7 +140,7 @@ export default function LeagueFilters({
           <Plus />
           Add
         </Button>
-      </Visibility>
+      </Authorized>
       <UpsertLeague.Viewport />
     </HStack>
   );

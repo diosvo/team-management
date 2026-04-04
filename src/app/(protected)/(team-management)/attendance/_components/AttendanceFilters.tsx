@@ -2,13 +2,14 @@
 
 import { Input, SimpleGrid } from '@chakra-ui/react';
 
+import Authorized from '@/components/Authorized';
 import { Field } from '@/components/ui/field';
-import Visibility from '@/components/Visibility';
 
 import usePermissions from '@/hooks/use-permissions';
 import { ALL, ESTABLISHED_DATE } from '@/utils/constant';
 import { useAttendanceFilters } from '@/utils/filters';
 
+import Visibility from '@/components/Visibility';
 import BulkAttendanceManager from './BulkAttendanceManager';
 import SubmitLeaveRequest from './SubmitLeaveRequest';
 
@@ -18,12 +19,16 @@ export default function AttendanceFilters() {
 
   return (
     <SimpleGrid columns={2} gap={4}>
-      <Visibility isVisible={isAdmin}>
-        <BulkAttendanceManager />
-      </Visibility>
-      <Visibility isVisible={isPlayer}>
-        <SubmitLeaveRequest />
-      </Visibility>
+      <Authorized action="create">
+        <Visibility isVisible={isAdmin}>
+          <BulkAttendanceManager />
+        </Visibility>
+      </Authorized>
+      <Authorized action="create">
+        <Visibility isVisible={isPlayer}>
+          <SubmitLeaveRequest />
+        </Visibility>
+      </Authorized>
       <Field>
         <Input
           type="date"
