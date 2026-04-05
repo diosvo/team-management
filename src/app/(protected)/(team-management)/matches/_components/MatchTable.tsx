@@ -4,12 +4,12 @@ import { useState } from 'react';
 
 import { Badge, Highlight, HStack, Span, Table } from '@chakra-ui/react';
 
+import Authorized from '@/components/Authorized';
 import Pagination from '@/components/Pagination';
 import SelectionActionBar from '@/components/SelectionActionBar';
 import { Checkbox } from '@/components/ui/checkbox';
 import { EmptyState } from '@/components/ui/empty-state';
 import { toaster } from '@/components/ui/toaster';
-import Visibility from '@/components/Visibility';
 
 import usePermissions from '@/hooks/use-permissions';
 import { MatchWithTeams } from '@/types/match';
@@ -20,12 +20,21 @@ import { colorMatchResult } from '@/utils/helper';
 import { removeMatch } from '@/actions/match';
 import { UpsertMatch } from './UpsertMatch';
 
+const headers = [
+  'Opponent',
+  'League',
+  'Score',
+  'Result',
+  'Location',
+  'Date',
+] as const;
+
 export default function MatchTable({
   matches,
 }: {
   matches: Array<MatchWithTeams>;
 }) {
-  const { isAdmin, isGuest } = usePermissions();
+  const { isGuest } = usePermissions();
   const [{ q, page }, setSearchParams] = useMatchFilters();
 
   const [selection, setSelection] = useState<Array<string>>([]);
@@ -61,7 +70,7 @@ export default function MatchTable({
         >
           <Table.Header>
             <Table.Row>
-              <Visibility isVisible={isAdmin}>
+              <Authorized action="delete">
                 <Table.ColumnHeader width={6}>
                   <Checkbox
                     top={0.5}
@@ -78,15 +87,8 @@ export default function MatchTable({
                     }}
                   />
                 </Table.ColumnHeader>
-              </Visibility>
-              {[
-                'Opponent',
-                'League',
-                'Score',
-                'Result',
-                'Location',
-                'Date',
-              ].map((header) => (
+              </Authorized>
+              {headers.map((header) => (
                 <Table.ColumnHeader key={header}>{header}</Table.ColumnHeader>
               ))}
             </Table.Row>
@@ -108,7 +110,7 @@ export default function MatchTable({
                     });
                   }}
                 >
-                  <Visibility isVisible={isAdmin}>
+                  <Authorized action="delete">
                     <Table.Cell onClick={(e) => e.stopPropagation()}>
                       <Checkbox
                         top={0.5}
@@ -123,7 +125,7 @@ export default function MatchTable({
                         }}
                       />
                     </Table.Cell>
-                  </Visibility>
+                  </Authorized>
                   <Table.Cell>
                     <Highlight query={q} styles={{ backgroundColor: 'yellow' }}>
                       {item.away_team.name}
@@ -156,7 +158,7 @@ export default function MatchTable({
               ))
             ) : (
               <Table.Row>
-                <Table.Cell colSpan={isAdmin ? 7 : 6}>
+                <Table.Cell colSpan={headers.length + 1}>
                   <EmptyState title="No matches found" />
                 </Table.Cell>
               </Table.Row>

@@ -9,10 +9,10 @@ import { ShieldAlert, ShieldCheck, SwatchBook } from 'lucide-react';
 import Pagination from '@/components/Pagination';
 import SelectionActionBar from '@/components/SelectionActionBar';
 
+import Authorized from '@/components/Authorized';
 import { Checkbox } from '@/components/ui/checkbox';
 import { EmptyState } from '@/components/ui/empty-state';
 import { toaster } from '@/components/ui/toaster';
-import Visibility from '@/components/Visibility';
 
 import usePermissions from '@/hooks/use-permissions';
 import { paginateData, useCommonParams } from '@/utils/filters';
@@ -73,7 +73,7 @@ export default function RosterTable({ users }: { users: Array<User> }) {
         >
           <Table.Header>
             <Table.Row>
-              <Visibility isVisible={isAdmin}>
+              <Authorized action="delete">
                 <>
                   <Table.ColumnHeader width={6}>
                     <Checkbox
@@ -93,7 +93,7 @@ export default function RosterTable({ users }: { users: Array<User> }) {
                     Verified
                   </Table.ColumnHeader>
                 </>
-              </Visibility>
+              </Authorized>
               {['No.', 'Name', 'Email', 'State', 'Roles', 'Position'].map(
                 (column: string) => (
                   <Table.ColumnHeader key={column}>{column}</Table.ColumnHeader>
@@ -113,8 +113,8 @@ export default function RosterTable({ users }: { users: Array<User> }) {
                     router.replace('/profile/' + user.id);
                   }}
                 >
-                  <Visibility isVisible={isAdmin}>
-                    <>
+                  <Authorized visible={isAdmin}>
+                    <Authorized>
                       <Table.Cell onClick={(e) => e.stopPropagation()}>
                         <Checkbox
                           top={0.5}
@@ -136,8 +136,8 @@ export default function RosterTable({ users }: { users: Array<User> }) {
                           <Icon as={ShieldAlert} size="sm" color="orange.500" />
                         )}
                       </Table.Cell>
-                    </>
-                  </Visibility>
+                    </Authorized>
+                  </Authorized>
                   <Table.Cell>{user.player?.jersey_number ?? '-'}</Table.Cell>
                   <Table.Cell>
                     <Highlight query={q} styles={{ backgroundColor: 'yellow' }}>

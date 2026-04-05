@@ -20,7 +20,6 @@ import {
 } from '@/test/mocks/periodic-testing';
 
 import {
-  canUpsertTestResult,
   createTestResult,
   getTestDates,
   getTestResult,
@@ -56,15 +55,6 @@ describe('Test Result Actions', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-  });
-
-  describe('canUpsertTestResult', () => {
-    test('returns false for non-admin user', async () => {
-      // MOCK_USER has role PLAYER, so isAdmin = false
-      const result = await canUpsertTestResult();
-
-      expect(result).toBe(false);
-    });
   });
 
   describe('getTestDates', () => {

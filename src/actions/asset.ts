@@ -11,14 +11,17 @@ import {
 import { getDbErrorMessage } from '@/db/pg-error';
 import { UpsertAssetSchemaValues } from '@/schemas/asset';
 
-import { withAuth } from './auth';
+import { withAuth, withResource } from './auth';
 import { revalidate } from './cache';
 
+const assets = withResource('assets');
+
 export const getAssets = withAuth(
-  async ({ team_id }) => await fetchAssets(team_id)
+  async ({ team_id }) => await fetchAssets(team_id),
 );
 
-export const upsertAsset = withAuth(
+export const upsertAsset = assets(
+  ['create', 'edit'],
   async (user, asset_id: string, asset: UpsertAssetSchemaValues) => {
     const newData = { ...asset, team_id: user.team_id };
 
@@ -32,16 +35,16 @@ export const upsertAsset = withAuth(
       revalidate.assets();
 
       return ResponseFactory.success(
-        `${asset_id ? 'Updated' : 'Added'} asset successfully`
+        `${asset_id ? 'Updated' : 'Added'} asset successfully`,
       );
     } catch (error) {
       const { message } = getDbErrorMessage(error);
       return ResponseFactory.error(message);
     }
-  }
+  },
 );
 
-export const removeAsset = withAuth(async (_, asset_id: string) => {
+export const removeAsset = assets(['delete'], async (_, asset_id: string) => {
   try {
     await deleteAsset(asset_id);
 

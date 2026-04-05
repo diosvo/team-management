@@ -3,7 +3,6 @@
 import { forbidden, notFound } from 'next/navigation';
 
 import { CoachPosition, PlayerPosition } from '@/utils/enum';
-import { hasPermissions } from '@/utils/helper';
 import { ResponseFactory } from '@/utils/response';
 
 import { insertCoach, updateCoach } from '@/db/coach';
@@ -23,8 +22,12 @@ import {
 } from '@/schemas/user';
 
 import auth from '@/lib/auth';
-import { withAuth } from './auth';
+import { hasPermissions } from '@/utils/permissions';
+import { withAuth, withResource } from './auth';
 import { revalidate } from './cache';
+
+const roster = withResource('roster');
+const user = withResource('profile');
 
 export const getActivePlayers = withAuth(async ({ team_id }) => {
   if (!team_id) return [];
@@ -59,52 +62,56 @@ export const getUserProfile = withAuth(async (user, target_id: string) => {
   };
 });
 
-export const addUser = withAuth(async ({ team_id }, values: AddUserValues) => {
-  try {
-    const user = {
-      ...values,
-      team_id,
-    };
-    const { isPlayer, isCoach } = hasPermissions(user.role);
+export const addUser = roster(
+  'create',
+  async ({ team_id }, values: AddUserValues) => {
+    try {
+      const user = {
+        ...values,
+        team_id,
+      };
+      const { isPlayer, isCoach } = hasPermissions(user.role);
 
-    const data = await auth.api.signUpEmail({
-      body: {
-        ...user,
-        password: 'TemporaryPassword123!',
-      },
-    });
-
-    if (isPlayer) {
-      await insertPlayer({
-        id: data.user.id,
-        position: user.position as PlayerPosition,
+      const data = await auth.api.signUpEmail({
+        body: {
+          ...user,
+          password: 'TemporaryPassword123!',
+        },
       });
-    }
 
-    if (isCoach) {
-      await insertCoach({
-        id: data.user.id,
-        position: user.position as CoachPosition,
+      if (isPlayer) {
+        await insertPlayer({
+          id: data.user.id,
+          position: user.position as PlayerPosition,
+        });
+      }
+
+      if (isCoach) {
+        await insertCoach({
+          id: data.user.id,
+          position: user.position as CoachPosition,
+        });
+      }
+
+      await auth.api.requestPasswordReset({
+        body: {
+          email: values.email,
+          redirectTo: '/new-password',
+        },
       });
+
+      revalidate.roster();
+
+      return ResponseFactory.success('Sent an email to with instructions');
+    } catch (error) {
+      const { message } = getDbErrorMessage(error);
+      return ResponseFactory.error(message);
     }
+  },
+);
 
-    await auth.api.requestPasswordReset({
-      body: {
-        email: values.email,
-        redirectTo: '/new-password',
-      },
-    });
-
-    revalidate.roster();
-
-    return ResponseFactory.success('Sent an email to with instructions');
-  } catch (error) {
-    const { message } = getDbErrorMessage(error);
-    return ResponseFactory.error(message);
-  }
-});
-
-export const updatePersonalInfo = withAuth(
+export const updatePersonalInfo = user(
+  'edit',
   async (_, user_id: string, values: EditPersonalInfoValues) => {
     try {
       await updateUser(user_id, values);
@@ -121,7 +128,8 @@ export const updatePersonalInfo = withAuth(
   },
 );
 
-export const updateTeamInfo = withAuth(
+export const updateTeamInfo = user(
+  'edit',
   async (_, user_id: string, values: EditTeamInfoValues) => {
     try {
       const { user: userData, player: playerData, coach: coachData } = values;
@@ -165,7 +173,7 @@ export const updateTeamInfo = withAuth(
   },
 );
 
-export const removeUser = withAuth(async (_, user_id: string) => {
+export const removeUser = roster('delete', async (_, user_id: string) => {
   try {
     await deleteUser(user_id);
 

@@ -12,14 +12,17 @@ import {
 import { getDbErrorMessage } from '@/db/pg-error';
 import { InsertAttendance } from '@/drizzle/schema';
 
-import { withAuth } from './auth';
+import { withAuth, withResource } from './auth';
 import { revalidate } from './cache';
+
+const attendance = withResource('attendance');
 
 export const getAttendanceByDate = withAuth(
   async ({ team_id }, date: string) => await fetchAttendance(team_id, date),
 );
 
-export const submitLeave = withAuth(
+export const submitLeave = attendance(
+  'create',
   async ({ team_id }, values: Omit<InsertAttendance, 'team_id'>) => {
     try {
       await insertAttendance({
@@ -46,7 +49,8 @@ export const submitLeave = withAuth(
   },
 );
 
-export const updateStatus = withAuth(
+export const updateStatus = attendance(
+  'edit',
   async (_, attendance_id: string, status: AttendanceStatus) => {
     try {
       await updateAttendance(attendance_id, {
@@ -64,16 +68,19 @@ export const updateStatus = withAuth(
   },
 );
 
-export const removeAttendance = withAuth(async (_, attendance_id: string) => {
-  try {
-    await deleteAttendance(attendance_id);
+export const removeAttendance = attendance(
+  'delete',
+  async (_, attendance_id: string) => {
+    try {
+      await deleteAttendance(attendance_id);
 
-    revalidate.attendances();
+      revalidate.attendances();
 
-    return ResponseFactory.success('Deleted attendance record successfully');
-  } catch (error) {
-    const shortId = attendance_id.slice(0, 8);
-    const { message } = getDbErrorMessage(error);
-    return ResponseFactory.error(`${message} (id: ${shortId})`);
-  }
-});
+      return ResponseFactory.success('Deleted attendance record successfully');
+    } catch (error) {
+      const shortId = attendance_id.slice(0, 8);
+      const { message } = getDbErrorMessage(error);
+      return ResponseFactory.error(`${message} (id: ${shortId})`);
+    }
+  },
+);

@@ -10,7 +10,7 @@ import {
 } from '@chakra-ui/react';
 import { CalendarSearch, Plus } from 'lucide-react';
 
-import Visibility from '@/components/Visibility';
+import Authorized from '@/components/Authorized';
 import { Status } from '@/components/ui/status';
 
 import usePermissions from '@/hooks/use-permissions';
@@ -41,7 +41,7 @@ export default function SessionFilters() {
 
   return (
     <SimpleGrid columns={isAdmin ? 3 : 2} gap={3}>
-      <Visibility isVisible={isAdmin}>
+      <Authorized action="create">
         <Button
           onClick={() =>
             UpsertSession.open('new-session', {
@@ -55,7 +55,7 @@ export default function SessionFilters() {
           <Plus />
           New Session
         </Button>
-      </Visibility>
+      </Authorized>
       <Select.Root
         collection={statuses}
         value={[status]}

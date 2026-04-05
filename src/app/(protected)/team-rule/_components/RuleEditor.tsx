@@ -5,11 +5,11 @@ import { useEffect, useState, useTransition } from 'react';
 import { Button, HStack, Separator, Text, VStack } from '@chakra-ui/react';
 import { Eye, Pencil, Save } from 'lucide-react';
 
+import Authorized from '@/components/Authorized';
 import PageTitle from '@/components/PageTitle';
 import TextEditor from '@/components/TextEditor';
 import { toaster } from '@/components/ui/toaster';
 import { Tooltip } from '@/components/ui/tooltip';
-import Visibility from '@/components/Visibility';
 
 import { NullishRule } from '@/drizzle/schema/rule';
 import usePermissions from '@/hooks/use-permissions';
@@ -57,7 +57,7 @@ export default function RuleEditor({ rule }: { rule: NullishRule }) {
     <VStack alignItems="stretch" gap={6}>
       <HStack>
         <PageTitle title="Team Rule" />
-        <Visibility isVisible={isAdmin}>
+        <Authorized action="edit">
           <>
             <Tooltip
               positioning={{ placement: 'top' }}
@@ -103,7 +103,7 @@ export default function RuleEditor({ rule }: { rule: NullishRule }) {
               </Tooltip>
             </HStack>
           </>
-        </Visibility>
+        </Authorized>
       </HStack>
       <TextEditor
         editable={isAdmin && isEditing && !isPending}

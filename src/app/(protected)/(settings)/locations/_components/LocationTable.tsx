@@ -10,7 +10,6 @@ import SelectionActionBar from '@/components/SelectionActionBar';
 import { Checkbox } from '@/components/ui/checkbox';
 import { EmptyState } from '@/components/ui/empty-state';
 import { toaster } from '@/components/ui/toaster';
-import Visibility from '@/components/Visibility';
 
 import usePermissions from '@/hooks/use-permissions';
 import { paginateData, useCommonParams } from '@/utils/filters';
@@ -19,14 +18,17 @@ import { formatDatetime } from '@/utils/formatter';
 import { removeLocation } from '@/actions/location';
 import { Location } from '@/drizzle/schema';
 
+import Authorized from '@/components/Authorized';
 import { UpsertLocation } from './UpsertLocation';
+
+const headers = ['Name', 'Address', 'Last Updated'] as const;
 
 export default function LocationTable({
   locations,
 }: {
   locations: Array<Location>;
 }) {
-  const { isAdmin, isGuest } = usePermissions();
+  const { isGuest } = usePermissions();
   const [{ q, page }, setSearchParams] = useCommonParams();
 
   const [selection, setSelection] = useState<Array<string>>([]);
@@ -64,7 +66,7 @@ export default function LocationTable({
         >
           <Table.Header>
             <Table.Row>
-              <Visibility isVisible={isAdmin}>
+              <Authorized action="delete">
                 <Table.ColumnHeader width={6}>
                   <Checkbox
                     top={0.5}
@@ -81,8 +83,8 @@ export default function LocationTable({
                     }}
                   />
                 </Table.ColumnHeader>
-              </Visibility>
-              {['Name', 'Address', 'Last Updated'].map((header) => (
+              </Authorized>
+              {headers.map((header) => (
                 <Table.ColumnHeader key={header}>{header}</Table.ColumnHeader>
               ))}
             </Table.Row>
@@ -101,7 +103,7 @@ export default function LocationTable({
                     });
                   }}
                 >
-                  <Visibility isVisible={isAdmin}>
+                  <Authorized action="delete">
                     <Table.Cell onClick={(e) => e.stopPropagation()}>
                       <Checkbox
                         top={0.5}
@@ -118,7 +120,7 @@ export default function LocationTable({
                         }}
                       />
                     </Table.Cell>
-                  </Visibility>
+                  </Authorized>
                   <Table.Cell>
                     <Highlight query={q} styles={{ backgroundColor: 'yellow' }}>
                       {item.name}
@@ -134,7 +136,7 @@ export default function LocationTable({
               ))
             ) : (
               <Table.Row>
-                <Table.Cell colSpan={isAdmin ? 4 : 3}>
+                <Table.Cell colSpan={headers.length + 1}>
                   <EmptyState
                     title="No locations found"
                     icon={<MapPinXInside />}

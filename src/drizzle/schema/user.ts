@@ -101,5 +101,6 @@ export type User = UserInfo &
   Partial<{
     player: Player;
     coach: Coach;
+    is_captain: boolean;
   }>;
 export type InsertUser = typeof UserTable.$inferInsert;

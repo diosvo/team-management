@@ -1,13 +1,29 @@
-import { getSessionCookie } from 'better-auth/cookies';
-import { type NextRequest, NextResponse } from 'next/server';
+import { getCookieCache, getSessionCookie } from 'better-auth/cookies';
+import { NextRequest, NextResponse } from 'next/server';
 
 import {
   AUTH_ROUTES,
   DEFAULT_LOGIN_REDIRECT,
   LOGIN_PATH,
   PUBLIC_ROUTES,
+  RESOURCES,
 } from '@/routes';
 import { COOKIE } from '@/utils/constant';
+import { UserRole } from '@/utils/enum';
+import { can } from '@/utils/permissions';
+
+/**
+ * Resolves the current pathname to a `Resource` using prefix matching.
+ * e.g. `/periodic-testing/add-result` → `periodic-testing`
+ */
+function resolveResource(pathname: string) {
+  for (const resource of RESOURCES) {
+    if (pathname.startsWith(`/${resource}`)) {
+      return resource;
+    }
+  }
+  return undefined;
+}
 
 export default async function proxy(req: NextRequest) {
   const currentPath = req.nextUrl.pathname;
@@ -31,6 +47,25 @@ export default async function proxy(req: NextRequest) {
   // Redirect authenticated users from auth routes
   if (isLoggedIn && isAuthRoute) {
     return redirectTo(DEFAULT_LOGIN_REDIRECT);
+  }
+
+  // Route-level permission check using cookie cache
+  if (isLoggedIn && isProtectedRoute) {
+    const resource = resolveResource(currentPath);
+
+    if (resource) {
+      const session = await getCookieCache(req, {
+        cookiePrefix: COOKIE.prefix,
+      });
+
+      if (session?.user?.role) {
+        const role = session.user.role as UserRole;
+
+        if (!can(role, resource, 'view')) {
+          return redirectTo(DEFAULT_LOGIN_REDIRECT);
+        }
+      }
+    }
   }
 
   return NextResponse.next();

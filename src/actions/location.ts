@@ -12,12 +12,15 @@ import {
 import { getDbErrorMessage } from '@/db/pg-error';
 import { UpsertLocationSchemaValues } from '@/schemas/location';
 
-import { withAuth } from './auth';
+import { withAuth, withResource } from './auth';
 import { revalidate } from './cache';
+
+const locations = withResource('locations');
 
 export const getLocations = withAuth(fetchLocations);
 
-export const upsertLocation = withAuth(
+export const upsertLocation = locations(
+  'edit',
   async (_, location_id: string, location: UpsertLocationSchemaValues) => {
     try {
       if (location_id) {
@@ -38,14 +41,17 @@ export const upsertLocation = withAuth(
   },
 );
 
-export const removeLocation = withAuth(async (_, location_id: string) => {
-  try {
-    await deleteLocation(location_id);
+export const removeLocation = locations(
+  'delete',
+  async (_, location_id: string) => {
+    try {
+      await deleteLocation(location_id);
 
-    revalidate.locations();
+      revalidate.locations();
 
-    return ResponseFactory.success('Deleted location successfully');
-  } catch {
-    return ResponseFactory.error('Failed to delete location');
-  }
-});
+      return ResponseFactory.success('Deleted location successfully');
+    } catch {
+      return ResponseFactory.error('Failed to delete location');
+    }
+  },
+);

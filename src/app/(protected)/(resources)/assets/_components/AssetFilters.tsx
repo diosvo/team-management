@@ -13,7 +13,6 @@ import { Filter, Plus } from 'lucide-react';
 
 import SearchInput from '@/components/SearchInput';
 import { Status } from '@/components/ui/status';
-import Visibility from '@/components/Visibility';
 
 import usePermissions from '@/hooks/use-permissions';
 import {
@@ -24,6 +23,7 @@ import {
 import { useAssetFilters } from '@/utils/filters';
 import { colorCondition } from '@/utils/helper';
 
+import Authorized from '@/components/Authorized';
 import { UpsertAsset } from './UpsertAsset';
 
 const categories = createListCollection({
@@ -121,7 +121,7 @@ export default function AssetFilters() {
           </Select.Positioner>
         </Portal>
       </Select.Root>
-      <Visibility isVisible={isAdmin}>
+      <Authorized action="create">
         <Button
           size={{ base: 'sm', md: 'md' }}
           onClick={() =>
@@ -136,7 +136,7 @@ export default function AssetFilters() {
           <Plus />
           Add
         </Button>
-      </Visibility>
+      </Authorized>
     </HStack>
   );
 }

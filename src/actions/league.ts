@@ -16,8 +16,10 @@ import {
 import { getDbErrorMessage } from '@/db/pg-error';
 import { UpsertLeagueSchemaValues } from '@/schemas/league';
 
-import { withAuth } from './auth';
+import { withAuth, withResource } from './auth';
 import { revalidate } from './cache';
+
+const leagues = withResource('leagues');
 
 export const getLeagues = withAuth(fetchLeagues);
 
@@ -26,7 +28,8 @@ export const getPlayersInLeague = withAuth(
     await fetchPlayersInLeague(user.team_id, league_id),
 );
 
-export const upsertLeague = withAuth(
+export const upsertLeague = leagues(
+  'edit',
   async (user, league_id: string, league: UpsertLeagueSchemaValues) => {
     const status = isFuture(league.start_date)
       ? LeagueStatus.UPCOMING
@@ -54,7 +57,7 @@ export const upsertLeague = withAuth(
   },
 );
 
-export const removeLeague = withAuth(async (_, league_id: string) => {
+export const removeLeague = leagues('delete', async (_, league_id: string) => {
   try {
     await deleteLeague(league_id);
 
@@ -69,7 +72,8 @@ export const removeLeague = withAuth(async (_, league_id: string) => {
 // TODO:
 // - If players added to LeagueRosterTable, remove them if selection does not include them anymore. Otherwise, add them.
 // - Only work when league is Update action > If it's a new league, add this after upsertLeague
-export const upsertPlayerToLeague = withAuth(
+export const upsertPlayerToLeague = leagues(
+  'edit',
   async (user, league_id: string, player_id: string) => {
     try {
       await addPlayerToLeagueRoster(user.team_id, league_id, player_id);

@@ -11,12 +11,15 @@ import {
 import { UpsertTestTypeSchemaValues } from '@/schemas/periodic-testing';
 
 import { ResponseFactory } from '@/utils/response';
-import { withAuth } from './auth';
+import { withAuth, withResource } from './auth';
 import { revalidate } from './cache';
+
+const periodicTesting = withResource('periodic-testing');
 
 export const getTestTypes = withAuth(async () => await getAction());
 
-export const upsertTestType = withAuth(
+export const upsertTestType = periodicTesting(
+  'edit',
   async ({ team_id }, type_id: string, data: UpsertTestTypeSchemaValues) => {
     try {
       const existingTestType = await getTestTypeById(type_id);
@@ -37,21 +40,24 @@ export const upsertTestType = withAuth(
       const { message } = getDbErrorMessage(error);
       return ResponseFactory.error(message);
     }
-  }
+  },
 );
 
-export const removeTestType = withAuth(async (_, type_id: string) => {
-  try {
-    await deleteTestType(type_id);
+export const removeTestType = periodicTesting(
+  'delete',
+  async (_, type_id: string) => {
+    try {
+      await deleteTestType(type_id);
 
-    revalidate.testTypes();
+      revalidate.testTypes();
 
-    return ResponseFactory.success('Test type removed successfully');
-  } catch (error) {
-    const { message, constraint } = getDbErrorMessage(error);
-    if (constraint === 'periodic_testing_test_type_id_fkey') {
-      return ResponseFactory.error('Type is being in use.');
+      return ResponseFactory.success('Test type removed successfully');
+    } catch (error) {
+      const { message, constraint } = getDbErrorMessage(error);
+      if (constraint === 'periodic_testing_test_type_id_fkey') {
+        return ResponseFactory.error('Type is being in use.');
+      }
+      return ResponseFactory.error(message);
     }
-    return ResponseFactory.error(message);
-  }
-});
+  },
+);

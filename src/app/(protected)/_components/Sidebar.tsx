@@ -19,8 +19,8 @@ import {
 import { LucideProps, PanelLeftOpen, PanelRightOpen } from 'lucide-react';
 
 import { Tooltip } from '@/components/ui/tooltip';
-
-import { hrefPath, SIDEBAR_GROUP } from '../_helpers/utils';
+import usePermissions from '@/hooks/use-permissions';
+import { SIDEBAR_GROUP } from '../_helpers/utils';
 
 const BUTTON_CONFIG = {
   size: { base: 'xs', md: 'sm', mdTo2xl: 'md' },
@@ -31,6 +31,12 @@ const BUTTON_CONFIG = {
     },
   },
 } as const;
+
+function resourceToName(resource: string) {
+  return resource
+    .replace(/-/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
 
 function LoadingIndicator() {
   const { pending } = useLinkStatus();
@@ -103,6 +109,12 @@ export default function Sidebar({
   isExpanded: boolean;
   setIsExpanded: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
+  const { can } = usePermissions();
+  const visibleItems = SIDEBAR_GROUP.flatMap(({ title, items }) => {
+    const filtered = items.filter(({ resource }) => can(resource, 'view'));
+    return filtered.length > 0 ? [{ title, items: filtered }] : [];
+  });
+
   return (
     <VStack
       height="full"
@@ -111,7 +123,7 @@ export default function Sidebar({
       paddingInline={2}
       gap={isExpanded ? 6 : 2}
     >
-      {SIDEBAR_GROUP.map(({ title, items }) => (
+      {visibleItems.map(({ title, items }) => (
         <VStack key={title} alignItems="stretch">
           {isExpanded ? (
             <Text
@@ -125,21 +137,16 @@ export default function Sidebar({
           ) : (
             <Separator />
           )}
-
-          {items.map(({ text, icon, disabled }) => {
-            const path = hrefPath(text);
-            return (
-              <NavButton
-                key={text}
-                href={path}
-                icon={icon}
-                disabled={disabled}
-                isExpanded={isExpanded}
-              >
-                {text}
-              </NavButton>
-            );
-          })}
+          {items.map(({ resource, icon }) => (
+            <NavButton
+              key={resource}
+              href={resource}
+              icon={icon}
+              isExpanded={isExpanded}
+            >
+              {resourceToName(resource)}
+            </NavButton>
+          ))}
         </VStack>
       ))}
       <VStack marginTop="auto" alignItems="stretch">
