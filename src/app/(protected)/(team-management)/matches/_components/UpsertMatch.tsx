@@ -118,7 +118,7 @@ export const UpsertMatch = createOverlay(({ action, item, ...rest }) => {
                 >
                   League Match
                 </Switch>
-                <Authorized action="edit">
+                <Authorized resource="matches" action="edit">
                   <Visibility isVisible={isLeague}>
                     <SearchableSelect
                       controlledMode

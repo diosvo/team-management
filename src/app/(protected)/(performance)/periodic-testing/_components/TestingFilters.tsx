@@ -89,7 +89,7 @@ export default function TestingFilters() {
           </Select.Positioner>
         </Portal>
       </Select.Root>
-      <Authorized action="create">
+      <Authorized resource="periodic-testing" action="create">
         <Menu.Root>
           <Menu.Trigger asChild>
             <Button>
