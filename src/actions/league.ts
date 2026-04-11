@@ -16,8 +16,10 @@ import {
 import { getDbErrorMessage } from '@/db/pg-error';
 import { UpsertLeagueSchemaValues } from '@/schemas/league';
 
-import { withAuth } from './auth';
+import { withAuth, withResource } from './auth';
 import { revalidate } from './cache';
+
+const leagues = withResource('leagues');
 
 export const getLeagues = withAuth(fetchLeagues);
 
@@ -26,8 +28,13 @@ export const getPlayersInLeague = withAuth(
     await fetchPlayersInLeague(user.team_id, league_id),
 );
 
-export const upsertLeague = withAuth(
-  async (user, league_id: string, league: UpsertLeagueSchemaValues) => {
+export const upsertLeague = leagues(
+  ['create', 'edit'],
+  async function upsert(
+    user,
+    league_id: string,
+    league: UpsertLeagueSchemaValues,
+  ) {
     const status = isFuture(league.start_date)
       ? LeagueStatus.UPCOMING
       : isPast(league.end_date)
@@ -54,23 +61,27 @@ export const upsertLeague = withAuth(
   },
 );
 
-export const removeLeague = withAuth(async (_, league_id: string) => {
-  try {
-    await deleteLeague(league_id);
+export const removeLeague = leagues(
+  ['delete'],
+  async function remove(_, league_id: string) {
+    try {
+      await deleteLeague(league_id);
 
-    revalidate.leagues();
+      revalidate.leagues();
 
-    return ResponseFactory.success('Deleted league successfully');
-  } catch {
-    return ResponseFactory.error('Failed to delete asset');
-  }
-});
+      return ResponseFactory.success('Deleted league successfully');
+    } catch {
+      return ResponseFactory.error('Failed to delete asset');
+    }
+  },
+);
 
 // TODO:
 // - If players added to LeagueRosterTable, remove them if selection does not include them anymore. Otherwise, add them.
 // - Only work when league is Update action > If it's a new league, add this after upsertLeague
-export const upsertPlayerToLeague = withAuth(
-  async (user, league_id: string, player_id: string) => {
+export const upsertPlayerToLeague = leagues(
+  ['create', 'edit'],
+  async function upsertPlayer(user, league_id: string, player_id: string) {
     try {
       await addPlayerToLeagueRoster(user.team_id, league_id, player_id);
 

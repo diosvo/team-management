@@ -1,5 +1,7 @@
-import { getRule } from '@/actions/rule';
 import { Metadata } from 'next';
+
+import { getRule } from '@/actions/rule';
+
 import RuleEditor from './_components/RuleEditor';
 
 export const metadata: Metadata = {

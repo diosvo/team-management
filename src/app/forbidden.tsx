@@ -8,7 +8,7 @@ import { DEFAULT_LOGIN_REDIRECT } from '@/routes';
 
 export default function Forbidden() {
   return (
-    <Center h="100vh">
+    <Center>
       <EmptyState
         size="lg"
         icon={<LockKeyhole color="red" />}

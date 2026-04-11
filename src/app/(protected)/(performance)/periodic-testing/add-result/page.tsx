@@ -8,7 +8,7 @@ import { MoveLeft } from 'lucide-react';
 import PageTitle from '@/components/PageTitle';
 import { Tooltip } from '@/components/ui/tooltip';
 
-import { canUpsertTestResult } from '@/actions/test-result';
+import { canCreateTestResult } from '@/actions/test-result';
 import AddTestResultPageClient from './_components/AddTestResultPageClient';
 
 export const metadata: Metadata = {
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 };
 
 export default async function AddTestResultPage() {
-  const isAllowed = await canUpsertTestResult();
+  const isAllowed = await canCreateTestResult();
 
   if (!isAllowed) forbidden();
 

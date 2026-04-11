@@ -13,8 +13,10 @@ import {
 import { getTeamHeadCoach } from '@/db/user';
 import { UpsertSessionSchemaValues } from '@/schemas/training';
 
-import { withAuth } from './auth';
+import { withAuth, withResource } from './auth';
 import { revalidate } from './cache';
+
+const training = withResource('training');
 
 export const getCoach = withAuth(
   async ({ team_id }) => await getTeamHeadCoach(team_id),
@@ -25,12 +27,13 @@ export const getSessions = withAuth(
     await fetchSessions(team_id, filters),
 );
 
-export const upsertSession = withAuth(
-  async (
+export const upsertSession = training(
+  ['create', 'edit'],
+  async function upsert(
     { team_id },
     session_id: string,
     values: UpsertSessionSchemaValues,
-  ) => {
+  ) {
     try {
       const coach = await getTeamHeadCoach(team_id);
 
@@ -60,16 +63,19 @@ export const upsertSession = withAuth(
   },
 );
 
-export const removeSession = withAuth(async (_, session_id: string) => {
-  try {
-    await deleteSession(session_id);
+export const removeSession = training(
+  ['delete'],
+  async function remove(_, session_id: string) {
+    try {
+      await deleteSession(session_id);
 
-    revalidate.sessions();
+      revalidate.sessions();
 
-    return ResponseFactory.success('Training session deleted successfully');
-  } catch (error) {
-    const shortId = session_id.slice(0, 8);
-    const { message } = getDbErrorMessage(error);
-    return ResponseFactory.error(`${message} (id: ${shortId})`);
-  }
-});
+      return ResponseFactory.success('Training session deleted successfully');
+    } catch (error) {
+      const shortId = session_id.slice(0, 8);
+      const { message } = getDbErrorMessage(error);
+      return ResponseFactory.error(`${message} (id: ${shortId})`);
+    }
+  },
+);

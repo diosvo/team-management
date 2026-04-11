@@ -94,12 +94,3 @@ export function colorPlayerRank(rate: number): ColorPalette {
   if (rate >= 50) return 'orange';
   return 'red';
 }
-
-export function hasPermissions(role: UserRole) {
-  return {
-    isAdmin: role === UserRole.SUPER_ADMIN,
-    isPlayer: role === UserRole.PLAYER,
-    isCoach: role === UserRole.COACH,
-    isGuest: role === UserRole.GUEST,
-  };
-}

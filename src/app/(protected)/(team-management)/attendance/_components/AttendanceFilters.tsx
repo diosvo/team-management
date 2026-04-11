@@ -3,12 +3,12 @@
 import { Input, SimpleGrid } from '@chakra-ui/react';
 
 import { Field } from '@/components/ui/field';
-import Visibility from '@/components/Visibility';
 
 import usePermissions from '@/hooks/use-permissions';
 import { ALL, ESTABLISHED_DATE } from '@/utils/constant';
 import { useAttendanceFilters } from '@/utils/filters';
 
+import Visibility from '@/components/Visibility';
 import BulkAttendanceManager from './BulkAttendanceManager';
 import SubmitLeaveRequest from './SubmitLeaveRequest';
 

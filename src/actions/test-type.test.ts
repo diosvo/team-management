@@ -9,7 +9,11 @@ import {
 } from '@/db/test-type';
 import { UpsertTestTypeSchemaValues } from '@/schemas/periodic-testing';
 
-import { mockWithAuth } from '@/test/mocks/auth';
+import {
+  mockWithAuth,
+  mockWithResource,
+  mockWithResourceAction,
+} from '@/test/mocks/auth';
 import {
   MOCK_TEST_TYPE,
   MOCK_TEST_TYPE_2,
@@ -21,6 +25,7 @@ import { getTestTypes, removeTestType, upsertTestType } from './test-type';
 
 vi.mock('./auth', () => ({
   withAuth: mockWithAuth,
+  withResource: mockWithResource,
 }));
 
 vi.mock('@/db/test-type', () => ({
@@ -36,6 +41,26 @@ vi.mock('@/actions/cache', () => ({
     testTypes: vi.fn(),
   },
 }));
+
+describe('permissions', () => {
+  test('scopes to the periodic-testing resource', () => {
+    expect(mockWithResource).toHaveBeenCalledWith('periodic-testing');
+  });
+
+  test('upsertTestType requires create and edit actions', () => {
+    expect(mockWithResourceAction).toHaveBeenCalledWith(
+      ['create', 'edit'],
+      expect.objectContaining({ name: 'upsert' }),
+    );
+  });
+
+  test('removeTestType requires delete action', () => {
+    expect(mockWithResourceAction).toHaveBeenCalledWith(
+      ['delete'],
+      expect.objectContaining({ name: 'remove' }),
+    );
+  });
+});
 
 describe('Test Type Actions', () => {
   const mockResult = {

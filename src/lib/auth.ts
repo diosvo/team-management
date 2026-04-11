@@ -60,8 +60,12 @@ export default betterAuth({
       },
       team_id: {
         type: 'string',
+        required: true,
+      },
+      is_captain: {
+        type: 'boolean',
         required: false,
-        defaultValue: null,
+        defaultValue: false,
       },
     },
   },

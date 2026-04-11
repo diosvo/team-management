@@ -5,29 +5,34 @@ import { getDbErrorMessage } from '@/db/pg-error';
 import { getRule as getAction, insertRule, updateRule } from '@/db/rule';
 
 import { ResponseFactory } from '@/utils/response';
-import { withAuth } from './auth';
+import { withAuth, withResource } from './auth';
+
+const teamRule = withResource('team-rule');
 
 export const getRule = withAuth(
   async ({ team_id }) => await getAction(team_id),
 );
 
-export const upsertRule = withAuth(async ({ team_id }, content: string) => {
-  try {
-    const existingRule = await getRule();
+export const upsertRule = teamRule(
+  ['create', 'edit'],
+  async function upsert({ team_id }, content: string) {
+    try {
+      const existingRule = await getRule();
 
-    if (existingRule) {
-      await updateRule(existingRule.rule_id, content);
-    } else {
-      await insertRule({ team_id, content });
+      if (existingRule) {
+        await updateRule(existingRule.rule_id, content);
+      } else {
+        await insertRule({ team_id, content });
+      }
+
+      revalidate.rule();
+
+      return ResponseFactory.success(
+        `${existingRule ? 'Updated' : 'Added'} rule successfully`,
+      );
+    } catch (error) {
+      const { message } = getDbErrorMessage(error);
+      return ResponseFactory.error(message);
     }
-
-    revalidate.rule();
-
-    return ResponseFactory.success(
-      `${existingRule ? 'Updated' : 'Added'} rule successfully`,
-    );
-  } catch (error) {
-    const { message } = getDbErrorMessage(error);
-    return ResponseFactory.error(message);
-  }
-});
+  },
+);

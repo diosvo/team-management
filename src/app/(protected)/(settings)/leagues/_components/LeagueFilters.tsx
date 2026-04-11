@@ -10,13 +10,12 @@ import {
 } from '@chakra-ui/react';
 import { Crosshair, Filter, Plus } from 'lucide-react';
 
+import Authorized from '@/components/Authorized';
 import SearchInput from '@/components/SearchInput';
-import Visibility from '@/components/Visibility';
 import { Status } from '@/components/ui/status';
 import { toaster } from '@/components/ui/toaster';
 import { Tooltip } from '@/components/ui/tooltip';
 
-import usePermissions from '@/hooks/use-permissions';
 import { ALL, LEAGUE_STATUS_SELECTION } from '@/utils/constant';
 import { LeagueStatus } from '@/utils/enum';
 import { useLeagueFilters } from '@/utils/filters';
@@ -36,7 +35,6 @@ export default function LeagueFilters({
 }: {
   endedLeagues: Array<League>;
 }) {
-  const { isAdmin } = usePermissions();
   const [{ status }, setSearchParams] = useLeagueFilters();
 
   const handleCorrectStatus = async () => {
@@ -99,7 +97,7 @@ export default function LeagueFilters({
           </Select.Positioner>
         </Portal>
       </Select.Root>
-      <Visibility isVisible={isAdmin}>
+      <Authorized resource="leagues" action="edit">
         <Tooltip
           content={
             endedLeagues.length > 0 ? (
@@ -140,7 +138,7 @@ export default function LeagueFilters({
           <Plus />
           Add
         </Button>
-      </Visibility>
+      </Authorized>
       <UpsertLeague.Viewport />
     </HStack>
   );

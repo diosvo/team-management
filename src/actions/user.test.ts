@@ -7,7 +7,11 @@ import {
 } from '@/schemas/user';
 import { CoachPosition, PlayerPosition, UserRole } from '@/utils/enum';
 
-import { mockWithAuth } from '@/test/mocks/auth';
+import {
+  mockWithAuth,
+  mockWithResource,
+  mockWithResourceAction,
+} from '@/test/mocks/auth';
 import { MOCK_TEAM } from '@/test/mocks/team';
 import {
   MOCK_COACH,
@@ -42,6 +46,7 @@ import {
 
 vi.mock('./auth', () => ({
   withAuth: mockWithAuth,
+  withResource: mockWithResource,
 }));
 
 vi.mock('@/db/user', () => ({
@@ -77,6 +82,44 @@ vi.mock('@/lib/auth', () => ({
     },
   },
 }));
+
+describe('permissions', () => {
+  test('scopes roster-related actions to the roster resource', () => {
+    expect(mockWithResource).toHaveBeenCalledWith('roster');
+  });
+
+  test('scopes user-related actions to the profile resource', () => {
+    expect(mockWithResource).toHaveBeenCalledWith('profile');
+  });
+
+  test('addUser requires create action', () => {
+    expect(mockWithResourceAction).toHaveBeenCalledWith(
+      ['create'],
+      expect.objectContaining({ name: 'add' }),
+    );
+  });
+
+  test('updatePersonalInfo requires edit action', () => {
+    expect(mockWithResourceAction).toHaveBeenCalledWith(
+      ['edit'],
+      expect.objectContaining({ name: 'updatePersonal' }),
+    );
+  });
+
+  test('updateTeamInfo requires edit action', () => {
+    expect(mockWithResourceAction).toHaveBeenCalledWith(
+      ['edit'],
+      expect.objectContaining({ name: 'updateTeam' }),
+    );
+  });
+
+  test('removeUser requires delete action', () => {
+    expect(mockWithResourceAction).toHaveBeenCalledWith(
+      ['delete'],
+      expect.objectContaining({ name: 'remove' }),
+    );
+  });
+});
 
 describe('User Actions', () => {
   const mockResult = {
@@ -156,6 +199,7 @@ describe('User Actions', () => {
       name: MOCK_USER.name,
       image: null,
       role: UserRole.PLAYER,
+      is_captain: false,
       state: MOCK_USER.state,
       team_id: MOCK_TEAM.team_id,
     };
@@ -189,7 +233,7 @@ describe('User Actions', () => {
       expect(revalidate.roster).toHaveBeenCalled();
       expect(result).toEqual({
         success: true,
-        message: 'Sent an email to with instructions',
+        message: 'Sent an email with instructions',
       });
     });
 
