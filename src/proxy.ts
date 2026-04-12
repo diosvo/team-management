@@ -61,7 +61,10 @@ export default async function proxy(req: NextRequest) {
       const role = session?.user?.role as UserRole;
 
       if (!role || !can(role, resource, 'view')) {
-        return redirectTo(DEFAULT_LOGIN_REDIRECT);
+        // FIXME:
+        // Failed to fetch RSC payload for http://localhost:3000/dashboard. Falling back to browser navigation. TypeError: Failed to fetch
+        // => Redirect to a "403 Forbidden" page instead of login redirect (?)
+        // return redirectTo(DEFAULT_LOGIN_REDIRECT);
       }
     }
   }

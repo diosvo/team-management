@@ -1,6 +1,6 @@
-'use client';
+import NextLink from 'next/link';
 
-import { Span, Stack } from '@chakra-ui/react';
+import { Link as ChakraLink, LinkProps, Span, Stack } from '@chakra-ui/react';
 
 import SearchableSelect, { SearchableSelectProps } from '../SearchableSelect';
 
@@ -15,6 +15,31 @@ type LocationSelectionProps = Required<
   Partial<{
     isDisabled: boolean;
   }>;
+
+export function LocationLink({
+  name,
+  ...props
+}: { name: Nullish<string> } & LinkProps) {
+  if (!name) return 'Unknown';
+  const href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name)}`;
+
+  return (
+    <ChakraLink
+      colorPalette="blue"
+      focusRing="none"
+      textDecoration="dotted underline"
+      _hover={{
+        textDecoration: 'red dotted underline',
+      }}
+      {...props}
+      asChild
+    >
+      <NextLink href={href} rel="noopener noreferrer" target="_blank">
+        {name}
+      </NextLink>
+    </ChakraLink>
+  );
+}
 
 export default function LocationSelection({
   control,

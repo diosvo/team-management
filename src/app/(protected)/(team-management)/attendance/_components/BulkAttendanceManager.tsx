@@ -17,7 +17,7 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ClipboardCheck, SaveAll } from 'lucide-react';
+import { SaveAll } from 'lucide-react';
 import { useFieldArray, useForm } from 'react-hook-form';
 
 import { Checkbox } from '@/components/ui/checkbox';
@@ -45,7 +45,11 @@ import {
   BulkAttendanceSchemaValues,
 } from '@/schemas/attendance';
 
-export default function BulkAttendanceManager() {
+export default function BulkAttendanceManager({
+  trigger,
+}: {
+  trigger: React.ReactNode;
+}) {
   const [, setSearchParams] = useAttendanceFilters();
   const { data: activePlayers = [] } = useSWRImmutable<Array<User>>(
     CACHE_KEY.PLAYERS,
@@ -169,16 +173,7 @@ export default function BulkAttendanceManager() {
 
   return (
     <Dialog.Root open={open} onOpenChange={handleOpenChange}>
-      <Dialog.Trigger asChild>
-        <Button
-          size={{ base: 'sm', md: 'md' }}
-          colorPalette="green"
-          variant="outline"
-        >
-          <ClipboardCheck />
-          Mark Attendance
-        </Button>
-      </Dialog.Trigger>
+      <Dialog.Trigger asChild>{trigger}</Dialog.Trigger>
       <Portal>
         <Dialog.Backdrop />
         <Dialog.Positioner as="form" onSubmit={handleSubmit(onSubmit)}>

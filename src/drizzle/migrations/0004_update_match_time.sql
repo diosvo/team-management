@@ -1,1 +1,0 @@
-ALTER TABLE "match" ALTER COLUMN "time" SET DATA TYPE time;

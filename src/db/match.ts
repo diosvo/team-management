@@ -43,12 +43,16 @@ export async function getMatches(
             : MatchStatus.DRAW,
     }));
 
-    const win_streak = data.reduce((streak, match) => {
-      if (match.result === MatchStatus.WIN) {
-        return streak + 1;
-      }
-      return streak;
-    }, 0);
+    const win_streak = data.reduce(
+      (acc, match) => {
+        if (match.result === MatchStatus.WIN) {
+          const current = acc.current + 1;
+          return { current, max: Math.max(acc.max, current) };
+        }
+        return { ...acc, current: 0 };
+      },
+      { current: 0, max: 0 },
+    ).max;
 
     const avg_win_rate =
       data.length > 0

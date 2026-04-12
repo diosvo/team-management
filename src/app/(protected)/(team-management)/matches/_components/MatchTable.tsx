@@ -18,6 +18,7 @@ import { formatDate, formatDay } from '@/utils/formatter';
 import { colorMatchResult } from '@/utils/helper';
 
 import { removeMatch } from '@/actions/match';
+import { LocationLink } from '@/components/common/LocationSelection';
 import { UpsertMatch } from './UpsertMatch';
 
 const headers = [
@@ -144,7 +145,9 @@ export default function MatchTable({
                       {item.result}
                     </Badge>
                   </Table.Cell>
-                  <Table.Cell>{item.location?.name || '-'}</Table.Cell>
+                  <Table.Cell>
+                    <LocationLink name={item.location?.name} />
+                  </Table.Cell>
                   <Table.Cell>
                     <HStack gap={1}>
                       <Span fontSize="sm">{formatDay(item.date)}</Span>

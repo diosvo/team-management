@@ -9,7 +9,7 @@ import {
   MOCK_ATTENDANCE_HISTORY,
   MOCK_PLAYERS_ATTENDANCE_SUMMARY,
 } from '@/test/mocks/analytics';
-import { mockWithAuth } from '@/test/mocks/auth';
+import { mockWithAuth, mockWithResource } from '@/test/mocks/auth';
 import { MOCK_TEAM } from '@/test/mocks/team';
 
 import { Interval } from '@/utils/enum';
@@ -22,6 +22,7 @@ import {
 
 vi.mock('./auth', () => ({
   withAuth: mockWithAuth,
+  withResource: mockWithResource,
 }));
 
 vi.mock('@/db/analytics', () => ({

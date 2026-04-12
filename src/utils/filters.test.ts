@@ -8,8 +8,8 @@ import { ALL, INTERVAL_VALUES, SESSION_STATUS_VALUES } from './constant';
 import { AttendanceStatus, Interval, SessionStatus } from './enum';
 
 import {
-  loadAnalyticsFilters,
   loadAttendanceFilters,
+  loadDashboardFilters,
   loadMatchFilters,
   loadPeriodicTestingFilters,
   loadTrainingFilters,
@@ -366,15 +366,15 @@ describe('Server-Side Filter Loaders', () => {
     });
   });
 
-  describe('loadAnalyticsFilters', () => {
+  describe('loadDashboardFilters', () => {
     test('loads analytics filters with default values', async () => {
-      const result = await loadAnalyticsFilters(new URLSearchParams());
+      const result = await loadDashboardFilters(new URLSearchParams());
 
       expect(result).toEqual(
         expect.objectContaining({
           page: 1,
           q: '',
-          interval: Interval.THIS_MONTH,
+          interval: Interval.THIS_YEAR,
         }),
       );
     });
@@ -385,7 +385,7 @@ describe('Server-Side Filter Loaders', () => {
         q: 'dios',
         interval: Interval.THIS_YEAR,
       });
-      const result = await loadAnalyticsFilters(params);
+      const result = await loadDashboardFilters(params);
 
       expect(result).toEqual(
         expect.objectContaining({
@@ -398,7 +398,7 @@ describe('Server-Side Filter Loaders', () => {
 
     test('handles all interval values correctly', async () => {
       for (const interval of INTERVAL_VALUES) {
-        const result = await loadAnalyticsFilters(
+        const result = await loadDashboardFilters(
           new URLSearchParams({ interval }),
         );
         expect(result).toEqual(expect.objectContaining({ interval }));
@@ -406,12 +406,12 @@ describe('Server-Side Filter Loaders', () => {
     });
 
     test('uses default interval when invalid value provided', async () => {
-      const result = await loadAnalyticsFilters(
+      const result = await loadDashboardFilters(
         new URLSearchParams({ interval: 'invalid_interval' }),
       );
 
       expect(result).toEqual(
-        expect.objectContaining({ interval: Interval.THIS_MONTH }),
+        expect.objectContaining({ interval: Interval.THIS_YEAR }),
       );
     });
   });

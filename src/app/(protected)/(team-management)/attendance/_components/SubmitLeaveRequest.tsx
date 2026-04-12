@@ -12,7 +12,7 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { DoorOpen, Send } from 'lucide-react';
+import { Send } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 
 import { Field } from '@/components/ui/field';
@@ -27,7 +27,11 @@ import {
   UpsertAttendanceSchemaValues,
 } from '@/schemas/attendance';
 
-export default function SubmitLeaveRequest() {
+export default function SubmitLeaveRequest({
+  trigger,
+}: {
+  trigger: React.ReactNode;
+}) {
   const { data } = authClient.useSession();
 
   const {
@@ -67,12 +71,7 @@ export default function SubmitLeaveRequest() {
 
   return (
     <Dialog.Root>
-      <Dialog.Trigger asChild>
-        <Button size={{ base: 'sm', md: 'md' }}>
-          <DoorOpen />
-          Submit Leave Request
-        </Button>
-      </Dialog.Trigger>
+      <Dialog.Trigger asChild>{trigger}</Dialog.Trigger>
       <Portal>
         <Dialog.Backdrop />
         <Dialog.Positioner as="form" onSubmit={handleSubmit(onSubmit)}>

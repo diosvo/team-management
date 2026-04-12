@@ -66,9 +66,9 @@ const attendanceSearchParams = {
   status: parseAsStringEnum(ATTENDANCE_STATUS_VALUES).withDefault(ALL.value),
 };
 
-const analyticsSearchParams = {
+const dashboardSearchParams = {
   ...commonParams,
-  interval: parseAsStringEnum(INTERVAL_VALUES).withDefault(Interval.THIS_MONTH),
+  interval: parseAsStringEnum(INTERVAL_VALUES).withDefault(Interval.THIS_YEAR),
 };
 
 const trainingSearchParams = {
@@ -98,7 +98,7 @@ export const useTrainingFilters = () =>
     shallow: false,
   });
 export const useDashboardFilters = () =>
-  useQueryStates(analyticsSearchParams, {
+  useQueryStates(dashboardSearchParams, {
     shallow: false,
   });
 
@@ -109,7 +109,7 @@ export const loadPeriodicTestingFilters = createLoader(
 );
 export const loadMatchFilters = createLoader(matchSearchParams);
 export const loadAttendanceFilters = createLoader(attendanceSearchParams);
-export const loadAnalyticsFilters = createLoader(analyticsSearchParams);
+export const loadDashboardFilters = createLoader(dashboardSearchParams);
 export const loadTrainingFilters = createLoader(trainingSearchParams);
 
 /* ================== 🧮 Types & Enums 🧮 ================== */

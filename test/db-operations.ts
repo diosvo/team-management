@@ -41,11 +41,18 @@ export function mockSelectSuccess(returnValue: unknown) {
       createThenableWithMethods(returnValue, { limit: mockLimit }),
     );
 
-  const mockGroupBy = vi
+  const mockHaving = vi
     .fn()
     .mockImplementation(() =>
       createThenableWithMethods(returnValue, { orderBy: mockOrderBy }),
     );
+
+  const mockGroupBy = vi.fn().mockImplementation(() =>
+    createThenableWithMethods(returnValue, {
+      orderBy: mockOrderBy,
+      having: mockHaving,
+    }),
+  );
 
   const mockWhereWithGroupBy = vi
     .fn()
@@ -73,7 +80,7 @@ export function mockSelectSuccess(returnValue: unknown) {
     }),
   );
 
-  vi.mocked(db.select).mockReturnValue({
+  vi.mocked(db.select).mockReturnValueOnce({
     from: mockFrom,
   } as unknown as ReturnType<typeof db.select>);
 
@@ -82,6 +89,7 @@ export function mockSelectSuccess(returnValue: unknown) {
     mockWhere,
     mockWhereWithGroupBy,
     mockGroupBy,
+    mockHaving,
     mockOrderBy,
     mockLimit,
     mockLeftJoin,
