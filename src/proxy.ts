@@ -10,7 +10,6 @@ import {
 } from '@/routes';
 import { COOKIE } from '@/utils/constant';
 import { UserRole } from '@/utils/enum';
-import { can } from '@/utils/permissions';
 
 /**
  * Resolves the current pathname to a `Resource` using prefix matching.
@@ -28,7 +27,7 @@ function resolveResource(pathname: string) {
 export default async function proxy(req: NextRequest) {
   const currentPath = req.nextUrl.pathname;
   const isProtectedRoute = !PUBLIC_ROUTES.has(currentPath);
-  const isAuthRoute = AUTH_ROUTES.add('/').has(currentPath);
+  const isAuthRoute = AUTH_ROUTES.has(currentPath) || currentPath === '/';
 
   const redirectTo = (path: string) =>
     NextResponse.redirect(new URL(path, req.nextUrl));
@@ -52,18 +51,19 @@ export default async function proxy(req: NextRequest) {
   // Route-level permission check using cookie cache
   if (isLoggedIn && isProtectedRoute) {
     const resource = resolveResource(currentPath);
+    const cookie = req.cookies.get(COOKIE.prefix + 'session_token');
 
-    if (resource) {
-      const session = await getCookieCache(req, {
-        cookiePrefix: COOKIE.prefix,
-      });
+    // console.log(cookie);
 
-      const role = session?.user?.role as UserRole;
+    const session = await getCookieCache(req, {
+      cookiePrefix: COOKIE.prefix,
+    });
 
-      if (!role || !can(role, resource, 'view')) {
-        return redirectTo(DEFAULT_LOGIN_REDIRECT);
-      }
-    }
+    const role = session?.user?.role as UserRole;
+
+    // if (!role || !can(role, resource, 'view')) {
+    //   return redirectTo(DEFAULT_LOGIN_REDIRECT);
+    // }
   }
 
   return NextResponse.next();

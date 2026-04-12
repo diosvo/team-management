@@ -11,7 +11,6 @@ import {
   ReferenceLine,
   Tooltip,
   XAxis,
-  YAxis,
 } from 'recharts';
 
 import { EmptyState } from '@/components/ui/empty-state';
@@ -75,30 +74,25 @@ export default function AttendanceTrend({
         {records.length === 0 ? (
           <EmptyState icon={<ChartLine />} title="No attendance records" />
         ) : (
-          <Chart.Root maxHeight="xs" chart={chart}>
-            <LineChart data={chart.data}>
-              <CartesianGrid stroke={chart.color('border')} vertical={false} />
+          <Chart.Root chart={chart}>
+            <LineChart data={chart.data} responsive>
+              <CartesianGrid
+                stroke={chart.color('border')}
+                vertical={false}
+                strokeDasharray="2 2"
+              />
               <XAxis
                 axisLine={false}
                 dataKey={chart.key('short_date')}
                 stroke={chart.color('border')}
               />
-              <YAxis
-                stroke={chart.color('border')}
-                domain={[0, 100]}
-                label={{
-                  value: 'Attendance %',
-                  angle: -90,
-                  position: 'insideLeft',
-                }}
-              />
-              <Tooltip animationDuration={100} content={<CustomTooltip />} />
+              <Tooltip content={<CustomTooltip />} />
               <ReferenceLine
                 y={TARGET_RATE}
                 stroke="orange"
-                strokeDasharray="5 5"
+                strokeDasharray="2 2"
                 label={{
-                  value: `Target (${TARGET_RATE}%)`,
+                  value: `Target (${TARGET_RATE})`,
                   position: 'top',
                 }}
               />

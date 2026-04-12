@@ -33,3 +33,9 @@ export interface AttendanceHistoryRecord {
   attended: number;
   present_rate: number;
 }
+
+export interface MatchesRateRecord {
+  outcome: string;
+  friendly: number;
+  league: number;
+}

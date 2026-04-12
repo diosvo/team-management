@@ -7,12 +7,14 @@ import {
   Badge,
   Link as ChakraLink,
   HStack,
+  List,
   Span,
   Table,
 } from '@chakra-ui/react';
 import { CirclePile } from 'lucide-react';
 
 import Authorized from '@/components/Authorized';
+import { LocationLink } from '@/components/common/LocationSelection';
 import Pagination from '@/components/Pagination';
 import SelectionActionBar from '@/components/SelectionActionBar';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -27,6 +29,7 @@ import { formatDate, formatDay } from '@/utils/formatter';
 import { colorSessionStatus } from '@/utils/helper';
 
 import { removeSession } from '@/actions/training-session';
+import { Tooltip } from '@/components/ui/tooltip';
 import { UpsertSession } from './UpsertSession';
 
 const headers = ['Date', 'Time', 'Location', 'Status', 'Present Rate'] as const;
@@ -151,21 +154,7 @@ export default function SessionTable({
                     </HStack>
                   </Table.Cell>
                   <Table.Cell>
-                    {item.location?.name ? (
-                      <ChakraLink
-                        variant="underline"
-                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                          item.location.name,
-                        )}`}
-                        target="_blank"
-                        colorPalette="pink"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {item.location.name}
-                      </ChakraLink>
-                    ) : (
-                      '-'
-                    )}
+                    <LocationLink name={item.location?.name} />
                   </Table.Cell>
                   <Table.Cell>
                     <Badge
@@ -176,7 +165,17 @@ export default function SessionTable({
                       {item.status}
                     </Badge>
                   </Table.Cell>
-                  <Table.Cell>{item.present_rate}</Table.Cell>
+                  <Tooltip
+                    content={
+                      <List.Root paddingInline={4}>
+                        <List.Item>On Time: 1</List.Item>
+                        <List.Item>Late: 2</List.Item>
+                      </List.Root>
+                    }
+                    interactive
+                  >
+                    <Table.Cell>{item.present_rate}</Table.Cell>
+                  </Tooltip>
                 </Table.Row>
               ))
             ) : (

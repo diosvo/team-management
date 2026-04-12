@@ -14,7 +14,6 @@ export const ROLE_CONFIG: Record<UserRole, RoleConfig> = {
   ),
   [UserRole.COACH]: {
     dashboard: ['view'],
-    analytics: ['view'],
     'team-rule': ['view'],
     roster: ['view'],
     training: ['view', 'create', 'edit'],
@@ -29,7 +28,6 @@ export const ROLE_CONFIG: Record<UserRole, RoleConfig> = {
   },
   [UserRole.PLAYER]: {
     dashboard: ['view'],
-    analytics: ['view'],
     'team-rule': ['view'],
     roster: ['view'],
     training: ['view'],

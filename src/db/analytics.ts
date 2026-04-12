@@ -1,14 +1,15 @@
+import { format } from 'date-fns';
 import { and, count, desc, eq, gte, inArray, lte, SQL, sql } from 'drizzle-orm';
 
 import { AttendanceStatusValues } from '@/types/attendance';
 import { IntervalValues } from '@/types/common';
 
-import { LOCALE_DATE_FORMAT } from '@/utils/constant';
-import { AttendanceStatus } from '@/utils/enum';
+import { DEFAULT_DATE_FORMAT, LOCALE_DATE_FORMAT } from '@/utils/constant';
+import { AttendanceStatus, SessionStatus } from '@/utils/enum';
 import { TIME_DURATION } from '@/utils/formatter';
 
 import db from '@/drizzle';
-import { UserTable } from '@/drizzle/schema';
+import { MatchTable, TrainingSessionTable, UserTable } from '@/drizzle/schema';
 import { AttendanceTable } from '@/drizzle/schema/attendance';
 
 const COUNTED_STATUSES = [
@@ -61,6 +62,68 @@ function getTotalCountSql() {
 
 function getAttendedCountSql() {
   return countWhen(inArray(AttendanceTable.status, ATTENDED_STATUSES));
+}
+
+export async function getUpcomingMatches(team_id: string) {
+  try {
+    return await db.query.MatchTable.findMany({
+      where: and(
+        eq(MatchTable.home_team, team_id),
+        gte(MatchTable.date, format(new Date(), DEFAULT_DATE_FORMAT)),
+      ),
+      columns: {
+        match_id: true,
+        date: true,
+        time: true,
+      },
+      with: {
+        location: {
+          columns: {
+            name: true,
+          },
+        },
+        league: {
+          columns: {
+            league_id: true,
+            name: true,
+          },
+        },
+      },
+      orderBy: desc(MatchTable.date),
+      limit: 3,
+    });
+  } catch {
+    return [];
+  }
+}
+
+export async function getUpcomingSessions(team_id: string) {
+  try {
+    return await db.query.TrainingSessionTable.findMany({
+      where: and(
+        eq(TrainingSessionTable.team_id, team_id),
+        eq(TrainingSessionTable.status, SessionStatus.SCHEDULED),
+        gte(TrainingSessionTable.date, format(new Date(), DEFAULT_DATE_FORMAT)),
+      ),
+      columns: {
+        session_id: true,
+        date: true,
+        start_time: true,
+        end_time: true,
+      },
+      with: {
+        location: {
+          columns: {
+            name: true,
+          },
+        },
+      },
+      orderBy: desc(TrainingSessionTable.date),
+      limit: 3,
+    });
+  } catch {
+    return [];
+  }
 }
 
 export async function getTeamAttendanceHistory(

@@ -1,6 +1,6 @@
 'use client';
 
-import { Span, Stack } from '@chakra-ui/react';
+import { Link, LinkProps, Span, Stack } from '@chakra-ui/react';
 
 import SearchableSelect, { SearchableSelectProps } from '../SearchableSelect';
 
@@ -15,6 +15,30 @@ type LocationSelectionProps = Required<
   Partial<{
     isDisabled: boolean;
   }>;
+
+export function LocationLink({
+  name,
+  ...props
+}: { name: Nullish<string> } & LinkProps) {
+  if (!name) return 'Unknown';
+
+  return (
+    <Link
+      variant="underline"
+      colorPalette="blue"
+      focusRing="none"
+      _hover={{
+        textDecoration: 'red wavy underline',
+      }}
+      target="_blank"
+      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name)}`}
+      onClick={(e) => e.stopPropagation()}
+      {...props}
+    >
+      {name}
+    </Link>
+  );
+}
 
 export default function LocationSelection({
   control,
