@@ -17,7 +17,7 @@ const dates = createListCollection({
   items: INTERVAL_SELECTION,
 });
 
-export default function AnalyticsFilters() {
+export default function DashboardFilters() {
   const [{ interval }, setSearchParams] = useDashboardFilters();
 
   const handleSearchParams = (key: MatchSearchParamsKeys, value: string) => {
@@ -27,13 +27,18 @@ export default function AnalyticsFilters() {
   return (
     <SimpleGrid columns={1} gap={3}>
       <Select.Root
+        colorPalette="pink"
         collection={dates}
         value={[interval]}
         onValueChange={({ value }) => handleSearchParams('interval', value[0])}
       >
         <Select.HiddenSelect />
         <Select.Control>
-          <Select.Trigger>
+          <Select.Trigger
+            borderColor="colorPalette.muted"
+            bg="colorPalette.100"
+            color="colorPalette.fg"
+          >
             <HStack>
               <CalendarSearch size={16} />
               <Select.ValueText placeholder="Time" />

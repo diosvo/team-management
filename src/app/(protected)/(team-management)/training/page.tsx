@@ -4,6 +4,7 @@ import { HStack } from '@chakra-ui/react';
 
 import PageTitle from '@/components/PageTitle';
 
+import { getAttendanceHistory } from '@/actions/analytics';
 import { getSessions } from '@/actions/training-session';
 import { loadTrainingFilters } from '@/utils/filters';
 
@@ -20,7 +21,9 @@ export default async function TrainingSessionsPage(
   props: PageProps<'/training'>,
 ) {
   const params = await loadTrainingFilters(props.searchParams);
+  // TODO: migrate with getAttendanceHistory with on_time, late when hovering in Present Rate in SessionTable
   const { stats, data } = await getSessions(params);
+  const attendanceHistory = await getAttendanceHistory(params.interval);
 
   return (
     <>
@@ -28,7 +31,6 @@ export default async function TrainingSessionsPage(
         <PageTitle title="Training Sessions" />
         <SessionFilters />
       </HStack>
-
       <SessionStats stats={stats} />
       <SessionTable sessions={data} />
     </>

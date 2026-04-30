@@ -8,7 +8,7 @@ import {
   PlayerStats,
 } from '@/types/analytics';
 import { MOCK_LOCATION } from './location';
-import { MOCK_TEAM } from './team';
+import { MOCK_AWAY_TEAM, MOCK_TEAM } from './team';
 
 export const MOCK_TRAINING_HISTORY: Array<AttendanceWithPlayer> = [
   // Feb 15, 2026 (Great attendance)
@@ -397,6 +397,23 @@ export const MOCK_UPCOMING_SESSIONS = [
     id: 3,
     datetime: '2026-02-21T18:00:00', // Friday
     location: MOCK_LOCATION.name,
+  },
+];
+
+export const MOCK_UPCOMING_MACTHES = [
+  {
+    id: 1,
+    datetime: '2026-02-20T19:30:00', // Thursday
+    opponent: MOCK_AWAY_TEAM.name,
+    location: MOCK_LOCATION.name,
+    is_league_match: true,
+  },
+  {
+    id: 2,
+    datetime: '2026-02-27T19:30:00', // Next Thursday
+    opponent: MOCK_AWAY_TEAM.name,
+    location: MOCK_LOCATION.name,
+    is_league_match: false,
   },
 ];
 
