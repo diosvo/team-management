@@ -23,13 +23,13 @@ export default async function OverviewStats() {
           <Stat.Root borderWidth={1} padding={4} rounded="md">
             <Stat.Label>Next Game</Stat.Label>
             <Stat.ValueText alignItems="baseline">
-              {stats.next_game > 0 ? (
+              {!stats.next_game ? (
+                <Span color="green">TODAY</Span>
+              ) : (
                 <>
                   {stats.next_game}
                   <Stat.ValueUnit>days remaining</Stat.ValueUnit>
                 </>
-              ) : (
-                <Span color="green">TODAY</Span>
               )}
             </Stat.ValueText>
           </Stat.Root>
