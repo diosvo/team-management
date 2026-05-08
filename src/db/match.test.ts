@@ -45,6 +45,7 @@ vi.mock('@/drizzle', () => ({
 vi.mock('@/drizzle/schema', () => ({
   MatchTable: {
     match_id: 'match_id',
+    home_team: 'home_team',
     is_5x5: 'is_5x5',
     date: 'date',
     updated_at: 'updated_at',
@@ -56,7 +57,8 @@ describe('getMatches', () => {
     vi.clearAllMocks();
   });
 
-  const mockParams: MatchSearchParams = {
+  const mockParams: MatchSearchParams & { team_id: string } = {
+    team_id: MOCK_TEAM.team_id,
     is5x5: true,
     interval: Interval.THIS_MONTH,
     page: 1,
@@ -107,6 +109,7 @@ describe('getMatches', () => {
         location: { columns: { name: true } },
       },
       where: and(
+        eq(MatchTable.home_team, MOCK_TEAM.team_id),
         eq(MatchTable.is_5x5, true),
         gte(MatchTable.date, start.toISOString()),
         lte(MatchTable.date, end.toISOString()),

@@ -11,7 +11,11 @@ export interface TrainingSessionWithDetails extends TrainingSession {
   location: Pick<Location, 'name'> | null;
   coach: Pick<Coach, 'id'> | null;
   attendances: Array<Pick<Attendance, 'attendance_id' | 'status'>>;
-  present_rate: string;
+  analytics: {
+    late: number;
+    on_time: number;
+    present_rate: number;
+  };
 }
 
 export type TrainingSessionStats = StatCard['data'] & {

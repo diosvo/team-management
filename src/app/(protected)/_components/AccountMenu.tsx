@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 
 import { Avatar, Circle, Float, Link, Menu, Portal } from '@chakra-ui/react';
-import { LogOut, UserIcon } from 'lucide-react';
+import { GamepadDirectional, LogOut, UserRound } from 'lucide-react';
 
 import authClient from '@/lib/auth-client';
 
@@ -25,6 +25,18 @@ export default function AccountMenu() {
   }
 
   const user = data.user;
+  const Contents = [
+    {
+      title: 'Profile',
+      icon: UserRound,
+      href: '/profile',
+    },
+    {
+      title: 'My Performance',
+      icon: GamepadDirectional,
+      href: '/performance',
+    },
+  ];
 
   return (
     <Menu.Root>
@@ -45,12 +57,19 @@ export default function AccountMenu() {
       <Portal>
         <Menu.Positioner>
           <Menu.Content>
-            <Menu.Item value="profile" _hover={{ cursor: 'pointer' }} asChild>
-              <Link href={'/profile/' + user.id}>
-                <UserIcon size={14} />
-                {user.name}
-              </Link>
-            </Menu.Item>
+            {Contents.map(({ title, icon: Icon, href }) => (
+              <Menu.Item
+                key={href}
+                value={href}
+                _hover={{ cursor: 'pointer' }}
+                asChild
+              >
+                <Link href={href + '/' + user.id}>
+                  <Icon size={14} />
+                  {title}
+                </Link>
+              </Menu.Item>
+            ))}
             <Menu.Separator />
             <Menu.Item
               value="logout"

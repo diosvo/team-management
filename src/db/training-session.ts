@@ -54,21 +54,22 @@ export async function getSessions(
     });
 
     const data = result.map((session) => {
-      const total_attendances = session.attendances.length;
-      const present_count = session.attendances.filter(
-        ({ status }) => status !== AttendanceStatus.ABSENT,
+      const on_time = session.attendances.filter(
+        ({ status }) => status === AttendanceStatus.ON_TIME,
       ).length;
-      const rate = Math.round(
-        (present_count / total_attendances) * 100,
-      ).toFixed(1);
+      const late = session.attendances.filter(
+        ({ status }) => status === AttendanceStatus.LATE,
+      ).length;
+      const total_attendances = session.attendances.length;
+      const present_rate =
+        total_attendances > 0
+          ? Number((((on_time + late) / total_attendances) * 100).toFixed(1))
+          : 0;
 
       return {
         ...session,
         attendance_count: total_attendances,
-        present_rate:
-          total_attendances > 0
-            ? `${present_count}/${total_attendances} · ${rate}%`
-            : '-',
+        analytics: { on_time, late, present_rate },
       };
     });
 

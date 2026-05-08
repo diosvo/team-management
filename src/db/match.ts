@@ -12,9 +12,9 @@ import { InsertMatch, MatchTable } from '@/drizzle/schema';
 import { UpsertMatchSchemaValues } from '@/schemas/match';
 
 export async function getMatches(
-  params: MatchSearchParams,
+  params: MatchSearchParams & { team_id: string },
 ): Promise<DataWithStats<MatchWithTeams, MatchStats>> {
-  const { is5x5, interval } = params;
+  const { is5x5, interval, team_id } = params;
   const { start, end } = TIME_DURATION[interval];
 
   try {
@@ -26,6 +26,7 @@ export async function getMatches(
         location: { columns: { name: true } },
       },
       where: and(
+        eq(MatchTable.home_team, team_id),
         eq(MatchTable.is_5x5, is5x5),
         gte(MatchTable.date, start.toISOString()),
         lte(MatchTable.date, end.toISOString()),
@@ -43,12 +44,16 @@ export async function getMatches(
             : MatchStatus.DRAW,
     }));
 
-    const win_streak = data.reduce((streak, match) => {
-      if (match.result === MatchStatus.WIN) {
-        return streak + 1;
-      }
-      return streak;
-    }, 0);
+    const win_streak = data.reduce(
+      (acc, match) => {
+        if (match.result === MatchStatus.WIN) {
+          const current = acc.current + 1;
+          return { current, max: Math.max(acc.max, current) };
+        }
+        return { ...acc, current: 0 };
+      },
+      { current: 0, max: 0 },
+    ).max;
 
     const avg_win_rate =
       data.length > 0

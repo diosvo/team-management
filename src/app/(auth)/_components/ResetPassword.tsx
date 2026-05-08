@@ -3,6 +3,8 @@ type ResetPasswordProps = {
   url: string;
 };
 
+const YEAR = new Date().getFullYear();
+
 export default function ResetPassword({ name, url }: ResetPasswordProps) {
   return `<div style="max-width: 560px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 6px;">
     <div style="margin-bottom: 16px">
@@ -33,7 +35,7 @@ export default function ResetPassword({ name, url }: ResetPasswordProps) {
     </div>
 
     <div style="color: #718096; font-size: 12px; text-align: center;">
-      <p>© 2025 Saigon Rovers Basketball Club</p>
+      <p>© ${YEAR} Saigon Rovers Basketball Club</p>
     </div>
   </div>`;
 }

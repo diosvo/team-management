@@ -10,10 +10,6 @@ interface MigrationError extends Error {
   query: string;
 }
 
-console.info(
-  '🚩 Update `connectionString` in `src/drizzle/index.ts` to database URL before running this script.',
-);
-
 async function main() {
   console.log('🚀 Starting migration...\n');
 

@@ -70,12 +70,20 @@ export const MOCK_TRAINING_SESSION_RESPONSE = {
     {
       ...MOCK_SESSIONS_DB_RESULT[0],
       attendance_count: 3,
-      present_rate: '2/3 · 67.0%',
+      analytics: {
+        late: 1,
+        on_time: 1,
+        present_rate: 66.7,
+      },
     },
     {
       ...MOCK_SESSIONS_DB_RESULT[1],
       attendance_count: 2,
-      present_rate: '2/2 · 100.0%',
+      analytics: {
+        late: 0,
+        on_time: 2,
+        present_rate: 100,
+      },
     },
   ],
   stats: {

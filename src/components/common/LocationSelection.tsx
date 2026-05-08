@@ -1,31 +1,57 @@
 'use client';
 
-import { Span, Stack } from '@chakra-ui/react';
+import NextLink from 'next/link';
 
-import SearchableSelect, { SearchableSelectProps } from '../SearchableSelect';
+import { Link as ChakraLink, LinkProps, Span, Stack } from '@chakra-ui/react';
+import { Control, FieldPath, FieldValues } from 'react-hook-form';
+
+import SearchableSelect from '../SearchableSelect';
 
 import { CACHE_KEY } from '@/utils/constant';
 
 import { getLocations } from '@/actions/location';
-import { Location } from '@/drizzle/schema';
 
-type LocationSelectionProps = Required<
-  Pick<SearchableSelectProps<Location>, 'control'>
-> &
-  Partial<{
-    isDisabled: boolean;
-  }>;
+type LocationSelectionProps<TFieldValues extends FieldValues = FieldValues> = {
+  control: Control<TFieldValues>;
+  isDisabled?: boolean;
+};
 
-export default function LocationSelection({
+export function LocationLink({
+  name,
+  ...props
+}: { name: Nullish<string> } & LinkProps) {
+  if (!name) return 'Unknown';
+  const href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name)}`;
+
+  return (
+    <ChakraLink
+      colorPalette="blue"
+      focusRing="none"
+      textDecoration="dotted underline"
+      _hover={{
+        textDecoration: 'red dotted underline',
+      }}
+      {...props}
+      onClick={(e) => e.stopPropagation()}
+      asChild
+    >
+      <NextLink href={href} rel="noopener noreferrer" target="_blank">
+        {name}
+      </NextLink>
+    </ChakraLink>
+  );
+}
+
+export default function LocationSelection<TFieldValues extends FieldValues>({
   control,
   isDisabled,
-}: LocationSelectionProps) {
+}: LocationSelectionProps<TFieldValues>) {
   return (
     <SearchableSelect
       controlledMode
       multiple={false}
       control={control}
-      name="location_id"
+      name={'location_id' as FieldPath<TFieldValues>}
       label={CACHE_KEY.LOCATIONS}
       action={getLocations}
       fieldProps={{

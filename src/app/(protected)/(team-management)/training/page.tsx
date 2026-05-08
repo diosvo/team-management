@@ -28,7 +28,6 @@ export default async function TrainingSessionsPage(
         <PageTitle title="Training Sessions" />
         <SessionFilters />
       </HStack>
-
       <SessionStats stats={stats} />
       <SessionTable sessions={data} />
     </>

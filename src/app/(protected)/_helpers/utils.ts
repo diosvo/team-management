@@ -1,7 +1,5 @@
 import {
   BadgeCheck,
-  ChartArea,
-  DatabaseZap,
   Dumbbell,
   FileChartColumnIncreasing,
   FileText,
@@ -30,7 +28,6 @@ export const SIDEBAR_GROUP: Array<SidebarGroup> = [
     title: 'Overview',
     items: [
       { icon: LayoutDashboard, resource: 'dashboard' },
-      { icon: ChartArea, resource: 'analytics' },
       { icon: ShieldCheck, resource: 'team-rule' },
     ],
   },
@@ -53,7 +50,6 @@ export const SIDEBAR_GROUP: Array<SidebarGroup> = [
     items: [
       { icon: Package, resource: 'assets' },
       { icon: Film, resource: 'documents' },
-      { icon: DatabaseZap, resource: 'cache-store' },
     ],
   },
   {

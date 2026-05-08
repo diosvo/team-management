@@ -1,40 +1,17 @@
-import { FlatCompat } from '@eslint/eslintrc';
-import pluginSecurity from 'eslint-plugin-security';
-import { dirname } from 'path';
-import { fileURLToPath } from 'url';
+import nextVitals from 'eslint-config-next/core-web-vitals';
+import { defineConfig, globalIgnores } from 'eslint/config';
 
-const OFF = 0;
-const WARNING = 1;
-const ERROR = 2;
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
-
-const pluginSecurityConfigs = [
-  pluginSecurity.configs.recommended,
-  {
-    rules: {
-      'security/detect-object-injection': OFF,
-    },
-  },
-];
-
-const eslintConfig = [
-  ...compat.extends('next/core-web-vitals', 'next/typescript'),
-  ...pluginSecurityConfigs,
-  {
-    rules: {
-      // for Object destructuring
-      '@typescript-eslint/no-unused-vars': [
-        ERROR,
-        { ignoreRestSiblings: true },
-      ],
-    },
-  },
-];
+const eslintConfig = defineConfig([
+  ...nextVitals,
+  // Override default ignores of eslint-config-next.
+  globalIgnores([
+    // Default ignores of eslint-config-next:
+    '.next/**',
+    'out/**',
+    'build/**',
+    'next-env.d.ts',
+    'playwright/**',
+  ]),
+]);
 
 export default eslintConfig;

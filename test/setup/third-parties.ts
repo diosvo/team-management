@@ -1,3 +1,9 @@
+vi.mock('resend', () => ({
+  Resend: class {
+    emails = { send: vi.fn() };
+  },
+}));
+
 vi.mock('nuqs', async () => {
   const actual = await import('nuqs');
   return {

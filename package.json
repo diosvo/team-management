@@ -5,8 +5,8 @@
     "url": "https://www.linkedin.com/in/diosvo/"
   },
   "dependencies": {
-    "@chakra-ui/charts": "^3.34.0",
-    "@chakra-ui/react": "^3.34.0",
+    "@chakra-ui/charts": "^3.35.0",
+    "@chakra-ui/react": "^3.35.0",
     "@emotion/react": "^11.14.0",
     "@hookform/resolvers": "^5.2.2",
     "@next/env": "16.2.2",
@@ -28,13 +28,10 @@
     "recharts": "^3.7.0",
     "resend": "^6.7.0",
     "swr": "^2.4.1",
-    "uuid": "^13.0.0",
-    "winston": "^3.19.0",
-    "zod": "^4.3.5"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@date-fns/tz": "^1.4.1",
-    "@eslint/eslintrc": "^3.3.3",
     "@playwright/test": "^1.58.2",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
@@ -52,27 +49,15 @@
     "drizzle-kit": "^0.31.8",
     "eslint": "^9.39.2",
     "eslint-config-next": "16.2.2",
-    "eslint-plugin-security": "^3.0.1",
     "jest-axe": "^10.0.0",
     "jsdom": "^27.4.0",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3",
+    "typescript": "^6.0.3",
     "vite-tsconfig-paths": "^6.0.4",
     "vitest": "^4.0.16"
   },
   "name": "saigon-rovers-basketball-club-portal",
-  "pnpm": {
-    "ignoredBuiltDependencies": [
-      "esbuild"
-    ],
-    "onlyBuiltDependencies": [
-      "esbuild"
-    ],
-    "overrides": {
-      "@types/react": "19.2.14",
-      "@types/react-dom": "19.2.3"
-    }
-  },
+  "packageManager": "pnpm@11.0.8",
   "private": true,
   "scripts": {
     "analyze": "next experimental-analyze",

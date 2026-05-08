@@ -7,7 +7,6 @@ import { mockSelectFailure, mockSelectSuccess } from '@/test/db-operations';
 import {
   MOCK_ABSENCE_REASONS,
   MOCK_ATTENDANCE_HISTORY,
-  MOCK_PLAYER_RECORDS_FULL,
   MOCK_PLAYER_RECORDS_MANY_NEED_ATTENTION,
   MOCK_PLAYER_RECORDS_MANY_TOP,
   MOCK_PLAYER_RECORDS_NEED_ATTENTION,
@@ -102,7 +101,8 @@ describe('getPlayersAttendanceSummary', () => {
 
   test('returns players attendance summary when database query succeeds', async () => {
     const { mockFrom, mockLeftJoin, mockWhereWithGroupBy, mockGroupBy } =
-      mockSelectSuccess(MOCK_PLAYER_RECORDS_FULL);
+      mockSelectSuccess(MOCK_PLAYERS_ATTENDANCE_SUMMARY.top_performers);
+    mockSelectSuccess(MOCK_PLAYERS_ATTENDANCE_SUMMARY.need_attention);
 
     const result = await getPlayersAttendanceSummary(
       MOCK_TEAM.team_id,
@@ -120,6 +120,7 @@ describe('getPlayersAttendanceSummary', () => {
 
   test('filters top performers correctly (attendance_rate >= 80)', async () => {
     mockSelectSuccess(MOCK_PLAYER_RECORDS_TOP_PERFORMERS);
+    mockSelectSuccess([]);
 
     const result = await getPlayersAttendanceSummary(
       MOCK_TEAM.team_id,
@@ -132,6 +133,7 @@ describe('getPlayersAttendanceSummary', () => {
   });
 
   test('filters need attention correctly (attendance_rate < 50)', async () => {
+    mockSelectSuccess([]);
     mockSelectSuccess(MOCK_PLAYER_RECORDS_NEED_ATTENTION);
 
     const result = await getPlayersAttendanceSummary(
@@ -146,6 +148,7 @@ describe('getPlayersAttendanceSummary', () => {
 
   test('limits top performers to 3 players', async () => {
     mockSelectSuccess(MOCK_PLAYER_RECORDS_MANY_TOP);
+    mockSelectSuccess([]);
 
     const result = await getPlayersAttendanceSummary(
       MOCK_TEAM.team_id,
@@ -156,6 +159,7 @@ describe('getPlayersAttendanceSummary', () => {
   });
 
   test('limits need attention to 3 players', async () => {
+    mockSelectSuccess([]);
     mockSelectSuccess(MOCK_PLAYER_RECORDS_MANY_NEED_ATTENTION);
 
     const result = await getPlayersAttendanceSummary(

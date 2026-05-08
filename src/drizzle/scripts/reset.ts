@@ -3,10 +3,6 @@ import * as readline from 'readline';
 
 import db from '../index';
 
-console.info(
-  '🚩 Update `connectionString` in `src/drizzle/index.ts` to database URL before running this script.'
-);
-
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
@@ -19,7 +15,7 @@ async function askForConfirmation(): Promise<boolean> {
       (answer) => {
         rl.close();
         resolve(answer.toLowerCase() === 'y');
-      }
+      },
     );
   });
 }
