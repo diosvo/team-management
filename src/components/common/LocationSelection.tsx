@@ -1,3 +1,5 @@
+'use client';
+
 import NextLink from 'next/link';
 
 import { Link as ChakraLink, LinkProps, Span, Stack } from '@chakra-ui/react';
@@ -30,6 +32,7 @@ export function LocationLink({
         textDecoration: 'red dotted underline',
       }}
       {...props}
+      onClick={(e) => e.stopPropagation()}
       asChild
     >
       <NextLink href={href} rel="noopener noreferrer" target="_blank">

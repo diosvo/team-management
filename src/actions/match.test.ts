@@ -86,7 +86,10 @@ describe('Match Actions', () => {
 
       const result = await getMatches(mockParams);
 
-      expect(getDbMatches).toHaveBeenCalledWith(mockParams);
+      expect(getDbMatches).toHaveBeenCalledWith({
+        ...mockParams,
+        team_id: MOCK_USER.team_id,
+      });
       expect(result).toEqual(MOCK_MATCH_RESPONSE);
     });
 

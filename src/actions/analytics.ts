@@ -13,9 +13,9 @@ import {
   getPlayersAttendanceSummary,
   getTeamAttendanceHistory,
 } from '@/db/analytics';
+import { getMatches as fetchMatches } from '@/db/match';
 
 import { withAuth } from './auth';
-import { getMatches } from './match';
 import { getActivePlayers } from './user';
 
 /**
@@ -29,15 +29,18 @@ function createAnalyticsAction<T>(
   );
 }
 
-export const getOverviewStats = withAuth(async () => {
+export const getOverviewStats = withAuth(async ({ team_id }) => {
   const active_players = await getActivePlayers();
   const upcoming_matches = await getUpcomingMatches();
 
   const next_game =
     upcoming_matches.length > 0 ? upcoming_matches[0].date : null;
-  const next_game_date = differenceInDays(new Date(next_game!), new Date());
+  const next_game_date = next_game
+    ? differenceInDays(new Date(next_game), new Date())
+    : null;
 
-  const matches = await getMatches({
+  const matches = await fetchMatches({
+    team_id,
     is5x5: true,
     interval: Interval.THIS_YEAR,
     page: 1,
@@ -53,8 +56,12 @@ export const getOverviewStats = withAuth(async () => {
 });
 
 export const getMatchesRate = createAnalyticsAction(
-  async (_, interval: IntervalValues): Promise<Array<MatchesRateRecord>> => {
-    const matchesData = await getMatches({
+  async (
+    team_id,
+    interval: IntervalValues,
+  ): Promise<Array<MatchesRateRecord>> => {
+    const matchesData = await fetchMatches({
+      team_id,
       is5x5: true,
       interval,
       // TODO: it could be optional in the API, but the current implementation requires it

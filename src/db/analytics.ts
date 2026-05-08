@@ -4,7 +4,6 @@ import {
   count,
   desc,
   eq,
-  gt,
   gte,
   inArray,
   lt,
@@ -152,7 +151,7 @@ export async function getPlayersAttendanceSummary(
 
     const [top_performers, need_attention] = await Promise.all([
       _buildPlayerQuery(
-        ({ attendance_rate }) => gt(attendance_rate, 80),
+        ({ attendance_rate }) => gte(attendance_rate, 80),
         desc(attendanceRateSql),
       ),
       _buildPlayerQuery(

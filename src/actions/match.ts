@@ -18,7 +18,8 @@ import { UpsertMatchSchemaValues } from '@/schemas/match';
 import { MatchSearchParams } from '@/utils/filters';
 
 export const getMatches = withAuth(
-  async (_, params: MatchSearchParams) => await fetchMatches(params),
+  async ({ team_id }, params: MatchSearchParams) =>
+    await fetchMatches({ ...params, team_id }),
 );
 
 export const upsertMatch = matches(
