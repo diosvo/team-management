@@ -1,20 +1,18 @@
 import NextLink from 'next/link';
 
 import { Link as ChakraLink, LinkProps, Span, Stack } from '@chakra-ui/react';
+import { Control, FieldPath, FieldValues } from 'react-hook-form';
 
-import SearchableSelect, { SearchableSelectProps } from '../SearchableSelect';
+import SearchableSelect from '../SearchableSelect';
 
 import { CACHE_KEY } from '@/utils/constant';
 
 import { getLocations } from '@/actions/location';
-import { Location } from '@/drizzle/schema';
 
-type LocationSelectionProps = Required<
-  Pick<SearchableSelectProps<Location>, 'control'>
-> &
-  Partial<{
-    isDisabled: boolean;
-  }>;
+type LocationSelectionProps<TFieldValues extends FieldValues = FieldValues> = {
+  control: Control<TFieldValues>;
+  isDisabled?: boolean;
+};
 
 export function LocationLink({
   name,
@@ -41,16 +39,16 @@ export function LocationLink({
   );
 }
 
-export default function LocationSelection({
+export default function LocationSelection<TFieldValues extends FieldValues>({
   control,
   isDisabled,
-}: LocationSelectionProps) {
+}: LocationSelectionProps<TFieldValues>) {
   return (
     <SearchableSelect
       controlledMode
       multiple={false}
       control={control}
-      name="location_id"
+      name={'location_id' as FieldPath<TFieldValues>}
       label={CACHE_KEY.LOCATIONS}
       action={getLocations}
       fieldProps={{
