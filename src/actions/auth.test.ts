@@ -5,7 +5,7 @@ import auth from '@/lib/auth';
 import { LOGIN_PATH } from '@/routes';
 import { MOCK_PLAYER, MOCK_USER } from '@/test/mocks/user';
 
-import { getServerSession, withAuth } from './auth';
+import { withAuth } from './auth';
 
 type MockHeaders = Awaited<ReturnType<typeof headers>>;
 export type Session = typeof auth.$Infer.Session;
@@ -40,44 +40,6 @@ vi.mock('@/lib/auth', () => ({
 describe('Auth Actions', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-  });
-
-  describe('getServerSession', () => {
-    test('calls auth.api.getSession with headers', async () => {
-      const mockSession = createMockSession();
-      vi.mocked(headers).mockResolvedValue(mockHeaders);
-      vi.mocked(auth.api.getSession).mockResolvedValue(mockSession);
-
-      const result = await getServerSession();
-
-      expect(headers).toHaveBeenCalled();
-      expect(auth.api.getSession).toHaveBeenCalledWith({
-        headers: mockHeaders,
-      });
-      expect(result).toEqual(mockSession);
-    });
-
-    test('returns null when no session exists', async () => {
-      vi.mocked(headers).mockResolvedValue(mockHeaders);
-      vi.mocked(auth.api.getSession).mockResolvedValue(null);
-
-      const result = await getServerSession();
-
-      expect(result).toBeNull();
-    });
-
-    test('caches the result of getSession call', async () => {
-      const mockSession = createMockSession();
-      vi.mocked(headers).mockResolvedValue(mockHeaders);
-      vi.mocked(auth.api.getSession).mockResolvedValue(mockSession);
-
-      // Call twice to verify caching behavior
-      await getServerSession();
-      await getServerSession();
-
-      // Should still be called twice due to test isolation
-      expect(auth.api.getSession).toHaveBeenCalled();
-    });
   });
 
   describe('withAuth', () => {

@@ -29,7 +29,7 @@ export const LOCALE_DATETIME_FORMAT =
 export const COOKIE = {
   prefix: 'sgr',
   expires: 60 * 60, // 1 hour in seconds
-  maxAge: 10 * 60, // 10 minutes in seconds
+  maxAge: 60 * 60,
 };
 
 /**
