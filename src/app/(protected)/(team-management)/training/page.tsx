@@ -24,7 +24,7 @@ export default async function TrainingSessionsPage(
 
   return (
     <>
-      <HStack justifyContent="space-between" marginBottom={6}>
+      <HStack justifyContent="space-between">
         <PageTitle title="Training Sessions" />
         <SessionFilters />
       </HStack>

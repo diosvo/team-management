@@ -35,6 +35,22 @@ export function PlayerSelection({
   );
 }
 
+export function OnePlayerSelection({ control, name, label = 'player' }: any) {
+  return (
+    <SearchableSelect
+      controlledMode
+      name={name}
+      label={label}
+      control={control}
+      multiple={false}
+      action={getActivePlayers}
+      renderItem={PlayerItem}
+      itemToValue={({ id }) => id}
+      itemToString={({ name }) => name}
+    />
+  );
+}
+
 export function SelectedPlayers({
   selection,
   onSelectionChange,

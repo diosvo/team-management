@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import {
+  CURRENT_DATE,
   SELECTABLE_ASSET_CATEGORIES,
   SELECTABLE_ASSET_CONDITIONS,
 } from '@/utils/constant';
@@ -24,7 +25,9 @@ export const UpsertAssetSchema = z.object({
   category: z
     .enum(SELECTABLE_ASSET_CATEGORIES)
     .default(AssetCategory.EQUIPMENT),
-  note: z.string().max(128).optional(),
+  assigned_to: z.string().max(64).nullish(),
+  acquired_date: z.iso.date().nullish().default(CURRENT_DATE),
+  note: z.string().max(128).nullable(),
 });
 
 export type UpsertAssetSchemaValues = z.infer<typeof UpsertAssetSchema>;

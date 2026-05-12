@@ -397,6 +397,11 @@ const PostgresErrorHandlers: Record<
       'Transaction serialization failure. Please retry the transaction as it could not be completed due to concurrent modifications.',
     constraint: null,
   }),
+  [PgErrorCode.DATATYPE_MISMATCH]: () => ({
+    message:
+      'A column type mismatch was detected. Check that foreign key types match the referenced column.',
+    constraint: null,
+  }),
   default: (error) => ({
     message: `A database error occurred: ${error.message}`,
     constraint: null,

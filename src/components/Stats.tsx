@@ -43,11 +43,7 @@ export default function Stats({ data, config }: StatCard) {
   );
 
   return (
-    <SimpleGrid
-      columns={{ base: 1, sm: 2, md: 2, lg: 3, xl: 4 }}
-      gap={6}
-      marginBlock={6}
-    >
+    <SimpleGrid columns={{ base: 2, lg: 3, xl: 4 }} gap={6}>
       {cards.map(({ IconComponent, value, label, color, suffix, onClick }) => (
         <VStack
           key={label}

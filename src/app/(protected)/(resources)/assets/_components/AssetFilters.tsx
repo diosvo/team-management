@@ -1,18 +1,9 @@
 'use client';
 
-import {
-  Button,
-  createListCollection,
-  HStack,
-  Portal,
-  Select,
-  Span,
-  Stack,
-} from '@chakra-ui/react';
-import { Filter, Plus } from 'lucide-react';
+import { For, SegmentGroup } from '@chakra-ui/react';
 
-import SearchInput from '@/components/SearchInput';
-import { Status } from '@/components/ui/status';
+import FilterBar from '@/components/filters/FilterBar';
+import { Field } from '@/components/ui/field';
 
 import {
   ALL,
@@ -20,121 +11,98 @@ import {
   ASSET_CONDITION_SELECTION,
 } from '@/utils/constant';
 import { useAssetFilters } from '@/utils/filters';
-import { colorCondition } from '@/utils/helper';
+import { colorCategory, colorCondition } from '@/utils/helper';
 
-import Authorized from '@/components/Authorized';
-import { UpsertAsset } from './UpsertAsset';
+import { useLocalFilters } from '@/hooks/use-local-filters';
 
-const categories = createListCollection({
-  items: [ALL, ...ASSET_CATEGORY_SELECTION],
-});
-const conditions = createListCollection({
-  items: [ALL, ...ASSET_CONDITION_SELECTION],
-});
+const categoryItems = [ALL, ...ASSET_CATEGORY_SELECTION];
+const conditionItems = [ALL, ...ASSET_CONDITION_SELECTION];
 
 export default function AssetFilters() {
   const [{ category, condition }, setSearchParams] = useAssetFilters();
+  const { draft, setField, handleReset, handleApply, handleInteractOutside } =
+    useLocalFilters(
+      { category, condition },
+      { category: ALL.value, condition: ALL.value },
+      (values) => setSearchParams({ ...values, page: 1 }),
+    );
 
-  const handleValueChange = (
-    type: 'category' | 'condition',
-    value: Array<string>,
-  ) => {
-    setSearchParams({ [type]: value[0], page: 1 });
-  };
+  const activeCount = [category, condition].filter(
+    (value) => value !== ALL.value,
+  );
 
   return (
-    <HStack marginBottom={6}>
-      <SearchInput />
-      <Select.Root
-        width="xs"
-        size={{ base: 'sm', md: 'md' }}
-        collection={categories}
-        value={[category]}
-        data-testid="category-filter"
-        onValueChange={({ value }) => handleValueChange('category', value)}
-      >
-        <Select.HiddenSelect />
-        <Select.Control>
-          <Select.Trigger>
-            <HStack>
-              <Filter size={14} />
-              <Select.ValueText placeholder="Category" />
-            </HStack>
-          </Select.Trigger>
-          <Select.IndicatorGroup>
-            <Select.Indicator />
-          </Select.IndicatorGroup>
-        </Select.Control>
-        <Portal>
-          <Select.Positioner>
-            <Select.Content>
-              {categories.items.map((category) => (
-                <Select.Item key={category.value} item={category}>
-                  <Stack gap={0}>
-                    <Select.ItemText>{category.label}</Select.ItemText>
-                    <Span color="fg.muted" textStyle="xs">
-                      {category.description}
-                    </Span>
-                  </Stack>
-                  <Select.ItemIndicator />
-                </Select.Item>
-              ))}
-            </Select.Content>
-          </Select.Positioner>
-        </Portal>
-      </Select.Root>
-      <Select.Root
-        width="3xs"
-        size={{ base: 'sm', md: 'md' }}
-        collection={conditions}
-        value={[condition]}
-        data-testid="condition-filter"
-        onValueChange={({ value }) => handleValueChange('condition', value)}
-      >
-        <Select.HiddenSelect />
-        <Select.Control>
-          <Select.Trigger>
-            <HStack>
-              <Status colorPalette={colorCondition(condition)} />
-              <Select.ValueText placeholder="Condition" />
-            </HStack>
-          </Select.Trigger>
-          <Select.IndicatorGroup>
-            <Select.Indicator />
-          </Select.IndicatorGroup>
-        </Select.Control>
-        <Portal>
-          <Select.Positioner>
-            <Select.Content>
-              {conditions.items.map((condition) => (
-                <Select.Item item={condition} key={condition.value}>
-                  <HStack>
-                    <Status colorPalette={colorCondition(condition.value)} />
-                    {condition.label}
-                    <Select.ItemIndicator />
-                  </HStack>
-                </Select.Item>
-              ))}
-            </Select.Content>
-          </Select.Positioner>
-        </Portal>
-      </Select.Root>
-      <Authorized resource="assets" action="create">
-        <Button
-          size={{ base: 'sm', md: 'md' }}
-          onClick={() =>
-            UpsertAsset.open('add-asset', {
-              action: 'Add',
-              item: {
-                asset_id: '',
-              },
-            })
-          }
-        >
-          <Plus />
-          Add
-        </Button>
-      </Authorized>
-    </HStack>
+    <FilterBar
+      activeCount={activeCount.length}
+      handleReset={handleReset}
+      handleApply={handleApply}
+      handleInteractOutside={handleInteractOutside}
+      advancedFilters={
+        <>
+          <Field label="Category">
+            <SegmentGroup.Root
+              size="sm"
+              value={draft.category}
+              data-testid="category-filter"
+              onValueChange={({ value }) =>
+                setField('category', value as string)
+              }
+            >
+              <SegmentGroup.Indicator />
+              <For each={categoryItems}>
+                {({ label, value, description }) => (
+                  <SegmentGroup.Item
+                    key={value}
+                    value={value}
+                    title={description}
+                  >
+                    <SegmentGroup.ItemText
+                      _checked={{
+                        fontWeight: 'medium',
+                        color: colorCategory(value),
+                      }}
+                    >
+                      {label}
+                    </SegmentGroup.ItemText>
+                    <SegmentGroup.ItemHiddenInput />
+                  </SegmentGroup.Item>
+                )}
+              </For>
+            </SegmentGroup.Root>
+          </Field>
+          <Field label="Condition">
+            <SegmentGroup.Root
+              size="sm"
+              value={draft.condition}
+              data-testid="condition-filter"
+              onValueChange={({ value }) =>
+                setField('condition', value as string)
+              }
+            >
+              <SegmentGroup.Indicator />
+              <For each={conditionItems}>
+                {({ label, value, description }) => (
+                  <SegmentGroup.Item
+                    key={value}
+                    value={value}
+                    title={description}
+                  >
+                    <SegmentGroup.ItemText
+                      _checked={{
+                        fontWeight: 'medium',
+                        color: colorCondition(value),
+                      }}
+                    >
+                      {label}
+                    </SegmentGroup.ItemText>
+                    <SegmentGroup.ItemHiddenInput />
+                  </SegmentGroup.Item>
+                )}
+              </For>
+            </SegmentGroup.Root>
+          </Field>
+        </>
+      }
+    />
   );
 }

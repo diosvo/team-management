@@ -1,8 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback } from 'react';
 
 import { Badge, Highlight, Table } from '@chakra-ui/react';
+import { isEqual } from 'es-toolkit/predicate';
+import { capitalize } from 'es-toolkit/string';
 
 import Authorized from '@/components/Authorized';
 import Pagination from '@/components/Pagination';
@@ -11,9 +13,12 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { EmptyState } from '@/components/ui/empty-state';
 import { toaster } from '@/components/ui/toaster';
 
+import { useFilteredPagination } from '@/hooks/use-filtered-pagination';
 import usePermissions from '@/hooks/use-permissions';
-import { paginateData, useAssetFilters } from '@/utils/filters';
-import { formatDatetime } from '@/utils/formatter';
+
+import { ALL } from '@/utils/constant';
+import { useAssetFilters } from '@/utils/filters';
+import { formatDate, formatDatetime } from '@/utils/formatter';
 import { colorCategory, colorCondition } from '@/utils/helper';
 
 import { removeAsset } from '@/actions/asset';
@@ -21,19 +26,32 @@ import { Asset } from '@/drizzle/schema/asset';
 
 import { UpsertAsset } from './UpsertAsset';
 
-export default function AssetTable({ items }: { items: Array<Asset> }) {
+const HEADERS = [
+  'Name',
+  'Category',
+  'Quantity',
+  'Condition',
+  'Assigned To',
+  'Acquired Date',
+  'Last Updated',
+  'Note',
+] as const;
+
+export default function AssetTable({ data }: { data: Array<Asset> }) {
   const { isAdmin, isGuest } = usePermissions();
   const [{ q, page, category, condition }, setSearchParams] = useAssetFilters();
 
-  const [selection, setSelection] = useState<Array<string>>([]);
+  const predicate = useCallback(
+    (item: Asset) =>
+      item.name.toLowerCase().includes(q.toLowerCase()) &&
+      (isEqual(category, ALL.value) || isEqual(item.category, category)) &&
+      (isEqual(condition, ALL.value) || isEqual(item.condition, condition)),
+    [q, category, condition],
+  );
+  const { items, currentData, totalCount, selection, setSelection } =
+    useFilteredPagination(data, predicate, page);
   const selectionCount = selection.length;
-
-  useEffect(() => {
-    setSelection([]);
-  }, [category, condition]);
-
-  const totalCount = items.length;
-  const currentData = paginateData(items, page);
+  const columnCount = isAdmin ? HEADERS.length + 1 : HEADERS.length;
 
   // Selection
   const hasSelection = selectionCount > 0;
@@ -65,7 +83,7 @@ export default function AssetTable({ items }: { items: Array<Asset> }) {
           <Table.Header>
             <Table.Row>
               <Authorized resource="assets" action="delete">
-                <Table.ColumnHeader width={6}>
+                <Table.ColumnHeader width={columnCount}>
                   <Checkbox
                     top={0.5}
                     aria-label="Select all rows"
@@ -82,14 +100,7 @@ export default function AssetTable({ items }: { items: Array<Asset> }) {
                   />
                 </Table.ColumnHeader>
               </Authorized>
-              {[
-                'Name',
-                'Category',
-                'Quantity',
-                'Condition',
-                'Last Updated',
-                'Note',
-              ].map((header) => (
+              {HEADERS.map((header) => (
                 <Table.ColumnHeader key={header}>{header}</Table.ColumnHeader>
               ))}
             </Table.Row>
@@ -125,37 +136,43 @@ export default function AssetTable({ items }: { items: Array<Asset> }) {
                     </Table.Cell>
                   </Authorized>
                   <Table.Cell>
-                    <Highlight query={q} styles={{ backgroundColor: 'yellow' }}>
+                    <Highlight
+                      ignoreCase
+                      query={q}
+                      styles={{ backgroundColor: 'yellow' }}
+                    >
                       {item.name}
                     </Highlight>
                   </Table.Cell>
                   <Table.Cell>
                     <Badge
-                      variant="outline"
+                      variant="surface"
                       borderRadius="full"
                       colorPalette={colorCategory(item.category)}
                     >
-                      {item.category}
+                      {capitalize(item.category)}
                     </Badge>
                   </Table.Cell>
                   <Table.Cell>{item.quantity}</Table.Cell>
                   <Table.Cell>
                     <Badge
-                      variant="surface"
+                      variant="outline"
                       borderRadius="full"
                       colorPalette={colorCondition(item.condition)}
                     >
-                      {item.condition}
+                      {capitalize(item.condition)}
                     </Badge>
                   </Table.Cell>
+                  <Table.Cell>{item.user?.name || '-'}</Table.Cell>
+                  <Table.Cell>{formatDate(item.acquired_date)}</Table.Cell>
                   <Table.Cell>{formatDatetime(item.updated_at)}</Table.Cell>
                   <Table.Cell>{item.note}</Table.Cell>
                 </Table.Row>
               ))
             ) : (
               <Table.Row>
-                <Table.Cell colSpan={isAdmin ? 7 : 6}>
-                  <EmptyState title="No items found" />
+                <Table.Cell colSpan={columnCount}>
+                  <EmptyState title="No assets found" />
                 </Table.Cell>
               </Table.Row>
             )}
@@ -173,6 +190,7 @@ export default function AssetTable({ items }: { items: Array<Asset> }) {
         selectionCount={selectionCount}
         onDelete={removeItems}
       />
+      <UpsertAsset.Viewport />
     </>
   );
 }

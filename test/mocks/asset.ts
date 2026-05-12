@@ -28,4 +28,5 @@ export const MOCK_ASSET: Asset = {
 export const MOCK_ASSET_STATS = {
   total_items: MOCK_ASSET.quantity,
   need_replacement: 0,
+  obsolete_count: 0,
 };

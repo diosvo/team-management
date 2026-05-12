@@ -11,6 +11,7 @@
 - 💃 Using various parts of a modern frontend stack:
   - [Chakra UI](https://chakra-ui.com/) for component library.
   - [zod](https://zod.dev/) and [React Hook Form](https://react-hook-form.com/) for schema validation.
+  - [es-toolkit](https://es-toolkit.com/) for utility functions.
   - [nuqs](https://github.com/47ng/nuqs) for filters state management.
   - [SWR](https://swr.vercel.app/) for data fetching and caching.
 - 🧪 Testing:

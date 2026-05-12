@@ -22,7 +22,7 @@ export default async function AttendancePage(props: PageProps<'/attendance'>) {
 
   return (
     <>
-      <HStack justifyContent="space-between" marginBottom={6}>
+      <HStack justifyContent="space-between">
         <PageTitle title="Training Attendance" />
         <AttendanceFilters />
       </HStack>

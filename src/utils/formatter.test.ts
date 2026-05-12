@@ -1,7 +1,7 @@
 import { format } from 'date-fns';
 
 import { DEFAULT_DAY_FORMAT, LOCALE_DATE_FORMAT } from './constant';
-import { capitalize, formatDate, formatDatetime, formatDay } from './formatter';
+import { formatDate, formatDatetime, formatDay } from './formatter';
 
 vi.mock('date-fns', () => ({
   format: vi.fn(),
@@ -83,19 +83,5 @@ describe('formatDatetime', () => {
 
     expect(formatDatetime(datetimeString)).toBe('12/12/1999 02:30 PM');
     expect(format).toHaveBeenCalledWith(datetimeString, expect.any(String));
-  });
-});
-
-describe('capitalize', () => {
-  const cases = [
-    { input: '', expected: '' },
-    { input: 'a', expected: 'A' },
-    { input: 'hello', expected: 'Hello' },
-    { input: 'HELLO', expected: 'HELLO' },
-    { input: 'Hello', expected: 'Hello' },
-  ];
-
-  test.each(cases)('capitalizes $input to $expected', ({ input, expected }) => {
-    expect(capitalize(input)).toBe(expected);
   });
 });

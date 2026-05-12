@@ -30,7 +30,6 @@ export default function Pagination({
         display="flex"
         justifyContent="space-between"
         alignItems="center"
-        marginTop={4}
         count={count}
         page={page}
         pageSize={pageSize}

@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { PropsWithChildren, Suspense, useEffect, useState } from 'react';
 
-import { Container, Grid, GridItem, Separator } from '@chakra-ui/react';
+import { Grid, GridItem, Separator, Stack } from '@chakra-ui/react';
 
 import { toaster } from '@/components/ui/toaster';
 
@@ -71,9 +71,11 @@ export default function AuthenticatedLayout({ children }: PropsWithChildren) {
       </GridItem>
 
       <GridItem gridArea="main" overflow="auto" height="100%">
-        <Container paddingBlock={6}>
-          <Suspense>{children}</Suspense>
-        </Container>
+        <Suspense>
+          <Stack gap={{ base: 4, lg: 6 }} padding={{ base: 4, lg: 6 }}>
+            {children}
+          </Stack>
+        </Suspense>
       </GridItem>
     </Grid>
   );
