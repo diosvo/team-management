@@ -6,7 +6,7 @@
 
 Route guard for page navigation only.
 
-→ Block authenticated/ expired page navigation and RBAC before hitting the route handler.
+→ Block unauthenticated/ expired page navigation and RBAC before hitting the route handler.
 
 ### Layer 2: withAuth / withResource
 
