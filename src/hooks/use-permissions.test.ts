@@ -121,13 +121,13 @@ describe('usePermissions', () => {
       expect(result.current.can('roster', 'create')).toBeTruthy();
     });
 
-    test('GUEST cannot view analytics', () => {
+    test('GUEST cannot view assets', () => {
       (authClient.useSession as Mock).mockReturnValue({
         data: { session: {}, user: { role: UserRole.GUEST } },
         isPending: false,
       });
       const { result } = renderHook(() => usePermissions());
-      expect(result.current.can('analytics', 'view')).toBeFalsy();
+      expect(result.current.can('assets', 'view')).toBeFalsy();
     });
 
     test('PLAYER cannot create roster', () => {
@@ -176,14 +176,14 @@ describe('usePermissions', () => {
       ).toBeTruthy();
     });
 
-    test('GUEST has no analytics permissions', () => {
+    test('GUEST has no assets permissions', () => {
       (authClient.useSession as Mock).mockReturnValue({
         data: { session: {}, user: { role: UserRole.GUEST } },
         isPending: false,
       });
       const { result } = renderHook(() => usePermissions());
       expect(
-        result.current.canAny(['analytics:view', 'analytics:create']),
+        result.current.canAny(['assets:view', 'assets:create']),
       ).toBeFalsy();
     });
   });

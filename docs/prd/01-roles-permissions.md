@@ -1,3 +1,27 @@
+# Authentication & Authorization
+
+### Layer 1: Proxy
+
+> proxy.ts
+
+Route guard for page navigation only.
+
+→ Block unauthenticated/ expired page navigation and RBAC before hitting the route handler.
+
+### Layer 2: withAuth / withResource
+
+> `auth.api.getSession`
+
+- Only layer that cannot be bypassed.
+- Always runs for every server action.
+- Provide `user` context.
+
+### Layer 3: Layout
+
+> `authClient.useSession`
+
+Proactive client-side UX
+
 # Roles, Permissions & Glossary
 
 ## 1. Roles (Definitions)

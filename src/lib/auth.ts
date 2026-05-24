@@ -72,6 +72,7 @@ export default betterAuth({
   advanced: {
     cookiePrefix: COOKIE.prefix,
   },
+  // https://better-auth.com/docs/concepts/session-management
   session: {
     expiresIn: COOKIE.expires,
     cookieCache: {

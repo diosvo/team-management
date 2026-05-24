@@ -9,7 +9,6 @@
 
 import { headers } from 'next/headers';
 import { forbidden, redirect, RedirectType } from 'next/navigation';
-import { cache } from 'react';
 
 import { User } from '@/drizzle/schema';
 import auth from '@/lib/auth';
@@ -22,20 +21,15 @@ import {
   type Resource,
 } from '@/utils/permissions';
 
-export const getServerSession = cache(
-  async () =>
-    await auth.api.getSession({
-      headers: await headers(),
-    }),
-);
-
 type ServerAction<T extends Array<unknown>, R> = (...args: T) => Promise<R>;
 
 export function withAuth<T extends Array<unknown>, R>(
   serverAction: (user: User, ...args: T) => Promise<R>,
 ): ServerAction<T, R> {
   return async (...args: T): Promise<R> => {
-    const session = await getServerSession();
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
 
     if (!session || !session.user) {
       // Currently, it only works for fetching data

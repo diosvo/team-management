@@ -10,11 +10,12 @@ import {
 } from '@/routes';
 import { COOKIE } from '@/utils/constant';
 import { UserRole } from '@/utils/enum';
-import { can } from '@/utils/permissions';
+import { can } from './utils/permissions';
 
 /**
  * Resolves the current pathname to a `Resource` using prefix matching.
- * e.g. `/periodic-testing/add-result` → `periodic-testing`
+ *
+ * _e.g.,_ `/periodic-testing/add-result` → `periodic-testing`
  */
 function resolveResource(pathname: string) {
   for (const resource of RESOURCES) {
@@ -26,6 +27,11 @@ function resolveResource(pathname: string) {
 }
 
 export default async function proxy(req: NextRequest) {
+  // Server actions own their own auth via `withAuth`
+  if (req.headers.has('next-action')) {
+    return NextResponse.next();
+  }
+
   const currentPath = req.nextUrl.pathname;
   const isProtectedRoute = !PUBLIC_ROUTES.has(currentPath);
   const isAuthRoute = AUTH_ROUTES.add('/').has(currentPath);
@@ -33,38 +39,36 @@ export default async function proxy(req: NextRequest) {
   const redirectTo = (path: string) =>
     NextResponse.redirect(new URL(path, req.nextUrl));
 
-  // https://www.better-auth.com/docs/integrations/next#middleware
-  const sessionCookie = getSessionCookie(req, {
-    cookiePrefix: COOKIE.prefix,
-  });
+  // Fast check: Cookie read only, no DB (always GET/navigation request)
+  const sessionCookie = getSessionCookie(req, { cookiePrefix: COOKIE.prefix });
   const isLoggedIn = !!sessionCookie;
 
-  // Redirect unauthenticated users from protected routes
+  // Fast redirect: no cookie
   if (!isLoggedIn && isProtectedRoute) {
     return redirectTo(LOGIN_PATH);
   }
 
-  // Redirect authenticated users from auth routes
+  // Fast redirect: Cookie exists and on auth route
   if (isLoggedIn && isAuthRoute) {
     return redirectTo(DEFAULT_LOGIN_REDIRECT);
   }
 
-  // Route-level permission check using cookie cache
   if (isLoggedIn && isProtectedRoute) {
+    // Full validation: Cookie cache read + Protected route
+    const session = await getCookieCache(req, { cookiePrefix: COOKIE.prefix });
+
+    if (!session) {
+      // Session expired - cookie still present but cache is invalid
+      return redirectTo(LOGIN_PATH);
+    }
+
     const resource = resolveResource(currentPath);
 
     if (resource) {
-      const session = await getCookieCache(req, {
-        cookiePrefix: COOKIE.prefix,
-      });
+      const role = session.user.role as UserRole;
 
-      const role = session?.user?.role as UserRole;
-
-      if (!role || !can(role, resource, 'view')) {
-        // FIXME:
-        // Failed to fetch RSC payload for http://localhost:3000/dashboard. Falling back to browser navigation. TypeError: Failed to fetch
-        // => Redirect to a "403 Forbidden" page instead of login redirect (?)
-        // return redirectTo(DEFAULT_LOGIN_REDIRECT);
+      if (!can(role, resource, 'view')) {
+        return redirectTo('/forbidden');
       }
     }
   }
