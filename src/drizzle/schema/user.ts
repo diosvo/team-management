@@ -13,6 +13,7 @@ import {
 import { UserRole, UserState } from '@/utils/enum';
 
 import { created_at, expires_at, updated_at } from '../helpers';
+import { AssetTable } from './asset';
 import { Coach, CoachTable } from './coach';
 import { Player, PlayerTable } from './player';
 import { TeamTable } from './team';
@@ -41,7 +42,7 @@ export const UserTable = pgTable('user', {
   leave_date: date(),
 });
 
-export const UserRelations = relations(UserTable, ({ one }) => ({
+export const UserRelations = relations(UserTable, ({ one, many }) => ({
   team: one(TeamTable, {
     fields: [UserTable.team_id],
     references: [TeamTable.team_id],
@@ -54,6 +55,7 @@ export const UserRelations = relations(UserTable, ({ one }) => ({
     fields: [UserTable.id],
     references: [PlayerTable.id],
   }),
+  assets: many(AssetTable),
 }));
 
 export const SessionTable = pgTable('session', {

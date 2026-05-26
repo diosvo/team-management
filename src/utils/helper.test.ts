@@ -78,8 +78,9 @@ describe('colorCondition', () => {
 
 describe('colorCategory', () => {
   const cases = [
-    { category: AssetCategory.EQUIPMENT, expected: 'purple' },
-    { category: AssetCategory.TRAINING, expected: 'blue' },
+    { category: AssetCategory.EQUIPMENT, expected: 'green' },
+    { category: AssetCategory.TRAINING, expected: 'orange' },
+    { category: AssetCategory.OTHERS, expected: 'gray' },
     { category: ALL.value, expected: 'blue' },
     ...invalidColor('category'),
   ];

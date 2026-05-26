@@ -1,11 +1,11 @@
 import { Metadata } from 'next';
 
-import PageTitle from '@/components/PageTitle';
-
 import { getAssets } from '@/actions/asset';
 
-import AssetList from './_components/AssetList';
+import AssetFilters from './_components/AssetFilters';
+import AssetHeader from './_components/AssetHeader';
 import AssetStats from './_components/AssetStats';
+import AssetTable from './_components/AssetTable';
 
 export const metadata: Metadata = {
   title: 'Assets',
@@ -17,11 +17,10 @@ export default async function AssetsPage() {
 
   return (
     <>
-      <PageTitle title="Assets" />
-      <>
-        <AssetStats stats={stats} />
-        <AssetList data={data} />
-      </>
+      <AssetHeader />
+      <AssetStats stats={stats} />
+      <AssetFilters />
+      <AssetTable data={data} />
     </>
   );
 }

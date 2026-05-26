@@ -9,6 +9,7 @@ import {
   HStack,
   Input,
   Portal,
+  SimpleGrid,
   Textarea,
   createOverlay,
 } from '@chakra-ui/react';
@@ -25,12 +26,16 @@ import {
 import { Radio, RadioGroup } from '@/components/ui/radio';
 import { toaster } from '@/components/ui/toaster';
 import { Tooltip } from '@/components/ui/tooltip';
+import { OnePlayerSelection } from '@/components/user/PlayerSelection';
 
-import { getDefaults } from '@/lib/zod';
+import { getDefaults, onError } from '@/lib/zod';
 import {
   ASSET_CATEGORY_SELECTION,
   ASSET_CONDITION_SELECTION,
+  CURRENT_DATE,
+  ESTABLISHED_DATE,
 } from '@/utils/constant';
+import { AssetCondition } from '@/utils/enum';
 
 import { upsertAsset } from '@/actions/asset';
 import { UpsertAssetSchema, UpsertAssetSchemaValues } from '@/schemas/asset';
@@ -43,9 +48,8 @@ export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
     reset,
     register,
     handleSubmit,
-    formState: { isValid, errors },
+    formState: { isValid, isDirty, errors },
   } = useForm({
-    mode: 'onChange',
     resolver: zodResolver(UpsertAssetSchema),
     defaultValues: getDefaults(UpsertAssetSchema, item),
   });
@@ -73,10 +77,10 @@ export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
   };
 
   return (
-    <Dialog.Root {...rest}>
+    <Dialog.Root size={{ base: 'xs', md: 'md' }} {...rest}>
       <Portal>
         <Dialog.Backdrop />
-        <Dialog.Positioner as="form" onSubmit={handleSubmit(onSubmit)}>
+        <Dialog.Positioner as="form" onSubmit={handleSubmit(onSubmit, onError)}>
           <Dialog.Content>
             <Dialog.CloseTrigger asChild>
               <CloseButton />
@@ -85,7 +89,7 @@ export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
               <Dialog.Title>{action} Item</Dialog.Title>
             </Dialog.Header>
             <Dialog.Body>
-              <HStack alignItems="start">
+              <SimpleGrid columns={2} gap={4}>
                 <Field
                   required
                   label="Name"
@@ -120,7 +124,20 @@ export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
                     )}
                   />
                 </Field>
-              </HStack>
+                <Field label="Acquired date">
+                  <Input
+                    type="date"
+                    min={ESTABLISHED_DATE}
+                    max={CURRENT_DATE}
+                    {...register('acquired_date')}
+                  />
+                </Field>
+                <OnePlayerSelection
+                  control={control}
+                  name="assigned_to"
+                  label="owner"
+                />
+              </SimpleGrid>
               <Fieldset.Root marginBlock={4}>
                 <Fieldset.Legend color="GrayText">Category</Fieldset.Legend>
                 <Controller
@@ -170,6 +187,10 @@ export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
                             key={item.value}
                             value={item.value}
                             onBlur={field.onBlur}
+                            hidden={
+                              action === 'Add' &&
+                              item.value === AssetCondition.OBSOLETE
+                            }
                           >
                             {item.label}
                           </Radio>
@@ -197,7 +218,7 @@ export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
                 type="submit"
                 loadingText="Saving..."
                 loading={isPending}
-                disabled={!isValid || isPending}
+                disabled={!isValid || !isDirty || isPending}
               >
                 <Save /> {action}
               </Button>

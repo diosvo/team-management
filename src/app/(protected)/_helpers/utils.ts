@@ -20,6 +20,7 @@ type SidebarGroup = {
   items: Array<{
     icon: typeof LayoutDashboard;
     resource: Resource;
+    disabled?: boolean;
   }>;
 };
 
@@ -49,7 +50,7 @@ export const SIDEBAR_GROUP: Array<SidebarGroup> = [
     title: 'Resources',
     items: [
       { icon: Package, resource: 'assets' },
-      { icon: Film, resource: 'documents' },
+      { icon: Film, resource: 'documents', disabled: true },
     ],
   },
   {

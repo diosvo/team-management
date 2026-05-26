@@ -35,7 +35,7 @@ export default async function DashboardsPage(props: PageProps<'/dashboard'>) {
 
   return (
     <>
-      <SimpleGrid columns={{ base: 1, lg: 2 }} gap={6} marginBottom={6}>
+      <SimpleGrid columns={{ base: 1, lg: 2 }} gap={6}>
         <OverviewStats />
         <QuickActions />
       </SimpleGrid>
@@ -45,7 +45,7 @@ export default async function DashboardsPage(props: PageProps<'/dashboard'>) {
         <UpcomingMatches />
       </SimpleGrid>
 
-      <HStack marginBlock={6} justifyContent="space-between">
+      <HStack justifyContent="space-between">
         <PageTitle title="Analytics" />
         <DashboardFilters />
       </HStack>

@@ -220,6 +220,7 @@ export const SELECTABLE_ASSET_CONDITIONS = [
   AssetCondition.POOR,
   AssetCondition.FAIR,
   AssetCondition.GOOD,
+  AssetCondition.OBSOLETE,
 ] as const;
 export const ASSET_CONDITION_SELECTION: Selection<string> = [
   {
@@ -236,6 +237,11 @@ export const ASSET_CONDITION_SELECTION: Selection<string> = [
     label: 'Good',
     value: AssetCondition.GOOD,
     description: 'New, Excellent Condition',
+  },
+  {
+    label: 'Obsolete',
+    value: AssetCondition.OBSOLETE,
+    description: 'No longer used',
   },
 ];
 export const ASSET_CONDITION_VALUES = [

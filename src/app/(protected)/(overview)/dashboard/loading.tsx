@@ -2,7 +2,7 @@ import { HStack, Skeleton, VStack } from '@chakra-ui/react';
 
 export default function Loading() {
   return (
-    <VStack align="stretch" gap={6}>
+    <VStack align="stretch" gap={{ base: 4, lg: 6 }}>
       <Skeleton height={9} width={36} />
       <HStack gap={6}>
         <Skeleton height="266px" flex={1} />

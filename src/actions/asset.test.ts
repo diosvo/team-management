@@ -39,6 +39,7 @@ const MOCK_ASSETS_RESPONSE = {
   stats: {
     total_items: 1,
     need_replacement: 0,
+    obsolete_count: 0,
   },
   data: [MOCK_ASSET],
 };

@@ -1,3 +1,4 @@
+import { FieldErrors } from 'react-hook-form';
 import { z } from 'zod';
 
 type ZodItem<T extends z.ZodRawShape> = z.infer<z.ZodObject<T>>;
@@ -16,4 +17,10 @@ export function getDefaults<T extends z.ZodRawShape>(
   );
 
   return { ...defaults, ...item } as ZodItem<T>;
+}
+
+export function onError(errors: FieldErrors) {
+  if (process.env.NODE_ENV === 'development') {
+    console.error('[zod validation]:', errors);
+  }
 }

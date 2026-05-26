@@ -37,9 +37,9 @@ export function formatDatetime(
   return format(datetime, dtFormat);
 }
 
-export function capitalize(str: string): string {
-  if (!str) return '';
-  return str.charAt(0).toUpperCase() + str.slice(1);
+export function formatValueUnit(count: number, unit: string): Nullable<string> {
+  if (count === 0) return null;
+  return `${unit}${count > 1 ? 's' : ''}`;
 }
 
 // Replace CURRENT_DATE if possible

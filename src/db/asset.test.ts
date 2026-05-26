@@ -1,4 +1,4 @@
-import { desc, eq } from 'drizzle-orm';
+import { asc, eq } from 'drizzle-orm';
 
 import db from '@/drizzle';
 import { AssetTable, InsertAsset } from '@/drizzle/schema/asset';
@@ -46,6 +46,7 @@ vi.mock('@/drizzle/schema/asset', () => ({
     team_id: 'team_id',
     asset_id: 'asset_id',
     condition: 'condition',
+    acquired_date: 'acquired_date',
   },
 }));
 
@@ -66,7 +67,14 @@ describe('getAssets', () => {
     // Verify query construction
     expect(db.query.AssetTable.findMany).toHaveBeenCalledWith({
       where: eq(AssetTable.team_id, MOCK_TEAM.team_id),
-      orderBy: desc(AssetTable.updated_at),
+      orderBy: asc(AssetTable.acquired_date),
+      with: {
+        user: {
+          columns: {
+            name: true,
+          },
+        },
+      },
     });
   });
 
@@ -86,7 +94,7 @@ describe('getAssets', () => {
 
       const result = await getAssets(MOCK_TEAM.team_id);
       expect(result).toEqual({
-        stats: { total_items: 0, need_replacement: 0 },
+        stats: { total_items: 0, need_replacement: 0, obsolete_count: 0 },
         data: [],
       });
     },

@@ -46,13 +46,15 @@ export function colorCondition(condition: string): ColorPalette {
     [AssetCondition.GOOD]: 'green',
     [AssetCondition.FAIR]: 'orange',
     [AssetCondition.POOR]: 'red',
+    [AssetCondition.OBSOLETE]: 'gray',
   });
 }
 
 export function colorCategory(category: string): ColorPalette {
   return getColor(category, {
-    [AssetCategory.EQUIPMENT]: 'purple',
-    [AssetCategory.TRAINING]: 'blue',
+    [AssetCategory.EQUIPMENT]: 'green',
+    [AssetCategory.TRAINING]: 'orange',
+    [AssetCategory.OTHERS]: 'gray',
   });
 }
 

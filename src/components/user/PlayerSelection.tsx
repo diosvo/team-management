@@ -4,6 +4,7 @@ import { useCallback } from 'react';
 
 import { Box, BoxProps, List, Span } from '@chakra-ui/react';
 import { UserRoundX } from 'lucide-react';
+import { Control, FieldPath, FieldValues } from 'react-hook-form';
 
 import { User } from '@/drizzle/schema/user';
 
@@ -31,6 +32,32 @@ export function PlayerSelection({
       renderItem={PlayerItem}
       value={selection}
       onChange={onSelectionChange}
+    />
+  );
+}
+
+type OnePlayerSelectionProps<T extends FieldValues> = {
+  control: Control<T>;
+  name: FieldPath<T>;
+  label?: string;
+};
+
+export function OnePlayerSelection<T extends FieldValues>({
+  control,
+  name,
+  label = 'player',
+}: OnePlayerSelectionProps<T>) {
+  return (
+    <SearchableSelect
+      controlledMode
+      name={name}
+      label={label}
+      control={control}
+      multiple={false}
+      action={getActivePlayers}
+      renderItem={PlayerItem}
+      itemToValue={({ id }) => id}
+      itemToString={({ name }) => name}
     />
   );
 }

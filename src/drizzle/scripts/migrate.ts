@@ -1,5 +1,6 @@
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
 
+import { getDbErrorMessage } from '@/db/pg-error';
 import db from '../index';
 
 interface MigrationError extends Error {
@@ -22,17 +23,15 @@ async function main() {
   } catch (error: unknown) {
     console.error('❌ Migration failed!\n');
 
-    const { cause, message, query } = error as MigrationError;
+    const { cause, query } = error as MigrationError;
+
+    if (cause && cause.code) {
+      console.error('Code:', cause.code);
+    }
 
     // Extract the most relevant information
-    if (cause) {
-      console.error('Error:', cause.message);
-      if (cause.code) {
-        console.error('Code:', cause.code);
-      }
-    } else if (message) {
-      console.error('Error:', message);
-    }
+    const { message } = getDbErrorMessage(error);
+    console.error('Error:', message);
 
     // Show the failed query in a readable format
     if (query) {

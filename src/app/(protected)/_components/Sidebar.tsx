@@ -92,7 +92,7 @@ function NavButton({
           </div>
         ) : (
           <Link href={href}>
-            <Icon size="sm" fontWeight={isActive ? 500 : 400} as={icon} />
+            <Icon size="sm" as={icon} color={isActive ? 'black' : 'gray.500'} />
             {isExpanded && children}
             {isExpanded && <LoadingIndicator />}
           </Link>
@@ -137,11 +137,12 @@ export default function Sidebar({
           ) : (
             <Separator />
           )}
-          {items.map(({ resource, icon }) => (
+          {items.map(({ resource, icon, disabled }) => (
             <NavButton
               key={resource}
               icon={icon}
               href={`/${resource}`}
+              disabled={disabled}
               isExpanded={isExpanded}
             >
               {resourceToName(resource)}

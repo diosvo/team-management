@@ -37,6 +37,7 @@ export enum AssetCondition {
   POOR = 'POOR',
   FAIR = 'FAIR',
   GOOD = 'GOOD',
+  OBSOLETE = 'OBSOLETE',
 }
 
 export enum TestTypeUnit {
