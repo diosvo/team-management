@@ -17,14 +17,13 @@ import { useLocalFilters } from '@/hooks/use-local-filters';
 
 const categoryItems = [ALL, ...ASSET_CATEGORY_SELECTION];
 const conditionItems = [ALL, ...ASSET_CONDITION_SELECTION];
+const DEFAULT_FILTERS = { category: ALL.value, condition: ALL.value };
 
 export default function AssetFilters() {
   const [{ category, condition }, setSearchParams] = useAssetFilters();
   const { draft, setField, handleReset, handleApply, handleInteractOutside } =
-    useLocalFilters(
-      { category, condition },
-      { category: ALL.value, condition: ALL.value },
-      (values) => setSearchParams({ ...values, page: 1 }),
+    useLocalFilters({ category, condition }, DEFAULT_FILTERS, (values) =>
+      setSearchParams({ ...values, page: 1 }),
     );
 
   const activeCount = [category, condition].filter(

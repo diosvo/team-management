@@ -83,7 +83,7 @@ export default function AssetTable({ data }: { data: Array<Asset> }) {
           <Table.Header>
             <Table.Row>
               <Authorized resource="assets" action="delete">
-                <Table.ColumnHeader width={columnCount}>
+                <Table.ColumnHeader width={4}>
                   <Checkbox
                     top={0.5}
                     aria-label="Select all rows"

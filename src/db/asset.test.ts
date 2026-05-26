@@ -94,7 +94,7 @@ describe('getAssets', () => {
 
       const result = await getAssets(MOCK_TEAM.team_id);
       expect(result).toEqual({
-        stats: { total_items: 0, need_replacement: 0 },
+        stats: { total_items: 0, need_replacement: 0, obsolete_count: 0 },
         data: [],
       });
     },

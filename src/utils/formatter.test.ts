@@ -1,7 +1,12 @@
 import { format } from 'date-fns';
 
 import { DEFAULT_DAY_FORMAT, LOCALE_DATE_FORMAT } from './constant';
-import { formatDate, formatDatetime, formatDay } from './formatter';
+import {
+  formatDate,
+  formatDatetime,
+  formatDay,
+  formatValueUnit,
+} from './formatter';
 
 vi.mock('date-fns', () => ({
   format: vi.fn(),
@@ -83,5 +88,20 @@ describe('formatDatetime', () => {
 
     expect(formatDatetime(datetimeString)).toBe('12/12/1999 02:30 PM');
     expect(format).toHaveBeenCalledWith(datetimeString, expect.any(String));
+  });
+});
+
+describe('formatValueUnit', () => {
+  test('returns null when count is 0', () => {
+    expect(formatValueUnit(0, 'item')).toBeNull();
+  });
+
+  test('returns singular unit when count is 1', () => {
+    expect(formatValueUnit(1, 'item')).toBe('item');
+  });
+
+  test('returns plural unit when count is greater than 1', () => {
+    expect(formatValueUnit(2, 'item')).toBe('items');
+    expect(formatValueUnit(10, 'item')).toBe('items');
   });
 });

@@ -35,7 +35,7 @@ export async function getAssets(team_id: string) {
     };
   } catch {
     return {
-      stats: { total_items: 0, need_replacement: 0 },
+      stats: { total_items: 0, need_replacement: 0, obsolete_count: 0 },
       data: [],
     };
   }

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { paginateData } from '@/utils/filters';
 
@@ -9,12 +9,10 @@ export function useFilteredPagination<T>(
   pageSize?: number,
 ) {
   const [selection, setSelection] = useState<Array<string>>([]);
-  const [prevPredicate, setPrevPredicate] = useState(() => predicate);
 
-  if (prevPredicate !== predicate) {
-    setPrevPredicate(() => predicate);
+  useEffect(() => {
     setSelection([]);
-  }
+  }, [predicate]);
 
   const pagination = useMemo(() => {
     const items = data.filter(predicate);

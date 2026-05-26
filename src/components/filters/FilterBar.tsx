@@ -22,7 +22,7 @@ export default function FilterBar({
   handleInteractOutside,
 }: FilterBarProps) {
   return (
-    <HStack gap={4} alignItems="start">
+    <HStack gap={{ base: 3, lg: 4 }} alignItems="start">
       <SearchInput />
       {inlineFilters && (
         <Box display={{ base: 'none', lg: 'block' }}>{inlineFilters}</Box>
