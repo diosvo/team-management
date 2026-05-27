@@ -1,10 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback } from 'react';
 
-import { Highlight, Table } from '@chakra-ui/react';
+import { Table } from '@chakra-ui/react';
 import { MapPinXInside } from 'lucide-react';
 
+import Authorized from '@/components/Authorized';
+import HighlightText from '@/components/HighlightText';
 import Pagination from '@/components/Pagination';
 import SelectionActionBar from '@/components/SelectionActionBar';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -12,16 +14,16 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { toaster } from '@/components/ui/toaster';
 
 import usePermissions from '@/hooks/use-permissions';
-import { paginateData, useCommonParams } from '@/utils/filters';
+import useTableState from '@/hooks/use-table-state';
+import { useCommonParams } from '@/utils/filters';
 import { formatDatetime } from '@/utils/formatter';
 
 import { removeLocation } from '@/actions/location';
 import { Location } from '@/drizzle/schema';
 
-import Authorized from '@/components/Authorized';
 import { UpsertLocation } from './UpsertLocation';
 
-const headers = ['Name', 'Address', 'Last Updated'] as const;
+const HEADERS = ['Name', 'Address', 'Last Updated'] as const;
 
 export default function LocationTable({
   locations,
@@ -31,15 +33,29 @@ export default function LocationTable({
   const { isGuest } = usePermissions();
   const [{ q, page }, setSearchParams] = useCommonParams();
 
-  const [selection, setSelection] = useState<Array<string>>([]);
-  const selectionCount = selection.length;
-
-  const totalCount = locations.length;
-  const currentData = paginateData(locations, page);
-
-  // Selection
-  const hasSelection = selectionCount > 0;
-  const indeterminate = hasSelection && selectionCount < totalCount;
+  const predicate = useCallback(
+    (item: Location) => {
+      const query = q.toLowerCase();
+      return (
+        item.name.toLowerCase().includes(query) ||
+        item.address.toLowerCase().includes(query)
+      );
+    },
+    [q],
+  );
+  const {
+    items,
+    currentData,
+    indeterminate,
+    selection,
+    setSelection,
+    hasSelection,
+    totalCount,
+    columnCount,
+    selectionCount,
+  } = useTableState(locations, predicate, page, {
+    headerCount: HEADERS.length,
+  });
 
   const removeItems = async () => {
     const results = await Promise.all(selection.map(removeLocation));
@@ -67,7 +83,7 @@ export default function LocationTable({
           <Table.Header>
             <Table.Row>
               <Authorized resource="locations" action="delete">
-                <Table.ColumnHeader width={6}>
+                <Table.ColumnHeader width={4}>
                   <Checkbox
                     top={0.5}
                     aria-label="Select all rows"
@@ -77,14 +93,14 @@ export default function LocationTable({
                     onCheckedChange={(changes) => {
                       setSelection(
                         changes.checked
-                          ? locations.map(({ location_id }) => location_id)
+                          ? items.map(({ location_id }) => location_id)
                           : [],
                       );
                     }}
                   />
                 </Table.ColumnHeader>
               </Authorized>
-              {headers.map((header) => (
+              {HEADERS.map((header) => (
                 <Table.ColumnHeader key={header}>{header}</Table.ColumnHeader>
               ))}
             </Table.Row>
@@ -122,21 +138,17 @@ export default function LocationTable({
                     </Table.Cell>
                   </Authorized>
                   <Table.Cell>
-                    <Highlight query={q} styles={{ backgroundColor: 'yellow' }}>
-                      {item.name}
-                    </Highlight>
+                    <HighlightText query={q}>{item.name}</HighlightText>
                   </Table.Cell>
                   <Table.Cell>
-                    <Highlight query={q} styles={{ backgroundColor: 'yellow' }}>
-                      {item.address}
-                    </Highlight>
+                    <HighlightText query={q}>{item.address}</HighlightText>
                   </Table.Cell>
                   <Table.Cell>{formatDatetime(item.updated_at)}</Table.Cell>
                 </Table.Row>
               ))
             ) : (
               <Table.Row>
-                <Table.Cell colSpan={headers.length + 1}>
+                <Table.Cell colSpan={columnCount}>
                   <EmptyState
                     title="No locations found"
                     icon={<MapPinXInside />}
@@ -158,6 +170,7 @@ export default function LocationTable({
         selectionCount={selectionCount}
         onDelete={removeItems}
       />
+      <UpsertLocation.Viewport />
     </>
   );
 }

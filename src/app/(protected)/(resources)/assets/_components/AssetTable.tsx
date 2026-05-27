@@ -2,19 +2,20 @@
 
 import { useCallback } from 'react';
 
-import { Badge, Highlight, Table } from '@chakra-ui/react';
+import { Badge, Table } from '@chakra-ui/react';
 import { isEqual } from 'es-toolkit/predicate';
 import { capitalize } from 'es-toolkit/string';
 
 import Authorized from '@/components/Authorized';
+import HighlightText from '@/components/HighlightText';
 import Pagination from '@/components/Pagination';
 import SelectionActionBar from '@/components/SelectionActionBar';
 import { Checkbox } from '@/components/ui/checkbox';
 import { EmptyState } from '@/components/ui/empty-state';
 import { toaster } from '@/components/ui/toaster';
 
-import { useFilteredPagination } from '@/hooks/use-filtered-pagination';
 import usePermissions from '@/hooks/use-permissions';
+import useFilteredPagination from '@/hooks/use-table-state';
 
 import { ALL } from '@/utils/constant';
 import { useAssetFilters } from '@/utils/filters';
@@ -38,7 +39,7 @@ const HEADERS = [
 ] as const;
 
 export default function AssetTable({ data }: { data: Array<Asset> }) {
-  const { isAdmin, isGuest } = usePermissions();
+  const { isGuest } = usePermissions();
   const [{ q, page, category, condition }, setSearchParams] = useAssetFilters();
 
   const predicate = useCallback(
@@ -48,14 +49,19 @@ export default function AssetTable({ data }: { data: Array<Asset> }) {
       (isEqual(condition, ALL.value) || isEqual(item.condition, condition)),
     [q, category, condition],
   );
-  const { items, currentData, totalCount, selection, setSelection } =
-    useFilteredPagination(data, predicate, page);
-  const selectionCount = selection.length;
-  const columnCount = isAdmin ? HEADERS.length + 1 : HEADERS.length;
-
-  // Selection
-  const hasSelection = selectionCount > 0;
-  const indeterminate = hasSelection && selectionCount < totalCount;
+  const {
+    items,
+    currentData,
+    indeterminate,
+    selection,
+    setSelection,
+    hasSelection,
+    totalCount,
+    columnCount,
+    selectionCount,
+  } = useFilteredPagination(data, predicate, page, {
+    headerCount: HEADERS.length,
+  });
 
   const removeItems = async () => {
     const results = await Promise.all(selection.map(removeAsset));
@@ -136,13 +142,7 @@ export default function AssetTable({ data }: { data: Array<Asset> }) {
                     </Table.Cell>
                   </Authorized>
                   <Table.Cell>
-                    <Highlight
-                      ignoreCase
-                      query={q}
-                      styles={{ backgroundColor: 'yellow' }}
-                    >
-                      {item.name}
-                    </Highlight>
+                    <HighlightText query={q}>{item.name}</HighlightText>
                   </Table.Cell>
                   <Table.Cell>
                     <Badge

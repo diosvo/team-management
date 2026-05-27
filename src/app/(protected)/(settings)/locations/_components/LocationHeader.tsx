@@ -4,14 +4,14 @@ import { Button, HStack } from '@chakra-ui/react';
 import { Plus } from 'lucide-react';
 
 import Authorized from '@/components/Authorized';
-import SearchInput from '@/components/SearchInput';
+import PageTitle from '@/components/PageTitle';
 
 import { UpsertLocation } from './UpsertLocation';
 
-export default function LocationFilters() {
+export default function LocationHeader() {
   return (
-    <HStack marginBlock={6}>
-      <SearchInput />
+    <HStack justifyContent="space-between">
+      <PageTitle title="Locations" />
       <Authorized resource="locations" action="create">
         <Button
           size={{ base: 'sm', md: 'md' }}
@@ -28,7 +28,6 @@ export default function LocationFilters() {
           Add
         </Button>
       </Authorized>
-      <UpsertLocation.Viewport />
     </HStack>
   );
 }

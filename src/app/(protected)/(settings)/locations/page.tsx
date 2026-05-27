@@ -1,9 +1,10 @@
 import { Metadata } from 'next';
 
 import { getLocations } from '@/actions/location';
-import PageTitle from '@/components/PageTitle';
+import SearchInput from '@/components/SearchInput';
 
-import LocationList from './_components/LocationList';
+import LocationHeader from './_components/LocationHeader';
+import LocationTable from './_components/LocationTable';
 
 export const metadata: Metadata = {
   title: 'Locations',
@@ -15,8 +16,9 @@ export default async function LocationsPage() {
 
   return (
     <>
-      <PageTitle title="Locations" />
-      <LocationList locations={locations} />
+      <LocationHeader />
+      <SearchInput />
+      <LocationTable locations={locations} />
     </>
   );
 }
