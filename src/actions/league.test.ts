@@ -6,6 +6,7 @@ import {
   getLeagues as fetchLeagues,
   getPlayersInLeague as fetchPlayersInLeague,
   insertLeague,
+  removePlayerFromLeagueRoster,
   updateLeague,
 } from '@/db/league';
 import { getDbErrorMessage } from '@/db/pg-error';
@@ -21,14 +22,13 @@ import {
 } from '@/test/mocks/auth';
 import { MOCK_LEAGUE, MOCK_LEAGUE_INPUT } from '@/test/mocks/league';
 import { MOCK_TEAM } from '@/test/mocks/team';
-import { MOCK_USER, MOCK_USER_WITH_PLAYER } from '@/test/mocks/user';
+import { MOCK_USER } from '@/test/mocks/user';
 
 import {
   getLeagues,
   getPlayersInLeague,
   removeLeague,
   upsertLeague,
-  upsertPlayerToLeague,
 } from './league';
 
 vi.mock('./auth', () => ({
@@ -43,6 +43,11 @@ vi.mock('@/db/league', () => ({
   updateLeague: vi.fn(),
   deleteLeague: vi.fn(),
   addPlayerToLeagueRoster: vi.fn(),
+  removePlayerFromLeagueRoster: vi.fn(),
+}));
+
+vi.mock('@/db/pg-error', () => ({
+  getDbErrorMessage: vi.fn(),
 }));
 
 vi.mock('@/actions/cache', () => ({
@@ -65,13 +70,6 @@ describe('permissions', () => {
     expect(mockWithResourceAction).toHaveBeenCalledWith(
       ['create', 'edit'],
       expect.objectContaining({ name: 'upsert' }),
-    );
-  });
-
-  test('upsertPlayerToLeague requires create and edit actions', () => {
-    expect(mockWithResourceAction).toHaveBeenCalledWith(
-      ['create', 'edit'],
-      expect.objectContaining({ name: 'upsertPlayer' }),
     );
   });
 
@@ -99,6 +97,10 @@ describe('League Actions', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(getDbErrorMessage).mockReturnValue({
+      message: errorMessage,
+      constraint: null,
+    });
   });
 
   describe('getLeagues', () => {
@@ -142,7 +144,7 @@ describe('League Actions', () => {
 
   describe('upsertLeague', () => {
     const leagueData = MOCK_LEAGUE_INPUT as UpsertLeagueSchemaValues;
-    const insertReturn = { ...mockResult, command: 'INSERT' };
+    const insertReturn = [{ league_id: MOCK_LEAGUE.league_id }];
     const updateReturn = { ...mockResult, command: 'UPDATE' };
 
     describe('insert new league', () => {
@@ -151,7 +153,7 @@ describe('League Actions', () => {
         vi.mocked(isPast).mockReturnValue(false);
         vi.mocked(insertLeague).mockResolvedValue(insertReturn);
 
-        const result = await upsertLeague('', leagueData);
+        const result = await upsertLeague('', leagueData, []);
 
         expect(isFuture).toHaveBeenCalledWith(leagueData.start_date);
         expect(insertLeague).toHaveBeenCalledWith({
@@ -171,7 +173,7 @@ describe('League Actions', () => {
         vi.mocked(isPast).mockReturnValue(true);
         vi.mocked(insertLeague).mockResolvedValue(insertReturn);
 
-        const result = await upsertLeague('', leagueData);
+        const result = await upsertLeague('', leagueData, []);
 
         expect(isPast).toHaveBeenCalledWith(leagueData.end_date);
         expect(insertLeague).toHaveBeenCalledWith({
@@ -191,7 +193,7 @@ describe('League Actions', () => {
         vi.mocked(isPast).mockReturnValue(false);
         vi.mocked(insertLeague).mockResolvedValue(insertReturn);
 
-        const result = await upsertLeague('', leagueData);
+        const result = await upsertLeague('', leagueData, []);
 
         expect(insertLeague).toHaveBeenCalledWith({
           ...leagueData,
@@ -209,12 +211,8 @@ describe('League Actions', () => {
         vi.mocked(isFuture).mockReturnValue(false);
         vi.mocked(isPast).mockReturnValue(false);
         vi.mocked(insertLeague).mockRejectedValue(new Error(errorMessage));
-        vi.mocked(getDbErrorMessage).mockReturnValue({
-          message: errorMessage,
-          constraint: null,
-        });
 
-        const result = await upsertLeague('', leagueData);
+        const result = await upsertLeague('', leagueData, []);
 
         expect(insertLeague).toHaveBeenCalled();
         expect(getDbErrorMessage).toHaveBeenCalled();
@@ -231,7 +229,11 @@ describe('League Actions', () => {
         vi.mocked(isPast).mockReturnValue(false);
         vi.mocked(updateLeague).mockResolvedValue(updateReturn);
 
-        const result = await upsertLeague(MOCK_LEAGUE.league_id, leagueData);
+        const result = await upsertLeague(
+          MOCK_LEAGUE.league_id,
+          leagueData,
+          [],
+        );
 
         expect(updateLeague).toHaveBeenCalledWith(MOCK_LEAGUE.league_id, {
           ...MOCK_LEAGUE_INPUT,
@@ -250,7 +252,11 @@ describe('League Actions', () => {
         vi.mocked(isPast).mockReturnValue(true);
         vi.mocked(updateLeague).mockResolvedValue(updateReturn);
 
-        const result = await upsertLeague(MOCK_LEAGUE.league_id, leagueData);
+        const result = await upsertLeague(
+          MOCK_LEAGUE.league_id,
+          leagueData,
+          [],
+        );
 
         expect(updateLeague).toHaveBeenCalledWith(MOCK_LEAGUE.league_id, {
           ...leagueData,
@@ -269,7 +275,11 @@ describe('League Actions', () => {
         vi.mocked(isPast).mockReturnValue(false);
         vi.mocked(updateLeague).mockResolvedValue(updateReturn);
 
-        const result = await upsertLeague(MOCK_LEAGUE.league_id, leagueData);
+        const result = await upsertLeague(
+          MOCK_LEAGUE.league_id,
+          leagueData,
+          [],
+        );
 
         expect(updateLeague).toHaveBeenCalledWith(MOCK_LEAGUE.league_id, {
           ...leagueData,
@@ -287,12 +297,12 @@ describe('League Actions', () => {
         vi.mocked(isFuture).mockReturnValue(false);
         vi.mocked(isPast).mockReturnValue(false);
         vi.mocked(updateLeague).mockRejectedValue(new Error(errorMessage));
-        vi.mocked(getDbErrorMessage).mockReturnValue({
-          message: errorMessage,
-          constraint: null,
-        });
 
-        const result = await upsertLeague(MOCK_LEAGUE.league_id, leagueData);
+        const result = await upsertLeague(
+          MOCK_LEAGUE.league_id,
+          leagueData,
+          [],
+        );
 
         expect(updateLeague).toHaveBeenCalled();
         expect(getDbErrorMessage).toHaveBeenCalled();
@@ -300,6 +310,75 @@ describe('League Actions', () => {
           success: false,
           message: errorMessage,
         });
+      });
+
+      test('syncs roster by adding and removing players on update', async () => {
+        vi.mocked(isFuture).mockReturnValue(false);
+        vi.mocked(isPast).mockReturnValue(false);
+        vi.mocked(updateLeague).mockResolvedValue(updateReturn);
+        vi.mocked(fetchPlayersInLeague).mockResolvedValue([
+          { ...MOCK_USER, id: 'player-old' },
+          { ...MOCK_USER, id: 'player-keep' },
+        ]);
+
+        const result = await upsertLeague(MOCK_LEAGUE.league_id, leagueData, [
+          'player-keep',
+          'player-new',
+        ]);
+
+        expect(fetchPlayersInLeague).toHaveBeenCalledWith(
+          MOCK_TEAM.team_id,
+          MOCK_LEAGUE.league_id,
+        );
+        expect(addPlayerToLeagueRoster).toHaveBeenCalledWith(
+          MOCK_TEAM.team_id,
+          MOCK_LEAGUE.league_id,
+          'player-new',
+        );
+        expect(removePlayerFromLeagueRoster).toHaveBeenCalledWith(
+          MOCK_TEAM.team_id,
+          MOCK_LEAGUE.league_id,
+          'player-old',
+        );
+        expect(result).toEqual({
+          success: true,
+          message: 'Updated league successfully',
+        });
+      });
+
+      test('returns roster sync error message when add/remove operations fail', async () => {
+        vi.mocked(isFuture).mockReturnValue(false);
+        vi.mocked(isPast).mockReturnValue(false);
+        vi.mocked(updateLeague).mockResolvedValue(updateReturn);
+        vi.mocked(fetchPlayersInLeague).mockResolvedValue([
+          { ...MOCK_USER, id: 'player-old-id-123' },
+        ]);
+        vi.mocked(addPlayerToLeagueRoster).mockRejectedValueOnce(
+          new Error('add failed'),
+        );
+        vi.mocked(removePlayerFromLeagueRoster).mockRejectedValueOnce(
+          new Error('remove failed'),
+        );
+        vi.mocked(getDbErrorMessage)
+          .mockReturnValueOnce({
+            message: 'Add player failed',
+            constraint: null,
+          })
+          .mockReturnValueOnce({
+            message: 'Remove player failed',
+            constraint: null,
+          });
+
+        const result = await upsertLeague(MOCK_LEAGUE.league_id, leagueData, [
+          'player-new-id-456',
+        ]);
+
+        expect(result).toEqual({
+          success: false,
+          message:
+            'Add player failed (id: player-n)\nFailed to remove player (id: player-o) - Remove player failed',
+        });
+        expect(revalidate.leagues).not.toHaveBeenCalled();
       });
     });
   });
@@ -330,81 +409,6 @@ describe('League Actions', () => {
       expect(result).toEqual({
         success: false,
         message: 'Failed to delete asset',
-      });
-    });
-  });
-
-  describe('upsertPlayerToLeague', () => {
-    const playerId = MOCK_USER_WITH_PLAYER.id;
-
-    test('adds player to league roster successfully', async () => {
-      vi.mocked(addPlayerToLeagueRoster).mockResolvedValue({
-        ...mockResult,
-        command: 'INSERT',
-      });
-
-      const result = await upsertPlayerToLeague(
-        MOCK_LEAGUE.league_id,
-        playerId,
-      );
-
-      expect(addPlayerToLeagueRoster).toHaveBeenCalledWith(
-        MOCK_TEAM.team_id,
-        MOCK_LEAGUE.league_id,
-        playerId,
-      );
-      expect(result).toEqual({
-        success: true,
-        message: 'Added player to league roster',
-      });
-    });
-
-    test('returns error with short player id when add fails', async () => {
-      const shortId = playerId.slice(0, 8);
-      vi.mocked(addPlayerToLeagueRoster).mockRejectedValue(
-        new Error(errorMessage),
-      );
-      vi.mocked(getDbErrorMessage).mockReturnValue({
-        message: errorMessage,
-        constraint: null,
-      });
-
-      const result = await upsertPlayerToLeague(
-        MOCK_LEAGUE.league_id,
-        playerId,
-      );
-
-      expect(addPlayerToLeagueRoster).toHaveBeenCalledWith(
-        MOCK_TEAM.team_id,
-        MOCK_LEAGUE.league_id,
-        playerId,
-      );
-      expect(getDbErrorMessage).toHaveBeenCalled();
-      expect(result).toEqual({
-        success: false,
-        message: `${errorMessage} (id: ${shortId})`,
-      });
-    });
-
-    test('handles duplicate player error with formatted message', async () => {
-      const shortId = playerId.slice(0, 8);
-      const duplicateError = 'Duplicate player';
-      vi.mocked(addPlayerToLeagueRoster).mockRejectedValue(
-        new Error(duplicateError),
-      );
-      vi.mocked(getDbErrorMessage).mockReturnValue({
-        message: duplicateError,
-        constraint: 'league_roster_player_unique',
-      });
-
-      const result = await upsertPlayerToLeague(
-        MOCK_LEAGUE.league_id,
-        playerId,
-      );
-
-      expect(result).toEqual({
-        success: false,
-        message: `${duplicateError} (id: ${shortId})`,
       });
     });
   });

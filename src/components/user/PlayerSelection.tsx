@@ -26,7 +26,6 @@ export function PlayerSelection({
       multiple={true}
       label={CACHE_KEY.PLAYERS}
       action={getActivePlayers}
-      fieldProps={{ required: true }}
       itemToString={({ name }) => name}
       itemToValue={({ id }) => id}
       renderItem={PlayerItem}
@@ -99,6 +98,7 @@ export function SelectedPlayers({
         <EmptyState
           size="sm"
           title="No players selected"
+          description="Please select players to add them to the league."
           icon={<UserRoundX />}
         />
       )}

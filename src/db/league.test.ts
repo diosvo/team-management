@@ -12,6 +12,8 @@ import {
   mockDeleteFailure,
   mockDeleteSuccess,
   mockInsertFailure,
+  mockInsertReturningFailure,
+  mockInsertReturningSuccess,
   mockInsertSuccess,
   mockUpdateFailure,
   mockUpdateSuccess,
@@ -26,6 +28,7 @@ import {
   getLeagues,
   getPlayersInLeague,
   insertLeague,
+  removePlayerFromLeagueRoster,
   updateLeague,
 } from './league';
 
@@ -180,19 +183,24 @@ describe('insertLeague', () => {
   });
 
   test('inserts league successfully', async () => {
-    const mockValues = mockInsertSuccess({ league_id: MOCK_LEAGUE.league_id });
+    const { mockValues, mockReturning } = mockInsertReturningSuccess([
+      { league_id: MOCK_LEAGUE.league_id },
+    ]);
 
     const result = await insertLeague(MOCK_LEAGUE_INPUT);
 
-    expect(result).toEqual({ league_id: MOCK_LEAGUE.league_id });
+    expect(result).toEqual([{ league_id: MOCK_LEAGUE.league_id }]);
     // Verify query construction
     expect(db.insert).toHaveBeenCalledWith(LeagueTable);
     expect(mockValues).toHaveBeenCalledWith(MOCK_LEAGUE_INPUT);
+    expect(mockReturning).toHaveBeenCalledWith({
+      league_id: LeagueTable.league_id,
+    });
   });
 
   test('throws error when insert fails', async () => {
     const message = 'Insert failed';
-    mockInsertFailure(message);
+    mockInsertReturningFailure(message);
 
     await expect(insertLeague({} as InsertLeague)).rejects.toThrow(message);
   });
@@ -303,6 +311,72 @@ describe('addPlayerToLeagueRoster', () => {
 
     await expect(
       addPlayerToLeagueRoster(
+        MOCK_TEAM.team_id,
+        MOCK_LEAGUE.league_id,
+        MOCK_PLAYER.id,
+      ),
+    ).rejects.toThrow(message);
+  });
+});
+
+describe('removePlayerFromLeagueRoster', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  test('removes player from league roster successfully', async () => {
+    const mockWhere = mockDeleteSuccess({ team_id: MOCK_TEAM.team_id });
+
+    const result = await removePlayerFromLeagueRoster(
+      MOCK_TEAM.team_id,
+      MOCK_LEAGUE.league_id,
+      MOCK_PLAYER.id,
+    );
+
+    expect(result).toEqual({ team_id: MOCK_TEAM.team_id });
+    expect(db.delete).toHaveBeenCalledWith(LeagueTeamRosterTable);
+    expect(and).toHaveBeenCalledWith(
+      {
+        field: LeagueTeamRosterTable.team_id,
+        value: MOCK_TEAM.team_id,
+        type: 'eq',
+      },
+      {
+        field: LeagueTeamRosterTable.league_id,
+        value: MOCK_LEAGUE.league_id,
+        type: 'eq',
+      },
+      {
+        field: LeagueTeamRosterTable.player_id,
+        value: MOCK_PLAYER.id,
+        type: 'eq',
+      },
+    );
+    expect(mockWhere).toHaveBeenCalledWith([
+      {
+        field: LeagueTeamRosterTable.team_id,
+        value: MOCK_TEAM.team_id,
+        type: 'eq',
+      },
+      {
+        field: LeagueTeamRosterTable.league_id,
+        value: MOCK_LEAGUE.league_id,
+        type: 'eq',
+      },
+      {
+        field: LeagueTeamRosterTable.player_id,
+        value: MOCK_PLAYER.id,
+        type: 'eq',
+      },
+    ]);
+  });
+
+  test('throws error when removing player fails', async () => {
+    const message = 'Delete failed';
+    mockDeleteFailure(message);
+
+    await expect(
+      removePlayerFromLeagueRoster(
         MOCK_TEAM.team_id,
         MOCK_LEAGUE.league_id,
         MOCK_PLAYER.id,

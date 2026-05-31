@@ -15,7 +15,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { toaster } from '@/components/ui/toaster';
 
 import usePermissions from '@/hooks/use-permissions';
-import useFilteredPagination from '@/hooks/use-table-state';
+import useTableState from '@/hooks/use-table-state';
 
 import { ALL } from '@/utils/constant';
 import { useAssetFilters } from '@/utils/filters';
@@ -59,7 +59,7 @@ export default function AssetTable({ data }: { data: Array<Asset> }) {
     totalCount,
     columnCount,
     selectionCount,
-  } = useFilteredPagination(data, predicate, page, {
+  } = useTableState(data, predicate, page, {
     headerCount: HEADERS.length,
   });
 

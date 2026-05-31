@@ -1,64 +1,98 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useTransition } from 'react';
 
-import { Badge, Highlight, Table } from '@chakra-ui/react';
+import { Badge, Table } from '@chakra-ui/react';
 import { CircuitBoard } from 'lucide-react';
 
 import Authorized from '@/components/Authorized';
+import HighlightText from '@/components/HighlightText';
 import Pagination from '@/components/Pagination';
 import SelectionActionBar from '@/components/SelectionActionBar';
 import { Checkbox } from '@/components/ui/checkbox';
 import { EmptyState } from '@/components/ui/empty-state';
 import { toaster } from '@/components/ui/toaster';
 
+import { ALL } from '@/utils/constant';
 import { LeagueStatus } from '@/utils/enum';
-import { paginateData, useCommonParams } from '@/utils/filters';
+import { useLeagueFilters } from '@/utils/filters';
 import { formatDate } from '@/utils/formatter';
 import { colorLeagueStatus } from '@/utils/helper';
 
+import usePermissions from '@/hooks/use-permissions';
+import useTableState from '@/hooks/use-table-state';
+
 import { removeLeague } from '@/actions/league';
 import { League } from '@/drizzle/schema';
-import usePermissions from '@/hooks/use-permissions';
 
 import { UpsertLeague } from './UpsertLeague';
+
+const HEADERS = [
+  'Name',
+  'No. Players',
+  'Start Date',
+  'End Date',
+  'Status',
+] as const;
+
+type LeagueWithPlayerCount = League & { player_count: number };
 
 export default function LeagueTable({
   leagues,
 }: {
-  leagues: Array<League & { player_count: number }>;
+  leagues: Array<LeagueWithPlayerCount>;
 }) {
-  const { isAdmin, isGuest } = usePermissions();
-  const [{ q, page }, setSearchParams] = useCommonParams();
+  const { isGuest } = usePermissions();
+  const [isPending, startTransition] = useTransition();
+  const [{ q, page, status }, setSearchParams] = useLeagueFilters();
 
-  const [selection, setSelection] = useState<Array<string>>([]);
-  const selectionCount = selection.length;
-
-  const totalCount = leagues.length;
-  const currentData = paginateData(leagues, page);
+  const predicate = useCallback(
+    (item: LeagueWithPlayerCount) =>
+      item.name.toLowerCase().includes(q.toLowerCase()) &&
+      (status === ALL.value || item.status === status),
+    [q, status],
+  );
+  const {
+    items,
+    currentData,
+    selection,
+    setSelection,
+    hasSelection,
+    totalCount,
+    columnCount,
+    selectionCount,
+  } = useTableState(leagues, predicate, page, {
+    headerCount: HEADERS.length,
+  });
 
   // Only Upcoming leagues can be selected
   const isUpcoming = ({ status }: League) => status === LeagueStatus.UPCOMING;
-  const selectableItems = leagues.filter(isUpcoming);
+  const selectableItems = items.filter(isUpcoming);
   const selectableCount = selectableItems.length;
-
-  // Selection
-  const hasSelection = selectionCount > 0;
   const indeterminate = hasSelection && selectionCount < selectableCount;
 
   const removeItems = async () => {
-    const results = await Promise.all(selection.map(removeLeague));
-    const hasErrors = results.some(({ success }) => !success);
-    const successCount = results.filter(({ success }) => success).length;
-
-    toaster.create({
-      type: hasErrors ? 'warning' : 'success',
-      title: hasErrors
-        ? `Deleted ${successCount} league(s), but some operations failed.`
-        : `Successfully deleted ${successCount} league(s).`,
+    const id = toaster.create({
+      type: 'loading',
+      title: 'Deleting leagues...',
     });
 
-    setSelection([]);
+    startTransition(async () => {
+      const results = await Promise.all(
+        selection.map((league_id) => removeLeague(league_id)),
+      );
+      const hasErrors = results.some(({ success }) => !success);
+      const successCount = results.filter(({ success }) => success).length;
+
+      toaster.update(id, {
+        type: hasErrors ? 'warning' : 'success',
+        title: hasErrors
+          ? `Deleted ${successCount} league(s), but some operations failed.`
+          : `Successfully deleted ${successCount} league(s).`,
+      });
+
+      if (!hasErrors) setSelection([]);
+    });
   };
 
   return (
@@ -72,11 +106,11 @@ export default function LeagueTable({
           <Table.Header>
             <Table.Row>
               <Authorized resource="leagues" action="delete">
-                <Table.ColumnHeader width={6}>
+                <Table.ColumnHeader width={4}>
                   <Checkbox
                     top={0.5}
                     aria-label="Select all rows"
-                    disabled={selectableCount === 0}
+                    disabled={selectableCount === 0 || isPending}
                     checked={
                       indeterminate ? 'indeterminate' : selectionCount > 0
                     }
@@ -90,11 +124,9 @@ export default function LeagueTable({
                   />
                 </Table.ColumnHeader>
               </Authorized>
-              {['Name', 'No. Players', 'Start Date', 'End Date', 'Status'].map(
-                (header) => (
-                  <Table.ColumnHeader key={header}>{header}</Table.ColumnHeader>
-                ),
-              )}
+              {HEADERS.map((header) => (
+                <Table.ColumnHeader key={header}>{header}</Table.ColumnHeader>
+              ))}
             </Table.Row>
           </Table.Header>
           <Table.Body>
@@ -129,9 +161,7 @@ export default function LeagueTable({
                     </Table.Cell>
                   </Authorized>
                   <Table.Cell>
-                    <Highlight query={q} styles={{ backgroundColor: 'yellow' }}>
-                      {item.name}
-                    </Highlight>
+                    <HighlightText query={q}>{item.name}</HighlightText>
                   </Table.Cell>
                   <Table.Cell>{item.player_count}</Table.Cell>
                   <Table.Cell>{formatDate(item.start_date)}</Table.Cell>
@@ -149,7 +179,7 @@ export default function LeagueTable({
               ))
             ) : (
               <Table.Row>
-                <Table.Cell colSpan={isAdmin ? 7 : 6}>
+                <Table.Cell colSpan={columnCount}>
                   <EmptyState
                     title="No leagues found"
                     icon={<CircuitBoard />}
@@ -171,6 +201,7 @@ export default function LeagueTable({
         selectionCount={selectionCount}
         onDelete={removeItems}
       />
+      <UpsertLeague.Viewport />
     </>
   );
 }

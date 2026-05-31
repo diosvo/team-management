@@ -60,7 +60,7 @@ export function colorCategory(category: string): ColorPalette {
 
 export function colorLeagueStatus(status: string): ColorPalette {
   return getColor(status, {
-    [LeagueStatus.UPCOMING]: 'yellow',
+    [LeagueStatus.UPCOMING]: 'orange',
     [LeagueStatus.ONGOING]: 'green',
     [LeagueStatus.ENDED]: 'red',
   });
