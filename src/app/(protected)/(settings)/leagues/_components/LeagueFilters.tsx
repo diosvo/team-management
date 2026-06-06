@@ -1,18 +1,14 @@
 'use client';
 
-import {
-  Button,
-  createListCollection,
-  HStack,
-  List,
-  Portal,
-  Select,
-} from '@chakra-ui/react';
-import { Crosshair, Filter, Plus } from 'lucide-react';
+import { useMemo } from 'react';
+
+import { Button, For, List, SegmentGroup } from '@chakra-ui/react';
+import { isPast } from 'date-fns';
+import { Crosshair } from 'lucide-react';
 
 import Authorized from '@/components/Authorized';
-import SearchInput from '@/components/SearchInput';
-import { Status } from '@/components/ui/status';
+import FilterBar from '@/components/filters/FilterBar';
+import { Field } from '@/components/ui/field';
 import { toaster } from '@/components/ui/toaster';
 import { Tooltip } from '@/components/ui/tooltip';
 
@@ -23,19 +19,29 @@ import { colorLeagueStatus } from '@/utils/helper';
 
 import { upsertLeague } from '@/actions/league';
 import { League } from '@/drizzle/schema';
+import { useLocalFilters } from '@/hooks/use-local-filters';
 
-import { UpsertLeague } from './UpsertLeague';
+const statusItems = [ALL, ...LEAGUE_STATUS_SELECTION];
+const DEFAULT_FILTERS = { status: ALL.value };
 
-const statuses = createListCollection({
-  items: [ALL, ...LEAGUE_STATUS_SELECTION],
-});
-
-export default function LeagueFilters({
-  endedLeagues,
-}: {
-  endedLeagues: Array<League>;
-}) {
+export default function LeagueFilters({ leagues }: { leagues: Array<League> }) {
   const [{ status }, setSearchParams] = useLeagueFilters();
+  const { draft, setField, ...rest } = useLocalFilters(
+    { status },
+    DEFAULT_FILTERS,
+    (values) => setSearchParams({ ...values, page: 1 }),
+  );
+
+  const activeCount = [status].filter((value) => value !== ALL.value).length;
+
+  const endedLeagues = useMemo(
+    () =>
+      leagues.filter(
+        (league) =>
+          isPast(league.end_date) && league.status !== LeagueStatus.ENDED,
+      ),
+    [leagues],
+  );
 
   const handleCorrectStatus = async () => {
     const results = await Promise.all(
@@ -52,94 +58,71 @@ export default function LeagueFilters({
     toaster.create({
       type: hasErrors ? 'warning' : 'success',
       title: hasErrors
-        ? `Deleted ${successCount} league(s), but some operations failed.`
+        ? `Updated ${successCount} league(s), but some operations failed.`
         : `Successfully updated ${successCount} league(s).`,
     });
   };
 
   return (
-    <HStack marginBlock={6}>
-      <SearchInput />
-      <Select.Root
-        width="xs"
-        size={{ base: 'sm', md: 'md' }}
-        collection={statuses}
-        value={[status]}
-        onValueChange={({ value }) =>
-          setSearchParams({ status: value[0], page: 1 })
-        }
-      >
-        <Select.HiddenSelect />
-        <Select.Control>
-          <Select.Trigger>
-            <HStack>
-              <Filter size={14} />
-              <Select.ValueText placeholder="Status" />
-            </HStack>
-          </Select.Trigger>
-          <Select.IndicatorGroup>
-            <Select.Indicator />
-          </Select.IndicatorGroup>
-        </Select.Control>
-        <Portal>
-          <Select.Positioner>
-            <Select.Content>
-              {statuses.items.map((status) => (
-                <Select.Item item={status} key={status.value}>
-                  <HStack>
-                    <Status colorPalette={colorLeagueStatus(status.value)} />
-                    {status.label}
-                    <Select.ItemIndicator />
-                  </HStack>
-                </Select.Item>
-              ))}
-            </Select.Content>
-          </Select.Positioner>
-        </Portal>
-      </Select.Root>
-      <Authorized resource="leagues" action="edit">
-        <Tooltip
-          content={
-            endedLeagues.length > 0 ? (
-              <List.Root as="ol" paddingInline={3} paddingBlock={2}>
-                {endedLeagues.map((league) => (
-                  <List.Item key={league.league_id}>{league.name}</List.Item>
-                ))}
-              </List.Root>
-            ) : (
-              'All statuses are correct'
-            )
-          }
-        >
-          <Button
-            variant="outline"
-            colorPalette="red"
-            size={{ base: 'sm', md: 'md' }}
-            disabled={endedLeagues.length === 0}
-            onClick={handleCorrectStatus}
+    <FilterBar
+      activeCount={activeCount}
+      {...rest}
+      inlineFilters={
+        <Authorized resource="leagues" action="edit">
+          <Tooltip
+            content={
+              endedLeagues.length > 0 ? (
+                <List.Root as="ol" paddingInline={3} paddingBlock={2}>
+                  {endedLeagues.map((league) => (
+                    <List.Item key={league.league_id}>{league.name}</List.Item>
+                  ))}
+                </List.Root>
+              ) : (
+                'All statuses are correct'
+              )
+            }
           >
-            <Crosshair />
-            Correct Status
-            {endedLeagues.length > 0 && ` (${endedLeagues.length})`}
-          </Button>
-        </Tooltip>
-
-        <Button
-          size={{ base: 'sm', md: 'md' }}
-          onClick={() =>
-            UpsertLeague.open('add-league', {
-              action: 'Add',
-              item: {
-                league_id: '',
-              },
-            })
-          }
-        >
-          <Plus />
-          Add
-        </Button>
-      </Authorized>
-      <UpsertLeague.Viewport />
-    </HStack>
+            <Button
+              variant="outline"
+              colorPalette="red"
+              size={{ base: 'sm', md: 'md' }}
+              disabled={endedLeagues.length === 0}
+              onClick={handleCorrectStatus}
+            >
+              <Crosshair />
+              Correct Status
+              {endedLeagues.length > 0 && ` (${endedLeagues.length})`}
+            </Button>
+          </Tooltip>
+        </Authorized>
+      }
+      advancedFilters={
+        <Field label="Status">
+          <SegmentGroup.Root
+            size="sm"
+            value={draft.status}
+            data-testid="status-filter"
+            onValueChange={({ value }) => setField('status', value as string)}
+          >
+            <SegmentGroup.Indicator />
+            <For each={statusItems}>
+              {({ label, value }) => (
+                <SegmentGroup.Item key={value} value={value}>
+                  <SegmentGroup.ItemText
+                    _checked={{
+                      fontWeight: 'medium',
+                      color: colorLeagueStatus(value),
+                    }}
+                  >
+                    {label}
+                  </SegmentGroup.ItemText>
+                  <SegmentGroup.ItemHiddenInput />
+                </SegmentGroup.Item>
+              )}
+            </For>
+          </SegmentGroup.Root>
+        </Field>
+      }
+    />
   );
 }

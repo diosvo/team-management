@@ -95,7 +95,7 @@ describe('colorCategory', () => {
 
 describe('colorLeagueStatus', () => {
   const cases = [
-    { status: LeagueStatus.UPCOMING, expected: 'yellow' },
+    { status: LeagueStatus.UPCOMING, expected: 'orange' },
     { status: LeagueStatus.ONGOING, expected: 'green' },
     { status: LeagueStatus.ENDED, expected: 'red' },
     ...invalidColor('status'),

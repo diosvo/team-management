@@ -6,7 +6,6 @@ import usePermissions from './use-permissions';
 type Options = {
   pageSize: number;
   headerCount: number;
-  isAdmin: boolean;
 };
 
 export default function useTableState<T>(

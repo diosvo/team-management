@@ -10,8 +10,6 @@ import {
 import { UpsertLeagueSchemaValues } from '@/schemas/league';
 
 export async function getLeagues() {
-  // After all leagues have been updated, pass an argument to allow filtering (support Add match result with Upcoming/Ongoing status only)
-
   try {
     const leagues = await db.query.LeagueTable.findMany({
       orderBy: desc(LeagueTable.end_date),
@@ -58,7 +56,9 @@ export async function getPlayersInLeague(
 }
 
 export async function insertLeague(league: InsertLeague) {
-  return await db.insert(LeagueTable).values(league);
+  return await db.insert(LeagueTable).values(league).returning({
+    league_id: LeagueTable.league_id,
+  });
 }
 
 export async function updateLeague(
@@ -87,4 +87,20 @@ export async function addPlayerToLeagueRoster(
     league_id,
     player_id,
   });
+}
+
+export async function removePlayerFromLeagueRoster(
+  team_id: string,
+  league_id: string,
+  player_id: string,
+) {
+  return await db
+    .delete(LeagueTeamRosterTable)
+    .where(
+      and(
+        eq(LeagueTeamRosterTable.team_id, team_id),
+        eq(LeagueTeamRosterTable.league_id, league_id),
+        eq(LeagueTeamRosterTable.player_id, player_id),
+      ),
+    );
 }

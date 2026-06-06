@@ -1,9 +1,10 @@
 import { Metadata } from 'next';
 
-import PageTitle from '@/components/PageTitle';
-
 import { getLeagues } from '@/actions/league';
-import LeagueList from './_components/LeagueList';
+
+import LeagueFilters from './_components/LeagueFilters';
+import LeagueHeader from './_components/LeagueHeader';
+import LeagueTable from './_components/LeagueTable';
 
 export const metadata: Metadata = {
   title: 'Leagues',
@@ -15,8 +16,9 @@ export default async function LeaguesPage() {
 
   return (
     <>
-      <PageTitle title="Leagues" />
-      <LeagueList leagues={leagues} />
+      <LeagueHeader />
+      <LeagueFilters leagues={leagues} />
+      <LeagueTable leagues={leagues} />
     </>
   );
 }
