@@ -35,7 +35,7 @@ export const upsertLeague = leagues(
     user,
     league_id: string,
     league: UpsertLeagueSchemaValues,
-    player_ids: Array<string> = [],
+    player_ids?: Array<string>,
   ) {
     const status = isFuture(league.start_date)
       ? LeagueStatus.UPCOMING
@@ -58,8 +58,8 @@ export const upsertLeague = leagues(
       const rosterErrors = await syncLeagueRoster(
         user.team_id,
         leagueId,
-        player_ids,
         isUpdate,
+        player_ids,
       );
 
       if (rosterErrors.length > 0) {
@@ -96,10 +96,10 @@ export const removeLeague = leagues(
 async function syncLeagueRoster(
   team_id: string,
   league_id: string,
-  player_ids: Array<string>,
   isUpdate: boolean,
+  player_ids?: Array<string>,
 ): Promise<Array<string>> {
-  if (!league_id || player_ids.length === 0) return [];
+  if (!league_id || player_ids == null) return [];
 
   // Get current players only for existing leagues
   const currentPlayers = isUpdate

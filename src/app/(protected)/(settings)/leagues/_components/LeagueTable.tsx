@@ -91,7 +91,7 @@ export default function LeagueTable({
           : `Successfully deleted ${successCount} league(s).`,
       });
 
-      if (!hasErrors) setSelection([]);
+      setSelection([]);
     });
   };
 
@@ -148,7 +148,7 @@ export default function LeagueTable({
                       <Checkbox
                         top={0.5}
                         aria-label="Select row"
-                        disabled={!isUpcoming(item)}
+                        disabled={!isUpcoming(item) || isPending}
                         checked={selection.includes(item.league_id)}
                         onCheckedChange={(changes) => {
                           setSelection((prev) =>
