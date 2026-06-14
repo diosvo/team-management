@@ -1,9 +1,10 @@
-import { and, desc, eq, gte, lte } from 'drizzle-orm';
+import { and, desc, eq, gte, isNotNull, isNull, lte } from 'drizzle-orm';
 
 import { DataWithStats } from '@/types/common';
 import { MatchStats, MatchWithTeams } from '@/types/match';
 
-import { MatchStatus } from '@/utils/enum';
+import { ALL } from '@/utils/constant';
+import { MatchStatus, MatchType } from '@/utils/enum';
 import { MatchSearchParams } from '@/utils/filters';
 import { TIME_DURATION } from '@/utils/formatter';
 
@@ -14,7 +15,7 @@ import { UpsertMatchSchemaValues } from '@/schemas/match';
 export async function getMatches(
   params: MatchSearchParams & { team_id: string },
 ): Promise<DataWithStats<MatchWithTeams, MatchStats>> {
-  const { is5x5, interval, team_id } = params;
+  const { game_type, interval, match_type, team_id } = params;
   const { start, end } = TIME_DURATION[interval];
 
   try {
@@ -27,11 +28,19 @@ export async function getMatches(
       },
       where: and(
         eq(MatchTable.home_team, team_id),
-        eq(MatchTable.is_5x5, is5x5),
+        ...(game_type !== ALL.value
+          ? [eq(MatchTable.is_5x5, game_type === 'true')]
+          : []),
         gte(MatchTable.date, start.toISOString()),
         lte(MatchTable.date, end.toISOString()),
+        ...(match_type === MatchType.LEAGUE
+          ? [isNotNull(MatchTable.league_id)]
+          : []),
+        ...(match_type === MatchType.FRIENDLY
+          ? [isNull(MatchTable.league_id)]
+          : []),
       ),
-      orderBy: desc(MatchTable.updated_at),
+      orderBy: desc(MatchTable.date),
     });
 
     const data = matches.map((match) => ({

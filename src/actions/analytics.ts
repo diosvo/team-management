@@ -4,6 +4,7 @@ import { differenceInDays } from 'date-fns';
 
 import { MatchesRateRecord } from '@/types/analytics';
 import { IntervalValues } from '@/types/common';
+import { ALL } from '@/utils/constant';
 import { Interval, MatchStatus } from '@/utils/enum';
 
 import {
@@ -41,8 +42,9 @@ export const getOverviewStats = withAuth(async ({ team_id }) => {
 
   const matches = await fetchMatches({
     team_id,
-    is5x5: true,
+    game_type: 'true',
     interval: Interval.THIS_YEAR,
+    match_type: ALL.value,
     page: 1,
     q: '',
   });
@@ -62,8 +64,9 @@ export const getMatchesRate = createAnalyticsAction(
   ): Promise<Array<MatchesRateRecord>> => {
     const matchesData = await fetchMatches({
       team_id,
-      is5x5: true,
+      game_type: 'true',
       interval,
+      match_type: ALL.value,
       // TODO: it could be optional in the API, but the current implementation requires it
       page: 1,
       q: '',

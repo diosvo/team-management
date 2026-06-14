@@ -6,6 +6,7 @@ import {
   CoachPosition,
   Interval,
   LeagueStatus,
+  MatchType,
   PlayerPosition,
   SessionStatus,
   TestTypeUnit,
@@ -259,6 +260,26 @@ export const GAME_TYPE_SELECTION: Selection<string> = [
     value: 'true',
   },
 ];
+export const GAME_TYPE_VALUES = [
+  ALL.value,
+  ...GAME_TYPE_SELECTION.map(({ value }) => value),
+];
+
+export const SELECTABLE_MATCH_TYPES = [
+  MatchType.LEAGUE,
+  MatchType.FRIENDLY,
+] as const;
+export const MATCH_TYPE_SELECTION: Selection<string> = [
+  {
+    label: 'League',
+    value: MatchType.LEAGUE,
+  },
+  {
+    label: 'Friendly',
+    value: MatchType.FRIENDLY,
+  },
+];
+export const MATCH_TYPE_VALUES = [ALL.value, ...SELECTABLE_MATCH_TYPES];
 
 export const INTERVAL_SELECTION: Selection<IntervalValues> = [
   {

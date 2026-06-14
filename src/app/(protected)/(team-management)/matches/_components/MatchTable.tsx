@@ -1,10 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useTransition } from 'react';
 
-import { Badge, Highlight, HStack, Span, Table } from '@chakra-ui/react';
+import { Badge, HStack, Span, Table } from '@chakra-ui/react';
 
 import Authorized from '@/components/Authorized';
+import { LocationLink } from '@/components/common/LocationSelection';
+import HighlightText from '@/components/HighlightText';
 import Pagination from '@/components/Pagination';
 import SelectionActionBar from '@/components/SelectionActionBar';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -12,16 +14,19 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { toaster } from '@/components/ui/toaster';
 
 import usePermissions from '@/hooks/use-permissions';
+import useTableState from '@/hooks/use-table-state';
+
 import { MatchWithTeams } from '@/types/match';
-import { paginateData, useMatchFilters } from '@/utils/filters';
+import { useMatchFilters } from '@/utils/filters';
 import { formatDate, formatDay } from '@/utils/formatter';
 import { getColor } from '@/utils/helper';
 
 import { removeMatch } from '@/actions/match';
-import { LocationLink } from '@/components/common/LocationSelection';
+
+import { LeagueLink } from '@/components/common/LeagueSelection';
 import { UpsertMatch } from './UpsertMatch';
 
-const headers = [
+const HEADERS = [
   'Opponent',
   'League',
   'Score',
@@ -36,29 +41,48 @@ export default function MatchTable({
   matches: Array<MatchWithTeams>;
 }) {
   const { isGuest } = usePermissions();
+  const [isPending, startTransition] = useTransition();
   const [{ q, page }, setSearchParams] = useMatchFilters();
 
-  const [selection, setSelection] = useState<Array<string>>([]);
-  const selectionCount = selection.length;
-
-  const totalCount = matches.length;
-  const currentData = paginateData(matches, page);
-
-  // Selection
-  const hasSelection = selectionCount > 0;
-  const indeterminate = hasSelection && selectionCount < totalCount;
+  const predicate = useCallback(
+    (item: MatchWithTeams) =>
+      item.away_team.name.toLowerCase().includes(q.toLowerCase()),
+    [q],
+  );
+  const {
+    items,
+    currentData,
+    indeterminate,
+    selection,
+    setSelection,
+    hasSelection,
+    totalCount,
+    columnCount,
+    selectionCount,
+  } = useTableState(matches, predicate, page, {
+    headerCount: HEADERS.length,
+  });
 
   const removeItems = async () => {
-    const results = await Promise.all(selection.map(removeMatch));
-    const hasErrors = results.some(({ success }) => !success);
-    const successCount = results.filter(({ success }) => success).length;
-
-    toaster.create({
-      type: hasErrors ? 'error' : 'success',
-      title: `Successfully deleted ${successCount} match(es).`,
+    const id = toaster.create({
+      type: 'loading',
+      title: 'Deleting matches...',
     });
 
-    setSelection([]);
+    startTransition(async () => {
+      const results = await Promise.all(selection.map(removeMatch));
+      const hasErrors = results.some(({ success }) => !success);
+      const successCount = results.filter(({ success }) => success).length;
+
+      toaster.update(id, {
+        type: hasErrors ? 'warning' : 'success',
+        title: hasErrors
+          ? `Deleted ${successCount} match(es), but some operations failed.`
+          : `Successfully deleted ${successCount} match(es).`,
+      });
+
+      setSelection([]);
+    });
   };
 
   return (
@@ -76,20 +100,21 @@ export default function MatchTable({
                   <Checkbox
                     top={0.5}
                     aria-label="Select all rows"
+                    disabled={isPending}
                     checked={
                       indeterminate ? 'indeterminate' : selectionCount > 0
                     }
                     onCheckedChange={(changes) => {
                       setSelection(
                         changes.checked
-                          ? matches.map(({ match_id }) => match_id)
+                          ? items.map(({ match_id }) => match_id)
                           : [],
                       );
                     }}
                   />
                 </Table.ColumnHeader>
               </Authorized>
-              {headers.map((header) => (
+              {HEADERS.map((header) => (
                 <Table.ColumnHeader key={header}>{header}</Table.ColumnHeader>
               ))}
             </Table.Row>
@@ -116,23 +141,26 @@ export default function MatchTable({
                       <Checkbox
                         top={0.5}
                         aria-label="Select row"
+                        disabled={isPending}
                         checked={selection.includes(item.match_id)}
                         onCheckedChange={(changes) => {
                           setSelection((prev) =>
                             changes.checked
                               ? [...prev, item.match_id]
-                              : selection.filter((id) => id !== item.match_id),
+                              : prev.filter((id) => id !== item.match_id),
                           );
                         }}
                       />
                     </Table.Cell>
                   </Authorized>
                   <Table.Cell>
-                    <Highlight query={q} styles={{ backgroundColor: 'yellow' }}>
+                    <HighlightText query={q}>
                       {item.away_team.name}
-                    </Highlight>
+                    </HighlightText>
                   </Table.Cell>
-                  <Table.Cell>{item.league?.name || '-'}</Table.Cell>
+                  <Table.Cell>
+                    <LeagueLink name={item.league?.name} />
+                  </Table.Cell>
                   <Table.Cell>
                     {item.home_team_score} - {item.away_team_score}
                   </Table.Cell>
@@ -161,7 +189,7 @@ export default function MatchTable({
               ))
             ) : (
               <Table.Row>
-                <Table.Cell colSpan={headers.length + 1}>
+                <Table.Cell colSpan={columnCount}>
                   <EmptyState title="No matches found" />
                 </Table.Cell>
               </Table.Row>
@@ -180,6 +208,7 @@ export default function MatchTable({
         selectionCount={selectionCount}
         onDelete={removeItems}
       />
+      <UpsertMatch.Viewport />
     </>
   );
 }

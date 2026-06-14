@@ -61,7 +61,7 @@ export default function MatchesRate({
                 dataKey={chart.key(item.name)}
                 fill={chart.color(item.color)}
                 stroke={chart.color(item.color)}
-                onClick={() => router.push(`/matches?type=${item.name}`)}
+                onClick={() => router.push(`/matches?match_type=${item.name}`)}
               >
                 <LabelList position="top" dataKey={chart.key(item.name)} />
               </Bar>

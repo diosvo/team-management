@@ -4,9 +4,11 @@ import { SlidersHorizontal } from 'lucide-react';
 import SearchInput from '../SearchInput';
 import { CloseButton } from '../ui/close-button';
 
+type InlineContext = 'inline' | 'drawer';
+
 type FilterBarProps = {
   activeCount: number;
-  inlineFilters?: React.ReactNode;
+  inlineFilters?: (context: InlineContext) => React.ReactNode;
   advancedFilters: React.ReactNode;
   handleReset: () => void;
   handleApply: () => void;
@@ -25,7 +27,9 @@ export default function FilterBar({
     <HStack gap={{ base: 3, lg: 4 }} alignItems="start">
       <SearchInput />
       {inlineFilters && (
-        <Box display={{ base: 'none', lg: 'block' }}>{inlineFilters}</Box>
+        <Box display={{ base: 'none', lg: 'block' }}>
+          {inlineFilters('inline')}
+        </Box>
       )}
       <Drawer.Root
         closeOnEscape={false}
@@ -58,7 +62,7 @@ export default function FilterBar({
               >
                 {inlineFilters && (
                   <Box display={{ base: 'block', lg: 'none' }}>
-                    {inlineFilters}
+                    {inlineFilters('drawer')}
                   </Box>
                 )}
                 {advancedFilters}

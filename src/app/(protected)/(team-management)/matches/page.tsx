@@ -1,15 +1,12 @@
 import { Metadata } from 'next';
 
-import { HStack } from '@chakra-ui/react';
-
-import PageTitle from '@/components/PageTitle';
-
 import { getMatches } from '@/actions/match';
 import { loadMatchFilters } from '@/utils/filters';
 
-import MatchesFilters from './_components/MatchFilters';
-import MatchList from './_components/MatchList';
-import MatchesStats from './_components/MatchStats';
+import MatchFilters from './_components/MatchFilters';
+import MatchHeader from './_components/MatchHeader';
+import MatchStats from './_components/MatchStats';
+import MatchTable from './_components/MatchTable';
 
 export const metadata: Metadata = {
   title: 'Matches',
@@ -22,12 +19,10 @@ export default async function MatchesPage(props: PageProps<'/matches'>) {
 
   return (
     <>
-      <HStack justifyContent="space-between" marginBottom={6}>
-        <PageTitle title="Matches" />
-        <MatchesFilters />
-      </HStack>
-      <MatchesStats stats={stats} />
-      <MatchList matches={data} />
+      <MatchHeader />
+      <MatchStats stats={stats} />
+      <MatchFilters />
+      <MatchTable matches={data} />
     </>
   );
 }
