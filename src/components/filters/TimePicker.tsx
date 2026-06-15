@@ -33,9 +33,9 @@ export default function TimePicker({
       <Portal>
         <Select.Positioner>
           <Select.Content>
-            {dates.items.map((year) => (
-              <Select.Item item={year} key={year.value}>
-                {year.label}
+            {dates.items.map((interval) => (
+              <Select.Item item={interval} key={interval.value}>
+                {interval.label}
                 <Select.ItemIndicator />
               </Select.Item>
             ))}

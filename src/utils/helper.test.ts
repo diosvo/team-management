@@ -56,7 +56,7 @@ describe('getColor', () => {
   ];
 
   test.each(cases)('returns $expected for $value', ({ value, expected }) => {
-    expect(getColor(value as string)).toBe(expected);
+    expect(getColor(value)).toBe(expected);
   });
 });
 

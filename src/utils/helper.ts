@@ -12,40 +12,40 @@ import {
   UserState,
 } from './enum';
 
-const COLOR_MAP: Partial<Record<ColorPalette, string[]>> = {
+const COLOR_MAP: Partial<Record<ColorPalette, Array<string>>> = {
   blue: [UserRole.PLAYER],
   gray: [
-    UserState.UNKNOWN,
-    AssetCondition.OBSOLETE,
     AssetCategory.OTHERS,
+    AssetCondition.OBSOLETE,
     MatchStatus.DRAW,
     SessionStatus.COMPLETED,
+    UserState.UNKNOWN,
   ],
   green: [
-    UserState.ACTIVE,
-    AssetCondition.GOOD,
     AssetCategory.EQUIPMENT,
+    AssetCondition.GOOD,
+    AttendanceStatus.ON_TIME,
     LeagueStatus.ONGOING,
     MatchStatus.WIN,
-    AttendanceStatus.ON_TIME,
     SessionStatus.ACTIVE,
+    UserState.ACTIVE,
   ],
   orange: [
+    AssetCategory.TRAINING,
+    AssetCondition.FAIR,
+    AttendanceStatus.LATE,
+    LeagueStatus.UPCOMING,
     UserRole.SUPER_ADMIN,
     UserState.TEMPORARILY_ABSENT,
-    AssetCondition.FAIR,
-    AssetCategory.TRAINING,
-    LeagueStatus.UPCOMING,
-    AttendanceStatus.LATE,
   ],
   purple: [UserRole.COACH],
   red: [
-    UserState.INACTIVE,
     AssetCondition.POOR,
+    AttendanceStatus.ABSENT,
     LeagueStatus.ENDED,
     MatchStatus.LOSS,
-    AttendanceStatus.ABSENT,
     SessionStatus.CANCELLED,
+    UserState.INACTIVE,
   ],
   yellow: [SessionStatus.SCHEDULED],
 };
@@ -56,7 +56,7 @@ const COLOR_LOOKUP = new Map<string, ColorPalette>(
   ),
 );
 
-export function getColor(value: Nullable<string>): ColorPalette {
+export function getColor(value: Nullish<string>): ColorPalette {
   if (value === ALL.value) return 'blue';
   if (value == null) return 'gray';
   return COLOR_LOOKUP.get(value) ?? 'gray';
