@@ -8,27 +8,21 @@ import {
   Select,
   SimpleGrid,
 } from '@chakra-ui/react';
-import { CalendarSearch, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 
 import Authorized from '@/components/Authorized';
+import TimePicker from '@/components/filters/TimePicker';
 import { Status } from '@/components/ui/status';
 
 import usePermissions from '@/hooks/use-permissions';
-import {
-  ALL,
-  INTERVAL_SELECTION,
-  SESSION_STATUS_SELECTION,
-} from '@/utils/constant';
+import { ALL, SESSION_STATUS_SELECTION } from '@/utils/constant';
 import { TrainingSearchParamsKeys, useTrainingFilters } from '@/utils/filters';
-import { colorSessionStatus } from '@/utils/helper';
+import { getColor } from '@/utils/helper';
 
 import { UpsertSession } from './UpsertSession';
 
 const statuses = createListCollection({
   items: [ALL, ...SESSION_STATUS_SELECTION],
-});
-const dateRanges = createListCollection({
-  items: INTERVAL_SELECTION,
 });
 
 export default function SessionFilters() {
@@ -63,7 +57,7 @@ export default function SessionFilters() {
       >
         <Select.Trigger>
           <HStack width="full">
-            <Status colorPalette={colorSessionStatus(status)} />
+            <Status colorPalette={getColor(status)} />
             <Select.ValueText placeholder="Status" />
           </HStack>
         </Select.Trigger>
@@ -73,7 +67,7 @@ export default function SessionFilters() {
               {statuses.items.map((status) => (
                 <Select.Item item={status} key={status.value}>
                   <HStack>
-                    <Status colorPalette={colorSessionStatus(status.value)} />
+                    <Status colorPalette={getColor(status.value)} />
                     {status.label}
                     <Select.ItemIndicator />
                   </HStack>
@@ -83,33 +77,10 @@ export default function SessionFilters() {
           </Select.Positioner>
         </Portal>
       </Select.Root>
-      <Select.Root
-        collection={dateRanges}
-        value={[interval]}
-        onValueChange={({ value }) => handleSearchParams('interval', value[0])}
-      >
-        <Select.HiddenSelect />
-        <Select.Control>
-          <Select.Trigger>
-            <HStack>
-              <CalendarSearch size={16} />
-              <Select.ValueText placeholder="Time" />
-            </HStack>
-          </Select.Trigger>
-        </Select.Control>
-        <Portal>
-          <Select.Positioner>
-            <Select.Content>
-              {dateRanges.items.map((year) => (
-                <Select.Item item={year} key={year.value}>
-                  {year.label}
-                  <Select.ItemIndicator />
-                </Select.Item>
-              ))}
-            </Select.Content>
-          </Select.Positioner>
-        </Portal>
-      </Select.Root>
+      <TimePicker
+        value={interval}
+        onChange={(value) => handleSearchParams('interval', value)}
+      />
       <UpsertSession.Viewport />
     </SimpleGrid>
   );

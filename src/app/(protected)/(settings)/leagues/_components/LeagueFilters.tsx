@@ -15,7 +15,7 @@ import { Tooltip } from '@/components/ui/tooltip';
 import { ALL, LEAGUE_STATUS_SELECTION } from '@/utils/constant';
 import { LeagueStatus } from '@/utils/enum';
 import { useLeagueFilters } from '@/utils/filters';
-import { colorLeagueStatus } from '@/utils/helper';
+import { getColor } from '@/utils/helper';
 
 import { upsertLeague } from '@/actions/league';
 import { League } from '@/drizzle/schema';
@@ -111,7 +111,7 @@ export default function LeagueFilters({ leagues }: { leagues: Array<League> }) {
                   <SegmentGroup.ItemText
                     _checked={{
                       fontWeight: 'medium',
-                      color: colorLeagueStatus(value),
+                      color: getColor(value),
                     }}
                   >
                     {label}

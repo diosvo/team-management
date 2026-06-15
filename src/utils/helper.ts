@@ -12,83 +12,54 @@ import {
   UserState,
 } from './enum';
 
-/**
- * @description Returns a color from the provided colorMap based on the given value.
- */
-function getColor<T>(
-  value: Nullable<T>,
-  colorMap: Record<string, ColorPalette>,
-): ColorPalette {
+const COLOR_MAP: Partial<Record<ColorPalette, Array<string>>> = {
+  blue: [UserRole.PLAYER],
+  gray: [
+    AssetCategory.OTHERS,
+    AssetCondition.OBSOLETE,
+    MatchStatus.DRAW,
+    SessionStatus.COMPLETED,
+    UserState.UNKNOWN,
+  ],
+  green: [
+    AssetCategory.EQUIPMENT,
+    AssetCondition.GOOD,
+    AttendanceStatus.ON_TIME,
+    LeagueStatus.ONGOING,
+    MatchStatus.WIN,
+    SessionStatus.ACTIVE,
+    UserState.ACTIVE,
+  ],
+  orange: [
+    AssetCategory.TRAINING,
+    AssetCondition.FAIR,
+    AttendanceStatus.LATE,
+    LeagueStatus.UPCOMING,
+    UserRole.SUPER_ADMIN,
+    UserState.TEMPORARILY_ABSENT,
+  ],
+  purple: [UserRole.COACH],
+  red: [
+    AssetCondition.POOR,
+    AttendanceStatus.ABSENT,
+    LeagueStatus.ENDED,
+    MatchStatus.LOSS,
+    SessionStatus.CANCELLED,
+    UserState.INACTIVE,
+  ],
+  yellow: [SessionStatus.SCHEDULED],
+};
+
+const COLOR_LOOKUP = new Map<string, ColorPalette>(
+  Object.entries(COLOR_MAP).flatMap(([color, values]) =>
+    values!.map((value) => [value, color as ColorPalette]),
+  ),
+);
+
+export function getColor(value: Nullish<string>): ColorPalette {
   if (value === ALL.value) return 'blue';
   if (value == null) return 'gray';
-  return colorMap[value];
-}
-
-export function colorRole(role: string): ColorPalette {
-  return getColor(role, {
-    [UserRole.SUPER_ADMIN]: 'orange',
-    [UserRole.COACH]: 'purple',
-    [UserRole.PLAYER]: 'blue',
-  });
-}
-
-export function colorState(state: string): ColorPalette {
-  return getColor(state, {
-    [UserState.ACTIVE]: 'green',
-    [UserState.TEMPORARILY_ABSENT]: 'orange',
-    [UserState.INACTIVE]: 'red',
-    [UserState.UNKNOWN]: 'gray',
-  });
-}
-
-export function colorCondition(condition: string): ColorPalette {
-  return getColor(condition, {
-    [AssetCondition.GOOD]: 'green',
-    [AssetCondition.FAIR]: 'orange',
-    [AssetCondition.POOR]: 'red',
-    [AssetCondition.OBSOLETE]: 'gray',
-  });
-}
-
-export function colorCategory(category: string): ColorPalette {
-  return getColor(category, {
-    [AssetCategory.EQUIPMENT]: 'green',
-    [AssetCategory.TRAINING]: 'orange',
-    [AssetCategory.OTHERS]: 'gray',
-  });
-}
-
-export function colorLeagueStatus(status: string): ColorPalette {
-  return getColor(status, {
-    [LeagueStatus.UPCOMING]: 'orange',
-    [LeagueStatus.ONGOING]: 'green',
-    [LeagueStatus.ENDED]: 'red',
-  });
-}
-
-export function colorMatchResult(status: string): ColorPalette {
-  return getColor(status, {
-    [MatchStatus.WIN]: 'green',
-    [MatchStatus.LOSS]: 'red',
-    [MatchStatus.DRAW]: 'gray',
-  });
-}
-
-export function colorAttendanceStatus(status: string): ColorPalette {
-  return getColor(status, {
-    [AttendanceStatus.ON_TIME]: 'green',
-    [AttendanceStatus.ABSENT]: 'red',
-    [AttendanceStatus.LATE]: 'orange',
-  });
-}
-
-export function colorSessionStatus(status: string): ColorPalette {
-  return getColor(status, {
-    [SessionStatus.SCHEDULED]: 'yellow',
-    [SessionStatus.ACTIVE]: 'green',
-    [SessionStatus.COMPLETED]: 'gray',
-    [SessionStatus.CANCELLED]: 'red',
-  });
+  return COLOR_LOOKUP.get(value) ?? 'gray';
 }
 
 export function colorPlayerRank(rate: number): ColorPalette {

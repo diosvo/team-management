@@ -6,6 +6,7 @@ import { Table } from '@chakra-ui/react';
 import { MapPinXInside } from 'lucide-react';
 
 import Authorized from '@/components/Authorized';
+import { LocationLink } from '@/components/common/LocationSelection';
 import HighlightText from '@/components/HighlightText';
 import Pagination from '@/components/Pagination';
 import SelectionActionBar from '@/components/SelectionActionBar';
@@ -138,7 +139,9 @@ export default function LocationTable({
                     </Table.Cell>
                   </Authorized>
                   <Table.Cell>
-                    <HighlightText query={q}>{item.name}</HighlightText>
+                    <LocationLink name={item.name}>
+                      <HighlightText query={q}>{item.name}</HighlightText>
+                    </LocationLink>
                   </Table.Cell>
                   <Table.Cell>
                     <HighlightText query={q}>{item.address}</HighlightText>

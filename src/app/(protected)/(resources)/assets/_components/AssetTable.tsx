@@ -20,7 +20,7 @@ import useTableState from '@/hooks/use-table-state';
 import { ALL } from '@/utils/constant';
 import { useAssetFilters } from '@/utils/filters';
 import { formatDate, formatDatetime } from '@/utils/formatter';
-import { colorCategory, colorCondition } from '@/utils/helper';
+import { getColor } from '@/utils/helper';
 
 import { removeAsset } from '@/actions/asset';
 import { Asset } from '@/drizzle/schema/asset';
@@ -148,7 +148,7 @@ export default function AssetTable({ data }: { data: Array<Asset> }) {
                     <Badge
                       variant="surface"
                       borderRadius="full"
-                      colorPalette={colorCategory(item.category)}
+                      colorPalette={getColor(item.category)}
                     >
                       {capitalize(item.category)}
                     </Badge>
@@ -158,7 +158,7 @@ export default function AssetTable({ data }: { data: Array<Asset> }) {
                     <Badge
                       variant="outline"
                       borderRadius="full"
-                      colorPalette={colorCondition(item.condition)}
+                      colorPalette={getColor(item.condition)}
                     >
                       {capitalize(item.condition)}
                     </Badge>

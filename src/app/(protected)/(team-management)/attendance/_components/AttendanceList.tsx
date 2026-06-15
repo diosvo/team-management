@@ -7,7 +7,7 @@ import { Status } from '@/components/ui/status';
 
 import { ALL, ATTENDANCE_STATUS_SELECTION } from '@/utils/constant';
 import { useAttendanceFilters } from '@/utils/filters';
-import { colorAttendanceStatus } from '@/utils/helper';
+import { getColor } from '@/utils/helper';
 
 import { AttendanceWithPlayer } from '@/types/attendance';
 import AttendanceTable from './AttendanceTable';
@@ -48,7 +48,7 @@ export default function AttendanceList({
           <Select.Control>
             <Select.Trigger>
               <HStack>
-                <Status colorPalette={colorAttendanceStatus(status)} />
+                <Status colorPalette={getColor(status)} />
                 <Select.ValueText placeholder="Status" />
               </HStack>
             </Select.Trigger>
@@ -63,7 +63,7 @@ export default function AttendanceList({
                   <Select.Item item={status} key={status.value}>
                     <HStack>
                       <Status
-                        colorPalette={colorAttendanceStatus(status.value)}
+                        colorPalette={getColor(status.value)}
                       />
                       {status.label}
                       <Select.ItemIndicator />

@@ -18,6 +18,7 @@ type LocationSelectionProps<TFieldValues extends FieldValues = FieldValues> = {
 
 export function LocationLink({
   name,
+  children,
   ...props
 }: { name: Nullish<string> } & LinkProps) {
   if (!name) return 'Unknown';
@@ -27,16 +28,15 @@ export function LocationLink({
     <ChakraLink
       colorPalette="blue"
       focusRing="none"
-      textDecoration="dotted underline"
       _hover={{
-        textDecoration: 'red dotted underline',
+        textDecoration: 'blue dotted underline',
       }}
       {...props}
       onClick={(e) => e.stopPropagation()}
       asChild
     >
       <NextLink href={href} rel="noopener noreferrer" target="_blank">
-        {name}
+        {children ?? name}
       </NextLink>
     </ChakraLink>
   );

@@ -28,7 +28,7 @@ import { toaster } from '@/components/ui/toaster';
 
 import { CACHE_KEY, CURRENT_DATE, ESTABLISHED_DATE } from '@/utils/constant';
 import { formatDatetime } from '@/utils/formatter';
-import { colorLeagueStatus } from '@/utils/helper';
+import { getColor } from '@/utils/helper';
 
 import { getDefaults } from '@/lib/zod';
 import { UpsertMatchSchema, UpsertMatchSchemaValues } from '@/schemas/match';
@@ -141,7 +141,7 @@ export const UpsertMatch = createOverlay(({ action, item, ...rest }) => {
                             variant="outline"
                             marginLeft="auto"
                             borderRadius="full"
-                            colorPalette={colorLeagueStatus(item.status)}
+                            colorPalette={getColor(item.status)}
                           >
                             {item.status}
                           </Badge>

@@ -15,7 +15,7 @@ import usePermissions from '@/hooks/use-permissions';
 import { MatchWithTeams } from '@/types/match';
 import { paginateData, useMatchFilters } from '@/utils/filters';
 import { formatDate, formatDay } from '@/utils/formatter';
-import { colorMatchResult } from '@/utils/helper';
+import { getColor } from '@/utils/helper';
 
 import { removeMatch } from '@/actions/match';
 import { LocationLink } from '@/components/common/LocationSelection';
@@ -140,7 +140,7 @@ export default function MatchTable({
                     <Badge
                       variant="surface"
                       borderRadius="full"
-                      colorPalette={colorMatchResult(item.result)}
+                      colorPalette={getColor(item.result)}
                     >
                       {item.result}
                     </Badge>

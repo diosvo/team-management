@@ -20,17 +20,16 @@ export default async function OverviewStats() {
               {stats.active_players}
             </Stat.ValueText>
           </Stat.Root>
-          <Stat.Root borderWidth={1} padding={4} rounded="md">
+          <Stat.Root
+            borderWidth={1}
+            padding={4}
+            rounded="md"
+            hidden={stats.next_game != null}
+          >
             <Stat.Label>Next Game</Stat.Label>
             <Stat.ValueText alignItems="baseline">
-              {!stats.next_game ? (
-                <Span color="green">TODAY</Span>
-              ) : (
-                <>
-                  {stats.next_game}
-                  <Stat.ValueUnit>days remaining</Stat.ValueUnit>
-                </>
-              )}
+              {stats.next_game}
+              <Stat.ValueUnit>days remaining</Stat.ValueUnit>
             </Stat.ValueText>
           </Stat.Root>
           <Stat.Root borderWidth={1} padding={4} rounded="md">

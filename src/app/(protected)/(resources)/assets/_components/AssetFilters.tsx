@@ -11,7 +11,7 @@ import {
   ASSET_CONDITION_SELECTION,
 } from '@/utils/constant';
 import { useAssetFilters } from '@/utils/filters';
-import { colorCategory, colorCondition } from '@/utils/helper';
+import { getColor } from '@/utils/helper';
 
 import { useLocalFilters } from '@/hooks/use-local-filters';
 
@@ -58,7 +58,7 @@ export default function AssetFilters() {
                     <SegmentGroup.ItemText
                       _checked={{
                         fontWeight: 'medium',
-                        color: colorCategory(value),
+                        color: getColor(value),
                       }}
                     >
                       {label}
@@ -89,7 +89,7 @@ export default function AssetFilters() {
                     <SegmentGroup.ItemText
                       _checked={{
                         fontWeight: 'medium',
-                        color: colorCondition(value),
+                        color: getColor(value),
                       }}
                     >
                       {label}
