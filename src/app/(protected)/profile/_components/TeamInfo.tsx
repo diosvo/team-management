@@ -39,7 +39,7 @@ import {
   UserState,
 } from '@/utils/enum';
 import { formatDate } from '@/utils/formatter';
-import { colorRole, colorState } from '@/utils/helper';
+import { getColor } from '@/utils/helper';
 
 import { updateTeamInfo } from '@/actions/user';
 import { User } from '@/drizzle/schema';
@@ -177,7 +177,7 @@ export default function TeamInfo({
             <TextField label="Role">
               <Badge
                 variant="subtle"
-                colorPalette={colorRole(user.role)}
+                colorPalette={getColor(user.role)}
                 borderRadius="full"
               >
                 {user.role}
@@ -249,7 +249,7 @@ export default function TeamInfo({
                 <Badge
                   variant="surface"
                   borderRadius="full"
-                  colorPalette={colorState(user.state)}
+                  colorPalette={getColor(user.state)}
                 >
                   {user.state}
                 </Badge>

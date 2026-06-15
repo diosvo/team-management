@@ -8,7 +8,7 @@ import { GamepadDirectional, LogOut, UserRound } from 'lucide-react';
 import authClient from '@/lib/auth-client';
 
 import { LOGIN_PATH } from '@/routes';
-import { colorState } from '@/utils/helper';
+import { getColor } from '@/utils/helper';
 
 export default function AccountMenu() {
   const router = useRouter();
@@ -49,7 +49,7 @@ export default function AccountMenu() {
               size={2}
               outline="0.2em solid"
               outlineColor="bg"
-              backgroundColor={colorState(user.state)}
+              backgroundColor={getColor(user.state)}
             />
           </Float>
         </Avatar.Root>

@@ -16,7 +16,7 @@ import Visibility from '@/components/Visibility';
 
 import usePermissions from '@/hooks/use-permissions';
 import { paginateData, useCommonParams } from '@/utils/filters';
-import { colorState } from '@/utils/helper';
+import { getColor } from '@/utils/helper';
 
 import { removeUser } from '@/actions/user';
 import { User } from '@/drizzle/schema/user';
@@ -151,7 +151,7 @@ export default function RosterTable({ users }: { users: Array<User> }) {
                     <Badge
                       variant="surface"
                       borderRadius="full"
-                      colorPalette={colorState(user.state)}
+                      colorPalette={getColor(user.state)}
                     >
                       {user.state}
                     </Badge>

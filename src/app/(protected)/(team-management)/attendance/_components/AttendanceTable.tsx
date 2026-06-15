@@ -22,7 +22,7 @@ import { ALL } from '@/utils/constant';
 import { AttendanceStatus } from '@/utils/enum';
 import { paginateData, useAttendanceFilters } from '@/utils/filters';
 import { formatDatetime } from '@/utils/formatter';
-import { colorAttendanceStatus } from '@/utils/helper';
+import { getColor } from '@/utils/helper';
 
 import { removeAttendance, updateStatus } from '@/actions/attendance';
 import { AttendanceWithPlayer } from '@/types/attendance';
@@ -173,7 +173,7 @@ export default function AttendanceTable({
                       size="sm"
                       variant="outline"
                       borderRadius="full"
-                      colorPalette={colorAttendanceStatus(item.status)}
+                      colorPalette={getColor(item.status)}
                     >
                       {item.status}
                     </Badge>

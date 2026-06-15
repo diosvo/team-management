@@ -10,139 +10,53 @@ import {
   UserState,
 } from './enum';
 
-import {
-  colorAttendanceStatus,
-  colorCategory,
-  colorCondition,
-  colorLeagueStatus,
-  colorMatchResult,
-  colorPlayerRank,
-  colorRole,
-  colorSessionStatus,
-  colorState,
-} from './helper';
+import { colorPlayerRank, getColor } from './helper';
 
-function invalidColor(key: string) {
-  return [
-    { [key]: null, expected: 'gray' },
-    { [key]: undefined, expected: 'gray' },
-    { [key]: 'other', expected: undefined },
-  ];
-}
-
-describe('colorRole', () => {
+describe('getColor', () => {
   const cases = [
-    { role: UserRole.SUPER_ADMIN, expected: 'orange' },
-    { role: UserRole.COACH, expected: 'purple' },
-    { role: UserRole.PLAYER, expected: 'blue' },
-    { role: ALL.value, expected: 'blue' },
-    ...invalidColor('role'),
+    { value: ALL.value, expected: 'blue' },
+    { value: null, expected: 'gray' },
+    { value: undefined, expected: 'gray' },
+    { value: 'unknown', expected: 'gray' },
+    // UserRole
+    { value: UserRole.SUPER_ADMIN, expected: 'orange' },
+    { value: UserRole.COACH, expected: 'purple' },
+    { value: UserRole.PLAYER, expected: 'blue' },
+    // UserState
+    { value: UserState.ACTIVE, expected: 'green' },
+    { value: UserState.TEMPORARILY_ABSENT, expected: 'orange' },
+    { value: UserState.INACTIVE, expected: 'red' },
+    { value: UserState.UNKNOWN, expected: 'gray' },
+    // AssetCondition
+    { value: AssetCondition.GOOD, expected: 'green' },
+    { value: AssetCondition.FAIR, expected: 'orange' },
+    { value: AssetCondition.POOR, expected: 'red' },
+    { value: AssetCondition.OBSOLETE, expected: 'gray' },
+    // AssetCategory
+    { value: AssetCategory.EQUIPMENT, expected: 'green' },
+    { value: AssetCategory.TRAINING, expected: 'orange' },
+    { value: AssetCategory.OTHERS, expected: 'gray' },
+    // LeagueStatus
+    { value: LeagueStatus.UPCOMING, expected: 'orange' },
+    { value: LeagueStatus.ONGOING, expected: 'green' },
+    { value: LeagueStatus.ENDED, expected: 'red' },
+    // MatchStatus
+    { value: MatchStatus.WIN, expected: 'green' },
+    { value: MatchStatus.LOSS, expected: 'red' },
+    { value: MatchStatus.DRAW, expected: 'gray' },
+    // AttendanceStatus
+    { value: AttendanceStatus.ON_TIME, expected: 'green' },
+    { value: AttendanceStatus.ABSENT, expected: 'red' },
+    { value: AttendanceStatus.LATE, expected: 'orange' },
+    // SessionStatus
+    { value: SessionStatus.SCHEDULED, expected: 'yellow' },
+    { value: SessionStatus.ACTIVE, expected: 'green' },
+    { value: SessionStatus.COMPLETED, expected: 'gray' },
+    { value: SessionStatus.CANCELLED, expected: 'red' },
   ];
 
-  test.each(cases)('returns $expected for $role', ({ role, expected }) => {
-    expect(colorRole(role as string)).toBe(expected);
-  });
-});
-
-describe('colorState', () => {
-  const cases = [
-    { state: UserState.ACTIVE, expected: 'green' },
-    { state: UserState.TEMPORARILY_ABSENT, expected: 'orange' },
-    { state: UserState.INACTIVE, expected: 'red' },
-    { state: UserState.UNKNOWN, expected: 'gray' },
-    { state: ALL.value, expected: 'blue' },
-    ...invalidColor('state'),
-  ];
-
-  test.each(cases)('returns $expected for $state', ({ state, expected }) => {
-    expect(colorState(state as string)).toBe(expected);
-  });
-});
-
-describe('colorCondition', () => {
-  const cases = [
-    { condition: AssetCondition.GOOD, expected: 'green' },
-    { condition: AssetCondition.FAIR, expected: 'orange' },
-    { condition: AssetCondition.POOR, expected: 'red' },
-    { condition: ALL.value, expected: 'blue' },
-    ...invalidColor('condition'),
-  ];
-
-  test.each(cases)(
-    'returns $expected for $condition',
-    ({ condition, expected }) => {
-      expect(colorCondition(condition as string)).toBe(expected);
-    },
-  );
-});
-
-describe('colorCategory', () => {
-  const cases = [
-    { category: AssetCategory.EQUIPMENT, expected: 'green' },
-    { category: AssetCategory.TRAINING, expected: 'orange' },
-    { category: AssetCategory.OTHERS, expected: 'gray' },
-    { category: ALL.value, expected: 'blue' },
-    ...invalidColor('category'),
-  ];
-
-  test.each(cases)(
-    'returns $expected for $category',
-    ({ category, expected }) => {
-      expect(colorCategory(category as string)).toBe(expected);
-    },
-  );
-});
-
-describe('colorLeagueStatus', () => {
-  const cases = [
-    { status: LeagueStatus.UPCOMING, expected: 'orange' },
-    { status: LeagueStatus.ONGOING, expected: 'green' },
-    { status: LeagueStatus.ENDED, expected: 'red' },
-    ...invalidColor('status'),
-  ];
-
-  test.each(cases)('returns $expected for $status', ({ status, expected }) => {
-    expect(colorLeagueStatus(status as string)).toBe(expected);
-  });
-});
-
-describe('colorMatchResult', () => {
-  const cases = [
-    { status: MatchStatus.WIN, expected: 'green' },
-    { status: MatchStatus.LOSS, expected: 'red' },
-    { status: MatchStatus.DRAW, expected: 'gray' },
-    ...invalidColor('status'),
-  ];
-
-  test.each(cases)('returns $expected for $status', ({ status, expected }) => {
-    expect(colorMatchResult(status as string)).toBe(expected);
-  });
-});
-
-describe('colorAttendanceStatus', () => {
-  const cases = [
-    { status: AttendanceStatus.ON_TIME, expected: 'green' },
-    { status: AttendanceStatus.ABSENT, expected: 'red' },
-    { status: AttendanceStatus.LATE, expected: 'orange' },
-    ...invalidColor('status'),
-  ];
-
-  test.each(cases)('returns $expected for $status', ({ status, expected }) => {
-    expect(colorAttendanceStatus(status as string)).toBe(expected);
-  });
-});
-
-describe('colorSessionStatus', () => {
-  const cases = [
-    { status: SessionStatus.SCHEDULED, expected: 'yellow' },
-    { status: SessionStatus.ACTIVE, expected: 'green' },
-    { status: SessionStatus.COMPLETED, expected: 'gray' },
-    { status: SessionStatus.CANCELLED, expected: 'red' },
-    ...invalidColor('status'),
-  ];
-
-  test.each(cases)('returns $expected for $status', ({ status, expected }) => {
-    expect(colorSessionStatus(status as string)).toBe(expected);
+  test.each(cases)('returns $expected for $value', ({ value, expected }) => {
+    expect(getColor(value as string)).toBe(expected);
   });
 });
 

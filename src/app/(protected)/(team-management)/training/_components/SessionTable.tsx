@@ -26,7 +26,7 @@ import { TrainingSessionWithDetails } from '@/types/training-session';
 
 import { paginateData, useTrainingFilters } from '@/utils/filters';
 import { formatDate, formatDay } from '@/utils/formatter';
-import { colorSessionStatus } from '@/utils/helper';
+import { getColor } from '@/utils/helper';
 
 import { removeSession } from '@/actions/training-session';
 import { Tooltip } from '@/components/ui/tooltip';
@@ -160,7 +160,7 @@ export default function SessionTable({
                     <Badge
                       variant="surface"
                       borderRadius="full"
-                      colorPalette={colorSessionStatus(item.status)}
+                      colorPalette={getColor(item.status)}
                     >
                       {item.status}
                     </Badge>

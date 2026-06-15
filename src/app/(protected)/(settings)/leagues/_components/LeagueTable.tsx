@@ -17,7 +17,7 @@ import { ALL } from '@/utils/constant';
 import { LeagueStatus } from '@/utils/enum';
 import { useLeagueFilters } from '@/utils/filters';
 import { formatDate } from '@/utils/formatter';
-import { colorLeagueStatus } from '@/utils/helper';
+import { getColor } from '@/utils/helper';
 
 import usePermissions from '@/hooks/use-permissions';
 import useTableState from '@/hooks/use-table-state';
@@ -170,7 +170,7 @@ export default function LeagueTable({
                     <Badge
                       variant="surface"
                       borderRadius="full"
-                      colorPalette={colorLeagueStatus(item.status)}
+                      colorPalette={getColor(item.status)}
                     >
                       {item.status}
                     </Badge>

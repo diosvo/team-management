@@ -12,7 +12,7 @@ import { Field } from '@/components/ui/field';
 import { Status } from '@/components/ui/status';
 
 import { USER_STATE_SELECTION } from '@/utils/constant';
-import { colorState } from '@/utils/helper';
+import { getColor } from '@/utils/helper';
 
 type StateSelectionProps = Omit<SelectRootProps, 'collection'> &
   Partial<{
@@ -46,7 +46,7 @@ export function StateSelection({
           <Select.Content>
             {states.items.map((state) => (
               <Select.Item item={state} key={state.value}>
-                <Status colorPalette={colorState(state.value)}>
+                <Status colorPalette={getColor(state.value)}>
                   {state.label}
                 </Status>
                 <Select.ItemIndicator />

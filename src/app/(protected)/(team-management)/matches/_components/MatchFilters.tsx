@@ -8,18 +8,16 @@ import {
   Select,
   SimpleGrid,
 } from '@chakra-ui/react';
-import { CalendarSearch, DraftingCompass, Plus } from 'lucide-react';
+import { DraftingCompass, Plus } from 'lucide-react';
 
-import { GAME_TYPE_SELECTION, INTERVAL_SELECTION } from '@/utils/constant';
+import { GAME_TYPE_SELECTION } from '@/utils/constant';
 
+import TimePicker from '@/components/filters/TimePicker';
 import { MatchSearchParamsKeys, useMatchFilters } from '@/utils/filters';
 import { UpsertMatch } from './UpsertMatch';
 
 const types = createListCollection({
   items: GAME_TYPE_SELECTION,
-});
-const dates = createListCollection({
-  items: INTERVAL_SELECTION,
 });
 
 export default function MatchesFilters() {
@@ -72,33 +70,10 @@ export default function MatchesFilters() {
           </Select.Positioner>
         </Portal>
       </Select.Root>
-      <Select.Root
-        collection={dates}
-        value={[interval]}
-        onValueChange={({ value }) => handleSearchParams('interval', value[0])}
-      >
-        <Select.HiddenSelect />
-        <Select.Control>
-          <Select.Trigger>
-            <HStack>
-              <CalendarSearch size={16} />
-              <Select.ValueText placeholder="Time" />
-            </HStack>
-          </Select.Trigger>
-        </Select.Control>
-        <Portal>
-          <Select.Positioner>
-            <Select.Content>
-              {dates.items.map((year) => (
-                <Select.Item item={year} key={year.value}>
-                  {year.label}
-                  <Select.ItemIndicator />
-                </Select.Item>
-              ))}
-            </Select.Content>
-          </Select.Positioner>
-        </Portal>
-      </Select.Root>
+      <TimePicker
+        value={interval}
+        onChange={(value) => handleSearchParams('interval', value)}
+      />
       <UpsertMatch.Viewport />
     </SimpleGrid>
   );
