@@ -7,7 +7,6 @@ import {
   AttendanceStatus,
   LeagueStatus,
   MatchStatus,
-  MatchType,
   SessionStatus,
   UserRole,
   UserState,
