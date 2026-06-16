@@ -1,10 +1,11 @@
-import { and, desc, eq, gte, lte } from 'drizzle-orm';
+import { and, desc, eq, gte, isNotNull, isNull, lte } from 'drizzle-orm';
 
 import db from '@/drizzle';
 import { InsertMatch, MatchTable } from '@/drizzle/schema';
 
 import { UpsertMatchSchemaValues } from '@/schemas/match';
-import { Interval, MatchStatus } from '@/utils/enum';
+import { ALL } from '@/utils/constant';
+import { Interval, MatchStatus, MatchType } from '@/utils/enum';
 import { MatchSearchParams } from '@/utils/filters';
 import { TIME_DURATION } from '@/utils/formatter';
 
@@ -47,6 +48,7 @@ vi.mock('@/drizzle/schema', () => ({
     match_id: 'match_id',
     home_team: 'home_team',
     is_5x5: 'is_5x5',
+    league_id: 'league_id',
     date: 'date',
     updated_at: 'updated_at',
   },
@@ -59,8 +61,9 @@ describe('getMatches', () => {
 
   const mockParams: MatchSearchParams & { team_id: string } = {
     team_id: MOCK_TEAM.team_id,
-    is5x5: true,
+    game_type: 'true',
     interval: Interval.THIS_MONTH,
+    match_type: ALL.value,
     page: 1,
     q: '',
   };
@@ -114,8 +117,66 @@ describe('getMatches', () => {
         gte(MatchTable.date, start.toISOString()),
         lte(MatchTable.date, end.toISOString()),
       ),
-      orderBy: desc(MatchTable.updated_at),
+      orderBy: desc(MatchTable.date),
     });
+  });
+
+  test('filters league matches when type is league', async () => {
+    vi.mocked(db.query.MatchTable.findMany).mockResolvedValue([]);
+
+    await getMatches({ ...mockParams, match_type: MatchType.LEAGUE });
+
+    const { start, end } = TIME_DURATION[mockParams.interval];
+
+    expect(db.query.MatchTable.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: and(
+          eq(MatchTable.home_team, MOCK_TEAM.team_id),
+          eq(MatchTable.is_5x5, true),
+          gte(MatchTable.date, start.toISOString()),
+          lte(MatchTable.date, end.toISOString()),
+          isNotNull(MatchTable.league_id),
+        ),
+      }),
+    );
+  });
+
+  test('filters friendly matches when type is friendly', async () => {
+    vi.mocked(db.query.MatchTable.findMany).mockResolvedValue([]);
+
+    await getMatches({ ...mockParams, match_type: MatchType.FRIENDLY });
+
+    const { start, end } = TIME_DURATION[mockParams.interval];
+
+    expect(db.query.MatchTable.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: and(
+          eq(MatchTable.home_team, MOCK_TEAM.team_id),
+          eq(MatchTable.is_5x5, true),
+          gte(MatchTable.date, start.toISOString()),
+          lte(MatchTable.date, end.toISOString()),
+          isNull(MatchTable.league_id),
+        ),
+      }),
+    );
+  });
+
+  test('skips the is_5x5 filter when game_type is all', async () => {
+    vi.mocked(db.query.MatchTable.findMany).mockResolvedValue([]);
+
+    await getMatches({ ...mockParams, game_type: ALL.value });
+
+    const { start, end } = TIME_DURATION[mockParams.interval];
+
+    expect(db.query.MatchTable.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: and(
+          eq(MatchTable.home_team, MOCK_TEAM.team_id),
+          gte(MatchTable.date, start.toISOString()),
+          lte(MatchTable.date, end.toISOString()),
+        ),
+      }),
+    );
   });
 
   test('returns empty stats when no matches exist', async () => {

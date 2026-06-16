@@ -67,7 +67,7 @@ export default function LeagueFilters({ leagues }: { leagues: Array<League> }) {
     <FilterBar
       activeCount={activeCount}
       {...rest}
-      inlineFilters={
+      inlineFilters={() => (
         <Authorized resource="leagues" action="edit">
           <Tooltip
             content={
@@ -95,7 +95,7 @@ export default function LeagueFilters({ leagues }: { leagues: Array<League> }) {
             </Button>
           </Tooltip>
         </Authorized>
-      }
+      )}
       advancedFilters={
         <Field label="Status">
           <SegmentGroup.Root

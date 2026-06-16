@@ -16,6 +16,7 @@ import {
 import { MOCK_MATCH, MOCK_MATCH_RESPONSE } from '@/test/mocks/match';
 import { MOCK_USER } from '@/test/mocks/user';
 
+import { ALL } from '@/utils/constant';
 import { Interval } from '@/utils/enum';
 import { MatchSearchParams } from '@/utils/filters';
 
@@ -75,8 +76,9 @@ describe('Match Actions', () => {
 
   describe('getMatches', () => {
     const mockParams: MatchSearchParams = {
-      is5x5: true,
+      game_type: 'true',
       interval: Interval.THIS_MONTH,
+      match_type: ALL.value,
       page: 1,
       q: '',
     };

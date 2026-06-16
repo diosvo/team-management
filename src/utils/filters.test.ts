@@ -204,7 +204,7 @@ describe('Client-Side Filter Hooks', () => {
   describe('useMatchFilters', () => {
     test('calls useQueryStates with match params', () => {
       const mockReturn = [
-        { page: 1, q: '', is5x5: true, interval: Interval.THIS_YEAR },
+        { page: 1, q: '', game_type: ALL.value, interval: Interval.THIS_YEAR },
         vi.fn(),
       ];
       (nuqs.useQueryStates as unknown as Mock).mockReturnValue(mockReturn);
@@ -215,7 +215,7 @@ describe('Client-Side Filter Hooks', () => {
         expect.objectContaining({
           page: expect.anything(),
           q: expect.anything(),
-          is5x5: expect.anything(),
+          game_type: expect.anything(),
           interval: expect.anything(),
         }),
       );
@@ -455,7 +455,7 @@ describe('Server-Side Filter Loaders', () => {
         expect.objectContaining({
           page: 1,
           q: '',
-          is5x5: true,
+          game_type: ALL.value,
           interval: Interval.THIS_YEAR,
         }),
       );
@@ -465,7 +465,7 @@ describe('Server-Side Filter Loaders', () => {
       const params = new URLSearchParams({
         page: '2',
         q: 'finals',
-        is5x5: 'false',
+        game_type: 'false',
         interval: Interval.LAST_YEAR,
       });
       const result = await loadMatchFilters(params);
@@ -474,7 +474,7 @@ describe('Server-Side Filter Loaders', () => {
         expect.objectContaining({
           page: 2,
           q: 'finals',
-          is5x5: false,
+          game_type: 'false',
           interval: Interval.LAST_YEAR,
         }),
       );

@@ -126,7 +126,7 @@ Use when all 3 conditions are met:
 - Stable data — doesn't change on every request (_e.g._, locations, leagues, opponents)
 - No/few parameters — avoids cache key explosion
   - getLocations() has zero params ✅
-  - getMatches(is5x5, interval) has many ❌)
+  - getMatches(game_type, interval) has many ❌)
 - Clear invalidation — A server action that calls revalidateTag() after every mutation.
 
 ## ⭐️ Others

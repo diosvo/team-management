@@ -61,6 +61,11 @@ export enum MatchStatus {
   DRAW = 'DRAW',
 }
 
+export enum MatchType {
+  LEAGUE = 'league',
+  FRIENDLY = 'friendly',
+}
+
 export enum AttendanceStatus {
   ON_TIME = 'ON_TIME',
   ABSENT = 'ABSENT',

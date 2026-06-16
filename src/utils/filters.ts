@@ -2,7 +2,6 @@ import { useQueryStates } from 'nuqs';
 import {
   createLoader,
   parseAsArrayOf,
-  parseAsBoolean,
   parseAsInteger,
   parseAsString,
   parseAsStringEnum,
@@ -15,8 +14,10 @@ import {
   ASSET_CONDITION_VALUES,
   ATTENDANCE_STATUS_VALUES,
   CURRENT_DATE,
+  GAME_TYPE_VALUES,
   INTERVAL_VALUES,
   LEAGUE_STATUS_VALUES,
+  MATCH_TYPE_VALUES,
   SELECTABLE_USER_ROLES,
   SELECTABLE_USER_STATES,
   SESSION_STATUS_VALUES,
@@ -56,8 +57,9 @@ const leagueSearchParams = {
 
 const matchSearchParams = {
   ...commonParams,
-  is5x5: parseAsBoolean.withDefault(true),
+  game_type: parseAsStringEnum(GAME_TYPE_VALUES).withDefault(ALL.value),
   interval: parseAsStringEnum(INTERVAL_VALUES).withDefault(Interval.THIS_YEAR),
+  match_type: parseAsStringEnum(MATCH_TYPE_VALUES).withDefault(ALL.value),
 };
 
 const attendanceSearchParams = {

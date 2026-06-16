@@ -4,11 +4,7 @@ import { MatchStats } from '@/types/match';
 
 export default function MatchesStats({ stats }: { stats: MatchStats }) {
   return (
-    <SimpleGrid
-      columns={{ base: 1, sm: 2, md: 2, lg: 3, xl: 4 }}
-      gap={4}
-      marginBottom={6}
-    >
+    <SimpleGrid columns={{ base: 2, md: 4, xl: 6 }} gap={{ base: 3, lg: 4 }}>
       <Stat.Root borderWidth={1} padding={4} rounded="md">
         <Stat.Label>Total Matches</Stat.Label>
         <Stat.ValueText alignItems="baseline">
