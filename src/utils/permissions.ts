@@ -47,6 +47,7 @@ const CAPTAIN_PERMISSIONS: RoleConfig = {
   'team-rule': ['edit'],
   roster: ['edit'],
   matches: ['create', 'edit'],
+  registration: ['create', 'edit'],
 };
 
 export type Ability = {
