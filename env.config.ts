@@ -14,6 +14,12 @@ const envSchema = z.object({
   PRODUCTION_URL: z.url().default('http://localhost:3000'),
   DATABASE_URL: z.string().default(''),
   RESEND_API_KEY: z.string().default(''),
+  CHROMIUM_PACK_URL: z
+    .string()
+    .default('')
+    .describe(
+      'The URL to the Brotli pack of the Chromium executable. Required for production deployment.',
+    ),
   PW_USERNAME: z.string().default(''),
   PW_PASSWORD: z.string().default(''),
 });

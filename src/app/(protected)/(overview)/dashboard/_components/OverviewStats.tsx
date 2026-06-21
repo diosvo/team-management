@@ -1,14 +1,15 @@
-import { getOverviewStats } from '@/actions/analytics';
 import { SimpleGrid, Span, Stat } from '@chakra-ui/react';
 
 import { Card } from '@/components/ui/card';
+
+import { getOverviewStats } from '@/actions/analytics';
 
 export default async function OverviewStats() {
   const stats = await getOverviewStats();
 
   return (
     <Card title="Overview" description="Key performance indicators at a glance">
-      <SimpleGrid columns={3} gap={6}>
+      <SimpleGrid columns={3} gap={4}>
         <Stat.Root borderWidth={1} padding={4} rounded="md">
           <Stat.Label>Active Players</Stat.Label>
           <Stat.ValueText alignItems="baseline" color="tomato">

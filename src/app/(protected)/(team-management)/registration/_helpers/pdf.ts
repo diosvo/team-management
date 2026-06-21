@@ -1,6 +1,8 @@
 import fontkit from '@pdf-lib/fontkit';
 import { PDFDocument, PDFTextField, rgb } from 'pdf-lib';
 
+import { triggerDownload, withExtension } from '@/lib/download';
+
 import type { League } from '@/drizzle/schema';
 import type { User } from '@/drizzle/schema/user';
 
@@ -323,18 +325,6 @@ export const base64ToBytes = (base64: string): Uint8Array => {
   for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
   return bytes;
 };
-
-const triggerDownload = (blob: Blob, filename: string) => {
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = filename;
-  link.click();
-  URL.revokeObjectURL(url);
-};
-
-const withExtension = (filename: string, ext: string) =>
-  filename.endsWith(ext) ? filename : `${filename}${ext}`;
 
 export const downloadPdf = (bytes: Uint8Array, filename: string) =>
   triggerDownload(

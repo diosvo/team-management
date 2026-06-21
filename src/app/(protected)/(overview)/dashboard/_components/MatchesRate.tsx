@@ -33,7 +33,7 @@ export default function MatchesRate({
       title="Matches Record"
       description="Performance in league vs friendly matches"
     >
-      <Chart.Root chart={chart}>
+      <Chart.Root chart={chart} maxHeight="sm">
         <BarChart data={chart.data} responsive>
           <CartesianGrid
             stroke={chart.color('border.muted')}
@@ -54,6 +54,7 @@ export default function MatchesRate({
             <Bar
               key={item.name}
               stackId={item.stackId}
+              isAnimationActive={false}
               dataKey={chart.key(item.name)}
               fill={chart.color(item.color)}
               stroke={chart.color(item.color)}

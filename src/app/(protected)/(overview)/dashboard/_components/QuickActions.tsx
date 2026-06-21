@@ -88,7 +88,7 @@ export default function QuickActions() {
 
   return (
     <Card title={title} description="Shortcuts to common tasks">
-      <SimpleGrid columns={Actions.length} gap={6}>
+      <SimpleGrid columns={Actions.length} gap={4}>
         {Actions.map(({ title, icon: Icon, enabled, onClick }) => (
           <VStack
             key={title}

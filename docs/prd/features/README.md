@@ -8,6 +8,7 @@ Each feature spec describes:
 
 ## Feature catalog
 
-| Feature | Status | Spec                     |
-| ------- | ------ | ------------------------ |
-| Assets  | Draft  | [assets.md](./assets.md) |
+| Feature           | Status | Spec                                           |
+| ----------------- | ------ | ---------------------------------------------- |
+| Assets            | Draft  | [assets.md](./assets.md)                       |
+| Analytics Reports | Draft  | [analytics-reports.md](./analytics-reports.md) |

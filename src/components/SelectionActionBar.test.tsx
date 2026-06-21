@@ -31,6 +31,9 @@ describe('SelectionActionBar', () => {
   test('should be accessible', async () => {
     const { container } = setup();
 
+    // Wait for the action bar's async popover update to settle.
+    await screen.findByText('3 selected');
+
     const result = await axe(container);
     expect(result).toHaveNoViolations();
   });
@@ -38,7 +41,7 @@ describe('SelectionActionBar', () => {
   test('renders action bar when open is true', async () => {
     const { deleteButton } = setup();
 
-    expect(screen.getByText('3 selected')).toBeInTheDocument();
+    expect(await screen.findByText('3 selected')).toBeInTheDocument();
     expect(deleteButton).toBeInTheDocument();
   });
 
@@ -52,7 +55,7 @@ describe('SelectionActionBar', () => {
   test('displays correct selection count', async () => {
     setup({ selectionCount: 1 });
 
-    expect(screen.getByText('1 selected')).toBeInTheDocument();
+    expect(await screen.findByText('1 selected')).toBeInTheDocument();
   });
 
   test('calls onDelete when delete button is clicked', async () => {

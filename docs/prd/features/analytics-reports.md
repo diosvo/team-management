@@ -1,0 +1,154 @@
+# Feature Spec 06 — Analytics Reports (PDF)
+
+## 1. Summary
+
+- Auto-generate a **PDF report** that captures the Dashboard Analytics exactly as
+  rendered on screen.
+- **Phase 1:** download on demand (nothing persisted).
+- **Phase 2:** persist to Vercel Blob + distribute via email (Resend).
+- **Phase 3:** scheduled generation (cron) + a reports page to browse history.
+
+## 2. Goals / Metrics
+
+### Goals
+
+- Reproduce the Dashboard view as a shareable, print-ready PDF (high fidelity).
+- Allow recurring, hands-off report delivery for email distribution.
+- Keep a browsable history of generated reports.
+
+### Metrics
+
+- Time to produce a report (render + serve).
+- Number of scheduled reports delivered successfully vs. failed.
+
+## 3. Users & Permissions
+
+| Role             | Manual download | Configure schedules | View reports history |
+| ---------------- | --------------- | ------------------- | -------------------- |
+| GUEST            | No              | No                  | No                   |
+| PLAYER           | Yes             | No                  | No                   |
+| COACH            | Yes             | No                  | Yes                  |
+| SUPER_ADMIN      | Yes             | Yes                 | Yes                  |
+| PLAYER (Captain) | Yes             | Yes                 | Yes                  |
+
+> Permissions are a starting proposal — confirm before building Phase 3.
+
+## 4. Architecture Overview
+
+The rendering engine is built **once** and reused across all phases. Only the
+_sink_ (where bytes go) and the _trigger_ (who starts it) change.
+
+```
+                       ┌─────────────────────────────────────┐
+trigger                │  POST /api/reports/dashboard         │   sink
+─────────              │                                      │   ────
+manual click  ───────▶ │  puppeteer-core + @sparticuz/chromium│ ──▶ stream to browser (P1)
+cron (P3)     ───────▶ │  → load live dashboard URL (cookies) │ ──▶ Vercel Blob + DB (P2)
+                       │  → strip DOM to #reports-dashboard    │ ──▶ Resend email (P2)
+                       │  → page.pdf() → Buffer               │
+                       └─────────────────────────────────────┘
+```
+
+- **Why Puppeteer (not pdf-lib):** the dashboard uses Recharts (client-side SVG).
+  High fidelity requires a real browser render, which `pdf-lib` cannot do.
+- **Why reuse the live dashboard (no dedicated print route):** the client posts
+  its current URL; the server forwards the session cookies, renders that page,
+  then strips the DOM down to the `#reports-dashboard` grid (dropping nav and
+  filters) and forces a 2-charts-per-row layout. This avoids maintaining a
+  parallel print page — the report stays in sync with the dashboard for free.
+- **Deployment:** Vercel/serverless ⇒ `puppeteer-core` + `@sparticuz/chromium`
+  (bundled Puppeteer's ~300MB Chromium won't fit). Set route `maxDuration` high
+  enough for Puppeteer cold start + render.
+
+## 5. Functional Requirements
+
+### Phase 1 — Manual download
+
+- **FR-1:** A "Download report" action on the Dashboard posts the current URL to
+  `POST /api/reports/dashboard`, producing a PDF that reflects the selected
+  `interval` (carried in the URL's query params).
+- **FR-2:** The PDF visually matches the on-screen dashboard analytics: the server
+  renders the live page, keeps only the `#reports-dashboard` grid, and lays the
+  charts out 2 per row.
+- **FR-3:** Generation runs server-side in a single route handler; nothing is
+  persisted and no file is written to disk (bytes stream straight to the client).
+- **FR-4:** The client shows a loading state during generation and a toast on error.
+- **FR-5:** Non-ASCII (Vietnamese) filenames are preserved (RFC 5987 `filename*`).
+
+### Phase 2 — Persistence + email
+
+- **FR-6:** Generated PDFs upload to Vercel Blob.
+- **FR-7:** Each report writes a metadata row (see Technical Appendix).
+- **FR-8:** Downloads are served through an auth-guarded route — raw Blob URLs are
+  never exposed (player data is sensitive).
+- **FR-9:** A report can be emailed to a recipient list via Resend (attachment or
+  link to the download route).
+
+### Phase 3 — Scheduling + reports page
+
+- **FR-10:** Users can configure schedules (frequency, recipients, time range).
+- **FR-11:** A cron trigger generates due reports using the same engine.
+- **FR-12:** A reports page lists history with status, period, and download link.
+- **FR-13:** Failed cron runs are recorded with an error and surfaced in the list.
+- **FR-14:** A retention policy deletes old Blobs and marks rows `expired`.
+
+## 6. Acceptance Criteria (Given/When/Then)
+
+- **AC-1:** Given I am SUPER_ADMIN on the Dashboard with `interval=last_30_days`,
+  when I click "Download report", then I receive a PDF matching the on-screen
+  analytics for that interval.
+- **AC-2:** Given generation fails, when I click download, then I see an error
+  toast and no file is downloaded.
+- **AC-3 (P2):** Given a report is generated by cron, then a metadata row exists
+  with `trigger=cron`, a `blob_pathname`, and `status=success`.
+- **AC-4 (P2):** Given a report exists, when I open its download link, then access
+  is rejected without a valid session.
+- **AC-5 (P3):** Given a weekly schedule, when its time arrives, then a report is
+  generated, stored, and emailed to the configured recipients.
+
+## 7. Technical Appendix
+
+### Shared engine (Phase 1)
+
+- `POST /api/reports/dashboard` — accepts `{ url }`, launches Chromium, forwards
+  the request's session cookies, renders the live dashboard, strips the DOM to
+  `#reports-dashboard` (2 columns), and returns PDF bytes via `page.pdf()` as a
+  single continuous page.
+- Browser is always closed in a `finally` block; no temp file is written.
+- Download trigger helpers (`triggerDownload`, `withExtension`) extracted from
+  `registration/_helpers/pdf.ts` into a shared `lib/download.ts`.
+
+### Data model — `reports` (Phase 2, logical)
+
+- `id`: uuid
+- `created_at`: timestamp
+- `period_start` / `period_end`: timestamp (what the report covers)
+- `trigger`: enum [`manual-archived`, `cron`]
+- `schedule_id`: uuid (FK → `report_schedules`, nullable)
+- `blob_pathname`: string
+- `file_size`: integer
+- `status`: enum [`success`, `failed`, `expired`]
+- `error`: string (nullable)
+- `emailed_to`: string[] (nullable)
+- `emailed_at`: timestamp (nullable)
+
+### Data model — `report_schedules` (Phase 3, logical)
+
+- `id`: uuid
+- `frequency`: enum [`daily`, `weekly`, `monthly`]
+- `recipients`: string[]
+- `interval`: string (analytics time range the report covers)
+- `last_run_at`: timestamp (nullable)
+- `enabled`: boolean
+
+### Dependencies to add
+
+- `puppeteer-core`, `@sparticuz/chromium` (Phase 1)
+- `@vercel/blob` (Phase 2)
+- Reuse: `resend` (already configured in `src/lib/auth.ts`)
+
+### Open questions
+
+- Recipients: fixed admin list or per-user/per-team configurable?
+- Retention window (e.g. 6 months)?
+- Should manual downloads ever opt into being archived?

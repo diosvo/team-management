@@ -52,7 +52,11 @@ export default async function DashboardsPage(props: PageProps<'/dashboard'>) {
         <DashboardFilters />
       </HStack>
 
-      <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={6}>
+      <SimpleGrid
+        id="reports-dashboard"
+        columns={{ base: 1, md: 2, lg: 3 }}
+        gap={6}
+      >
         <MatchesRate records={matchesRate} />
         <AttendanceTrend records={attendanceHistory} />
         <PlayerAttendanceRanking records={attendanceSummary} />
