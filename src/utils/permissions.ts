@@ -35,6 +35,7 @@ export const ROLE_CONFIG: Record<UserRole, RoleConfig> = {
     matches: ['view'],
     'periodic-testing': ['view'],
     profile: ['view', 'edit'],
+    registration: ['view'],
   },
   [UserRole.GUEST]: {
     dashboard: ['view'],
@@ -47,6 +48,7 @@ const CAPTAIN_PERMISSIONS: RoleConfig = {
   'team-rule': ['edit'],
   roster: ['edit'],
   matches: ['create', 'edit'],
+  registration: ['create', 'edit'],
 };
 
 export type Ability = {

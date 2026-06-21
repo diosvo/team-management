@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Geist } from 'next/font/google';
+import { Google_Sans_Flex } from 'next/font/google';
 import { PropsWithChildren } from 'react';
 
 import { Analytics } from '@vercel/analytics/next';
@@ -12,10 +12,11 @@ import { Toaster } from '@/components/ui/toaster';
 import env from '@env';
 import './globals.css';
 
-const geist = Geist({
-  subsets: ['latin'],
-  variable: '--font-geist',
+const ggSans = Google_Sans_Flex({
   display: 'swap',
+  subsets: ['latin'],
+  adjustFontFallback: false,
+  fallback: ['system-ui', 'arial'],
 });
 
 export const metadata: Metadata = {
@@ -29,7 +30,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: PropsWithChildren) {
   return (
     <html lang="en">
-      <body className={`${geist.variable} ${geist.className} antialiased`}>
+      <body className={`${ggSans.className} antialiased`}>
         <NuqsAdapter>
           <UiProvider>
             {children}
