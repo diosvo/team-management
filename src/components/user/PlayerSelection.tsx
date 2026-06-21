@@ -17,6 +17,7 @@ import { CACHE_KEY } from '@/utils/constant';
 type UserSelector = Selector<Array<User>>;
 
 export function PlayerSelection({
+  disabled,
   selection,
   onSelectionChange,
 }: UserSelector) {
@@ -30,6 +31,7 @@ export function PlayerSelection({
       itemToValue={({ id }) => id}
       renderItem={PlayerItem}
       value={selection}
+      fieldProps={{ disabled }}
       onChange={onSelectionChange}
     />
   );

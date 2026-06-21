@@ -1,8 +1,8 @@
 import fontkit from '@pdf-lib/fontkit';
 import { PDFDocument, PDFTextField, rgb } from 'pdf-lib';
 
-import { League } from '@/drizzle/schema';
-import { User } from '@/drizzle/schema/user';
+import type { League } from '@/drizzle/schema';
+import type { User } from '@/drizzle/schema/user';
 
 /**
  * @description Columns extracted for every player. The order is also the column

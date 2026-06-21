@@ -36,12 +36,13 @@ import { User } from '@/drizzle/schema/user';
 import { getLeagues } from '@/actions/league';
 import { getActivePlayers } from '@/actions/user';
 
+import usePermissions from '@/hooks/use-permissions';
 import { CACHE_KEY } from '@/utils/constant';
-
 import { buildRegistrationPdf, bytesToBase64 } from '../_helpers/pdf';
 import { useSavedRegistrations } from '../_helpers/useSavedRegistrations';
+
 import PreviewPanel from './PreviewPanel';
-import RegistrationSteps from './RegistrationSteps';
+import RegistrationSteps, { type StepDef } from './RegistrationSteps';
 import SavedRegistrations from './SavedRegistrations';
 
 const NOTES_LIMIT = 256;
@@ -63,6 +64,9 @@ export default function RegistrationPageClient() {
   const [selection, setSelection] = useState<Array<User>>([]);
   const [template, setTemplate] = useState<File>();
   const [notes, setNotes] = useState('');
+
+  const { isCaptain, isAdmin } = usePermissions();
+  const isDisabled = !isCaptain && !isAdmin;
 
   const { items: saved, save, remove, getUniqueName } = useSavedRegistrations();
 
@@ -95,7 +99,7 @@ export default function RegistrationPageClient() {
         playerCount: selection.length,
         notes: notes || undefined,
         templateName: template?.name,
-        filename: `saigon-rovers-${name}`,
+        filename: `saigon-rovers-${name.toLowerCase().replace(/\s+/g, '-')}`,
         pdfBase64: bytesToBase64(bytes),
       });
       toaster.success({
@@ -111,10 +115,10 @@ export default function RegistrationPageClient() {
     }
   };
 
-  const steps = [
+  const steps: Array<StepDef> = [
     { title: 'Choose players', done: selection.length > 0 },
     { title: 'Pick league', done: !!league },
-    { title: 'Attach PDF', done: !!template, optional: true },
+    { title: 'Attach PDF', done: !!template, isOptional: true },
     { title: 'Review & Export', done: selection.length > 0 && !!league },
   ];
 
@@ -146,12 +150,15 @@ export default function RegistrationPageClient() {
             <Card.Body>
               <HStack alignItems="end" gap={2}>
                 <PlayerSelection
+                  disabled={isDisabled}
                   selection={selection}
                   onSelectionChange={setSelection}
                 />
                 <Button
                   variant="outline"
-                  disabled={activePlayers.length === 0 || allSelected}
+                  disabled={
+                    isDisabled || activePlayers.length === 0 || allSelected
+                  }
                   onClick={() => setSelection(activePlayers)}
                 >
                   Select all
@@ -159,7 +166,7 @@ export default function RegistrationPageClient() {
                 <Button
                   variant="ghost"
                   colorPalette="red"
-                  disabled={selection.length === 0}
+                  disabled={isDisabled || selection.length === 0}
                   onClick={() => setSelection([])}
                 >
                   Clear
@@ -189,6 +196,7 @@ export default function RegistrationPageClient() {
                 multiple={false}
                 label={CACHE_KEY.LEAGUES}
                 action={getLeagues}
+                fieldProps={{ disabled: isDisabled }}
                 value={league ?? null}
                 itemToString={({ name }) => name}
                 itemToValue={({ league_id }) => league_id}
@@ -271,6 +279,7 @@ export default function RegistrationPageClient() {
                 accept="application/pdf"
                 maxFiles={1}
                 maxFileSize={10 * 1024 * 1024}
+                disabled={isDisabled}
                 onFileChange={({ acceptedFiles }) =>
                   setTemplate(acceptedFiles[0])
                 }
@@ -304,8 +313,9 @@ export default function RegistrationPageClient() {
               <Textarea
                 size="sm"
                 rows={3}
-                value={notes}
                 resize="none"
+                value={notes}
+                disabled={isDisabled}
                 maxLength={NOTES_LIMIT}
                 placeholder="Internal notes about this registration…"
                 onChange={(event) => setNotes(event.target.value)}

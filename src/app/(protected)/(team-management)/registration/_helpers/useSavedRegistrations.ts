@@ -39,7 +39,10 @@ export function useSavedRegistrations() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       // One-time hydration of persisted state
-      if (raw) setItems(JSON.parse(raw));
+      if (raw) {
+        const parsed: unknown = JSON.parse(raw);
+        setItems(Array.isArray(parsed) ? parsed : []);
+      }
     } catch {
       // Corrupt/unavailable storage — start empty.
     }

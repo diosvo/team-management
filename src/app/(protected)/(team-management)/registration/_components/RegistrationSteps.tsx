@@ -1,11 +1,11 @@
 import { Circle, Span, Steps } from '@chakra-ui/react';
 import { Check } from 'lucide-react';
 
-export interface StepDef {
+export type StepDef = {
   title: string;
   done: boolean;
   isOptional?: boolean;
-}
+};
 
 export default function RegistrationSteps({
   steps,

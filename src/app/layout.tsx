@@ -12,9 +12,11 @@ import { Toaster } from '@/components/ui/toaster';
 import env from '@env';
 import './globals.css';
 
-export const ggSans = Google_Sans_Flex({
+const ggSans = Google_Sans_Flex({
   display: 'swap',
   subsets: ['latin'],
+  adjustFontFallback: false,
+  fallback: ['system-ui', 'arial'],
 });
 
 export const metadata: Metadata = {
