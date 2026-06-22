@@ -1,7 +1,7 @@
 'use client';
 
 import NextLink from 'next/link';
-import { useState } from 'react';
+import { useCallback } from 'react';
 
 import {
   Badge,
@@ -15,24 +15,27 @@ import { CirclePile } from 'lucide-react';
 
 import Authorized from '@/components/Authorized';
 import { LocationLink } from '@/components/common/LocationSelection';
+import HighlightText from '@/components/HighlightText';
 import Pagination from '@/components/Pagination';
 import SelectionActionBar from '@/components/SelectionActionBar';
 import { Checkbox } from '@/components/ui/checkbox';
 import { EmptyState } from '@/components/ui/empty-state';
 import { toaster } from '@/components/ui/toaster';
+import { Tooltip } from '@/components/ui/tooltip';
 
 import usePermissions from '@/hooks/use-permissions';
-import { TrainingSessionWithDetails } from '@/types/training-session';
+import useTableState from '@/hooks/use-table-state';
 
-import { paginateData, useTrainingFilters } from '@/utils/filters';
+import { TrainingSessionWithDetails } from '@/types/training-session';
+import { useTrainingFilters } from '@/utils/filters';
 import { formatDate, formatDay } from '@/utils/formatter';
 import { getColor } from '@/utils/helper';
 
 import { removeSession } from '@/actions/training-session';
-import { Tooltip } from '@/components/ui/tooltip';
+
 import { UpsertSession } from './UpsertSession';
 
-const headers = ['Date', 'Time', 'Location', 'Status', 'Present Rate'] as const;
+const HEADERS = ['Date', 'Time', 'Location', 'Status', 'Present Rate'] as const;
 
 export default function SessionTable({
   sessions,
@@ -40,16 +43,26 @@ export default function SessionTable({
   sessions: Array<TrainingSessionWithDetails>;
 }) {
   const { isGuest } = usePermissions();
-  const [{ page }, setSearchParams] = useTrainingFilters();
+  const [{ q, page }, setSearchParams] = useTrainingFilters();
 
-  const [selection, setSelection] = useState<Array<string>>([]);
-  const selectionCount = selection.length;
-
-  const totalCount = sessions.length;
-  const currentData = paginateData(sessions, page);
-
-  const hasSelection = selectionCount > 0;
-  const indeterminate = hasSelection && selectionCount < totalCount;
+  const predicate = useCallback(
+    (item: TrainingSessionWithDetails) =>
+      (item.location?.name ?? '').toLowerCase().includes(q.toLowerCase()),
+    [q],
+  );
+  const {
+    items,
+    currentData,
+    indeterminate,
+    selection,
+    setSelection,
+    hasSelection,
+    totalCount,
+    columnCount,
+    selectionCount,
+  } = useTableState(sessions, predicate, page, {
+    headerCount: HEADERS.length,
+  });
 
   const removeItems = async () => {
     const results = await Promise.all(selection.map(removeSession));
@@ -57,8 +70,10 @@ export default function SessionTable({
     const successCount = results.filter(({ success }) => success).length;
 
     toaster.create({
-      type: hasErrors ? 'error' : 'success',
-      title: `Successfully deleted ${successCount} session(s).`,
+      type: hasErrors ? 'warning' : 'success',
+      title: hasErrors
+        ? `Deleted ${successCount} session(s), but some operations failed.`
+        : `Successfully deleted ${successCount} session(s).`,
     });
 
     setSelection([]);
@@ -85,14 +100,14 @@ export default function SessionTable({
                     onCheckedChange={(changes) => {
                       setSelection(
                         changes.checked
-                          ? sessions.map(({ session_id }) => session_id)
+                          ? items.map(({ session_id }) => session_id)
                           : [],
                       );
                     }}
                   />
                 </Table.ColumnHeader>
               </Authorized>
-              {headers.map((header) => (
+              {HEADERS.map((header) => (
                 <Table.ColumnHeader key={header}>{header}</Table.ColumnHeader>
               ))}
             </Table.Row>
@@ -103,7 +118,7 @@ export default function SessionTable({
                 <Table.Row
                   key={item.session_id}
                   _hover={{ cursor: isGuest ? 'default' : 'pointer' }}
-                  onClick={(e) => {
+                  onClick={() => {
                     if (isGuest) return;
                     UpsertSession.open('update-session', {
                       action: 'Update',
@@ -121,16 +136,14 @@ export default function SessionTable({
                           setSelection((prev) =>
                             changes.checked
                               ? [...prev, item.session_id]
-                              : selection.filter(
-                                  (id) => id !== item.session_id,
-                                ),
+                              : prev.filter((id) => id !== item.session_id),
                           );
                         }}
                       />
                     </Table.Cell>
                   </Authorized>
                   <Table.Cell>
-                    <ChakraLink variant="underline" colorPalette="blue" asChild>
+                    <ChakraLink colorPalette="blue" asChild>
                       <NextLink
                         href={{
                           pathname: '/attendance',
@@ -154,7 +167,11 @@ export default function SessionTable({
                     </HStack>
                   </Table.Cell>
                   <Table.Cell>
-                    <LocationLink name={item.location?.name} />
+                    <LocationLink name={item.location?.name}>
+                      <HighlightText query={q}>
+                        {item.location?.name ?? '-'}
+                      </HighlightText>
+                    </LocationLink>
                   </Table.Cell>
                   <Table.Cell>
                     <Badge
@@ -180,7 +197,7 @@ export default function SessionTable({
               ))
             ) : (
               <Table.Row>
-                <Table.Cell colSpan={headers.length + 1}>
+                <Table.Cell colSpan={columnCount}>
                   <EmptyState
                     title="No training sessions found"
                     icon={<CirclePile />}
@@ -202,6 +219,7 @@ export default function SessionTable({
         selectionCount={selectionCount}
         onDelete={removeItems}
       />
+      <UpsertSession.Viewport />
     </>
   );
 }

@@ -1,13 +1,10 @@
 import { Metadata } from 'next';
 
-import { HStack } from '@chakra-ui/react';
-
-import PageTitle from '@/components/PageTitle';
-
 import { getSessions } from '@/actions/training-session';
 import { loadTrainingFilters } from '@/utils/filters';
 
 import SessionFilters from './_components/SessionFilters';
+import SessionHeader from './_components/SessionHeader';
 import SessionStats from './_components/SessionStats';
 import SessionTable from './_components/SessionTable';
 
@@ -24,11 +21,9 @@ export default async function TrainingSessionsPage(
 
   return (
     <>
-      <HStack justifyContent="space-between">
-        <PageTitle title="Training Sessions" />
-        <SessionFilters />
-      </HStack>
+      <SessionHeader />
       <SessionStats stats={stats} />
+      <SessionFilters />
       <SessionTable sessions={data} />
     </>
   );

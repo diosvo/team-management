@@ -37,6 +37,7 @@ const COLOR_MAP: Partial<Record<ColorPalette, Array<string>>> = {
     LeagueStatus.UPCOMING,
     UserRole.SUPER_ADMIN,
     UserState.TEMPORARILY_ABSENT,
+    SessionStatus.SCHEDULED,
   ],
   purple: [UserRole.COACH],
   red: [
@@ -47,7 +48,6 @@ const COLOR_MAP: Partial<Record<ColorPalette, Array<string>>> = {
     SessionStatus.CANCELLED,
     UserState.INACTIVE,
   ],
-  yellow: [SessionStatus.SCHEDULED],
 };
 
 const COLOR_LOOKUP = new Map<string, ColorPalette>(

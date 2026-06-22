@@ -49,7 +49,7 @@ describe('getColor', () => {
     { value: AttendanceStatus.ABSENT, expected: 'red' },
     { value: AttendanceStatus.LATE, expected: 'orange' },
     // SessionStatus
-    { value: SessionStatus.SCHEDULED, expected: 'yellow' },
+    { value: SessionStatus.SCHEDULED, expected: 'orange' },
     { value: SessionStatus.ACTIVE, expected: 'green' },
     { value: SessionStatus.COMPLETED, expected: 'gray' },
     { value: SessionStatus.CANCELLED, expected: 'red' },
