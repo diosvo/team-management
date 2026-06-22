@@ -5,6 +5,7 @@ import { useCallback, useTransition } from 'react';
 import { Badge, HStack, Span, Table } from '@chakra-ui/react';
 
 import Authorized from '@/components/Authorized';
+import { LeagueLink } from '@/components/common/LeagueSelection';
 import { LocationLink } from '@/components/common/LocationSelection';
 import HighlightText from '@/components/HighlightText';
 import Pagination from '@/components/Pagination';
@@ -13,17 +14,14 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { EmptyState } from '@/components/ui/empty-state';
 import { toaster } from '@/components/ui/toaster';
 
-import usePermissions from '@/hooks/use-permissions';
-import useTableState from '@/hooks/use-table-state';
-
 import { MatchWithTeams } from '@/types/match';
 import { useMatchFilters } from '@/utils/filters';
 import { formatDate, formatDay } from '@/utils/formatter';
 import { getColor } from '@/utils/helper';
 
 import { removeMatch } from '@/actions/match';
+import useTableState from '@/hooks/use-table-state';
 
-import { LeagueLink } from '@/components/common/LeagueSelection';
 import { UpsertMatch } from './UpsertMatch';
 
 const HEADERS = [
@@ -40,7 +38,6 @@ export default function MatchTable({
 }: {
   matches: Array<MatchWithTeams>;
 }) {
-  const { isGuest } = usePermissions();
   const [isPending, startTransition] = useTransition();
   const [{ q, page }, setSearchParams] = useMatchFilters();
 
@@ -124,9 +121,8 @@ export default function MatchTable({
               currentData.map((item) => (
                 <Table.Row
                   key={item.match_id}
-                  _hover={{ cursor: isGuest ? 'default' : 'pointer' }}
+                  _hover={{ cursor: 'pointer' }}
                   onClick={() => {
-                    if (isGuest) return;
                     UpsertMatch.open('update-match', {
                       action: 'Update',
                       item: {

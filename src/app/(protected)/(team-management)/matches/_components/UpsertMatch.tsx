@@ -18,6 +18,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Save } from 'lucide-react';
 import { Controller, useForm } from 'react-hook-form';
 
+import Authorized from '@/components/Authorized';
 import LocationSelection from '@/components/common/LocationSelection';
 import SearchableSelect from '@/components/SearchableSelect';
 import { CloseButton } from '@/components/ui/close-button';
@@ -25,6 +26,7 @@ import { Field } from '@/components/ui/field';
 import { NumberInputField } from '@/components/ui/number-input';
 import { Switch } from '@/components/ui/switch';
 import { toaster } from '@/components/ui/toaster';
+import Visibility from '@/components/Visibility';
 
 import { CACHE_KEY, CURRENT_DATE, ESTABLISHED_DATE } from '@/utils/constant';
 import { formatDatetime } from '@/utils/formatter';
@@ -36,8 +38,6 @@ import { UpsertMatchSchema, UpsertMatchSchemaValues } from '@/schemas/match';
 import { getLeagues } from '@/actions/league';
 import { upsertMatch } from '@/actions/match';
 import { getOpponents } from '@/actions/team';
-import Authorized from '@/components/Authorized';
-import Visibility from '@/components/Visibility';
 
 export const UpsertMatch = createOverlay(({ action, item, ...rest }) => {
   const [isPending, startTransition] = useTransition();
