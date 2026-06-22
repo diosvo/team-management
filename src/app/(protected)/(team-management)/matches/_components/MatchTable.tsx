@@ -14,14 +14,14 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { EmptyState } from '@/components/ui/empty-state';
 import { toaster } from '@/components/ui/toaster';
 
+import useTableState from '@/hooks/use-table-state';
+
+import { useMatchFilters } from '@/lib/nuqs';
 import { MatchWithTeams } from '@/types/match';
-import { useMatchFilters } from '@/utils/filters';
 import { formatDate, formatDay } from '@/utils/formatter';
 import { getColor } from '@/utils/helper';
 
 import { removeMatch } from '@/actions/match';
-import useTableState from '@/hooks/use-table-state';
-
 import { UpsertMatch } from './UpsertMatch';
 
 const HEADERS = [

@@ -1,132 +1,41 @@
-import { useQueryStates } from 'nuqs';
-import {
-  createLoader,
-  parseAsArrayOf,
-  parseAsInteger,
-  parseAsString,
-  parseAsStringEnum,
-  type Options,
-} from 'nuqs/server';
+export {
+  loadAttendanceFilters,
+  loadDashboardFilters,
+  loadMatchFilters,
+  loadPeriodicTestingFilters,
+  loadTrainingFilters,
+  useAssetFilters,
+  useAttendanceFilters,
+  useCommonParams,
+  useDashboardFilters,
+  useLeagueFilters,
+  useMatchFilters,
+  usePeriodicTestingFilters,
+  useRosterFilters,
+  useTrainingFilters,
+} from '@/lib/nuqs';
 
-import {
-  ALL,
-  ASSET_CATEGORY_VALUES,
-  ASSET_CONDITION_VALUES,
-  ATTENDANCE_STATUS_VALUES,
-  CURRENT_DATE,
-  GAME_TYPE_VALUES,
-  INTERVAL_VALUES,
-  LEAGUE_STATUS_VALUES,
-  MATCH_TYPE_VALUES,
-  SELECTABLE_USER_ROLES,
-  SELECTABLE_USER_STATES,
-  SESSION_STATUS_VALUES,
-} from './constant';
-import { Interval } from './enum';
-
-export const commonParams = {
-  page: parseAsInteger.withDefault(1),
-  q: parseAsString.withDefault(''),
+const sameValue = (a: unknown, b: unknown): boolean => {
+  if (Array.isArray(a) && Array.isArray(b)) {
+    if (a.length !== b.length) return false;
+    const bSet = new Set(b);
+    return a.every((value) => bSet.has(value));
+  }
+  return a === b;
 };
 
-const rosterSearchParams = {
-  ...commonParams,
-  role: parseAsArrayOf(parseAsStringEnum(SELECTABLE_USER_ROLES)).withDefault(
-    [],
-  ),
-  state: parseAsArrayOf(parseAsStringEnum(SELECTABLE_USER_STATES)).withDefault(
-    [],
-  ),
-};
-
-const assetSearchParams = {
-  ...commonParams,
-  category: parseAsStringEnum(ASSET_CATEGORY_VALUES).withDefault(ALL.value),
-  condition: parseAsStringEnum(ASSET_CONDITION_VALUES).withDefault(ALL.value),
-};
-
-const periodicTestingSearchParams = {
-  ...commonParams,
-  date: parseAsString.withDefault(''),
-};
-
-const leagueSearchParams = {
-  ...commonParams,
-  status: parseAsStringEnum(LEAGUE_STATUS_VALUES).withDefault(ALL.value),
-};
-
-const matchSearchParams = {
-  ...commonParams,
-  game_type: parseAsStringEnum(GAME_TYPE_VALUES).withDefault(ALL.value),
-  interval: parseAsStringEnum(INTERVAL_VALUES).withDefault(Interval.THIS_YEAR),
-  match_type: parseAsStringEnum(MATCH_TYPE_VALUES).withDefault(ALL.value),
-};
-
-const attendanceSearchParams = {
-  ...commonParams,
-  date: parseAsString.withDefault(CURRENT_DATE),
-  status: parseAsStringEnum(ATTENDANCE_STATUS_VALUES).withDefault(ALL.value),
-};
-
-const dashboardSearchParams = {
-  ...commonParams,
-  interval: parseAsStringEnum(INTERVAL_VALUES).withDefault(Interval.THIS_YEAR),
-};
-
-const trainingSearchParams = {
-  ...commonParams,
-  interval: parseAsStringEnum(INTERVAL_VALUES).withDefault(Interval.THIS_MONTH),
-  status: parseAsStringEnum(SESSION_STATUS_VALUES).withDefault(ALL.value),
-};
-
-/* ================== 👯‍♂️ Client-Side Hooks 👯‍♂️ ================== */
-
-export const useCommonParams = (options: Options = {}) =>
-  useQueryStates(commonParams, options);
-export const useRosterFilters = () => useQueryStates(rosterSearchParams);
-export const useAssetFilters = () => useQueryStates(assetSearchParams);
-export const usePeriodicTestingFilters = () =>
-  useQueryStates(periodicTestingSearchParams, {
-    shallow: false,
-  });
-export const useLeagueFilters = () => useQueryStates(leagueSearchParams);
-export const useMatchFilters = () => useQueryStates(matchSearchParams);
-export const useAttendanceFilters = () =>
-  useQueryStates(attendanceSearchParams, {
-    shallow: false,
-  });
-export const useTrainingFilters = () =>
-  useQueryStates(trainingSearchParams, {
-    shallow: false,
-  });
-export const useDashboardFilters = () =>
-  useQueryStates(dashboardSearchParams, {
-    shallow: false,
-  });
-
-/* ================== 🌩️ Server-Side Loaders 🌩️ ================== */
-
-export const loadPeriodicTestingFilters = createLoader(
-  periodicTestingSearchParams,
-);
-export const loadMatchFilters = createLoader(matchSearchParams);
-export const loadAttendanceFilters = createLoader(attendanceSearchParams);
-export const loadDashboardFilters = createLoader(dashboardSearchParams);
-export const loadTrainingFilters = createLoader(trainingSearchParams);
-
-/* ================== 🧮 Types & Enums 🧮 ================== */
-
-export type MatchSearchParams = Awaited<ReturnType<typeof loadMatchFilters>>;
-export type MatchSearchParamsKeys = keyof typeof matchSearchParams;
-export type TrainingSearchParams = Awaited<
-  ReturnType<typeof loadTrainingFilters>
->;
-export type TrainingSearchParamsKeys = keyof typeof trainingSearchParams;
-export type AttendanceSearchParams = Awaited<
-  ReturnType<typeof loadAttendanceFilters>
->;
-
-/* ================== ⛽️ Utility Functions ⛽️ ================== */
+/**
+ * @description Counts how many filters differ from their defaults, ignoring `page`/`q`.
+ * Array-aware and order-insensitive (URL-decoded arrays may arrive reordered).
+ */
+export const countActiveFilters = <T extends Record<string, unknown>>(
+  values: T,
+  defaults: T,
+): number =>
+  Object.keys(defaults).filter(
+    (key) =>
+      !['page', 'q'].includes(key) && !sameValue(values[key], defaults[key]),
+  ).length;
 
 export function paginateData<T>(
   data: Array<T>,

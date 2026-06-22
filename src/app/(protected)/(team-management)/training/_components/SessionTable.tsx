@@ -27,12 +27,13 @@ import usePermissions from '@/hooks/use-permissions';
 import useTableState from '@/hooks/use-table-state';
 
 import { TrainingSessionWithDetails } from '@/types/training-session';
-import { useTrainingFilters } from '@/utils/filters';
+
+import { useTrainingFilters } from '@/lib/nuqs';
+import { paginateData } from '@/utils/filters';
 import { formatDate, formatDay } from '@/utils/formatter';
 import { getColor } from '@/utils/helper';
 
 import { removeSession } from '@/actions/training-session';
-
 import { UpsertSession } from './UpsertSession';
 
 const HEADERS = ['Date', 'Time', 'Location', 'Status', 'Present Rate'] as const;

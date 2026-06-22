@@ -6,7 +6,7 @@ import { Input, InputGroup, InputProps } from '@chakra-ui/react';
 import { Search } from 'lucide-react';
 
 import { CloseButton } from '@/components/ui/close-button';
-import { useCommonParams } from '@/utils/filters';
+import { useCommonParams } from '@/lib/nuqs';
 
 export default function SearchInput(props: InputProps) {
   const [{ q }, setSearchParams] = useCommonParams();

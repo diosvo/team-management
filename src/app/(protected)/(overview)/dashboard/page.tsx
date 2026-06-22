@@ -1,3 +1,5 @@
+import { Metadata } from 'next';
+
 import { HStack, SimpleGrid } from '@chakra-ui/react';
 
 import PageTitle from '@/components/PageTitle';
@@ -8,8 +10,8 @@ import {
   getMatchesRate,
   getMostAbsenceReasons,
 } from '@/actions/analytics';
-import { loadDashboardFilters } from '@/utils/filters';
-import { Metadata } from 'next';
+import { loadDashboardFilters } from '@/lib/nuqs';
+
 import AbsenceReasonsBreakdown from './_components/AbsenceReasonsBreakdown';
 import AttendanceTrend from './_components/AttendanceTrend';
 import DashboardFilters from './_components/DashboardFilters';

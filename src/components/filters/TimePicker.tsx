@@ -17,6 +17,8 @@ export default function TimePicker({
   return (
     <Select.Root
       width="max-content"
+      flexShrink={0}
+      size={{ base: 'sm', md: 'md' }}
       collection={dates}
       value={[value]}
       onValueChange={({ value }) => onChange(value[0])}
@@ -34,7 +36,11 @@ export default function TimePicker({
         <Select.Positioner>
           <Select.Content>
             {dates.items.map((interval) => (
-              <Select.Item item={interval} key={interval.value}>
+              <Select.Item
+                item={interval}
+                key={interval.value}
+                whiteSpace="nowrap"
+              >
                 {interval.label}
                 <Select.ItemIndicator />
               </Select.Item>

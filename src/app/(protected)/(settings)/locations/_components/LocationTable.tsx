@@ -16,7 +16,7 @@ import { toaster } from '@/components/ui/toaster';
 
 import usePermissions from '@/hooks/use-permissions';
 import useTableState from '@/hooks/use-table-state';
-import { useCommonParams } from '@/utils/filters';
+import { useCommonParams } from '@/lib/nuqs';
 import { formatDatetime } from '@/utils/formatter';
 
 import { removeLocation } from '@/actions/location';

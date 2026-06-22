@@ -1,11 +1,10 @@
-import { and, desc, eq, gte, lte } from 'drizzle-orm';
+import { and, desc, eq, gte, inArray, lte } from 'drizzle-orm';
 
 import db from '@/drizzle';
 import { InsertTrainingSession, TrainingSessionTable } from '@/drizzle/schema';
 
-import { ALL } from '@/utils/constant';
 import { Interval, SessionStatus } from '@/utils/enum';
-import { TrainingSearchParams } from '@/utils/filters';
+import { TrainingSearchParams } from '@/lib/nuqs';
 import { TIME_DURATION } from '@/utils/formatter';
 
 import {
@@ -75,7 +74,7 @@ describe('getSessions', () => {
 
   const mockParams: TrainingSearchParams = {
     interval: Interval.THIS_MONTH,
-    status: ALL.value,
+    status: [],
     page: 1,
     q: '',
   };
@@ -109,14 +108,14 @@ describe('getSessions', () => {
     });
   });
 
-  test('applies status filter when status is not ALL', async () => {
+  test('applies status filter when status is not empty', async () => {
     vi.mocked(db.query.TrainingSessionTable.findMany).mockResolvedValue(
       MOCK_SESSIONS_DB_RESULT,
     );
 
     const paramsWithStatus: TrainingSearchParams = {
       ...mockParams,
-      status: SessionStatus.COMPLETED,
+      status: [SessionStatus.COMPLETED],
     };
 
     await getSessions(MOCK_TEAM.team_id, paramsWithStatus);
@@ -129,7 +128,7 @@ describe('getSessions', () => {
           eq(TrainingSessionTable.team_id, MOCK_TEAM.team_id),
           gte(TrainingSessionTable.date, start.toISOString()),
           lte(TrainingSessionTable.date, end.toISOString()),
-          eq(TrainingSessionTable.status, SessionStatus.COMPLETED),
+          inArray(TrainingSessionTable.status, [SessionStatus.COMPLETED]),
         ),
       }),
     );

@@ -2,37 +2,33 @@
 
 import { useMemo } from 'react';
 
-import { Button, For, List, SegmentGroup } from '@chakra-ui/react';
+import { Button, List } from '@chakra-ui/react';
 import { isPast } from 'date-fns';
 import { Crosshair } from 'lucide-react';
 
 import Authorized from '@/components/Authorized';
-import FilterBar from '@/components/filters/FilterBar';
-import { Field } from '@/components/ui/field';
+import Filters from '@/components/filters/Filters';
 import { toaster } from '@/components/ui/toaster';
 import { Tooltip } from '@/components/ui/tooltip';
 
-import { ALL, LEAGUE_STATUS_SELECTION } from '@/utils/constant';
+import { useLeagueFilters } from '@/lib/nuqs';
+import type { FilterDef } from '@/types/filters';
+import { LEAGUE_STATUS_SELECTION } from '@/utils/constant';
 import { LeagueStatus } from '@/utils/enum';
-import { useLeagueFilters } from '@/utils/filters';
-import { getColor } from '@/utils/helper';
 
 import { upsertLeague } from '@/actions/league';
 import { League } from '@/drizzle/schema';
-import { useLocalFilters } from '@/hooks/use-local-filters';
 
-const statusItems = [ALL, ...LEAGUE_STATUS_SELECTION];
-const DEFAULT_FILTERS = { status: ALL.value };
+const FILTERS: Array<FilterDef> = [
+  {
+    key: 'status',
+    label: 'Status',
+    control: { type: 'checkbox-group', options: LEAGUE_STATUS_SELECTION },
+  },
+];
 
 export default function LeagueFilters({ leagues }: { leagues: Array<League> }) {
-  const [{ status }, setSearchParams] = useLeagueFilters();
-  const { draft, setField, ...rest } = useLocalFilters(
-    { status },
-    DEFAULT_FILTERS,
-    (values) => setSearchParams({ ...values, page: 1 }),
-  );
-
-  const activeCount = [status].filter((value) => value !== ALL.value).length;
+  const [values, setSearchParams] = useLeagueFilters();
 
   const endedLeagues = useMemo(
     () =>
@@ -64,10 +60,12 @@ export default function LeagueFilters({ leagues }: { leagues: Array<League> }) {
   };
 
   return (
-    <FilterBar
-      activeCount={activeCount}
-      {...rest}
-      inlineFilters={() => (
+    <Filters
+      filters={FILTERS}
+      values={values}
+      defaults={useLeagueFilters.defaults}
+      onApply={(next) => setSearchParams({ ...next, page: 1 })}
+      actions={
         <Authorized resource="leagues" action="edit">
           <Tooltip
             content={
@@ -95,33 +93,6 @@ export default function LeagueFilters({ leagues }: { leagues: Array<League> }) {
             </Button>
           </Tooltip>
         </Authorized>
-      )}
-      advancedFilters={
-        <Field label="Status">
-          <SegmentGroup.Root
-            size="sm"
-            value={draft.status}
-            data-testid="status-filter"
-            onValueChange={({ value }) => setField('status', value as string)}
-          >
-            <SegmentGroup.Indicator />
-            <For each={statusItems}>
-              {({ label, value }) => (
-                <SegmentGroup.Item key={value} value={value}>
-                  <SegmentGroup.ItemText
-                    _checked={{
-                      fontWeight: 'medium',
-                      color: getColor(value),
-                    }}
-                  >
-                    {label}
-                  </SegmentGroup.ItemText>
-                  <SegmentGroup.ItemHiddenInput />
-                </SegmentGroup.Item>
-              )}
-            </For>
-          </SegmentGroup.Root>
-        </Field>
       }
     />
   );

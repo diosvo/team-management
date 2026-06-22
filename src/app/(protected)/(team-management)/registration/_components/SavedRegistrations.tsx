@@ -12,7 +12,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { toaster } from '@/components/ui/toaster';
 
 import useTableState from '@/hooks/use-table-state';
-import { useCommonParams } from '@/utils/filters';
+import { useCommonParams } from '@/lib/nuqs';
 import { formatDatetime } from '@/utils/formatter';
 
 import { base64ToBytes, downloadPdf } from '../_helpers/pdf';

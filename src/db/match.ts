@@ -3,9 +3,8 @@ import { and, desc, eq, gte, isNotNull, isNull, lte } from 'drizzle-orm';
 import { DataWithStats } from '@/types/common';
 import { MatchStats, MatchWithTeams } from '@/types/match';
 
-import { ALL } from '@/utils/constant';
+import { MatchSearchParams } from '@/lib/nuqs';
 import { MatchStatus, MatchType } from '@/utils/enum';
-import { MatchSearchParams } from '@/utils/filters';
 import { TIME_DURATION } from '@/utils/formatter';
 
 import db from '@/drizzle';
@@ -28,15 +27,16 @@ export async function getMatches(
       },
       where: and(
         eq(MatchTable.home_team, team_id),
-        ...(game_type !== ALL.value
-          ? [eq(MatchTable.is_5x5, game_type === 'true')]
+        // Empty or both options selected → no condition; exactly one → narrow.
+        ...(game_type.length === 1
+          ? [eq(MatchTable.is_5x5, game_type[0] === 'true')]
           : []),
         gte(MatchTable.date, start.toISOString()),
         lte(MatchTable.date, end.toISOString()),
-        ...(match_type === MatchType.LEAGUE
+        ...(match_type.length === 1 && match_type[0] === MatchType.LEAGUE
           ? [isNotNull(MatchTable.league_id)]
           : []),
-        ...(match_type === MatchType.FRIENDLY
+        ...(match_type.length === 1 && match_type[0] === MatchType.FRIENDLY
           ? [isNull(MatchTable.league_id)]
           : []),
       ),

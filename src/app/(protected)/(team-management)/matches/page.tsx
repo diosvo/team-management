@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 import { getMatches } from '@/actions/match';
-import { loadMatchFilters } from '@/utils/filters';
+import { loadMatchFilters } from '@/lib/nuqs';
 
 import MatchFilters from './_components/MatchFilters';
 import MatchHeader from './_components/MatchHeader';

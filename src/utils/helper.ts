@@ -58,7 +58,7 @@ const COLOR_LOOKUP = new Map<string, ColorPalette>(
 
 export function getColor(value: Nullish<string>): ColorPalette {
   if (value === ALL.value) return 'blue';
-  if (value == null) return 'gray';
+  if (value == null) return 'black';
   return COLOR_LOOKUP.get(value) ?? 'gray';
 }
 

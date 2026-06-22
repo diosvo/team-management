@@ -27,6 +27,7 @@ import { Tooltip } from '@/components/ui/tooltip';
 import { PlayerSelection } from '@/components/user/PlayerSelection';
 import Visibility from '@/components/Visibility';
 
+import { useAttendanceFilters } from '@/lib/nuqs';
 import {
   ALL,
   CACHE_KEY,
@@ -34,7 +35,6 @@ import {
   ESTABLISHED_DATE,
 } from '@/utils/constant';
 import { AttendanceStatus } from '@/utils/enum';
-import { useAttendanceFilters } from '@/utils/filters';
 
 import { User } from '@/drizzle/schema';
 

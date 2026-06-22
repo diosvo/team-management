@@ -1,7 +1,8 @@
 'use server';
 
-import { TrainingSearchParams } from '@/utils/filters';
 import { ResponseFactory } from '@/utils/response';
+
+import { TrainingSearchParams } from '@/lib/nuqs';
 
 import { getDbErrorMessage } from '@/db/pg-error';
 import {

@@ -1,107 +1,36 @@
 'use client';
 
-import { For, SegmentGroup } from '@chakra-ui/react';
+import Filters from '@/components/filters/Filters';
 
-import FilterBar from '@/components/filters/FilterBar';
-import { Field } from '@/components/ui/field';
-
+import { useAssetFilters } from '@/lib/nuqs';
+import type { FilterDef } from '@/types/filters';
 import {
-  ALL,
   ASSET_CATEGORY_SELECTION,
   ASSET_CONDITION_SELECTION,
 } from '@/utils/constant';
-import { useAssetFilters } from '@/utils/filters';
-import { getColor } from '@/utils/helper';
 
-import { useLocalFilters } from '@/hooks/use-local-filters';
-
-const categoryItems = [ALL, ...ASSET_CATEGORY_SELECTION];
-const conditionItems = [ALL, ...ASSET_CONDITION_SELECTION];
-const DEFAULT_FILTERS = { category: ALL.value, condition: ALL.value };
+const FILTERS: Array<FilterDef> = [
+  {
+    key: 'category',
+    label: 'Category',
+    control: { type: 'checkbox-group', options: ASSET_CATEGORY_SELECTION },
+  },
+  {
+    key: 'condition',
+    label: 'Condition',
+    control: { type: 'checkbox-group', options: ASSET_CONDITION_SELECTION },
+  },
+];
 
 export default function AssetFilters() {
-  const [{ category, condition }, setSearchParams] = useAssetFilters();
-  const { draft, setField, handleReset, handleApply, handleInteractOutside } =
-    useLocalFilters({ category, condition }, DEFAULT_FILTERS, (values) =>
-      setSearchParams({ ...values, page: 1 }),
-    );
-
-  const activeCount = [category, condition].filter(
-    (value) => value !== ALL.value,
-  );
+  const [values, setSearchParams] = useAssetFilters();
 
   return (
-    <FilterBar
-      activeCount={activeCount.length}
-      handleReset={handleReset}
-      handleApply={handleApply}
-      handleInteractOutside={handleInteractOutside}
-      advancedFilters={
-        <>
-          <Field label="Category">
-            <SegmentGroup.Root
-              size="sm"
-              value={draft.category}
-              data-testid="category-filter"
-              onValueChange={({ value }) =>
-                setField('category', value as string)
-              }
-            >
-              <SegmentGroup.Indicator />
-              <For each={categoryItems}>
-                {({ label, value, description }) => (
-                  <SegmentGroup.Item
-                    key={value}
-                    value={value}
-                    title={description}
-                  >
-                    <SegmentGroup.ItemText
-                      _checked={{
-                        fontWeight: 'medium',
-                        color: getColor(value),
-                      }}
-                    >
-                      {label}
-                    </SegmentGroup.ItemText>
-                    <SegmentGroup.ItemHiddenInput />
-                  </SegmentGroup.Item>
-                )}
-              </For>
-            </SegmentGroup.Root>
-          </Field>
-          <Field label="Condition">
-            <SegmentGroup.Root
-              size="sm"
-              value={draft.condition}
-              data-testid="condition-filter"
-              onValueChange={({ value }) =>
-                setField('condition', value as string)
-              }
-            >
-              <SegmentGroup.Indicator />
-              <For each={conditionItems}>
-                {({ label, value, description }) => (
-                  <SegmentGroup.Item
-                    key={value}
-                    value={value}
-                    title={description}
-                  >
-                    <SegmentGroup.ItemText
-                      _checked={{
-                        fontWeight: 'medium',
-                        color: getColor(value),
-                      }}
-                    >
-                      {label}
-                    </SegmentGroup.ItemText>
-                    <SegmentGroup.ItemHiddenInput />
-                  </SegmentGroup.Item>
-                )}
-              </For>
-            </SegmentGroup.Root>
-          </Field>
-        </>
-      }
+    <Filters
+      filters={FILTERS}
+      values={values}
+      defaults={useAssetFilters.defaults}
+      onApply={(next) => setSearchParams({ ...next, page: 1 })}
     />
   );
 }

@@ -2,9 +2,8 @@
 
 import { SimpleGrid, Span, Stat } from '@chakra-ui/react';
 
-import { ALL } from '@/utils/constant';
+import { useAssetFilters } from '@/lib/nuqs';
 import { AssetCondition } from '@/utils/enum';
-import { useAssetFilters } from '@/utils/filters';
 import { formatValueUnit } from '@/utils/formatter';
 
 type AssetStatsProps = {
@@ -26,7 +25,7 @@ export default function AssetStats({ stats }: AssetStatsProps) {
   const [, setSearchParams] = useAssetFilters();
 
   const handleClick = (condition: AssetCondition) => {
-    setSearchParams({ page: 1, q: '', category: ALL.value, condition });
+    setSearchParams({ page: 1, q: '', category: [], condition: [condition] });
   };
 
   return (

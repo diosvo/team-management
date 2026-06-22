@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 import { getSessions } from '@/actions/training-session';
-import { loadTrainingFilters } from '@/utils/filters';
+import { loadTrainingFilters } from '@/lib/nuqs';
 
 import SessionFilters from './_components/SessionFilters';
 import SessionHeader from './_components/SessionHeader';

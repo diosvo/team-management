@@ -13,8 +13,8 @@ import {
 } from '@/components/ui/number-input';
 import { Tooltip } from '@/components/ui/tooltip';
 
+import { useCommonParams } from '@/lib/nuqs';
 import { TestConfigurationSelection } from '@/types/periodic-testing';
-import { useCommonParams } from '@/utils/filters';
 
 import { InsertTestResult } from '@/drizzle/schema';
 

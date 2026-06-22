@@ -15,8 +15,8 @@ import { colorPlayerRank, getColor } from './helper';
 describe('getColor', () => {
   const cases = [
     { value: ALL.value, expected: 'blue' },
-    { value: null, expected: 'gray' },
-    { value: undefined, expected: 'gray' },
+    { value: null, expected: 'black' },
+    { value: undefined, expected: 'black' },
     { value: 'unknown', expected: 'gray' },
     // UserRole
     { value: UserRole.SUPER_ADMIN, expected: 'orange' },
