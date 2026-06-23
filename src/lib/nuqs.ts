@@ -104,7 +104,10 @@ function createFilters<T extends UseQueryStatesKeysMap>(
 ) {
   const useFilters = () => useQueryStates(params, options);
   useFilters.defaults = getDefaults(params);
-  return useFilters;
+
+  return Object.assign(() => useQueryStates(params, options), {
+    defaults: getDefaults(params),
+  });
 }
 
 export const useCommonParams = (options: Options = {}) =>

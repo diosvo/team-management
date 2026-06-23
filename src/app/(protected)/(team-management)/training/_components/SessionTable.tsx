@@ -29,7 +29,6 @@ import useTableState from '@/hooks/use-table-state';
 import { TrainingSessionWithDetails } from '@/types/training-session';
 
 import { useTrainingFilters } from '@/lib/nuqs';
-import { paginateData } from '@/utils/filters';
 import { formatDate, formatDay } from '@/utils/formatter';
 import { getColor } from '@/utils/helper';
 

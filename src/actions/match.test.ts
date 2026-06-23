@@ -16,8 +16,8 @@ import {
 import { MOCK_MATCH, MOCK_MATCH_RESPONSE } from '@/test/mocks/match';
 import { MOCK_USER } from '@/test/mocks/user';
 
+import { MatchSearchParams } from '@/lib/nuqs';
 import { Interval } from '@/utils/enum';
-import { MatchSearchParams } from '@/utils/filters';
 
 import { getMatches, removeMatch, upsertMatch } from './match';
 

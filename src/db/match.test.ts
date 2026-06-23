@@ -3,9 +3,9 @@ import { and, desc, eq, gte, isNotNull, isNull, lte } from 'drizzle-orm';
 import db from '@/drizzle';
 import { InsertMatch, MatchTable } from '@/drizzle/schema';
 
+import { MatchSearchParams } from '@/lib/nuqs';
 import { UpsertMatchSchemaValues } from '@/schemas/match';
 import { Interval, MatchStatus, MatchType } from '@/utils/enum';
-import { MatchSearchParams } from '@/utils/filters';
 import { TIME_DURATION } from '@/utils/formatter';
 
 import {
