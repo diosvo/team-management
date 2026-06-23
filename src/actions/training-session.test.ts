@@ -23,7 +23,8 @@ import {
 import { MOCK_COACH_WITH_NAME } from '@/test/mocks/user';
 
 import { Interval } from '@/utils/enum';
-import { TrainingSearchParams } from '@/utils/filters';
+
+import { TrainingSearchParams } from '@/lib/nuqs';
 
 import {
   getCoach,
@@ -103,7 +104,7 @@ describe('Training Session Actions', () => {
   describe('getSessions', () => {
     const mockParams: TrainingSearchParams = {
       interval: Interval.THIS_MONTH,
-      status: 'all',
+      status: [],
       page: 1,
       q: '',
     };

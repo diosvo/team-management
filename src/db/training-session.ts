@@ -1,8 +1,7 @@
-import { and, desc, eq, gte, lte } from 'drizzle-orm';
+import { and, desc, eq, gte, inArray, lte } from 'drizzle-orm';
 
-import { ALL } from '@/utils/constant';
 import { AttendanceStatus, SessionStatus } from '@/utils/enum';
-import { TrainingSearchParams } from '@/utils/filters';
+import { TrainingSearchParams } from '@/lib/nuqs';
 import { TIME_DURATION } from '@/utils/formatter';
 
 import db from '@/drizzle';
@@ -28,10 +27,8 @@ export async function getSessions(
       lte(TrainingSessionTable.date, end.toISOString()),
     ];
 
-    if (params.status !== ALL.value) {
-      conditions.push(
-        eq(TrainingSessionTable.status, params.status as SessionStatus),
-      );
+    if (params.status.length > 0) {
+      conditions.push(inArray(TrainingSessionTable.status, params.status));
     }
 
     const result = await db.query.TrainingSessionTable.findMany({

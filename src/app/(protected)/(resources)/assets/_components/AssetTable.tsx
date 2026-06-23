@@ -3,7 +3,6 @@
 import { useCallback } from 'react';
 
 import { Badge, Table } from '@chakra-ui/react';
-import { isEqual } from 'es-toolkit/predicate';
 import { capitalize } from 'es-toolkit/string';
 
 import Authorized from '@/components/Authorized';
@@ -17,8 +16,7 @@ import { toaster } from '@/components/ui/toaster';
 import usePermissions from '@/hooks/use-permissions';
 import useTableState from '@/hooks/use-table-state';
 
-import { ALL } from '@/utils/constant';
-import { useAssetFilters } from '@/utils/filters';
+import { useAssetFilters } from '@/lib/nuqs';
 import { formatDate, formatDatetime } from '@/utils/formatter';
 import { getColor } from '@/utils/helper';
 
@@ -45,8 +43,8 @@ export default function AssetTable({ data }: { data: Array<Asset> }) {
   const predicate = useCallback(
     (item: Asset) =>
       item.name.toLowerCase().includes(q.toLowerCase()) &&
-      (isEqual(category, ALL.value) || isEqual(item.category, category)) &&
-      (isEqual(condition, ALL.value) || isEqual(item.condition, condition)),
+      (category.length === 0 || category.includes(item.category)) &&
+      (condition.length === 0 || condition.includes(item.condition)),
     [q, category, condition],
   );
   const {

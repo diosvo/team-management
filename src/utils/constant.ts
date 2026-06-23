@@ -264,6 +264,9 @@ export const GAME_TYPE_VALUES = [
   ALL.value,
   ...GAME_TYPE_SELECTION.map(({ value }) => value),
 ];
+export const SELECTABLE_GAME_TYPES = GAME_TYPE_SELECTION.map(
+  ({ value }) => value,
+);
 
 export const SELECTABLE_MATCH_TYPES = [
   MatchType.LEAGUE,

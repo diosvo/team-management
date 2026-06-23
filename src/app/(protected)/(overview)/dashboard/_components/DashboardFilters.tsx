@@ -3,7 +3,7 @@
 import { SimpleGrid } from '@chakra-ui/react';
 
 import TimePicker from '@/components/filters/TimePicker';
-import { MatchSearchParamsKeys, useDashboardFilters } from '@/utils/filters';
+import { MatchSearchParamsKeys, useDashboardFilters } from '@/lib/nuqs';
 
 export default function DashboardFilters() {
   const [{ interval }, setSearchParams] = useDashboardFilters();

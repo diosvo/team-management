@@ -13,7 +13,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { EmptyState } from '@/components/ui/empty-state';
 import { toaster } from '@/components/ui/toaster';
 
-import { ALL } from '@/utils/constant';
 import { LeagueStatus } from '@/utils/enum';
 import { useLeagueFilters } from '@/utils/filters';
 import { formatDate } from '@/utils/formatter';
@@ -49,7 +48,7 @@ export default function LeagueTable({
   const predicate = useCallback(
     (item: LeagueWithPlayerCount) =>
       item.name.toLowerCase().includes(q.toLowerCase()) &&
-      (status === ALL.value || item.status === status),
+      (status.length === 0 || status.includes(item.status)),
     [q, status],
   );
   const {

@@ -17,8 +17,8 @@ export default function TrainingSessionsLoading() {
           </Stat.Root>
         ))}
       </SimpleGrid>
-      <Skeleton width="full" height="40px" />
-      <SkeletonText noOfLines={5} gap={4} />
+      <Skeleton height={10} width="100%" />
+      <SkeletonText noOfLines={7} gap={2} height={10} />
     </VStack>
   );
 }

@@ -2,8 +2,8 @@
 
 import { SimpleGrid, Span, Stat } from '@chakra-ui/react';
 
+import { useTrainingFilters } from '@/lib/nuqs';
 import { SessionStatus } from '@/utils/enum';
-import { useTrainingFilters } from '@/utils/filters';
 import { formatValueUnit } from '@/utils/formatter';
 
 import { TrainingSessionStats } from '@/types/training-session';
@@ -34,7 +34,7 @@ export default function SessionStats({
         _hover={cardHoverStyle}
         onClick={() =>
           setSearchParams(
-            { page: 1, status: SessionStatus.COMPLETED },
+            { page: 1, status: [SessionStatus.COMPLETED] },
             { shallow: false },
           )
         }
