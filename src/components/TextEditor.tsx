@@ -1,264 +1,119 @@
 'use client';
 
-import { useState } from 'react';
-
-import {
-  Box,
-  Button,
-  ButtonGroup,
-  HStack,
-  IconButton,
-  Input,
-  Separator,
-} from '@chakra-ui/react';
-import Link from '@tiptap/extension-link';
-import Underline from '@tiptap/extension-underline';
-import { EditorContent, useEditor } from '@tiptap/react';
+import { Box, Button, Text } from '@chakra-ui/react';
+import { useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import {
-  Bold,
-  Italic,
-  Link2,
-  List,
-  ListOrdered,
-  RotateCcw,
-  Underline as UnderlineIcon,
-} from 'lucide-react';
+import { Save } from 'lucide-react';
 
-import {
-  PopoverArrow,
-  PopoverBody,
-  PopoverContent,
-  PopoverRoot,
-  PopoverTitle,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { Tooltip } from '@/components/ui/tooltip';
-
-import Visibility from './Visibility';
+import { Control, RichTextEditor } from '@/components/ui/rich-text-editor';
+import { formatDatetime } from '@/utils/formatter';
 
 type TextEditorProps = {
   editable: boolean;
   content: string;
-  defaultContent: string;
-  hasChanges: boolean;
-  onChange: (content: string) => void;
+  onCancel: () => void;
+  onSave: (content: string) => void;
+  lastUpdated?: Date;
 };
 
 export default function TextEditor({
   editable,
   content,
-  defaultContent,
-  hasChanges,
-  onChange,
+  lastUpdated,
+  onCancel,
+  onSave,
 }: TextEditorProps) {
-  const [url, setUrl] = useState<string>('');
-
   const editor = useEditor(
     {
       editable,
       content,
-      extensions: [
-        StarterKit,
-        Underline,
-        Link.configure({
-          defaultProtocol: 'https',
-          HTMLAttributes: {
-            class: 'custom-link',
-          },
-          shouldAutoLink: (url) => url.startsWith('https://'),
-        }),
-      ],
+      extensions: [StarterKit.configure({ link: { openOnClick: false } })],
+      shouldRerenderOnTransaction: true,
       immediatelyRender: false,
-      onUpdate: ({ editor }) => onChange(editor.getHTML()),
     },
-    [editable],
+    [editable, content],
   );
 
-  // Use Popover for link insertion
-  const setLink = () => {
-    if (!editor) return;
+  if (!editor) return null;
 
-    // Empty
-    if (url === '') {
-      editor.chain().focus().extendMarkRange('link').unsetLink().run();
-      return;
-    }
-
-    // Update link
-    editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
-    setUrl('');
-  };
-
-  if (!editor) {
-    return null;
+  if (!editable) {
+    return (
+      <>
+        <Box dangerouslySetInnerHTML={{ __html: editor.getHTML() }} />
+        {lastUpdated && (
+          <Text
+            fontSize="sm"
+            paddingTop={4}
+            color="GrayText"
+            borderTopWidth={1}
+          >
+            Last updated on {formatDatetime(lastUpdated)}
+          </Text>
+        )}
+      </>
+    );
   }
 
   return (
-    <Box
-      {...(editable
-        ? { borderWidth: 1, borderColor: 'gray.200', borderRadius: 'md' }
-        : {})}
-    >
-      <Visibility isVisible={editable}>
-        <ButtonGroup display="flex" gap={0}>
-          <Tooltip content="Bold">
-            <IconButton
-              size="sm"
-              variant="ghost"
-              aria-label="Bold"
-              onClick={() => editor.chain().focus().toggleBold().run()}
-              backgroundColor={
-                editor.isActive('bold') ? 'gray.100' : 'transparent'
-              }
-            >
-              <Bold />
-            </IconButton>
-          </Tooltip>
-          <Tooltip content="Italic">
-            <IconButton
-              size="sm"
-              variant="ghost"
-              aria-label="Italic"
-              onClick={() => editor.chain().focus().toggleItalic().run()}
-              backgroundColor={
-                editor.isActive('italic') ? 'gray.100' : 'transparent'
-              }
-            >
-              <Italic />
-            </IconButton>
-          </Tooltip>
-          <Tooltip content="Underline">
-            <IconButton
-              size="sm"
-              variant="ghost"
-              aria-label="Underline"
-              onClick={() => editor.chain().focus().toggleUnderline().run()}
-              backgroundColor={
-                editor.isActive('underline') ? 'gray.100' : 'transparent'
-              }
-            >
-              <UnderlineIcon />
-            </IconButton>
-          </Tooltip>
+    <RichTextEditor.Root editor={editor} borderWidth="1px" rounded="md">
+      <RichTextEditor.Toolbar>
+        <RichTextEditor.ControlGroup>
+          <Control.Bold />
+          <Control.Italic />
+          <Control.Underline />
+          <Control.Strikethrough />
+        </RichTextEditor.ControlGroup>
 
-          <Separator orientation="vertical" height={4} />
+        <RichTextEditor.ControlGroup>
+          <Control.H1 />
+          <Control.H2 />
+          <Control.H3 />
+          <Control.H4 />
+        </RichTextEditor.ControlGroup>
 
-          <Tooltip content="Insert Link">
-            <PopoverRoot lazyMount unmountOnExit size="xs">
-              <PopoverTrigger
-                asChild
-                onClick={() => {
-                  const currentLink = editor.getAttributes('link').href || '';
-                  setUrl(currentLink);
-                }}
-              >
-                <IconButton
-                  size="sm"
-                  variant="ghost"
-                  aria-label="Insert Link"
-                  disabled={editor.state.selection.empty}
-                  data-active={editor.isActive('link')}
-                >
-                  <Link2 />
-                </IconButton>
-              </PopoverTrigger>
-              <PopoverContent>
-                <PopoverArrow />
-                <PopoverBody>
-                  <PopoverTitle fontSize="xs">Link to:</PopoverTitle>
-                  <HStack marginBottom={2}>
-                    <Input
-                      placeholder="https://example.com"
-                      name="url-link"
-                      size="xs"
-                      value={url}
-                      onChange={(e) => setUrl(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          setLink();
-                        }
-                      }}
-                    />
-                  </HStack>
-                  <ButtonGroup
-                    size="xs"
-                    gap={2}
-                    display="flex"
-                    justifyContent="flex-end"
-                  >
-                    {editor.isActive('link') && (
-                      <Button
-                        variant="plain"
-                        color="red.500"
-                        onClick={() => {
-                          editor.chain().focus().unsetLink().run();
-                          setUrl('');
-                        }}
-                      >
-                        Remove
-                      </Button>
-                    )}
-                    <Button
-                      onClick={setLink}
-                      disabled={!Link.options.shouldAutoLink(url)}
-                    >
-                      OK
-                    </Button>
-                  </ButtonGroup>
-                </PopoverBody>
-              </PopoverContent>
-            </PopoverRoot>
-          </Tooltip>
+        <RichTextEditor.ControlGroup>
+          <Control.BulletList />
+          <Control.OrderedList />
+        </RichTextEditor.ControlGroup>
 
-          <Separator orientation="vertical" height={4} />
+        <RichTextEditor.ControlGroup>
+          <Control.Link />
+          <Control.Unlink />
+        </RichTextEditor.ControlGroup>
 
-          <Tooltip content="Bullet List">
-            <IconButton
-              size="sm"
-              variant="ghost"
-              aria-label="Bullet List"
-              onClick={() => editor.chain().focus().toggleBulletList().run()}
-              backgroundColor={
-                editor.isActive('bulletList') ? 'gray.100' : 'transparent'
-              }
-            >
-              <List />
-            </IconButton>
-          </Tooltip>
-          <Tooltip content="Numbered List">
-            <IconButton
-              size="sm"
-              variant="ghost"
-              aria-label="Numbered List"
-              onClick={() => editor.chain().focus().toggleOrderedList().run()}
-              backgroundColor={
-                editor.isActive('orderedList') ? 'gray.100' : 'transparent'
-              }
-            >
-              <ListOrdered />
-            </IconButton>
-          </Tooltip>
-          <Tooltip content="Reset">
-            <IconButton
-              size="sm"
-              variant="ghost"
-              aria-label="Reset"
-              marginLeft="auto"
-              disabled={!hasChanges}
-              onClick={() => {
-                onChange(defaultContent);
-                editor.commands.setContent(defaultContent);
-              }}
-            >
-              <RotateCcw />
-            </IconButton>
-          </Tooltip>
-        </ButtonGroup>
-      </Visibility>
-      <Box padding={editable ? 4 : 0} borderRadius="md">
-        <EditorContent editor={editor} />
-      </Box>
-    </Box>
+        <RichTextEditor.ControlGroup>
+          <Control.Undo />
+          <Control.Redo />
+        </RichTextEditor.ControlGroup>
+      </RichTextEditor.Toolbar>
+
+      <RichTextEditor.Content />
+
+      <RichTextEditor.Footer justifyContent="flex-end">
+        <Box>
+          <Button
+            size="xs"
+            marginRight={2}
+            variant="ghost"
+            colorPalette="red"
+            onClick={() => {
+              onCancel();
+              editor.commands.setContent(content);
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            size="xs"
+            variant="surface"
+            colorPalette="green"
+            onClick={() => onSave(editor.getHTML())}
+          >
+            <Save />
+            Save
+          </Button>
+        </Box>
+      </RichTextEditor.Footer>
+    </RichTextEditor.Root>
   );
 }
