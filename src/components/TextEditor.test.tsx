@@ -19,6 +19,8 @@ describe('TextEditor', () => {
   const onSave = vi.fn();
 
   const mockEditor = {
+    isEditable: true,
+    setEditable: vi.fn(),
     getHTML: vi.fn(() => '<p>Test content</p>'),
     chain: vi.fn(function () {
       return mockEditor;
