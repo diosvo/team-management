@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect } from 'react';
+
 import { Box, Button, Text } from '@chakra-ui/react';
 import { useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -31,15 +33,23 @@ export default function TextEditor({
       shouldRerenderOnTransaction: true,
       immediatelyRender: false,
     },
-    [editable, content],
+    [content],
   );
+
+  useEffect(() => {
+    if (editor && editor.isEditable !== editable) {
+      editor.setEditable(editable);
+    }
+  }, [editor, editable]);
 
   if (!editor) return null;
 
   if (!editable) {
     return (
       <>
-        <Box dangerouslySetInnerHTML={{ __html: editor.getHTML() }} />
+        <RichTextEditor.Root editor={editor} border="none">
+          <RichTextEditor.Content />
+        </RichTextEditor.Root>
         {lastUpdated && (
           <Text
             fontSize="sm"
