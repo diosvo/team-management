@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState, useTransition } from 'react';
+import { useState, useTransition } from 'react';
 
-import { Button, HStack, Separator, Text, VStack } from '@chakra-ui/react';
-import { Eye, Pencil, Save } from 'lucide-react';
+import { Button, HStack } from '@chakra-ui/react';
+import { Eye, Pencil } from 'lucide-react';
 
 import Authorized from '@/components/Authorized';
 import PageTitle from '@/components/PageTitle';
@@ -12,24 +12,16 @@ import { toaster } from '@/components/ui/toaster';
 import { Tooltip } from '@/components/ui/tooltip';
 
 import { NullishRule } from '@/drizzle/schema/rule';
-import { formatDatetime } from '@/utils/formatter';
 
 import { upsertRule } from '@/actions/rule';
 
 export default function RuleEditor({ rule }: { rule: NullishRule }) {
-  const defaultContent =
+  const initialContent =
     rule?.content || 'Please wait for admin to set up the rule.';
-  const [content, setContent] = useState<string>(defaultContent);
-
+  const [isEditing, setIsEditing] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const [hasChanges, setHasChanges] = useState<boolean>(false);
-  const [isEditing, setIsEditing] = useState<boolean>(false);
 
-  useEffect(() => {
-    setHasChanges(content !== defaultContent);
-  }, [content, defaultContent]);
-
-  const onSubmit = () => {
+  const onSave = (content: string) => {
     startTransition(async () => {
       const id = toaster.create({
         type: 'loading',
@@ -43,15 +35,12 @@ export default function RuleEditor({ rule }: { rule: NullishRule }) {
         title,
       });
 
-      if (success) {
-        setIsEditing(false);
-        setHasChanges(false);
-      }
+      if (success) setIsEditing(false);
     });
   };
 
   return (
-    <VStack alignItems="stretch" gap={6}>
+    <>
       <HStack>
         <PageTitle title="Team Rule" />
         <Authorized resource="team-rule" action="edit">
@@ -68,52 +57,16 @@ export default function RuleEditor({ rule }: { rule: NullishRule }) {
                 {isEditing ? <Eye /> : <Pencil />}
               </Button>
             </Tooltip>
-
-            <HStack marginLeft="auto">
-              <Button
-                hidden={!isEditing || isPending || !hasChanges}
-                size="sm"
-                variant="surface"
-                colorPalette="whiteAlpha"
-                onClick={() => {
-                  setIsEditing(!isEditing);
-                  setContent(defaultContent);
-                }}
-              >
-                Cancel
-              </Button>
-              <Tooltip
-                showArrow
-                open={hasChanges}
-                content="Not saved yet"
-                positioning={{ placement: 'top' }}
-                contentProps={{ css: { '--tooltip-bg': 'colors.red.500' } }}
-              >
-                <Button
-                  size="sm"
-                  disabled={isPending || !hasChanges}
-                  onClick={onSubmit}
-                >
-                  <Save />
-                  Save
-                </Button>
-              </Tooltip>
-            </HStack>
           </>
         </Authorized>
       </HStack>
       <TextEditor
         editable={isEditing && !isPending}
-        defaultContent={defaultContent}
-        content={content}
-        hasChanges={hasChanges}
-        onChange={setContent}
+        content={initialContent}
+        onSave={onSave}
+        onCancel={() => setIsEditing(false)}
+        lastUpdated={rule?.updated_at}
       />
-      <Separator />
-      <Text fontSize="xs" color="GrayText">
-        {rule?.updated_at &&
-          `Last updated on ${formatDatetime(rule.updated_at)}`}
-      </Text>
-    </VStack>
+    </>
   );
 }
