@@ -37,7 +37,6 @@ export default function QuickActions() {
   const [mounted, setMounted] = useState(false);
 
   // Ensure server and first client render match to avoid hydration mismatch
-  // Should be skeleton or placeholder until mounted is true.
   useEffect(() => {
     setMounted(true);
   }, []);

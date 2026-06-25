@@ -5,6 +5,7 @@ import { Card as ChakraCard } from '@chakra-ui/react';
 export interface CardProps extends Omit<ChakraCard.RootProps, 'title'> {
   title: ReactNode;
   description?: ReactNode;
+  children?: ReactNode;
 }
 
 export function Card({ title, description, children, ...rest }: CardProps) {

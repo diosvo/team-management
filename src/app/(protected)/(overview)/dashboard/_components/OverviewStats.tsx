@@ -24,7 +24,7 @@ export default async function OverviewStats() {
             borderWidth={1}
             padding={4}
             rounded="md"
-            hidden={stats.next_game != null}
+            hidden={stats.next_game == null}
           >
             <Stat.Label>Next Game</Stat.Label>
             <Stat.ValueText alignItems="baseline">

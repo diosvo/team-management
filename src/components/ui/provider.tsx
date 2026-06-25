@@ -1,7 +1,7 @@
 'use client';
 
 import { useServerInsertedHTML } from 'next/navigation';
-import { PropsWithChildren, useState } from 'react';
+import { PropsWithChildren, useRef, useState } from 'react';
 
 import { ChakraProvider, createSystem, defaultConfig } from '@chakra-ui/react';
 import createCache from '@emotion/cache';
@@ -31,14 +31,32 @@ export default function UiProvider({ children }: PropsWithChildren) {
     return cache;
   });
 
-  useServerInsertedHTML(() => (
-    <style
-      data-emotion={`${cache.key} ${Object.keys(cache.inserted).join(' ')}`}
-      dangerouslySetInnerHTML={{
-        __html: Object.values(cache.inserted).join(' '),
-      }}
-    />
-  ));
+  const flushedRef = useRef(new Set<string>());
+
+  useServerInsertedHTML(() => {
+    const flushed = flushedRef.current;
+    const newNames: Array<string> = [];
+    const newStyles: Array<string> = [];
+
+    for (const [name, style] of Object.entries(cache.inserted)) {
+      if (!flushed.has(name)) {
+        flushed.add(name);
+        newNames.push(name);
+        if (typeof style === 'string') {
+          newStyles.push(style);
+        }
+      }
+    }
+
+    if (newNames.length === 0) return null;
+
+    return (
+      <style
+        data-emotion={`${cache.key} ${newNames.join(' ')}`}
+        dangerouslySetInnerHTML={{ __html: newStyles.join(' ') }}
+      />
+    );
+  });
 
   return (
     <CacheProvider value={cache}>
