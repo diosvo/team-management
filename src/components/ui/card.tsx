@@ -1,23 +1,41 @@
-import { ReactNode } from 'react';
+import { Card as ChakraCard, HStack } from '@chakra-ui/react';
 
-import { Card as ChakraCard } from '@chakra-ui/react';
+export type CardProps = Omit<ChakraCard.RootProps, 'title'> &
+  Required<{
+    title: React.ReactNode;
+  }> &
+  Partial<{
+    description: React.ReactNode;
+    action: React.ReactNode;
+    footer: React.ReactNode;
+    children: React.ReactNode;
+  }>;
 
-export interface CardProps extends Omit<ChakraCard.RootProps, 'title'> {
-  title: ReactNode;
-  description?: ReactNode;
-  children?: ReactNode;
-}
-
-export function Card({ title, description, children, ...rest }: CardProps) {
+export function Card({
+  title,
+  description,
+  action,
+  footer,
+  children,
+  ...rest
+}: CardProps) {
   return (
-    <ChakraCard.Root {...rest}>
+    <ChakraCard.Root {...rest} size="sm">
       <ChakraCard.Header>
-        <ChakraCard.Title>{title}</ChakraCard.Title>
+        {action ? (
+          <HStack justifyContent="space-between" alignItems="start">
+            <ChakraCard.Title>{title}</ChakraCard.Title>
+            {action}
+          </HStack>
+        ) : (
+          <ChakraCard.Title>{title}</ChakraCard.Title>
+        )}
         {description && (
           <ChakraCard.Description>{description}</ChakraCard.Description>
         )}
       </ChakraCard.Header>
       <ChakraCard.Body>{children}</ChakraCard.Body>
+      {footer && <ChakraCard.Footer>{footer}</ChakraCard.Footer>}
     </ChakraCard.Root>
   );
 }

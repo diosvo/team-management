@@ -3,11 +3,12 @@
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 
-import { Button, Card, Highlight, HStack, SimpleGrid } from '@chakra-ui/react';
+import { Button, Highlight, SimpleGrid } from '@chakra-ui/react';
 import { format } from 'date-fns';
 import { Save } from 'lucide-react';
 
 import StepIndicator from '@/components/StepIndicator';
+import { Card } from '@/components/ui/card';
 import { toaster } from '@/components/ui/toaster';
 
 import { createTestResult } from '@/actions/test-result';
@@ -58,57 +59,55 @@ export default function AddTestResultPageClient() {
       gap={6}
       templateColumns={{ lg: '3fr 7fr' }}
     >
-      <Card.Root>
-        <Card.Header>
-          <Card.Title>
+      <Card
+        title={
+          <>
             <StepIndicator step={1} />
             Test Configuration
-          </Card.Title>
-          <Card.Description>
-            <Highlight
-              query="active"
-              styles={{ px: '0.5', backgroundColor: 'green.100' }}
-            >
-              Only active players can be joined to the test.
-            </Highlight>
-          </Card.Description>
-        </Card.Header>
-        <Card.Body>
-          <TestResultConfiguration
-            selection={selection}
-            setSelection={setSelection}
-          />
-        </Card.Body>
-      </Card.Root>
-      <Card.Root>
-        <Card.Header>
-          <HStack justifyContent="space-between">
-            <Card.Title>
-              <StepIndicator step={2} />
-              Test Result
-            </Card.Title>
-            <Button
-              disabled={
-                !selection.players.length ||
-                !selection.types.length ||
-                !tableData.length ||
-                isPending
-              }
-              onClick={() => onSave(tableData)}
-            >
-              <Save />
-              Save
-            </Button>
-          </HStack>
-        </Card.Header>
-        <Card.Body>
-          <TestResultTable
-            configuration={selection}
-            setSelection={setSelection}
-            onChange={setTableData}
-          />
-        </Card.Body>
-      </Card.Root>
+          </>
+        }
+        description={
+          <Highlight
+            query="active"
+            styles={{ px: '0.5', backgroundColor: 'green.100' }}
+          >
+            Only active players can be joined to the test.
+          </Highlight>
+        }
+      >
+        <TestResultConfiguration
+          selection={selection}
+          setSelection={setSelection}
+        />
+      </Card>
+      <Card
+        title={
+          <>
+            <StepIndicator step={2} />
+            Test Result
+          </>
+        }
+        action={
+          <Button
+            disabled={
+              !selection.players.length ||
+              !selection.types.length ||
+              !tableData.length ||
+              isPending
+            }
+            onClick={() => onSave(tableData)}
+          >
+            <Save />
+            Save
+          </Button>
+        }
+      >
+        <TestResultTable
+          configuration={selection}
+          setSelection={setSelection}
+          onChange={setTableData}
+        />
+      </Card>
     </SimpleGrid>
   );
 }

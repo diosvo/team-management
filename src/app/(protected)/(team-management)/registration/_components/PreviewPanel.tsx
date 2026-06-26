@@ -2,15 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-import {
-  Box,
-  Button,
-  Card,
-  HStack,
-  Spinner,
-  Table,
-  Text,
-} from '@chakra-ui/react';
+import { Box, Button, HStack, Spinner, Table, Text } from '@chakra-ui/react';
 import {
   Eye,
   FileDown,
@@ -19,6 +11,7 @@ import {
   Table as TableIcon,
 } from 'lucide-react';
 
+import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { toaster } from '@/components/ui/toaster';
 
@@ -93,61 +86,62 @@ export default function PreviewPanel({
   };
 
   return (
-    <Card.Root size="sm">
-      <Card.Header>
-        <HStack alignItems="start" justifyContent="space-between">
-          <HStack gap={2}>
-            <Eye size={16} />
-            <Card.Title>Preview</Card.Title>
-          </HStack>
-          <HStack>
-            <Button
-              size={{ base: 'xs', md: 'sm' }}
-              variant="outline"
-              disabled={!ready}
-              onClick={handleCsv}
-            >
-              <FileText /> CSV
-            </Button>
-            <Button
-              size={{ base: 'xs', md: 'sm' }}
-              variant="outline"
-              loading={busy}
-              disabled={!ready}
-              onClick={handlePdf}
-            >
-              <FileDown /> PDF
-            </Button>
-            <Button
-              size={{ base: 'xs', md: 'sm' }}
-              disabled={!ready}
-              onClick={onSave}
-            >
-              <Save /> Save
-            </Button>
-          </HStack>
+    <Card
+      title={
+        <HStack>
+          <Eye size={16} />
+          Preview
         </HStack>
-      </Card.Header>
-      <Card.Body>
-        {!ready ? (
-          <EmptyState
-            size="sm"
-            icon={<TableIcon />}
-            title="Nothing to preview yet"
-            description="Select at least one player and a league to see the preview."
-          />
-        ) : template ? (
-          <PdfPreview players={players} league={league} template={template} />
-        ) : (
-          <TablePreview players={players} />
-        )}
-      </Card.Body>
-      <Card.Footer fontSize="sm" color="fg.muted" alignSelf="center">
-        {template
-          ? `Using uploaded form: ${template.name}`
-          : 'No PDF uploaded - showing the registration as a table.'}
-      </Card.Footer>
-    </Card.Root>
+      }
+      action={
+        <HStack>
+          <Button
+            size={{ base: 'xs', md: 'sm' }}
+            variant="outline"
+            disabled={!ready}
+            onClick={handleCsv}
+          >
+            <FileText /> CSV
+          </Button>
+          <Button
+            size={{ base: 'xs', md: 'sm' }}
+            variant="outline"
+            loading={busy}
+            disabled={!ready}
+            onClick={handlePdf}
+          >
+            <FileDown /> PDF
+          </Button>
+          <Button
+            size={{ base: 'xs', md: 'sm' }}
+            disabled={!ready}
+            onClick={onSave}
+          >
+            <Save /> Save
+          </Button>
+        </HStack>
+      }
+      footer={
+        <Text fontSize="xs" color="fg.muted" marginInline="auto">
+          {template
+            ? `Using uploaded form: ${template.name}`
+            : 'No PDF uploaded - showing the registration as a table.'}
+        </Text>
+      }
+    >
+      {!ready ? (
+        <EmptyState
+          size="sm"
+          icon={<TableIcon />}
+          title="Nothing to preview yet"
+          description="Select at least one player and a league to see the preview."
+        />
+      ) : template ? (
+        <PdfPreview players={players} league={league} template={template} />
+      ) : (
+        <TablePreview players={players} />
+      )}
+    </Card>
   );
 }
 

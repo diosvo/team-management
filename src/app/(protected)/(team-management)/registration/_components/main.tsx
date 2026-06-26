@@ -6,7 +6,6 @@ import useSWR from 'swr';
 import {
   Badge,
   Button,
-  Card,
   Code,
   FileUpload,
   Flex,
@@ -24,6 +23,7 @@ import {
 import { HelpCircle, Trophy, Upload, UsersRound } from 'lucide-react';
 
 import SearchableSelect from '@/components/SearchableSelect';
+import { Card } from '@/components/ui/card';
 import { toaster } from '@/components/ui/toaster';
 import {
   PlayerSelection,
@@ -128,200 +128,194 @@ export default function RegistrationPageClient() {
 
       <SimpleGrid columns={{ base: 1, lg: 12 }} gap={6} alignItems="start">
         <GridItem colSpan={{ base: 1, lg: 5 }}>
-          <Card.Root size="sm">
-            <Card.Header>
-              <Flex justifyContent="space-between">
-                <HStack>
-                  <UsersRound size={16} />
-                  <Card.Title>Select players</Card.Title>
-                </HStack>
-                <Badge
-                  variant="surface"
-                  colorPalette={selection.length ? 'green' : 'gray'}
-                >
-                  {selection.length} selected
-                </Badge>
-              </Flex>
-              <Card.Description>
+          <Card
+            title={
+              <HStack>
+                <UsersRound size={16} />
+                Select players
+              </HStack>
+            }
+            action={
+              <Badge
+                variant="surface"
+                colorPalette={selection.length ? 'green' : 'gray'}
+              >
+                {selection.length} selected
+              </Badge>
+            }
+            description={
+              <>
                 Only <Span backgroundColor="green.100">active</Span> players are
                 shown.
-              </Card.Description>
-            </Card.Header>
-            <Card.Body>
-              <HStack alignItems="end" gap={2}>
-                <PlayerSelection
-                  disabled={isDisabled}
-                  selection={selection}
-                  onSelectionChange={setSelection}
-                />
-                <Button
-                  variant="outline"
-                  disabled={
-                    isDisabled || activePlayers.length === 0 || allSelected
-                  }
-                  onClick={() => setSelection(activePlayers)}
-                >
-                  Select all
-                </Button>
-                <Button
-                  variant="ghost"
-                  colorPalette="red"
-                  disabled={isDisabled || selection.length === 0}
-                  onClick={() => setSelection([])}
-                >
-                  Clear
-                </Button>
-              </HStack>
-
-              <SelectedPlayers
+              </>
+            }
+          >
+            <HStack alignItems="end" gap={2}>
+              <PlayerSelection
+                disabled={isDisabled}
                 selection={selection}
                 onSelectionChange={setSelection}
               />
-            </Card.Body>
-          </Card.Root>
+              <Button
+                variant="outline"
+                disabled={
+                  isDisabled || activePlayers.length === 0 || allSelected
+                }
+                onClick={() => setSelection(activePlayers)}
+              >
+                Select all
+              </Button>
+              <Button
+                variant="ghost"
+                colorPalette="red"
+                disabled={isDisabled || selection.length === 0}
+                onClick={() => setSelection([])}
+              >
+                Clear
+              </Button>
+            </HStack>
 
-          <Card.Root size="sm" marginBlock={6}>
-            <Card.Header>
+            <SelectedPlayers
+              selection={selection}
+              onSelectionChange={setSelection}
+            />
+          </Card>
+
+          <Card
+            marginBlock={6}
+            title={
               <HStack>
                 <Trophy size={16} />
-                <Card.Title>Choose a league</Card.Title>
+                Choose a league
               </HStack>
-              <Card.Description>
-                Pick which competition this registration is for.
-              </Card.Description>
-            </Card.Header>
-            <Card.Body>
-              <SearchableSelect
-                controlledMode={false}
-                multiple={false}
-                label={CACHE_KEY.LEAGUES}
-                action={getLeagues}
-                fieldProps={{ disabled: isDisabled }}
-                value={league ?? null}
-                itemToString={({ name }) => name}
-                itemToValue={({ league_id }) => league_id}
-                onChange={(item) => setLeague(item ?? undefined)}
-              />
-            </Card.Body>
-          </Card.Root>
+            }
+            description="Pick which competition this registration is for."
+          >
+            <SearchableSelect
+              controlledMode={false}
+              multiple={false}
+              label={CACHE_KEY.LEAGUES}
+              action={getLeagues}
+              fieldProps={{ disabled: isDisabled }}
+              value={league ?? null}
+              itemToString={({ name }) => name}
+              itemToValue={({ league_id }) => league_id}
+              onChange={(item) => setLeague(item ?? undefined)}
+            />
+          </Card>
 
-          <Card.Root size="sm">
-            <Card.Header>
+          <Card
+            title={
               <HStack>
                 <Upload size={16} />
-                <Card.Title>Attach PDF</Card.Title>
-                <Card.Description fontSize="xs">(optional)</Card.Description>
-                <Popover.Root>
-                  <Popover.Trigger asChild>
-                    <IconButton
-                      size="sm"
-                      variant="ghost"
-                      marginLeft="auto"
-                      colorPalette="blue"
-                    >
-                      <HelpCircle size={14} />
-                    </IconButton>
-                  </Popover.Trigger>
-                  <Portal>
-                    <Popover.Positioner>
-                      <Popover.Content>
-                        <Popover.Arrow />
-                        <Popover.Body>
-                          <Popover.Title fontWeight="medium">
-                            Field names
-                          </Popover.Title>
-                          <Text fontSize="xs" color="fg.muted" marginTop={1}>
-                            Upload a fillable PDF whose text fields are named
-                            like below — they&apos;ll be filled automatically.
-                          </Text>
-                          <Stack gap={2} marginTop={3}>
-                            {FIELD_GUIDE.map(({ label, names }) => (
-                              <Flex
-                                key={label}
-                                justifyContent="space-between"
-                                alignItems="center"
-                                gap={3}
-                              >
-                                <Span fontSize="xs" fontWeight="medium">
-                                  {label}
-                                </Span>
-                                <HStack
-                                  gap={1}
-                                  flexWrap="wrap"
-                                  justifyContent="end"
-                                >
-                                  {names.map((name) => (
-                                    <Code key={name} size="sm">
-                                      {name}
-                                    </Code>
-                                  ))}
-                                </HStack>
-                              </Flex>
-                            ))}
-                          </Stack>
-                        </Popover.Body>
-                        <Popover.Footer fontSize="xs" color="fg.muted">
-                          No fillable fields? We&apos;ll generate a roster from
-                          scratch instead.
-                        </Popover.Footer>
-                      </Popover.Content>
-                    </Popover.Positioner>
-                  </Portal>
-                </Popover.Root>
-              </HStack>
-              <Card.Description>
-                Upload a fillable PDF form or auto-generate a roster for the
-                current league.
-              </Card.Description>
-            </Card.Header>
-            <Card.Body>
-              <FileUpload.Root
-                accept="application/pdf"
-                maxFiles={1}
-                maxFileSize={10 * 1024 * 1024}
-                disabled={isDisabled}
-                onFileChange={({ acceptedFiles }) =>
-                  setTemplate(acceptedFiles[0])
-                }
-              >
-                <FileUpload.HiddenInput />
-                {!template && (
-                  <FileUpload.Dropzone width="full" minHeight="20">
-                    <Upload size={16} />
-                    <FileUpload.DropzoneContent>
-                      <Span>Click to upload PDF</Span>
-                      <Span color="fg.muted" fontSize="xs">
-                        Max 10 MB
-                      </Span>
-                    </FileUpload.DropzoneContent>
-                  </FileUpload.Dropzone>
-                )}
-                <FileUpload.List clearable />
-              </FileUpload.Root>
-
-              <HStack marginBlock={2}>
-                <Span fontWeight="medium" fontSize="sm">
-                  Notes
-                </Span>
+                Attach PDF
                 <Span fontSize="xs" color="fg.muted">
                   (optional)
                 </Span>
-                <Span fontSize="xs" color="fg.muted" marginLeft="auto">
-                  {notes.length}/{NOTES_LIMIT}
-                </Span>
               </HStack>
-              <Textarea
-                size="sm"
-                rows={3}
-                resize="none"
-                value={notes}
-                disabled={isDisabled}
-                maxLength={NOTES_LIMIT}
-                placeholder="Internal notes about this registration…"
-                onChange={(event) => setNotes(event.target.value)}
-              />
-            </Card.Body>
-          </Card.Root>
+            }
+            action={
+              <Popover.Root>
+                <Popover.Trigger asChild>
+                  <IconButton size="sm" variant="ghost" colorPalette="blue">
+                    <HelpCircle size={14} />
+                  </IconButton>
+                </Popover.Trigger>
+                <Portal>
+                  <Popover.Positioner>
+                    <Popover.Content>
+                      <Popover.Arrow />
+                      <Popover.Body>
+                        <Popover.Title fontWeight="medium">
+                          Field names
+                        </Popover.Title>
+                        <Text fontSize="xs" color="fg.muted" marginTop={1}>
+                          Upload a fillable PDF whose text fields are named like
+                          below — they&apos;ll be filled automatically.
+                        </Text>
+                        <Stack gap={2} marginTop={3}>
+                          {FIELD_GUIDE.map(({ label, names }) => (
+                            <Flex
+                              key={label}
+                              justifyContent="space-between"
+                              alignItems="center"
+                              gap={3}
+                            >
+                              <Span fontSize="xs" fontWeight="medium">
+                                {label}
+                              </Span>
+                              <HStack
+                                gap={1}
+                                flexWrap="wrap"
+                                justifyContent="end"
+                              >
+                                {names.map((name) => (
+                                  <Code key={name} size="sm">
+                                    {name}
+                                  </Code>
+                                ))}
+                              </HStack>
+                            </Flex>
+                          ))}
+                        </Stack>
+                      </Popover.Body>
+                      <Popover.Footer fontSize="xs" color="fg.muted">
+                        No fillable fields? We&apos;ll generate a roster from
+                        scratch instead.
+                      </Popover.Footer>
+                    </Popover.Content>
+                  </Popover.Positioner>
+                </Portal>
+              </Popover.Root>
+            }
+            description="Upload a fillable PDF form or auto-generate a roster for the current league."
+          >
+            <FileUpload.Root
+              accept="application/pdf"
+              maxFiles={1}
+              maxFileSize={10 * 1024 * 1024}
+              disabled={isDisabled}
+              onFileChange={({ acceptedFiles }) =>
+                setTemplate(acceptedFiles[0])
+              }
+            >
+              <FileUpload.HiddenInput />
+              {!template && (
+                <FileUpload.Dropzone width="full" minHeight="20">
+                  <Upload size={16} />
+                  <FileUpload.DropzoneContent>
+                    <Span>Click to upload PDF</Span>
+                    <Span color="fg.muted" fontSize="xs">
+                      Max 10 MB
+                    </Span>
+                  </FileUpload.DropzoneContent>
+                </FileUpload.Dropzone>
+              )}
+              <FileUpload.List clearable />
+            </FileUpload.Root>
+
+            <HStack marginBlock={2}>
+              <Span fontWeight="medium" fontSize="sm">
+                Notes
+              </Span>
+              <Span fontSize="xs" color="fg.muted">
+                (optional)
+              </Span>
+              <Span fontSize="xs" color="fg.muted" marginLeft="auto">
+                {notes.length}/{NOTES_LIMIT}
+              </Span>
+            </HStack>
+            <Textarea
+              size="sm"
+              rows={3}
+              resize="none"
+              value={notes}
+              disabled={isDisabled}
+              maxLength={NOTES_LIMIT}
+              placeholder="Internal notes about this registration…"
+              onChange={(event) => setNotes(event.target.value)}
+            />
+          </Card>
         </GridItem>
 
         <GridItem colSpan={{ base: 1, lg: 7 }}>
