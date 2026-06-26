@@ -1,54 +1,90 @@
 'use client';
 
-import { useMemo } from 'react';
-
-import { ClockAlert, ClockCheck, PanelLeftClose, Percent } from 'lucide-react';
-
-import Stats, { StatCard } from '@/components/Stats';
+import { SimpleGrid, Span, Stat } from '@chakra-ui/react';
 
 import { AttendanceStats as StatsType } from '@/types/attendance';
+
+import { useAttendanceFilters } from '@/lib/nuqs';
 import { AttendanceStatus } from '@/utils/enum';
-import { useAttendanceFilters } from '@/utils/filters';
+import { formatValueUnit } from '@/utils/formatter';
+import { colorRank } from '@/utils/helper';
+
+const cardHoverStyle = {
+  cursor: 'pointer',
+  shadow: 'sm',
+  transform: 'translateY(-2px)',
+  transition: 'all 0.2s',
+};
+
+interface StatCardProps {
+  label: string;
+  count: number;
+  color: string;
+  unit?: string;
+  onClick?: () => void;
+}
+
+function StatCard({
+  label,
+  count,
+  color,
+  unit = 'player',
+  onClick,
+}: StatCardProps) {
+  const clickable = Boolean(onClick) && count > 0;
+
+  return (
+    <Stat.Root
+      borderWidth={1}
+      padding={4}
+      rounded="md"
+      _hover={clickable ? cardHoverStyle : {}}
+      onClick={clickable ? onClick : undefined}
+    >
+      <Stat.Label>{label}</Stat.Label>
+      <Stat.ValueText alignItems="baseline">
+        <Span color={count > 0 ? color : 'black'}>{count}</Span>
+        <Stat.ValueUnit>{formatValueUnit(count, unit)}</Stat.ValueUnit>
+      </Stat.ValueText>
+    </Stat.Root>
+  );
+}
 
 export default function AttendanceStats({ stats }: { stats: StatsType }) {
   const [, setSearchParams] = useAttendanceFilters();
 
-  const handleStatClick = (status: AttendanceStatus) => {
-    setSearchParams({ status, page: 1 });
-  };
+  const handleClick = (status: AttendanceStatus) =>
+    setSearchParams({ page: 1, q: '', status: [status] });
 
-  const config = useMemo<StatCard['config']>(
-    () => [
-      {
-        key: 'on_time_count',
-        label: 'On Time',
-        icon: ClockCheck,
-        color: 'green',
-        onClick: () => handleStatClick(AttendanceStatus.ON_TIME),
-      },
-      {
-        key: 'late_count',
-        label: 'Late Entry',
-        icon: ClockAlert,
-        color: 'orange',
-        onClick: () => handleStatClick(AttendanceStatus.LATE),
-      },
-      {
-        key: 'absent_count',
-        label: 'Absent',
-        icon: PanelLeftClose,
-        color: 'red',
-        onClick: () => handleStatClick(AttendanceStatus.ABSENT),
-      },
-      {
-        key: 'present_rate',
-        label: 'Present Rate',
-        icon: Percent,
-        color: 'blue',
-      },
-    ],
-    [],
+  return (
+    <SimpleGrid columns={{ base: 2, md: 4, xl: 6 }} gap={{ base: 3, lg: 4 }}>
+      <StatCard
+        label="On Time"
+        count={stats.on_time_count}
+        color="green"
+        onClick={() => handleClick(AttendanceStatus.ON_TIME)}
+      />
+      <StatCard
+        label="Late Entry"
+        count={stats.late_count}
+        color="orange"
+        onClick={() => handleClick(AttendanceStatus.LATE)}
+      />
+      <StatCard
+        label="Absent"
+        count={stats.absent_count}
+        color="red"
+        onClick={() => handleClick(AttendanceStatus.ABSENT)}
+      />
+      <Stat.Root borderWidth={1} padding={4} rounded="md">
+        <Stat.Label>Present Rate</Stat.Label>
+        <Stat.ValueText alignItems="baseline">
+          <Span color={colorRank(stats.present_rate)}>
+            {stats.present_rate}
+          </Span>
+          <Stat.ValueUnit>%</Stat.ValueUnit>
+        </Stat.ValueText>
+      </Stat.Root>
+    </SimpleGrid>
   );
-
-  return <Stats data={stats} config={config} />;
 }

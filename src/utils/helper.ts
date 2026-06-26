@@ -62,7 +62,7 @@ export function getColor(value: Nullish<string>): ColorPalette {
   return COLOR_LOOKUP.get(value) ?? 'black';
 }
 
-export function colorPlayerRank(rate: number): ColorPalette {
+export function colorRank(rate: number): ColorPalette {
   if (rate >= 80) return 'green';
   if (rate >= 50) return 'orange';
   return 'red';
