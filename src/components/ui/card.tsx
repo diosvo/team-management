@@ -1,14 +1,15 @@
-import { ReactNode } from 'react';
+import { Card as ChakraCard, HStack } from '@chakra-ui/react';
 
-import { Card as ChakraCard, Flex } from '@chakra-ui/react';
-
-export interface CardProps extends Omit<ChakraCard.RootProps, 'title'> {
-  title: ReactNode;
-  description?: ReactNode;
-  action?: ReactNode;
-  footer?: ReactNode;
-  children?: ReactNode;
-}
+export type CardProps = Omit<ChakraCard.RootProps, 'title'> &
+  Required<{
+    title: React.ReactNode;
+  }> &
+  Partial<{
+    description: React.ReactNode;
+    action: React.ReactNode;
+    footer: React.ReactNode;
+    children: React.ReactNode;
+  }>;
 
 export function Card({
   title,
@@ -19,13 +20,13 @@ export function Card({
   ...rest
 }: CardProps) {
   return (
-    <ChakraCard.Root {...rest}>
+    <ChakraCard.Root {...rest} size="sm">
       <ChakraCard.Header>
         {action ? (
-          <Flex justifyContent="space-between" alignItems="center" gap={2}>
+          <HStack justifyContent="space-between" alignItems="start">
             <ChakraCard.Title>{title}</ChakraCard.Title>
             {action}
-          </Flex>
+          </HStack>
         ) : (
           <ChakraCard.Title>{title}</ChakraCard.Title>
         )}

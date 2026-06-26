@@ -87,9 +87,8 @@ export default function PreviewPanel({
 
   return (
     <Card
-      size="sm"
       title={
-        <HStack gap={2}>
+        <HStack>
           <Eye size={16} />
           Preview
         </HStack>
@@ -123,7 +122,7 @@ export default function PreviewPanel({
         </HStack>
       }
       footer={
-        <Text fontSize="sm" color="fg.muted" marginInline="auto">
+        <Text fontSize="xs" color="fg.muted" marginInline="auto">
           {template
             ? `Using uploaded form: ${template.name}`
             : 'No PDF uploaded - showing the registration as a table.'}

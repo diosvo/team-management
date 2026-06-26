@@ -71,11 +71,6 @@ export default function PersonalInfo({
   return (
     <Card
       as="form"
-      size="sm"
-      _hover={{
-        shadow: 'md',
-        transition: 'all 0.2s',
-      }}
       onSubmit={handleSubmit(onSubmit)}
       title="Personal Information"
       action={

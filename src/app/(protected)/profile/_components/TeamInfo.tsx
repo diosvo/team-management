@@ -5,7 +5,6 @@ import { useSWRConfig } from 'swr';
 
 import {
   Badge,
-  HStack,
   IconButton,
   Input,
   InputGroup,
@@ -119,10 +118,6 @@ export default function TeamInfo({
     <Card
       as="form"
       size="sm"
-      _hover={{
-        shadow: 'md',
-        transition: 'all 0.2s',
-      }}
       onSubmit={handleSubmit(onSubmit)}
       title="Team Information"
       action={

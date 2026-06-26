@@ -129,7 +129,6 @@ export default function RegistrationPageClient() {
       <SimpleGrid columns={{ base: 1, lg: 12 }} gap={6} alignItems="start">
         <GridItem colSpan={{ base: 1, lg: 5 }}>
           <Card
-            size="sm"
             title={
               <HStack>
                 <UsersRound size={16} />
@@ -183,7 +182,6 @@ export default function RegistrationPageClient() {
           </Card>
 
           <Card
-            size="sm"
             marginBlock={6}
             title={
               <HStack>
@@ -207,7 +205,6 @@ export default function RegistrationPageClient() {
           </Card>
 
           <Card
-            size="sm"
             title={
               <HStack>
                 <Upload size={16} />

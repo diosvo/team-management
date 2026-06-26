@@ -86,7 +86,6 @@ export default function SavedRegistrations({
 
   return (
     <Card
-      size="sm"
       title="Saved registrations"
       description="Recent league registrations you have saved."
     >
