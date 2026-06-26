@@ -1,7 +1,7 @@
 'use client';
 
 import { Chart, useChart } from '@chakra-ui/charts';
-import { Box, Card, Span, Text } from '@chakra-ui/react';
+import { Box, Span, Text } from '@chakra-ui/react';
 import { ChartLine } from 'lucide-react';
 import type { TooltipContentProps } from 'recharts';
 import {
@@ -13,6 +13,7 @@ import {
   XAxis,
 } from 'recharts';
 
+import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 
 import { AttendanceHistoryRecord } from '@/types/analytics';
@@ -55,10 +56,10 @@ export default function AttendanceTrend({
     records.length;
 
   return (
-    <Card.Root>
-      <Card.Header>
-        <Card.Title>Attendance Rate Trend</Card.Title>
-        <Card.Description>
+    <Card
+      title="Attendance Rate Trend"
+      description={
+        <>
           Overall team attendance percentage
           {avgRate && (
             <>
@@ -68,44 +69,43 @@ export default function AttendanceTrend({
               </Span>
             </>
           )}
-        </Card.Description>
-      </Card.Header>
-      <Card.Body>
-        {records.length === 0 ? (
-          <EmptyState icon={<ChartLine />} title="No attendance records" />
-        ) : (
-          <Chart.Root chart={chart}>
-            <LineChart data={chart.data} responsive>
-              <CartesianGrid
-                stroke={chart.color('border')}
-                vertical={false}
-                strokeDasharray="2 2"
-              />
-              <XAxis
-                axisLine={false}
-                dataKey={chart.key('short_date')}
-                stroke={chart.color('border')}
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <ReferenceLine
-                y={TARGET_RATE}
-                stroke="orange"
-                strokeDasharray="2 2"
-                label={{
-                  value: `Target (${TARGET_RATE})`,
-                  position: 'top',
-                }}
-              />
-              <Line
-                type="monotone"
-                dataKey={chart.key('present_rate')}
-                stroke={chart.color('green')}
-                strokeWidth={1.5}
-              />
-            </LineChart>
-          </Chart.Root>
-        )}
-      </Card.Body>
-    </Card.Root>
+        </>
+      }
+    >
+      {records.length === 0 ? (
+        <EmptyState icon={<ChartLine />} title="No attendance records" />
+      ) : (
+        <Chart.Root chart={chart}>
+          <LineChart data={chart.data} responsive>
+            <CartesianGrid
+              stroke={chart.color('border')}
+              vertical={false}
+              strokeDasharray="2 2"
+            />
+            <XAxis
+              axisLine={false}
+              dataKey={chart.key('short_date')}
+              stroke={chart.color('border')}
+            />
+            <Tooltip content={<CustomTooltip />} />
+            <ReferenceLine
+              y={TARGET_RATE}
+              stroke="orange"
+              strokeDasharray="2 2"
+              label={{
+                value: `Target (${TARGET_RATE})`,
+                position: 'top',
+              }}
+            />
+            <Line
+              type="monotone"
+              dataKey={chart.key('present_rate')}
+              stroke={chart.color('green')}
+              strokeWidth={1.5}
+            />
+          </LineChart>
+        </Chart.Root>
+      )}
+    </Card>
   );
 }

@@ -3,10 +3,10 @@
 import { useMemo } from 'react';
 
 import { Chart, useChart } from '@chakra-ui/charts';
-import { Card } from '@chakra-ui/react';
 import { ChartPie } from 'lucide-react';
 import { Pie, PieChart, PieSectorShapeProps, Sector } from 'recharts';
 
+import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 
 import { AbsenceReason } from '@/types/analytics';
@@ -37,33 +37,28 @@ export default function AbsenceReasonsBreakdown({
   });
 
   return (
-    <Card.Root>
-      <Card.Header>
-        <Card.Title>Most Common Absence Reasons</Card.Title>
-        <Card.Description>
-          Top 5 reasons why players miss training
-        </Card.Description>
-      </Card.Header>
-      <Card.Body>
-        {enrichedReasons.length ? (
-          <Chart.Root maxHeight="xs" chart={chart}>
-            <PieChart responsive>
-              <Pie
-                data={enrichedReasons}
-                labelLine
-                isAnimationActive
-                dataKey={chart.key('count')}
-                label={({ name, value }) => `${name}: ${value}`}
-                shape={(props: PieSectorShapeProps) => (
-                  <Sector {...props} fill={props.payload.color} />
-                )}
-              />
-            </PieChart>
-          </Chart.Root>
-        ) : (
-          <EmptyState icon={<ChartPie />} title="No absence reasons records" />
-        )}
-      </Card.Body>
-    </Card.Root>
+    <Card
+      title="Most Common Absence Reasons"
+      description="Top 5 reasons why players miss training"
+    >
+      {enrichedReasons.length ? (
+        <Chart.Root maxHeight="xs" chart={chart}>
+          <PieChart responsive>
+            <Pie
+              data={enrichedReasons}
+              labelLine
+              isAnimationActive
+              dataKey={chart.key('count')}
+              label={({ name, value }) => `${name}: ${value}`}
+              shape={(props: PieSectorShapeProps) => (
+                <Sector {...props} fill={props.payload.color} />
+              )}
+            />
+          </PieChart>
+        </Chart.Root>
+      ) : (
+        <EmptyState icon={<ChartPie />} title="No absence reasons records" />
+      )}
+    </Card>
   );
 }

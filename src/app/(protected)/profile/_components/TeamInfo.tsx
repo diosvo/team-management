@@ -5,12 +5,12 @@ import { useSWRConfig } from 'swr';
 
 import {
   Badge,
-  Card,
   HStack,
   IconButton,
   Input,
   InputGroup,
   SimpleGrid,
+  Stack,
   Text,
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -19,6 +19,7 @@ import { Activity, Edit, LucideClock9, Save, Shirt } from 'lucide-react';
 import { Controller, useForm } from 'react-hook-form';
 
 import TextField from '@/components/TextField';
+import { Card } from '@/components/ui/card';
 import { CloseButton } from '@/components/ui/close-button';
 import { Field } from '@/components/ui/field';
 import {
@@ -115,7 +116,7 @@ export default function TeamInfo({
   };
 
   return (
-    <Card.Root
+    <Card
       as="form"
       size="sm"
       _hover={{
@@ -123,43 +124,36 @@ export default function TeamInfo({
         transition: 'all 0.2s',
       }}
       onSubmit={handleSubmit(onSubmit)}
-    >
-      <HStack
-        borderBottom={1}
-        borderBottomStyle="solid"
-        borderBottomColor="gray.200"
-        asChild
-      >
-        <Card.Header paddingBlock={2}>
-          <Card.Title marginRight="auto">Team Information</Card.Title>
-          {isEditing ? (
-            <>
-              <CloseButton size="sm" variant="outline" onClick={onCancel} />
-              <Tooltip content="Save" disabled={isPending}>
-                <IconButton
-                  size="sm"
-                  type="submit"
-                  disabled={!isDirty || !isValid || isPending}
-                >
-                  <Save />
-                </IconButton>
-              </Tooltip>
-            </>
-          ) : (
-            <Tooltip content={viewOnly ? 'View Only' : 'Edit'}>
+      title="Team Information"
+      action={
+        isEditing ? (
+          <>
+            <CloseButton size="sm" variant="outline" onClick={onCancel} />
+            <Tooltip content="Save" disabled={isPending}>
               <IconButton
                 size="sm"
-                variant="subtle"
-                disabled={viewOnly}
-                onClick={() => setIsEditing(true)}
+                type="submit"
+                disabled={!isDirty || !isValid || isPending}
               >
-                <Edit />
+                <Save />
               </IconButton>
             </Tooltip>
-          )}
-        </Card.Header>
-      </HStack>
-      <Card.Body gap={3}>
+          </>
+        ) : (
+          <Tooltip content={viewOnly ? 'View Only' : 'Edit'}>
+            <IconButton
+              size="sm"
+              variant="subtle"
+              disabled={viewOnly}
+              onClick={() => setIsEditing(true)}
+            >
+              <Edit />
+            </IconButton>
+          </Tooltip>
+        )
+      }
+    >
+      <Stack gap={3}>
         {isEditing && isAdmin ? (
           <RolePositionSelection
             roleName="user.role"
@@ -284,7 +278,7 @@ export default function TeamInfo({
             )}
           </>
         )}
-      </Card.Body>
-    </Card.Root>
+      </Stack>
+    </Card>
   );
 }
