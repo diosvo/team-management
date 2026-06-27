@@ -75,7 +75,7 @@ export default function AttendanceTrend({
       {records.length === 0 ? (
         <EmptyState icon={<ChartLine />} title="No attendance records" />
       ) : (
-        <Chart.Root chart={chart}>
+        <Chart.Root chart={chart} maxHeight="sm">
           <LineChart data={chart.data} responsive>
             <CartesianGrid
               stroke={chart.color('border')}
@@ -99,6 +99,7 @@ export default function AttendanceTrend({
             />
             <Line
               type="monotone"
+              isAnimationActive={false}
               dataKey={chart.key('present_rate')}
               stroke={chart.color('green')}
               strokeWidth={1.5}

@@ -18,6 +18,7 @@ const nextConfig: NextConfig = {
     qualities: [25, 50, 75, 100],
     formats: ['image/webp', 'image/avif'],
   },
+  serverExternalPackages: ['puppeteer-core', '@sparticuz/chromium-min'],
 };
 
 export default nextConfig;

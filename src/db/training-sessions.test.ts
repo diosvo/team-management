@@ -161,6 +161,11 @@ describe('getSessions', () => {
   ])(
     'returns default stats when database query $description',
     async ({ mockError }) => {
+      // Suppress the expected error log from the catch block.
+      const errorSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+
       vi.mocked(db.query.TrainingSessionTable.findMany).mockRejectedValue(
         mockError,
       );
@@ -175,6 +180,9 @@ describe('getSessions', () => {
           total_hours: 0,
         },
       });
+      expect(errorSpy).toHaveBeenCalled();
+
+      errorSpy.mockRestore();
     },
   );
 });

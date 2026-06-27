@@ -5,12 +5,10 @@ import auth from '@/lib/auth';
 import { LOGIN_PATH } from '@/routes';
 import { MOCK_PLAYER, MOCK_USER } from '@/test/mocks/user';
 
-import { withAuth } from './auth';
+import { verifySession, withAuth } from './auth';
 
 type MockHeaders = Awaited<ReturnType<typeof headers>>;
 export type Session = typeof auth.$Infer.Session;
-
-const mockHeaders = { 'user-agent': 'test' } as unknown as MockHeaders;
 
 const createMockSession = (): Session => ({
   session: {
@@ -40,6 +38,33 @@ vi.mock('@/lib/auth', () => ({
 describe('Auth Actions', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  describe('verifySession', () => {
+    test('returns the session when it exists', async () => {
+      const mockSession = createMockSession();
+      vi.mocked(headers).mockResolvedValue({} as MockHeaders);
+      vi.mocked(auth.api.getSession).mockResolvedValue(mockSession);
+
+      await expect(verifySession()).resolves.toEqual(mockSession);
+    });
+
+    test('returns null when no session exists', async () => {
+      vi.mocked(headers).mockResolvedValue({} as MockHeaders);
+      vi.mocked(auth.api.getSession).mockResolvedValue(null);
+
+      await expect(verifySession()).resolves.toBeNull();
+    });
+
+    test('returns null when session exists but user is missing', async () => {
+      vi.mocked(headers).mockResolvedValue({} as MockHeaders);
+      vi.mocked(auth.api.getSession).mockResolvedValue({
+        ...createMockSession(),
+        user: undefined,
+      } as never);
+
+      await expect(verifySession()).resolves.toBeNull();
+    });
   });
 
   describe('withAuth', () => {

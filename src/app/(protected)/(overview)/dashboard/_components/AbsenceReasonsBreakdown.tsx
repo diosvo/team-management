@@ -42,12 +42,12 @@ export default function AbsenceReasonsBreakdown({
       description="Top 5 reasons why players miss training"
     >
       {enrichedReasons.length ? (
-        <Chart.Root maxHeight="xs" chart={chart}>
+        <Chart.Root chart={chart} maxHeight="sm">
           <PieChart responsive>
             <Pie
               data={enrichedReasons}
               labelLine
-              isAnimationActive
+              isAnimationActive={false}
               dataKey={chart.key('count')}
               label={({ name, value }) => `${name}: ${value}`}
               shape={(props: PieSectorShapeProps) => (
