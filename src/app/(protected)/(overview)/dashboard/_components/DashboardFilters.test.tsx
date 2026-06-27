@@ -70,8 +70,10 @@ describe('DashboardFilters', () => {
       await waitFor(() => {
         expect(mockFetch).toHaveBeenCalledWith('/api/reports/dashboard', {
           method: 'POST',
-          body: JSON.stringify({ interval: Interval.THIS_YEAR }),
-          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            interval: Interval.THIS_YEAR,
+            filename: 'analytics-overview-report.pdf',
+          }),
         });
       });
 
@@ -96,7 +98,10 @@ describe('DashboardFilters', () => {
         expect(mockFetch).toHaveBeenCalledWith(
           '/api/reports/dashboard',
           expect.objectContaining({
-            body: JSON.stringify({ interval: Interval.LAST_YEAR }),
+            body: JSON.stringify({
+              interval: Interval.LAST_YEAR,
+              filename: 'analytics-overview-report.pdf',
+            }),
           }),
         );
       });

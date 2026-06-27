@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 
+import { verifySession } from '@/actions/auth';
 import { getBrowser } from '@/lib/puppeteer';
 import { Interval } from '@/utils/enum';
 
@@ -7,6 +8,10 @@ import { POST } from './route';
 
 vi.mock('@/lib/puppeteer', () => ({
   getBrowser: vi.fn(),
+}));
+
+vi.mock('@/actions/auth', () => ({
+  verifySession: vi.fn(),
 }));
 
 vi.mock('@env', () => ({
@@ -64,6 +69,22 @@ function createRequest(
 describe('POST /api/reports/dashboard', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Authenticated by default; the 401 case overrides this.
+    vi.mocked(verifySession).mockResolvedValue({
+      user: { id: 'diosvo' },
+    } as never);
+  });
+
+  test('returns 401 when there is no session', async () => {
+    vi.mocked(verifySession).mockResolvedValue(null as never);
+
+    const response = await POST(createRequest());
+
+    expect(response.status).toBe(401);
+    await expect(response.json()).resolves.toEqual({
+      error: 'User not authenticated',
+    });
+    expect(getBrowser).not.toHaveBeenCalled();
   });
 
   test('generates a PDF for a valid interval', async () => {
@@ -80,12 +101,12 @@ describe('POST /api/reports/dashboard', () => {
       value: 'abc',
       domain: 'localhost:3000',
     });
-    expect(browser.page.goto).toHaveBeenCalledWith(
-      'http://localhost:3000/reports',
-      { waitUntil: 'networkidle0' },
-    );
+    expect(browser.page.goto).toHaveBeenCalledWith('http://localhost:3000', {
+      waitUntil: 'networkidle0',
+    });
     expect(browser.page.waitForSelector).toHaveBeenCalledWith(
       '#reports-dashboard',
+      { timeout: 3000 },
     );
     expect(browser.page.pdf).toHaveBeenCalled();
 

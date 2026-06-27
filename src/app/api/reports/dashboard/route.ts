@@ -1,16 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { getBrowser } from '@/lib/puppeteer';
 import { formatDate, TIME_DURATION } from '@/utils/formatter';
 import env from '@env';
 
+import { verifySession } from '@/actions/auth';
+import { getBrowser } from '@/lib/puppeteer';
+
+export const maxDuration = 30; // in seconds
 const devEnv = env.NODE_ENV === 'development';
 
 export async function POST(req: NextRequest) {
   let browser;
 
+  const session = await verifySession();
+
+  if (!session) {
+    return NextResponse.json(
+      { error: 'User not authenticated' },
+      { status: 401 },
+    );
+  }
+
   try {
-    const { interval } = await req.json();
+    const { interval, filename } = await req.json();
     const period = TIME_DURATION[interval];
 
     const durationLabel = `Duration: ${formatDate(period.start)} - ${formatDate(period.end)}`;
@@ -19,8 +31,17 @@ export async function POST(req: NextRequest) {
       timeStyle: 'short',
     })}`;
 
-    const url = req.headers.get('referer')!;
-    const domain = req.headers.get('host')!;
+    const host = req.headers.get('host');
+    if (!host) {
+      return NextResponse.json(
+        { error: 'Missing request headers required for report generation' },
+        { status: 400 },
+      );
+    }
+
+    const proto = req.headers.get('x-forwarded-proto') ?? 'http';
+    const url = req.headers.get('origin') ?? `${proto}://${host}`;
+
     const cookies = req.cookies.getAll();
 
     browser = await getBrowser();
@@ -28,7 +49,7 @@ export async function POST(req: NextRequest) {
 
     // Forward auth cookies so protected routes render correctly
     await browser.setCookie(
-      ...cookies.map((cookie) => ({ ...cookie, domain })),
+      ...cookies.map((cookie) => ({ ...cookie, domain: host })),
     );
 
     // A4 at 96dpi is ~794px; use 1200px so Chakra's md breakpoint (768px) is active
@@ -36,7 +57,7 @@ export async function POST(req: NextRequest) {
 
     await page.goto(url, { waitUntil: 'networkidle0' });
 
-    await page.waitForSelector('#reports-dashboard');
+    await page.waitForSelector('#reports-dashboard', { timeout: 3000 });
 
     // Replace body content with only the dashboard grid — <head> stays intact
     // so all Chakra CSS variables and stylesheets remain active
@@ -81,7 +102,6 @@ export async function POST(req: NextRequest) {
           margin-bottom: 1rem;
         }
         #pdf-description { font-size: 13px; color: #666; }
-        #pdf-description { font-size: 13px; color: #666; }
         #reports-dashboard { grid-template-columns: repeat(2, 1fr) !important; }
       `,
     });
@@ -100,7 +120,12 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return new Response(Buffer.from(pdfBuffer));
+    return new Response(Buffer.from(pdfBuffer), {
+      headers: {
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename=${filename}`,
+      },
+    });
   } catch (error) {
     return NextResponse.json(
       {

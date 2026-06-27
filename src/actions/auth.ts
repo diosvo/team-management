@@ -23,16 +23,23 @@ import {
 
 type ServerAction<T extends Array<unknown>, R> = (...args: T) => Promise<R>;
 
+export const verifySession = async () => {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session || !session.user) return null;
+
+  return session;
+};
+
 export function withAuth<T extends Array<unknown>, R>(
   serverAction: (user: User, ...args: T) => Promise<R>,
 ): ServerAction<T, R> {
   return async (...args: T): Promise<R> => {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const session = await verifySession();
 
-    if (!session || !session.user) {
-      // Currently, it only works for fetching data
+    if (!session) {
       redirect(LOGIN_PATH, RedirectType.replace);
     }
 

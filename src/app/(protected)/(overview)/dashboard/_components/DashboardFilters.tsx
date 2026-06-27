@@ -6,8 +6,11 @@ import { useState } from 'react';
 
 import TimePicker from '@/components/filters/TimePicker';
 import { toaster } from '@/components/ui/toaster';
+
 import { triggerDownload } from '@/lib/download';
 import { MatchSearchParamsKeys, useDashboardFilters } from '@/lib/nuqs';
+
+const FILE_NAME = 'analytics-overview-report.pdf';
 
 export default function DashboardFilters() {
   const [{ interval }, setSearchParams] = useDashboardFilters();
@@ -22,8 +25,7 @@ export default function DashboardFilters() {
     try {
       const response = await fetch('/api/reports/dashboard', {
         method: 'POST',
-        body: JSON.stringify({ interval }),
-        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ interval, filename: FILE_NAME }),
       });
 
       if (!response.ok) {
@@ -36,7 +38,7 @@ export default function DashboardFilters() {
       }
 
       const blob = await response.blob();
-      triggerDownload(blob, 'analytics-overview-report.pdf');
+      triggerDownload(blob, FILE_NAME);
     } finally {
       setDownloading(false);
     }
