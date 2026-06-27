@@ -1,49 +1,65 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 
-import { Badge, Highlight, Icon, Table } from '@chakra-ui/react';
-import { ShieldAlert, ShieldCheck, SwatchBook } from 'lucide-react';
+import { Badge, Icon, Table } from '@chakra-ui/react';
+import { Check, Loader, SwatchBook } from 'lucide-react';
 
+import HighlightText from '@/components/HighlightText';
 import Pagination from '@/components/Pagination';
 import SelectionActionBar from '@/components/SelectionActionBar';
-
+import Visibility from '@/components/Visibility';
 import { Checkbox } from '@/components/ui/checkbox';
 import { EmptyState } from '@/components/ui/empty-state';
 import { toaster } from '@/components/ui/toaster';
-import Visibility from '@/components/Visibility';
 
 import usePermissions from '@/hooks/use-permissions';
-import { paginateData, useCommonParams } from '@/utils/filters';
+import useTableState from '@/hooks/use-table-state';
+
+import { useRosterFilters } from '@/lib/nuqs';
 import { getColor } from '@/utils/helper';
 
 import { removeUser } from '@/actions/user';
 import { User } from '@/drizzle/schema/user';
 
+const HEADERS = ['No.', 'Name', 'Email', 'State', 'Roles', 'Position'] as const;
+
+const mask = (cc: string, num = 4) =>
+  `${cc}`.slice(-num).padStart(`${cc}`.length, '*');
+
 export default function RosterTable({ users }: { users: Array<User> }) {
   const router = useRouter();
   const { isAdmin, isCaptain, isGuest } = usePermissions();
-  const [{ q, page }, setSearchParams] = useCommonParams();
+  const [{ q, page, state, role }, setSearchParams] = useRosterFilters();
 
-  const [selection, setSelection] = useState<Array<string>>([]);
-  const selectionCount = selection.length;
+  const canManage = isAdmin || isCaptain;
 
-  const totalCount = users.length;
-  const currentData = paginateData(users, page);
+  const predicate = useCallback(
+    (user: User) =>
+      (user.name.toLowerCase().includes(q.toLowerCase()) ||
+        user.email.toLowerCase().includes(q.toLowerCase())) &&
+      (state.length === 0 || state.includes(user.state)) &&
+      (role.length === 0 || role.includes(user.role)),
+    [q, state, role],
+  );
 
-  // Selection
-  const hasSelection = selectionCount > 0;
-  const indeterminate = hasSelection && selectionCount < totalCount;
+  const {
+    items,
+    currentData,
+    indeterminate,
+    selection,
+    setSelection,
+    hasSelection,
+    totalCount,
+    selectionCount,
+  } = useTableState(users, predicate, page);
 
-  const columnCount = useMemo(() => {
-    let count = 0;
-    if (isAdmin) {
-      count += 2; // Checkbox and Verified
-    }
-    count += 6; // No., Name, Email, State, Roles, Position
-    return count;
-  }, [isAdmin]);
+  // No., Name, Email, State, Roles, Position (+ checkbox & verified for managers)
+  const columnCount = useMemo(
+    () => HEADERS.length + (canManage ? 2 : 0),
+    [canManage],
+  );
 
   const removeUsers = async () => {
     const results = await Promise.all(selection.map(removeUser));
@@ -60,20 +76,18 @@ export default function RosterTable({ users }: { users: Array<User> }) {
     setSelection([]);
   };
 
-  const mask = (cc: string, num = 4) =>
-    `${cc}`.slice(-num).padStart(`${cc}`.length, '*');
-
   return (
     <>
-      <Table.ScrollArea marginTop={2} marginBottom={4}>
+      <Table.ScrollArea>
         <Table.Root
+          borderWidth={1}
           size={{ base: 'sm', md: 'md' }}
           stickyHeader
           interactive={totalCount > 0}
         >
           <Table.Header>
             <Table.Row>
-              <Visibility isVisible={isAdmin || isCaptain}>
+              <Visibility isVisible={canManage}>
                 <>
                   <Table.ColumnHeader width={6}>
                     <Checkbox
@@ -84,7 +98,7 @@ export default function RosterTable({ users }: { users: Array<User> }) {
                       }
                       onCheckedChange={(changes) => {
                         setSelection(
-                          changes.checked ? users.map(({ id }) => id) : [],
+                          changes.checked ? items.map(({ id }) => id) : [],
                         );
                       }}
                     />
@@ -94,11 +108,9 @@ export default function RosterTable({ users }: { users: Array<User> }) {
                   </Table.ColumnHeader>
                 </>
               </Visibility>
-              {['No.', 'Name', 'Email', 'State', 'Roles', 'Position'].map(
-                (column: string) => (
-                  <Table.ColumnHeader key={column}>{column}</Table.ColumnHeader>
-                ),
-              )}
+              {HEADERS.map((header) => (
+                <Table.ColumnHeader key={header}>{header}</Table.ColumnHeader>
+              ))}
             </Table.Row>
           </Table.Header>
           <Table.Body>
@@ -113,7 +125,7 @@ export default function RosterTable({ users }: { users: Array<User> }) {
                     router.replace('/profile/' + user.id);
                   }}
                 >
-                  <Visibility isVisible={isAdmin || isCaptain}>
+                  <Visibility isVisible={canManage}>
                     <Table.Cell onClick={(e) => e.stopPropagation()}>
                       <Checkbox
                         top={0.5}
@@ -130,22 +142,22 @@ export default function RosterTable({ users }: { users: Array<User> }) {
                     </Table.Cell>
                     <Table.Cell textAlign="center">
                       {user.emailVerified ? (
-                        <Icon as={ShieldCheck} size="sm" color="green.500" />
+                        <Icon as={Check} size="sm" color="green.500" />
                       ) : (
-                        <Icon as={ShieldAlert} size="sm" color="orange.500" />
+                        <Icon as={Loader} size="sm" color="orange.500" />
                       )}
                     </Table.Cell>
                   </Visibility>
                   <Table.Cell>{user.player?.jersey_number ?? '-'}</Table.Cell>
                   <Table.Cell>
-                    <Highlight query={q} styles={{ backgroundColor: 'yellow' }}>
+                    <HighlightText query={q}>
                       {isGuest ? mask(user.name, -4) : user.name}
-                    </Highlight>
+                    </HighlightText>
                   </Table.Cell>
                   <Table.Cell>
-                    <Highlight query={q} styles={{ backgroundColor: 'yellow' }}>
+                    <HighlightText query={q}>
                       {isGuest ? mask(user.email, -4) : user.email}
-                    </Highlight>
+                    </HighlightText>
                   </Table.Cell>
                   <Table.Cell>
                     <Badge
