@@ -104,4 +104,15 @@ describe('formatValueUnit', () => {
     expect(formatValueUnit(2, 'item')).toBe('items');
     expect(formatValueUnit(10, 'item')).toBe('items');
   });
+
+  test('does not double-pluralize units already ending in "s"', () => {
+    expect(formatValueUnit(5, 'pts')).toBe('pts');
+    expect(formatValueUnit(1, 'pts')).toBe('pts');
+  });
+
+  test('shows symbols and multi-word phrases verbatim (no plural, no hide)', () => {
+    expect(formatValueUnit(0, '%')).toBe('%');
+    expect(formatValueUnit(50, '%')).toBe('%');
+    expect(formatValueUnit(3, 'days remaining')).toBe('days remaining');
+  });
 });

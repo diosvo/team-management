@@ -1,5 +1,3 @@
-import { StatCard } from '@/components/Stats';
-
 import { AttendanceStatus } from '@/utils/enum';
 
 import { Attendance } from '@/drizzle/schema/attendance';
@@ -13,9 +11,9 @@ export interface AttendanceWithPlayer extends Attendance {
   };
 }
 
-export type AttendanceStats = StatCard['data'] & {
+export interface AttendanceStats {
   on_time_count: number;
   late_count: number;
   absent_count: number;
   present_rate: number;
-};
+}

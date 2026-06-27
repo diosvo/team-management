@@ -1,6 +1,7 @@
-import { SimpleGrid, Span, Stat } from '@chakra-ui/react';
+import { SimpleGrid } from '@chakra-ui/react';
 
 import { Card } from '@/components/ui/card';
+import { Stat } from '@/components/ui/stat';
 
 import { getOverviewStats } from '@/actions/analytics';
 
@@ -10,33 +11,19 @@ export default async function OverviewStats() {
   return (
     <Card title="Overview" description="Key performance indicators at a glance">
       <SimpleGrid columns={3} gap={4}>
-        <Stat.Root borderWidth={1} padding={4} rounded="md">
-          <Stat.Label>Active Players</Stat.Label>
-          <Stat.ValueText alignItems="baseline" color="tomato">
-            {stats.active_players}
-          </Stat.ValueText>
-        </Stat.Root>
-        <Stat.Root
-          borderWidth={1}
-          padding={4}
-          rounded="md"
+        <Stat label="Active Players" value={stats.active_players} color="red" />
+        <Stat
+          label="Next Game"
+          value={stats.next_game}
+          unit="days remaining"
           hidden={stats.next_game == null}
-        >
-          <Stat.Label>Next Game</Stat.Label>
-          <Stat.ValueText alignItems="baseline">
-            {stats.next_game}
-            <Stat.ValueUnit>days remaining</Stat.ValueUnit>
-          </Stat.ValueText>
-        </Stat.Root>
-        <Stat.Root borderWidth={1} padding={4} rounded="md">
-          <Stat.Label>Win Rate</Stat.Label>
-          <Stat.ValueText alignItems="baseline">
-            <Span color={stats.win_rate > 50 ? 'green' : 'tomato'}>
-              {stats.win_rate}
-            </Span>
-            <Stat.ValueUnit>%</Stat.ValueUnit>
-          </Stat.ValueText>
-        </Stat.Root>
+        />
+        <Stat
+          label="Win Rate"
+          value={stats.win_rate}
+          unit="%"
+          color={stats.win_rate > 50 ? 'green' : 'red'}
+        />
       </SimpleGrid>
     </Card>
   );
