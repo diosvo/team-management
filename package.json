@@ -62,7 +62,6 @@
     "vitest": "^4.0.16"
   },
   "name": "saigon-rovers-basketball-club-portal",
-  "packageManager": "pnpm@11.9.0",
   "private": true,
   "scripts": {
     "analyze": "next experimental-analyze",

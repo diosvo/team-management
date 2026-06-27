@@ -45,3 +45,9 @@ next-env.d.ts
 /playwright-report/
 /blob-report/
 /playwright/
+
+# PRD PDF build (scripts/build-prd-pdf.mjs)
+# Note: sgr-team-management-prd.pdf is committed intentionally; build temp dirs are not.
+/.prd-build/
+/.prd-tools/
+/scripts/node_modules/
