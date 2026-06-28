@@ -1,11 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import useSWR from 'swr';
 
 import {
   Badge,
-  Button,
   Code,
   FileUpload,
   Flex,
@@ -27,7 +25,7 @@ import SearchableSelect from '@/components/SearchableSelect';
 import { Card } from '@/components/ui/card';
 import { toaster } from '@/components/ui/toaster';
 import {
-  PlayerSelection,
+  PlayerSelectionWithActions,
   SelectedPlayers,
 } from '@/components/user/PlayerSelection';
 
@@ -35,7 +33,6 @@ import { League } from '@/drizzle/schema';
 import { User } from '@/drizzle/schema/user';
 
 import { getLeagues } from '@/actions/league';
-import { getActivePlayers } from '@/actions/user';
 
 import usePermissions from '@/hooks/use-permissions';
 import { CACHE_KEY } from '@/utils/constant';
@@ -70,20 +67,6 @@ export default function RegistrationPageClient() {
   const isDisabled = !isCaptain && !isAdmin;
 
   const { items: saved, save, remove, getUniqueName } = useSavedRegistrations();
-
-  // Shares the SWR cache the player SearchableSelect already populates.
-  const { data: activePlayers = [] } = useSWR(
-    CACHE_KEY.PLAYERS,
-    getActivePlayers,
-    {
-      revalidateIfStale: false,
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-    },
-  );
-
-  const allSelected =
-    activePlayers.length > 0 && selection.length === activePlayers.length;
 
   const handleSave = async () => {
     if (!league || selection.length === 0) return;
@@ -151,31 +134,11 @@ export default function RegistrationPageClient() {
               </>
             }
           >
-            <HStack alignItems="end" gap={2}>
-              <PlayerSelection
-                disabled={isDisabled}
-                selection={selection}
-                onSelectionChange={setSelection}
-              />
-              <Button
-                variant="outline"
-                disabled={
-                  isDisabled || activePlayers.length === 0 || allSelected
-                }
-                onClick={() => setSelection(activePlayers)}
-              >
-                Select all
-              </Button>
-              <Button
-                variant="ghost"
-                colorPalette="red"
-                disabled={isDisabled || selection.length === 0}
-                onClick={() => setSelection([])}
-              >
-                Clear
-              </Button>
-            </HStack>
-
+            <PlayerSelectionWithActions
+              selection={selection}
+              disabled={isDisabled}
+              onSelectionChange={setSelection}
+            />
             <SelectedPlayers
               selection={selection}
               onSelectionChange={setSelection}

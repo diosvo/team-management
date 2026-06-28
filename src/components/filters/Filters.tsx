@@ -30,6 +30,7 @@ type FiltersProps<T extends Record<string, unknown>> = {
   defaults: T;
   onApply: (values: Partial<T>) => void;
   searchable?: boolean;
+  disabled?: boolean; // Disable search + all inline controls
   actions?: ReactNode; // Right-aligned (button), not counted
 };
 
@@ -45,7 +46,7 @@ const pickArrays = (
   );
 
 export const isInlineControl = (control: FilterControl): boolean =>
-  control.type === 'interval' || control.type === 'date';
+  ['interval', 'date'].includes(control.type);
 
 export default function Filters<T extends Record<string, unknown>>({
   filters,
@@ -53,6 +54,7 @@ export default function Filters<T extends Record<string, unknown>>({
   defaults,
   onApply,
   searchable = true,
+  disabled = false,
   actions,
 }: FiltersProps<T>) {
   const inlineDefs = filters.filter((f) => isInlineControl(f.control));
@@ -97,6 +99,7 @@ export default function Filters<T extends Record<string, unknown>>({
             aria-label={def.label}
             width="max-content"
             flexShrink={0}
+            disabled={disabled}
             min={def.control.min}
             max={def.control.max}
             size={{ base: 'sm', md: 'md' }}
@@ -113,7 +116,7 @@ export default function Filters<T extends Record<string, unknown>>({
 
   return (
     <HStack gap={{ base: 3, lg: 4 }}>
-      {searchable && <SearchInput />}
+      {searchable && <SearchInput disabled={disabled} />}
       {inlineDefs.map(renderInline)}
 
       {categoricalDefs.length > 0 && (
@@ -122,7 +125,11 @@ export default function Filters<T extends Record<string, unknown>>({
           onInteractOutside={handleInteractOutside}
         >
           <Drawer.Trigger asChild>
-            <Button size={{ base: 'sm', md: 'md' }} variant="outline">
+            <Button
+              size={{ base: 'sm', md: 'md' }}
+              variant="outline"
+              disabled={disabled}
+            >
               <SlidersHorizontal size={14} />
               Filters
               {activeCount > 0 && (

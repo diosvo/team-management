@@ -58,6 +58,8 @@ export const createTestResult = periodicTesting(
       if (toCreate.length > 0) await insertTestResult(toCreate);
       if (toUpdate.length > 0) await updateTestResults(toUpdate);
 
+      revalidate.testResults();
+
       return ResponseFactory.success(
         `${toCreate.length} created, ${toUpdate.length} updated`,
       );

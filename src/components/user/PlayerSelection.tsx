@@ -1,8 +1,9 @@
 'use client';
 
 import { useCallback } from 'react';
+import useSWRImmutable from 'swr/immutable';
 
-import { Box, BoxProps, List, Span } from '@chakra-ui/react';
+import { Box, BoxProps, Button, HStack, List, Span } from '@chakra-ui/react';
 import { UserRoundX } from 'lucide-react';
 import { Control, FieldPath, FieldValues } from 'react-hook-form';
 
@@ -34,6 +35,46 @@ export function PlayerSelection({
       fieldProps={{ disabled }}
       onChange={onSelectionChange}
     />
+  );
+}
+
+export function PlayerSelectionWithActions({
+  disabled,
+  selection,
+  onSelectionChange,
+}: UserSelector) {
+  // Shares the SWR cache the player SearchableSelect already populates.
+  const { data: activePlayers = [] } = useSWRImmutable(
+    CACHE_KEY.PLAYERS,
+    getActivePlayers,
+  );
+
+  const allSelected =
+    activePlayers.length > 0 && selection.length === activePlayers.length;
+
+  return (
+    <HStack width="full" alignItems="end">
+      <PlayerSelection
+        disabled={disabled}
+        selection={selection}
+        onSelectionChange={onSelectionChange}
+      />
+      <Button
+        variant="outline"
+        disabled={disabled || activePlayers.length === 0 || allSelected}
+        onClick={() => onSelectionChange(activePlayers)}
+      >
+        Select all
+      </Button>
+      <Button
+        variant="ghost"
+        colorPalette="red"
+        disabled={disabled || selection.length === 0}
+        onClick={() => onSelectionChange([])}
+      >
+        Clear
+      </Button>
+    </HStack>
   );
 }
 

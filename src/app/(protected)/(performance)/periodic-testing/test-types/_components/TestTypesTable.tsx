@@ -1,18 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback } from 'react';
 
 import { Table } from '@chakra-ui/react';
 import { formatDistanceToNow } from 'date-fns';
 
+import Authorized from '@/components/Authorized';
+import HighlightText from '@/components/HighlightText';
 import Pagination from '@/components/Pagination';
 import SelectionActionBar from '@/components/SelectionActionBar';
-
 import { Checkbox } from '@/components/ui/checkbox';
 import { EmptyState } from '@/components/ui/empty-state';
 import { toaster } from '@/components/ui/toaster';
 
-import { paginateData, useCommonParams } from '@/utils/filters';
+import usePermissions from '@/hooks/use-permissions';
+import useTableState from '@/hooks/use-table-state';
+
+import { useTestTypeFilters } from '@/lib/nuqs';
 import { formatDatetime } from '@/utils/formatter';
 
 import { removeTestType } from '@/actions/test-type';
@@ -20,18 +24,31 @@ import { TestType } from '@/drizzle/schema';
 
 import { UpsertTestType } from './UpsertTestType';
 
+const HEADERS = ['Name', 'Unit', 'Last Updated', ''] as const;
+
 export default function TestTypesTable({ data }: { data: Array<TestType> }) {
-  const [{ page }, setSearchParams] = useCommonParams();
+  const { isGuest } = usePermissions();
+  const [{ q, page, unit }, setSearchParams] = useTestTypeFilters();
 
-  const [selection, setSelection] = useState<Array<string>>([]);
-  const selectionCount = selection.length;
-
-  const totalCount = data.length;
-  const currentData = paginateData(data, page);
-
-  // Selection
-  const hasSelection = selectionCount > 0;
-  const indeterminate = hasSelection && selectionCount < totalCount;
+  const predicate = useCallback(
+    (item: TestType) =>
+      item.name.toLowerCase().includes(q.toLowerCase()) &&
+      (unit.length === 0 || unit.includes(item.unit)),
+    [q, unit],
+  );
+  const {
+    items,
+    currentData,
+    indeterminate,
+    selection,
+    setSelection,
+    hasSelection,
+    totalCount,
+    columnCount,
+    selectionCount,
+  } = useTableState(data, predicate, page, {
+    headerCount: HEADERS.length,
+  });
 
   const removeItems = async () => {
     const results = await Promise.all(selection.map(removeTestType));
@@ -62,20 +79,28 @@ export default function TestTypesTable({ data }: { data: Array<TestType> }) {
         >
           <Table.Header>
             <Table.Row>
-              <Table.ColumnHeader>
-                <Checkbox
-                  top={0.5}
-                  aria-label="Select all rows"
-                  checked={indeterminate ? 'indeterminate' : selectionCount > 0}
-                  onCheckedChange={(changes) =>
-                    setSelection(
-                      changes.checked ? data.map(({ type_id }) => type_id) : [],
-                    )
-                  }
-                />
-              </Table.ColumnHeader>
-              {['Name', 'Unit', 'Last Updated', ''].map((header) => (
-                <Table.ColumnHeader key={header}>{header}</Table.ColumnHeader>
+              <Authorized resource="periodic-testing" action="delete">
+                <Table.ColumnHeader width={4}>
+                  <Checkbox
+                    top={0.5}
+                    aria-label="Select all rows"
+                    checked={
+                      indeterminate ? 'indeterminate' : selectionCount > 0
+                    }
+                    onCheckedChange={(changes) =>
+                      setSelection(
+                        changes.checked
+                          ? items.map(({ type_id }) => type_id)
+                          : [],
+                      )
+                    }
+                  />
+                </Table.ColumnHeader>
+              </Authorized>
+              {HEADERS.map((header, index) => (
+                <Table.ColumnHeader key={header || index}>
+                  {header}
+                </Table.ColumnHeader>
               ))}
             </Table.Row>
           </Table.Header>
@@ -84,41 +109,44 @@ export default function TestTypesTable({ data }: { data: Array<TestType> }) {
               currentData.map((item) => (
                 <Table.Row
                   key={item.type_id}
-                  _hover={{ cursor: 'pointer' }}
-                  onClick={() =>
+                  _hover={{ cursor: isGuest ? 'default' : 'pointer' }}
+                  onClick={() => {
+                    if (isGuest) return;
                     UpsertTestType.open('update-test-type', {
                       action: 'Update',
                       item,
-                    })
-                  }
+                    });
+                  }}
                 >
-                  <Table.Cell onClick={(e) => e.stopPropagation()}>
-                    <Checkbox
-                      top={0.5}
-                      aria-label="Select row"
-                      checked={selection.includes(item.type_id)}
-                      onCheckedChange={(changes) =>
-                        setSelection((prev) =>
-                          changes.checked
-                            ? [...prev, item.type_id]
-                            : selection.filter((id) => id !== item.type_id),
-                        )
-                      }
-                    />
+                  <Authorized resource="periodic-testing" action="delete">
+                    <Table.Cell onClick={(e) => e.stopPropagation()}>
+                      <Checkbox
+                        top={0.5}
+                        aria-label="Select row"
+                        checked={selection.includes(item.type_id)}
+                        onCheckedChange={(changes) =>
+                          setSelection((prev) =>
+                            changes.checked
+                              ? [...prev, item.type_id]
+                              : selection.filter((id) => id !== item.type_id),
+                          )
+                        }
+                      />
+                    </Table.Cell>
+                  </Authorized>
+                  <Table.Cell>
+                    <HighlightText query={q}>{item.name}</HighlightText>
                   </Table.Cell>
-                  <Table.Cell>{item.name}</Table.Cell>
                   <Table.Cell>{item.unit}</Table.Cell>
                   <Table.Cell>{formatDatetime(item.updated_at)}</Table.Cell>
                   <Table.Cell color="GrayText">
-                    {formatDistanceToNow(item.updated_at, {
-                      addSuffix: true,
-                    })}
+                    {formatDistanceToNow(item.updated_at, { addSuffix: true })}
                   </Table.Cell>
                 </Table.Row>
               ))
             ) : (
               <Table.Row>
-                <Table.Cell colSpan={4}>
+                <Table.Cell colSpan={columnCount}>
                   <EmptyState title="No matching names found" />
                 </Table.Cell>
               </Table.Row>
@@ -137,6 +165,7 @@ export default function TestTypesTable({ data }: { data: Array<TestType> }) {
         selectionCount={selectionCount}
         onDelete={removeItems}
       />
+      <UpsertTestType.Viewport />
     </>
   );
 }

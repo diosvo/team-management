@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { memo, useCallback } from 'react';
 
 import { Table, Text } from '@chakra-ui/react';
 import { BookUser } from 'lucide-react';
@@ -13,10 +13,11 @@ import {
 } from '@/components/ui/number-input';
 import { Tooltip } from '@/components/ui/tooltip';
 
-import { useCommonParams } from '@/lib/nuqs';
+import { paginateData, useCommonParams } from '@/utils/filters';
+
 import { TestConfigurationSelection } from '@/types/periodic-testing';
 
-import { InsertTestResult } from '@/drizzle/schema';
+const PAGE_SIZE = 10;
 
 const removalStyle = {
   cursor: 'pointer',
@@ -24,50 +25,58 @@ const removalStyle = {
   textDecorationColor: 'red.500',
 };
 
-export default function TestResultTable({
-  configuration: { players, types, date },
-  setSelection,
+// Generate a unique key for each player-test combination.
+const getResultKey = (player_id: string, type_id: string) =>
+  `${player_id}-${type_id}`;
+
+type ResultCellProps = {
+  cellKey: string;
+  value: string;
+  onChange: (key: string, value: string) => void;
+};
+
+// Memoized so editing one cell doesn't re-render the entire grid.
+const ResultCell = memo(function ResultCell({
+  cellKey,
+  value,
   onChange,
+}: ResultCellProps) {
+  return (
+    <Table.Cell>
+      <NumberInputRoot
+        min={0}
+        value={value}
+        onValueChange={({ value }) => onChange(cellKey, value)}
+      >
+        <NumberInputField />
+      </NumberInputRoot>
+    </Table.Cell>
+  );
+});
+
+export default function TestResultTable({
+  configuration: { players, types },
+  setSelection,
+  results,
+  setResults,
 }: {
   configuration: TestConfigurationSelection;
   setSelection: React.Dispatch<
     React.SetStateAction<TestConfigurationSelection>
   >;
-  onChange: (data: Array<InsertTestResult>) => void;
+  results: Record<string, string>;
+  setResults: React.Dispatch<React.SetStateAction<Record<string, string>>>;
 }) {
   const [{ page }, setSearchParams] = useCommonParams();
-  const [results, setResults] = useState<Record<string, string>>({});
 
   const hasData = players.length > 0 && types.length > 0;
+  const currentData = paginateData(players, page, PAGE_SIZE);
 
-  useEffect(() => {
-    if (!hasData) {
-      onChange([]);
-      return;
-    }
-
-    const formattedData: Array<InsertTestResult> = [];
-
-    players.forEach(({ id }) => {
-      types.forEach(({ type_id }) => {
-        const key = getResultKey(id, type_id);
-        const result = results[key] || '0';
-
-        formattedData.push({
-          type_id: type_id,
-          player_id: id,
-          result: result,
-          date,
-        });
-      });
-    });
-
-    onChange(formattedData);
-  }, [hasData, results]);
-
-  // Generate a unique key for each player-test combination
-  const getResultKey = (user_id: string, type_id: string) =>
-    `${user_id}-${type_id}`;
+  const handleChange = useCallback(
+    (key: string, value: string) =>
+      setResults((prev) => ({ ...prev, [key]: value })),
+    [setResults],
+  );
 
   return (
     <>
@@ -112,10 +121,9 @@ export default function TestResultTable({
           )}
           <Table.Body>
             {hasData ? (
-              players.map(({ id, name }) => (
+              currentData.map(({ id, name }) => (
                 <Table.Row key={id}>
                   <Tooltip
-                    key={id}
                     showArrow
                     content={`Remove "${name}" ?`}
                     positioning={{ placement: 'top-start' }}
@@ -137,20 +145,12 @@ export default function TestResultTable({
                   {types.map(({ type_id }) => {
                     const key = getResultKey(id, type_id);
                     return (
-                      <Table.Cell key={type_id}>
-                        <NumberInputRoot
-                          min={0}
-                          value={results[key] || '0'}
-                          onValueChange={({ value }) =>
-                            setResults((prev) => ({
-                              ...prev,
-                              [key]: value,
-                            }))
-                          }
-                        >
-                          <NumberInputField />
-                        </NumberInputRoot>
-                      </Table.Cell>
+                      <ResultCell
+                        key={type_id}
+                        cellKey={key}
+                        value={results[key] || '0'}
+                        onChange={handleChange}
+                      />
                     );
                   })}
                 </Table.Row>
@@ -173,7 +173,7 @@ export default function TestResultTable({
       <Pagination
         count={players.length}
         page={page}
-        pageSize={10}
+        pageSize={PAGE_SIZE}
         onPageChange={setSearchParams}
       />
     </>

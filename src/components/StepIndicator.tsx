@@ -1,17 +1,23 @@
-import { Text } from '@chakra-ui/react';
+import { Circle } from '@chakra-ui/react';
+import { Check } from 'lucide-react';
 
-export default function StepIndicator({ step }: { step: number }) {
+export default function StepIndicator({
+  step,
+  done = false,
+}: {
+  step: number;
+  done?: boolean;
+}) {
   return (
-    <Text
-      as="span"
-      paddingBlock={1}
-      paddingInline={3}
-      marginRight={2}
-      color="white"
-      borderRadius="full"
-      backgroundColor="gray.fg"
+    <Circle
+      size={6}
+      fontSize="xs"
+      borderWidth={1}
+      color={done ? 'white' : 'fg.muted'}
+      borderColor={done ? 'green.solid' : 'border'}
+      backgroundColor={done ? 'green.solid' : 'transparent'}
     >
-      {step}
-    </Text>
+      {done ? <Check size={14} /> : step}
+    </Circle>
   );
 }

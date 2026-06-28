@@ -20,6 +20,7 @@ import {
   SELECTABLE_LEAGUE_STATUS,
   SELECTABLE_MATCH_TYPES,
   SELECTABLE_SESSION_STATUS,
+  SELECTABLE_TEST_TYPES,
   SELECTABLE_USER_ROLES,
   SELECTABLE_USER_STATES,
 } from '@/utils/constant';
@@ -53,6 +54,16 @@ export const assetSearchParams = {
 const periodicTestingSearchParams = {
   ...commonParams,
   date: parseAsString.withDefault(''),
+  // Test type names to display as columns (empty = show all). Dynamic per date,
+  // so parsed as free-form strings rather than a fixed enum.
+  type: parseAsArrayOf(parseAsString).withDefault([]),
+};
+
+const testTypeSearchParams = {
+  ...commonParams,
+  unit: parseAsArrayOf(
+    parseAsStringEnum([...SELECTABLE_TEST_TYPES]),
+  ).withDefault([]),
 };
 
 const leagueSearchParams = {
@@ -124,9 +135,12 @@ export const useCommonParams = (options: Options = {}) =>
 
 export const useRosterFilters = createFilters(rosterSearchParams);
 export const useAssetFilters = createFilters(assetSearchParams);
+export const useTestTypeFilters = createFilters(testTypeSearchParams);
+// Client-only by default (search/pagination/column filters never hit the
+// server). Only the date change opts into `{ shallow: false }` at the call
+// site, since it's the single param that drives the server `getTestResult`.
 export const usePeriodicTestingFilters = createFilters(
   periodicTestingSearchParams,
-  { shallow: false },
 );
 export const useLeagueFilters = createFilters(leagueSearchParams);
 export const useMatchFilters = createFilters(matchSearchParams);

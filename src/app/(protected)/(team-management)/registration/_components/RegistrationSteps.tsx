@@ -1,5 +1,5 @@
-import { Circle, Span, Steps } from '@chakra-ui/react';
-import { Check } from 'lucide-react';
+import StepIndicator from '@/components/StepIndicator';
+import { Span, Steps } from '@chakra-ui/react';
 
 export type StepDef = {
   title: string;
@@ -24,16 +24,7 @@ export default function RegistrationSteps({
         {steps.map((step, index) => (
           <Steps.Item key={step.title} index={index} title={step.title}>
             <Steps.Trigger>
-              <Circle
-                size="6"
-                fontSize="xs"
-                borderWidth={1}
-                color={step.done ? 'white' : 'fg.muted'}
-                borderColor={step.done ? 'green.solid' : 'border'}
-                backgroundColor={step.done ? 'green.solid' : 'transparent'}
-              >
-                {step.done ? <Check size={14} /> : index + 1}
-              </Circle>
+              <StepIndicator step={index + 1} done={step.done} />
               <Steps.Title
                 whiteSpace="nowrap"
                 display={{ base: 'none', md: 'block' }}

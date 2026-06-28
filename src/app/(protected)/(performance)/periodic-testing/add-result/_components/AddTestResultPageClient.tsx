@@ -1,9 +1,9 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useMemo, useState, useTransition } from 'react';
 
-import { Button, Highlight, SimpleGrid } from '@chakra-ui/react';
+import { Button, Highlight, HStack, SimpleGrid } from '@chakra-ui/react';
 import { format } from 'date-fns';
 import { Save } from 'lucide-react';
 
@@ -29,7 +29,24 @@ export default function AddTestResultPageClient() {
   });
 
   const [isPending, startTransition] = useTransition();
-  const [tableData, setTableData] = useState<Array<InsertTestResult>>([]);
+  // Entered scores, keyed by `${player_id}-${type_id}`.
+  const [results, setResults] = useState<Record<string, string>>({});
+
+  // Derive the payload from the current selection + entered scores instead of
+  // mirroring it into state via an effect.
+  const tableData = useMemo<Array<InsertTestResult>>(() => {
+    const { players, types, date } = selection;
+    if (!players.length || !types.length) return [];
+
+    return players.flatMap(({ id }) =>
+      types.map(({ type_id }) => ({
+        type_id,
+        player_id: id,
+        result: results[`${id}-${type_id}`] || '0',
+        date,
+      })),
+    );
+  }, [selection, results]);
 
   const onSave = (data: Array<InsertTestResult>) => {
     const id = toaster.create({
@@ -57,14 +74,14 @@ export default function AddTestResultPageClient() {
     <SimpleGrid
       columns={{ base: 1, lg: 2 }}
       gap={6}
-      templateColumns={{ lg: '3fr 7fr' }}
+      templateColumns={{ lg: '1fr 2fr' }}
     >
       <Card
         title={
-          <>
+          <HStack>
             <StepIndicator step={1} />
             Test Configuration
-          </>
+          </HStack>
         }
         description={
           <Highlight
@@ -82,13 +99,14 @@ export default function AddTestResultPageClient() {
       </Card>
       <Card
         title={
-          <>
+          <HStack>
             <StepIndicator step={2} />
             Test Result
-          </>
+          </HStack>
         }
         action={
           <Button
+            size="sm"
             disabled={
               !selection.players.length ||
               !selection.types.length ||
@@ -105,7 +123,8 @@ export default function AddTestResultPageClient() {
         <TestResultTable
           configuration={selection}
           setSelection={setSelection}
-          onChange={setTableData}
+          results={results}
+          setResults={setResults}
         />
       </Card>
     </SimpleGrid>

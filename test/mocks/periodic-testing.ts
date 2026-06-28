@@ -3,9 +3,13 @@ import {
   InsertTestType,
   TestResult,
   TestType,
+  User,
 } from '@/drizzle/schema';
 
-import { TestResult as TestResultType } from '@/types/periodic-testing';
+import {
+  TestConfigurationSelection,
+  TestResult as TestResultType,
+} from '@/types/periodic-testing';
 import { TestTypeUnit } from '@/utils/enum';
 
 import { MOCK_TEAM } from './team';
@@ -68,19 +72,62 @@ export const MOCK_TEST_RESULT_DB_ROW = {
   },
 };
 
+// A second player used to exercise filtering, column restriction, and removal.
+export const MOCK_TEST_PLAYER_2: User = {
+  ...MOCK_USER,
+  id: 'user-456',
+  name: 'Second Player',
+};
+
 export const MOCK_TEST_RESULT_RESPONSE: TestResultType = {
   headers: [
     {
+      type_id: MOCK_TEST_TYPE.type_id,
       name: MOCK_TEST_TYPE.name,
       unit: MOCK_TEST_TYPE.unit,
+    },
+    {
+      type_id: MOCK_TEST_TYPE_2.type_id,
+      name: MOCK_TEST_TYPE_2.name,
+      unit: MOCK_TEST_TYPE_2.unit,
     },
   ],
   players: [
     {
       player_id: MOCK_PLAYER.id,
       player_name: MOCK_USER.name,
-      tests: { [MOCK_TEST_TYPE.name]: MOCK_TEST_RESULT_INPUT.result },
-      result_id: MOCK_TEST_RESULT.result_id,
+      // The second test type is intentionally missing so an empty cell can
+      // exercise the inline "create result" path.
+      tests: {
+        [MOCK_TEST_TYPE.name]: {
+          result_id: MOCK_TEST_RESULT.result_id,
+          result: MOCK_TEST_RESULT_INPUT.result,
+        },
+      },
+    },
+    {
+      player_id: MOCK_TEST_PLAYER_2.id,
+      player_name: MOCK_TEST_PLAYER_2.name,
+      tests: {
+        [MOCK_TEST_TYPE.name]: {
+          result_id: 'result-456',
+          result: '5.100',
+        },
+      },
     },
   ],
+};
+
+// ======================== Test Configuration ========================
+
+export const MOCK_TEST_CONFIGURATION: TestConfigurationSelection = {
+  players: [MOCK_USER, MOCK_TEST_PLAYER_2],
+  types: [MOCK_TEST_TYPE, MOCK_TEST_TYPE_2],
+  date: MOCK_TEST_RESULT_DATE,
+};
+
+export const MOCK_EMPTY_TEST_CONFIGURATION: TestConfigurationSelection = {
+  players: [],
+  types: [],
+  date: MOCK_TEST_RESULT_DATE,
 };

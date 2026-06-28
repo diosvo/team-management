@@ -4,7 +4,7 @@ import { Input, Span, VStack } from '@chakra-ui/react';
 
 import SearchableSelect from '@/components/SearchableSelect';
 import { Field } from '@/components/ui/field';
-import { PlayerSelection } from '@/components/user/PlayerSelection';
+import { PlayerSelectionWithActions } from '@/components/user/PlayerSelection';
 
 import { TestConfigurationSelection } from '@/types/periodic-testing';
 import { ESTABLISHED_DATE } from '@/utils/constant';
@@ -24,7 +24,7 @@ export default function TestResultConfiguration({
 }: TestResultConfigurationProps) {
   return (
     <VStack gap={4}>
-      <PlayerSelection
+      <PlayerSelectionWithActions
         selection={selection.players}
         onSelectionChange={(selected) =>
           setSelection((prev) => ({
