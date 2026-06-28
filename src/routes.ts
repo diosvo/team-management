@@ -38,6 +38,7 @@ export const RESOURCES = [
   'cache-store',
   'dashboard',
   'documents',
+  'emails',
   'leagues',
   'locations',
   'matches',
@@ -45,6 +46,7 @@ export const RESOURCES = [
   'profile',
   'registration',
   'roster',
+  'reports',
   'team-rule',
   'training',
 ] as const;

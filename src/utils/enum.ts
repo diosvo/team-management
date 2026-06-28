@@ -85,3 +85,23 @@ export enum SessionStatus {
   COMPLETED = 'COMPLETED',
   CANCELLED = 'CANCELLED',
 }
+
+export enum ReportTrigger {
+  MANUAL = 'manual',
+  SCHEDULED = 'scheduled',
+}
+
+export enum EmailStatus {
+  BOUNCED = 'bounced',
+  CANCELED = 'canceled',
+  CLICKED = 'clicked',
+  COMPLAINED = 'complained',
+  DELIVERED = 'delivered',
+  DELIVERY_DELAYED = 'delivery_delayed',
+  FAILED = 'failed',
+  OPENED = 'opened',
+  QUEUED = 'queued',
+  SCHEDULED = 'scheduled',
+  SENT = 'sent',
+  SUPPRESSED = 'suppressed',
+}

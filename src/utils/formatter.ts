@@ -65,3 +65,13 @@ export const TIME_DURATION: Record<string, { start: Date; end: Date }> = {
     end: endOfYear(currentDate),
   },
 };
+
+export const formatDuration = (interval: string): string => {
+  const period = TIME_DURATION[interval];
+
+  if (!period) {
+    throw new Error(`Invalid report interval: ${interval}`);
+  }
+
+  return `${formatDate(period.start)} - ${formatDate(period.end)}`;
+};

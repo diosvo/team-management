@@ -93,7 +93,7 @@ export default function AttendanceTrend({
               stroke="orange"
               strokeDasharray="2 2"
               label={{
-                value: `Target (${TARGET_RATE})`,
+                value: `Target (${TARGET_RATE})%`,
                 position: 'top',
               }}
             />
