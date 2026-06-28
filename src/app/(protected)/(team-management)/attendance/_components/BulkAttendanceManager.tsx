@@ -28,12 +28,7 @@ import { PlayerSelection } from '@/components/user/PlayerSelection';
 import Visibility from '@/components/Visibility';
 
 import { useAttendanceFilters } from '@/lib/nuqs';
-import {
-  ALL,
-  CACHE_KEY,
-  CURRENT_DATE,
-  ESTABLISHED_DATE,
-} from '@/utils/constant';
+import { CACHE_KEY, CURRENT_DATE, ESTABLISHED_DATE } from '@/utils/constant';
 import { AttendanceStatus } from '@/utils/enum';
 
 import { User } from '@/drizzle/schema';
@@ -158,7 +153,7 @@ export default function BulkAttendanceManager({
 
       if (!hasErrors) {
         setOpen(false);
-        setSearchParams({ date: parsed.date, status: ALL.value, page: 1 });
+        setSearchParams({ date: parsed.date, status: [], page: 1 });
       }
     });
   };

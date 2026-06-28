@@ -1,62 +1,36 @@
 'use client';
 
-import { Button, Input, SimpleGrid } from '@chakra-ui/react';
-import { ClipboardCheck, DoorOpen } from 'lucide-react';
+import Filters from '@/components/filters/Filters';
 
-import { Field } from '@/components/ui/field';
-import Visibility from '@/components/Visibility';
+import { useAttendanceFilters } from '@/lib/nuqs';
+import type { FilterDef } from '@/types/filters';
+import {
+  ATTENDANCE_STATUS_SELECTION,
+  ESTABLISHED_DATE,
+} from '@/utils/constant';
 
-import usePermissions from '@/hooks/use-permissions';
-import { ALL, ESTABLISHED_DATE } from '@/utils/constant';
-import { useAttendanceFilters } from '@/utils/filters';
-
-import BulkAttendanceManager from './BulkAttendanceManager';
-import SubmitLeaveRequest from './SubmitLeaveRequest';
+const FILTERS: Array<FilterDef> = [
+  {
+    key: 'date',
+    label: 'Date',
+    control: { type: 'date', min: ESTABLISHED_DATE },
+  },
+  {
+    key: 'status',
+    label: 'Status',
+    control: { type: 'checkbox-group', options: ATTENDANCE_STATUS_SELECTION },
+  },
+];
 
 export default function AttendanceFilters() {
-  const { isAdmin, isPlayer } = usePermissions();
-  const [{ date }, setSearchParams] = useAttendanceFilters();
+  const [values, setSearchParams] = useAttendanceFilters();
 
   return (
-    <SimpleGrid columns={2} gap={4}>
-      <Visibility isVisible={isAdmin}>
-        <BulkAttendanceManager
-          trigger={
-            <Button
-              size={{ base: 'sm', md: 'md' }}
-              colorPalette="green"
-              variant="outline"
-            >
-              <ClipboardCheck />
-              Mark Attendance
-            </Button>
-          }
-        />
-      </Visibility>
-      <Visibility isVisible={isPlayer}>
-        <SubmitLeaveRequest
-          trigger={
-            <Button size={{ base: 'sm', md: 'md' }}>
-              <DoorOpen />
-              Submit Leave Request
-            </Button>
-          }
-        />
-      </Visibility>
-      <Field>
-        <Input
-          type="date"
-          value={date}
-          min={ESTABLISHED_DATE}
-          onChange={(value) =>
-            setSearchParams({
-              date: value.target.value,
-              status: ALL.value,
-              page: 1,
-            })
-          }
-        />
-      </Field>
-    </SimpleGrid>
+    <Filters
+      filters={FILTERS}
+      values={values}
+      defaults={useAttendanceFilters.defaults}
+      onApply={(next) => setSearchParams({ ...next, page: 1 })}
+    />
   );
 }

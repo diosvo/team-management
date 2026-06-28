@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 
 import { PlayerSessionSummary, PlayerStats } from '@/types/analytics';
-import { colorPlayerRank } from '@/utils/helper';
+import { colorRank } from '@/utils/helper';
 
 const PlayerRank = (player: PlayerStats, index: number) => {
   return (
@@ -17,7 +17,7 @@ const PlayerRank = (player: PlayerStats, index: number) => {
       <Text fontSize="xs" color="GrayText" marginLeft="auto" marginRight={4}>
         {player.attended} sessions
       </Text>
-      <Text fontSize="sm" color={colorPlayerRank(player.attendance_rate)}>
+      <Text fontSize="sm" color={colorRank(player.attendance_rate)}>
         {player.attendance_rate}%
       </Text>
     </HStack>

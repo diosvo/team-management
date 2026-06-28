@@ -1,15 +1,12 @@
 import { Metadata } from 'next';
 
-import { HStack } from '@chakra-ui/react';
-
-import PageTitle from '@/components/PageTitle';
-
 import { getAttendanceByDate } from '@/actions/attendance';
-import { loadAttendanceFilters } from '@/utils/filters';
+import { loadAttendanceFilters } from '@/lib/nuqs';
 
 import AttendanceFilters from './_components/AttendanceFilters';
-import AttendanceList from './_components/AttendanceList';
+import AttendanceHeader from './_components/AttendanceHeader';
 import AttendanceStats from './_components/AttendanceStats';
+import AttendanceTable from './_components/AttendanceTable';
 
 export const metadata: Metadata = {
   title: 'Attendance',
@@ -22,12 +19,10 @@ export default async function AttendancePage(props: PageProps<'/attendance'>) {
 
   return (
     <>
-      <HStack justifyContent="space-between">
-        <PageTitle title="Training Attendance" />
-        <AttendanceFilters />
-      </HStack>
+      <AttendanceHeader />
       <AttendanceStats stats={stats} />
-      <AttendanceList attendances={data} />
+      <AttendanceFilters />
+      <AttendanceTable attendances={data} />
     </>
   );
 }

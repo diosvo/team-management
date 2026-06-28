@@ -2,7 +2,15 @@
 
 import type { ReactNode } from 'react';
 
-import { Badge, Box, Button, Drawer, HStack, Portal } from '@chakra-ui/react';
+import {
+  Badge,
+  Box,
+  Button,
+  Drawer,
+  HStack,
+  Input,
+  Portal,
+} from '@chakra-ui/react';
 import { SlidersHorizontal } from 'lucide-react';
 
 import SearchInput from '@/components/SearchInput';
@@ -68,6 +76,23 @@ export default function Filters<T extends Record<string, unknown>>({
             key={def.key}
             value={values[def.key] as string}
             onChange={(value) => onApply({ [def.key]: value } as Partial<T>)}
+          />
+        );
+      case 'date':
+        return (
+          <Input
+            key={def.key}
+            type="date"
+            aria-label={def.label}
+            width="max-content"
+            flexShrink={0}
+            min={def.control.min}
+            max={def.control.max}
+            size={{ base: 'sm', md: 'md' }}
+            value={values[def.key] as string}
+            onChange={(event) =>
+              onApply({ [def.key]: event.target.value } as Partial<T>)
+            }
           />
         );
       default:

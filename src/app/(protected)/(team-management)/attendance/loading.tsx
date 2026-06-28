@@ -3,31 +3,26 @@ import {
   SimpleGrid,
   Skeleton,
   SkeletonText,
-  Stack,
+  Stat,
+  VStack,
 } from '@chakra-ui/react';
 
-export default function Loading() {
+export default function AttendanceLoading() {
   return (
-    <Stack>
-      <HStack justifyContent="space-between" marginBottom={6}>
-        <Skeleton height={9} width="240px" />
-        <HStack marginLeft="auto" gap={4}>
-          <Skeleton height={9} width="174px" />
-          <Skeleton height={9} width="174px" />
-        </HStack>
+    <VStack alignItems="stretch" gap={{ base: 4, lg: 6 }}>
+      <HStack justifyContent="space-between">
+        <Skeleton height={9} width={56} />
+        <Skeleton height={9} width={44} />
       </HStack>
-      <SimpleGrid
-        columns={{ base: 1, sm: 2, md: 2, lg: 3, xl: 4 }}
-        gap={6}
-        marginBlock={6}
-      >
-        <Skeleton height="131px" />
-        <Skeleton height="131px" />
-        <Skeleton height="131px" />
-        <Skeleton height="131px" />
+      <SimpleGrid columns={{ base: 2, md: 4, xl: 6 }} gap={{ base: 3, lg: 4 }}>
+        {Array.from({ length: 4 }).map((_, index) => (
+          <Stat.Root key={index}>
+            <Skeleton width="full" height="90px" />
+          </Stat.Root>
+        ))}
       </SimpleGrid>
-      <Skeleton width="full" height="40px" marginBlock={4} />
-      <SkeletonText noOfLines={5} gap={4} />
-    </Stack>
+      <Skeleton height={10} width="100%" />
+      <SkeletonText noOfLines={7} gap={2} height={10} />
+    </VStack>
   );
 }

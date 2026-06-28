@@ -10,12 +10,11 @@ import {
 } from 'nuqs/server';
 
 import {
-  ALL,
-  ATTENDANCE_STATUS_VALUES,
   CURRENT_DATE,
   INTERVAL_VALUES,
   SELECTABLE_ASSET_CATEGORIES,
   SELECTABLE_ASSET_CONDITIONS,
+  SELECTABLE_ATTENDANCE_STATUS,
   SELECTABLE_GAME_TYPES,
   SELECTABLE_LEAGUE_STATUS,
   SELECTABLE_MATCH_TYPES,
@@ -76,7 +75,9 @@ export const matchSearchParams = {
 const attendanceSearchParams = {
   ...commonParams,
   date: parseAsString.withDefault(CURRENT_DATE),
-  status: parseAsStringEnum(ATTENDANCE_STATUS_VALUES).withDefault(ALL.value),
+  status: parseAsArrayOf(
+    parseAsStringEnum([...SELECTABLE_ATTENDANCE_STATUS]),
+  ).withDefault([]),
 };
 
 const dashboardSearchParams = {

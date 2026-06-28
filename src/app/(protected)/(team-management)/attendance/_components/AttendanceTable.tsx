@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback } from 'react';
 
-import { Badge, Button, Highlight, Table } from '@chakra-ui/react';
+import { Badge, Button, Table } from '@chakra-ui/react';
 import {
   ClockAlert,
   ClockCheck,
@@ -10,6 +10,7 @@ import {
   UsersRound,
 } from 'lucide-react';
 
+import HighlightText from '@/components/HighlightText';
 import Pagination from '@/components/Pagination';
 import SelectionActionBar from '@/components/SelectionActionBar';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -18,14 +19,17 @@ import { toaster } from '@/components/ui/toaster';
 import Visibility from '@/components/Visibility';
 
 import usePermissions from '@/hooks/use-permissions';
-import { ALL } from '@/utils/constant';
+import useTableState from '@/hooks/use-table-state';
+
+import { useAttendanceFilters } from '@/lib/nuqs';
 import { AttendanceStatus } from '@/utils/enum';
-import { paginateData, useAttendanceFilters } from '@/utils/filters';
 import { formatDatetime } from '@/utils/formatter';
 import { getColor } from '@/utils/helper';
 
 import { removeAttendance, updateStatus } from '@/actions/attendance';
 import { AttendanceWithPlayer } from '@/types/attendance';
+
+const HEADERS = ['Name', 'Status', 'Reason', 'Last Updated'] as const;
 
 const ACTIONS = [
   {
@@ -56,24 +60,36 @@ export default function AttendanceTable({
   const { isAdmin } = usePermissions();
   const [{ q, page, status }, setSearchParams] = useAttendanceFilters();
 
-  const [selection, setSelection] = useState<Array<string>>([]);
-  const selectionCount = selection.length;
+  const predicate = useCallback(
+    (item: AttendanceWithPlayer) => {
+      const matchesSearch = item.player.user.name
+        .toLowerCase()
+        .includes(q.toLowerCase());
+      const matchesStatus = status.length === 0 || status.includes(item.status);
 
-  useEffect(() => {
-    setSelection([]);
-  }, [status]);
+      return matchesSearch && matchesStatus;
+    },
+    [q, status],
+  );
 
-  const totalCount = attendances.length;
-  const currentData = paginateData(attendances, page);
-
-  // Selection
-  const hasSelection = selectionCount > 0;
-  const indeterminate = hasSelection && selectionCount < totalCount;
+  const {
+    items,
+    currentData,
+    indeterminate,
+    selection,
+    setSelection,
+    hasSelection,
+    totalCount,
+    columnCount,
+    selectionCount,
+  } = useTableState(attendances, predicate, page, {
+    headerCount: HEADERS.length,
+  });
 
   const removeItems = async () => {
     const results = await Promise.all(selection.map(removeAttendance));
     const successCount = results.filter(({ success }) => success).length;
-    const hasErrors = successCount < 1;
+    const hasErrors = successCount < selectionCount;
 
     toaster.create({
       type: hasErrors ? 'warning' : 'success',
@@ -101,7 +117,7 @@ export default function AttendanceTable({
 
     if (!hasErrors) {
       setSelection([]);
-      setSearchParams({ status: newStatus, page: 1 });
+      setSearchParams({ status: [newStatus], page: 1 });
     }
   };
 
@@ -110,7 +126,6 @@ export default function AttendanceTable({
       <Table.ScrollArea>
         <Table.Root
           borderWidth={1}
-          marginTop={6}
           size={{ base: 'sm', md: 'md' }}
           interactive={totalCount > 0}
         >
@@ -124,20 +139,17 @@ export default function AttendanceTable({
                     checked={
                       indeterminate ? 'indeterminate' : selectionCount > 0
                     }
-                    disabled={status === ALL.value}
                     onCheckedChange={(changes) => {
                       setSelection(
                         changes.checked
-                          ? attendances.map(
-                              ({ attendance_id }) => attendance_id,
-                            )
+                          ? items.map(({ attendance_id }) => attendance_id)
                           : [],
                       );
                     }}
                   />
                 </Table.ColumnHeader>
               </Visibility>
-              {['Name', 'Status', 'Reason', 'Last Updated'].map((header) => (
+              {HEADERS.map((header) => (
                 <Table.ColumnHeader key={header}>{header}</Table.ColumnHeader>
               ))}
             </Table.Row>
@@ -152,7 +164,6 @@ export default function AttendanceTable({
                         top={0.5}
                         aria-label="Select row"
                         checked={selection.includes(item.attendance_id)}
-                        disabled={status === ALL.value}
                         onCheckedChange={(changes) => {
                           setSelection((prev) =>
                             changes.checked
@@ -164,9 +175,9 @@ export default function AttendanceTable({
                     </Table.Cell>
                   </Visibility>
                   <Table.Cell>
-                    <Highlight query={q} styles={{ backgroundColor: 'yellow' }}>
+                    <HighlightText query={q}>
                       {item.player.user.name}
-                    </Highlight>
+                    </HighlightText>
                   </Table.Cell>
                   <Table.Cell>
                     <Badge
@@ -184,7 +195,7 @@ export default function AttendanceTable({
               ))
             ) : (
               <Table.Row>
-                <Table.Cell colSpan={isAdmin ? 5 : 4}>
+                <Table.Cell colSpan={columnCount}>
                   <EmptyState title="No players found" icon={<UsersRound />} />
                 </Table.Cell>
               </Table.Row>
@@ -204,7 +215,7 @@ export default function AttendanceTable({
         onDelete={removeItems}
       >
         {ACTIONS.map(({ label, value, icon: Icon, color }) => (
-          <Visibility key={value} isVisible={status !== value}>
+          <Visibility key={value} isVisible={!status.includes(value)}>
             <Button
               size="sm"
               variant="outline"

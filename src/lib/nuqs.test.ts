@@ -225,7 +225,7 @@ describe('Client-Side Filter Hooks', () => {
         page: 1,
         q: '',
         date: CURRENT_DATE,
-        status: ALL.value,
+        status: [],
       });
     });
   });
@@ -351,7 +351,7 @@ describe('Server-Side Filter Loaders', () => {
           page: 1,
           q: '',
           date: expect.any(String),
-          status: ALL.value,
+          status: [],
         }),
       );
     });
@@ -370,18 +370,22 @@ describe('Server-Side Filter Loaders', () => {
           page: 4,
           q: 'dios',
           date: MOCK_ATTENDANCE_DATE,
-          status: AttendanceStatus.ABSENT,
+          status: [AttendanceStatus.ABSENT],
         }),
       );
     });
 
     test('handles multiple status values correctly', async () => {
       const result = await loadAttendanceFilters(
-        new URLSearchParams({ status: AttendanceStatus.ON_TIME }),
+        new URLSearchParams({
+          status: `${AttendanceStatus.ON_TIME},${AttendanceStatus.LATE}`,
+        }),
       );
 
       expect(result).toEqual(
-        expect.objectContaining({ status: AttendanceStatus.ON_TIME }),
+        expect.objectContaining({
+          status: [AttendanceStatus.ON_TIME, AttendanceStatus.LATE],
+        }),
       );
     });
 
@@ -390,7 +394,7 @@ describe('Server-Side Filter Loaders', () => {
         new URLSearchParams({ status: 'invalid_status' }),
       );
 
-      expect(result).toEqual(expect.objectContaining({ status: ALL.value }));
+      expect(result).toEqual(expect.objectContaining({ status: [] }));
     });
   });
 

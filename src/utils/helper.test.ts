@@ -10,7 +10,7 @@ import {
   UserState,
 } from './enum';
 
-import { colorPlayerRank, getColor } from './helper';
+import { colorRank, getColor } from './helper';
 
 describe('getColor', () => {
   const cases = [
@@ -60,7 +60,7 @@ describe('getColor', () => {
   });
 });
 
-describe('colorPlayerRank', () => {
+describe('colorRank', () => {
   const cases = [
     { value: 80, expected: 'green' },
     { value: 50, expected: 'orange' },
@@ -68,6 +68,6 @@ describe('colorPlayerRank', () => {
   ];
 
   test.each(cases)('returns $expected for $value', ({ value, expected }) => {
-    expect(colorPlayerRank(value as number)).toBe(expected);
+    expect(colorRank(value as number)).toBe(expected);
   });
 });
