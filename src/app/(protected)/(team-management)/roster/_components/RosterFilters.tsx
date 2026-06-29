@@ -1,44 +1,40 @@
 'use client';
 
-import { HStack } from '@chakra-ui/react';
-
-import SearchInput from '@/components/SearchInput';
-import { RoleSelection } from '@/components/user/RolePositionSelection';
-import { StateSelection } from '@/components/user/StateSelection';
+import Filters from '@/components/filters/Filters';
 
 import usePermissions from '@/hooks/use-permissions';
-import { UserRole, UserState } from '@/utils/enum';
-import { useRosterFilters } from '@/utils/filters';
 
-import Visibility from '@/components/Visibility';
-import AddUser from './AddUser';
+import { useRosterFilters } from '@/lib/nuqs';
+import type { FilterDef } from '@/types/filters';
+import { USER_ROLE_SELECTION, USER_STATE_SELECTION } from '@/utils/constant';
+
+const STATE_FILTER: FilterDef = {
+  key: 'state',
+  label: 'State',
+  control: { type: 'checkbox-group', options: USER_STATE_SELECTION },
+};
+
+const ROLE_FILTER: FilterDef = {
+  key: 'role',
+  label: 'Role',
+  control: { type: 'checkbox-group', options: USER_ROLE_SELECTION },
+};
 
 export default function RosterFilters() {
   const { isAdmin, isCaptain } = usePermissions();
-  const [{ state, role }, setSearchParams] = useRosterFilters();
+  const [values, setSearchParams] = useRosterFilters();
+
+  const filters = [
+    STATE_FILTER,
+    ...(isAdmin || isCaptain ? [ROLE_FILTER] : []),
+  ];
 
   return (
-    <HStack marginBlock={6}>
-      <SearchInput />
-      <StateSelection
-        multiple
-        width="2xs"
-        value={state}
-        onValueChange={({ value }) =>
-          setSearchParams({ state: value as Array<UserState> })
-        }
-      />
-      <Visibility isVisible={isAdmin || isCaptain}>
-        <RoleSelection
-          multiple
-          width="2xs"
-          value={role}
-          onValueChange={({ value }) =>
-            setSearchParams({ role: value as Array<UserRole> })
-          }
-        />
-        <AddUser />
-      </Visibility>
-    </HStack>
+    <Filters
+      filters={filters}
+      values={values}
+      defaults={useRosterFilters.defaults}
+      onApply={(next) => setSearchParams({ ...next, page: 1 })}
+    />
   );
 }
