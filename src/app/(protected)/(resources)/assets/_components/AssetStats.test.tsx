@@ -1,9 +1,8 @@
-import { axe } from 'jest-axe';
 import * as nuqs from 'nuqs';
 import { Mock } from 'vitest';
 
 import { MOCK_ASSET_STATS } from '@/test/mocks/asset';
-import { renderWithUI, screen } from '@/test/utilities';
+import { axeInteractiveStat, renderWithUI, screen } from '@/test/utilities';
 
 import { useAssetFilters } from '@/lib/nuqs';
 import { AssetCondition } from '@/utils/enum';
@@ -29,7 +28,7 @@ describe('AssetStats', () => {
   test('should be accessible', async () => {
     const { container } = setup();
 
-    const result = await axe(container);
+    const result = await axeInteractiveStat(container);
     expect(result).toHaveNoViolations();
   });
 

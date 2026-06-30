@@ -1,9 +1,8 @@
-import { axe } from 'jest-axe';
 import * as nuqs from 'nuqs';
 import { Mock } from 'vitest';
 
 import { MOCK_ATTENDANCE_STATS } from '@/test/mocks/attendance';
-import { renderWithUI, screen } from '@/test/utilities';
+import { axeInteractiveStat, renderWithUI, screen } from '@/test/utilities';
 
 import { AttendanceStats as StatsType } from '@/types/attendance';
 import { AttendanceStatus } from '@/utils/enum';
@@ -29,7 +28,7 @@ describe('AttendanceStats', () => {
   test('should be accessible', async () => {
     const { container } = setup();
 
-    const result = await axe(container);
+    const result = await axeInteractiveStat(container);
     expect(result).toHaveNoViolations();
   });
 

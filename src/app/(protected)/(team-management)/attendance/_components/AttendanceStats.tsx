@@ -7,6 +7,7 @@ import { Stat } from '@/components/ui/stat';
 import { useAttendanceFilters } from '@/lib/nuqs';
 import { AttendanceStats as StatsType } from '@/types/attendance';
 import { AttendanceStatus } from '@/utils/enum';
+import { colorRank } from '@/utils/helper';
 
 export default function AttendanceStats({ stats }: { stats: StatsType }) {
   const [, setSearchParams] = useAttendanceFilters();
@@ -38,7 +39,7 @@ export default function AttendanceStats({ stats }: { stats: StatsType }) {
         label="Present Rate"
         value={stats.present_rate}
         unit="%"
-        color="blue"
+        color={colorRank(stats.present_rate)}
       />
     </SimpleGrid>
   );

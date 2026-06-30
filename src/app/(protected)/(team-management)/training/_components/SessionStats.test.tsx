@@ -1,9 +1,12 @@
-import { axe } from 'jest-axe';
 import * as nuqs from 'nuqs';
 import { Mock } from 'vitest';
 
 import { MOCK_TRAINING_SESSION_RESPONSE } from '@/test/mocks/training-sessions';
-import { renderWithUI, screen } from '@/test/utilities';
+import {
+  axeInteractiveStat,
+  renderWithUI,
+  screen,
+} from '@/test/utilities';
 
 import { SessionStatus } from '@/utils/enum';
 
@@ -34,7 +37,7 @@ describe('SessionStats', () => {
   test('should be accessible', async () => {
     const { container } = setup();
 
-    const result = await axe(container);
+    const result = await axeInteractiveStat(container);
     expect(result).toHaveNoViolations();
   });
 
