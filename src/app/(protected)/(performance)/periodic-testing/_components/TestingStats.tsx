@@ -1,23 +1,6 @@
-'use client';
+import { SimpleGrid } from '@chakra-ui/react';
 
-import { Check, Users } from 'lucide-react';
-
-import Stats, { type StatCard } from '@/components/Stats';
-
-const TESTING_STATS: StatCard['config'] = [
-  {
-    key: 'total_players',
-    label: 'Players Joined',
-    icon: Users,
-    color: 'blue',
-  },
-  {
-    key: 'completed_tests',
-    label: 'Completed Tests',
-    icon: Check,
-    color: 'green',
-  },
-];
+import { Stat } from '@/components/ui/stat';
 
 export default function TestingStats({
   stats,
@@ -27,5 +10,19 @@ export default function TestingStats({
     completed_tests: number;
   };
 }) {
-  return <Stats data={stats} config={TESTING_STATS} />;
+  return (
+    <SimpleGrid columns={{ base: 2, md: 4, xl: 6 }} gap={{ base: 3, lg: 4 }}>
+      <Stat
+        label="Players Joined"
+        value={stats.total_players}
+        unit="player"
+      />
+      <Stat
+        label="Completed Tests"
+        value={stats.completed_tests}
+        unit="test"
+        color={stats.completed_tests > 0 ? 'green' : 'black'}
+      />
+    </SimpleGrid>
+  );
 }

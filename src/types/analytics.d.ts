@@ -1,8 +1,8 @@
-export type AnalyticsStats = StatCard['data'] & {
+export interface AnalyticsStats {
   total_sessions: number;
   avg_attendance: number;
   avg_recovery_days: number;
-};
+}
 
 export interface PlayerStats {
   player_name: Picked<UserTable, 'name'>;

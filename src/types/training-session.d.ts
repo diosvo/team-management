@@ -1,4 +1,3 @@
-import { StatCard } from '@/components/Stats';
 import { SessionStatus } from '@/utils/enum';
 
 import { Attendance, Coach } from '@/drizzle/schema';
@@ -18,8 +17,8 @@ export interface TrainingSessionWithDetails extends TrainingSession {
   };
 }
 
-export type TrainingSessionStats = StatCard['data'] & {
+export interface TrainingSessionStats {
   completed_sessions: number;
   avg_attendance: number;
   total_hours: number;
-};
+}
