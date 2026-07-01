@@ -1,13 +1,14 @@
 import {
   BadgeCheck,
   Dumbbell,
-  FileChartColumnIncreasing,
   FileText,
   Film,
   GamepadDirectional,
   LayoutDashboard,
+  MailSearch,
   MapPinHouse,
   Package,
+  PersonStanding,
   ShieldCheck,
   Trophy,
   UsersRound,
@@ -44,13 +45,14 @@ export const SIDEBAR_GROUP: Array<SidebarGroup> = [
   },
   {
     title: 'Performance',
-    items: [{ icon: FileChartColumnIncreasing, resource: 'periodic-testing' }],
+    items: [{ icon: PersonStanding, resource: 'periodic-testing' }],
   },
   {
     title: 'Resources',
     items: [
       { icon: Package, resource: 'assets' },
       { icon: Film, resource: 'documents', disabled: true },
+      { icon: MailSearch, resource: 'emails' },
     ],
   },
   {

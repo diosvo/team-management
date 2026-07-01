@@ -1,6 +1,14 @@
 import { Highlight, HighlightProps } from '@chakra-ui/react';
 
-export default function HighlightText({ query, ...props }: HighlightProps) {
+interface HighlightTextProps extends Omit<HighlightProps, 'children'> {
+  children: string | Array<string>;
+}
+
+export default function HighlightText({
+  query,
+  children,
+  ...props
+}: HighlightTextProps) {
   return (
     <Highlight
       ignoreCase
@@ -8,7 +16,7 @@ export default function HighlightText({ query, ...props }: HighlightProps) {
       styles={{ backgroundColor: 'yellow' }}
       {...props}
     >
-      {props.children}
+      {Array.isArray(children) ? children.join(', ') : children}
     </Highlight>
   );
 }

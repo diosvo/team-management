@@ -14,6 +14,12 @@ const envSchema = z.object({
   PRODUCTION_URL: z.url().default('http://localhost:3000'),
   DATABASE_URL: z.string().default(''),
   RESEND_API_KEY: z.string().default(''),
+  BLOB_READ_WRITE_TOKEN: z
+    .string()
+    .default('')
+    .describe(
+      'Read/write token for the Vercel Blob store. Required to persist generated reports.',
+    ),
   CHROMIUM_PACK_URL: z
     .string()
     .default('')

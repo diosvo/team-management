@@ -3,6 +3,7 @@
 import { useCallback, useState } from 'react';
 
 import { HStack, IconButton, Table } from '@chakra-ui/react';
+import { Base64 } from 'js-base64';
 import { Download, Trash2 } from 'lucide-react';
 
 import HighlightText from '@/components/HighlightText';
@@ -16,7 +17,7 @@ import useTableState from '@/hooks/use-table-state';
 import { useCommonParams } from '@/lib/nuqs';
 import { formatDatetime } from '@/utils/formatter';
 
-import { base64ToBytes, downloadPdf } from '../_helpers/pdf';
+import { downloadPdf } from '../_helpers/pdf';
 import { SavedRegistration } from '../_helpers/useSavedRegistrations';
 
 const HEADERS = ['Name', 'Players', 'Date saved', 'Actions'] as const;
@@ -47,7 +48,7 @@ export default function SavedRegistrations({
     toaster.promise(
       (async () =>
         downloadPdf(
-          base64ToBytes(item.pdfBase64),
+          Base64.toUint8Array(item.pdfBase64),
           item.filename ?? 'registration',
         ))(),
       {

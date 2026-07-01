@@ -6,8 +6,17 @@ import { toaster } from '@/components/ui/toaster';
 import { triggerDownload } from '@/lib/download';
 import { renderWithUI, screen, waitFor } from '@/test/utilities';
 import { Interval } from '@/utils/enum';
+import { formatDuration } from '@/utils/formatter';
 
 import DashboardFilters from './DashboardFilters';
+
+// Mirror the payload the component derives from the selected interval so the
+// expectations stay correct regardless of the year the suite runs in.
+const expectedPayload = (interval: Interval) => {
+  const period = formatDuration(interval);
+  const filename = `sgr-report-${period.replace(/\D+/g, '-')}.pdf`;
+  return { period, filename };
+};
 
 vi.mock('@/lib/download', () => ({
   triggerDownload: vi.fn(),
@@ -30,13 +39,13 @@ describe('DashboardFilters', () => {
       mockSetSearchParams,
     ]);
 
-    const view = renderWithUI(<DashboardFilters />);
-    const downloadButton = screen.getByRole('button', { name: /Download/ });
+    return renderWithUI(<DashboardFilters />);
+  };
 
-    return {
-      ...view,
-      downloadButton,
-    };
+  // Download lives behind the Actions menu — open it, then click the item.
+  const clickDownload = async (user: ReturnType<typeof setup>['user']) => {
+    await user.click(screen.getByRole('button', { name: /Actions/i }));
+    await user.click(await screen.findByRole('menuitem', { name: /Download/i }));
   };
 
   beforeEach(() => {
@@ -48,10 +57,12 @@ describe('DashboardFilters', () => {
     vi.unstubAllGlobals();
   });
 
-  test('renders the download button and the selected interval', () => {
-    const { downloadButton } = setup();
+  test('renders the actions menu and the selected interval', () => {
+    setup();
 
-    expect(downloadButton).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /Actions/i }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('combobox')).toBeInTheDocument();
     expect(screen.getAllByText('This year').length).toBeGreaterThan(0);
   });
@@ -64,23 +75,19 @@ describe('DashboardFilters', () => {
         blob: vi.fn().mockResolvedValue(blob),
       });
 
-      const { user, downloadButton } = setup();
-      await user.click(downloadButton);
+      const { user } = setup();
+      await clickDownload(user);
+
+      const { period, filename } = expectedPayload(Interval.THIS_YEAR);
 
       await waitFor(() => {
         expect(mockFetch).toHaveBeenCalledWith('/api/reports/dashboard', {
           method: 'POST',
-          body: JSON.stringify({
-            interval: Interval.THIS_YEAR,
-            filename: 'analytics-overview-report.pdf',
-          }),
+          body: JSON.stringify({ period, filename }),
         });
       });
 
-      expect(triggerDownload).toHaveBeenCalledWith(
-        blob,
-        'analytics-overview-report.pdf',
-      );
+      expect(triggerDownload).toHaveBeenCalledWith(blob, filename);
       expect(toaster.error).not.toHaveBeenCalled();
     });
 
@@ -91,17 +98,16 @@ describe('DashboardFilters', () => {
         blob: vi.fn().mockResolvedValue(blob),
       });
 
-      const { user, downloadButton } = setup({ interval: Interval.LAST_YEAR });
-      await user.click(downloadButton);
+      const { user } = setup({ interval: Interval.LAST_YEAR });
+      await clickDownload(user);
+
+      const { period, filename } = expectedPayload(Interval.LAST_YEAR);
 
       await waitFor(() => {
         expect(mockFetch).toHaveBeenCalledWith(
           '/api/reports/dashboard',
           expect.objectContaining({
-            body: JSON.stringify({
-              interval: Interval.LAST_YEAR,
-              filename: 'analytics-overview-report.pdf',
-            }),
+            body: JSON.stringify({ period, filename }),
           }),
         );
       });
@@ -113,8 +119,8 @@ describe('DashboardFilters', () => {
         json: vi.fn().mockResolvedValue({ error: 'Something went wrong' }),
       });
 
-      const { user, downloadButton } = setup();
-      await user.click(downloadButton);
+      const { user } = setup();
+      await clickDownload(user);
 
       await waitFor(() => {
         expect(toaster.error).toHaveBeenCalledWith({
@@ -135,8 +141,8 @@ describe('DashboardFilters', () => {
         }),
       );
 
-      const { user, downloadButton } = setup();
-      await user.click(downloadButton);
+      const { user } = setup();
+      await clickDownload(user);
 
       expect(await screen.findByText('Generating...')).toBeInTheDocument();
 

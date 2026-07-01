@@ -88,7 +88,7 @@ describe('Asset Actions', () => {
 
     test('returns empty response when no assets exist', async () => {
       const emptyResponse = {
-        stats: { total_items: 0, need_replacement: 0 },
+        stats: { total_items: 0, need_replacement: 0, obsolete_count: 0 },
         data: [],
       };
       vi.mocked(getDbAssets).mockResolvedValue(emptyResponse);

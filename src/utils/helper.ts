@@ -5,6 +5,7 @@ import {
   AssetCategory,
   AssetCondition,
   AttendanceStatus,
+  EmailStatus,
   LeagueStatus,
   MatchStatus,
   SessionStatus,
@@ -13,10 +14,13 @@ import {
 } from './enum';
 
 const COLOR_MAP: Partial<Record<ColorPalette, Array<string>>> = {
-  blue: [UserRole.PLAYER],
+  blue: [UserRole.PLAYER, EmailStatus.SENT],
   gray: [
     AssetCategory.OTHERS,
     AssetCondition.OBSOLETE,
+    EmailStatus.CANCELED,
+    EmailStatus.QUEUED,
+    EmailStatus.SUPPRESSED,
     MatchStatus.DRAW,
     SessionStatus.COMPLETED,
     UserState.UNKNOWN,
@@ -25,6 +29,9 @@ const COLOR_MAP: Partial<Record<ColorPalette, Array<string>>> = {
     AssetCategory.EQUIPMENT,
     AssetCondition.GOOD,
     AttendanceStatus.ON_TIME,
+    EmailStatus.CLICKED,
+    EmailStatus.DELIVERED,
+    EmailStatus.OPENED,
     LeagueStatus.ONGOING,
     MatchStatus.WIN,
     SessionStatus.ACTIVE,
@@ -34,6 +41,8 @@ const COLOR_MAP: Partial<Record<ColorPalette, Array<string>>> = {
     AssetCategory.TRAINING,
     AssetCondition.FAIR,
     AttendanceStatus.LATE,
+    EmailStatus.DELIVERY_DELAYED,
+    EmailStatus.SCHEDULED,
     LeagueStatus.UPCOMING,
     UserRole.SUPER_ADMIN,
     UserState.TEMPORARILY_ABSENT,
@@ -43,6 +52,9 @@ const COLOR_MAP: Partial<Record<ColorPalette, Array<string>>> = {
   red: [
     AssetCondition.POOR,
     AttendanceStatus.ABSENT,
+    EmailStatus.BOUNCED,
+    EmailStatus.COMPLAINED,
+    EmailStatus.FAILED,
     LeagueStatus.ENDED,
     MatchStatus.LOSS,
     SessionStatus.CANCELLED,

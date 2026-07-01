@@ -15,6 +15,7 @@ import {
   SELECTABLE_ASSET_CATEGORIES,
   SELECTABLE_ASSET_CONDITIONS,
   SELECTABLE_ATTENDANCE_STATUS,
+  SELECTABLE_EMAIL_STATUS,
   SELECTABLE_GAME_TYPES,
   SELECTABLE_LEAGUE_STATUS,
   SELECTABLE_MATCH_TYPES,
@@ -85,6 +86,13 @@ const dashboardSearchParams = {
   interval: parseAsStringEnum(INTERVAL_VALUES).withDefault(Interval.THIS_YEAR),
 };
 
+const emailSearchParams = {
+  ...commonParams,
+  status: parseAsArrayOf(
+    parseAsStringEnum([...SELECTABLE_EMAIL_STATUS]),
+  ).withDefault([]),
+};
+
 const trainingSearchParams = {
   ...commonParams,
   interval: parseAsStringEnum(INTERVAL_VALUES).withDefault(Interval.THIS_MONTH),
@@ -131,6 +139,7 @@ export const useTrainingFilters = createFilters(trainingSearchParams, {
 export const useDashboardFilters = createFilters(dashboardSearchParams, {
   shallow: false,
 });
+export const useEmailFilters = createFilters(emailSearchParams);
 
 /* ================== 🌩️ Server-Side Loaders 🌩️ ================== */
 

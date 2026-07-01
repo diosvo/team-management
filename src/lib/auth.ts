@@ -1,7 +1,6 @@
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { betterAuth } from 'better-auth/minimal';
 import { nextCookies } from 'better-auth/next-js';
-import { Resend } from 'resend';
 
 import { COOKIE } from '@/utils/constant';
 import { UserRole, UserState } from '@/utils/enum';
@@ -14,10 +13,9 @@ import {
   UserTable,
   VerificationTable,
 } from '@/drizzle/schema/user';
+import { sendEmail } from '@/lib/resend';
 
 import ResetPassword from '@/app/(auth)/_components/ResetPassword';
-
-const resend = new Resend(env.RESEND_API_KEY);
 
 export default betterAuth({
   appName: 'Saigon Rovers Basketball Club Portal',
@@ -38,8 +36,7 @@ export default betterAuth({
       const email = user.email;
       const name = email.split('@')[0];
 
-      await resend.emails.send({
-        from: 'Acme <onboarding@resend.dev>',
+      await sendEmail({
         to: email,
         subject: 'Create a new password',
         html: ResetPassword({ name, url }),

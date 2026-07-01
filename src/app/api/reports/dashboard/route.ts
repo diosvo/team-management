@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { formatDate, TIME_DURATION } from '@/utils/formatter';
 import env from '@env';
 
 import { verifySession } from '@/actions/auth';
@@ -22,10 +21,9 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { interval, filename } = await req.json();
-    const period = TIME_DURATION[interval];
+    const { period, filename } = await req.json();
 
-    const durationLabel = `Duration: ${formatDate(period.start)} - ${formatDate(period.end)}`;
+    const durationLabel = `Duration: ${period}`;
     const generatedOn = `Generated on ${new Date().toLocaleString('en-US', {
       dateStyle: 'long',
       timeStyle: 'short',

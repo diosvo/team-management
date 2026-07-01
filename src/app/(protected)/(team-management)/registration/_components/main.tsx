@@ -20,6 +20,7 @@ import {
   Text,
   Textarea,
 } from '@chakra-ui/react';
+import { Base64 } from 'js-base64';
 import { HelpCircle, Trophy, Upload, UsersRound } from 'lucide-react';
 
 import SearchableSelect from '@/components/SearchableSelect';
@@ -38,7 +39,7 @@ import { getActivePlayers } from '@/actions/user';
 
 import usePermissions from '@/hooks/use-permissions';
 import { CACHE_KEY } from '@/utils/constant';
-import { buildRegistrationPdf, bytesToBase64 } from '../_helpers/pdf';
+import { buildRegistrationPdf } from '../_helpers/pdf';
 import { useSavedRegistrations } from '../_helpers/useSavedRegistrations';
 
 import PreviewPanel from './PreviewPanel';
@@ -100,7 +101,7 @@ export default function RegistrationPageClient() {
         notes: notes || undefined,
         templateName: template?.name,
         filename: `saigon-rovers-${name.toLowerCase().replace(/\s+/g, '-')}`,
-        pdfBase64: bytesToBase64(bytes),
+        pdfBase64: Base64.fromUint8Array(bytes),
       });
       toaster.success({
         title: 'Registration saved',
