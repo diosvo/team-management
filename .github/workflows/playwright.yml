@@ -2,7 +2,6 @@ name: 🧪 End-To-End Testing
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
     branches: [main]
 
 jobs:

@@ -1,9 +1,16 @@
-name: PRD PDF
+name: Product Requirements Document
 
 on:
   workflow_dispatch:
   push:
     branches: [main]
+    paths:
+      - 'docs/prd/**'
+      - 'scripts/build-prd-pdf.mjs'
+      - 'scripts/prd-pdf.css'
+
+  pull_request:
+    branches: [main] # Trigger on PRs targeting main branch
     paths:
       - 'docs/prd/**'
       - 'scripts/build-prd-pdf.mjs'
