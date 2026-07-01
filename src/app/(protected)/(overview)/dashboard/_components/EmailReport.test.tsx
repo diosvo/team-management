@@ -87,7 +87,9 @@ describe('EmailReport', () => {
   test('keeps the dialog closed when not open', () => {
     setup({ open: false });
 
-    expect(screen.queryByText('Email Analytics Report')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('Email Analytics Report'),
+    ).not.toBeInTheDocument();
   });
 
   test('disables the submit button until recipients are selected', async () => {
@@ -179,10 +181,12 @@ describe('EmailReport', () => {
     );
 
     await waitFor(() => {
-      expect(toaster.error).toHaveBeenCalledWith({
-        title: 'Email failed',
-        description: 'Failed to send the report via email.',
-      });
+      expect(toaster.error).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: 'Email failed',
+          description: 'boom',
+        }),
+      );
     });
 
     expect(toaster.success).not.toHaveBeenCalled();

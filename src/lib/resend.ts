@@ -22,11 +22,17 @@ export async function sendEmail({
   html,
   attachments,
 }: EmailProps) {
-  return await resend.emails.send({
+  const response = await resend.emails.send({
     from: EMAIL_FROM,
     to,
     subject: `SGR - ${subject}`,
     html,
     attachments,
   });
+
+  if (response.error) {
+    throw new Error(response.error.message);
+  }
+
+  return response;
 }

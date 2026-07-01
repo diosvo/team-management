@@ -150,6 +150,9 @@ importers:
       jest-axe:
         specifier: ^10.0.0
         version: 10.0.0
+      js-base64:
+        specifier: ^3.8.0
+        version: 3.8.0
       jsdom:
         specifier: ^27.4.0
         version: 27.4.0(@noble/hashes@2.2.0)
@@ -3495,6 +3498,9 @@ packages:
 
   jose@6.2.3:
     resolution: {integrity: sha512-YYVDInQKFJfR/xa3ojUTl8c2KoTwiL1R5Wg9YCydwH0x0B9grbzlg5HC7mMjCtUJjbQ/YnGEZIhI5tCgfTb4Hw==}
+
+  js-base64@3.8.0:
+    resolution: {integrity: sha512-65kvbemyZhj+ExQt1PEFyBEjL5vAHysu1lJdW1AwhhChkO8ZBPizYk/m9GVrpbS2Je1hF+UYZ+6KywqtZV8mHw==}
 
   js-tokens@10.0.0:
     resolution: {integrity: sha512-lM/UBzQmfJRo9ABXbPWemivdCW8V2G8FHaHdypQaIy523snUjog0W71ayWXTjiR+ixeMyVHN2XcpnTd/liPg/Q==}
@@ -8269,6 +8275,8 @@ snapshots:
       picomatch: 4.0.4
 
   jose@6.2.3: {}
+
+  js-base64@3.8.0: {}
 
   js-tokens@10.0.0: {}
 

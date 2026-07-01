@@ -59,4 +59,13 @@ describe('sendEmail', () => {
 
     await expect(sendEmail(PAYLOAD)).rejects.toThrow('network down');
   });
+
+  test('throws with the error message when Resend returns an error', async () => {
+    send.mockResolvedValue({
+      data: null,
+      error: { message: 'Invalid recipient' },
+    });
+
+    await expect(sendEmail(PAYLOAD)).rejects.toThrow('Invalid recipient');
+  });
 });

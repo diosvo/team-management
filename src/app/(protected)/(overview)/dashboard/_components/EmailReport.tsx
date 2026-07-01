@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+
 import {
   Button,
   CloseButton,
@@ -10,7 +12,7 @@ import {
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { capitalize } from 'es-toolkit/string';
-import { useState } from 'react';
+import { Base64 } from 'js-base64';
 import { useForm, useWatch } from 'react-hook-form';
 
 import SearchableSelect from '@/components/SearchableSelect';
@@ -66,7 +68,9 @@ export default function EmailReport({
         return;
       }
 
-      const pdfBuffer = Buffer.from(await response.arrayBuffer());
+      const content = Base64.fromUint8Array(
+        new Uint8Array(await response.arrayBuffer()),
+      );
 
       await sendReportEmail({
         to: recipients,
@@ -76,7 +80,7 @@ export default function EmailReport({
         }),
         attachments: [
           {
-            content: pdfBuffer.toString('base64'),
+            content,
             filename,
           },
         ],
@@ -95,7 +99,9 @@ export default function EmailReport({
     } catch (error) {
       toaster.error({
         title: 'Email failed',
-        description: 'Failed to send the report via email.',
+        duration: 10000,
+        description:
+          error instanceof Error ? error.message : 'An unknown error occurred.',
       });
     } finally {
       setSending(false);

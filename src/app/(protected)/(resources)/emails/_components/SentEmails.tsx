@@ -32,9 +32,12 @@ export default function SentEmails({ emails }: { emails: Array<ListEmail> }) {
 
   const predicate = useCallback(
     (item: ListEmail) => {
+      const qLower = q.toLowerCase();
+      const toText = Array.isArray(item.to) ? item.to.join(', ') : item.to;
+
       const matchesQuery =
-        item.to.includes(q) ||
-        item.subject.toLowerCase().includes(q.toLowerCase());
+        toText.toLowerCase().includes(qLower) ||
+        item.subject.toLowerCase().includes(qLower);
       const matchesStatus =
         status.length === 0 ||
         (status as Array<string>).includes(item.last_event);

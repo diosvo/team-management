@@ -8,6 +8,9 @@
 - 🔑 [Better Auth](https://www.better-auth.com) for authentication.
 - 📩 [Resend](https://resend.com/) for email confirmation.
 - ⏰ [date-fns](https://date-fns.org/) for datetime manipulation.
+- PDF generation with:
+  - [pdf-lib](https://pdf-lib.js.org/) for PDF manipulation.
+  - [js-byte64](https://www.npmjs.com/package/js-base64) for base64 encoding/decoding.
 - 💃 Using various parts of a modern frontend stack:
   - [Chakra UI](https://chakra-ui.com/) for component library.
   - [zod](https://zod.dev/) and [React Hook Form](https://react-hook-form.com/) for schema validation.
