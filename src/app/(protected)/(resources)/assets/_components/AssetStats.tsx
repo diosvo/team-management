@@ -16,10 +16,10 @@ type AssetStatsProps = {
 };
 
 export default function AssetStats({ stats }: AssetStatsProps) {
-  const [, setSearchParams] = useAssetFilters();
+  const [params, setSearchParams] = useAssetFilters();
 
   const handleClick = (condition: AssetCondition) => {
-    setSearchParams({ ...useAssetFilters.defaults, condition: [condition] });
+    setSearchParams({ ...params, condition: [condition] });
   };
 
   return (

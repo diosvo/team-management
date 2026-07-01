@@ -52,6 +52,34 @@ This is a high-level map; details live in the [`Page Specs`](./pages/README.md) 
 
 - UI may hide controls, but **server must enforce** permissions.
 
+### Filtering & Search State
+
+The **URL is the single source of truth** for search (`q`), pagination (`page`), and filters. Any UI holding local state (the search box, the Advanced Filters drawer draft) is only a _mirror_ of the URL and must follow one two-way contract:
+
+- **Local → URL** on commit (Apply / debounced typing / stat card click).
+- **URL → Local** whenever the URL changes from _outside_ that component (card click,back button, reset, deep link) - so mirrors never drift or clobber the URL.
+
+The `URL → Local` resync is centralized in the `useSyncedState` hook; every filter mirror
+reuses it rather than re-implementing sync.
+
+```
+                 commit (Apply / debounce / card click)
+   ┌──────────────────────────────────────────────►┐
+LOCAL MIRROR                                       URL
+(draft, search box)                       [single source of truth]
+   └◄──────────────────────────────────────────────┘
+                 resync (useSyncedState) on external change
+```
+
+Cases the contract guarantees:
+
+- **Search box** — a card click that sets `q=''` clears the input; stale text can't be
+  pushed back into the URL.
+- **Advanced Filters drawer** — draft opens from the URL, diverges only locally while
+  editing; Apply commits, interact-outside reverts, external URL changes resync the draft.
+- **Card click / back button / deep link** — one URL write fans out to every mirror
+  (search box + drawer) so the whole page reflects it.
+
 ### Audit / Logging (optional)
 
 - [ ] For privileged actions (create/edit/delete), capture: actor role, team context, timestamp.

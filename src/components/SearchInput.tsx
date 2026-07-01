@@ -1,17 +1,19 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { Input, InputGroup, InputProps } from '@chakra-ui/react';
 import { Search } from 'lucide-react';
 
 import { CloseButton } from '@/components/ui/close-button';
+import useSyncedState from '@/hooks/use-synced-state';
 import { useCommonParams } from '@/lib/nuqs';
 
 export default function SearchInput(props: InputProps) {
   const [{ q }, setSearchParams] = useCommonParams();
-  // Manage local state for the search input
-  const [search, setSearch] = useState(q);
+  // Local input state mirrors `q`, resyncing when the URL changes externally
+  // (e.g. a stat card click that resets `q`) so stale text can't clobber it.
+  const [search, setSearch] = useSyncedState(q);
   const inputRef = useRef<Nullable<HTMLInputElement>>(null);
 
   useEffect(() => {

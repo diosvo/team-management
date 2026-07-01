@@ -16,7 +16,7 @@ import { SlidersHorizontal } from 'lucide-react';
 import SearchInput from '@/components/SearchInput';
 import { CloseButton } from '@/components/ui/close-button';
 
-import { useLocalFilters } from '@/hooks/use-local-filters';
+import useSyncedState from '@/hooks/use-synced-state';
 
 import { type FilterControl, type FilterDef } from '@/types/filters';
 import { countActiveFilters } from '@/utils/filters';
@@ -61,10 +61,17 @@ export default function Filters<T extends Record<string, unknown>>({
 
   const committed = pickArrays(values, keys);
   const defaultsSubset = pickArrays(defaults, keys);
-  const { draft, setField, handleReset, handleApply, handleInteractOutside } =
-    useLocalFilters<CategoricalValues>(committed, defaultsSubset, (next) =>
-      onApply(next as Partial<T>),
-    );
+
+  // Draft mirrors the committed (URL) values, resyncing when they change
+  // externally - e.g. a stat card click that writes directly to the URL,
+  // bypassing the drawer's Apply flow.
+  const [draft, setDraft] = useSyncedState<CategoricalValues>(committed);
+
+  const setField = (field: string, value: Array<string>) =>
+    setDraft((prev) => ({ ...prev, [field]: value }));
+  const handleReset = () => setDraft(defaultsSubset);
+  const handleApply = () => onApply(draft as Partial<T>);
+  const handleInteractOutside = () => setDraft(committed);
 
   const activeCount = countActiveFilters(committed, defaultsSubset);
 
