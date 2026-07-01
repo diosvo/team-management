@@ -38,20 +38,20 @@ Proactive client-side UX. Reads the session client-side and controls which UI el
 
 ## 2. Permission Matrix
 
-| Resource           | GUEST | PLAYER           | COACH              | SUPER_ADMIN | Captain (extra) |
-| ------------------ | ----- | ---------------- | ------------------ | ----------- | --------------- |
-| `dashboard`        | view  | view             | view               | all         | —               |
-| `team-rule`        | —     | view             | view               | all         | edit            |
-| `roster`           | view  | view             | view               | all         | edit            |
-| `training`         | —     | view             | view, create, edit | all         | —               |
-| `attendance`       | —     | view, create     | view, create, edit | all         | —               |
-| `registration`     | —     | view             | view               | all         | create, edit    |
-| `matches`          | view  | view             | view, create, edit | all         | create, edit    |
-| `periodic-testing` | —     | view             | view               | all         | —               |
-| `assets`           | —     | —                | view               | all         | —               |
-| `leagues`          | —     | —                | view               | all         | —               |
-| `locations`        | —     | —                | view               | all         | —               |
-| `profile`          | —     | view, edit (own) | view, edit (own)   | all         | —               |
+| Resource           | GUEST | PLAYER           | COACH              | SUPER_ADMIN | Captain (extra)      |
+| ------------------ | ----- | ---------------- | ------------------ | ----------- | -------------------- |
+| `dashboard`        | view  | view             | view               | all         | —                    |
+| `team-rule`        | —     | view             | view               | all         | edit                 |
+| `roster`           | view  | view             | view               | all         | create, edit, delete |
+| `training`         | —     | view             | view, create, edit | all         | —                    |
+| `attendance`       | —     | view, create     | view, create, edit | all         | —                    |
+| `registration`     | —     | view             | view               | all         | create, edit         |
+| `matches`          | view  | view             | view, create, edit | all         | create, edit         |
+| `periodic-testing` | —     | view             | view               | all         | —                    |
+| `assets`           | —     | —                | view               | all         | —                    |
+| `leagues`          | —     | —                | view               | all         | —                    |
+| `locations`        | —     | —                | view               | all         | —                    |
+| `profile`          | —     | view, edit (own) | view, edit (own)   | all         | —                    |
 
 > `all` = view, create, edit, delete. Captain permissions are **additive** on top of PLAYER.
 

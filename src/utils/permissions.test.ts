@@ -56,11 +56,27 @@ describe('can', () => {
       isCaptain: true,
       expected: true,
     },
+    // Captain fully manages the roster (invite + remove)
+    {
+      role: UserRole.PLAYER,
+      resource: 'roster',
+      action: 'create',
+      isCaptain: true,
+      expected: true,
+    },
     {
       role: UserRole.PLAYER,
       resource: 'roster',
       action: 'delete',
       isCaptain: true,
+      expected: true,
+    },
+    // A non-captain PLAYER cannot manage the roster
+    {
+      role: UserRole.PLAYER,
+      resource: 'roster',
+      action: 'delete',
+      isCaptain: false,
       expected: false,
     },
     // GUEST limited to view on specific resources

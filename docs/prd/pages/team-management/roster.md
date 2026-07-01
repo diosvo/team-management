@@ -5,14 +5,14 @@
 ## 1. Summary
 
 - **Roster** lists all team members (players, coaches, admins) with their roles and states.
-- Admins can invite new members and remove existing ones; individual profiles are edited at `/profile/[id]`.
+- Admins and Captains can invite new members and remove existing ones; individual profiles are edited at `/profile/[id]`.
 
 ## 2. Goals / Metrics
 
 ### Goals
 
 - Give every member a clear view of who is on the team.
-- Let admins manage membership (invite, remove).
+- Let admins and captains manage membership (invite, remove).
 
 ## 3. Users & Permissions
 
@@ -22,8 +22,9 @@
 | PLAYER           | Yes  | No         | No     |
 | COACH            | Yes  | No         | No     |
 | SUPER_ADMIN      | Yes  | Yes        | Yes    |
-| PLAYER (Captain) | Yes  | No         | No     |
+| PLAYER (Captain) | Yes  | Yes        | Yes    |
 
+> Captains inherit PLAYER permissions plus full roster management (`roster:create`, `edit`, `delete`) — the same invite/remove capabilities as SUPER_ADMIN on this page.
 > All users can edit their own profile at `/profile/[id]`. SUPER_ADMIN can edit any profile.
 
 ## 4. UX / Flows
@@ -39,28 +40,29 @@
 
 ### Add member
 
-- SUPER_ADMIN sees **+ Add**; clicking it opens an invite dialog.
+- SUPER_ADMIN and Captain see **+ Add**; clicking it opens an invite dialog.
 - A random password is set and a verification email is sent automatically.
 
 ### Remove
 
-- SUPER_ADMIN can select one or more members and delete them (bulk supported).
+- SUPER_ADMIN and Captain can select one or more members and delete them (bulk supported).
 
 ## 5. Functional Requirements
 
 - **FR-1:** All roles (including GUEST) can view the roster.
 - **FR-2:** Filter by name, email, role, and active/inactive state; filter state stored in URL.
-- **FR-3:** Only SUPER_ADMIN can invite new members.
+- **FR-3:** SUPER_ADMIN and Captain can invite new members.
 - **FR-4:** Invite sets a random password and sends a verification email.
 - **FR-5:** Jersey numbers are unique per team.
-- **FR-6:** Only SUPER_ADMIN can remove members (bulk delete supported).
+- **FR-6:** SUPER_ADMIN and Captain can remove members (bulk delete supported).
 - **FR-7:** Changes show a success or error toast.
 
 ## 6. Acceptance Criteria (Given/When/Then)
 
-- **AC-1:** Given I am a GUEST, when I open Roster, then I see the list but no add or remove controls.
+- **AC-1:** Given I am a GUEST (or non-captain PLAYER/COACH), when I open Roster, then I see the list but no add or remove controls.
 - **AC-2:** Given I am SUPER_ADMIN, when I invite a new player with a duplicate jersey number, then the action is rejected.
 - **AC-3:** Given I am SUPER_ADMIN, when I remove a member, then they no longer appear in the roster.
+- **AC-4:** Given I am a Captain, when I open Roster, then I see the **+ Add** and remove controls and can invite and remove members like a SUPER_ADMIN.
 
 ## 7. Technical Appendix
 

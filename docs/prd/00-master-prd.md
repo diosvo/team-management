@@ -26,7 +26,7 @@ Provide a centralized, role-based hub where users can view and (when authorized)
 - **PLAYER:** standard team member
 - **COACH:** coaching staff
 - **SUPER_ADMIN:** administrative access across the application
-- **Captain (PLAYER flag):** elevated permissions for registration, matches, roster editing, and team-rule editing
+- **Captain (PLAYER flag):** elevated permissions for registration, matches, roster management (invite/remove members), and team-rule editing
 
 ## 3. Primary Use Cases (Jobs-to-be-done)
 

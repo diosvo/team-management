@@ -1,4 +1,6 @@
-allowBuilds:
-  esbuild: false
-  sharp: false
-  unrs-resolver: false
+packages: []
+
+ignoredBuiltDependencies:
+  - esbuild
+  - sharp
+  - unrs-resolver

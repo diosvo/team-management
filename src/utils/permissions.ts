@@ -46,7 +46,7 @@ export const ROLE_CONFIG: Record<UserRole, RoleConfig> = {
 
 const CAPTAIN_PERMISSIONS: RoleConfig = {
   'team-rule': ['edit'],
-  roster: ['edit'],
+  roster: ['create', 'edit', 'delete'],
   matches: ['create', 'edit'],
   registration: ['create', 'edit'],
 };

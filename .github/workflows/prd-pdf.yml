@@ -25,7 +25,8 @@ jobs:
       - name: 📦 Install md-to-pdf (isolated)
         run: |
           mkdir -p .prd-tools
-          (cd .prd-tools && npm init -y >/dev/null && npm install md-to-pdf@5)
+          echo '{"name":"prd-tools","private":true}' > .prd-tools/package.json
+          (cd .prd-tools && npm install md-to-pdf@5)
           ln -sfn "$PWD/.prd-tools/node_modules" scripts/node_modules
 
       - name: 🔨 Build PDF

@@ -34,11 +34,19 @@ Open the workflow run → **Artifacts** → download **Product Requirements Docu
 
 ### Local preview
 
-```bash
-# One-time setup (isolated from the app's pnpm dependencies)
-cd .prd-tools && npm install md-to-pdf@5
+One-time setup (isolated from the app's pnpm dependencies).
 
-# Generate PDF
+```bash
+# Install md-to-pdf under .prd-tools, then symlink it where the ESM import resolves.
+mkdir -p .prd-tools
+echo '{"name":"prd-tools","private":true}' > .prd-tools/package.json
+(cd .prd-tools && npm install md-to-pdf@5)
+ln -sfn "$PWD/.prd-tools/node_modules" scripts/node_modules
+```
+
+Generate PDF:
+
+```bash
 node scripts/build-prd-pdf.mjs
 ```
 

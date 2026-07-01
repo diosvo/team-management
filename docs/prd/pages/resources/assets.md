@@ -89,7 +89,7 @@
 ## 6. Acceptance Criteria (Given/When/Then)
 
 - **AC-1:** Given I am a GUEST, when I open Assets, then I do not see “+ Add” or delete checkboxes.
-- **AC-2:** Given I am a Captain, when I add an asset with Name and Quantity, then it is created and visible in the list.
+- **AC-2:** Given I am SUPER_ADMIN, when I add an asset with Name and Quantity, then it is created and visible in the list.
 - **AC-3:** Given I filter by name "net", category "Equipment" and condition "Good", then the URL includes `q=net`, `category=EQUIPMENT` and `condition=GOOD`.
 - **AC-4:** Given I am a COACH, when I attempt to delete assets (UI or API), then the request is rejected.
 
