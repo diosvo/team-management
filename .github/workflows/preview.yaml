@@ -6,7 +6,6 @@ env:
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
     branches: [main] # Trigger on PRs targeting main branch
 
 jobs:
@@ -14,11 +13,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 📥 Checkout Code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: 🚚 Setup pnpm
         uses: pnpm/action-setup@v6
         with:
+          version: latest
           cache: true
 
       - name: 📦 Install dependencies
@@ -28,14 +28,16 @@ jobs:
         run: pnpm test
 
   build-and-deploy:
+    needs: unit-test
     runs-on: ubuntu-latest
     steps:
       - name: 📥 Checkout Code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: 🚚 Setup pnpm
         uses: pnpm/action-setup@v6
         with:
+          version: latest
           cache: true
 
       - name: 📦 Install Vercel CLI

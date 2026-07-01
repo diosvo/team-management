@@ -45,3 +45,8 @@ next-env.d.ts
 /playwright-report/
 /blob-report/
 /playwright/
+
+# PRD PDF build (scripts/build-prd-pdf.mjs)
+/.prd-build/
+/.prd-tools/
+sgr-team-management-prd.pdf

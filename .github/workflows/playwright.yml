@@ -2,7 +2,6 @@ name: 🧪 End-To-End Testing
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
     branches: [main]
 
 jobs:
@@ -13,12 +12,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 📥 Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: 🚚 Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
         with:
-          version: 10
+          version: latest
           cache: true
 
       - name: 📦 Install dependencies

@@ -22,22 +22,22 @@ Provide a centralized, role-based hub where users can view and (when authorized)
 
 ## 2. Target Users
 
-- **GUEST:** limited read-only access / Different database with mock data?
-- **PLAYER:** participant
+- **GUEST:** limited read-only access (dashboard, roster, matches)
+- **PLAYER:** standard team member
 - **COACH:** coaching staff
-- **SUPER_ADMIN:** global/admin operations
-- **Captain (PLAYER flag):** elevated permissions within a team
+- **SUPER_ADMIN:** administrative access across the application
+- **Captain (PLAYER flag):** elevated permissions for registration, matches, roster management (invite/remove members), and team-rule editing
 
 ## 3. Primary Use Cases (Jobs-to-be-done)
 
-- A player checks team info and performance metrics.
-- A coach reviews team status and metrics.
-- A captain manages operational items like **Assets**.
-- An admin manages teams and configuration safely.
+- A player checks team info, training schedule, and performance metrics.
+- A coach manages training sessions, attendance, and match records.
+- A captain handles registration, manages the roster, and edits team rules.
+- An admin manages teams, configuration, and all operational data.
 
 ## 4. Feature Map (High-level)
 
-This is a high-level map; details live in [`Feature Specs`](./features/README.md) docs.
+This is a high-level map; details live in the [`Page Specs`](./pages/README.md) docs.
 
 ## 5. Product Principles (Shared UX expectations)
 

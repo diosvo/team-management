@@ -1,0 +1,48 @@
+name: 📂 Product Requirements Document
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/prd/**'
+      - 'scripts/build-prd-pdf.mjs'
+      - 'scripts/prd-pdf.css'
+
+  pull_request:
+    branches: [main] # Trigger on PRs targeting main branch
+    paths:
+      - 'docs/prd/**'
+      - 'scripts/build-prd-pdf.mjs'
+      - 'scripts/prd-pdf.css'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v7
+
+      - name: 🚚 Setup node
+        uses: actions/setup-node@v6
+        with:
+          node-version: latest
+
+      # We don't touch the app's pnpm-managed dependencies, then symlink it where the ESM import resolves.
+      - name: 📦 Install md-to-pdf (isolated)
+        run: |
+          mkdir -p .prd-tools
+          echo '{"name":"prd-tools","private":true}' > .prd-tools/package.json
+          (cd .prd-tools && npm install md-to-pdf@5)
+          ln -sfn "$PWD/.prd-tools/node_modules" scripts/node_modules
+
+      - name: 🔨 Build PDF
+        run: node scripts/build-prd-pdf.mjs
+
+      - name: 🚀 Upload file
+        uses: actions/upload-artifact@v7
+        with:
+          name: Product Requirements Document
+          path: sgr-team-management-prd.pdf
+          if-no-files-found: error
+          retention-days: 30

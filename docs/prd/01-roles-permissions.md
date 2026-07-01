@@ -1,74 +1,97 @@
 # Authentication & Authorization
 
-### Layer 1: Proxy
+## Auth layers
 
-> proxy.ts
+### Layer 1: Proxy (`proxy.ts`)
 
-Route guard for page navigation only.
+Runs on every page navigation (not server actions).
 
-→ Block unauthenticated/ expired page navigation and RBAC before hitting the route handler.
+- Checks for a session cookie; if missing, redirects to `/login`.
+- If a session cookie is present but the cache is expired, redirects to `/login`.
+- Resolves the current pathname to a `Resource` and calls `can(role, resource, 'view')`; if denied, redirects to `/forbidden`.
+- **Does not run** for server action requests (`next-action` header) — server actions enforce their own auth.
 
-### Layer 2: withAuth / withResource
+### Layer 2: `withAuth` / `withResource` (`src/actions/auth.ts`)
 
-> `auth.api.getSession`
+The only layer that cannot be bypassed. Runs inside every server action.
 
-- Only layer that cannot be bypassed.
-- Always runs for every server action.
-- Provide `user` context.
+- `withAuth` — verifies the session and injects the `user` context into the action.
+- `withResource(resource)(actions, fn)` — calls `withAuth`, then checks that the user's ability includes **all** listed actions on the resource via `defineAbility`. Returns `forbidden()` if not.
 
-### Layer 3: Layout
+### Layer 3: Layout / client (`authClient.useSession`)
 
-> `authClient.useSession`
+Proactive client-side UX. Reads the session client-side and controls which UI elements are rendered. Does not enforce security — server is the source of truth.
 
-Proactive client-side UX
+---
 
 # Roles, Permissions & Glossary
 
-## 1. Roles (Definitions)
+## 1. Roles
 
-### GUEST
+| Role          | Description                                                                                      |
+| ------------- | ------------------------------------------------------------------------------------------------ |
+| `GUEST`       | Read-only access to public team data (dashboard, roster, matches).                               |
+| `PLAYER`      | Standard team member. Can view most pages and submit attendance leave requests.                  |
+| `COACH`       | Coaching staff. Can manage training sessions, attendance, and matches.                           |
+| `SUPER_ADMIN` | Full access to all resources and actions.                                                        |
+| Captain       | A `PLAYER` with `is_captain = true`. Inherits PLAYER permissions plus elevated actions (see §2). |
 
-- Read-only access to view data.
+## 2. Permission Matrix
 
-### PLAYER
+| Resource           | GUEST | PLAYER           | COACH              | SUPER_ADMIN | Captain (extra)      |
+| ------------------ | ----- | ---------------- | ------------------ | ----------- | -------------------- |
+| `dashboard`        | view  | view             | view               | all         | —                    |
+| `team-rule`        | —     | view             | view               | all         | edit                 |
+| `roster`           | view  | view             | view               | all         | create, edit, delete |
+| `training`         | —     | view             | view, create, edit | all         | —                    |
+| `attendance`       | —     | view, create     | view, create, edit | all         | —                    |
+| `registration`     | —     | view             | view               | all         | create, edit         |
+| `matches`          | view  | view             | view, create, edit | all         | create, edit         |
+| `periodic-testing` | —     | view             | view               | all         | —                    |
+| `assets`           | —     | —                | view               | all         | —                    |
+| `leagues`          | —     | —                | view               | all         | —                    |
+| `locations`        | —     | —                | view               | all         | —                    |
+| `profile`          | —     | view, edit (own) | view, edit (own)   | all         | —                    |
 
-- Standard team member access.
+> `all` = view, create, edit, delete. Captain permissions are **additive** on top of PLAYER.
 
-### COACH
+## 3. Client-side enforcement
 
-- Staff-level access (typically view + coaching operations).
+### `usePermissions` hook
 
-### SUPER_ADMIN
+Returns the current user's permissions for use in React components:
 
-- Administrative access across the application.
+```ts
+const {
+  isAdmin,
+  isPlayer,
+  isCoach,
+  isGuest,
+  isCaptain,
+  can, // (resource, action) => boolean
+  canAll, // (Permission[]) => boolean
+  canAny, // (Permission[]) => boolean
+} = usePermissions();
+```
 
-### Captain (PLAYER flag)
+### `Authorized` component
 
-A PLAYER with elevated permissions for specific team-level operations.
+Renders `children` only when `can(resource, action)` is true. Use this to conditionally show action controls (Add, Edit, Delete buttons).
 
-## 2. Permission Model (General rules)
+```tsx
+<Authorized resource="roster" action="create">
+  <AddUserButton />
+</Authorized>
+```
 
-### 2.1. Server side
+### `Visibility` component
 
-Actions are enforced with `withResource` → defense-in-depth
+Renders children visibly or hidden based on any boolean condition (not permission-aware). Use for layout-level show/hide where the check is already done elsewhere.
 
-### 2.2. Client (UI) side
-
-Hide actions or UI elements with `usePermissions`:
-
-- isAdmin, isCoach, isPlayer, isGuest
-- can
-- canAll
-- canAny
-
-The rule of thumb: if you're hiding an action button (create/edit/delete), use `Authorized`. Everything else stays `Visibility`.
-
-### 2.3. Proxy
-
-- Items on sidebar are hidden by permissions.
-- Direct URL / API access will be rejected when unauthorized or don't have permissions.
-
-## 3. Glossary
+## 4. Glossary
 
 - **RBAC:** Role-Based Access Control
-- **Query params:** URL parameters like `?q=ball&condition=Good` used to store filter state.
+- **`withResource`:** server-side HOF that enforces `resource:action` permission before executing a server action
+- **`withAuth`:** server-side HOF that verifies the session and provides user context
+- **Captain flag:** `is_captain` field on the user record; grants additional permissions on top of the PLAYER role
+- **Query params:** URL parameters (e.g. `?q=ball&condition=Good`) used to persist filter state
