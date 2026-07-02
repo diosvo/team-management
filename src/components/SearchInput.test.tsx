@@ -96,4 +96,22 @@ describe('SearchInput', () => {
     expect(input.value).toBe('');
     expect(input).toHaveFocus();
   });
+
+  test('resyncs the input when the URL query changes externally', async () => {
+    const { user, input, rerender } = setup({ q: 'stale' });
+    expect(input.value).toBe('stale');
+
+    await user.clear(input);
+    await user.type(input, 'edited');
+    expect(input.value).toBe('edited');
+
+    // Simulate an external URL change (e.g. a stat card click resetting `q`).
+    (nuqs.useQueryStates as unknown as Mock).mockReturnValue([
+      { q: '' },
+      mockSetSearchParams,
+    ]);
+    rerender(<SearchInput />);
+
+    expect(input.value).toBe('');
+  });
 });
