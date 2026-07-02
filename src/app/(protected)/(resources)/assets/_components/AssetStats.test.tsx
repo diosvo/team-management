@@ -58,7 +58,7 @@ describe('AssetStats', () => {
     expect(setSearchParams).toHaveBeenCalledWith(null);
   });
 
-  test('filters by poor condition while preserving existing params when need replacement is clicked', async () => {
+  test('filters by poor condition, resets to the first page, and preserves existing params when need replacement is clicked', async () => {
     const params = { q: '1' };
     const { user } = setup(
       { ...MOCK_ASSET_STATS, need_replacement: 2 },
@@ -70,6 +70,7 @@ describe('AssetStats', () => {
     expect(setSearchParams).toHaveBeenCalledWith({
       ...params,
       condition: [AssetCondition.POOR],
+      page: 1,
     });
   });
 

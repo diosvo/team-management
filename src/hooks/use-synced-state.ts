@@ -1,3 +1,4 @@
+import { isEqual } from 'es-toolkit/predicate';
 import { useRef, useState, type Dispatch, type SetStateAction } from 'react';
 
 /**
@@ -16,13 +17,12 @@ export default function useSyncedState<T>(
   external: T,
 ): [T, Dispatch<SetStateAction<T>>] {
   const [local, setLocal] = useState<T>(external);
-  const prevRef = useRef<T>(external);
+  const prev = useRef<T>(external);
 
   // Value comparison (not referential) so arrays/objects rebuilt on each URL
   // read don't trigger a false resync.
-  const serialized = JSON.stringify(external);
-  if (JSON.stringify(prevRef.current) !== serialized) {
-    prevRef.current = external;
+  if (!isEqual(prev.current, external)) {
+    prev.current = external;
     setLocal(external);
   }
 

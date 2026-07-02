@@ -38,9 +38,11 @@ type CategoricalValues = Record<string, Array<string>>;
 
 const pickArrays = (
   source: Record<string, unknown>,
-  keys: string[],
+  keys: Array<string>,
 ): CategoricalValues =>
-  Object.fromEntries(keys.map((key) => [key, (source[key] as string[]) ?? []]));
+  Object.fromEntries(
+    keys.map((key) => [key, (source[key] as Array<string>) ?? []]),
+  );
 
 export const isInlineControl = (control: FilterControl): boolean =>
   control.type === 'interval' || control.type === 'date';
@@ -67,8 +69,10 @@ export default function Filters<T extends Record<string, unknown>>({
   // bypassing the drawer's Apply flow.
   const [draft, setDraft] = useSyncedState<CategoricalValues>(committed);
 
-  const setField = (field: string, value: Array<string>) =>
-    setDraft((prev) => ({ ...prev, [field]: value }));
+  const setField = <K extends keyof CategoricalValues>(
+    field: K,
+    value: CategoricalValues[K],
+  ) => setDraft((prev) => ({ ...prev, [field]: value }));
   const handleReset = () => setDraft(defaultsSubset);
   const handleApply = () => onApply(draft as Partial<T>);
   const handleInteractOutside = () => setDraft(committed);
@@ -114,7 +118,6 @@ export default function Filters<T extends Record<string, unknown>>({
 
       {categoricalDefs.length > 0 && (
         <Drawer.Root
-          closeOnEscape={false}
           placement={{ base: 'bottom', lg: 'end' }}
           onInteractOutside={handleInteractOutside}
         >

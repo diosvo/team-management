@@ -57,7 +57,7 @@ This is a high-level map; details live in the [`Page Specs`](./pages/README.md) 
 The **URL is the single source of truth** for search (`q`), pagination (`page`), and filters. Any UI holding local state (the search box, the Advanced Filters drawer draft) is only a _mirror_ of the URL and must follow one two-way contract:
 
 - **Local → URL** on commit (Apply / debounced typing / stat card click).
-- **URL → Local** whenever the URL changes from _outside_ that component (card click,back button, reset, deep link) - so mirrors never drift or clobber the URL.
+- **URL → Local** whenever the URL changes from _outside_ that component (card click, back button, reset, deep link) - so mirrors never drift or clobber the URL.
 
 The `URL → Local` resync is centralized in the `useSyncedState` hook; every filter mirror
 reuses it rather than re-implementing sync.

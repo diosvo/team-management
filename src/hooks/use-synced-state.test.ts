@@ -11,7 +11,7 @@ describe('useSyncedState', () => {
   });
 
   test('local updates do not affect the external value', () => {
-    const { result } = renderHook(() => useSyncedState('hello'));
+    const { result } = renderHook(() => useSyncedState<string>('hello'));
 
     const [, setValue] = result.current;
     act(() => setValue('world'));
