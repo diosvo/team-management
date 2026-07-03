@@ -4,7 +4,6 @@ import { Mock } from 'vitest';
 import { MOCK_ASSET_STATS } from '@/test/mocks/asset';
 import { axeInteractiveStat, renderWithUI, screen } from '@/test/utilities';
 
-import { useAssetFilters } from '@/lib/nuqs';
 import { AssetCondition } from '@/utils/enum';
 
 import AssetStats from './AssetStats';
@@ -12,9 +11,9 @@ import AssetStats from './AssetStats';
 describe('AssetStats', () => {
   const setSearchParams = vi.fn();
 
-  const setup = (stats = MOCK_ASSET_STATS) => {
+  const setup = (stats = MOCK_ASSET_STATS, params = {}) => {
     (nuqs.useQueryStates as unknown as Mock).mockReturnValue([
-      {},
+      params,
       setSearchParams,
     ]);
 
@@ -59,14 +58,19 @@ describe('AssetStats', () => {
     expect(setSearchParams).toHaveBeenCalledWith(null);
   });
 
-  test('filters by poor condition when need replacement is clicked', async () => {
-    const { user } = setup({ ...MOCK_ASSET_STATS, need_replacement: 2 });
+  test('filters by poor condition, resets to the first page, and preserves existing params when need replacement is clicked', async () => {
+    const params = { q: '1' };
+    const { user } = setup(
+      { ...MOCK_ASSET_STATS, need_replacement: 2 },
+      params,
+    );
 
     await user.click(screen.getByText('Need Replacement'));
 
     expect(setSearchParams).toHaveBeenCalledWith({
-      ...useAssetFilters.defaults,
+      ...params,
       condition: [AssetCondition.POOR],
+      page: 1,
     });
   });
 
