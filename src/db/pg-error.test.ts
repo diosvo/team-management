@@ -38,6 +38,7 @@ describe('PgErrorCode', () => {
     // Integrity constraint violations — drive the PostgresErrorHandlers map
     ['UNIQUE_VIOLATION', PgErrorCode.UNIQUE_VIOLATION, '23505'],
     ['FOREIGN_KEY_VIOLATION', PgErrorCode.FOREIGN_KEY_VIOLATION, '23503'],
+    ['RESTRICT_VIOLATION', PgErrorCode.RESTRICT_VIOLATION, '23001'],
     ['CHECK_VIOLATION', PgErrorCode.CHECK_VIOLATION, '23514'],
     ['NOT_NULL_VIOLATION', PgErrorCode.NOT_NULL_VIOLATION, '23502'],
     // Schema/syntax errors
@@ -105,6 +106,33 @@ describe('getDbErrorMessage', () => {
           getDbErrorMessage(
             createQueryError(PgErrorCode.FOREIGN_KEY_VIOLATION),
           ),
+        ).toEqual({
+          message,
+          constraint: null,
+        });
+      });
+    });
+
+    describe('RESTRICT_VIOLATION (23001)', () => {
+      const message =
+        'This record is still referenced by other records and cannot be modified.';
+
+      test('returns the constraint name when set', () => {
+        expect(
+          getDbErrorMessage(
+            createQueryError(PgErrorCode.RESTRICT_VIOLATION, {
+              constraint: 'test_result_type_id_test_type_type_id_fk',
+            }),
+          ),
+        ).toEqual({
+          message,
+          constraint: 'test_result_type_id_test_type_type_id_fk',
+        });
+      });
+
+      test('returns null constraint when not set', () => {
+        expect(
+          getDbErrorMessage(createQueryError(PgErrorCode.RESTRICT_VIOLATION)),
         ).toEqual({
           message,
           constraint: null,

@@ -1,14 +1,16 @@
 import { TestType, User } from '@/drizzle/schema';
 
 export interface PlayerTestResult {
-  result_id: string;
   player_id: string;
   player_name: string;
-  tests: Record<string, string>;
+  // Keyed by test type name. Each cell carries its own `result_id` so an
+  // inline edit updates the correct player/type row.
+  tests: Record<string, { result_id: string; result: string }>;
 }
 
 export interface TestResult {
-  headers: Array<{ name: string; unit: string }>;
+  // `type_id` lets an inline edit on an empty cell create the missing result.
+  headers: Array<{ type_id: string; name: string; unit: string }>;
   players: Array<PlayerTestResult>;
 }
 

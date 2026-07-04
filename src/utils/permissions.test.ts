@@ -26,6 +26,29 @@ describe('can', () => {
       isCaptain: false,
       expected: false,
     },
+    // COACH fully manages periodic testing (results + test types)
+    {
+      role: UserRole.COACH,
+      resource: 'periodic-testing',
+      action: 'delete',
+      isCaptain: false,
+      expected: true,
+    },
+    // Captain also fully manages periodic testing
+    {
+      role: UserRole.PLAYER,
+      resource: 'periodic-testing',
+      action: 'edit',
+      isCaptain: true,
+      expected: true,
+    },
+    {
+      role: UserRole.PLAYER,
+      resource: 'periodic-testing',
+      action: 'edit',
+      isCaptain: false,
+      expected: false,
+    },
     // PLAYER base permissions
     {
       role: UserRole.PLAYER,

@@ -3,6 +3,7 @@ import { InsertTestResult } from '@/drizzle/schema';
 
 import { getDbErrorMessage } from '@/db/pg-error';
 import {
+  deleteTestResultById as deleteAction,
   getDates,
   getTestResultByDate,
   getTestResultByUserAndTypeIds,
@@ -25,6 +26,7 @@ import {
 
 import {
   createTestResult,
+  deleteTestResultById,
   getTestDates,
   getTestResult,
   updateTestResultById,
@@ -42,6 +44,7 @@ vi.mock('@/db/test-result', () => ({
   insertTestResult: vi.fn(),
   updateTestResultById: vi.fn(),
   updateTestResults: vi.fn(),
+  deleteTestResultById: vi.fn(),
 }));
 
 vi.mock('@/actions/cache', () => ({
@@ -66,6 +69,13 @@ describe('permissions', () => {
     expect(mockWithResourceAction).toHaveBeenCalledWith(
       ['edit'],
       expect.objectContaining({ name: 'updateById' }),
+    );
+  });
+
+  test('deleteTestResultById requires delete action', () => {
+    expect(mockWithResourceAction).toHaveBeenCalledWith(
+      ['delete'],
+      expect.objectContaining({ name: 'deleteById' }),
     );
   });
 });
@@ -285,6 +295,42 @@ describe('Test Result Actions', () => {
       expect(result).toEqual({
         success: false,
         message: pgError,
+      });
+    });
+  });
+
+  describe('deleteTestResultById', () => {
+    test('deletes test result and revalidates cache', async () => {
+      vi.mocked(deleteAction).mockResolvedValue({
+        ...mockResult,
+        command: 'DELETE',
+      });
+
+      const result = await deleteTestResultById(MOCK_TEST_RESULT.result_id);
+
+      expect(deleteAction).toHaveBeenCalledWith(MOCK_TEST_RESULT.result_id);
+      expect(revalidate.testResults).toHaveBeenCalled();
+      expect(result).toEqual({
+        success: true,
+        message: 'Test result deleted successfully',
+      });
+    });
+
+    test('returns error response when delete fails', async () => {
+      const errorMessage = 'Delete failed';
+      vi.mocked(deleteAction).mockRejectedValue(new Error(errorMessage));
+      vi.mocked(getDbErrorMessage).mockReturnValue({
+        message: errorMessage,
+        constraint: null,
+      });
+
+      const result = await deleteTestResultById(MOCK_TEST_RESULT.result_id);
+
+      expect(getDbErrorMessage).toHaveBeenCalled();
+      expect(revalidate.testResults).not.toHaveBeenCalled();
+      expect(result).toEqual({
+        success: false,
+        message: errorMessage,
       });
     });
   });

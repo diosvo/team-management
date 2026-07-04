@@ -363,6 +363,11 @@ const PostgresErrorHandlers: Record<
       'A foreign key violation occurred. The record you are trying to link does not exist.',
     constraint: error.constraint || null,
   }),
+  [PgErrorCode.RESTRICT_VIOLATION]: (error) => ({
+    message:
+      'This record is still referenced by other records and cannot be modified.',
+    constraint: error.constraint || null,
+  }),
   [PgErrorCode.CHECK_VIOLATION]: (error) => ({
     message: 'A check constraint was violated.',
     constraint: error.constraint || null,

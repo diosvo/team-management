@@ -293,19 +293,21 @@ describe('Client-Side Filter Hooks', () => {
   });
 
   describe('usePeriodicTestingFilters', () => {
-    test('calls useQueryStates with periodic testing params and shallow: false', () => {
+    test('calls useQueryStates with periodic testing params (shallow by default)', () => {
       const mockReturn = [{ page: 1, q: '', date: '' }, vi.fn()];
       (nuqs.useQueryStates as unknown as Mock).mockReturnValue(mockReturn);
 
       const { result } = renderHook(() => usePeriodicTestingFilters());
 
+      // Client-only by default; only the date change opts into a server
+      // round-trip via a per-call `{ shallow: false }` override.
       expect(nuqs.useQueryStates).toHaveBeenCalledWith(
         expect.objectContaining({
           page: expect.anything(),
           q: expect.anything(),
           date: expect.anything(),
         }),
-        { shallow: false },
+        {},
       );
       expect(result.current).toBe(mockReturn);
     });
@@ -315,6 +317,7 @@ describe('Client-Side Filter Hooks', () => {
         page: 1,
         q: '',
         date: '',
+        type: [],
       });
     });
   });

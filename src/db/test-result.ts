@@ -22,7 +22,7 @@ export async function getDates(): Promise<Array<string>> {
 }
 
 export async function getTestResultByDate(date: string): Promise<TestResult> {
-  const types = new Map<string, string>();
+  const types = new Map<string, { type_id: string; unit: string }>();
 
   try {
     const results = await db.query.TestResultTable.findMany({
@@ -45,10 +45,14 @@ export async function getTestResultByDate(date: string): Promise<TestResult> {
 
     // Build headers from the results
     results.forEach(({ type }) => {
-      const { name, unit } = type;
-      if (!types.has(name)) types.set(name, unit);
+      const { type_id, name, unit } = type;
+      if (!types.has(name)) types.set(name, { type_id, unit });
     });
-    const headers = [...types].map(([name, unit]) => ({ name, unit }));
+    const headers = [...types].map(([name, { type_id, unit }]) => ({
+      type_id,
+      name,
+      unit,
+    }));
 
     const players: Array<PlayerTestResult> = Object.values(
       results.reduce(
@@ -59,10 +63,9 @@ export async function getTestResultByDate(date: string): Promise<TestResult> {
             player_id,
             player_name: player.user.name,
             tests: {},
-            result_id,
           };
 
-          acc[player_id].tests[type.name] = result;
+          acc[player_id].tests[type.name] = { result_id, result };
           return acc;
         },
         {} as Record<string, PlayerTestResult>,
@@ -108,4 +111,10 @@ export async function updateTestResultById(result: Partial<InsertTestResult>) {
 
 export async function updateTestResults(results: Array<InsertTestResult>) {
   return await Promise.all(results.map(updateTestResultById));
+}
+
+export async function deleteTestResultById(result_id: string) {
+  return await db
+    .delete(TestResultTable)
+    .where(eq(TestResultTable.result_id, result_id));
 }

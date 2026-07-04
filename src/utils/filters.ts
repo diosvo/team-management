@@ -12,6 +12,7 @@ export {
   useMatchFilters,
   usePeriodicTestingFilters,
   useRosterFilters,
+  useTestTypeFilters,
   useTrainingFilters,
 } from '@/lib/nuqs';
 

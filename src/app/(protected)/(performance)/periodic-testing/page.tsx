@@ -1,10 +1,12 @@
 import { Metadata } from 'next';
 
-import PageTitle from '@/components/PageTitle';
-import TestingResultList from './_components/TestingResultList';
-
-import { getTestResult } from '@/actions/test-result';
+import { getTestDates, getTestResult } from '@/actions/test-result';
 import { loadPeriodicTestingFilters } from '@/utils/filters';
+
+import PlayerPerformanceMatrix from './_components/PlayerPerformanceMatrix';
+import TestingFilters from './_components/TestingFilters';
+import TestingHeader from './_components/TestingHeader';
+import TestingStats from './_components/TestingStats';
 
 export const metadata: Metadata = {
   title: 'Periodic Testing',
@@ -15,12 +17,22 @@ export default async function PeriodicTestingPage({
   searchParams,
 }: PageProps<'/periodic-testing'>) {
   const { date } = await loadPeriodicTestingFilters(searchParams);
-  const result = await getTestResult(date);
+  const [result, dates] = await Promise.all([
+    getTestResult(date),
+    getTestDates(),
+  ]);
 
   return (
     <>
-      <PageTitle title="Periodic Testing" />
-      <TestingResultList result={result} />
+      <TestingHeader />
+      <TestingStats
+        stats={{
+          completed_tests: result.headers.length,
+          total_players: result.players.length,
+        }}
+      />
+      <TestingFilters dates={dates} />
+      <PlayerPerformanceMatrix result={result} />
     </>
   );
 }

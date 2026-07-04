@@ -1,83 +1,166 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { memo, useCallback, useMemo, useState, useTransition } from 'react';
 
-import { Button, Flex, Highlight, Table, Text } from '@chakra-ui/react';
+import { Editable, Table, Text } from '@chakra-ui/react';
 import { FileUser } from 'lucide-react';
 
+import HighlightText from '@/components/HighlightText';
 import Pagination from '@/components/Pagination';
 import { EmptyState } from '@/components/ui/empty-state';
-import {
-  NumberInputField,
-  NumberInputRoot,
-} from '@/components/ui/number-input';
-import {
-  PopoverArrow,
-  PopoverBody,
-  PopoverCloseTrigger,
-  PopoverContent,
-  PopoverRoot,
-  PopoverTitle,
-  PopoverTrigger,
-} from '@/components/ui/popover';
 import { toaster } from '@/components/ui/toaster';
 
 import usePermissions from '@/hooks/use-permissions';
+import useTableState from '@/hooks/use-table-state';
 
-import { updateTestResultById } from '@/actions/test-result';
-import { TestResult } from '@/types/periodic-testing';
-import { paginateData, useCommonParams } from '@/utils/filters';
+import {
+  createTestResult,
+  deleteTestResultById,
+  updateTestResultById,
+} from '@/actions/test-result';
+import { PlayerTestResult, TestResult } from '@/types/periodic-testing';
+import { usePeriodicTestingFilters } from '@/utils/filters';
 
-type Cell = {
+const PAGE_SIZE = 10;
+
+const stickyColumn = {
+  position: 'sticky',
+  left: 0,
+  zIndex: 1,
+  backgroundColor: 'white',
+} as const;
+
+type MatrixCellProps = {
+  resultId?: string;
+  value: string;
+  editable: boolean;
+  // Identify the player/type/date so an empty cell can create a new result.
   playerId: string;
-  resultId: string;
-  currentScore: string;
-  newScore: string;
+  typeId: string;
+  date: string;
 };
 
-export default function PlayerPerformanceMatrix({
-  result,
-}: {
-  result: TestResult;
-}) {
-  const [{ q, page }, setSearchParams] = useCommonParams();
-  const { isGuest, isPlayer } = usePermissions();
-  const viewOnly = isGuest || isPlayer;
-
+/**
+ * A single editable score cell. Owns its own draft + transition so editing one
+ * cell never re-renders the rest of the matrix.
+ */
+const MatrixCell = memo(function MatrixCell({
+  resultId,
+  value,
+  editable,
+  playerId,
+  typeId,
+  date,
+}: MatrixCellProps) {
+  const [score, setScore] = useState(value);
+  const [committed, setCommitted] = useState(value);
   const [isPending, startTransition] = useTransition();
-  const [openPopoverKey, setOpenPopoverKey] = useState<Nullable<string>>(null);
 
-  const [editingCell, setEditingCell] = useState<Cell>({
-    playerId: '',
-    resultId: '',
-    currentScore: '0',
-    newScore: '0',
-  });
+  // Adjust the draft during render when the server value changes (e.g.
+  // revalidation) instead of in an effect — avoids a cascading re-render.
+  if (value !== committed) {
+    setCommitted(value);
+    setScore(value);
+  }
 
-  const totalCount = result.players.length;
-  const currentData = paginateData(result.players, page);
+  const onCommit = (next: string) => {
+    // No change — nothing to do.
+    if (next === value) {
+      setScore(value);
+      return;
+    }
 
-  const onScoreUpdate = (cell: Cell) => {
-    const id = toaster.create({
-      type: 'loading',
-      title: 'Updating score...',
-    });
+    // Cleared: delete the saved result, or revert if the cell was empty.
+    if (next === '') {
+      if (!resultId) {
+        setScore(value);
+        return;
+      }
+
+      const id = toaster.create({
+        type: 'loading',
+        title: 'Deleting score...',
+      });
+
+      startTransition(async () => {
+        const { success, message: title } =
+          await deleteTestResultById(resultId);
+
+        toaster.update(id, { type: success ? 'success' : 'error', title });
+
+        // Revert the draft if the delete failed.
+        if (!success) setScore(value);
+      });
+      return;
+    }
+
+    const id = toaster.create({ type: 'loading', title: 'Saving score...' });
 
     startTransition(async () => {
-      const { success, message: title } = await updateTestResultById({
-        result_id: cell.resultId,
-        player_id: cell.playerId,
-        result: cell.newScore,
-      });
+      const { success, message: title } = resultId
+        ? await updateTestResultById({ result_id: resultId, result: next })
+        : await createTestResult([
+            { player_id: playerId, type_id: typeId, date, result: next },
+          ]);
 
-      toaster.update(id, {
-        type: success ? 'success' : 'error',
-        title,
-      });
+      toaster.update(id, { type: success ? 'success' : 'error', title });
 
-      if (success) setOpenPopoverKey(null);
+      // Revert the draft if the save failed.
+      if (!success) setScore(value);
     });
   };
+
+  return (
+    <Table.Cell textAlign="center" padding={0}>
+      <Editable.Root
+        value={score}
+        placeholder="-"
+        disabled={!editable || isPending}
+        activationMode="click"
+        textAlign="center"
+        onValueChange={({ value }) => setScore(value)}
+        onValueCommit={({ value }) => onCommit(value)}
+      >
+        <Editable.Preview
+          width="full"
+          minHeight={8}
+          justifyContent="center"
+          _hover={editable ? { backgroundColor: 'gray.100' } : undefined}
+        />
+        <Editable.Input type="number" min={0} textAlign="center" />
+      </Editable.Root>
+    </Table.Cell>
+  );
+});
+
+function PlayerPerformanceMatrix({ result }: { result: TestResult }) {
+  const [{ q, page, type, date }, setSearchParams] =
+    usePeriodicTestingFilters();
+  const { can } = usePermissions();
+  // Drive editability off the actual ability so it matches the server actions
+  // (covers SUPER_ADMIN, COACH, and Captain — not viewer roles).
+  const editable = can('periodic-testing', 'edit');
+
+  const predicate = useCallback(
+    (player: PlayerTestResult) =>
+      player.player_name.toLowerCase().includes(q.toLowerCase()),
+    [q],
+  );
+  const { currentData, totalCount } = useTableState(
+    result.players,
+    predicate,
+    page,
+    { pageSize: PAGE_SIZE },
+  );
+
+  // Restrict columns to the selected test types (empty = show all).
+  const headers = useMemo(
+    () =>
+      type.length === 0
+        ? result.headers
+        : result.headers.filter(({ name }) => type.includes(name)),
+    [result.headers, type],
+  );
 
   return (
     <>
@@ -86,16 +169,10 @@ export default function PlayerPerformanceMatrix({
           {totalCount > 0 && (
             <Table.Header>
               <Table.Row>
-                <Table.ColumnHeader
-                  position="sticky"
-                  left={0}
-                  zIndex={1}
-                  backgroundColor="white"
-                >
+                <Table.ColumnHeader {...stickyColumn}>
                   Player
                 </Table.ColumnHeader>
-
-                {result.headers.map(({ name, unit }) => (
+                {headers.map(({ name, unit }) => (
                   <Table.ColumnHeader key={name} textAlign="center">
                     {name}
                     <Text
@@ -113,93 +190,30 @@ export default function PlayerPerformanceMatrix({
           )}
           <Table.Body>
             {currentData.length > 0 ? (
-              currentData.map(
-                ({ player_id, player_name, tests, result_id }) => (
-                  <Table.Row key={player_id}>
-                    <Table.Cell>
-                      <Highlight
-                        query={q}
-                        styles={{ backgroundColor: 'yellow' }}
-                      >
-                        {player_name}
-                      </Highlight>
-                    </Table.Cell>
-                    {result.headers.map(({ name }) => {
-                      const popoverKey = `${player_id}-${name}`;
-                      return (
-                        <Table.Cell
-                          key={name}
-                          textAlign="center"
-                          _hover={{
-                            cursor: viewOnly ? 'default' : 'pointer',
-                            backgroundColor: viewOnly ? 'default' : 'gray.100',
-                          }}
-                          onClick={() => {
-                            if (viewOnly) return;
-                            setOpenPopoverKey(popoverKey);
-                            setEditingCell({
-                              playerId: player_id,
-                              resultId: result_id,
-                              currentScore: tests[name] || '0',
-                              newScore: tests[name] || '0',
-                            });
-                          }}
-                        >
-                          <PopoverRoot
-                            open={openPopoverKey === popoverKey}
-                            size="xs"
-                            lazyMount
-                            unmountOnExit
-                            onOpenChange={({ open }) => {
-                              if (!open) setOpenPopoverKey(null);
-                            }}
-                          >
-                            <PopoverTrigger asChild>
-                              <Text>{parseFloat(tests[name]) || '-'}</Text>
-                            </PopoverTrigger>
-                            <PopoverContent>
-                              <PopoverArrow />
-                              <PopoverCloseTrigger />
-                              <PopoverBody>
-                                <PopoverTitle>New score:</PopoverTitle>
-                                <NumberInputRoot
-                                  min={0}
-                                  defaultValue={editingCell.currentScore}
-                                  marginBlock={3}
-                                  onValueChange={({ value }) => {
-                                    setEditingCell((prev) => ({
-                                      ...prev,
-                                      newScore: value,
-                                    }));
-                                  }}
-                                >
-                                  <NumberInputField />
-                                </NumberInputRoot>
-                                <Flex justifyContent="flex-end">
-                                  <Button
-                                    disabled={
-                                      parseFloat(editingCell.currentScore) ===
-                                        parseFloat(editingCell.newScore) ||
-                                      editingCell.newScore === '' ||
-                                      isPending
-                                    }
-                                    onClick={() => onScoreUpdate(editingCell)}
-                                  >
-                                    Save
-                                  </Button>
-                                </Flex>
-                              </PopoverBody>
-                            </PopoverContent>
-                          </PopoverRoot>
-                        </Table.Cell>
-                      );
-                    })}
-                  </Table.Row>
-                ),
-              )
+              currentData.map(({ player_id, player_name, tests }) => (
+                <Table.Row key={player_id}>
+                  <Table.Cell {...stickyColumn}>
+                    <HighlightText query={q}>{player_name}</HighlightText>
+                  </Table.Cell>
+                  {headers.map(({ name, type_id }) => {
+                    const cell = tests[name];
+                    return (
+                      <MatrixCell
+                        key={name}
+                        resultId={cell?.result_id}
+                        value={cell?.result ?? ''}
+                        editable={editable}
+                        playerId={player_id}
+                        typeId={type_id}
+                        date={date}
+                      />
+                    );
+                  })}
+                </Table.Row>
+              ))
             ) : (
               <Table.Row>
-                <Table.Cell colSpan={result.headers.length + 1}>
+                <Table.Cell colSpan={headers.length + 1}>
                   <EmptyState
                     icon={<FileUser />}
                     title="No test result found"
@@ -214,9 +228,11 @@ export default function PlayerPerformanceMatrix({
       <Pagination
         count={totalCount}
         page={page}
-        pageSize={10}
+        pageSize={PAGE_SIZE}
         onPageChange={setSearchParams}
       />
     </>
   );
 }
+
+export default memo(PlayerPerformanceMatrix);

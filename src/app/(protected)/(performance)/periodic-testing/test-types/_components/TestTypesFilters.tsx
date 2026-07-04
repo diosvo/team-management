@@ -1,30 +1,28 @@
 'use client';
 
-import { Button, HStack } from '@chakra-ui/react';
-import { Plus } from 'lucide-react';
+import Filters from '@/components/filters/Filters';
 
-import SearchInput from '@/components/SearchInput';
+import { useTestTypeFilters } from '@/lib/nuqs';
+import type { FilterDef } from '@/types/filters';
+import { TEST_TYPE_UNIT_SELECTION } from '@/utils/constant';
 
-import { UpsertTestType } from './UpsertTestType';
+const FILTERS: Array<FilterDef> = [
+  {
+    key: 'unit',
+    label: 'Unit',
+    control: { type: 'checkbox-group', options: TEST_TYPE_UNIT_SELECTION },
+  },
+];
 
 export default function TestTypesFilters() {
+  const [values, setSearchParams] = useTestTypeFilters();
+
   return (
-    <HStack marginBottom={6}>
-      <SearchInput />
-      <Button
-        size={{ base: 'sm', md: 'md' }}
-        onClick={() =>
-          UpsertTestType.open('add-test-type', {
-            action: 'Add',
-            item: {
-              type_id: '',
-            },
-          })
-        }
-      >
-        <Plus />
-        Add
-      </Button>
-    </HStack>
+    <Filters
+      filters={FILTERS}
+      values={values}
+      defaults={useTestTypeFilters.defaults}
+      onApply={(next) => setSearchParams({ ...next, page: 1 })}
+    />
   );
 }

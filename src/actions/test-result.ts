@@ -4,6 +4,7 @@ import { InsertTestResult } from '@/drizzle/schema';
 
 import { getDbErrorMessage } from '@/db/pg-error';
 import {
+  deleteTestResultById as deleteAction,
   getDates,
   getTestResultByDate,
   getTestResultByUserAndTypeIds,
@@ -58,6 +59,8 @@ export const createTestResult = periodicTesting(
       if (toCreate.length > 0) await insertTestResult(toCreate);
       if (toUpdate.length > 0) await updateTestResults(toUpdate);
 
+      revalidate.testResults();
+
       return ResponseFactory.success(
         `${toCreate.length} created, ${toUpdate.length} updated`,
       );
@@ -77,6 +80,22 @@ export const updateTestResultById = periodicTesting(
       revalidate.testResults();
 
       return ResponseFactory.success('Test result updated successfully');
+    } catch (error) {
+      const { message } = getDbErrorMessage(error);
+      return ResponseFactory.error(message);
+    }
+  },
+);
+
+export const deleteTestResultById = periodicTesting(
+  ['delete'],
+  async function deleteById(_, result_id: string) {
+    try {
+      await deleteAction(result_id);
+
+      revalidate.testResults();
+
+      return ResponseFactory.success('Test result deleted successfully');
     } catch (error) {
       const { message } = getDbErrorMessage(error);
       return ResponseFactory.error(message);
