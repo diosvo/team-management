@@ -13,7 +13,11 @@ import { toaster } from '@/components/ui/toaster';
 import usePermissions from '@/hooks/use-permissions';
 import useTableState from '@/hooks/use-table-state';
 
-import { createTestResult, updateTestResultById } from '@/actions/test-result';
+import {
+  createTestResult,
+  deleteTestResultById,
+  updateTestResultById,
+} from '@/actions/test-result';
 import { PlayerTestResult, TestResult } from '@/types/periodic-testing';
 import { usePeriodicTestingFilters } from '@/utils/filters';
 
@@ -60,9 +64,33 @@ const MatrixCell = memo(function MatrixCell({
   }
 
   const onCommit = (next: string) => {
-    // No change, or cleared to empty (the score column is required) — revert.
-    if (next === value || next === '') {
+    // No change — nothing to do.
+    if (next === value) {
       setScore(value);
+      return;
+    }
+
+    // Cleared: delete the saved result, or revert if the cell was empty.
+    if (next === '') {
+      if (!resultId) {
+        setScore(value);
+        return;
+      }
+
+      const id = toaster.create({
+        type: 'loading',
+        title: 'Deleting score...',
+      });
+
+      startTransition(async () => {
+        const { success, message: title } =
+          await deleteTestResultById(resultId);
+
+        toaster.update(id, { type: success ? 'success' : 'error', title });
+
+        // Revert the draft if the delete failed.
+        if (!success) setScore(value);
+      });
       return;
     }
 
@@ -108,8 +136,10 @@ const MatrixCell = memo(function MatrixCell({
 function PlayerPerformanceMatrix({ result }: { result: TestResult }) {
   const [{ q, page, type, date }, setSearchParams] =
     usePeriodicTestingFilters();
-  const { isGuest, isPlayer } = usePermissions();
-  const editable = !(isGuest || isPlayer);
+  const { can } = usePermissions();
+  // Drive editability off the actual ability so it matches the server actions
+  // (covers SUPER_ADMIN, COACH, and Captain — not viewer roles).
+  const editable = can('periodic-testing', 'edit');
 
   const predicate = useCallback(
     (player: PlayerTestResult) =>

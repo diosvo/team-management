@@ -20,7 +20,7 @@ export const ROLE_CONFIG: Record<UserRole, RoleConfig> = {
     attendance: ['view', 'create', 'edit'],
     registration: ['view'],
     matches: ['view', 'create', 'edit'],
-    'periodic-testing': ['view'],
+    'periodic-testing': [...ALL_ACTIONS],
     assets: ['view'],
     leagues: ['view'],
     locations: ['view'],
@@ -49,6 +49,7 @@ const CAPTAIN_PERMISSIONS: RoleConfig = {
   roster: ['create', 'edit', 'delete'],
   matches: ['create', 'edit'],
   registration: ['create', 'edit'],
+  'periodic-testing': [...ALL_ACTIONS],
 };
 
 export type Ability = {

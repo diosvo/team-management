@@ -22,7 +22,7 @@ describe('StepIndicator', () => {
     const stepElement = screen.getByText('1');
 
     expect(stepElement).toBeInTheDocument();
-    expect(stepElement.tagName).toBe('SPAN');
+    expect(stepElement.tagName).toBe('DIV');
   });
 
   test('renders with different step numbers', () => {

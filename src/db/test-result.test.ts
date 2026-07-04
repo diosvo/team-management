@@ -10,11 +10,11 @@ import {
   mockUpdateSuccess,
 } from '@/test/db-operations';
 import {
+  MOCK_TEST_PLAYER_2,
   MOCK_TEST_RESULT,
   MOCK_TEST_RESULT_DATE,
   MOCK_TEST_RESULT_DB_ROW,
   MOCK_TEST_RESULT_INPUT,
-  MOCK_TEST_RESULT_RESPONSE,
 } from '@/test/mocks/periodic-testing';
 
 import {
@@ -114,13 +114,58 @@ describe('getTestResultByDate', () => {
   });
 
   test('returns headers and players for a given date', async () => {
+    // A second player with the same test type exercises player aggregation
+    // and header de-duplication (headers are derived from the result rows).
+    const secondRow = {
+      ...MOCK_TEST_RESULT_DB_ROW,
+      result_id: 'result-456',
+      result: '5.100',
+      player_id: MOCK_TEST_PLAYER_2.id,
+      player: {
+        ...MOCK_TEST_RESULT_DB_ROW.player,
+        id: MOCK_TEST_PLAYER_2.id,
+        user: MOCK_TEST_PLAYER_2,
+      },
+    };
+
     vi.mocked(db.query.TestResultTable.findMany).mockResolvedValue([
       MOCK_TEST_RESULT_DB_ROW,
+      secondRow,
     ]);
 
     const result = await getTestResultByDate(MOCK_TEST_RESULT_DATE);
 
-    expect(result).toEqual(MOCK_TEST_RESULT_RESPONSE);
+    expect(result).toEqual({
+      headers: [
+        {
+          type_id: MOCK_TEST_RESULT_DB_ROW.type.type_id,
+          name: MOCK_TEST_RESULT_DB_ROW.type.name,
+          unit: MOCK_TEST_RESULT_DB_ROW.type.unit,
+        },
+      ],
+      players: [
+        {
+          player_id: MOCK_TEST_RESULT_DB_ROW.player_id,
+          player_name: MOCK_TEST_RESULT_DB_ROW.player.user.name,
+          tests: {
+            [MOCK_TEST_RESULT_DB_ROW.type.name]: {
+              result_id: MOCK_TEST_RESULT.result_id,
+              result: MOCK_TEST_RESULT_INPUT.result,
+            },
+          },
+        },
+        {
+          player_id: MOCK_TEST_PLAYER_2.id,
+          player_name: MOCK_TEST_PLAYER_2.name,
+          tests: {
+            [MOCK_TEST_RESULT_DB_ROW.type.name]: {
+              result_id: 'result-456',
+              result: '5.100',
+            },
+          },
+        },
+      ],
+    });
     expect(db.query.TestResultTable.findMany).toHaveBeenCalledWith({
       with: {
         player: { with: { user: true } },

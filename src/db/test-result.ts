@@ -112,3 +112,9 @@ export async function updateTestResultById(result: Partial<InsertTestResult>) {
 export async function updateTestResults(results: Array<InsertTestResult>) {
   return await Promise.all(results.map(updateTestResultById));
 }
+
+export async function deleteTestResultById(result_id: string) {
+  return await db
+    .delete(TestResultTable)
+    .where(eq(TestResultTable.result_id, result_id));
+}

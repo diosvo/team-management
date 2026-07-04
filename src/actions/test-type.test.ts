@@ -232,7 +232,7 @@ describe('Test Type Actions', () => {
       vi.mocked(deleteTestType).mockRejectedValue({ code: '23503' });
       vi.mocked(getDbErrorMessage).mockReturnValue({
         message: 'Foreign key violation',
-        constraint: 'periodic_testing_test_type_id_fkey',
+        constraint: 'test_result_type_id_test_type_type_id_fk',
       });
 
       const result = await removeTestType(MOCK_TEST_TYPE.type_id);

@@ -58,7 +58,7 @@ export const removeTestType = periodicTesting(
       return ResponseFactory.success('Test type removed successfully');
     } catch (error) {
       const { message, constraint } = getDbErrorMessage(error);
-      if (constraint === 'periodic_testing_test_type_id_fkey') {
+      if (constraint === 'test_result_type_id_test_type_type_id_fk') {
         return ResponseFactory.error('Type is being in use.');
       }
       return ResponseFactory.error(message);

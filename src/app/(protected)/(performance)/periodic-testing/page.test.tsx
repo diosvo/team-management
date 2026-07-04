@@ -129,12 +129,11 @@ describe('PeriodicTestingPage', () => {
     });
   });
 
-  test('passes the dates and headers to the filters', async () => {
+  test('passes the dates to the filters', async () => {
     await setup();
 
     expect(propsSpy.filters).toEqual({
       dates: [MOCK_DATE],
-      headers: MOCK_TEST_RESULT_RESPONSE.headers,
     });
   });
 

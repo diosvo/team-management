@@ -1,10 +1,7 @@
 import * as nuqs from 'nuqs';
 import { Mock } from 'vitest';
 
-import {
-  MOCK_TEST_RESULT_DATE,
-  MOCK_TEST_RESULT_RESPONSE,
-} from '@/test/mocks/periodic-testing';
+import { MOCK_TEST_RESULT_DATE } from '@/test/mocks/periodic-testing';
 import { renderWithUI, screen } from '@/test/utilities';
 
 import TestingFilters from './TestingFilters';
@@ -31,11 +28,9 @@ describe('TestingFilters', () => {
 
   const setup = ({
     dates = [MOCK_TEST_RESULT_DATE],
-    headers = MOCK_TEST_RESULT_RESPONSE.headers,
     params = {},
   }: {
     dates?: Array<string>;
-    headers?: (typeof MOCK_TEST_RESULT_RESPONSE)['headers'];
     params?: Record<string, unknown>;
   } = {}) => {
     (nuqs.useQueryStates as unknown as Mock).mockReturnValue([
@@ -43,7 +38,7 @@ describe('TestingFilters', () => {
       mockSetSearchParams,
     ]);
 
-    return renderWithUI(<TestingFilters dates={dates} headers={headers} />);
+    return renderWithUI(<TestingFilters dates={dates} />);
   };
 
   beforeEach(() => {

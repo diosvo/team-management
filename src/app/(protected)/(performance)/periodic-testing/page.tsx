@@ -31,7 +31,7 @@ export default async function PeriodicTestingPage({
           total_players: result.players.length,
         }}
       />
-      <TestingFilters dates={dates} headers={result.headers} />
+      <TestingFilters dates={dates} />
       <PlayerPerformanceMatrix result={result} />
     </>
   );

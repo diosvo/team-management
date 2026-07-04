@@ -7,17 +7,10 @@ import { CalendarSearch } from 'lucide-react';
 
 import Filters from '@/components/filters/Filters';
 
-import type { TestResult } from '@/types/periodic-testing';
 import { usePeriodicTestingFilters } from '@/utils/filters';
 import { formatDate } from '@/utils/formatter';
 
-export default function TestingFilters({
-  dates,
-  headers,
-}: {
-  dates: Array<string>;
-  headers: TestResult['headers'];
-}) {
+export default function TestingFilters({ dates }: { dates: Array<string> }) {
   const [values, setSearchParams] = usePeriodicTestingFilters();
   const disabled = dates.length === 0;
 

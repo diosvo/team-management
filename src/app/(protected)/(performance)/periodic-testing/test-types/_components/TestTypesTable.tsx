@@ -62,7 +62,7 @@ export default function TestTypesTable({ data }: { data: Array<TestType> }) {
     toaster.create({
       type: hasErrors ? 'warning' : 'success',
       title: hasErrors
-        ? `${successCount} deleted, but some operations failed: ${errorMessages}`
+        ? `${successCount} deleted, some operations failed: ${errorMessages}`
         : `Successfully deleted ${successCount} type(s).`,
     });
 
@@ -98,9 +98,7 @@ export default function TestTypesTable({ data }: { data: Array<TestType> }) {
                 </Table.ColumnHeader>
               </Authorized>
               {HEADERS.map((header, index) => (
-                <Table.ColumnHeader key={header || index}>
-                  {header}
-                </Table.ColumnHeader>
+                <Table.ColumnHeader key={index}>{header}</Table.ColumnHeader>
               ))}
             </Table.Row>
           </Table.Header>

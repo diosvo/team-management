@@ -15,7 +15,11 @@ import { renderWithUI, screen, waitFor } from '@/test/utilities';
 
 import usePermissions from '@/hooks/use-permissions';
 
-import { createTestResult, updateTestResultById } from '@/actions/test-result';
+import {
+  createTestResult,
+  deleteTestResultById,
+  updateTestResultById,
+} from '@/actions/test-result';
 import { TestResult } from '@/types/periodic-testing';
 
 import PlayerPerformanceMatrix from './PlayerPerformanceMatrix';
@@ -27,6 +31,7 @@ vi.mock('@/hooks/use-permissions', () => ({
 vi.mock('@/actions/test-result', () => ({
   createTestResult: vi.fn(),
   updateTestResultById: vi.fn(),
+  deleteTestResultById: vi.fn(),
 }));
 
 vi.mock('@/components/ui/toaster', () => ({
@@ -44,20 +49,19 @@ describe('PlayerPerformanceMatrix', () => {
   const mockUsePermissions = usePermissions as unknown as Mock;
   const mockCreate = createTestResult as unknown as Mock;
   const mockUpdate = updateTestResultById as unknown as Mock;
+  const mockDelete = deleteTestResultById as unknown as Mock;
 
   const setup = ({
     result = MOCK_TEST_RESULT_RESPONSE,
-    perms = {},
+    canEdit = true,
     params = {},
   }: {
     result?: TestResult;
-    perms?: Record<string, boolean>;
+    canEdit?: boolean;
     params?: Record<string, unknown>;
   } = {}) => {
     mockUsePermissions.mockReturnValue({
-      isGuest: false,
-      isPlayer: false,
-      ...perms,
+      can: () => canEdit,
     });
     (nuqs.useQueryStates as unknown as Mock).mockReturnValue([
       { page: 1, q: '', date: MOCK_TEST_RESULT_DATE, type: [], ...params },
@@ -150,7 +154,9 @@ describe('PlayerPerformanceMatrix', () => {
     });
   });
 
-  test('reverts and does not save when a cell is cleared to empty', async () => {
+  test('deletes the result when a filled cell is cleared to empty', async () => {
+    mockDelete.mockResolvedValue({ success: true, message: 'Deleted' });
+
     const { user } = setup();
 
     await user.click(screen.getByText(FIRST_RESULT));
@@ -159,12 +165,28 @@ describe('PlayerPerformanceMatrix', () => {
     await user.type(input, '{Enter}');
 
     await waitFor(() => {
-      expect(mockUpdate).not.toHaveBeenCalled();
+      expect(mockDelete).toHaveBeenCalledWith(MOCK_TEST_RESULT.result_id);
     });
+    expect(mockUpdate).not.toHaveBeenCalled();
   });
 
-  test('does not allow editing for players', async () => {
-    const { user } = setup({ perms: { isPlayer: true } });
+  test('reverts and does nothing when an empty cell is left empty', async () => {
+    const { user } = setup();
+
+    // The first player has no second-type score yet (placeholder cell).
+    const [emptyCell] = screen.getAllByText('-');
+    await user.click(emptyCell);
+    const input = await screen.findByRole('spinbutton');
+    await user.type(input, '{Enter}');
+
+    await waitFor(() => {
+      expect(mockCreate).not.toHaveBeenCalled();
+    });
+    expect(mockDelete).not.toHaveBeenCalled();
+  });
+
+  test('does not allow editing without the edit permission', async () => {
+    const { user } = setup({ canEdit: false });
 
     await user.click(screen.getByText(FIRST_RESULT));
 
