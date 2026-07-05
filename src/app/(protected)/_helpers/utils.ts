@@ -25,6 +25,15 @@ type SidebarGroup = {
   }>;
 };
 
+/**
+ * Convert a kebab-case URL segment or resource key into a Title Case label
+ */
+export function segmentToLabel(segment: string): string {
+  return segment
+    .replace(/-/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
 export const SIDEBAR_GROUP: Array<SidebarGroup> = [
   {
     title: 'Overview',

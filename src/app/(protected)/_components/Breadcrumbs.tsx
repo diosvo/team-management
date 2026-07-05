@@ -6,6 +6,8 @@ import { Fragment } from 'react';
 
 import { Breadcrumb } from '@chakra-ui/react';
 
+import { segmentToLabel } from '../_helpers/utils';
+
 /**
  * Segments that have no index route of their own, so they should be rendered
  * as plain text instead of a link
@@ -13,12 +15,6 @@ import { Breadcrumb } from '@chakra-ui/react';
  * @example `/profile` only exists as `/profile/[id]`
  */
 const NON_NAVIGABLE_SEGMENTS = new Set<string>(['profile']);
-
-function toLabel(segment: string): string {
-  return segment
-    .replace(/-/g, ' ')
-    .replace(/\b\w/g, (char) => char.toUpperCase());
-}
 
 export default function Breadcrumbs() {
   const pathname = usePathname();
@@ -28,7 +24,7 @@ export default function Breadcrumbs() {
 
   const crumbs = segments.map((segment, index) => ({
     segment,
-    label: toLabel(segment),
+    label: segmentToLabel(segment),
     href: `/${segments.slice(0, index + 1).join('/')}`,
     isLast: index === segments.length - 1,
   }));

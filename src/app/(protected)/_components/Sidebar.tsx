@@ -20,7 +20,7 @@ import { LucideProps, PanelLeftOpen, PanelRightOpen } from 'lucide-react';
 
 import { Tooltip } from '@/components/ui/tooltip';
 import usePermissions from '@/hooks/use-permissions';
-import { SIDEBAR_GROUP } from '../_helpers/utils';
+import { SIDEBAR_GROUP, segmentToLabel } from '../_helpers/utils';
 
 const BUTTON_CONFIG = {
   size: { base: 'xs', md: 'sm', mdTo2xl: 'md' },
@@ -31,12 +31,6 @@ const BUTTON_CONFIG = {
     },
   },
 } as const;
-
-function resourceToName(resource: string) {
-  return resource
-    .replace(/-/g, ' ')
-    .replace(/\b\w/g, (char) => char.toUpperCase());
-}
 
 function LoadingIndicator() {
   const { pending } = useLinkStatus();
@@ -145,7 +139,7 @@ export default function Sidebar({
               disabled={disabled}
               isExpanded={isExpanded}
             >
-              {resourceToName(resource)}
+              {segmentToLabel(resource)}
             </NavButton>
           ))}
         </VStack>
