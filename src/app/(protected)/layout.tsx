@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { PropsWithChildren, Suspense, useEffect, useState } from 'react';
 
-import { Grid, GridItem, Separator, Stack } from '@chakra-ui/react';
+import { Grid, GridItem, Stack } from '@chakra-ui/react';
 
 import { toaster } from '@/components/ui/toaster';
 
@@ -11,6 +11,7 @@ import authClient from '@/lib/auth-client';
 import { LOGIN_PATH } from '@/routes';
 
 import Header from './_components/AppHeader';
+import Breadcrumbs from './_components/Breadcrumbs';
 import Sidebar from './_components/Sidebar';
 
 export default function AuthenticatedLayout({ children }: PropsWithChildren) {
@@ -53,7 +54,6 @@ export default function AuthenticatedLayout({ children }: PropsWithChildren) {
     >
       <GridItem gridArea="header">
         <Header />
-        <Separator />
       </GridItem>
 
       <GridItem
@@ -72,6 +72,13 @@ export default function AuthenticatedLayout({ children }: PropsWithChildren) {
 
       <GridItem gridArea="main" overflow="auto" height="100%">
         <Suspense>
+          <Stack
+            hideFrom="lg"
+            paddingBlock={2}
+            paddingInline={{ base: 4, lg: 6 }}
+          >
+            <Breadcrumbs />
+          </Stack>
           <Stack gap={{ base: 4, lg: 6 }} padding={{ base: 4, lg: 6 }}>
             {children}
           </Stack>
