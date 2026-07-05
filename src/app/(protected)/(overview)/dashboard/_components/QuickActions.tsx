@@ -1,9 +1,8 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
 
-import { Flex, SimpleGrid, Skeleton, VStack } from '@chakra-ui/react';
+import { Flex, SimpleGrid, VStack } from '@chakra-ui/react';
 import {
   CalendarRange,
   ClipboardCheck,
@@ -19,7 +18,7 @@ import SubmitLeaveRequest from '@/app/(protected)/(team-management)/attendance/_
 import { Card } from '@/components/ui/card';
 
 import usePermissions from '@/hooks/use-permissions';
-import authClient from '@/lib/auth-client';
+import { useSessionContext } from '@/providers/session';
 
 const actionItemStyles = {
   padding: 4,
@@ -34,16 +33,8 @@ const actionItemStyles = {
 } as const;
 
 export default function QuickActions() {
-  const [mounted, setMounted] = useState(false);
-
-  // Ensure server and first client render match to avoid hydration mismatch
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const { data } = authClient.useSession();
-
   const router = useRouter();
+  const { user } = useSessionContext();
   const { isAdmin, isPlayer } = usePermissions();
 
   const title = (
@@ -52,18 +43,6 @@ export default function QuickActions() {
       Quick Actions
     </Flex>
   );
-
-  if (!mounted || !data?.user) {
-    return (
-      <Card title={title} description="Shortcuts to common tasks">
-        <SimpleGrid columns={3} gap={6}>
-          {Array.from({ length: 3 }).map((_, index) => (
-            <Skeleton key={index} height="84px" borderRadius="md" />
-          ))}
-        </SimpleGrid>
-      </Card>
-    );
-  }
 
   const Actions = [
     {
@@ -82,7 +61,7 @@ export default function QuickActions() {
       enabled: isPlayer,
       title: 'My Stats',
       icon: FileCheck,
-      onClick: () => router.push('/performance/' + data.user.id),
+      onClick: () => router.push('/performance/' + user!.id),
     },
   ];
 

@@ -1,9 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
-import authClient from '@/lib/auth-client';
-import { UserRole } from '@/utils/enum';
 import {
   defineAbility,
   hasPermissions,
@@ -12,40 +10,41 @@ import {
   type Resource,
 } from '@/utils/permissions';
 
-import { User } from '@/drizzle/schema';
+import { useSessionContext } from '@/providers/session';
 
-const DEFAULT_PERMISSIONS = {
+export type PermissionsResult = {
+  isLoading: boolean;
+  isAdmin: boolean;
+  isPlayer: boolean;
+  isCoach: boolean;
+  isGuest: boolean;
+  isCaptain: boolean;
+  can: (resource: Resource, action: Action) => boolean;
+  canAll: (perms: Array<Permission>) => boolean;
+  canAny: (perms: Array<Permission>) => boolean;
+};
+
+const NO_ACCESS: Omit<PermissionsResult, 'isLoading'> = {
   isAdmin: false,
   isPlayer: false,
   isCoach: false,
   isGuest: false,
   isCaptain: false,
-  can: (_resource: Resource, _action: Action) => false,
-  canAll: (_perms: Array<Permission>) => false,
-  canAny: (_perms: Array<Permission>) => false,
+  can: () => false,
+  canAll: () => false,
+  canAny: () => false,
 } as const;
 
 export default function usePermissions() {
-  const [mounted, setMounted] = useState(false);
-
-  // Ensure client-side only execution
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const { data, isPending } = authClient.useSession();
-  const user = data?.user as User;
-  const role = user?.role as UserRole;
-  const ready = mounted && !isPending && !!data?.session && !!role;
+  const { role, isCaptain, isLoading } = useSessionContext();
 
   return useMemo(() => {
-    // Return default permissions during SSR or while mounting
-    if (!ready || !role) return DEFAULT_PERMISSIONS;
+    if (!role) return { isLoading, ...NO_ACCESS };
 
-    const isCaptain = user?.is_captain ?? false;
     const ability = defineAbility(role, isCaptain);
 
     return {
+      isLoading: false,
       ...hasPermissions(role),
       isCaptain,
       can: (resource: Resource, action: Action) =>
@@ -53,5 +52,5 @@ export default function usePermissions() {
       canAll: ability.canAll,
       canAny: ability.canAny,
     };
-  }, [ready, user]);
+  }, [role, isCaptain, isLoading]);
 }

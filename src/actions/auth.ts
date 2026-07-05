@@ -9,11 +9,13 @@
 
 import { headers } from 'next/headers';
 import { forbidden, redirect, RedirectType } from 'next/navigation';
+import { cache } from 'react';
 
-import { User } from '@/drizzle/schema';
+import type { User } from '@/drizzle/schema/user';
 import auth from '@/lib/auth';
 import { LOGIN_PATH } from '@/routes';
 
+import { UserRole } from '@/utils/enum';
 import {
   defineAbility,
   type Action,
@@ -23,7 +25,10 @@ import {
 
 type ServerAction<T extends Array<unknown>, R> = (...args: T) => Promise<R>;
 
-export const verifySession = async () => {
+/**
+ * Request-scoped session lookup.
+ */
+export const verifySession = cache(async () => {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -31,7 +36,7 @@ export const verifySession = async () => {
   if (!session || !session.user) return null;
 
   return session;
-};
+});
 
 export function withAuth<T extends Array<unknown>, R>(
   serverAction: (user: User, ...args: T) => Promise<R>,
@@ -49,28 +54,36 @@ export function withAuth<T extends Array<unknown>, R>(
 
 /**
  * Usage:
- * ```js
- *   const roster = withResource('roster');
- *   export const upsertPlayer = roster(
- *     ['create', 'edit'],
- *     async function upsert(user, playerData) {
- *       // Server action logic
- *     }
- *   );
+ * ```ts
+ * 'use server';
+ * const roster = withResource('roster');
+ *
+ * export const upsertPlayer = roster(['create', 'edit'], async (user, data) => {
+ *   // action logic - `user` is guaranteed authenticated & authorized
+ * });
+ *
+ * // single action shorthand
+ * export const listPlayers = roster('view', async (user) => { ... });
  * ```
  */
 export function withResource(resource: Resource) {
   return <T extends Array<unknown>, R>(
-    actions: Array<Action>,
+    actions: Action | Array<Action>,
     serverAction: (user: User, ...args: T) => Promise<R>,
   ): ServerAction<T, R> => {
+    const required = (Array.isArray(actions) ? actions : [actions]).map(
+      (action) => `${resource}:${action}` as Permission,
+    );
+
     return withAuth(async (user, ...args: T) => {
-      const ability = defineAbility(user.role, user.is_captain);
-      const hasPermission = ability.canAll(
-        actions.map((action) => `${resource}:${action}` as Permission),
+      const ability = defineAbility(
+        user.role as UserRole,
+        user.is_captain ?? false,
       );
 
-      return hasPermission ? serverAction(user, ...args) : forbidden();
+      if (!ability.canAll(required)) forbidden();
+
+      return serverAction(user, ...args);
     });
   };
 }

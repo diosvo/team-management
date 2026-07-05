@@ -6,15 +6,16 @@ import { Avatar, Circle, Float, Link, Menu, Portal } from '@chakra-ui/react';
 import { GamepadDirectional, LogOut, UserRound } from 'lucide-react';
 
 import authClient from '@/lib/auth-client';
+import { useSessionContext } from '@/providers/session';
 
 import { LOGIN_PATH } from '@/routes';
 import { getColor } from '@/utils/helper';
 
 export default function AccountMenu() {
   const router = useRouter();
+  const { user, isAuthenticated } = useSessionContext();
 
-  const { data } = authClient.useSession();
-  if (!data?.user) return null;
+  if (!isAuthenticated) return null;
 
   async function handleLogout() {
     await authClient.signOut({
@@ -24,7 +25,6 @@ export default function AccountMenu() {
     });
   }
 
-  const user = data.user;
   const Contents = [
     {
       title: 'Profile',
@@ -42,14 +42,14 @@ export default function AccountMenu() {
     <Menu.Root>
       <Menu.Trigger focusVisibleRing="none">
         <Avatar.Root variant="subtle" size={{ base: 'xs', md: 'sm', lg: 'md' }}>
-          <Avatar.Fallback name={user.name} />
-          <Avatar.Image src={user.image as string} />
+          <Avatar.Fallback name={user!.name} />
+          <Avatar.Image src={user!.image as string} />
           <Float placement="bottom-end" offsetX={1} offsetY={1}>
             <Circle
               size={2}
               outline="0.2em solid"
               outlineColor="bg"
-              backgroundColor={getColor(user.state)}
+              backgroundColor={getColor(user!.state)}
             />
           </Float>
         </Avatar.Root>
@@ -64,7 +64,7 @@ export default function AccountMenu() {
                 _hover={{ cursor: 'pointer' }}
                 asChild
               >
-                <Link href={href + '/' + user.id}>
+                <Link href={href + '/' + user!.id}>
                   <Icon size={14} />
                   {title}
                 </Link>
