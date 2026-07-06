@@ -2,15 +2,14 @@
 
 import { useCallback, useState } from 'react';
 
-import { HStack, IconButton, Table } from '@chakra-ui/react';
+import { Box, HStack, IconButton } from '@chakra-ui/react';
 import { Base64 } from 'js-base64';
 import { Download, Trash2 } from 'lucide-react';
 
+import DataTable, { type Column } from '@/components/DataTable';
 import HighlightText from '@/components/HighlightText';
-import Pagination from '@/components/Pagination';
 import SearchInput from '@/components/SearchInput';
 import { Card } from '@/components/ui/card';
-import { EmptyState } from '@/components/ui/empty-state';
 import { toaster } from '@/components/ui/toaster';
 
 import useTableState from '@/hooks/use-table-state';
@@ -19,8 +18,6 @@ import { formatDatetime } from '@/utils/formatter';
 
 import { downloadPdf } from '../_helpers/pdf';
 import { SavedRegistration } from '../_helpers/useSavedRegistrations';
-
-const HEADERS = ['Name', 'Players', 'Date saved', 'Actions'] as const;
 
 type SavedRegistrationsProps = {
   items: Array<SavedRegistration>;
@@ -39,9 +36,7 @@ export default function SavedRegistrations({
       item.leagueName.toLowerCase().includes(q.toLowerCase()),
     [q],
   );
-  const { currentData, totalCount } = useTableState(items, predicate, page, {
-    headerCount: HEADERS.length,
-  });
+  const { currentData, totalCount } = useTableState(items, predicate, page);
 
   const handleDownload = (item: SavedRegistration) => {
     setIsDownloading(true);
@@ -85,78 +80,69 @@ export default function SavedRegistrations({
     });
   };
 
+  const columns: Array<Column<SavedRegistration>> = [
+    {
+      header: 'Name',
+      cellProps: { fontWeight: 'medium' },
+      cell: (item) => (
+        <HighlightText query={q}>{item.leagueName}</HighlightText>
+      ),
+    },
+    { header: 'Players', cell: (item) => item.playerCount },
+    {
+      header: 'Date saved',
+      cellProps: { whiteSpace: 'nowrap' },
+      cell: (item) => formatDatetime(item.savedAt),
+    },
+    {
+      header: 'Actions',
+      cell: (item) => (
+        <HStack gap={1}>
+          <IconButton
+            size="xs"
+            variant="ghost"
+            hidden={!item.pdfBase64}
+            disabled={isDownloading}
+            onClick={() => handleDownload(item)}
+          >
+            <Download />
+          </IconButton>
+          <IconButton
+            size="xs"
+            variant="ghost"
+            colorPalette="red"
+            disabled={isDownloading}
+            onClick={() => handleRemove(item)}
+          >
+            <Trash2 />
+          </IconButton>
+        </HStack>
+      ),
+    },
+  ];
+
   return (
     <Card
       title="Saved registrations"
       description="Recent league registrations you have saved."
     >
-      <SearchInput placeholder="Filter by name..." />
+      <Box marginBlock={4}>
+        <SearchInput placeholder="Filter by name..." />
+      </Box>
 
-      <Table.ScrollArea marginBlock={4}>
-        <Table.Root size="sm">
-          <Table.Header>
-            <Table.Row>
-              {HEADERS.map((header) => (
-                <Table.ColumnHeader key={header} paddingBlock={3}>
-                  {header}
-                </Table.ColumnHeader>
-              ))}
-            </Table.Row>
-          </Table.Header>
-          <Table.Body>
-            {currentData.length > 0 ? (
-              currentData.map((item) => (
-                <Table.Row key={item.id}>
-                  <Table.Cell fontWeight="medium">
-                    <HighlightText query={q}>{item.leagueName}</HighlightText>
-                  </Table.Cell>
-                  <Table.Cell>{item.playerCount}</Table.Cell>
-                  <Table.Cell whiteSpace="nowrap">
-                    {formatDatetime(item.savedAt)}
-                  </Table.Cell>
-                  <Table.Cell>
-                    <HStack gap={1}>
-                      <IconButton
-                        size="xs"
-                        variant="ghost"
-                        hidden={!item.pdfBase64}
-                        disabled={isDownloading}
-                        onClick={() => handleDownload(item)}
-                      >
-                        <Download />
-                      </IconButton>
-                      <IconButton
-                        size="xs"
-                        variant="ghost"
-                        colorPalette="red"
-                        disabled={isDownloading}
-                        onClick={() => handleRemove(item)}
-                      >
-                        <Trash2 />
-                      </IconButton>
-                    </HStack>
-                  </Table.Cell>
-                </Table.Row>
-              ))
-            ) : (
-              <Table.Row>
-                <Table.Cell colSpan={HEADERS.length}>
-                  <EmptyState
-                    size="sm"
-                    title="No saved registrations yet"
-                    description="Click Save in the preview to keep a registration here."
-                  />
-                </Table.Cell>
-              </Table.Row>
-            )}
-          </Table.Body>
-        </Table.Root>
-      </Table.ScrollArea>
-
-      <Pagination
-        count={totalCount}
+      <DataTable
+        columns={columns}
+        rowId={(item) => item.id}
+        currentData={currentData}
+        totalCount={totalCount}
         page={page}
         onPageChange={setSearchParams}
+        empty={{
+          title: 'No saved registrations yet',
+          description: 'Click Save in the preview to keep a registration here.',
+        }}
+        size="sm"
+        borderWidth={undefined}
       />
     </Card>
   );

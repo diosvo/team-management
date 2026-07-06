@@ -133,7 +133,7 @@ export default function Filters<T extends Record<string, unknown>>({
               <SlidersHorizontal size={14} />
               Filters
               {activeCount > 0 && (
-                <Badge borderRadius="full" colorPalette="cyan">
+                <Badge variant="surface" borderRadius="full" colorPalette="cyan">
                   {activeCount}
                 </Badge>
               )}

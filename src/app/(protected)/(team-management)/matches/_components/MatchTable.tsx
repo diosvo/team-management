@@ -2,18 +2,15 @@
 
 import { useCallback, useTransition } from 'react';
 
-import { Badge, HStack, Span, Table } from '@chakra-ui/react';
+import { Badge, HStack, Span } from '@chakra-ui/react';
 
-import Authorized from '@/components/Authorized';
 import { LeagueLink } from '@/components/common/LeagueSelection';
 import { LocationLink } from '@/components/common/LocationSelection';
+import DataTable, { type Column } from '@/components/DataTable';
 import HighlightText from '@/components/HighlightText';
-import Pagination from '@/components/Pagination';
-import SelectionActionBar from '@/components/SelectionActionBar';
-import { Checkbox } from '@/components/ui/checkbox';
-import { EmptyState } from '@/components/ui/empty-state';
 import { toaster } from '@/components/ui/toaster';
 
+import usePermissions from '@/hooks/use-permissions';
 import useTableState from '@/hooks/use-table-state';
 
 import { useMatchFilters } from '@/lib/nuqs';
@@ -24,20 +21,12 @@ import { getColor } from '@/utils/helper';
 import { removeMatch } from '@/actions/match';
 import { UpsertMatch } from './UpsertMatch';
 
-const HEADERS = [
-  'Opponent',
-  'League',
-  'Score',
-  'Result',
-  'Location',
-  'Date',
-] as const;
-
 export default function MatchTable({
   matches,
 }: {
   matches: Array<MatchWithTeams>;
 }) {
+  const { can } = usePermissions();
   const [isPending, startTransition] = useTransition();
   const [{ q, page }, setSearchParams] = useMatchFilters();
 
@@ -46,19 +35,8 @@ export default function MatchTable({
       item.away_team.name.toLowerCase().includes(q.toLowerCase()),
     [q],
   );
-  const {
-    items,
-    currentData,
-    indeterminate,
-    selection,
-    setSelection,
-    hasSelection,
-    totalCount,
-    columnCount,
-    selectionCount,
-  } = useTableState(matches, predicate, page, {
-    headerCount: HEADERS.length,
-  });
+  const { items, currentData, selection, setSelection, totalCount } =
+    useTableState(matches, predicate, page);
 
   const removeItems = async () => {
     const id = toaster.create({
@@ -82,127 +60,75 @@ export default function MatchTable({
     });
   };
 
+  const columns: Array<Column<MatchWithTeams>> = [
+    {
+      header: 'Opponent',
+      cell: (item) => (
+        <HighlightText query={q}>{item.away_team.name}</HighlightText>
+      ),
+    },
+    {
+      header: 'League',
+      cell: (item) => <LeagueLink name={item.league?.name} />,
+    },
+    {
+      header: 'Score',
+      cell: (item) => `${item.home_team_score} - ${item.away_team_score}`,
+    },
+    {
+      header: 'Result',
+      cell: (item) => (
+        <Badge
+          variant="surface"
+          borderRadius="full"
+          colorPalette={getColor(item.result)}
+        >
+          {item.result}
+        </Badge>
+      ),
+    },
+    {
+      header: 'Location',
+      cell: (item) => <LocationLink name={item.location?.name} />,
+    },
+    {
+      header: 'Date',
+      cell: (item) => (
+        <HStack gap={1}>
+          <Span fontSize="sm">{formatDay(item.date)}</Span>
+          <Span color="gray.400">&bull;</Span>
+          <Span fontSize="sm">{formatDate(item.date)}</Span>
+          <Span color="gray.400">&bull;</Span>
+          <Span fontSize="sm">{item.time}</Span>
+        </HStack>
+      ),
+    },
+  ];
+
   return (
     <>
-      <Table.ScrollArea>
-        <Table.Root
-          borderWidth={1}
-          size={{ base: 'sm', md: 'md' }}
-          interactive={totalCount > 0}
-        >
-          <Table.Header>
-            <Table.Row>
-              <Authorized resource="matches" action="delete">
-                <Table.ColumnHeader width={6}>
-                  <Checkbox
-                    top={0.5}
-                    aria-label="Select all rows"
-                    disabled={isPending}
-                    checked={
-                      indeterminate ? 'indeterminate' : selectionCount > 0
-                    }
-                    onCheckedChange={(changes) => {
-                      setSelection(
-                        changes.checked
-                          ? items.map(({ match_id }) => match_id)
-                          : [],
-                      );
-                    }}
-                  />
-                </Table.ColumnHeader>
-              </Authorized>
-              {HEADERS.map((header) => (
-                <Table.ColumnHeader key={header}>{header}</Table.ColumnHeader>
-              ))}
-            </Table.Row>
-          </Table.Header>
-          <Table.Body>
-            {currentData.length > 0 ? (
-              currentData.map((item) => (
-                <Table.Row
-                  key={item.match_id}
-                  _hover={{ cursor: 'pointer' }}
-                  onClick={() => {
-                    UpsertMatch.open('update-match', {
-                      action: 'Update',
-                      item: {
-                        ...item,
-                        away_team: item.away_team.team_id,
-                      },
-                    });
-                  }}
-                >
-                  <Authorized resource="matches" action="delete">
-                    <Table.Cell onClick={(e) => e.stopPropagation()}>
-                      <Checkbox
-                        top={0.5}
-                        aria-label="Select row"
-                        disabled={isPending}
-                        checked={selection.includes(item.match_id)}
-                        onCheckedChange={(changes) => {
-                          setSelection((prev) =>
-                            changes.checked
-                              ? [...prev, item.match_id]
-                              : prev.filter((id) => id !== item.match_id),
-                          );
-                        }}
-                      />
-                    </Table.Cell>
-                  </Authorized>
-                  <Table.Cell>
-                    <HighlightText query={q}>
-                      {item.away_team.name}
-                    </HighlightText>
-                  </Table.Cell>
-                  <Table.Cell>
-                    <LeagueLink name={item.league?.name} />
-                  </Table.Cell>
-                  <Table.Cell>
-                    {item.home_team_score} - {item.away_team_score}
-                  </Table.Cell>
-                  <Table.Cell>
-                    <Badge
-                      variant="surface"
-                      borderRadius="full"
-                      colorPalette={getColor(item.result)}
-                    >
-                      {item.result}
-                    </Badge>
-                  </Table.Cell>
-                  <Table.Cell>
-                    <LocationLink name={item.location?.name} />
-                  </Table.Cell>
-                  <Table.Cell>
-                    <HStack gap={1}>
-                      <Span fontSize="sm">{formatDay(item.date)}</Span>
-                      <Span color="gray.400">&bull;</Span>
-                      <Span fontSize="sm">{formatDate(item.date)}</Span>
-                      <Span color="gray.400">&bull;</Span>
-                      <Span fontSize="sm">{item.time}</Span>
-                    </HStack>
-                  </Table.Cell>
-                </Table.Row>
-              ))
-            ) : (
-              <Table.Row>
-                <Table.Cell colSpan={columnCount}>
-                  <EmptyState title="No matches found" />
-                </Table.Cell>
-              </Table.Row>
-            )}
-          </Table.Body>
-        </Table.Root>
-      </Table.ScrollArea>
-
-      <Pagination
-        count={totalCount}
+      <DataTable
+        columns={columns}
+        rowId={(item) => item.match_id}
+        currentData={currentData}
+        totalCount={totalCount}
         page={page}
         onPageChange={setSearchParams}
-      />
-      <SelectionActionBar
-        open={hasSelection}
-        selectionCount={selectionCount}
-        onDelete={removeItems}
+        empty={{ title: 'No matches found' }}
+        onRowClick={(item) =>
+          UpsertMatch.open('update-match', {
+            action: 'Update',
+            item: { ...item, away_team: item.away_team.team_id },
+          })
+        }
+        selection={{
+          canSelect: can('matches', 'delete'),
+          items,
+          selection,
+          setSelection,
+          disabled: isPending,
+          onDelete: removeItems,
+        }}
       />
       <UpsertMatch.Viewport />
     </>

@@ -1,22 +1,19 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useMemo } from 'react';
 
-import { Badge, Table } from '@chakra-ui/react';
+import { Badge } from '@chakra-ui/react';
 import { capitalize } from 'es-toolkit/string';
 
-import Authorized from '@/components/Authorized';
+import DataTable, { type Column } from '@/components/DataTable';
 import HighlightText from '@/components/HighlightText';
-import Pagination from '@/components/Pagination';
-import SelectionActionBar from '@/components/SelectionActionBar';
-import { Checkbox } from '@/components/ui/checkbox';
-import { EmptyState } from '@/components/ui/empty-state';
 import { toaster } from '@/components/ui/toaster';
 
 import usePermissions from '@/hooks/use-permissions';
 import useTableState from '@/hooks/use-table-state';
 
 import { useAssetFilters } from '@/lib/nuqs';
+import { buildPredicate } from '@/utils/filters';
 import { formatDate, formatDatetime } from '@/utils/formatter';
 import { getColor } from '@/utils/helper';
 
@@ -25,41 +22,20 @@ import { Asset } from '@/drizzle/schema/asset';
 
 import { UpsertAsset } from './UpsertAsset';
 
-const HEADERS = [
-  'Name',
-  'Category',
-  'Quantity',
-  'Condition',
-  'Assigned To',
-  'Acquired Date',
-  'Last Updated',
-  'Note',
-] as const;
-
 export default function AssetTable({ data }: { data: Array<Asset> }) {
-  const { isGuest } = usePermissions();
+  const { can, isGuest } = usePermissions();
   const [{ q, page, category, condition }, setSearchParams] = useAssetFilters();
 
-  const predicate = useCallback(
-    (item: Asset) =>
-      item.name.toLowerCase().includes(q.toLowerCase()) &&
-      (category.length === 0 || category.includes(item.category)) &&
-      (condition.length === 0 || condition.includes(item.condition)),
+  const predicate = useMemo(
+    () =>
+      buildPredicate<Asset>({
+        search: { query: q, fields: ['name'] },
+        match: { category, condition },
+      }),
     [q, category, condition],
   );
-  const {
-    items,
-    currentData,
-    indeterminate,
-    selection,
-    setSelection,
-    hasSelection,
-    totalCount,
-    columnCount,
-    selectionCount,
-  } = useTableState(data, predicate, page, {
-    headerCount: HEADERS.length,
-  });
+  const { items, currentData, selection, setSelection, totalCount } =
+    useTableState(data, predicate, page);
 
   const removeItems = async () => {
     const results = await Promise.all(selection.map(removeAsset));
@@ -76,117 +52,61 @@ export default function AssetTable({ data }: { data: Array<Asset> }) {
     setSelection([]);
   };
 
+  const columns: Array<Column<Asset>> = [
+    {
+      header: 'Name',
+      cell: (item) => <HighlightText query={q}>{item.name}</HighlightText>,
+    },
+    {
+      header: 'Category',
+      cell: (item) => (
+        <Badge variant="outline" borderRadius="full">
+          {capitalize(item.category)}
+        </Badge>
+      ),
+    },
+    { header: 'Quantity', cell: (item) => item.quantity },
+    {
+      header: 'Condition',
+      cell: (item) => (
+        <Badge
+          variant="surface"
+          borderRadius="full"
+          colorPalette={getColor(item.condition)}
+        >
+          {capitalize(item.condition)}
+        </Badge>
+      ),
+    },
+    { header: 'Assigned To', cell: (item) => item.user?.name },
+    { header: 'Acquired Date', cell: (item) => formatDate(item.acquired_date) },
+    { header: 'Last Updated', cell: (item) => formatDatetime(item.updated_at) },
+    { header: 'Note', cell: (item) => item.note },
+  ];
+
   return (
     <>
-      <Table.ScrollArea>
-        <Table.Root
-          borderWidth={1}
-          size={{ base: 'sm', md: 'md' }}
-          interactive={totalCount > 0}
-        >
-          <Table.Header>
-            <Table.Row>
-              <Authorized resource="assets" action="delete">
-                <Table.ColumnHeader width={4}>
-                  <Checkbox
-                    top={0.5}
-                    aria-label="Select all rows"
-                    checked={
-                      indeterminate ? 'indeterminate' : selectionCount > 0
-                    }
-                    onCheckedChange={(changes) => {
-                      setSelection(
-                        changes.checked
-                          ? items.map(({ asset_id }) => asset_id)
-                          : [],
-                      );
-                    }}
-                  />
-                </Table.ColumnHeader>
-              </Authorized>
-              {HEADERS.map((header) => (
-                <Table.ColumnHeader key={header}>{header}</Table.ColumnHeader>
-              ))}
-            </Table.Row>
-          </Table.Header>
-          <Table.Body>
-            {currentData.length > 0 ? (
-              currentData.map((item) => (
-                <Table.Row
-                  key={item.asset_id}
-                  _hover={{ cursor: isGuest ? 'default' : 'pointer' }}
-                  onClick={() => {
-                    if (isGuest) return;
-                    UpsertAsset.open('update-asset', {
-                      action: 'Update',
-                      item,
-                    });
-                  }}
-                >
-                  <Authorized resource="assets" action="delete">
-                    <Table.Cell onClick={(e) => e.stopPropagation()}>
-                      <Checkbox
-                        top={0.5}
-                        aria-label="Select row"
-                        checked={selection.includes(item.asset_id)}
-                        onCheckedChange={(changes) => {
-                          setSelection((prev) =>
-                            changes.checked
-                              ? [...prev, item.asset_id]
-                              : selection.filter((id) => id !== item.asset_id),
-                          );
-                        }}
-                      />
-                    </Table.Cell>
-                  </Authorized>
-                  <Table.Cell>
-                    <HighlightText query={q}>{item.name}</HighlightText>
-                  </Table.Cell>
-                  <Table.Cell>
-                    <Badge
-                      variant="surface"
-                      borderRadius="full"
-                      colorPalette={getColor(item.category)}
-                    >
-                      {capitalize(item.category)}
-                    </Badge>
-                  </Table.Cell>
-                  <Table.Cell>{item.quantity}</Table.Cell>
-                  <Table.Cell>
-                    <Badge
-                      variant="outline"
-                      borderRadius="full"
-                      colorPalette={getColor(item.condition)}
-                    >
-                      {capitalize(item.condition)}
-                    </Badge>
-                  </Table.Cell>
-                  <Table.Cell>{item.user?.name || '-'}</Table.Cell>
-                  <Table.Cell>{formatDate(item.acquired_date)}</Table.Cell>
-                  <Table.Cell>{formatDatetime(item.updated_at)}</Table.Cell>
-                  <Table.Cell>{item.note}</Table.Cell>
-                </Table.Row>
-              ))
-            ) : (
-              <Table.Row>
-                <Table.Cell colSpan={columnCount}>
-                  <EmptyState title="No assets found" />
-                </Table.Cell>
-              </Table.Row>
-            )}
-          </Table.Body>
-        </Table.Root>
-      </Table.ScrollArea>
-
-      <Pagination
-        count={totalCount}
+      <DataTable
+        columns={columns}
+        rowId={(item) => item.asset_id}
+        currentData={currentData}
+        totalCount={totalCount}
         page={page}
         onPageChange={setSearchParams}
-      />
-      <SelectionActionBar
-        open={hasSelection}
-        selectionCount={selectionCount}
-        onDelete={removeItems}
+        empty={{ title: 'No assets found' }}
+        onRowClick={
+          isGuest
+            ? undefined
+            : (item) =>
+                UpsertAsset.open('update-asset', { action: 'Update', item })
+        }
+        selection={{
+          canSelect: can('assets', 'delete'),
+          items,
+          selection,
+          setSelection,
+          onDelete: removeItems,
+        }}
       />
       <UpsertAsset.Viewport />
     </>

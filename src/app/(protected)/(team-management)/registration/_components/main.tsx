@@ -283,14 +283,12 @@ export default function RegistrationPageClient() {
         </GridItem>
 
         <GridItem colSpan={{ base: 1, lg: 7 }}>
-          <Stack gap={6}>
-            <PreviewPanel
-              players={selection}
-              league={league}
-              template={template}
-              onSave={handleSave}
-            />
-          </Stack>
+          <PreviewPanel
+            players={selection}
+            league={league}
+            template={template}
+            onSave={handleSave}
+          />
         </GridItem>
 
         <GridItem colSpan={{ base: 1, lg: 12 }}>

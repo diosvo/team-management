@@ -164,11 +164,7 @@ export default function TeamInfo({
         ) : (
           <SimpleGrid columns={{ base: 1, md: 2 }}>
             <TextField label="Role">
-              <Badge
-                variant="subtle"
-                colorPalette={getColor(user.role)}
-                borderRadius="full"
-              >
+              <Badge variant="outline" borderRadius="full">
                 {user.role}
               </Badge>
             </TextField>

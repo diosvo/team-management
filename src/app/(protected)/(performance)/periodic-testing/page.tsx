@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 import { getTestDates, getTestResult } from '@/actions/test-result';
-import { loadPeriodicTestingFilters } from '@/utils/filters';
+import { loadPeriodicTestingFilters } from '@/lib/nuqs';
 
 import PlayerPerformanceMatrix from './_components/PlayerPerformanceMatrix';
 import TestingFilters from './_components/TestingFilters';

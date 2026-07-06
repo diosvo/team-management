@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
-import { Box, Button, HStack, Spinner, Table, Text } from '@chakra-ui/react';
+import { Box, Button, HStack, Spinner, Text } from '@chakra-ui/react';
 import {
   Eye,
   FileDown,
@@ -11,9 +11,12 @@ import {
   Table as TableIcon,
 } from 'lucide-react';
 
+import DataTable, { type Column } from '@/components/DataTable';
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { toaster } from '@/components/ui/toaster';
+
+import useTableState from '@/hooks/use-table-state';
 
 import { League } from '@/drizzle/schema';
 import { User } from '@/drizzle/schema/user';
@@ -145,37 +148,43 @@ export default function PreviewPanel({
   );
 }
 
+const PAGE_SIZE = 10;
+
 function TablePreview({ players }: { players: Array<User> }) {
+  const [page, setPage] = useState(1);
+
+  const predicate = useCallback(() => true, []);
+  const { currentData, totalCount } = useTableState(players, predicate, page, {
+    pageSize: PAGE_SIZE,
+  });
+
+  const columns: Array<Column<User>> = [
+    {
+      header: '#',
+      cell: (_player, index) => (page - 1) * PAGE_SIZE + index + 1,
+      cellProps: { color: 'fg.muted' },
+    },
+    ...COLUMNS.map(
+      (column): Column<User> => ({
+        header: column.header,
+        cell: (player) => toRow(player)[column.key],
+      }),
+    ),
+  ];
+
   return (
-    <Table.ScrollArea>
-      <Table.Root size="sm" borderWidth={1}>
-        <Table.Header>
-          <Table.Row>
-            <Table.ColumnHeader>#</Table.ColumnHeader>
-            {COLUMNS.map((column) => (
-              <Table.ColumnHeader key={column.key}>
-                {column.header}
-              </Table.ColumnHeader>
-            ))}
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {players.map((player, index) => {
-            const row = toRow(player);
-            return (
-              <Table.Row key={player.id}>
-                <Table.Cell color="fg.muted">{index + 1}</Table.Cell>
-                {COLUMNS.map((column) => (
-                  <Table.Cell key={column.key}>
-                    {row[column.key] || '-'}
-                  </Table.Cell>
-                ))}
-              </Table.Row>
-            );
-          })}
-        </Table.Body>
-      </Table.Root>
-    </Table.ScrollArea>
+    <DataTable
+      size="sm"
+      columns={columns}
+      rowId={(player) => player.id}
+      page={page}
+      pageSize={PAGE_SIZE}
+      totalCount={totalCount}
+      currentData={currentData}
+      onPageChange={({ page }) => setPage(page)}
+      marginBottom={2}
+      empty={{ title: 'No players to preview', icon: <TableIcon /> }}
+    />
   );
 }
 

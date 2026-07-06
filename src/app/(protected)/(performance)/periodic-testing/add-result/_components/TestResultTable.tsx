@@ -13,7 +13,8 @@ import {
 } from '@/components/ui/number-input';
 import { Tooltip } from '@/components/ui/tooltip';
 
-import { paginateData, useCommonParams } from '@/utils/filters';
+import { useCommonParams } from '@/lib/nuqs';
+import { paginateData } from '@/utils/filters';
 
 import { TestConfigurationSelection } from '@/types/periodic-testing';
 

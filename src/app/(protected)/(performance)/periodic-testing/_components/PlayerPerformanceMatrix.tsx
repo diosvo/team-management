@@ -19,7 +19,7 @@ import {
   updateTestResultById,
 } from '@/actions/test-result';
 import { PlayerTestResult, TestResult } from '@/types/periodic-testing';
-import { usePeriodicTestingFilters } from '@/utils/filters';
+import { usePeriodicTestingFilters } from '@/lib/nuqs';
 
 const PAGE_SIZE = 10;
 

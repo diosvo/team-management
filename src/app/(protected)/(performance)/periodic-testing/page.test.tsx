@@ -8,7 +8,7 @@ import {
 import { renderWithUI, screen } from '@/test/utilities';
 
 import { getTestDates, getTestResult } from '@/actions/test-result';
-import { loadPeriodicTestingFilters } from '@/utils/filters';
+import { loadPeriodicTestingFilters } from '@/lib/nuqs';
 
 import PeriodicTestingPage, { metadata } from './page';
 
@@ -17,7 +17,8 @@ vi.mock('@/actions/test-result', () => ({
   getTestDates: vi.fn(),
 }));
 
-vi.mock('@/utils/filters', () => ({
+vi.mock('@/lib/nuqs', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/nuqs')>()),
   loadPeriodicTestingFilters: vi.fn(),
 }));
 

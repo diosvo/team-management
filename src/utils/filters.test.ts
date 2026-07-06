@@ -1,6 +1,6 @@
 import { Interval } from './enum';
 
-import { countActiveFilters, paginateData } from './filters';
+import { buildPredicate, countActiveFilters, paginateData } from './filters';
 
 /* ================== Utility Functions ================== */
 
@@ -74,6 +74,78 @@ describe('paginateData', () => {
     const result = paginateData(mockData, 3, 1);
 
     expect(result).toEqual([{ id: 3, name: 'Item 3' }]);
+  });
+});
+
+describe('buildPredicate', () => {
+  type Row = {
+    name: string;
+    email: string;
+    state: string;
+    role: string;
+    nested?: { city: string };
+  };
+
+  const rows: Array<Row> = [
+    { name: 'Alice', email: 'alice@x.io', state: 'active', role: 'admin' },
+    { name: 'Bob', email: 'bob@y.io', state: 'inactive', role: 'guest' },
+    {
+      name: 'Carol',
+      email: 'carol@x.io',
+      state: 'active',
+      role: 'guest',
+      nested: { city: 'Hanoi' },
+    },
+  ];
+
+  test('matches everything when config is empty', () => {
+    expect(rows.filter(buildPredicate<Row>({}))).toEqual(rows);
+  });
+
+  test('searches across fields (case-insensitive, OR)', () => {
+    const result = rows.filter(
+      buildPredicate<Row>({ search: { query: 'ALICE', fields: ['name', 'email'] } }),
+    );
+    expect(result.map((r) => r.name)).toEqual(['Alice']);
+  });
+
+  test('ignores blank/whitespace query', () => {
+    expect(
+      rows.filter(buildPredicate<Row>({ search: { query: '   ', fields: ['name'] } })),
+    ).toEqual(rows);
+  });
+
+  test('supports accessor fields for nested values', () => {
+    const result = rows.filter(
+      buildPredicate<Row>({
+        search: { query: 'hanoi', fields: [(r) => r.nested?.city] },
+      }),
+    );
+    expect(result.map((r) => r.name)).toEqual(['Carol']);
+  });
+
+  test('match keys map to item properties and AND together', () => {
+    const result = rows.filter(
+      buildPredicate<Row>({ match: { state: ['active'], role: ['guest'] } }),
+    );
+    expect(result.map((r) => r.name)).toEqual(['Carol']);
+  });
+
+  test('empty selection is ignored', () => {
+    const result = rows.filter(
+      buildPredicate<Row>({ match: { state: [], role: ['admin'] } }),
+    );
+    expect(result.map((r) => r.name)).toEqual(['Alice']);
+  });
+
+  test('combines search and match', () => {
+    const result = rows.filter(
+      buildPredicate<Row>({
+        search: { query: 'x.io', fields: ['email'] },
+        match: { state: ['active'] },
+      }),
+    );
+    expect(result.map((r) => r.name)).toEqual(['Alice', 'Carol']);
   });
 });
 
