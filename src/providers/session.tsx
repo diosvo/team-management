@@ -5,7 +5,7 @@ import { createContext, useContext, useMemo } from 'react';
 import type { User } from '@/drizzle/schema/user';
 import type { UserRole } from '@/utils/enum';
 
-import auth from '@/lib/auth';
+import type auth from '@/lib/auth';
 import authClient from '@/lib/auth-client';
 
 export type Session = Nullable<typeof auth.$Infer.Session>;
@@ -32,7 +32,7 @@ export default function SessionProvider({
   initialSession,
   children,
 }: SessionProviderProps) {
-  // The client hook keeps the sessiom fresh after sign-in/out, token refresh, etc. Until it resolves, we trust the server value.
+  // The client hook keeps the session fresh after sign-in/out, token refresh, etc. Until it resolves, we trust the server value.
   const { data, isPending } = authClient.useSession();
 
   const value = useMemo<SessionContextValue>(() => {

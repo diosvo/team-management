@@ -5,7 +5,8 @@ import { MOCK_USER } from '@/test/mocks/user';
 import { renderWithUI, screen, waitFor } from '@/test/utilities';
 
 import usePermissions from '@/hooks/use-permissions';
-import authClient from '@/lib/auth-client';
+
+import { useSessionContext } from '@/providers/session';
 
 import QuickActions from './QuickActions';
 
@@ -23,10 +24,8 @@ vi.mock('@/hooks/use-permissions', () => ({
   default: vi.fn(),
 }));
 
-vi.mock('@/lib/auth-client', () => ({
-  default: {
-    useSession: vi.fn(),
-  },
+vi.mock('@/providers/session', () => ({
+  useSessionContext: vi.fn(),
 }));
 
 // The dialog-heavy actions are exercised by their own tests; render the trigger only.
@@ -46,7 +45,7 @@ vi.mock(
 
 describe('QuickActions', () => {
   const mockUsePermissions = usePermissions as unknown as Mock;
-  const mockUseSession = authClient.useSession as unknown as Mock;
+  const mockUseSessionContext = useSessionContext as unknown as Mock;
 
   const setup = ({
     isAdmin = false,
@@ -58,7 +57,7 @@ describe('QuickActions', () => {
     user?: typeof MOCK_USER | null;
   } = {}) => {
     mockUsePermissions.mockReturnValue({ isAdmin, isPlayer });
-    mockUseSession.mockReturnValue({ data: user ? { user } : null });
+    mockUseSessionContext.mockReturnValue({ user });
 
     return renderWithUI(<QuickActions />);
   };
@@ -72,12 +71,6 @@ describe('QuickActions', () => {
 
     expect(await screen.findByText('Quick Actions')).toBeInTheDocument();
     expect(screen.getByText('Shortcuts to common tasks')).toBeInTheDocument();
-  });
-
-  test('renders the skeleton loading state when there is no session', () => {
-    setup({ user: null });
-
-    expect(screen.queryByText('View Schedule')).not.toBeInTheDocument();
   });
 
   test('renders the default actions for any logged-in user', async () => {

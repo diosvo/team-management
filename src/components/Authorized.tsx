@@ -19,7 +19,7 @@ type AuthorizedProps = Required<{
   children: React.ReactNode;
 }> &
   Partial<{
-    /** when several actions are give: must the user have all of them or any? */
+    /** when several actions are given: must the user have all of them or any? */
     mode: 'all' | 'any';
     /** rendered while permissions are still resolving (e.g., a Skeleton) */
     loading: React.ReactNode;

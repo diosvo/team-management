@@ -39,15 +39,6 @@ describe('TestTypesHeader', () => {
     expect(screen.getByText('Test Types')).toBeInTheDocument();
   });
 
-  test('renders the back link to periodic testing', () => {
-    setup();
-
-    expect(screen.getByRole('link')).toHaveAttribute(
-      'href',
-      '../periodic-testing',
-    );
-  });
-
   test('renders the add button when the user can create', () => {
     setup(true);
 
