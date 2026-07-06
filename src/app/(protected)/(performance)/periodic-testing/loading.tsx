@@ -10,10 +10,10 @@ import {
 export default function Loading() {
   return (
     <VStack alignItems="stretch" gap={{ base: 4, lg: 6 }}>
-      {/* TestingHeader: title + actions menu */}
+      {/* TestingHeader: title + actions */}
       <HStack justifyContent="space-between">
         <Skeleton height={9} width={56} />
-        <Skeleton height={9} width={28} />
+        <Skeleton height={9} width={56} />
       </HStack>
       {/* TestingStats: Players Joined + Completed Tests */}
       <SimpleGrid columns={{ base: 2, md: 4, xl: 6 }} gap={{ base: 3, lg: 4 }}>

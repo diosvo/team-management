@@ -39,28 +39,37 @@ describe('TestingHeader', () => {
     expect(screen.getByText('Periodic Testing')).toBeInTheDocument();
   });
 
-  test('renders the actions menu when the user can create', () => {
+  test('renders the action links when the user can create', () => {
     setup(true);
 
     expect(
-      screen.getByRole('button', { name: /actions/i }),
+      screen.getByRole('link', { name: /add result/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: /manage types/i }),
     ).toBeInTheDocument();
   });
 
-  test('hides the actions menu when the user cannot create', () => {
+  test('hides the action links when the user cannot create', () => {
     setup(false);
 
     expect(
-      screen.queryByRole('button', { name: /actions/i }),
+      screen.queryByRole('link', { name: /add result/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('link', { name: /manage types/i }),
     ).not.toBeInTheDocument();
   });
 
-  test('reveals the add-result and manage-test-types links when opened', async () => {
-    const { user } = setup(true);
+  test('points the action links at the add-result and test-types pages', () => {
+    setup(true);
 
-    await user.click(screen.getByRole('button', { name: /actions/i }));
-
-    expect(await screen.findByText('Add Result')).toBeInTheDocument();
-    expect(screen.getByText('Manage Test Types')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /add result/i })).toHaveAttribute(
+      'href',
+      '/periodic-testing/add-result',
+    );
+    expect(
+      screen.getByRole('link', { name: /manage types/i }),
+    ).toHaveAttribute('href', '/periodic-testing/test-types');
   });
 });

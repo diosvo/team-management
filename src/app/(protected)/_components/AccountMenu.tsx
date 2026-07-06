@@ -6,15 +6,16 @@ import { Avatar, Circle, Float, Link, Menu, Portal } from '@chakra-ui/react';
 import { GamepadDirectional, LogOut, UserRound } from 'lucide-react';
 
 import authClient from '@/lib/auth-client';
+import { useSessionContext } from '@/providers/session';
 
 import { LOGIN_PATH } from '@/routes';
 import { getColor } from '@/utils/helper';
 
 export default function AccountMenu() {
   const router = useRouter();
+  const { user, isAuthenticated } = useSessionContext();
 
-  const { data } = authClient.useSession();
-  if (!data?.user) return null;
+  if (!isAuthenticated || !user) return null;
 
   async function handleLogout() {
     await authClient.signOut({
@@ -24,7 +25,6 @@ export default function AccountMenu() {
     });
   }
 
-  const user = data.user;
   const Contents = [
     {
       title: 'Profile',

@@ -6,8 +6,8 @@ import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
 
-import UiProvider from '@/components/ui/provider';
 import { Toaster } from '@/components/ui/toaster';
+import UiProvider from '@/providers/chakra';
 
 import env from '@env';
 import './globals.css';
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: PropsWithChildren) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${ggSans.className} antialiased`}>
         <NuqsAdapter>
           <UiProvider>

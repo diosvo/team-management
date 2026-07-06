@@ -1,8 +1,12 @@
+import { createElement, type PropsWithChildren } from 'react';
+
 import { renderHook } from '@testing-library/react';
 import { Mock } from 'vitest';
 
 import authClient from '@/lib/auth-client';
 import { UserRole } from '@/utils/enum';
+
+import SessionProvider from '@/providers/session';
 
 import usePermissions from './use-permissions';
 
@@ -11,6 +15,18 @@ vi.mock('@/lib/auth-client', () => ({
     useSession: vi.fn(),
   },
 }));
+
+/**
+ * `usePermissions` reads from `useSessionContext`, so exercise it through a
+ * real `SessionProvider`. The provider derives its value from the mocked
+ * `authClient.useSession()`, so each test still controls the session by
+ * mocking that hook.
+ */
+const wrapper = ({ children }: PropsWithChildren) =>
+  createElement(SessionProvider, { initialSession: null, children });
+
+const renderPermissions = () =>
+  renderHook(() => usePermissions(), { wrapper });
 
 describe('usePermissions', () => {
   beforeEach(() => {
@@ -23,7 +39,7 @@ describe('usePermissions', () => {
       isPending: false,
     });
 
-    const { result } = renderHook(() => usePermissions());
+    const { result } = renderPermissions();
 
     expect(result.current.isAdmin).toBeFalsy();
     expect(result.current.isPlayer).toBeFalsy();
@@ -43,7 +59,7 @@ describe('usePermissions', () => {
       isPending: false,
     });
 
-    const { result } = renderHook(() => usePermissions());
+    const { result } = renderPermissions();
 
     expect(result.current.isAdmin).toBeFalsy();
     expect(result.current.isPlayer).toBeFalsy();
@@ -102,7 +118,7 @@ describe('usePermissions', () => {
         isPending: false,
       });
 
-      const { result } = renderHook(() => usePermissions());
+      const { result } = renderPermissions();
 
       expect(result.current.isAdmin).toBe(isAdmin);
       expect(result.current.isPlayer).toBe(isPlayer);
@@ -117,7 +133,7 @@ describe('usePermissions', () => {
         data: { session: {}, user: { role: UserRole.SUPER_ADMIN } },
         isPending: false,
       });
-      const { result } = renderHook(() => usePermissions());
+      const { result } = renderPermissions();
       expect(result.current.can('roster', 'create')).toBeTruthy();
     });
 
@@ -126,7 +142,7 @@ describe('usePermissions', () => {
         data: { session: {}, user: { role: UserRole.GUEST } },
         isPending: false,
       });
-      const { result } = renderHook(() => usePermissions());
+      const { result } = renderPermissions();
       expect(result.current.can('assets', 'view')).toBeFalsy();
     });
 
@@ -135,7 +151,7 @@ describe('usePermissions', () => {
         data: { session: {}, user: { role: UserRole.PLAYER } },
         isPending: false,
       });
-      const { result } = renderHook(() => usePermissions());
+      const { result } = renderPermissions();
       expect(result.current.can('roster', 'create')).toBeFalsy();
     });
   });
@@ -146,7 +162,7 @@ describe('usePermissions', () => {
         data: { session: {}, user: { role: UserRole.COACH } },
         isPending: false,
       });
-      const { result } = renderHook(() => usePermissions());
+      const { result } = renderPermissions();
       expect(
         result.current.canAll(['training:view', 'training:create']),
       ).toBeTruthy();
@@ -157,7 +173,7 @@ describe('usePermissions', () => {
         data: { session: {}, user: { role: UserRole.COACH } },
         isPending: false,
       });
-      const { result } = renderHook(() => usePermissions());
+      const { result } = renderPermissions();
       expect(
         result.current.canAll(['training:view', 'training:delete']),
       ).toBeFalsy();
@@ -170,7 +186,7 @@ describe('usePermissions', () => {
         data: { session: {}, user: { role: UserRole.PLAYER } },
         isPending: false,
       });
-      const { result } = renderHook(() => usePermissions());
+      const { result } = renderPermissions();
       expect(
         result.current.canAny(['roster:view', 'roster:create']),
       ).toBeTruthy();
@@ -181,7 +197,7 @@ describe('usePermissions', () => {
         data: { session: {}, user: { role: UserRole.GUEST } },
         isPending: false,
       });
-      const { result } = renderHook(() => usePermissions());
+      const { result } = renderPermissions();
       expect(
         result.current.canAny(['assets:view', 'assets:create']),
       ).toBeFalsy();

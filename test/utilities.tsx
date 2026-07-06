@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event';
 import { configureAxe } from 'jest-axe';
 export * from '@testing-library/react';
 
-import UiProvider from '@/components/ui/provider';
+import UiProvider from '@/providers/chakra';
 
 /**
  * @description Axe instance for components containing an interactive `Stat`

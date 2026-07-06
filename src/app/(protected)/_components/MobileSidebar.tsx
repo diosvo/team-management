@@ -5,14 +5,14 @@ import { useState } from 'react';
 import { CloseButton, Drawer, IconButton, Portal } from '@chakra-ui/react';
 import { PanelRightOpen } from 'lucide-react';
 
-import authClient from '@/lib/auth-client';
+import { useSessionContext } from '@/providers/session';
 import Sidebar from './Sidebar';
 
 export default function MobileSidebar() {
-  const { data } = authClient.useSession();
+  const { isAuthenticated } = useSessionContext();
   const [open, setOpen] = useState<boolean>(false);
 
-  if (!data?.session) return null;
+  if (!isAuthenticated) return null;
 
   return (
     <Drawer.Root open={open} onOpenChange={() => setOpen(!open)}>

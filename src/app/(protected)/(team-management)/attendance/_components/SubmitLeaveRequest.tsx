@@ -18,10 +18,10 @@ import { useForm } from 'react-hook-form';
 import { Field } from '@/components/ui/field';
 import { toaster } from '@/components/ui/toaster';
 
-import authClient from '@/lib/auth-client';
 import { CURRENT_DATE, ESTABLISHED_DATE } from '@/utils/constant';
 
 import { submitLeave } from '@/actions/attendance';
+import { useSessionContext } from '@/providers/session';
 import {
   UpsertAttendanceSchema,
   UpsertAttendanceSchemaValues,
@@ -32,7 +32,7 @@ export default function SubmitLeaveRequest({
 }: {
   trigger: React.ReactNode;
 }) {
-  const { data } = authClient.useSession();
+  const { user } = useSessionContext();
 
   const {
     reset,
@@ -45,7 +45,7 @@ export default function SubmitLeaveRequest({
   const [isPending, startTransition] = useTransition();
 
   const onSubmit = (values: UpsertAttendanceSchemaValues) => {
-    if (!data?.user) return;
+    if (!user) return;
 
     const id = toaster.create({
       type: 'loading',
@@ -55,7 +55,7 @@ export default function SubmitLeaveRequest({
     startTransition(async () => {
       const { success, message: title } = await submitLeave({
         ...values,
-        player_id: data.user.id,
+        player_id: user.id,
       });
 
       toaster.update(id, {

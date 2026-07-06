@@ -5,12 +5,13 @@ import { MOCK_USER } from '@/test/mocks/user';
 import { renderWithUI, screen, waitFor } from '@/test/utilities';
 
 import { submitLeave } from '@/actions/attendance';
-import authClient from '@/lib/auth-client';
+
+import { useSessionContext } from '@/providers/session';
 
 import SubmitLeaveRequest from './SubmitLeaveRequest';
 
-vi.mock('@/lib/auth-client', () => ({
-  default: { useSession: vi.fn() },
+vi.mock('@/providers/session', () => ({
+  useSessionContext: vi.fn(),
 }));
 
 vi.mock('@/actions/attendance', () => ({
@@ -25,9 +26,7 @@ describe('SubmitLeaveRequest', () => {
   const mockSubmitLeave = vi.mocked(submitLeave);
 
   const setup = () => {
-    (authClient.useSession as Mock).mockReturnValue({
-      data: { user: MOCK_USER },
-    });
+    (useSessionContext as Mock).mockReturnValue({ user: MOCK_USER });
 
     return renderWithUI(<SubmitLeaveRequest trigger={<button>Open</button>} />);
   };
