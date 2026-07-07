@@ -25,6 +25,9 @@ export const metadata: Metadata = {
     template: '%s | SGR Portal',
   },
   description: 'Saigon Rovers Basketball Club',
+  icons: {
+    icon: '/icon.png',
+  },
 };
 
 export default function RootLayout({ children }: PropsWithChildren) {
