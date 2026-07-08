@@ -3,6 +3,7 @@ import { DatabaseError } from 'pg';
 
 interface ErrorHandler {
   message: string;
+  detail?: string;
   constraint: Nullable<string>;
 }
 
@@ -356,28 +357,34 @@ const PostgresErrorHandlers: Record<
 > = {
   [PgErrorCode.UNIQUE_VIOLATION]: (error) => ({
     message: 'A duplicate entry was found for a unique field.',
+    detail: error.detail,
     constraint: error.constraint || null,
   }),
   [PgErrorCode.FOREIGN_KEY_VIOLATION]: (error) => ({
     message:
-      'A foreign key violation occurred. The record you are trying to link does not exist.',
+      'This record is still referenced by other records and cannot be modified.',
+    detail: error.detail,
     constraint: error.constraint || null,
   }),
   [PgErrorCode.RESTRICT_VIOLATION]: (error) => ({
     message:
       'This record is still referenced by other records and cannot be modified.',
+    detail: error.detail,
     constraint: error.constraint || null,
   }),
   [PgErrorCode.CHECK_VIOLATION]: (error) => ({
     message: 'A check constraint was violated.',
+    detail: error.detail,
     constraint: error.constraint || null,
   }),
   [PgErrorCode.NOT_NULL_VIOLATION]: (error) => ({
     message: `A required field is missing. The column '${error.column}' cannot be null.`,
+    detail: error.detail,
     constraint: error.column || null,
   }),
   [PgErrorCode.UNDEFINED_COLUMN]: (error) => ({
     message: 'An undefined column was referenced in the query.',
+    detail: error.detail,
     constraint: error.column || null,
   }),
   [PgErrorCode.SYNTAX_ERROR]: () => ({
@@ -434,6 +441,7 @@ export function getDbErrorMessage(error: unknown): ErrorHandler {
     // Default case for any other unhandled DatabaseError
     return {
       message: `A database error occurred: ${originalError.message}`,
+      detail: originalError.detail,
       constraint: null,
     };
   }
@@ -446,5 +454,8 @@ export function getDbErrorMessage(error: unknown): ErrorHandler {
     };
   }
 
-  return { message: 'An unknown error occurred.', constraint: null };
+  return {
+    message: 'An unknown error occurred.',
+    constraint: null,
+  };
 }

@@ -35,7 +35,6 @@ export const DEFAULT_LOGIN_REDIRECT = '/dashboard' as const;
 export const RESOURCES = [
   'assets',
   'attendance',
-  'cache-store',
   'dashboard',
   'documents',
   'emails',
@@ -48,5 +47,6 @@ export const RESOURCES = [
   'roster',
   'reports',
   'team-rule',
+  'teams',
   'training',
 ] as const;

@@ -10,6 +10,7 @@ import {
   Package,
   PersonStanding,
   ShieldCheck,
+  Swords,
   Trophy,
   UsersRound,
 } from 'lucide-react';
@@ -67,6 +68,7 @@ export const SIDEBAR_GROUP: Array<SidebarGroup> = [
   {
     title: 'Settings',
     items: [
+      { icon: Swords, resource: 'teams' },
       { icon: Trophy, resource: 'leagues' },
       { icon: MapPinHouse, resource: 'locations' },
     ],
