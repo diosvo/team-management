@@ -27,6 +27,7 @@ Each spec follows the same template:
 | **Settings**        | Teams            | `/teams`            | Draft  | [teams](./settings/teams.md)                          |
 | **Settings**        | Leagues          | `/leagues`          | Draft  | [leagues](./settings/leagues.md)                      |
 | **Settings**        | Locations        | `/locations`        | Draft  | [locations](./settings/locations.md)                  |
+| **Account**         | Profile          | `/profile/[id]`     | Draft  | [profile](./profile.md)                               |
 
 > **Dashboard** includes the **PDF Reports** capability (formerly the standalone
 > "Analytics Reports" spec) as a functionality under §5.
@@ -34,5 +35,4 @@ Each spec follows the same template:
 ### Not yet documented
 
 - Auth pages: `/login`, `/forgot-password`, `/new-password`
-- User profile: `/profile/[id]`
 - Resources → **Documents** (`/documents`, disabled in the sidebar)

@@ -32,16 +32,19 @@ import {
   getUserById,
   updateUser as updateDbUser,
 } from '@/db/user';
+import { deleteFile, getFile, uploadFile } from '@/lib/blob';
 
 import {
   addUser,
   getActivePlayers,
+  getAvatar,
   getRoster,
   getUserProfile,
   getUsers,
   removeUser,
   updatePersonalInfo,
   updateTeamInfo,
+  uploadAvatar,
 } from './user';
 
 vi.mock('./auth', () => ({
@@ -65,6 +68,12 @@ vi.mock('@/db/coach', () => ({
 vi.mock('@/db/player', () => ({
   insertPlayer: vi.fn(),
   updatePlayer: vi.fn(),
+}));
+
+vi.mock('@/lib/blob', () => ({
+  getFile: vi.fn(),
+  uploadFile: vi.fn(),
+  deleteFile: vi.fn(),
 }));
 
 vi.mock('@/actions/cache', () => ({
@@ -96,6 +105,20 @@ describe('permissions', () => {
     expect(mockWithResourceAction).toHaveBeenCalledWith(
       ['create'],
       expect.objectContaining({ name: 'add' }),
+    );
+  });
+
+  test('getAvatar requires view action', () => {
+    expect(mockWithResourceAction).toHaveBeenCalledWith(
+      ['view'],
+      expect.objectContaining({ name: 'getAvatar' }),
+    );
+  });
+
+  test('uploadAvatar requires edit action', () => {
+    expect(mockWithResourceAction).toHaveBeenCalledWith(
+      ['edit'],
+      expect.objectContaining({ name: 'uploadAvatar' }),
     );
   });
 
@@ -275,6 +298,88 @@ describe('User Actions', () => {
 
       const result = await addUser(newPlayerData);
 
+      expect(result).toEqual({
+        success: false,
+        message: errorMessage,
+      });
+    });
+  });
+
+  describe('getAvatar', () => {
+    test('returns null without fetching when image path is null', async () => {
+      const result = await getAvatar(null);
+
+      expect(getFile).not.toHaveBeenCalled();
+      expect(result).toBeNull();
+    });
+
+    test('fetches the file for a given image path', async () => {
+      const dataUrl = 'data:image/png;base64,abc';
+      vi.mocked(getFile).mockResolvedValue(dataUrl);
+
+      const result = await getAvatar('users/user-123/avatar.png');
+
+      expect(getFile).toHaveBeenCalledWith('users/user-123/avatar.png');
+      expect(result).toBe(dataUrl);
+    });
+  });
+
+  describe('uploadAvatar', () => {
+    const file = new File(['avatar'], 'avatar.png', { type: 'image/png' });
+    const pathname = 'users/user-123/avatar-xyz.png';
+
+    test('uploads avatar and updates the user record', async () => {
+      vi.mocked(uploadFile).mockResolvedValue({ pathname } as Awaited<
+        ReturnType<typeof uploadFile>
+      >);
+      vi.mocked(updateDbUser).mockResolvedValue({
+        ...mockResult,
+        command: 'UPDATE',
+      });
+
+      const result = await uploadAvatar(MOCK_USER.id, null, file);
+
+      expect(uploadFile).toHaveBeenCalledWith('users/' + MOCK_USER.id, file, {
+        contentType: file.type,
+      });
+      expect(updateDbUser).toHaveBeenCalledWith(MOCK_USER.id, {
+        image: pathname,
+      });
+      expect(deleteFile).not.toHaveBeenCalled();
+      expect(revalidate.user).toHaveBeenCalledWith(MOCK_USER.id);
+      expect(result).toEqual({
+        success: true,
+        message: 'Uploaded avatar successfully',
+        data: { image: pathname },
+      });
+    });
+
+    test('deletes the old avatar when an old path is provided', async () => {
+      const oldPath = 'users/user-123/old-avatar.png';
+      vi.mocked(uploadFile).mockResolvedValue({ pathname } as Awaited<
+        ReturnType<typeof uploadFile>
+      >);
+      vi.mocked(updateDbUser).mockResolvedValue({
+        ...mockResult,
+        command: 'UPDATE',
+      });
+
+      await uploadAvatar(MOCK_USER.id, oldPath, file);
+
+      expect(deleteFile).toHaveBeenCalledWith(oldPath);
+    });
+
+    test('returns error when upload fails', async () => {
+      vi.mocked(uploadFile).mockRejectedValue(new Error(errorMessage));
+      vi.mocked(getDbErrorMessage).mockReturnValue({
+        message: errorMessage,
+        constraint: null,
+      });
+
+      const result = await uploadAvatar(MOCK_USER.id, null, file);
+
+      expect(updateDbUser).not.toHaveBeenCalled();
+      expect(revalidate.user).not.toHaveBeenCalled();
       expect(result).toEqual({
         success: false,
         message: errorMessage,

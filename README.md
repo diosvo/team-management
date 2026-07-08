@@ -7,6 +7,7 @@
 - 💾 [Neon](https://vercel.com/marketplace/neon) for PostgresSQL database interaction.
 - 🔑 [Better Auth](https://www.better-auth.com) for authentication.
 - 📩 [Resend](https://resend.com/) for email confirmation.
+- 🗂️ [Vercel Blob](https://vercel.com/docs/vercel-blob) for file storage.
 - ⏰ [date-fns](https://date-fns.org/) for datetime manipulation.
 - PDF generation with:
   - [pdf-lib](https://pdf-lib.js.org/) for PDF manipulation.

@@ -21,6 +21,18 @@ describe('ResponseFactory', () => {
         message,
       });
     });
+
+    test('attaches the provided data payload', () => {
+      const data = { image: 'users/1/avatar.png' };
+
+      const result = ResponseFactory.success('Uploaded', data);
+
+      expect(result).toEqual({
+        success: true,
+        message: 'Uploaded',
+        data,
+      });
+    });
   });
 
   describe('error', () => {

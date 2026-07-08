@@ -5,6 +5,7 @@ import { useSWRConfig } from 'swr';
 
 import {
   Badge,
+  HStack,
   IconButton,
   Input,
   InputGroup,
@@ -122,7 +123,7 @@ export default function TeamInfo({
       title="Team Information"
       action={
         isEditing ? (
-          <>
+          <HStack>
             <CloseButton size="sm" variant="outline" onClick={onCancel} />
             <Tooltip content="Save" disabled={isPending}>
               <IconButton
@@ -133,7 +134,7 @@ export default function TeamInfo({
                 <Save />
               </IconButton>
             </Tooltip>
-          </>
+          </HStack>
         ) : (
           <Tooltip content={viewOnly ? 'View Only' : 'Edit'}>
             <IconButton

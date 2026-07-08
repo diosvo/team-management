@@ -1,14 +1,13 @@
 import { Metadata } from 'next';
 
-import { SimpleGrid, Text, VStack } from '@chakra-ui/react';
+import { Text } from '@chakra-ui/react';
 
 import PageTitle from '@/components/PageTitle';
 
 import { getUserProfile } from '@/actions/user';
 import { formatDatetime } from '@/utils/formatter';
 
-import PersonalInfo from '../_components/PersonalInfo';
-import TeamInfo from '../_components/TeamInfo';
+import ProfileLayout from '../_components/ProfileLayout';
 
 export const metadata: Metadata = {
   title: 'Profile',
@@ -24,17 +23,12 @@ export default async function ProfilePage({
   const { targetUser, viewOnly } = await getUserProfile(id);
 
   return (
-    <VStack gap={6} alignItems="stretch">
+    <>
       <PageTitle title="Profile Details" />
-
-      <SimpleGrid columns={{ base: 1, lg: 2 }} gap={6}>
-        <PersonalInfo user={targetUser} viewOnly={viewOnly} />
-        <TeamInfo user={targetUser} viewOnly={viewOnly} />
-      </SimpleGrid>
-
-      <Text fontSize="xs" color="GrayText">
+      <ProfileLayout user={targetUser} viewOnly={viewOnly} />
+      <Text fontSize="sm" color="GrayText">
         {`Last updated on ${formatDatetime(targetUser.updatedAt)}`}
       </Text>
-    </VStack>
+    </>
   );
 }
