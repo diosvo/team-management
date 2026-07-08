@@ -138,7 +138,7 @@ export const UpsertMatch = createOverlay(({ action, item, ...rest }) => {
                           {item.name}
                           <Badge
                             size="xs"
-                            variant="outline"
+                            variant="surface"
                             marginLeft="auto"
                             borderRadius="full"
                             colorPalette={getColor(item.status)}

@@ -2,21 +2,18 @@ import { ColorPalette } from '@chakra-ui/react';
 
 import { ALL } from './constant';
 import {
-  AssetCategory,
   AssetCondition,
   AttendanceStatus,
   EmailStatus,
   LeagueStatus,
   MatchStatus,
   SessionStatus,
-  UserRole,
   UserState,
 } from './enum';
 
 const COLOR_MAP: Partial<Record<ColorPalette, Array<string>>> = {
-  blue: [UserRole.PLAYER, EmailStatus.SENT],
+  blue: [EmailStatus.SENT],
   gray: [
-    AssetCategory.OTHERS,
     AssetCondition.OBSOLETE,
     EmailStatus.CANCELED,
     EmailStatus.QUEUED,
@@ -26,7 +23,6 @@ const COLOR_MAP: Partial<Record<ColorPalette, Array<string>>> = {
     UserState.UNKNOWN,
   ],
   green: [
-    AssetCategory.EQUIPMENT,
     AssetCondition.GOOD,
     AttendanceStatus.ON_TIME,
     EmailStatus.CLICKED,
@@ -38,17 +34,14 @@ const COLOR_MAP: Partial<Record<ColorPalette, Array<string>>> = {
     UserState.ACTIVE,
   ],
   orange: [
-    AssetCategory.TRAINING,
     AssetCondition.FAIR,
     AttendanceStatus.LATE,
     EmailStatus.DELIVERY_DELAYED,
     EmailStatus.SCHEDULED,
     LeagueStatus.UPCOMING,
-    UserRole.SUPER_ADMIN,
     UserState.TEMPORARILY_ABSENT,
     SessionStatus.SCHEDULED,
   ],
-  purple: [UserRole.COACH],
   red: [
     AssetCondition.POOR,
     AttendanceStatus.ABSENT,

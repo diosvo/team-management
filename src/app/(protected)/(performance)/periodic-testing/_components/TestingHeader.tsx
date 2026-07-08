@@ -11,7 +11,7 @@ export default function TestingHeader() {
     <HStack>
       <PageTitle title="Periodic Testing" />
       <Authorized resource="periodic-testing" action="create">
-        <HStack marginLeft="auto">
+        <HStack marginLeft="auto" gap={{ base: 3, lg: 4 }}>
           <Button size={{ base: 'sm', md: 'md' }} variant="surface" asChild>
             <Link href="/periodic-testing/test-types">
               <Settings2 size={14} />

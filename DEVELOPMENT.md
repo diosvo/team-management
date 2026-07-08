@@ -132,3 +132,11 @@ Use when all 3 conditions are met:
 ## ⭐️ Others
 
 - Check the [snippet directory](https://github.com/chakra-ui/chakra-ui/tree/main/apps/compositions/src/ui) to see Chakra UI changes.
+
+### Badge Variants
+
+Pick by what the value _means_, not by the column:
+
+- `surface` + `colorPalette={getColor(...)}` → **semantic status** where the color carries meaning (status/state/condition/result). _e.g._, attendance status, asset condition, match result.
+- `outline`, no `colorPalette` → **neutral labels** that classify but aren't good/bad (role, position).
+- `surface` + fixed color → **UI accents** not driven by data (_e.g._, "TODAY", "N selected").
