@@ -150,7 +150,7 @@ export default function DataTable<T>({
                         textAlign={column.align}
                         {...column.cellProps}
                       >
-                        {column.cell(item, rowIndex) || '-'}
+                        {column.cell(item, rowIndex) ?? '-'}
                       </Table.Cell>
                     ))}
                   </Table.Row>

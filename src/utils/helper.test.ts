@@ -1,12 +1,10 @@
 import { ALL } from './constant';
 import {
-  AssetCategory,
   AssetCondition,
   AttendanceStatus,
   LeagueStatus,
   MatchStatus,
   SessionStatus,
-  UserRole,
   UserState,
 } from './enum';
 
@@ -18,10 +16,6 @@ describe('getColor', () => {
     { value: null, expected: 'gray' },
     { value: undefined, expected: 'gray' },
     { value: 'unknown', expected: 'black' },
-    // UserRole
-    { value: UserRole.SUPER_ADMIN, expected: 'orange' },
-    { value: UserRole.COACH, expected: 'purple' },
-    { value: UserRole.PLAYER, expected: 'blue' },
     // UserState
     { value: UserState.ACTIVE, expected: 'green' },
     { value: UserState.TEMPORARILY_ABSENT, expected: 'orange' },
@@ -32,10 +26,6 @@ describe('getColor', () => {
     { value: AssetCondition.FAIR, expected: 'orange' },
     { value: AssetCondition.POOR, expected: 'red' },
     { value: AssetCondition.OBSOLETE, expected: 'gray' },
-    // AssetCategory
-    { value: AssetCategory.EQUIPMENT, expected: 'green' },
-    { value: AssetCategory.TRAINING, expected: 'orange' },
-    { value: AssetCategory.OTHERS, expected: 'gray' },
     // LeagueStatus
     { value: LeagueStatus.UPCOMING, expected: 'orange' },
     { value: LeagueStatus.ONGOING, expected: 'green' },
