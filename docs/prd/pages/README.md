@@ -24,6 +24,7 @@ Each spec follows the same template:
 | **Team Management** | Matches          | `/matches`          | Draft  | [matches](./team-management/matches.md)               |
 | **Performance**     | Periodic Testing | `/periodic-testing` | Draft  | [periodic-testing](./performance/periodic-testing.md) |
 | **Resources**       | Assets           | `/assets`           | Draft  | [assets](./resources/assets.md)                       |
+| **Settings**        | Teams            | `/teams`            | Draft  | [teams](./settings/teams.md)                          |
 | **Settings**        | Leagues          | `/leagues`          | Draft  | [leagues](./settings/leagues.md)                      |
 | **Settings**        | Locations        | `/locations`        | Draft  | [locations](./settings/locations.md)                  |
 

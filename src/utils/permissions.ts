@@ -37,6 +37,7 @@ export const ROLE_CONFIG: Record<UserRole, RoleConfig> = {
     'periodic-testing': ['view'],
     profile: ['view', 'edit'],
     registration: ['view'],
+    teams: ['view'],
   },
   [UserRole.GUEST]: {
     dashboard: ['view'],

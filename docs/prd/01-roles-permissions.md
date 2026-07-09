@@ -49,6 +49,7 @@ Proactive client-side UX. Reads the session client-side and controls which UI el
 | `matches`          | view  | view             | view, create, edit | all         | create, edit         |
 | `periodic-testing` | —     | view             | view, create, edit | all         | —                    |
 | `assets`           | —     | —                | view               | all         | —                    |
+| `teams`            | —     | —                | view               | all         | —                    |
 | `leagues`          | —     | —                | view               | all         | —                    |
 | `locations`        | —     | —                | view               | all         | —                    |
 | `profile`          | —     | view, edit (own) | view, edit (own)   | all         | —                    |
