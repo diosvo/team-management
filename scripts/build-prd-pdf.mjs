@@ -37,6 +37,7 @@ const MANIFEST = [
   'pages/team-management/matches.md',
   'pages/performance/periodic-testing.md',
   'pages/resources/assets.md',
+  'pages/settings/teams.md',
   'pages/settings/leagues.md',
   'pages/settings/locations.md',
 ];

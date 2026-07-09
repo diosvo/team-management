@@ -1,11 +1,11 @@
-import { eq } from 'drizzle-orm';
+import { asc, eq } from 'drizzle-orm';
 
 import db from '@/drizzle';
 import { TeamTable } from '@/drizzle/schema/team';
 
 import { MOCK_TEAM } from '@/test/mocks/team';
 
-import { getOtherTeams } from './team';
+import { getTeams } from './team';
 
 vi.mock('@/drizzle', () => ({
   default: {
@@ -20,16 +20,11 @@ vi.mock('@/drizzle', () => ({
 vi.mock('@/drizzle/schema/team', () => ({
   TeamTable: {
     is_default: 'is_default',
+    name: 'name',
   },
 }));
 
-vi.mock('@/actions/cache', () => ({
-  CACHE_TAG: {
-    OPPONENTS: 'opponents',
-  },
-}));
-
-describe('getOtherTeams', () => {
+describe('getTeams', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -37,13 +32,14 @@ describe('getOtherTeams', () => {
   test('returns teams when database query succeeds', async () => {
     vi.mocked(db.query.TeamTable.findMany).mockResolvedValue([MOCK_TEAM]);
 
-    const result = await getOtherTeams();
+    const result = await getTeams();
 
     // Don't care about exact db query result here
     expect(result).toEqual([MOCK_TEAM]);
     // Verify query construction
     expect(db.query.TeamTable.findMany).toHaveBeenCalledWith({
       where: eq(TeamTable.is_default, false),
+      orderBy: asc(TeamTable.name),
     });
   });
 
@@ -61,7 +57,7 @@ describe('getOtherTeams', () => {
     async ({ mockError }) => {
       vi.mocked(db.query.TeamTable.findMany).mockRejectedValue(mockError);
 
-      const result = await getOtherTeams();
+      const result = await getTeams();
       expect(result).toEqual([]);
     },
   );

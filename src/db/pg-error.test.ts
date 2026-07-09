@@ -89,7 +89,7 @@ describe('getDbErrorMessage', () => {
 
     describe('FOREIGN_KEY_VIOLATION (23503)', () => {
       const message =
-        'A foreign key violation occurred. The record you are trying to link does not exist.';
+        'A foreign key constraint was violated. The referenced record may not exist.';
 
       test('returns the constraint name when set', () => {
         expect(
@@ -98,7 +98,10 @@ describe('getDbErrorMessage', () => {
               constraint: 'orders_user_id_fkey',
             }),
           ),
-        ).toEqual({ message, constraint: 'orders_user_id_fkey' });
+        ).toEqual({
+          message,
+          constraint: 'orders_user_id_fkey',
+        });
       });
 
       test('returns null constraint when not set', () => {

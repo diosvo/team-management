@@ -24,6 +24,7 @@ export const ROLE_CONFIG: Record<UserRole, RoleConfig> = {
     assets: ['view'],
     leagues: ['view'],
     locations: ['view'],
+    teams: ['view'],
     profile: ['view', 'edit'],
   },
   [UserRole.PLAYER]: {
@@ -36,6 +37,7 @@ export const ROLE_CONFIG: Record<UserRole, RoleConfig> = {
     'periodic-testing': ['view'],
     profile: ['view', 'edit'],
     registration: ['view'],
+    teams: ['view'],
   },
   [UserRole.GUEST]: {
     dashboard: ['view'],

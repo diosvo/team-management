@@ -37,7 +37,7 @@ import { UpsertMatchSchema, UpsertMatchSchemaValues } from '@/schemas/match';
 
 import { getLeagues } from '@/actions/league';
 import { upsertMatch } from '@/actions/match';
-import { getOpponents } from '@/actions/team';
+import { getTeams } from '@/actions/team';
 
 export const UpsertMatch = createOverlay(({ action, item, ...rest }) => {
   const [isPending, startTransition] = useTransition();
@@ -156,7 +156,7 @@ export const UpsertMatch = createOverlay(({ action, item, ...rest }) => {
                   control={control}
                   name="away_team"
                   label={CACHE_KEY.OPPONENTS}
-                  action={getOpponents}
+                  action={getTeams}
                   fieldProps={{
                     required: true,
                     disabled: isPending,

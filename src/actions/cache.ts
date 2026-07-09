@@ -23,6 +23,7 @@ export const revalidate = {
   matches: () => revalidatePath('/matches'),
   roster: () => revalidatePath('/roster'),
   sessions: () => revalidatePath('/training'),
+  teams: () => revalidatePath('/teams'),
   testResults: () => revalidatePath('/periodic-testing'),
   testTypes: () => revalidatePath('/periodic-testing/test-types'),
   user: (userId: string) => revalidatePath(`/profile/${userId}`),
