@@ -16,7 +16,7 @@ import { revalidate } from './cache';
 
 const teams = withResource('teams');
 
-/** @returns A list of opponents */
+/** @returns A list of teams as opponents */
 export const getTeams = withAuth(fetchTeams);
 
 export const upsertTeam = teams(
@@ -51,8 +51,8 @@ export const removeTeam = teams(
 
       return ResponseFactory.success('Deleted team successfully');
     } catch (error) {
-      const { detail } = getDbErrorMessage(error);
-      return ResponseFactory.error(detail);
+      const { message } = getDbErrorMessage(error);
+      return ResponseFactory.error(message);
     }
   },
 );

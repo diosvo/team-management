@@ -147,7 +147,7 @@ describe('Team Actions', () => {
       });
     });
 
-    test('', async () => {
+    test('returns an error when the db operation fails', async () => {
       vi.mocked(deleteTeam).mockRejectedValue(new Error('boom'));
 
       const result = await removeTeam(MOCK_AWAY_TEAM.team_id);
@@ -155,7 +155,7 @@ describe('Team Actions', () => {
       expect(revalidate.teams).not.toHaveBeenCalled();
       expect(result).toEqual({
         success: false,
-        message: 'Something went wrong.',
+        message: 'Email already exists',
       });
     });
   });

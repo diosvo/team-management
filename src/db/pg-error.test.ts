@@ -89,7 +89,7 @@ describe('getDbErrorMessage', () => {
 
     describe('FOREIGN_KEY_VIOLATION (23503)', () => {
       const message =
-        'This record is still referenced by other records and cannot be modified.';
+        'A foreign key constraint was violated. The referenced record may not exist.';
 
       test('returns the constraint name when set', () => {
         expect(
@@ -100,7 +100,6 @@ describe('getDbErrorMessage', () => {
           ),
         ).toEqual({
           message,
-          detail: undefined,
           constraint: 'orders_user_id_fkey',
         });
       });
@@ -112,7 +111,6 @@ describe('getDbErrorMessage', () => {
           ),
         ).toEqual({
           message,
-          detail: undefined,
           constraint: null,
         });
       });

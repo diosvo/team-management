@@ -24,7 +24,7 @@ import { UpsertTeam } from './UpsertTeam';
 
 export default function TeamTable({ teams }: { teams: Array<Team> }) {
   const { mutate } = useSWRConfig();
-  const { can, isGuest } = usePermissions();
+  const { can } = usePermissions();
   const [{ q, page }, setSearchParams] = useCommonParams();
 
   const predicate = useMemo(
@@ -91,10 +91,10 @@ export default function TeamTable({ teams }: { teams: Array<Team> }) {
         onPageChange={setSearchParams}
         empty={{ title: 'No teams found', icon: <UsersRound /> }}
         onRowClick={
-          isGuest
-            ? undefined
-            : (item) =>
+          can('teams', 'edit')
+            ? (item) =>
                 UpsertTeam.open('update-team', { action: 'Update', item })
+            : undefined
         }
         selection={{
           canSelect: can('teams', 'delete'),

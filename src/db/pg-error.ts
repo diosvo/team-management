@@ -3,9 +3,11 @@ import { DatabaseError } from 'pg';
 
 interface ErrorHandler {
   message: string;
-  detail?: string;
   constraint: Nullable<string>;
 }
+
+const withDetail = (message: string, detail?: string): string =>
+  detail || message;
 
 export enum PgErrorCode {
   // Class 00 — Successful Completion
@@ -356,35 +358,42 @@ const PostgresErrorHandlers: Record<
   (error: DatabaseError) => ErrorHandler
 > = {
   [PgErrorCode.UNIQUE_VIOLATION]: (error) => ({
-    message: 'A duplicate entry was found for a unique field.',
-    detail: error.detail,
+    message: withDetail(
+      'A duplicate entry was found for a unique field.',
+      error.detail,
+    ),
     constraint: error.constraint || null,
   }),
   [PgErrorCode.FOREIGN_KEY_VIOLATION]: (error) => ({
-    message:
-      'This record is still referenced by other records and cannot be modified.',
-    detail: error.detail,
+    message: withDetail(
+      'A foreign key constraint was violated. The referenced record may not exist.',
+      error.detail,
+    ),
     constraint: error.constraint || null,
   }),
   [PgErrorCode.RESTRICT_VIOLATION]: (error) => ({
-    message:
+    message: withDetail(
       'This record is still referenced by other records and cannot be modified.',
-    detail: error.detail,
+      error.detail,
+    ),
     constraint: error.constraint || null,
   }),
   [PgErrorCode.CHECK_VIOLATION]: (error) => ({
-    message: 'A check constraint was violated.',
-    detail: error.detail,
+    message: withDetail('A check constraint was violated.', error.detail),
     constraint: error.constraint || null,
   }),
   [PgErrorCode.NOT_NULL_VIOLATION]: (error) => ({
-    message: `A required field is missing. The column '${error.column}' cannot be null.`,
-    detail: error.detail,
+    message: withDetail(
+      `A required field is missing. The column '${error.column}' cannot be null.`,
+      error.detail,
+    ),
     constraint: error.column || null,
   }),
   [PgErrorCode.UNDEFINED_COLUMN]: (error) => ({
-    message: 'An undefined column was referenced in the query.',
-    detail: error.detail,
+    message: withDetail(
+      'An undefined column was referenced in the query.',
+      error.detail,
+    ),
     constraint: error.column || null,
   }),
   [PgErrorCode.SYNTAX_ERROR]: () => ({
@@ -440,8 +449,10 @@ export function getDbErrorMessage(error: unknown): ErrorHandler {
 
     // Default case for any other unhandled DatabaseError
     return {
-      message: `A database error occurred: ${originalError.message}`,
-      detail: originalError.detail,
+      message: withDetail(
+        `A database error occurred: ${originalError.message}`,
+        originalError.detail,
+      ),
       constraint: null,
     };
   }
