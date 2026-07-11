@@ -72,7 +72,10 @@ export default function LoginPage() {
           invalid={!!errors.password}
           errorText={errors.password?.message}
         >
-          <PasswordInput {...register('password')} />
+          <PasswordInput
+            autoComplete="current-password"
+            {...register('password')}
+          />
         </Field>
 
         <ChakraLink
