@@ -5,6 +5,7 @@
     "url": "https://www.linkedin.com/in/diosvo/"
   },
   "dependencies": {
+    "@better-auth/infra": "^0.3.6",
     "@chakra-ui/charts": "^3.36.0",
     "@chakra-ui/react": "^3.36.0",
     "@emotion/cache": "^11.14.0",
