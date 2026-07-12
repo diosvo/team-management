@@ -1,3 +1,4 @@
+import { dash } from '@better-auth/infra';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { betterAuth } from 'better-auth/minimal';
 import { nextCookies } from 'better-auth/next-js';
@@ -78,6 +79,7 @@ export default betterAuth({
     },
   },
   plugins: [
+    dash(),
     nextCookies(), // Ensure that it is the last plugin in the array
   ],
 });
