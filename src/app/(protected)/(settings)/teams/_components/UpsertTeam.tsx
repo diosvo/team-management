@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useTransition } from 'react';
 import { useSWRConfig } from 'swr';
 
 import {
@@ -29,11 +29,11 @@ import { upsertTeam } from '@/actions/team';
 export const UpsertTeam = createOverlay(({ action, item, ...rest }) => {
   const { mutate } = useSWRConfig();
   const [isPending, startTransition] = useTransition();
-  const [logo, setLogo] = useState<Nullable<File>>(null);
 
   const {
     reset,
     register,
+    setValue,
     handleSubmit,
     formState: { isValid, errors },
   } = useForm({
@@ -48,11 +48,7 @@ export const UpsertTeam = createOverlay(({ action, item, ...rest }) => {
     });
 
     startTransition(async () => {
-      const { success, message: title } = await upsertTeam(
-        item.team_id,
-        data,
-        logo,
-      );
+      const { success, message: title } = await upsertTeam(item.team_id, data);
 
       toaster.update(id, {
         type: success ? 'success' : 'error',
@@ -61,7 +57,6 @@ export const UpsertTeam = createOverlay(({ action, item, ...rest }) => {
 
       if (success) {
         reset();
-        setLogo(null);
         mutate(CACHE_KEY.OPPONENTS, undefined, { revalidate: true });
       }
       if (action === 'Update') UpsertTeam.close('update-team');
@@ -83,9 +78,9 @@ export const UpsertTeam = createOverlay(({ action, item, ...rest }) => {
             <Dialog.Body>
               <VStack alignItems="stretch" gap={4}>
                 <AvatarUpload
-                  src={item.logo_url}
+                  src={item.image}
                   fallback={item.name}
-                  onChange={setLogo}
+                  onChange={(file) => setValue('image', file)}
                   isPending={isPending}
                 />
                 <Field

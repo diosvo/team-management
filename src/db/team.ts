@@ -15,6 +15,12 @@ export async function getTeams() {
   }
 }
 
+export async function getTeam(team_id: string) {
+  return await db.query.TeamTable.findFirst({
+    where: eq(TeamTable.team_id, team_id),
+  });
+}
+
 export async function insertTeam(team: InsertTeam) {
   const [row] = await db
     .insert(TeamTable)

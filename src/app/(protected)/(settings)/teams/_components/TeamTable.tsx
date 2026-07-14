@@ -66,7 +66,7 @@ export default function TeamTable({ teams }: { teams: Array<Team> }) {
         <HStack>
           <Avatar.Root shape="rounded" size="xs" marginRight={2}>
             <Avatar.Fallback name={item.name} />
-            <Avatar.Image src={item.logo_url ?? undefined} />
+            <Avatar.Image src={item.image ?? undefined} />
           </Avatar.Root>
           <Text>
             <HighlightText query={q}>{item.name}</HighlightText>
