@@ -16,12 +16,16 @@ export async function getTeams() {
 }
 
 export async function insertTeam(team: InsertTeam) {
-  return await db.insert(TeamTable).values({ ...team, is_default: false });
+  const [row] = await db
+    .insert(TeamTable)
+    .values({ ...team, is_default: false })
+    .returning({ team_id: TeamTable.team_id });
+  return row;
 }
 
 export async function updateTeam(
   team_id: string,
-  team: UpsertTeamSchemaValues,
+  team: Partial<UpsertTeamSchemaValues>,
 ) {
   return await db
     .update(TeamTable)

@@ -1,6 +1,6 @@
 'use client';
 
-import { useTransition } from 'react';
+import { useState, useTransition } from 'react';
 import { useSWRConfig } from 'swr';
 
 import {
@@ -15,19 +15,21 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Save } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 
+import AvatarUpload from '@/components/common/AvatarUpload';
 import { CloseButton } from '@/components/ui/close-button';
 import { Field } from '@/components/ui/field';
 import { toaster } from '@/components/ui/toaster';
 
 import { getDefaults } from '@/lib/zod';
+import { UpsertTeamSchema, type UpsertTeamSchemaValues } from '@/schemas/team';
 import { CACHE_KEY } from '@/utils/constant';
 
 import { upsertTeam } from '@/actions/team';
-import { UpsertTeamSchema, UpsertTeamSchemaValues } from '@/schemas/team';
 
 export const UpsertTeam = createOverlay(({ action, item, ...rest }) => {
   const { mutate } = useSWRConfig();
   const [isPending, startTransition] = useTransition();
+  const [logo, setLogo] = useState<Nullable<File>>(null);
 
   const {
     reset,
@@ -46,7 +48,11 @@ export const UpsertTeam = createOverlay(({ action, item, ...rest }) => {
     });
 
     startTransition(async () => {
-      const { success, message: title } = await upsertTeam(item.team_id, data);
+      const { success, message: title } = await upsertTeam(
+        item.team_id,
+        data,
+        logo,
+      );
 
       toaster.update(id, {
         type: success ? 'success' : 'error',
@@ -55,6 +61,7 @@ export const UpsertTeam = createOverlay(({ action, item, ...rest }) => {
 
       if (success) {
         reset();
+        setLogo(null);
         mutate(CACHE_KEY.OPPONENTS, undefined, { revalidate: true });
       }
       if (action === 'Update') UpsertTeam.close('update-team');
@@ -74,7 +81,13 @@ export const UpsertTeam = createOverlay(({ action, item, ...rest }) => {
               <Dialog.Title>{action} Team</Dialog.Title>
             </Dialog.Header>
             <Dialog.Body>
-              <VStack alignItems="stretch" gap={3}>
+              <VStack alignItems="stretch" gap={4}>
+                <AvatarUpload
+                  src={item.logo_url}
+                  fallback={item.name}
+                  onChange={setLogo}
+                  isPending={isPending}
+                />
                 <Field
                   required
                   label="Name"
@@ -110,17 +123,6 @@ export const UpsertTeam = createOverlay(({ action, item, ...rest }) => {
                     max={new Date().getFullYear()}
                     disabled={isPending}
                     {...register('establish_year')}
-                  />
-                </Field>
-                <Field
-                  label="Logo URL"
-                  invalid={!!errors.logo_url}
-                  errorText={errors.logo_url?.message}
-                >
-                  <Input
-                    placeholder="https://example.com/logo.png"
-                    disabled={isPending}
-                    {...register('logo_url')}
                   />
                 </Field>
               </VStack>

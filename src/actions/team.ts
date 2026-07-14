@@ -9,8 +9,9 @@ import {
   insertTeam,
   updateTeam,
 } from '@/db/team';
-import { UpsertTeamSchemaValues } from '@/schemas/team';
+import type { UpsertTeamSchemaValues } from '@/schemas/team';
 
+import { deleteFile, uploadFile } from '@/lib/blob';
 import { withAuth, withResource } from './auth';
 import { revalidate } from './cache';
 
@@ -21,12 +22,32 @@ export const getTeams = withAuth(fetchTeams);
 
 export const upsertTeam = teams(
   ['create', 'edit'],
-  async function upsert(_, team_id: string, team: UpsertTeamSchemaValues) {
+  async function upsert(
+    _,
+    team_id: string,
+    team: UpsertTeamSchemaValues,
+    file?: Nullable<File>,
+  ) {
     try {
+      let id = team_id;
+
       if (team_id) {
         await updateTeam(team_id, team);
       } else {
-        await insertTeam(team);
+        const inserted = await insertTeam(team);
+        id = inserted.team_id;
+      }
+
+      if (file) {
+        const { pathname } = await uploadFile('teams/' + id, file, {
+          contentType: file.type,
+        });
+        await updateTeam(id, { image: pathname });
+
+        // Clean up the previously stored logo, if any.
+        if (team.image) {
+          await deleteFile(team.image);
+        }
       }
 
       revalidate.teams();

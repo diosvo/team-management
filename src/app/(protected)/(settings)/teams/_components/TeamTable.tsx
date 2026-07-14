@@ -1,25 +1,25 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useSWRConfig } from 'swr';
 
+import { Avatar, HStack, Text } from '@chakra-ui/react';
 import { UsersRound } from 'lucide-react';
 
 import DataTable, { type Column } from '@/components/DataTable';
 import HighlightText from '@/components/HighlightText';
-
 import { toaster } from '@/components/ui/toaster';
 
 import usePermissions from '@/hooks/use-permissions';
 import useTableState from '@/hooks/use-table-state';
 import { useCommonParams } from '@/lib/nuqs';
+import { CACHE_KEY } from '@/utils/constant';
 import { buildPredicate } from '@/utils/filters';
 import { formatDatetime } from '@/utils/formatter';
 
 import { removeTeam } from '@/actions/team';
 import { Team } from '@/drizzle/schema';
 
-import { CACHE_KEY } from '@/utils/constant';
-import { useSWRConfig } from 'swr';
 import { UpsertTeam } from './UpsertTeam';
 
 export default function TeamTable({ teams }: { teams: Array<Team> }) {
@@ -62,7 +62,17 @@ export default function TeamTable({ teams }: { teams: Array<Team> }) {
   const columns: Array<Column<Team>> = [
     {
       header: 'Name',
-      cell: (item) => <HighlightText query={q}>{item.name}</HighlightText>,
+      cell: (item) => (
+        <HStack>
+          <Avatar.Root shape="rounded" size="xs" marginRight={2}>
+            <Avatar.Fallback name={item.name} />
+            <Avatar.Image src={item.logo_url ?? undefined} />
+          </Avatar.Root>
+          <Text>
+            <HighlightText query={q}>{item.name}</HighlightText>
+          </Text>
+        </HStack>
+      ),
     },
     {
       header: 'Email',

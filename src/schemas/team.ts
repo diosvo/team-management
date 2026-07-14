@@ -23,13 +23,7 @@ export const UpsertTeamSchema = z.object({
     .min(MIN_YEAR, { error: `Be at least ${MIN_YEAR}.` })
     .max(CURRENT_YEAR, { error: `Be at most ${CURRENT_YEAR}.` })
     .default(CURRENT_YEAR),
-  logo_url: z.preprocess(
-    emptyToUndefined,
-    z
-      .url({ error: 'Enter a valid URL.' })
-      .max(256, { error: 'Be at most 256 characters long.' })
-      .nullish(),
-  ),
+  image: z.preprocess(emptyToUndefined, z.string().nullish()),
 });
 
 export type UpsertTeamSchemaValues = z.infer<typeof UpsertTeamSchema>;

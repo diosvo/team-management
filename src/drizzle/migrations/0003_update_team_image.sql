@@ -1,0 +1,1 @@
+ALTER TABLE "team" RENAME COLUMN "logo_url" TO "image";
