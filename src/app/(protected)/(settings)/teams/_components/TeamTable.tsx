@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { useSWRConfig } from 'swr';
 
-import { Avatar, HStack, Text } from '@chakra-ui/react';
+import { Avatar, HStack, Skeleton, Text } from '@chakra-ui/react';
 import { UsersRound } from 'lucide-react';
 
 import DataTable, { type Column } from '@/components/DataTable';
@@ -20,6 +20,7 @@ import { formatDatetime } from '@/utils/formatter';
 import { removeTeam } from '@/actions/team';
 import { Team } from '@/drizzle/schema';
 
+import { useTeamLogo } from '@/hooks/use-avatar';
 import { UpsertTeam } from './UpsertTeam';
 
 export default function TeamTable({ teams }: { teams: Array<Team> }) {
@@ -62,17 +63,27 @@ export default function TeamTable({ teams }: { teams: Array<Team> }) {
   const columns: Array<Column<Team>> = [
     {
       header: 'Name',
-      cell: (item) => (
-        <HStack>
-          <Avatar.Root shape="rounded" size="xs" marginRight={2}>
-            <Avatar.Fallback name={item.name} />
-            <Avatar.Image src={item.image ?? undefined} />
-          </Avatar.Root>
-          <Text>
-            <HighlightText query={q}>{item.name}</HighlightText>
-          </Text>
-        </HStack>
-      ),
+      cell: (item) => {
+        const { data, isLoading } = item.image
+          ? useTeamLogo(item.image)
+          : { data: null, isLoading: false };
+
+        return (
+          <HStack>
+            {isLoading ? (
+              <Skeleton width={8} height={8} />
+            ) : (
+              <Avatar.Root shape="rounded" size="xs">
+                <Avatar.Fallback name={item.name} />
+                <Avatar.Image src={data ?? undefined} />
+              </Avatar.Root>
+            )}
+            <Text marginLeft={2}>
+              <HighlightText query={q}>{item.name}</HighlightText>
+            </Text>
+          </HStack>
+        );
+      },
     },
     {
       header: 'Email',

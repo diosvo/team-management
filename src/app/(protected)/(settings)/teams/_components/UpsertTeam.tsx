@@ -1,6 +1,6 @@
 'use client';
 
-import { useTransition } from 'react';
+import { useState, useTransition } from 'react';
 import { useSWRConfig } from 'swr';
 
 import {
@@ -24,18 +24,20 @@ import { getDefaults } from '@/lib/zod';
 import { UpsertTeamSchema, type UpsertTeamSchemaValues } from '@/schemas/team';
 import { CACHE_KEY } from '@/utils/constant';
 
-import { upsertTeam } from '@/actions/team';
+import { uploadLogo, upsertTeam } from '@/actions/team';
+import { useTeamLogo } from '@/hooks/use-avatar';
 
 export const UpsertTeam = createOverlay(({ action, item, ...rest }) => {
   const { mutate } = useSWRConfig();
   const [isPending, startTransition] = useTransition();
+  const [imagePath, setImagePath] = useState(item.image);
+  const { data: image, isLoading } = useTeamLogo(imagePath);
 
   const {
     reset,
     register,
-    setValue,
     handleSubmit,
-    formState: { isValid, errors },
+    formState: { isValid, isDirty, errors },
   } = useForm({
     resolver: zodResolver(UpsertTeamSchema),
     defaultValues: getDefaults(UpsertTeamSchema, item),
@@ -63,6 +65,30 @@ export const UpsertTeam = createOverlay(({ action, item, ...rest }) => {
     });
   };
 
+  const handleFileChange = (file: File) => {
+    const id = toaster.create({
+      type: 'loading',
+      title: 'Setting team logo...',
+    });
+
+    startTransition(async () => {
+      const {
+        success,
+        message: title,
+        data,
+      } = await uploadLogo(item.team_id, imagePath, file);
+
+      toaster.update(id, {
+        type: success ? 'success' : 'error',
+        title,
+      });
+
+      if (success && data) {
+        setImagePath(data.image);
+      }
+    });
+  };
+
   return (
     <Dialog.Root {...rest}>
       <Portal>
@@ -78,10 +104,10 @@ export const UpsertTeam = createOverlay(({ action, item, ...rest }) => {
             <Dialog.Body>
               <VStack alignItems="stretch" gap={4}>
                 <AvatarUpload
-                  src={item.image}
+                  src={image as string}
                   fallback={item.name}
-                  onChange={(file) => setValue('image', file)}
-                  isPending={isPending}
+                  onChange={handleFileChange}
+                  isPending={isLoading || isPending}
                 />
                 <Field
                   required
@@ -127,7 +153,7 @@ export const UpsertTeam = createOverlay(({ action, item, ...rest }) => {
                 type="submit"
                 loadingText="Saving..."
                 loading={isPending}
-                disabled={!isValid}
+                disabled={!isValid || !isDirty || isPending}
               >
                 <Save /> {action}
               </Button>

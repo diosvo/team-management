@@ -1,48 +1,49 @@
-import { useEffect, useState } from 'react';
-
-import {
-  Avatar,
-  AvatarFallbackProps,
-  AvatarImageProps,
-  Box,
-  Center,
-  FileUpload,
-} from '@chakra-ui/react';
+import { Avatar, Box, Center, FileUpload, Skeleton } from '@chakra-ui/react';
 import { Camera } from 'lucide-react';
 
+import { toaster } from '@/components/ui/toaster';
+
+const MAX_FILE_SIZE = 100_000; // 100 KB
+
+type AvatarUploadProps = Required<{
+  src: Image;
+  onChange: (file: File) => void;
+}> &
+  Partial<{
+    fallback: string;
+    disabled: boolean;
+    isPending: boolean;
+  }>;
+
 export default function AvatarUpload({
-  onChange,
-  isPending,
-  disabled,
   src,
   fallback,
-}: {
-  onChange: (file: File) => void;
-  src?: AvatarImageProps['src'];
-  disabled?: boolean;
-  fallback?: AvatarFallbackProps['name'];
-  isPending?: boolean;
-}) {
-  const [preview, setPreview] = useState<Nullable<string>>(null);
-
-  useEffect(() => {
-    if (!preview) return;
-    return () => URL.revokeObjectURL(preview);
-  }, [preview]);
-
-  const handleFileChange = (file: File) => {
-    if (!file) return;
-
-    setPreview(URL.createObjectURL(file));
-    onChange(file);
-  };
-
+  disabled,
+  isPending,
+  onChange,
+}: AvatarUploadProps) {
   return (
     <FileUpload.Root
-      disabled={disabled}
-      maxFileSize={1024 * 1024} // 1MB
-      accept="image/*"
-      onFileChange={({ acceptedFiles }) => handleFileChange(acceptedFiles[0])}
+      disabled={disabled || isPending}
+      maxFileSize={MAX_FILE_SIZE}
+      accept={['image/png', 'image/jpeg', 'image/jpg']}
+      onFileAccept={({ files }) => {
+        if (files[0]) onChange(files[0]);
+      }}
+      onFileReject={({ files }) => {
+        if (!files.length) return;
+
+        const tooLarge = files.some(({ errors }) =>
+          errors.includes('FILE_TOO_LARGE'),
+        );
+
+        toaster.create({
+          type: 'error',
+          title: tooLarge
+            ? 'Image must be smaller than 100 KB'
+            : 'Only PNG or JPEG images are allowed',
+        });
+      }}
       alignItems="center"
     >
       <FileUpload.HiddenInput />
@@ -56,10 +57,19 @@ export default function AvatarUpload({
           cursor={disabled ? 'default' : 'pointer'}
           css={{ '&:hover .avatar-overlay': { opacity: 1 } }}
         >
-          <Avatar.Root width={32} height={32} variant="outline" shape="rounded">
-            <Avatar.Fallback name={fallback} />
-            <Avatar.Image src={preview ?? src ?? undefined} />
-          </Avatar.Root>
+          {isPending ? (
+            <Skeleton width={32} height={32} />
+          ) : (
+            <Avatar.Root
+              width={32}
+              height={32}
+              variant="outline"
+              shape="rounded"
+            >
+              <Avatar.Fallback name={fallback} />
+              <Avatar.Image src={src ?? undefined} />
+            </Avatar.Root>
+          )}
           <Center
             hidden={disabled}
             position="absolute"

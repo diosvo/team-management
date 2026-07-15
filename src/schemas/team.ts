@@ -23,7 +23,6 @@ export const UpsertTeamSchema = z.object({
     .min(MIN_YEAR, { error: `Be at least ${MIN_YEAR}.` })
     .max(CURRENT_YEAR, { error: `Be at most ${CURRENT_YEAR}.` })
     .default(CURRENT_YEAR),
-  image: z.any().optional(),
 });
 
 export type UpsertTeamSchemaValues = z.infer<typeof UpsertTeamSchema>;

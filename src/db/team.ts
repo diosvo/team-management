@@ -1,8 +1,7 @@
 import { and, asc, eq } from 'drizzle-orm';
 
 import db from '@/drizzle';
-import { InsertTeam, TeamTable } from '@/drizzle/schema/team';
-import { UpsertTeamSchemaValues } from '@/schemas/team';
+import { InsertTeam, Team, TeamTable } from '@/drizzle/schema/team';
 
 export async function getTeams() {
   try {
@@ -29,10 +28,7 @@ export async function insertTeam(team: InsertTeam) {
   return row;
 }
 
-export async function updateTeam(
-  team_id: string,
-  team: Partial<UpsertTeamSchemaValues>,
-) {
+export async function updateTeam(team_id: string, team: Partial<Team>) {
   return await db
     .update(TeamTable)
     .set(team)
