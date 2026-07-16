@@ -2,7 +2,7 @@
 
 import { forbidden, notFound } from 'next/navigation';
 
-import { CoachPosition, PlayerPosition } from '@/utils/enum';
+import type { CoachPosition, PlayerPosition } from '@/utils/enum';
 import { ResponseFactory } from '@/utils/response';
 
 import { insertCoach, updateCoach } from '@/db/coach';
@@ -117,7 +117,7 @@ export const getAvatar = profile(
   async function getAvatar(_, image_path: Nullable<string>) {
     if (!image_path) return null;
 
-    return await getFile(image_path);
+    return await getFile(image_path as string);
   },
 );
 

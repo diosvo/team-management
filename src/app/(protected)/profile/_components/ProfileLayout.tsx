@@ -1,8 +1,10 @@
 'use client';
 
-import type { User } from '@/drizzle/schema';
 import { Center, Tabs, useBreakpointValue } from '@chakra-ui/react';
-import AvatarUploadCard from './AvatarUploadCard';
+
+import type { User } from '@/drizzle/schema';
+
+import AvatarUploader from './AvatarUploader';
 import PersonalInfo from './PersonalInfo';
 import TeamInfo from './TeamInfo';
 
@@ -33,7 +35,7 @@ export default function ProfileLayout({
         </Tabs.List>
 
         <Tabs.Content value="avatar" flex="1">
-          <AvatarUploadCard user={user} />
+          <AvatarUploader user={user} />
         </Tabs.Content>
 
         <Tabs.Content value="personal-info" flex="1">

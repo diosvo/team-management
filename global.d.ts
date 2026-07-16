@@ -6,3 +6,5 @@ type Selector<T> = {
   selection: T;
   onSelectionChange: (selected: T) => void;
 };
+
+type Image = string | Blob | undefined;

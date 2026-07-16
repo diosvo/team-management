@@ -72,6 +72,24 @@ STATE → Condition/Being → Can change in any direction
 CONDITION → Physical/Quality state
 └─ AssetCondition (POOR/FAIR/GOOD)
 
+## 🖼️ Image Optimization
+
+**Decision: avatars stay on Chakra `Avatar.Image` (plain `<img>`), not `next/image`.**
+
+Why — the current avatar pipeline makes `next/image` a no-op:
+
+- Avatars are stored as **private** Vercel Blobs (`access: 'private'` in `lib/blob.ts`).
+- `getFile()` fetches the blob **server-side** and returns a **base64 data URL** (`data:<type>;base64,...`), which flows through `useUserAvatar` into `Avatar.Image` (`AccountMenu`, `ImageUploader`).
+- `next/image` cannot optimize `data:` URLs — it passes them through untouched (no resize to `imageSizes`, no WebP/AVIF, `remotePatterns` never applies).
+
+So the images are already fully materialized before they reach the browser; wrapping them in `next/image` adds required `width`/`height` and loses Chakra's `Fallback` layering for **zero optimization gain**. Uploads are also capped at 100 KB and shown at ~32px.
+
+Guidance:
+
+- Use `next/image` for **static/public** assets referenced by a real URL (_e.g._, the header logo via a static import).
+- Keep **private, access-controlled** images (avatars) on `Avatar.Image` with base64 data URLs.
+- Revisit only if avatars move to **public blobs served by URL** — then `next/image` + `next.config.ts` `images.remotePatterns` become worthwhile (at the cost of the private-access model).
+
 ## 📦 Database Interactions
 
 Ensure that PostgresSQL (latest version) is running on your local machine, start it via Homebrew:

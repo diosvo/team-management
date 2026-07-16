@@ -6,7 +6,7 @@ import { renderWithUI, screen } from '@/test/utilities';
 import ProfileLayout from './ProfileLayout';
 
 // Isolate the layout from its children; each child has its own test file.
-vi.mock('./AvatarUploadCard', () => ({
+vi.mock('./AvatarUploader', () => ({
   default: ({ user }: { user: User }) => (
     <div data-testid="avatar-card">{user.name}</div>
   ),

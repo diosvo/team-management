@@ -9,7 +9,7 @@ import { useSessionContext } from '@/providers/session';
 
 import { toaster } from '@/components/ui/toaster';
 
-import AvatarUploadCard from './AvatarUploadCard';
+import AvatarUploader from './AvatarUploader';
 
 vi.mock('@/actions/user', () => ({
   uploadAvatar: vi.fn(),
@@ -38,7 +38,7 @@ vi.mock('@/components/ui/toaster', () => ({
   },
 }));
 
-describe('AvatarUploadCard', () => {
+describe('AvatarUploader', () => {
   const mockUploadAvatar = uploadAvatar as unknown as Mock;
   const mockUseUserAvatar = useUserAvatar as unknown as Mock;
   const mockUseSessionContext = useSessionContext as unknown as Mock;
@@ -53,7 +53,7 @@ describe('AvatarUploadCard', () => {
       user: isOwner ? { id: user.id } : { id: 'someone-else' },
     });
 
-    return renderWithUI(<AvatarUploadCard user={user} />);
+    return renderWithUI(<AvatarUploader user={user} />);
   };
 
   const getFileInput = (container: HTMLElement) =>
