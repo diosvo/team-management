@@ -1,13 +1,21 @@
 'use client';
 
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-import { Avatar, Circle, Float, Link, Menu, Portal } from '@chakra-ui/react';
+import {
+  Avatar,
+  Circle,
+  Float,
+  Menu,
+  Portal,
+  SkeletonCircle,
+} from '@chakra-ui/react';
 import { GamepadDirectional, LogOut, UserRound } from 'lucide-react';
 
+import { useUserAvatar } from '@/hooks/use-avatar';
 import authClient from '@/lib/auth-client';
 import { useSessionContext } from '@/providers/session';
-
 import { LOGIN_PATH } from '@/routes';
 import { getColor } from '@/utils/helper';
 
@@ -16,6 +24,8 @@ export default function AccountMenu() {
   const { user, isAuthenticated } = useSessionContext();
 
   if (!isAuthenticated || !user) return null;
+
+  const { data: image, isLoading } = useUserAvatar(user.image);
 
   async function handleLogout() {
     await authClient.signOut({
@@ -41,18 +51,25 @@ export default function AccountMenu() {
   return (
     <Menu.Root>
       <Menu.Trigger focusVisibleRing="none">
-        <Avatar.Root variant="subtle" size={{ base: 'xs', md: 'sm', lg: 'md' }}>
-          <Avatar.Fallback name={user.name} />
-          <Avatar.Image src={user.image as string} />
-          <Float placement="bottom-end" offsetX={1} offsetY={1}>
-            <Circle
-              size={2}
-              outline="0.2em solid"
-              outlineColor="bg"
-              backgroundColor={getColor(user.state)}
-            />
-          </Float>
-        </Avatar.Root>
+        {isLoading ? (
+          <SkeletonCircle size="10" />
+        ) : (
+          <Avatar.Root
+            variant="outline"
+            size={{ base: 'xs', md: 'sm', lg: 'md' }}
+          >
+            <Avatar.Fallback name={user.name} />
+            <Avatar.Image src={image ?? undefined} />
+            <Float placement="bottom-end" offsetX={1} offsetY={1}>
+              <Circle
+                size={2}
+                outline="0.2em solid"
+                outlineColor="bg"
+                backgroundColor={getColor(user.state)}
+              />
+            </Float>
+          </Avatar.Root>
+        )}
       </Menu.Trigger>
       <Portal>
         <Menu.Positioner>

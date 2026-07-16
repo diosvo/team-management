@@ -40,6 +40,7 @@ const MANIFEST = [
   'pages/settings/teams.md',
   'pages/settings/leagues.md',
   'pages/settings/locations.md',
+  'pages/profile.md',
 ];
 
 const PAGE_BREAK = '\n\n<div class="page-break"></div>\n\n';

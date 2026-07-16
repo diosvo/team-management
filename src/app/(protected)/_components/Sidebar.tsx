@@ -115,10 +115,9 @@ export default function Sidebar({
       alignItems="stretch"
       paddingBlock={4}
       paddingInline={2}
-      gap={isExpanded ? 6 : 2}
     >
-      {visibleItems.map(({ title, items }) => (
-        <VStack key={title} alignItems="stretch">
+      {visibleItems.map(({ title, items }, index) => (
+        <VStack key={title} alignItems="stretch" marginTop={index > 0 ? 4 : 0}>
           {isExpanded ? (
             <Text
               fontSize={9}

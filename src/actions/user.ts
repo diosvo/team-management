@@ -2,7 +2,7 @@
 
 import { forbidden, notFound } from 'next/navigation';
 
-import { CoachPosition, PlayerPosition } from '@/utils/enum';
+import type { CoachPosition, PlayerPosition } from '@/utils/enum';
 import { ResponseFactory } from '@/utils/response';
 
 import { insertCoach, updateCoach } from '@/db/coach';
@@ -22,7 +22,9 @@ import {
 } from '@/schemas/user';
 
 import auth from '@/lib/auth';
+import { deleteFile, getFile, uploadFile } from '@/lib/blob';
 import { hasPermissions } from '@/utils/permissions';
+
 import { withAuth, withResource } from './auth';
 import { revalidate } from './cache';
 
@@ -103,6 +105,46 @@ export const addUser = roster(
       revalidate.roster();
 
       return ResponseFactory.success('Sent an email with instructions');
+    } catch (error) {
+      const { message } = getDbErrorMessage(error);
+      return ResponseFactory.error(message);
+    }
+  },
+);
+
+export const getAvatar = profile(
+  ['view'],
+  async function getAvatar(_, image_path: Nullable<string>) {
+    if (!image_path) return null;
+
+    return await getFile(image_path as string);
+  },
+);
+
+export const uploadAvatar = profile(
+  ['edit'],
+  async function uploadAvatar(
+    _,
+    user_id: string,
+    old_path: Nullable<string>,
+    file: File,
+  ) {
+    try {
+      const { pathname } = await uploadFile('users/' + user_id, file, {
+        contentType: file.type,
+      });
+
+      await updateUser(user_id, { image: pathname });
+
+      if (old_path) {
+        await deleteFile(old_path);
+      }
+
+      revalidate.user(user_id);
+
+      return ResponseFactory.success('Uploaded avatar successfully', {
+        image: pathname,
+      });
     } catch (error) {
       const { message } = getDbErrorMessage(error);
       return ResponseFactory.error(message);

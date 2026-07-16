@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 
-import { IconButton, Input, SimpleGrid } from '@chakra-ui/react';
+import { HStack, IconButton, Input, SimpleGrid } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Edit, Save } from 'lucide-react';
 import { useForm } from 'react-hook-form';
@@ -75,7 +75,7 @@ export default function PersonalInfo({
       title="Personal Information"
       action={
         isEditing ? (
-          <>
+          <HStack>
             <CloseButton size="sm" variant="outline" onClick={onCancel} />
             <Tooltip content="Save" disabled={isPending}>
               <IconButton
@@ -86,7 +86,7 @@ export default function PersonalInfo({
                 <Save />
               </IconButton>
             </Tooltip>
-          </>
+          </HStack>
         ) : (
           <Tooltip content={viewOnly ? 'View Only' : 'Edit'}>
             <IconButton
