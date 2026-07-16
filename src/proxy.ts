@@ -83,8 +83,8 @@ export const config = {
      * - api (API routes)
      * - _next/static (static files)
      * - _next/image (image optimization files)
-     * - Metadata files
+     * - static asset requests with common image extensions (png, svg, ico, etc.)
      */
-    '/((?!api|_next/static|_next/image|icon.svg).*)',
+    '/((?!api|_next/static|_next/image|.*\\.(?:png|svg|jpg|jpeg|gif|ico|webp)$).*)',
   ],
 };

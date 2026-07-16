@@ -16,13 +16,8 @@ export const AUTH_ROUTES = new Set([
 /**
  * An array of routes that are accessible to the public.
  * These routes do not require authentication
- * @type {Array<string>}
  */
-export const PUBLIC_ROUTES = new Set([
-  ...AUTH_ROUTES,
-  '/logo.svg',
-  '/squiggle.svg',
-]);
+export const PUBLIC_ROUTES = new Set([...AUTH_ROUTES]);
 
 /**
  * The default redirect path after logging in.
