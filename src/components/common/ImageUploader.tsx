@@ -37,6 +37,7 @@ export default function ImageUploader({
 }: ImageUploaderProps) {
   const isPending = state === 'pending';
   const isDisabled = state === 'disabled';
+  const isHidden = isDisabled || isPending;
 
   return (
     <FileUpload.Root
@@ -48,14 +49,10 @@ export default function ImageUploader({
       alignItems="center"
     >
       <FileUpload.HiddenInput />
-      <FileUpload.Trigger
-        asChild
-        disabled={isPending}
-        aria-label="Upload image"
-      >
+      <FileUpload.Trigger asChild disabled={isHidden} aria-label="Upload image">
         <Box
           position="relative"
-          cursor={isDisabled ? 'default' : 'pointer'}
+          cursor={isHidden ? 'default' : 'pointer'}
           css={{ '&:hover .avatar-overlay': { opacity: 1 } }}
         >
           {isPending ? (
@@ -72,7 +69,7 @@ export default function ImageUploader({
             </Avatar.Root>
           )}
           <Center
-            hidden={isDisabled}
+            hidden={isHidden}
             position="absolute"
             className="avatar-overlay"
             backgroundColor="blackAlpha.600"

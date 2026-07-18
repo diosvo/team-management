@@ -54,7 +54,7 @@ export default function AvatarUpload({
       >
         <Box
           position="relative"
-          cursor={disabled ? 'default' : 'pointer'}
+          cursor={disabled || isPending ? 'default' : 'pointer'}
           css={{ '&:hover .avatar-overlay': { opacity: 1 } }}
         >
           {isPending ? (
@@ -71,7 +71,7 @@ export default function AvatarUpload({
             </Avatar.Root>
           )}
           <Center
-            hidden={disabled}
+            hidden={disabled || isPending}
             position="absolute"
             className="avatar-overlay"
             backgroundColor="blackAlpha.600"

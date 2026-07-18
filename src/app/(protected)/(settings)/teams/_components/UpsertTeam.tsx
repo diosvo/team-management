@@ -25,7 +25,7 @@ import { UpsertTeamSchema, type UpsertTeamSchemaValues } from '@/schemas/team';
 import { CACHE_KEY } from '@/utils/constant';
 
 import { uploadLogo, upsertTeam } from '@/actions/team';
-import { useTeamLogo } from '@/hooks/use-avatar';
+import { useTeamLogo } from '@/hooks/use-image';
 
 export const UpsertTeam = createOverlay(({ action, item, ...rest }) => {
   const { mutate } = useSWRConfig();

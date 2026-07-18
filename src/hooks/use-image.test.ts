@@ -6,7 +6,7 @@ import { Mock } from 'vitest';
 
 import { getAvatar } from '@/actions/user';
 
-import { useUserAvatar } from './use-avatar';
+import { useUserAvatar } from './use-image';
 
 vi.mock('@/actions/user', () => ({
   getAvatar: vi.fn(),

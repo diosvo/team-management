@@ -13,7 +13,7 @@ import {
 } from '@chakra-ui/react';
 import { GamepadDirectional, LogOut, UserRound } from 'lucide-react';
 
-import { useUserAvatar } from '@/hooks/use-avatar';
+import { useUserAvatar } from '@/hooks/use-image';
 import authClient from '@/lib/auth-client';
 import { useSessionContext } from '@/providers/session';
 import { LOGIN_PATH } from '@/routes';

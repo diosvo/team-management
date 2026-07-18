@@ -4,7 +4,7 @@ import { MOCK_USER } from '@/test/mocks/user';
 import { renderWithUI, screen, waitFor } from '@/test/utilities';
 
 import { uploadAvatar } from '@/actions/user';
-import { useUserAvatar } from '@/hooks/use-avatar';
+import { useUserAvatar } from '@/hooks/use-image';
 import { useSessionContext } from '@/providers/session';
 
 import { toaster } from '@/components/ui/toaster';

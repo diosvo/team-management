@@ -20,7 +20,7 @@ import { formatDatetime } from '@/utils/formatter';
 import { removeTeam } from '@/actions/team';
 import { Team } from '@/drizzle/schema';
 
-import { useTeamLogo } from '@/hooks/use-avatar';
+import { useTeamLogo } from '@/hooks/use-image';
 import { UpsertTeam } from './UpsertTeam';
 
 export default function TeamTable({ teams }: { teams: Array<Team> }) {
