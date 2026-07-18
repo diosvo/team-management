@@ -1,7 +1,6 @@
 import { getDbErrorMessage } from '@/db/pg-error';
 import {
   deleteTeam,
-  getTeam,
   getTeams as fetchTeams,
   insertTeam,
   updateTeam,
@@ -19,7 +18,7 @@ import {
 } from '@/test/mocks/auth';
 import { MOCK_AWAY_TEAM } from '@/test/mocks/team';
 
-import { getTeams, removeTeam, upsertTeam } from './team';
+import { getTeams, removeTeam, uploadLogo, upsertTeam } from './team';
 
 vi.mock('./auth', () => ({
   withAuth: mockWithAuth,
@@ -133,31 +132,6 @@ describe('Team Actions', () => {
       });
     });
 
-    test('uploads a new logo and cleans up the previous one', async () => {
-      const file = new File(['logo'], 'logo.png', { type: 'image/png' });
-      vi.mocked(getTeam).mockResolvedValue(MOCK_AWAY_TEAM);
-      vi.mocked(uploadFile).mockResolvedValue({
-        pathname: 'teams/hcm-new.png',
-      } as Awaited<ReturnType<typeof uploadFile>>);
-
-      const result = await upsertTeam(MOCK_AWAY_TEAM.team_id, {
-        ...TEAM_INPUT,
-        image: file,
-      });
-
-      expect(uploadFile).toHaveBeenCalledWith(
-        `teams/${MOCK_AWAY_TEAM.team_id}`,
-        file,
-      );
-      expect(updateTeam).toHaveBeenCalledWith(MOCK_AWAY_TEAM.team_id, {
-        image: 'teams/hcm-new.png',
-      });
-      // The previous pathname is removed, never the freshly uploaded File.
-      expect(deleteFile).toHaveBeenCalledWith(MOCK_AWAY_TEAM.image);
-      expect(deleteFile).not.toHaveBeenCalledWith(file);
-      expect(result.success).toBe(true);
-    });
-
     test('returns an error when the db operation fails', async () => {
       const message = 'Email already exists';
       vi.mocked(insertTeam).mockRejectedValue(new Error(message));
@@ -169,6 +143,51 @@ describe('Team Actions', () => {
 
       expect(revalidate.teams).not.toHaveBeenCalled();
       expect(result).toEqual({ success: false, message });
+    });
+  });
+
+  describe('uploadLogo', () => {
+    const file = new File(['logo'], 'logo.png', { type: 'image/png' });
+
+    test('uploads a new logo and cleans up the previous one', async () => {
+      vi.mocked(uploadFile).mockResolvedValue({
+        pathname: 'teams/hcm-new.png',
+      } as Awaited<ReturnType<typeof uploadFile>>);
+
+      const result = await uploadLogo(
+        MOCK_AWAY_TEAM.team_id,
+        MOCK_AWAY_TEAM.image,
+        file,
+      );
+
+      expect(uploadFile).toHaveBeenCalledWith(
+        `teams/${MOCK_AWAY_TEAM.team_id}`,
+        file,
+        { contentType: file.type },
+      );
+      expect(updateTeam).toHaveBeenCalledWith(MOCK_AWAY_TEAM.team_id, {
+        image: 'teams/hcm-new.png',
+      });
+      // The previous pathname is removed, never the freshly uploaded File.
+      expect(deleteFile).toHaveBeenCalledWith(MOCK_AWAY_TEAM.image);
+      expect(deleteFile).not.toHaveBeenCalledWith(file);
+      expect(revalidate.teams).toHaveBeenCalled();
+      expect(result).toEqual({
+        success: true,
+        message: 'Uploaded logo successfully',
+        data: { image: 'teams/hcm-new.png' },
+      });
+    });
+
+    test('does not delete anything when there is no previous logo', async () => {
+      vi.mocked(uploadFile).mockResolvedValue({
+        pathname: 'teams/hcm-new.png',
+      } as Awaited<ReturnType<typeof uploadFile>>);
+
+      const result = await uploadLogo(MOCK_AWAY_TEAM.team_id, null, file);
+
+      expect(deleteFile).not.toHaveBeenCalled();
+      expect(result.success).toBe(true);
     });
   });
 

@@ -12,10 +12,9 @@ import {
   createOverlay,
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Save } from 'lucide-react';
+import { ImageOff, Save } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 
-import AvatarUpload from '@/components/common/AvatarUpload';
 import { CloseButton } from '@/components/ui/close-button';
 import { Field } from '@/components/ui/field';
 import { toaster } from '@/components/ui/toaster';
@@ -25,12 +24,14 @@ import { UpsertTeamSchema, type UpsertTeamSchemaValues } from '@/schemas/team';
 import { CACHE_KEY } from '@/utils/constant';
 
 import { uploadLogo, upsertTeam } from '@/actions/team';
+import ImageUploader from '@/components/common/ImageUploader';
 import { useTeamLogo } from '@/hooks/use-image';
 
 export const UpsertTeam = createOverlay(({ action, item, ...rest }) => {
-  const { mutate } = useSWRConfig();
   const [isPending, startTransition] = useTransition();
   const [imagePath, setImagePath] = useState(item.image);
+
+  const { mutate } = useSWRConfig();
   const { data: image, isLoading } = useTeamLogo(imagePath);
 
   const {
@@ -103,11 +104,11 @@ export const UpsertTeam = createOverlay(({ action, item, ...rest }) => {
             </Dialog.Header>
             <Dialog.Body>
               <VStack alignItems="stretch" gap={4}>
-                <AvatarUpload
+                <ImageUploader
                   src={image as string}
-                  fallback={item.name}
+                  fallback={item.name || <ImageOff />}
+                  state={isPending || isLoading ? 'pending' : 'editable'}
                   onChange={handleFileChange}
-                  isPending={isLoading || isPending}
                 />
                 <Field
                   required

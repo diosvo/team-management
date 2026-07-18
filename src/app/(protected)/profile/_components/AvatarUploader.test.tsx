@@ -15,7 +15,7 @@ vi.mock('@/actions/user', () => ({
   uploadAvatar: vi.fn(),
 }));
 
-vi.mock('@/hooks/use-avatar', () => ({
+vi.mock('@/hooks/use-image', () => ({
   useUserAvatar: vi.fn(),
 }));
 
@@ -68,7 +68,8 @@ describe('AvatarUploader', () => {
   test('renders the user name and role', () => {
     setup();
 
-    expect(screen.getByText(MOCK_USER.name)).toBeInTheDocument();
+    // The name appears twice: the avatar fallback and the profile label.
+    expect(screen.getAllByText(MOCK_USER.name).length).toBeGreaterThan(0);
     expect(screen.getByText(MOCK_USER.role)).toBeInTheDocument();
   });
 

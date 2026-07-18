@@ -41,7 +41,7 @@ describe('ImageUploader', () => {
 
       expect(getFileInput(container)).toBeEnabled();
       expect(getOverlay(container)).not.toHaveAttribute('hidden');
-      expect(screen.getByText('TU')).toBeInTheDocument();
+      expect(screen.getByText('Test User')).toBeInTheDocument();
     });
 
     test('disabled: input disabled and overlay hidden', () => {
@@ -49,21 +49,21 @@ describe('ImageUploader', () => {
 
       expect(getFileInput(container)).toBeDisabled();
       expect(getOverlay(container)).toHaveAttribute('hidden');
-      expect(screen.getByText('TU')).toBeInTheDocument();
+      expect(screen.getByText('Test User')).toBeInTheDocument();
     });
 
     test('pending: input disabled and avatar replaced by skeleton', () => {
       const { container } = setup({ state: 'pending' });
 
       expect(getFileInput(container)).toBeDisabled();
-      expect(screen.queryByText('TU')).not.toBeInTheDocument();
+      expect(screen.queryByText('Test User')).not.toBeInTheDocument();
       expect(container.querySelector('.chakra-skeleton')).toBeInTheDocument();
     });
 
     test('renders the fallback without a src', () => {
       setup({ src: undefined });
 
-      expect(screen.getByText('TU')).toBeInTheDocument();
+      expect(screen.getByText('Test User')).toBeInTheDocument();
     });
   });
 
