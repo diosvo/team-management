@@ -1,11 +1,18 @@
-import { Avatar, Box, Center, FileUpload, Skeleton } from '@chakra-ui/react';
-import { Camera } from 'lucide-react';
+import {
+  Avatar,
+  AvatarFallbackProps,
+  Box,
+  Center,
+  FileUpload,
+  Skeleton,
+} from '@chakra-ui/react';
+import { ImageUp } from 'lucide-react';
 
 import { toaster } from '@/components/ui/toaster';
 
 const MAX_FILE_SIZE = 100_000; // 100 KB
 
-export function notifyRejection(files: Array<{ errors: string[] }>) {
+export function notifyRejection(files: Array<{ errors: Array<string> }>) {
   if (!files.length) return;
 
   const tooLarge = files.some(({ errors }) =>
@@ -21,11 +28,11 @@ export function notifyRejection(files: Array<{ errors: string[] }>) {
 }
 
 type ImageUploaderProps = Required<{
-  src: Image;
+  src: Nullable<string>;
   onChange: (file: File) => void;
 }> &
   Partial<{
-    fallback: string;
+    fallback: AvatarFallbackProps['name'];
     state: 'editable' | 'disabled' | 'pending';
   }>;
 
@@ -37,6 +44,7 @@ export default function ImageUploader({
 }: ImageUploaderProps) {
   const isPending = state === 'pending';
   const isDisabled = state === 'disabled';
+  const isHidden = isDisabled || isPending;
 
   return (
     <FileUpload.Root
@@ -48,14 +56,10 @@ export default function ImageUploader({
       alignItems="center"
     >
       <FileUpload.HiddenInput />
-      <FileUpload.Trigger
-        asChild
-        disabled={isPending}
-        aria-label="Upload image"
-      >
+      <FileUpload.Trigger asChild disabled={isHidden} aria-label="Upload image">
         <Box
           position="relative"
-          cursor={isDisabled ? 'default' : 'pointer'}
+          cursor={isHidden ? 'default' : 'pointer'}
           css={{ '&:hover .avatar-overlay': { opacity: 1 } }}
         >
           {isPending ? (
@@ -67,12 +71,12 @@ export default function ImageUploader({
               variant="outline"
               shape="rounded"
             >
-              <Avatar.Fallback name={fallback} />
+              <Avatar.Fallback>{fallback}</Avatar.Fallback>
               <Avatar.Image src={src ?? undefined} />
             </Avatar.Root>
           )}
           <Center
-            hidden={isDisabled}
+            hidden={isHidden}
             position="absolute"
             className="avatar-overlay"
             backgroundColor="blackAlpha.600"
@@ -81,7 +85,7 @@ export default function ImageUploader({
             borderRadius="md"
             transition="opacity 0.2s"
           >
-            <Camera size={24} color="white" />
+            <ImageUp size={24} color="white" />
           </Center>
         </Box>
       </FileUpload.Trigger>

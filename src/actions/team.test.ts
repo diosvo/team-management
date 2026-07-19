@@ -6,6 +6,8 @@ import {
   updateTeam,
 } from '@/db/team';
 
+import { deleteFile, uploadFile } from '@/lib/blob';
+
 import { revalidate } from '@/actions/cache';
 import { UpsertTeamSchemaValues } from '@/schemas/team';
 
@@ -16,7 +18,7 @@ import {
 } from '@/test/mocks/auth';
 import { MOCK_AWAY_TEAM } from '@/test/mocks/team';
 
-import { getTeams, removeTeam, upsertTeam } from './team';
+import { getTeams, removeTeam, uploadLogo, upsertTeam } from './team';
 
 vi.mock('./auth', () => ({
   withAuth: mockWithAuth,
@@ -24,10 +26,16 @@ vi.mock('./auth', () => ({
 }));
 
 vi.mock('@/db/team', () => ({
+  getTeam: vi.fn(),
   getTeams: vi.fn(),
   insertTeam: vi.fn(),
   updateTeam: vi.fn(),
   deleteTeam: vi.fn(),
+}));
+
+vi.mock('@/lib/blob', () => ({
+  uploadFile: vi.fn(),
+  deleteFile: vi.fn(),
 }));
 
 vi.mock('@/db/pg-error', () => ({
@@ -44,7 +52,6 @@ const TEAM_INPUT: UpsertTeamSchemaValues = {
   name: MOCK_AWAY_TEAM.name,
   email: MOCK_AWAY_TEAM.email,
   establish_year: MOCK_AWAY_TEAM.establish_year,
-  logo_url: MOCK_AWAY_TEAM.logo_url,
 };
 
 describe('permissions', () => {
@@ -95,6 +102,10 @@ describe('Team Actions', () => {
 
   describe('upsertTeam', () => {
     test('inserts a new team when no id is provided', async () => {
+      vi.mocked(insertTeam).mockResolvedValue({
+        team_id: MOCK_AWAY_TEAM.team_id,
+      });
+
       const result = await upsertTeam('', TEAM_INPUT);
 
       expect(insertTeam).toHaveBeenCalledWith(TEAM_INPUT);
@@ -132,6 +143,51 @@ describe('Team Actions', () => {
 
       expect(revalidate.teams).not.toHaveBeenCalled();
       expect(result).toEqual({ success: false, message });
+    });
+  });
+
+  describe('uploadLogo', () => {
+    const file = new File(['logo'], 'logo.png', { type: 'image/png' });
+
+    test('uploads a new logo and cleans up the previous one', async () => {
+      vi.mocked(uploadFile).mockResolvedValue({
+        pathname: 'teams/hcm-new.png',
+      } as Awaited<ReturnType<typeof uploadFile>>);
+
+      const result = await uploadLogo(
+        MOCK_AWAY_TEAM.team_id,
+        MOCK_AWAY_TEAM.image,
+        file,
+      );
+
+      expect(uploadFile).toHaveBeenCalledWith(
+        `teams/${MOCK_AWAY_TEAM.team_id}`,
+        file,
+        { contentType: file.type },
+      );
+      expect(updateTeam).toHaveBeenCalledWith(MOCK_AWAY_TEAM.team_id, {
+        image: 'teams/hcm-new.png',
+      });
+      // The previous pathname is removed, never the freshly uploaded File.
+      expect(deleteFile).toHaveBeenCalledWith(MOCK_AWAY_TEAM.image);
+      expect(deleteFile).not.toHaveBeenCalledWith(file);
+      expect(revalidate.teams).toHaveBeenCalled();
+      expect(result).toEqual({
+        success: true,
+        message: 'Uploaded logo successfully',
+        data: { image: 'teams/hcm-new.png' },
+      });
+    });
+
+    test('does not delete anything when there is no previous logo', async () => {
+      vi.mocked(uploadFile).mockResolvedValue({
+        pathname: 'teams/hcm-new.png',
+      } as Awaited<ReturnType<typeof uploadFile>>);
+
+      const result = await uploadLogo(MOCK_AWAY_TEAM.team_id, null, file);
+
+      expect(deleteFile).not.toHaveBeenCalled();
+      expect(result.success).toBe(true);
     });
   });
 

@@ -1,25 +1,26 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useSWRConfig } from 'swr';
 
+import { Avatar, HStack, Skeleton, Text } from '@chakra-ui/react';
 import { UsersRound } from 'lucide-react';
 
 import DataTable, { type Column } from '@/components/DataTable';
 import HighlightText from '@/components/HighlightText';
-
 import { toaster } from '@/components/ui/toaster';
 
 import usePermissions from '@/hooks/use-permissions';
 import useTableState from '@/hooks/use-table-state';
 import { useCommonParams } from '@/lib/nuqs';
+import { CACHE_KEY } from '@/utils/constant';
 import { buildPredicate } from '@/utils/filters';
 import { formatDatetime } from '@/utils/formatter';
 
 import { removeTeam } from '@/actions/team';
 import { Team } from '@/drizzle/schema';
 
-import { CACHE_KEY } from '@/utils/constant';
-import { useSWRConfig } from 'swr';
+import { useTeamLogo } from '@/hooks/use-image';
 import { UpsertTeam } from './UpsertTeam';
 
 export default function TeamTable({ teams }: { teams: Array<Team> }) {
@@ -62,7 +63,7 @@ export default function TeamTable({ teams }: { teams: Array<Team> }) {
   const columns: Array<Column<Team>> = [
     {
       header: 'Name',
-      cell: (item) => <HighlightText query={q}>{item.name}</HighlightText>,
+      cell: (item) => <TeamNameCell team={item} query={q} />,
     },
     {
       header: 'Email',
@@ -106,5 +107,25 @@ export default function TeamTable({ teams }: { teams: Array<Team> }) {
       />
       <UpsertTeam.Viewport />
     </>
+  );
+}
+
+function TeamNameCell({ team, query }: { team: Team; query: string }) {
+  const { data, isLoading } = useTeamLogo(team.image);
+
+  return (
+    <HStack>
+      {isLoading ? (
+        <Skeleton width={8} height={8} />
+      ) : (
+        <Avatar.Root shape="rounded" size="xs">
+          <Avatar.Fallback name={team.name} />
+          <Avatar.Image src={data ?? undefined} />
+        </Avatar.Root>
+      )}
+      <Text marginLeft={2}>
+        <HighlightText query={query}>{team.name}</HighlightText>
+      </Text>
+    </HStack>
   );
 }

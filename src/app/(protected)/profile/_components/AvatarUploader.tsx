@@ -13,7 +13,7 @@ import authClient from '@/lib/auth-client';
 import { useSessionContext } from '@/providers/session';
 
 import { uploadAvatar } from '@/actions/user';
-import { useUserAvatar } from '@/hooks/use-avatar';
+import { useUserAvatar } from '@/hooks/use-image';
 
 export default function AvatarUploader({ user }: { user: User }) {
   const [isPending, startTransition] = useTransition();

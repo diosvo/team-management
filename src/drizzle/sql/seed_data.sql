@@ -47,7 +47,7 @@ CREATE TEMP TABLE seed_team_map (
 
 WITH ins AS (
   INSERT INTO team (
-    team_id, is_default, name, email, establish_year, logo_url, created_at, updated_at
+    team_id, is_default, name, email, establish_year, image, created_at, updated_at
   )
   SELECT
     gen_random_uuid(),

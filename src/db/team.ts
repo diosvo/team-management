@@ -1,8 +1,7 @@
 import { and, asc, eq } from 'drizzle-orm';
 
 import db from '@/drizzle';
-import { InsertTeam, TeamTable } from '@/drizzle/schema/team';
-import { UpsertTeamSchemaValues } from '@/schemas/team';
+import { InsertTeam, Team, TeamTable } from '@/drizzle/schema/team';
 
 export async function getTeams() {
   try {
@@ -15,14 +14,21 @@ export async function getTeams() {
   }
 }
 
-export async function insertTeam(team: InsertTeam) {
-  return await db.insert(TeamTable).values({ ...team, is_default: false });
+export async function getTeam(team_id: string) {
+  return await db.query.TeamTable.findFirst({
+    where: eq(TeamTable.team_id, team_id),
+  });
 }
 
-export async function updateTeam(
-  team_id: string,
-  team: UpsertTeamSchemaValues,
-) {
+export async function insertTeam(team: InsertTeam) {
+  const [row] = await db
+    .insert(TeamTable)
+    .values({ ...team, is_default: false })
+    .returning({ team_id: TeamTable.team_id });
+  return row;
+}
+
+export async function updateTeam(team_id: string, team: Partial<Team>) {
   return await db
     .update(TeamTable)
     .set(team)

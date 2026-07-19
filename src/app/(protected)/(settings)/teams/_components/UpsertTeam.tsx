@@ -1,6 +1,6 @@
 'use client';
 
-import { useTransition } from 'react';
+import { useState, useTransition } from 'react';
 import { useSWRConfig } from 'swr';
 
 import {
@@ -12,7 +12,7 @@ import {
   createOverlay,
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Save } from 'lucide-react';
+import { ImageOff, Save } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 
 import { CloseButton } from '@/components/ui/close-button';
@@ -20,20 +20,27 @@ import { Field } from '@/components/ui/field';
 import { toaster } from '@/components/ui/toaster';
 
 import { getDefaults } from '@/lib/zod';
+import { UpsertTeamSchema, type UpsertTeamSchemaValues } from '@/schemas/team';
 import { CACHE_KEY } from '@/utils/constant';
 
-import { upsertTeam } from '@/actions/team';
-import { UpsertTeamSchema, UpsertTeamSchemaValues } from '@/schemas/team';
+import { uploadLogo, upsertTeam } from '@/actions/team';
+import ImageUploader from '@/components/common/ImageUploader';
+import { useTeamLogo } from '@/hooks/use-image';
 
 export const UpsertTeam = createOverlay(({ action, item, ...rest }) => {
-  const { mutate } = useSWRConfig();
   const [isPending, startTransition] = useTransition();
+  const [imagePath, setImagePath] = useState(item.image);
+
+  const { mutate } = useSWRConfig();
+  const { data: image, isLoading } = useTeamLogo(imagePath);
+
+  const isUpdate = action === 'Update';
 
   const {
     reset,
     register,
     handleSubmit,
-    formState: { isValid, errors },
+    formState: { isValid, isDirty, errors },
   } = useForm({
     resolver: zodResolver(UpsertTeamSchema),
     defaultValues: getDefaults(UpsertTeamSchema, item),
@@ -57,7 +64,31 @@ export const UpsertTeam = createOverlay(({ action, item, ...rest }) => {
         reset();
         mutate(CACHE_KEY.OPPONENTS, undefined, { revalidate: true });
       }
-      if (action === 'Update') UpsertTeam.close('update-team');
+      if (isUpdate) UpsertTeam.close('update-team');
+    });
+  };
+
+  const handleFileChange = (file: File) => {
+    const id = toaster.create({
+      type: 'loading',
+      title: 'Setting team logo...',
+    });
+
+    startTransition(async () => {
+      const {
+        success,
+        message: title,
+        data,
+      } = await uploadLogo(item.team_id, imagePath, file);
+
+      toaster.update(id, {
+        type: success ? 'success' : 'error',
+        title,
+      });
+
+      if (success && data) {
+        setImagePath(data.image);
+      }
     });
   };
 
@@ -74,7 +105,15 @@ export const UpsertTeam = createOverlay(({ action, item, ...rest }) => {
               <Dialog.Title>{action} Team</Dialog.Title>
             </Dialog.Header>
             <Dialog.Body>
-              <VStack alignItems="stretch" gap={3}>
+              <VStack alignItems="stretch" gap={4}>
+                {isUpdate && (
+                  <ImageUploader
+                    src={image as string}
+                    fallback={item.name || <ImageOff />}
+                    state={isPending || isLoading ? 'pending' : 'editable'}
+                    onChange={handleFileChange}
+                  />
+                )}
                 <Field
                   required
                   label="Name"
@@ -112,17 +151,6 @@ export const UpsertTeam = createOverlay(({ action, item, ...rest }) => {
                     {...register('establish_year')}
                   />
                 </Field>
-                <Field
-                  label="Logo URL"
-                  invalid={!!errors.logo_url}
-                  errorText={errors.logo_url?.message}
-                >
-                  <Input
-                    placeholder="https://example.com/logo.png"
-                    disabled={isPending}
-                    {...register('logo_url')}
-                  />
-                </Field>
               </VStack>
             </Dialog.Body>
             <Dialog.Footer>
@@ -130,7 +158,7 @@ export const UpsertTeam = createOverlay(({ action, item, ...rest }) => {
                 type="submit"
                 loadingText="Saving..."
                 loading={isPending}
-                disabled={!isValid}
+                disabled={!isValid || !isDirty || isPending}
               >
                 <Save /> {action}
               </Button>
