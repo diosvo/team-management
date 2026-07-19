@@ -28,7 +28,7 @@ export function notifyRejection(files: Array<{ errors: Array<string> }>) {
 }
 
 type ImageUploaderProps = Required<{
-  src: Image;
+  src: Nullable<string>;
   onChange: (file: File) => void;
 }> &
   Partial<{

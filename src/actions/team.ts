@@ -44,10 +44,10 @@ export const upsertTeam = teams(
 
 export const getLogo = teams(
   ['view'],
-  async function getAvatar(_, image: Image) {
+  async function getAvatar(_, image: Nullish<string>) {
     if (!image) return null;
 
-    return await getFile(image as string);
+    return await getFile(image);
   },
 );
 
@@ -56,7 +56,7 @@ export const uploadLogo = teams(
   async function upload(
     _,
     team_id: string,
-    old_path: Nullable<string>,
+    old_path: Nullish<string>,
     file: File,
   ) {
     try {
@@ -76,8 +76,6 @@ export const uploadLogo = teams(
         image: pathname,
       });
     } catch (error) {
-      console.log('error', error);
-
       const { message } = getDbErrorMessage(error);
       return ResponseFactory.error(message);
     }

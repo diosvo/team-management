@@ -1,22 +1,15 @@
-import { HStack, Skeleton, SkeletonText, Stack } from '@chakra-ui/react';
+import { Flex, Skeleton, SkeletonText } from '@chakra-ui/react';
 
 export default function Loading() {
   return (
     <>
-      {/* TeamHeader: page title + "Add" button */}
-      <HStack justifyContent="space-between">
-        <Skeleton height={{ base: 8, md: 10 }} width={40} />
-        <Skeleton height={{ base: 8, md: 10 }} width={20} />
-      </HStack>
+      <Flex justifyContent="space-between">
+        <Skeleton height={9} width={32} />
+        <Skeleton height={9} width={24} />
+      </Flex>
 
-      {/* SearchInput */}
-      <Skeleton height={{ base: 8, md: 10 }} width="100%" />
-
-      {/* TeamTable */}
-      <Stack borderWidth={1} borderRadius="md" gap={4} padding={4}>
-        <Skeleton height={6} width="100%" />
-        <SkeletonText noOfLines={7} gap={4} />
-      </Stack>
+      <Skeleton height={10} width="100%" />
+      <SkeletonText noOfLines={7} gap={2} height={10} />
     </>
   );
 }

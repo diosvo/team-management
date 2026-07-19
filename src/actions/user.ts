@@ -114,7 +114,7 @@ export const addUser = roster(
 
 export const getAvatar = profile(
   ['view'],
-  async function getAvatar(_, image_path: Nullable<string>) {
+  async function getAvatar(_, image_path: Nullish<string>) {
     if (!image_path) return null;
 
     return await getFile(image_path as string);
@@ -126,7 +126,7 @@ export const uploadAvatar = profile(
   async function uploadAvatar(
     _,
     user_id: string,
-    old_path: Nullable<string>,
+    old_path: Nullish<string>,
     file: File,
   ) {
     try {

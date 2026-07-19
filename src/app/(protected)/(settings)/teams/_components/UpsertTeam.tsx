@@ -34,6 +34,8 @@ export const UpsertTeam = createOverlay(({ action, item, ...rest }) => {
   const { mutate } = useSWRConfig();
   const { data: image, isLoading } = useTeamLogo(imagePath);
 
+  const isUpdate = action === 'Update';
+
   const {
     reset,
     register,
@@ -62,7 +64,7 @@ export const UpsertTeam = createOverlay(({ action, item, ...rest }) => {
         reset();
         mutate(CACHE_KEY.OPPONENTS, undefined, { revalidate: true });
       }
-      if (action === 'Update') UpsertTeam.close('update-team');
+      if (isUpdate) UpsertTeam.close('update-team');
     });
   };
 
@@ -104,12 +106,14 @@ export const UpsertTeam = createOverlay(({ action, item, ...rest }) => {
             </Dialog.Header>
             <Dialog.Body>
               <VStack alignItems="stretch" gap={4}>
-                <ImageUploader
-                  src={image as string}
-                  fallback={item.name || <ImageOff />}
-                  state={isPending || isLoading ? 'pending' : 'editable'}
-                  onChange={handleFileChange}
-                />
+                {isUpdate && (
+                  <ImageUploader
+                    src={image as string}
+                    fallback={item.name || <ImageOff />}
+                    state={isPending || isLoading ? 'pending' : 'editable'}
+                    onChange={handleFileChange}
+                  />
+                )}
                 <Field
                   required
                   label="Name"

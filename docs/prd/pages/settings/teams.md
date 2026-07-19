@@ -5,7 +5,7 @@
 ## 1. Summary
 
 - **Teams** manages the directory of **opponent** teams used across the app (primarily as home/away teams in Matches).
-- Each entry captures a name, optional contact email, establishment year, and optional logo.
+- Each entry captures a name, optional contact email, establishment year, and an optional logo uploaded as an image.
 - The app's own **default team** is hidden here and cannot be edited or deleted from this page.
 
 ## 2. Goals / Metrics
@@ -36,6 +36,7 @@
 ### View
 
 - Table lists opponent teams with name, email, established year, and last updated.
+- The name cell shows the team **logo** as a rounded avatar (initials fallback while loading or when no logo is set); logos are fetched on demand and cached client-side.
 - Filter by free-text search over name or email (search box).
 - Rows are sorted alphabetically by name.
 
@@ -43,7 +44,11 @@
 
 - SUPER_ADMIN sees **+ Add**; clicking it opens a dialog.
 - SUPER_ADMIN can click a row to open the same dialog pre-filled for editing.
-- Fields: **Name** (required), **Email** (optional), **Establish Year** (defaults to the current year), **Logo URL** (optional).
+- Fields: **Name** (required), **Email** (optional), **Establish Year** (defaults to the current year).
+- **Logo** is uploaded as an image, not entered as a URL. The uploader is shown **only when editing** an existing team (a team must exist before a logo can be attached to it).
+  - Click the avatar to pick a file; accepted formats are **PNG or JPEG**, up to **100 KB**. Rejected files raise an error toast (too large, or unsupported type).
+  - Uploading a new logo replaces the previous one; the old image is removed from storage.
+  - The logo saves immediately on selection (separate from the Save action for the other fields).
 
 ### Delete
 
@@ -55,10 +60,11 @@
 - **FR-1:** COACH and SUPER_ADMIN can view teams; the list excludes the default team.
 - **FR-2:** Filter by name or email; search state stored in the URL (`q`).
 - **FR-3:** SUPER_ADMIN can create and edit teams.
-- **FR-4:** Name is 3–128 characters. Email, when provided, must be a valid address and is unique across teams. Establish year is between 2000 and the current year (defaults to the current year). Logo URL, when provided, must be a valid URL.
-- **FR-5:** SUPER_ADMIN can delete teams, including bulk delete.
-- **FR-6:** The default team cannot be updated or deleted from this page.
-- **FR-7:** Changes show a success or error toast; bulk delete reports partial failures.
+- **FR-4:** Name is 3–128 characters. Email, when provided, must be a valid address (max 128 chars) and is unique across teams. Establish year is between 2000 and the current year (defaults to the current year).
+- **FR-5:** SUPER_ADMIN can upload a team logo when editing a team. The file must be PNG or JPEG and no larger than 100 KB; the image is stored in blob storage and the team record keeps its storage path. Replacing a logo deletes the previously stored image.
+- **FR-6:** SUPER_ADMIN can delete teams, including bulk delete.
+- **FR-7:** The default team cannot be updated or deleted from this page.
+- **FR-8:** Changes show a success or error toast; bulk delete reports partial failures.
 
 ## 6. Acceptance Criteria (Given/When/Then)
 
@@ -66,6 +72,7 @@
 - **AC-2:** Given I am SUPER_ADMIN, when I add a team with an email already used by another team, then the action is rejected with an error toast.
 - **AC-3:** Given I am SUPER_ADMIN, when I select multiple teams and delete them, then a toast reports how many were deleted and any failures.
 - **AC-4:** Given I am a PLAYER or GUEST, when I navigate to `/teams`, then I have no access to the page.
+- **AC-5:** Given I am SUPER_ADMIN editing a team, when I upload a PNG or JPEG under 100 KB, then the logo is saved and shown as the team's avatar; when I upload a larger or unsupported file, then it is rejected with an error toast and the existing logo is unchanged.
 
 ## 7. Technical Appendix
 
@@ -78,7 +85,7 @@ Team:
 - `name`: string (3–128)
 - `email`: string (unique, optional)
 - `establish_year`: integer (2000 – current year, default current year)
-- `logo_url`: string (optional, valid URL)
+- `image`: text (optional; blob storage path to the uploaded logo — replaces the former `logo_url` column)
 - `updated_at`: timestamp
 
 ### Query params
@@ -89,5 +96,12 @@ Team:
 ### API
 
 - `getTeams()` — fetch all opponent teams (excludes the default team)
-- `upsertTeam(team_id?, data)` — create or update a team
+- `upsertTeam(team_id?, data)` — create or update a team (name, email, establish year)
+- `uploadLogo(team_id, old_path?, file)` — store the logo image in blob storage, save its path on the team, and delete the previously stored image
+- `getLogo(image?)` — resolve a team's logo image from its storage path (cached client-side via `useTeamLogo`)
 - `removeTeam(team_id)` — delete a team
+
+### Media / storage
+
+- Logo images are stored in blob storage under `teams/{team_id}`.
+- Accepted upload types: `image/png`, `image/jpeg`. Max size: 100 KB (`MAX_FILE_SIZE`).

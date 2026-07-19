@@ -63,27 +63,7 @@ export default function TeamTable({ teams }: { teams: Array<Team> }) {
   const columns: Array<Column<Team>> = [
     {
       header: 'Name',
-      cell: (item) => {
-        const { data, isLoading } = item.image
-          ? useTeamLogo(item.image)
-          : { data: null, isLoading: false };
-
-        return (
-          <HStack>
-            {isLoading ? (
-              <Skeleton width={8} height={8} />
-            ) : (
-              <Avatar.Root shape="rounded" size="xs">
-                <Avatar.Fallback name={item.name} />
-                <Avatar.Image src={data ?? undefined} />
-              </Avatar.Root>
-            )}
-            <Text marginLeft={2}>
-              <HighlightText query={q}>{item.name}</HighlightText>
-            </Text>
-          </HStack>
-        );
-      },
+      cell: (item) => <TeamNameCell team={item} query={q} />,
     },
     {
       header: 'Email',
@@ -127,5 +107,25 @@ export default function TeamTable({ teams }: { teams: Array<Team> }) {
       />
       <UpsertTeam.Viewport />
     </>
+  );
+}
+
+function TeamNameCell({ team, query }: { team: Team; query: string }) {
+  const { data, isLoading } = useTeamLogo(team.image);
+
+  return (
+    <HStack>
+      {isLoading ? (
+        <Skeleton width={8} height={8} />
+      ) : (
+        <Avatar.Root shape="rounded" size="xs">
+          <Avatar.Fallback name={team.name} />
+          <Avatar.Image src={data ?? undefined} />
+        </Avatar.Root>
+      )}
+      <Text marginLeft={2}>
+        <HighlightText query={query}>{team.name}</HighlightText>
+      </Text>
+    </HStack>
   );
 }
