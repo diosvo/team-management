@@ -427,6 +427,22 @@ const PostgresErrorHandlers: Record<
 };
 
 /**
+ * @description Whether an error is a Postgres unique violation, optionally on
+ * a specific constraint. Used as an idempotency signal (e.g. a report run that
+ * was already executed for the same occurrence).
+ */
+export function isUniqueViolation(error: unknown, constraint?: string): boolean {
+  if (
+    !(error instanceof DrizzleQueryError) ||
+    !(error.cause instanceof DatabaseError) ||
+    error.cause.code !== PgErrorCode.UNIQUE_VIOLATION
+  ) {
+    return false;
+  }
+  return !constraint || error.cause.constraint === constraint;
+}
+
+/**
  * @description Extracts a user-friendly message and constraint from a Drizzle ORM error.
  *
  * @param error The error object from Drizzle.

@@ -1,0 +1,105 @@
+---
+title: 'Reports'
+---
+
+> Route: `/reports` · Nav group: **Overview** · Status: **Draft**
+
+Companion to the [Dashboard](/docs/features/dashboard) spec. The Dashboard
+renders analytics and produces PDFs on demand; this page covers **scheduling**
+those reports and the **history** of what was generated.
+
+## 1. Summary
+
+- Two reports can be scheduled per team, each emailed once its period closes:
+
+  | Report         | Data window        | Sent on                |
+  | -------------- | ------------------ | ---------------------- |
+  | **Last month** | The previous month | The 1st of every month |
+  | **Last year**  | The previous year  | 1 January              |
+
+- Both go out around **08:00 ICT**. There is no per-schedule time or day picker.
+- A daily cron renders due reports with the same engine as the Dashboard
+  download, stores each PDF, and emails recipients a download link.
+
+## 2. Permissions
+
+Access is governed by the `reports` resource.
+
+| Action            | Capability                                 |
+| ----------------- | ------------------------------------------ |
+| `view`            | See schedules and generation history       |
+| `create` / `edit` | Add, update, toggle, or run a schedule now |
+| `delete`          | Remove a schedule                          |
+
+> The cron endpoint is not user-facing: it is authorized by a `CRON_SECRET`
+> Bearer token, and reports render under a service-account session.
+
+## 3. UX
+
+- **Schedules** — one row per report with recipient count, next run, last run,
+  and an enable/disable toggle. Rows open an editor (report + recipients).
+- **Run now** — generates the report immediately under the current user's
+  session. It is also the recovery path after a failed scheduled run.
+- **History** — every generated report with status, period, trigger, delivery
+  status, and an auth-guarded download link.
+
+## 4. Scheduled report flow
+
+<Mermaid
+  chart={`
+flowchart TD
+    cron([Vercel Cron · daily 08:00 ICT]) -->|Bearer CRON_SECRET| claim[Claim schedules where<br/>next_run_at ≤ now]
+    claim -->|none| idle[Done · nothing due]
+    claim -->|due| run[Insert history row · pending<br/>unique schedule + occurrence]
+    run -->|duplicate| skip[Skip · already ran]
+    run --> pdf[Render dashboard to PDF<br/>store in Blob]
+    pdf --> mail[Email recipients<br/>a download link]
+    mail --> ok[Mark success<br/>advance next_run_at]
+    pdf -. 3 failed attempts .-> fail[Mark failed<br/>advance next_run_at<br/>notify coaches/admins]
+    mail -. 3 failed attempts .-> fail
+`}
+/>
+
+How it stays correct:
+
+- **`next_run_at` is precomputed** on every create, edit, and enable: the 1st
+  of the next period at 08:00 ICT. The cron only polls for overdue rows, so
+  most days it does nothing.
+- **One run per occurrence.** The history row is inserted first under a
+  unique `(schedule_id, scheduled_for)` key, so overlapping or replayed cron
+  hits can never double-send. "Run now" uses `now()` as its occurrence.
+- **Retries happen in-process** (3 attempts). The PDF is kept between
+  attempts, so an email failure does not re-render it.
+- **A final failure still advances `next_run_at`** — the next tick is a month
+  away, so a human recovers with "Run now" after the failure email.
+
+## 5. Technical appendix
+
+| Endpoint                     | Purpose                                                                                |
+| ---------------------------- | -------------------------------------------------------------------------------------- |
+| `GET /api/reports/schedule`  | Cron tick (`0 1 * * *` UTC). Claims due rows with `FOR UPDATE SKIP LOCKED`, runs each. |
+| `GET /api/reports/retention` | Cron (`0 2 * * *` UTC). Deletes Blobs past `RETENTION_DAYS` and marks rows `expired`.  |
+| `GET /api/reports/download`  | Streams a stored PDF to a signed-in member of the report's team.                       |
+| `POST /api/webhooks/resend`  | Svix-verified delivery events; stamps `delivered` / `bounced` / … onto the run.        |
+
+### Data model
+
+**`report_schedule`** — one row per team per report.
+
+- `interval`: `last_month` \| `last_year` (data window; the cadence follows
+  from it). Unique with `team_id`.
+- `recipients`: string[]
+- `enabled`: boolean
+- `next_run_at`: timestamp (UTC, precomputed; partial-indexed for the tick)
+- `last_run_at`: timestamp (nullable)
+
+**`report_history`** — one row per generated report, scheduled or manual.
+
+- `schedule_id` + `scheduled_for`: the occurrence (unique — the idempotency
+  gate; null for on-demand emails)
+- `interval`, `period`: what was rendered
+- `trigger`: `manual` \| `scheduled`
+- `status`: `pending` \| `success` \| `failed` \| `expired`
+- `attempts`, `error`: retry outcome, surfaced in the UI
+- `pathname`, `filename`, `expires_at`: Blob location, download name, retention
+- `resend_email_id`, `delivery_status`: from the Resend webhook

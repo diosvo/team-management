@@ -10,10 +10,17 @@ const envSchema = z.object({
     .enum(['development', 'test', 'production'])
     .default('development'),
   CI: z.coerce.boolean().default(false),
+  CRON_SECRET: z.string().default(''),
   DEV_URL: z.url().default('http://localhost:3000'),
   PRODUCTION_URL: z.url().default('http://localhost:3000'),
   DATABASE_URL: z.string().default(''),
   RESEND_API_KEY: z.string().default(''),
+  RESEND_WEBHOOK_SECRET: z
+    .string()
+    .default('')
+    .describe(
+      'Signing secret (whsec_...) of the Resend webhook endpoint. Required to record email delivery statuses.',
+    ),
   BLOB_READ_WRITE_TOKEN: z
     .string()
     .default('')
