@@ -127,7 +127,7 @@ export default function Sidebar({
   );
 
   const rootRef = useRef<HTMLDivElement>(null);
-  const scrollTimeout = useRef<ReturnType<typeof setTimeout>>(null);
+  const scrollTimeout = useRef<Nullable<ReturnType<typeof setTimeout>>>(null);
 
   const handleScroll = () => {
     rootRef.current?.setAttribute('data-scrolling', '');

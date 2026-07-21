@@ -4,6 +4,7 @@ import env from '@env';
 
 import { verifySession } from '@/actions/auth';
 import { getBrowser } from '@/lib/puppeteer';
+import { formatDuration } from '@/utils/formatter';
 
 export const maxDuration = 30; // in seconds
 const devEnv = env.NODE_ENV === 'development';
@@ -21,9 +22,11 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { period, filename } = await req.json();
+    const { interval, filename } = await req.json();
 
-    const durationLabel = `Duration: ${period}`;
+    // The label is derived here rather than trusted from the client, so it can
+    // never disagree with the interval the dashboard is rendered for.
+    const durationLabel = `Duration: ${formatDuration(interval)}`;
     const generatedOn = `Generated on ${new Date().toLocaleString('en-US', {
       dateStyle: 'long',
       timeStyle: 'short',
@@ -53,7 +56,11 @@ export async function POST(req: NextRequest) {
     // A4 at 96dpi is ~794px; use 1200px so Chakra's md breakpoint (768px) is active
     await page.setViewport({ width: 1200, height: 900 });
 
-    await page.goto(url, { waitUntil: 'networkidle0' });
+    // Navigate to the dashboard for the requested interval — the origin alone
+    // renders whatever the root serves, with a default window.
+    await page.goto(`${url}/dashboard?interval=${interval}`, {
+      waitUntil: 'networkidle0',
+    });
 
     await page.waitForSelector('#reports-dashboard', { timeout: 3000 });
 
@@ -62,8 +69,7 @@ export async function POST(req: NextRequest) {
     // effort — an empty dashboard shows empty states, not skeletons)
     await page
       .waitForFunction(
-        () =>
-          !document.querySelector('#reports-dashboard .chakra-skeleton'),
+        () => !document.querySelector('#reports-dashboard .chakra-skeleton'),
         { timeout: 5000 },
       )
       .catch(() => {});

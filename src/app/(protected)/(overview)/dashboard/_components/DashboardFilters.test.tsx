@@ -18,7 +18,7 @@ import DashboardFilters from './DashboardFilters';
 const expectedPayload = (interval: Interval) => {
   const period = formatDuration(interval);
   const filename = `sgr-report-${period.replace(/\D+/g, '-')}.pdf`;
-  return { period, filename };
+  return { interval, filename };
 };
 
 vi.mock('@/lib/download', () => ({
@@ -84,12 +84,12 @@ describe('DashboardFilters', () => {
       const { user } = setup();
       await clickDownload(user);
 
-      const { period, filename } = expectedPayload(Interval.THIS_YEAR);
+      const { interval, filename } = expectedPayload(Interval.THIS_YEAR);
 
       await waitFor(() => {
         expect(mockFetch).toHaveBeenCalledWith('/api/reports/dashboard', {
           method: 'POST',
-          body: JSON.stringify({ period, filename }),
+          body: JSON.stringify({ interval, filename }),
         });
       });
 
@@ -107,13 +107,13 @@ describe('DashboardFilters', () => {
       const { user } = setup({ interval: Interval.LAST_YEAR });
       await clickDownload(user);
 
-      const { period, filename } = expectedPayload(Interval.LAST_YEAR);
+      const { interval, filename } = expectedPayload(Interval.LAST_YEAR);
 
       await waitFor(() => {
         expect(mockFetch).toHaveBeenCalledWith(
           '/api/reports/dashboard',
           expect.objectContaining({
-            body: JSON.stringify({ period, filename }),
+            body: JSON.stringify({ interval, filename }),
           }),
         );
       });
