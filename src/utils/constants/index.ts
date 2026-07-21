@@ -6,6 +6,7 @@ export * from './email';
 export * from './interval';
 export * from './league';
 export * from './match';
+export * from './report';
 export * from './testing';
 export * from './training';
 export * from './user';

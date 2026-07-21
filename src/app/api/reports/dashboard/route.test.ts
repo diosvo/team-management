@@ -102,9 +102,10 @@ describe('POST /api/reports/dashboard', () => {
       value: 'abc',
       domain: 'localhost:3000',
     });
-    expect(browser.page.goto).toHaveBeenCalledWith('http://localhost:3000', {
-      waitUntil: 'networkidle0',
-    });
+    expect(browser.page.goto).toHaveBeenCalledWith(
+      `http://localhost:3000/dashboard?interval=${Interval.THIS_MONTH}`,
+      { waitUntil: 'networkidle0' },
+    );
     expect(browser.page.waitForSelector).toHaveBeenCalledWith(
       '#reports-dashboard',
       { timeout: 3000 },

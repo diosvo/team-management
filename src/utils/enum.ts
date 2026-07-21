@@ -123,6 +123,23 @@ export const SessionStatus = createEnum([
 ] as const);
 export type SessionStatus = enumUnion<typeof SessionStatus>;
 
+/** User-picked cadence of a report schedule. */
+export const ReportFrequency = createEnum([
+  'weekly',
+  'monthly',
+  'quarterly',
+] as const);
+export type ReportFrequency = enumUnion<typeof ReportFrequency>;
+
+/** Lifecycle of a single report run: pending → success | failed, then expired. */
+export const ReportStatus = createEnum([
+  'pending',
+  'success',
+  'failed',
+  'expired',
+] as const);
+export type ReportStatus = enumUnion<typeof ReportStatus>;
+
 export const ReportTrigger = createEnum(['manual', 'scheduled'] as const);
 export type ReportTrigger = enumUnion<typeof ReportTrigger>;
 
