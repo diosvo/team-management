@@ -1,5 +1,5 @@
 import { getCookieCache, getSessionCookie } from 'better-auth/cookies';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, type NextResponse } from 'next/server';
 
 import { DEFAULT_LOGIN_REDIRECT, LOGIN_PATH } from '@/routes';
 import { UserRole } from '@/utils/enum';
@@ -45,7 +45,7 @@ function withSessionToken(present: boolean) {
 }
 
 /** Simulate the signed `sgr.session_data` cache resolving to a session, or failing. */
-function withSessionCache(role: UserRole | null) {
+function withSessionCache(role: Nullable<UserRole>) {
   mockGetCookieCache.mockResolvedValue(
     role
       ? {
@@ -57,7 +57,7 @@ function withSessionCache(role: UserRole | null) {
             token: 'test-token',
             userId: 'test-user-id',
           },
-          user: MOCK_USER,
+          user: { ...MOCK_USER, role },
           updatedAt: Date.now(),
         }
       : null,
