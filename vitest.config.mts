@@ -30,7 +30,6 @@ export default defineConfig({
         '**/lib/auth.ts',
         '**/lib/auth-client.ts',
         // App wiring & config
-        '**/proxy.ts',
         '**/routes.ts',
         '**/providers/**',
       ],
