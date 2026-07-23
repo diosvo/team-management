@@ -46,18 +46,17 @@ const MANIFEST = [
   '99-changelog.md',
 ];
 
-const LOGO = join(ROOT, 'assets', 'images', 'header-logo.webp');
+const LOGO = join(ROOT, 'assets', 'images', 'prd-logo.png');
 
 const PAGE_BREAK = '\n\n<div class="page-break"></div>\n\n';
 
-const cover = (logoDataUri) => [
-  '<div class="cover">',
-  `<img class="cover-logo" src="${logoDataUri}" alt="Saigon Rovers logo" />`,
-  '<h1>Basketball Team Management</h1>',
-  '<h2>Product Requirements Documentation</h2>',
-  '<p class="cover-sub">Saigon Rovers Basketball Club</p>',
-  '</div>',
-].join('\n');
+const cover = (logoDataUri) =>
+  [
+    '<div class="cover">',
+    `<img class="cover-logo" src="${logoDataUri}" alt="Saigon Rovers logo" />`,
+    '<h1>Product Requirements Documentation</h1>',
+    '</div>',
+  ].join('\n');
 
 async function main() {
   const sections = [];

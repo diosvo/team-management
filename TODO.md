@@ -1,6 +1,6 @@
 # Schema Review Checklist
 
-Follow-up items from a review of the data model in `src/drizzle/schema/` (see [02-diagrams.md](./docs/prd/02-diagrams.md) for the full ERD). Each item is a decision to make or a change to schedule — check it off once resolved (fixed, or consciously accepted as-is).
+Follow-up items from a review of the data model in `src/drizzle/schema/` (see [ARCHITECTURE.md](./ARCHITECTURE.md) for the full ERD). Each item is a decision to make or a change to schedule — check it off once resolved (fixed, or consciously accepted as-is).
 
 **Suggested priority:** start with the ⭐ items — they reject real-world data or block real scheduling patterns, and they're small migrations now but painful data-repair jobs later.
 

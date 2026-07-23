@@ -104,27 +104,11 @@ blockquote {
 }
 
 .cover .cover-logo {
-  width: 120px;
-  margin: 0 auto 1.5em;
+  width: 360px;
+  margin: 0 auto;
 }
 
 .cover h1 {
-  font-size: 40px;
+  font-size: 32px;
   border: none;
-  margin-bottom: 0.2em;
-}
-
-.cover h2 {
-  font-size: 20px;
-  font-weight: 400;
-  color: #475569;
-  margin-top: 0;
-}
-
-.cover .cover-sub {
-  margin-top: 1.5em;
-  color: #94a3b8;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  font-size: 12px;
 }
