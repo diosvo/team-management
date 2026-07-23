@@ -25,28 +25,34 @@ const REPORT_MD = join(BUILD_DIR, 'report.md');
 /** Ordered list of docs to stitch (relative to docs/prd/). */
 const MANIFEST = [
   'README.md',
-  '00-master-prd.md',
+  '00-overview.md',
   '01-roles-permissions.md',
-  'pages/README.md',
-  'pages/overview/dashboard.md',
-  'pages/overview/team-rule.md',
-  'pages/team-management/roster.md',
-  'pages/team-management/training.md',
-  'pages/team-management/attendance.md',
-  'pages/team-management/registration.md',
-  'pages/team-management/matches.md',
-  'pages/performance/periodic-testing.md',
-  'pages/resources/assets.md',
-  'pages/settings/teams.md',
-  'pages/settings/leagues.md',
-  'pages/settings/locations.md',
-  'pages/profile.md',
+  '../../ARCHITECTURE.md', // repo-root doc, not under docs/prd/
+  'features/README.md',
+  'features/overview/dashboard.md',
+  'features/overview/team-rule.md',
+  'features/team-management/roster.md',
+  'features/team-management/training.md',
+  'features/team-management/attendance.md',
+  'features/team-management/registration.md',
+  'features/team-management/matches.md',
+  'features/performance/periodic-testing.md',
+  'features/resources/assets.md',
+  'features/settings/teams.md',
+  'features/settings/leagues.md',
+  'features/settings/locations.md',
+  'features/profile.md',
+  '90-roadmap.md',
+  '99-changelog.md',
 ];
+
+const LOGO = join(ROOT, 'assets', 'images', 'header-logo.webp');
 
 const PAGE_BREAK = '\n\n<div class="page-break"></div>\n\n';
 
-const COVER = [
+const cover = (logoDataUri) => [
   '<div class="cover">',
+  `<img class="cover-logo" src="${logoDataUri}" alt="Saigon Rovers logo" />`,
   '<h1>Basketball Team Management</h1>',
   '<h2>Product Requirements Documentation</h2>',
   '<p class="cover-sub">Saigon Rovers Basketball Club</p>',
@@ -60,7 +66,11 @@ async function main() {
     sections.push(md.trim());
   }
 
-  const stitched = [COVER, ...sections].join(PAGE_BREAK) + '\n';
+  // Inline the logo so the stitched md in .prd-build/ has no path dependency.
+  const logo = await readFile(LOGO);
+  const logoDataUri = `data:image/webp;base64,${logo.toString('base64')}`;
+
+  const stitched = [cover(logoDataUri), ...sections].join(PAGE_BREAK) + '\n';
 
   await mkdir(BUILD_DIR, { recursive: true });
   await writeFile(REPORT_MD, stitched, 'utf8');

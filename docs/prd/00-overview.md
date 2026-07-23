@@ -1,8 +1,10 @@
-# Master PRD — Saigon Rovers Basketball Team Management
+# Product Overview — Saigon Rovers Basketball Team Management
 
-## 1. Product Overview
+> Status: **Draft** · The strategic top of the PRD. Feature-level detail lives in [`features/`](./features/README.md).
 
-Team Management is a web app for managing teams, people, and operations (assets, schedules, etc.) with role-based access.
+## 1. Vision & Problem
+
+Team Management is a web app for managing a basketball club's teams, people, and operations (rosters, schedules, assets) with role-based access.
 
 ### Problem
 
@@ -12,41 +14,69 @@ Teams often track key operational info in spreadsheets/chats, causing:
 - unclear ownership
 - poor visibility across roles
 
-### Solution
+### Vision
 
-Provide a centralized, role-based hub where users can view and (when authorized) manage team data and workflows.
+One private, role-based hub that is the club's single source of truth: any member can answer "who, when, where" in seconds, and the people responsible for a workflow (attendance, registration, testing) can run it end-to-end without leaving the app.
 
-- Application is a private team portal
-- Users are trusted team members (invited via email by admin)
-- The role set is small and static
+## 2. Personas & Target Users
 
-## 2. Target Users
+The role model is small and static; users are trusted club members invited by an admin.
 
-- **GUEST:** limited read-only access (dashboard, roster, matches)
-- **PLAYER:** standard team member
-- **COACH:** coaching staff
-- **SUPER_ADMIN:** administrative access across the application
-- **Captain (PLAYER flag):** elevated permissions for registration, matches, roster management (invite/remove members), and team-rule editing
+| Persona                | Role flag          | What they need from the app                                                                                    |
+| ---------------------- | ------------------ | -------------------------------------------------------------------------------------------------------------- |
+| **Visitor / trialist** | `GUEST`            | Read-only look at the club: dashboard, roster, matches.                                                        |
+| **Player**             | `PLAYER`           | Check training schedule, team rules, own attendance and performance metrics; keep own profile current.         |
+| **Team captain**       | `PLAYER` + Captain | Everything a player has, plus run registration, manage the roster (invite/remove), record matches, edit rules. |
+| **Coach**              | `COACH`            | Plan training sessions, take attendance, record match results, track player testing/performance over time.     |
+| **Club administrator** | `SUPER_ADMIN`      | Configure teams, leagues, locations; manage all people and data; full access everywhere.                       |
 
-## 3. Primary Use Cases (Jobs-to-be-done)
+Full capability-by-role detail: [01-roles-permissions](./01-roles-permissions.md).
+
+## 3. Goals & Success Metrics
+
+> Metrics below are proposals — confirm and prune to the 2–3 that matter (see [Open Questions](#11-open-questions)).
+
+| Goal                                             | Signal of success (proposed)                                   |
+| ------------------------------------------------ | -------------------------------------------------------------- |
+| Replace spreadsheets/chat as the operational hub | Roster, schedule, and match data maintained in-app only        |
+| Reliable attendance & performance history        | Attendance recorded for ≥ 90% of training sessions             |
+| Self-service answers                             | Members find schedule/roster/rules without asking in chat      |
+| Safe delegation                                  | Captains/coaches run their workflows without admin involvement |
+
+## 4. Non-Goals (Out of Scope)
+
+Explicitly not planned without a new product signal — the app targets a trusted, small, single-club portal:
+
+- **Injury/medical tracking, payments/fees, audit logs** — revisit only on real demand.
+- **Multi-club / public-facing product** — one club, private portal; opponents are lightweight records, not tenants.
+- **Native mobile apps** — responsive web only.
+- **Self-service sign-up** — membership is invite-only by design.
+
+## 5. Assumptions & Constraints
+
+- Application is a private team portal; users are trusted team members (invited via email by admin).
+- The role set is small and static (`GUEST`, `PLAYER`, `COACH`, `SUPER_ADMIN`, plus the Captain flag).
+- Single club with typical team sizes (tens of users, not thousands) — informs performance targets.
+
+## 6. Primary Use Cases (Jobs-to-be-done)
 
 - A player checks team info, training schedule, and performance metrics.
 - A coach manages training sessions, attendance, and match records.
 - A captain handles registration, manages the roster, and edits team rules.
 - An admin manages teams, configuration, and all operational data.
 
-## 4. Feature Map (High-level)
+## 7. Feature Map (High-level)
 
-This is a high-level map; details live in the [`Page Specs`](./pages/README.md) docs.
+This is a high-level map; details live in the [`Feature Specs`](./features/README.md) docs.
 
-## 5. Product Principles (Shared UX expectations)
+## 8. Product Principles (Shared UX expectations)
 
-- **Role clarity:** users should never wonder why they can/can’t do something.
+- **Role clarity:** users should never wonder why they can/can't do something.
 - **Fast search:** lists must support filtering.
 - **Safe destructive actions:** deletions require confirmation + clear feedback.
 - **Deep-linkable state:** filters should be reflected in the URL where reasonable.
 
-## 6. Shared Requirements (Cross-feature)
+## 9. Shared Requirements (Cross-feature)
 
 ### Authorization
 
@@ -80,22 +110,13 @@ Cases the contract guarantees:
 - **Card click / back button / deep link** — one URL write fans out to every mirror
   (search box + drawer) so the whole page reflects it.
 
-### Audit / Logging (optional)
-
-- [ ] For privileged actions (create/edit/delete), capture: actor role, team context, timestamp.
-
-## 7. Non-Functional Requirements
+## 10. Non-Functional Requirements
 
 - **Performance:** common pages load quickly for typical team sizes.
 - **Accessibility:** keyboard navigation and accessible dialogs.
 - **Reliability:** clear loading/error states; avoid duplicate submits.
 
-## 8. Release / Rollout (Light)
+## 11. Open Questions
 
-- Prefer feature flags for larger changes.
-- Ship in small increments with backward-compatible data changes.
-
-## 9. Open Questions
-
-- What are the most important product-level success metrics?
-- Which features require audit logs vs. basic activity logging?
+- Which 2–3 success metrics in §3 are the ones we actually commit to (and how do we measure them)?
+- Which features require audit logs vs. basic activity logging? (Currently a non-goal — see §4.)

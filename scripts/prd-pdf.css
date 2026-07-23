@@ -103,6 +103,11 @@ blockquote {
   text-align: center;
 }
 
+.cover .cover-logo {
+  width: 120px;
+  margin: 0 auto 1.5em;
+}
+
 .cover h1 {
   font-size: 40px;
   border: none;

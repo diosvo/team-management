@@ -1,17 +1,18 @@
-# Page Specs
+# Feature Specs
 
-Docs are organized **by page**, mirroring the app's sidebar navigation
+Specs are organized **by page**, mirroring the app's sidebar navigation
 (`SIDEBAR_GROUP` in `src/app/(protected)/_helpers/utils.ts`). Each page has one
 spec; its individual functionalities are sections **inside** that spec
 (§5 Functional Requirements).
 
 Each spec follows the same template:
 
+- Status line (`> Route · Nav group · Status`) — keep it current
 - User-facing behavior (readable by end users)
 - Requirements + Acceptance Criteria (for engineering/QA)
 - Technical appendix (data/API/permissions) if possible.
 
-## Page catalog
+## Feature catalog
 
 | Nav group           | Page             | Route               | Status | Spec                                                  |
 | ------------------- | ---------------- | ------------------- | ------ | ----------------------------------------------------- |
