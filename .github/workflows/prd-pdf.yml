@@ -17,7 +17,7 @@ on:
       - 'scripts/prd-pdf.css'
 
 jobs:
-  build:
+  prd-pdf:
     runs-on: ubuntu-latest
     steps:
       - name: 📥 Checkout Code

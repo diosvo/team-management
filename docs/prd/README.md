@@ -4,14 +4,23 @@ This folder contains the product requirements documentation for **Team Managemen
 
 ## Document map
 
-| File                                              | Contents                                                                              |
-| ------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| [00-master-prd](./00-master-prd.md)               | Product overview, target users, feature map, shared requirements                      |
-| [01-roles-permissions](./01-roles-permissions.md) | Auth layers, role definitions, full permission matrix, client-side enforcement        |
-| [pages/README](./pages/README.md)                 | Page catalog with routes and links to every spec                                      |
-| `pages/**`                                        | One spec per page (summary → permissions → UX flows → FRs → ACs → technical appendix) |
+| File                                              | Contents                                                                                 |
+| ------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| [00-overview](./00-overview.md)                   | Vision, personas, goals & metrics, non-goals, constraints, shared requirements           |
+| [01-roles-permissions](./01-roles-permissions.md) | Auth layers, role definitions, full permission matrix, client-side enforcement           |
+| [ARCHITECTURE.md](../../ARCHITECTURE.md)          | Technical architecture (repo root — included in the PDF between roles and feature specs) |
+| [features/README](./features/README.md)           | Feature catalog with routes, statuses, and links to every spec                           |
+| `features/**`                                     | One spec per feature/page (summary → permissions → UX flows → FRs → ACs → tech appendix) |
+| [90-roadmap](./90-roadmap.md)                     | Release plan: shipped / in progress / planned / not planned                              |
+| [99-changelog](./99-changelog.md)                 | Revision history of the PRD itself                                                       |
 
-Read in order: **Master PRD → Roles & Permissions → Page catalog → individual page specs**.
+Read in order: **Overview → Roles & Permissions → Feature catalog → individual specs → Roadmap**.
+
+## Conventions
+
+- Every feature spec starts with a status line: `> Route: \`/x\` · Nav group: **X** · Status: **Draft | Approved | Shipped**`. Keep it current — it's the at-a-glance lifecycle marker in both GitHub and the PDF.
+- Numbered files (`00`, `01`, `90`, `99`) are the linear read; the gap before `90` leaves room for new sections without renumbering.
+- Record meaningful doc changes in [99-changelog](./99-changelog.md).
 
 ## PDF export
 
@@ -52,8 +61,9 @@ node scripts/build-prd-pdf.mjs
 
 Produces `sgr-team-management-prd.pdf` in the repo root. Styling lives in `scripts/prd-pdf.css`.
 
-### Adding a new page
+### Adding a new feature spec
 
-1. Create the spec under `docs/prd/pages/<group>/<page>.md`.
+1. Create the spec under `docs/prd/features/<group>/<page>.md`.
 2. Add it to the `MANIFEST` array in `scripts/build-prd-pdf.mjs` at the correct position.
-3. Add a row to the catalog table in `docs/prd/pages/README.md`.
+3. Add a row to the catalog table in `docs/prd/features/README.md`.
+4. Note it in `docs/prd/99-changelog.md`.
