@@ -3,20 +3,21 @@
 import Link, { useLinkStatus } from 'next/link';
 import { usePathname } from 'next/navigation';
 import React, {
-  ForwardRefExoticComponent,
-  PropsWithChildren,
-  RefAttributes,
+  type ForwardRefExoticComponent,
+  type PropsWithChildren,
+  type RefAttributes,
 } from 'react';
 
 import {
   Button,
   Icon,
+  IconButton,
   Separator,
   Spinner,
   Text,
   VStack,
 } from '@chakra-ui/react';
-import { LucideProps, PanelLeftOpen, PanelRightOpen } from 'lucide-react';
+import { ChevronLeft, ChevronRight, LucideProps } from 'lucide-react';
 
 import { Tooltip } from '@/components/ui/tooltip';
 import usePermissions from '@/hooks/use-permissions';
@@ -111,58 +112,67 @@ export default function Sidebar({
 
   return (
     <VStack
+      position="relative"
       height="full"
       alignItems="stretch"
       paddingBlock={4}
       paddingInline={2}
     >
-      {visibleItems.map(({ title, items }, index) => (
-        <VStack key={title} alignItems="stretch" marginTop={index > 0 ? 4 : 0}>
-          {isExpanded ? (
-            <Text
-              fontSize={9}
-              color="gray.700"
-              letterSpacing="wider"
-              marginLeft={{ base: 3, md: 4 }}
-            >
-              {title.toUpperCase()}
-            </Text>
-          ) : (
-            <Separator />
-          )}
-          {items.map(({ resource, icon, disabled }) => (
-            <NavButton
-              key={resource}
-              icon={icon}
-              href={`/${resource}`}
-              disabled={disabled}
-              isExpanded={isExpanded}
-            >
-              {segmentToLabel(resource)}
-            </NavButton>
-          ))}
-        </VStack>
-      ))}
-      <VStack marginTop="auto" alignItems="stretch">
-        <Separator marginInline={-2} />
-        <Tooltip
-          showArrow
-          disabled={isExpanded}
-          content={!isExpanded && 'Expand menu'}
-          positioning={{ placement: 'right' }}
+      <Tooltip
+        showArrow
+        content={isExpanded ? 'Collapse menu' : 'Expand menu'}
+        positioning={{ placement: 'right' }}
+      >
+        <IconButton
+          aria-label={isExpanded ? 'Collapse menu' : 'Expand menu'}
+          size="2xs"
+          variant="outline"
+          backgroundColor="white"
+          position="absolute"
+          top={isExpanded ? 2 : 1}
+          right={0}
+          transform="translateX(50%)"
+          zIndex={1}
+          _hover={{
+            backgroundColor: 'gray.50',
+          }}
+          onClick={() => setIsExpanded(!isExpanded)}
         >
-          <Button
-            {...BUTTON_CONFIG}
-            variant="ghost"
-            fontWeight={400}
-            justifyContent={isExpanded ? 'flex-start' : 'center'}
-            paddingInline={isExpanded ? undefined : 2}
-            onClick={() => setIsExpanded(!isExpanded)}
+          <Icon as={isExpanded ? ChevronLeft : ChevronRight} />
+        </IconButton>
+      </Tooltip>
+      <VStack flex="1" minHeight={0} alignItems="stretch" overflowY="auto">
+        {visibleItems.map(({ title, items }, index) => (
+          <VStack
+            key={title}
+            alignItems="stretch"
+            marginTop={index > 0 ? 4 : 0}
           >
-            <Icon size="sm" as={isExpanded ? PanelRightOpen : PanelLeftOpen} />
-            {isExpanded && 'Collapse menu'}
-          </Button>
-        </Tooltip>
+            {isExpanded ? (
+              <Text
+                fontSize={9}
+                color="gray.700"
+                letterSpacing="wider"
+                marginLeft={{ base: 3, md: 4 }}
+              >
+                {title.toUpperCase()}
+              </Text>
+            ) : (
+              <Separator />
+            )}
+            {items.map(({ resource, icon, disabled }) => (
+              <NavButton
+                key={resource}
+                icon={icon}
+                href={`/${resource}`}
+                disabled={disabled}
+                isExpanded={isExpanded}
+              >
+                {segmentToLabel(resource)}
+              </NavButton>
+            ))}
+          </VStack>
+        ))}
       </VStack>
     </VStack>
   );
