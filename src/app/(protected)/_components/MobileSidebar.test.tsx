@@ -2,13 +2,11 @@ import { Mock } from 'vitest';
 
 import { renderWithUI, screen } from '@/test/utilities';
 
-import authClient from '@/lib/auth-client';
+import { useSessionContext } from '@/providers/session';
 
 import MobileSidebar from './MobileSidebar';
 
-vi.mock('@/lib/auth-client', () => ({
-  default: { useSession: vi.fn() },
-}));
+vi.mock('@/providers/session', () => ({ useSessionContext: vi.fn() }));
 
 // Stub the heavy Sidebar so MobileSidebar can be tested in isolation.
 vi.mock('./Sidebar', () => ({
@@ -16,12 +14,10 @@ vi.mock('./Sidebar', () => ({
 }));
 
 describe('MobileSidebar', () => {
-  const mockUseSession = authClient.useSession as unknown as Mock;
+  const mockUseSessionContext = useSessionContext as unknown as Mock;
 
-  const setup = (hasSession = true) => {
-    mockUseSession.mockReturnValue({
-      data: hasSession ? { session: { id: 'session-1' } } : null,
-    });
+  const setup = (isAuthenticated = true) => {
+    mockUseSessionContext.mockReturnValue({ isAuthenticated });
     return renderWithUI(<MobileSidebar />);
   };
 

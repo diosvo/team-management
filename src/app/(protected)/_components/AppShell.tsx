@@ -35,7 +35,7 @@ export default function AppShell({ children }: PropsWithChildren) {
 
   return (
     <Grid
-      height="100vh"
+      height="100dvh"
       templateRows="auto 1fr"
       templateColumns={{ base: '1fr', lg: `${sidebarWidth} 1fr` }}
       transition="grid-template-columns 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
@@ -54,7 +54,7 @@ export default function AppShell({ children }: PropsWithChildren) {
         <Sidebar isExpanded={isExpanded} setIsExpanded={setIsExpanded} />
       </GridItem>
 
-      <GridItem overflow="auto">
+      <GridItem position="relative" overflow="auto">
         <Suspense>
           <Stack
             hideFrom="lg"

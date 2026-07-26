@@ -31,10 +31,10 @@ describe('Sidebar', () => {
   const setup = ({
     can = () => true,
     isExpanded = true,
-  }: {
-    can?: (resource: string) => boolean;
-    isExpanded?: boolean;
-  } = {}) => {
+  }: Partial<{
+    can: (resource: string) => boolean;
+    isExpanded: boolean;
+  }> = {}) => {
     mockUsePermissions.mockReturnValue({ can });
     return renderWithUI(
       <Sidebar isExpanded={isExpanded} setIsExpanded={setIsExpanded} />,
@@ -121,22 +121,29 @@ describe('Sidebar', () => {
   });
 
   describe('expand / collapse', () => {
-    test('shows "Collapse menu" label when expanded', () => {
+    test('labels the toggle "Collapse menu" when expanded', () => {
       setup({ isExpanded: true });
 
-      expect(screen.getByText('Collapse menu')).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'Collapse menu' }),
+      ).toBeInTheDocument();
     });
 
-    test('hides the label when collapsed', () => {
+    test('labels the toggle "Expand menu" when collapsed', () => {
       setup({ isExpanded: false });
 
-      expect(screen.queryByText('Collapse menu')).not.toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'Expand menu' }),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: 'Collapse menu' }),
+      ).not.toBeInTheDocument();
     });
 
     test('calls setIsExpanded when the toggle button is clicked', async () => {
       const { user } = setup({ isExpanded: true });
 
-      await user.click(screen.getByText('Collapse menu'));
+      await user.click(screen.getByRole('button', { name: 'Collapse menu' }));
 
       expect(setIsExpanded).toHaveBeenCalled();
     });

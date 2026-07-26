@@ -3,7 +3,9 @@ import { Mock } from 'vitest';
 import { MOCK_USER } from '@/test/mocks/user';
 import { renderWithUI, screen } from '@/test/utilities';
 
+import { useUserAvatar } from '@/hooks/use-image';
 import authClient from '@/lib/auth-client';
+import { useSessionContext } from '@/providers/session';
 import { LOGIN_PATH } from '@/routes';
 
 import AccountMenu from './AccountMenu';
@@ -15,19 +17,25 @@ vi.mock('next/navigation', async (importOriginal) => {
   return { ...actual, useRouter: () => ({ replace: mockReplace }) };
 });
 
+vi.mock('@/providers/session', () => ({ useSessionContext: vi.fn() }));
+
+vi.mock('@/hooks/use-image', () => ({ useUserAvatar: vi.fn() }));
+
 vi.mock('@/lib/auth-client', () => ({
-  default: {
-    useSession: vi.fn(),
-    signOut: vi.fn(),
-  },
+  default: { signOut: vi.fn() },
 }));
 
 describe('AccountMenu', () => {
-  const mockUseSession = authClient.useSession as unknown as Mock;
+  const mockUseSessionContext = useSessionContext as unknown as Mock;
+  const mockUseUserAvatar = useUserAvatar as unknown as Mock;
   const mockSignOut = authClient.signOut as unknown as Mock;
 
   const setup = (user: typeof MOCK_USER | null = MOCK_USER) => {
-    mockUseSession.mockReturnValue({ data: user ? { user } : null });
+    mockUseSessionContext.mockReturnValue({
+      user,
+      isAuthenticated: !!user,
+    });
+    mockUseUserAvatar.mockReturnValue({ data: null, isLoading: false });
     return renderWithUI(<AccountMenu />);
   };
 
