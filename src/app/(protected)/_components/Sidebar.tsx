@@ -3,6 +3,10 @@
 import Link, { useLinkStatus } from 'next/link';
 import { usePathname } from 'next/navigation';
 import React, {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
   type ForwardRefExoticComponent,
   type PropsWithChildren,
   type RefAttributes,
@@ -110,6 +114,23 @@ export default function Sidebar({
     return filtered.length > 0 ? [{ title, items: filtered }] : [];
   });
 
+  // Show the scrollbar only while the user is actively scrolling, and hide the
+  // collapse button during that time so the two never overlap.
+  const [isScrolling, setIsScrolling] = useState(false);
+  const scrollTimeout = useRef<Nullable<ReturnType<typeof setTimeout>>>(null);
+
+  const handleScroll = useCallback(() => {
+    setIsScrolling(true);
+    if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+    scrollTimeout.current = setTimeout(() => setIsScrolling(false), 800);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+    };
+  }, []);
+
   return (
     <VStack
       position="relative"
@@ -133,6 +154,9 @@ export default function Sidebar({
           right={0}
           transform="translateX(50%)"
           zIndex={1}
+          opacity={isScrolling ? 0 : 1}
+          pointerEvents={isScrolling ? 'none' : 'auto'}
+          transition="opacity 0.2s ease"
           _hover={{
             backgroundColor: 'gray.50',
           }}
@@ -141,7 +165,32 @@ export default function Sidebar({
           <Icon as={isExpanded ? ChevronLeft : ChevronRight} />
         </IconButton>
       </Tooltip>
-      <VStack flex="1" minHeight={0} alignItems="stretch" overflowY="auto">
+      <VStack
+        flex="1"
+        minHeight={0}
+        alignItems="stretch"
+        overflowY="auto"
+        // Extend to the sidebar's right border so the scrollbar sits flush,
+        // then re-inset the content with padding
+        marginInlineEnd={-2}
+        paddingInlineEnd={2}
+        onScroll={handleScroll}
+        // Scrollbar fades in only while actively scrolling
+        css={{
+          scrollbarWidth: 'thin',
+          scrollbarColor: isScrolling
+            ? 'var(--chakra-colors-gray-300) transparent'
+            : 'transparent transparent',
+          '&::-webkit-scrollbar': { width: '6px' },
+          '&::-webkit-scrollbar-thumb': {
+            borderRadius: '3px',
+            backgroundColor: isScrolling
+              ? 'var(--chakra-colors-gray-300)'
+              : 'transparent',
+            transition: 'background-color 0.2s ease',
+          },
+        }}
+      >
         {visibleItems.map(({ title, items }, index) => (
           <VStack
             key={title}

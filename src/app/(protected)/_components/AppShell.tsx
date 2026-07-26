@@ -46,6 +46,7 @@ export default function AppShell({ children }: PropsWithChildren) {
 
       <GridItem
         hideBelow="lg"
+        minHeight={0}
         backgroundColor="gray.50"
         borderRightWidth="1px"
         borderRightColor="gray.200"
