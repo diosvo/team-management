@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { PropsWithChildren, Suspense, useEffect, useState } from 'react';
+import { type PropsWithChildren, Suspense, useEffect, useState } from 'react';
 
 import { Grid, GridItem, Stack } from '@chakra-ui/react';
 
