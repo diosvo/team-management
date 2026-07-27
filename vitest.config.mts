@@ -1,9 +1,11 @@
 import react from '@vitejs/plugin-react';
-import tsconfigPaths from 'vite-tsconfig-paths';
 import { configDefaults, defineConfig } from 'vitest/config';
 
 export default defineConfig({
-  plugins: [tsconfigPaths(), react()], // For React component testing
+  plugins: [react()], // For React component testing
+  resolve: {
+    tsconfigPaths: true, // Use tsconfig paths for module resolution
+  },
   test: {
     environment: 'jsdom', // Simulate a browser environment
     setupFiles: ['./test/setup.ts'], // Reference a setup file

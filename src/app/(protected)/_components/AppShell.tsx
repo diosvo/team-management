@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { PropsWithChildren, Suspense, useEffect, useState } from 'react';
+import { type PropsWithChildren, Suspense, useEffect, useState } from 'react';
 
 import { Grid, GridItem, Stack } from '@chakra-ui/react';
 
@@ -35,7 +35,7 @@ export default function AppShell({ children }: PropsWithChildren) {
 
   return (
     <Grid
-      height="100vh"
+      height="100dvh"
       templateRows="auto 1fr"
       templateColumns={{ base: '1fr', lg: `${sidebarWidth} 1fr` }}
       transition="grid-template-columns 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
@@ -46,6 +46,7 @@ export default function AppShell({ children }: PropsWithChildren) {
 
       <GridItem
         hideBelow="lg"
+        minHeight={0}
         backgroundColor="gray.50"
         borderRightWidth="1px"
         borderRightColor="gray.200"
@@ -53,7 +54,7 @@ export default function AppShell({ children }: PropsWithChildren) {
         <Sidebar isExpanded={isExpanded} setIsExpanded={setIsExpanded} />
       </GridItem>
 
-      <GridItem overflow="auto">
+      <GridItem position="relative" overflow="auto">
         <Suspense>
           <Stack
             hideFrom="lg"
