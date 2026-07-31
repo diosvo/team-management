@@ -21,7 +21,7 @@ import { Field } from '@/components/ui/field';
 import { toaster } from '@/components/ui/toaster';
 
 import { getDefaults } from '@/lib/zod';
-import { ESTABLISHED_DATE } from '@/utils/constant';
+import { ESTABLISHED_DATE } from '@/utils/constants';
 import { formatDatetime, formatDay } from '@/utils/formatter';
 
 import { upsertSession } from '@/actions/training-session';

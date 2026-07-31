@@ -13,7 +13,7 @@ import { toaster } from '@/components/ui/toaster';
 import usePermissions from '@/hooks/use-permissions';
 import useTableState from '@/hooks/use-table-state';
 import { useCommonParams } from '@/lib/nuqs';
-import { CACHE_KEY } from '@/utils/constant';
+import { CACHE_KEY } from '@/utils/constants';
 import { buildPredicate } from '@/utils/filters';
 import { formatDatetime } from '@/utils/formatter';
 

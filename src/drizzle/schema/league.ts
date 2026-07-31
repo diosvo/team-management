@@ -9,14 +9,17 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core';
 
-import { LeagueStatus } from '@/utils/enum';
+import { enumValues, LeagueStatus } from '@/utils/enum';
 import { created_at, updated_at } from '../helpers';
 
 import { MatchTable } from './match';
 import { PlayerTable } from './player';
 import { TeamTable } from './team';
 
-export const leagueStatusEnum = pgEnum('league_status', LeagueStatus);
+export const leagueStatusEnum = pgEnum(
+  'league_status',
+  enumValues(LeagueStatus),
+);
 
 export const LeagueTable = pgTable('league', {
   league_id: uuid().primaryKey().defaultRandom(),

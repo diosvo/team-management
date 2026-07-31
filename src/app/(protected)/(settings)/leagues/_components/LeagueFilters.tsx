@@ -13,7 +13,7 @@ import { Tooltip } from '@/components/ui/tooltip';
 
 import { useLeagueFilters } from '@/lib/nuqs';
 import type { FilterDef } from '@/types/filters';
-import { LEAGUE_STATUS_SELECTION } from '@/utils/constant';
+import { LEAGUE_STATUS_SELECTION } from '@/utils/constants';
 import { LeagueStatus } from '@/utils/enum';
 
 import { upsertLeague } from '@/actions/league';

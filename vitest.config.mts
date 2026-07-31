@@ -21,7 +21,7 @@ export default defineConfig({
         // Chakra UI components (already well-tested by Chakra)
         '**/components/ui/**',
         // Pure data/type definitions
-        '**/utils/constant.ts',
+        '**/utils/constants/**',
         '**/utils/enum.ts',
         '**/utils/type.ts',
         // Drizzle ORM setup & schema definitions

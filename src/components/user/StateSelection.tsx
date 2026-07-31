@@ -11,7 +11,7 @@ import { Control, Controller, FieldPath, FieldValues } from 'react-hook-form';
 import { Field } from '@/components/ui/field';
 import { Status } from '@/components/ui/status';
 
-import { USER_STATE_SELECTION } from '@/utils/constant';
+import { USER_STATE_SELECTION } from '@/utils/constants';
 import { getColor } from '@/utils/helper';
 
 type StateSelectionProps = Omit<SelectRootProps, 'collection'> &

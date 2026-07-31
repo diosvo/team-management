@@ -7,7 +7,7 @@ import type { FilterDef } from '@/types/filters';
 import {
   ASSET_CATEGORY_SELECTION,
   ASSET_CONDITION_SELECTION,
-} from '@/utils/constant';
+} from '@/utils/constants';
 
 const FILTERS: Array<FilterDef> = [
   {

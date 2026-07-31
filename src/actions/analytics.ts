@@ -4,7 +4,7 @@ import { differenceInDays } from 'date-fns';
 
 import { MatchesRateRecord } from '@/types/analytics';
 import { IntervalValues } from '@/types/common';
-import { Interval, MatchStatus } from '@/utils/enum';
+import { Interval, MatchStatus, MatchType } from '@/utils/enum';
 
 import {
   getUpcomingMatches as fetchUpcomingMatches,
@@ -74,7 +74,7 @@ export const getMatchesRate = createAnalyticsAction(
     return Object.entries(
       matchesData.data.reduce(
         (acc, match) => {
-          const type = match.league_id ? 'league' : 'friendly';
+          const type = match.league_id ? MatchType.LEAGUE : MatchType.FRIENDLY;
           switch (match.result) {
             case MatchStatus.WIN:
               acc.win[type] += 1;
@@ -91,9 +91,9 @@ export const getMatchesRate = createAnalyticsAction(
           return acc;
         },
         {
-          win: { league: 0, friendly: 0 },
-          draw: { league: 0, friendly: 0 },
-          lose: { league: 0, friendly: 0 },
+          win: { [MatchType.LEAGUE]: 0, [MatchType.FRIENDLY]: 0 },
+          draw: { [MatchType.LEAGUE]: 0, [MatchType.FRIENDLY]: 0 },
+          lose: { [MatchType.LEAGUE]: 0, [MatchType.FRIENDLY]: 0 },
         },
       ),
     ).map(([outcome, data]) => ({ outcome, ...data }));

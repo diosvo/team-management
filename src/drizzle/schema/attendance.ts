@@ -9,7 +9,7 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core';
 
-import { AttendanceStatus } from '@/utils/enum';
+import { AttendanceStatus, enumValues } from '@/utils/enum';
 
 import { created_at, updated_at } from '../helpers';
 import { PlayerTable } from './player';
@@ -18,7 +18,7 @@ import { TrainingSessionTable } from './training';
 
 export const attendanceStatusEnum = pgEnum(
   'attendance_status',
-  AttendanceStatus,
+  enumValues(AttendanceStatus),
 );
 
 export const AttendanceTable = pgTable(

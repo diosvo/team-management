@@ -1,7 +1,7 @@
 import { relations } from 'drizzle-orm';
 import { date, pgEnum, pgTable, text, time, uuid } from 'drizzle-orm/pg-core';
 
-import { SessionStatus } from '@/utils/enum';
+import { enumValues, SessionStatus } from '@/utils/enum';
 
 import { created_at, updated_at } from '../helpers';
 import { AttendanceTable } from './attendance';
@@ -9,7 +9,10 @@ import { CoachTable } from './coach';
 import { LocationTable } from './location';
 import { TeamTable } from './team';
 
-export const sessionStatusEnum = pgEnum('session_status', SessionStatus);
+export const sessionStatusEnum = pgEnum(
+  'session_status',
+  enumValues(SessionStatus),
+);
 
 export const TrainingSessionTable = pgTable('training_session', {
   session_id: uuid().primaryKey().defaultRandom(),

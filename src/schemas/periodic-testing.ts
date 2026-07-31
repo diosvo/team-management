@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { SELECTABLE_TEST_TYPES } from '@/utils/constant';
+import { SELECTABLE_TEST_TYPES } from '@/utils/constants';
 import { TestTypeUnit } from '@/utils/enum';
 
 export const UpsertTestTypeSchema = z.object({

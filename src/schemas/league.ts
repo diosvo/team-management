@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { CURRENT_DATE, SELECTABLE_LEAGUE_STATUS } from '@/utils/constant';
+import { CURRENT_DATE, SELECTABLE_LEAGUE_STATUS } from '@/utils/constants';
 import { LeagueStatus } from '@/utils/enum';
 
 export const UpsertLeagueSchema = z

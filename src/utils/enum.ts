@@ -1,107 +1,141 @@
-export enum UserRole {
-  COACH = 'COACH',
-  PLAYER = 'PLAYER',
-  GUEST = 'GUEST',
-  SUPER_ADMIN = 'SUPER_ADMIN',
+// Derives a readonly enum-like object: lowercase value array → UPPERCASE key accessors.
+function createEnum<T extends string>(values: readonly T[]) {
+  return Object.fromEntries(values.map((v) => [v.toUpperCase(), v])) as {
+    readonly [K in T as Uppercase<K>]: K;
+  };
 }
 
-export enum UserState {
-  ACTIVE = 'ACTIVE',
-  INACTIVE = 'INACTIVE',
-  TEMPORARILY_ABSENT = 'TEMPORARILY_ABSENT',
-  UNKNOWN = 'UNKNOWN',
-}
+/** Extracts a typed tuple of values from an enum const for use with drizzle's pgEnum. */
+export const enumValues = <T extends object>(obj: T) =>
+  Object.values(obj) as unknown as [
+    T[keyof T] & string,
+    ...(T[keyof T] & string)[],
+  ];
 
-export enum CoachPosition {
-  HEAD_COACH = 'HEAD_COACH',
-  ASSISTANT_COACH = 'ASSISTANT_COACH',
-  UNKNOWN = 'UNKNOWN',
-}
+export const UserRole = createEnum([
+  'coach',
+  'player',
+  'guest',
+  'super_admin',
+] as const);
+export type UserRole = (typeof UserRole)[keyof typeof UserRole];
 
-export enum PlayerPosition {
-  POINT_GUARD = 'POINT_GUARD',
-  SHOOTING_GUARD = 'SHOOTING_GUARD',
-  SMALL_FORWARD = 'SMALL_FORWARD',
-  POWER_FORWARD = 'POWER_FORWARD',
-  CENTER = 'CENTER',
-  UNKNOWN = 'UNKNOWN',
-}
+export const UserState = createEnum([
+  'active',
+  'inactive',
+  'temporarily_absent',
+  'unknown',
+] as const);
+export type UserState = (typeof UserState)[keyof typeof UserState];
 
-export enum AssetCategory {
-  EQUIPMENT = 'EQUIPMENT',
-  TRAINING = 'TRAINING',
-  OTHERS = 'OTHERS',
-}
+export const CoachPosition = createEnum([
+  'head_coach',
+  'assistant_coach',
+  'unknown',
+] as const);
+export type CoachPosition = (typeof CoachPosition)[keyof typeof CoachPosition];
 
-export enum AssetCondition {
-  POOR = 'POOR',
-  FAIR = 'FAIR',
-  GOOD = 'GOOD',
-  OBSOLETE = 'OBSOLETE',
-}
+export const PlayerPosition = createEnum([
+  'point_guard',
+  'shooting_guard',
+  'small_forward',
+  'power_forward',
+  'center',
+  'unknown',
+] as const);
+export type PlayerPosition =
+  (typeof PlayerPosition)[keyof typeof PlayerPosition];
 
-export enum TestTypeUnit {
-  METERS = 'meters',
-  PERCENT = 'percent',
-  POINTS = 'points',
-  REPS = 'reps',
-  SECONDS = 'seconds',
-  TIMES = 'times',
-}
+export const AssetCategory = createEnum([
+  'equipment',
+  'training',
+  'others',
+] as const);
+export type AssetCategory = (typeof AssetCategory)[keyof typeof AssetCategory];
 
-export enum LeagueStatus {
-  UPCOMING = 'UPCOMING',
-  ONGOING = 'ONGOING',
-  ENDED = 'ENDED',
-}
+export const AssetCondition = createEnum([
+  'poor',
+  'fair',
+  'good',
+  'obsolete',
+] as const);
+export type AssetCondition =
+  (typeof AssetCondition)[keyof typeof AssetCondition];
 
-export enum MatchStatus {
-  WIN = 'WIN',
-  LOSS = 'LOSS',
-  DRAW = 'DRAW',
-}
+export const TestTypeUnit = createEnum([
+  'meters',
+  'percent',
+  'points',
+  'reps',
+  'seconds',
+  'times',
+] as const);
+export type TestTypeUnit = (typeof TestTypeUnit)[keyof typeof TestTypeUnit];
 
-export enum MatchType {
-  LEAGUE = 'league',
-  FRIENDLY = 'friendly',
-}
+export const LeagueStatus = createEnum([
+  'upcoming',
+  'ongoing',
+  'ended',
+] as const);
+export type LeagueStatus = (typeof LeagueStatus)[keyof typeof LeagueStatus];
 
-export enum AttendanceStatus {
-  ON_TIME = 'ON_TIME',
-  ABSENT = 'ABSENT',
-  LATE = 'LATE',
-}
+export const AchievementType = createEnum([
+  'champion',
+  'runner_up',
+  'third_place',
+  'mvp',
+  'top_scorer',
+  'custom',
+] as const);
+export type AchievementType =
+  (typeof AchievementType)[keyof typeof AchievementType];
 
-export enum Interval {
-  THIS_MONTH = 'this_month',
-  LAST_MONTH = 'last_month',
-  THIS_YEAR = 'this_year',
-  LAST_YEAR = 'last_year',
-}
+export const MatchStatus = createEnum(['win', 'loss', 'draw'] as const);
+export type MatchStatus = (typeof MatchStatus)[keyof typeof MatchStatus];
 
-export enum SessionStatus {
-  SCHEDULED = 'SCHEDULED',
-  ACTIVE = 'ACTIVE',
-  COMPLETED = 'COMPLETED',
-  CANCELLED = 'CANCELLED',
-}
+export const MatchType = createEnum(['league', 'friendly'] as const);
+export type MatchType = (typeof MatchType)[keyof typeof MatchType];
 
-export enum ReportTrigger {
-  MANUAL = 'manual',
-  SCHEDULED = 'scheduled',
-}
+export const AttendanceStatus = createEnum([
+  'on_time',
+  'absent',
+  'late',
+] as const);
+export type AttendanceStatus =
+  (typeof AttendanceStatus)[keyof typeof AttendanceStatus];
 
-export enum EmailStatus {
-  BOUNCED = 'bounced',
-  CANCELED = 'canceled',
-  CLICKED = 'clicked',
-  COMPLAINED = 'complained',
-  DELIVERED = 'delivered',
-  DELIVERY_DELAYED = 'delivery_delayed',
-  FAILED = 'failed',
-  OPENED = 'opened',
-  QUEUED = 'queued',
-  SCHEDULED = 'scheduled',
-  SENT = 'sent',
-  SUPPRESSED = 'suppressed',
-}
+export const Interval = createEnum([
+  'this_month',
+  'last_month',
+  'this_year',
+  'last_year',
+] as const);
+export type Interval = (typeof Interval)[keyof typeof Interval];
+
+export const SessionStatus = createEnum([
+  'scheduled',
+  'active',
+  'completed',
+  'cancelled',
+] as const);
+export type SessionStatus = (typeof SessionStatus)[keyof typeof SessionStatus];
+
+export const ReportTrigger = createEnum(['manual', 'scheduled'] as const);
+export type ReportTrigger = (typeof ReportTrigger)[keyof typeof ReportTrigger];
+
+// Lowercase keys match the email provider's webhook event names.
+export const EmailStatus = createEnum([
+  'bounced',
+  'canceled',
+  'clicked',
+  'complained',
+  'delivered',
+  'delivery_delayed',
+  'failed',
+  'opened',
+  'queued',
+  'scheduled',
+  'sent',
+  'suppressed',
+] as const);
+export type EmailStatus = (typeof EmailStatus)[keyof typeof EmailStatus];

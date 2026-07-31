@@ -18,7 +18,7 @@ import { useForm } from 'react-hook-form';
 import { Field } from '@/components/ui/field';
 import { toaster } from '@/components/ui/toaster';
 
-import { CURRENT_DATE, ESTABLISHED_DATE } from '@/utils/constant';
+import { CURRENT_DATE, ESTABLISHED_DATE } from '@/utils/constants';
 
 import { submitLeave } from '@/actions/attendance';
 import { useSessionContext } from '@/providers/session';

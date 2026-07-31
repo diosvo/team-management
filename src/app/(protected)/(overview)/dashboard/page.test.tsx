@@ -87,7 +87,7 @@ describe('DashboardsPage', () => {
 
   const MOCK_MATCHES_RATE = [{ outcome: 'win', league: 3, friendly: 2 }];
 
-  const setup = async (interval = Interval.THIS_YEAR) => {
+  const setup = async (interval: Interval = Interval.THIS_YEAR) => {
     mockLoadFilters.mockResolvedValue({ interval });
     mockMatchesRate.mockResolvedValue(MOCK_MATCHES_RATE);
     mockAttendanceHistory.mockResolvedValue(MOCK_ATTENDANCE_HISTORY);

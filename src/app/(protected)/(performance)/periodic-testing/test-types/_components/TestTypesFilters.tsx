@@ -4,7 +4,7 @@ import Filters from '@/components/filters/Filters';
 
 import { useTestTypeFilters } from '@/lib/nuqs';
 import type { FilterDef } from '@/types/filters';
-import { TEST_TYPE_UNIT_SELECTION } from '@/utils/constant';
+import { TEST_TYPE_UNIT_SELECTION } from '@/utils/constants';
 
 const FILTERS: Array<FilterDef> = [
   {

@@ -10,13 +10,16 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core';
 
-import { TestTypeUnit } from '@/utils/enum';
+import { enumValues, TestTypeUnit } from '@/utils/enum';
 
 import { created_at, updated_at } from '../helpers';
 import { PlayerTable } from './player';
 import { TeamTable } from './team';
 
-export const testTypeUnitEnum = pgEnum('test_type_unit', TestTypeUnit);
+export const testTypeUnitEnum = pgEnum(
+  'test_type_unit',
+  enumValues(TestTypeUnit),
+);
 
 export const TestTypeTable = pgTable(
   'test_type',

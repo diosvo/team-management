@@ -15,7 +15,7 @@ import { createTestResult } from '@/actions/test-result';
 import { InsertTestResult } from '@/drizzle/schema';
 
 import { TestConfigurationSelection } from '@/types/periodic-testing';
-import { DEFAULT_DATE_FORMAT } from '@/utils/constant';
+import { DEFAULT_DATE_FORMAT } from '@/utils/constants';
 
 import TestResultConfiguration from './TestResultConfiguration';
 import TestResultTable from './TestResultTable';

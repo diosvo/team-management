@@ -1,7 +1,7 @@
 import { createListCollection, HStack, Portal, Select } from '@chakra-ui/react';
 import { CalendarSearch } from 'lucide-react';
 
-import { INTERVAL_SELECTION } from '@/utils/constant';
+import { INTERVAL_SELECTION } from '@/utils/constants';
 
 const dates = createListCollection({
   items: INTERVAL_SELECTION,

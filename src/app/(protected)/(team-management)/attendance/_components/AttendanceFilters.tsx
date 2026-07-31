@@ -7,7 +7,7 @@ import type { FilterDef } from '@/types/filters';
 import {
   ATTENDANCE_STATUS_SELECTION,
   ESTABLISHED_DATE,
-} from '@/utils/constant';
+} from '@/utils/constants';
 
 const FILTERS: Array<FilterDef> = [
   {

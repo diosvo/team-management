@@ -28,7 +28,7 @@ import { Switch } from '@/components/ui/switch';
 import { toaster } from '@/components/ui/toaster';
 import Visibility from '@/components/Visibility';
 
-import { CACHE_KEY, CURRENT_DATE, ESTABLISHED_DATE } from '@/utils/constant';
+import { CACHE_KEY, CURRENT_DATE, ESTABLISHED_DATE } from '@/utils/constants';
 import { formatDatetime } from '@/utils/formatter';
 import { getColor } from '@/utils/helper';
 

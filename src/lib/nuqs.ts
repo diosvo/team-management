@@ -23,7 +23,7 @@ import {
   SELECTABLE_TEST_TYPES,
   SELECTABLE_USER_ROLES,
   SELECTABLE_USER_STATES,
-} from '@/utils/constant';
+} from '@/utils/constants';
 import { Interval } from '@/utils/enum';
 
 export const commonParams = {

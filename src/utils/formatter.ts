@@ -13,7 +13,7 @@ import {
   DEFAULT_DAY_FORMAT,
   LOCALE_DATE_FORMAT,
   LOCALE_DATETIME_FORMAT,
-} from './constant';
+} from './constants';
 import { Interval } from './enum';
 
 export function formatDay(
