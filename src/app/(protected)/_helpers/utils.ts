@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   MailSearch,
   MapPinHouse,
+  Medal,
   Package,
   PersonStanding,
   ShieldCheck,
@@ -38,6 +39,7 @@ export const SIDEBAR_GROUP: Array<SidebarGroup> = [
     title: 'Overview',
     items: [
       { icon: LayoutDashboard, resource: 'dashboard' },
+      { icon: Medal, resource: 'achievements' },
       { icon: ShieldCheck, resource: 'team-rule' },
     ],
   },

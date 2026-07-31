@@ -55,6 +55,12 @@ export async function getPlayersInLeague(
   }
 }
 
+export async function getLeagueById(league_id: string) {
+  return await db.query.LeagueTable.findFirst({
+    where: eq(LeagueTable.league_id, league_id),
+  });
+}
+
 export async function insertLeague(league: InsertLeague) {
   return await db.insert(LeagueTable).values(league).returning({
     league_id: LeagueTable.league_id,

@@ -1,11 +1,14 @@
 'use client';
 
 import { useMemo, useTransition } from 'react';
+import Link from 'next/link';
 
-import { Badge } from '@chakra-ui/react';
+import { Badge, IconButton } from '@chakra-ui/react';
+import { isPast } from 'date-fns';
 import { capitalize } from 'es-toolkit/string';
-import { CircuitBoard } from 'lucide-react';
+import { CircuitBoard, Trophy } from 'lucide-react';
 
+import Authorized from '@/components/Authorized';
 import DataTable, { type Column } from '@/components/DataTable';
 import HighlightText from '@/components/HighlightText';
 import { toaster } from '@/components/ui/toaster';
@@ -89,6 +92,28 @@ export default function LeagueTable({
           {capitalize(item.status)}
         </Badge>
       ),
+    },
+    {
+      header: '',
+      align: 'center',
+      // Ended leagues (derived from dates, the stored status can be stale)
+      // link straight to the "record achievement" dialog.
+      cell: (item) =>
+        isPast(item.end_date) && (
+          <Authorized resource="achievements" action="create">
+            <IconButton
+              asChild
+              size="xs"
+              variant="ghost"
+              aria-label="Record achievement"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <Link href={`/achievements?record=${item.league_id}`}>
+                <Trophy />
+              </Link>
+            </IconButton>
+          </Authorized>
+        ),
     },
   ];
 

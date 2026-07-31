@@ -15,6 +15,7 @@ vi.mock('nuqs', async () => {
 vi.mock('drizzle-orm', () => ({
   and: vi.fn((...args) => args),
   asc: vi.fn((field) => ({ field, direction: 'asc' })),
+  avg: vi.fn((field) => ({ field, fn: 'avg' })),
   count: vi.fn(() => ({ fn: 'count' })),
   desc: vi.fn((field) => ({ field, direction: 'desc' })),
   eq: vi.fn((field, value) => ({ field, value, type: 'eq' })),

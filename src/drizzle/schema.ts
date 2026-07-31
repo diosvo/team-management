@@ -1,3 +1,4 @@
+export * from './schema/achievement';
 export * from './schema/asset';
 export * from './schema/attendance';
 export * from './schema/coach';

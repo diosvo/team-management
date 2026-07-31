@@ -28,6 +28,7 @@ export const DEFAULT_LOGIN_REDIRECT = '/dashboard' as const;
  * All resources in the application that permissions can be applied to.
  */
 export const RESOURCES = [
+  'achievements',
   'assets',
   'attendance',
   'dashboard',
