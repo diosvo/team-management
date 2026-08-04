@@ -284,13 +284,20 @@ test.describe('Training Session Display', () => {
   test('displays present rate with tooltip', async ({ page }) => {
     const firstRow = page.getByRole('row').nth(1);
     if (await firstRow.isVisible()) {
-      const presentRateCell = firstRow.getByRole('cell').last();
+      const presentRate = firstRow
+        .getByRole('cell')
+        .last()
+        .getByText(/\d+%/);
+      await expect(presentRate).toBeVisible();
 
       // Hover to show tooltip
-      await presentRateCell.hover();
+      await presentRate.hover();
 
-      // Tooltip should show details
-      expect(true).toBeTruthy();
+      // Tooltip should show attendance details
+      const tooltip = page.getByRole('tooltip');
+      await expect(tooltip).toBeVisible();
+      await expect(tooltip).toContainText(/On Time: \d+/);
+      await expect(tooltip).toContainText(/Late: \d+/);
     }
   });
 });

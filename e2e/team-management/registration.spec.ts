@@ -38,24 +38,28 @@ test.describe('Registration - Step 1: League Selection', () => {
   });
 
   test('selects a league from dropdown', async ({ page }) => {
-    const leagueSelect = page
-      .locator('[data-testid="league-select"]')
-      .or(page.locator('button:has-text("Select League")').first());
+    const leagueSelect = page.getByRole('combobox', {
+      name: /select leagues/i,
+    });
+    await leagueSelect.click();
 
-    if (await leagueSelect.isVisible()) {
-      await leagueSelect.click();
+    // Wait for options to load
+    const listbox = page.getByRole('listbox');
+    await expect(listbox).toBeVisible();
+    await expect(listbox.getByText('Loading...')).not.toBeVisible();
 
-      // Wait for options to appear
-      await page.waitForTimeout(300);
+    const firstOption = listbox.getByRole('option').first();
+    test.skip(
+      !(await firstOption.isVisible()),
+      'No leagues available to select',
+    );
 
-      const firstOption = page.getByRole('option').first();
-      if (await firstOption.isVisible()) {
-        await firstOption.click();
+    const leagueName = ((await firstOption.textContent()) ?? '').trim();
+    await firstOption.click();
 
-        // League should be selected
-        expect(true).toBeTruthy();
-      }
-    }
+    // Selecting closes the dropdown and fills the input with the league name
+    await expect(listbox).not.toBeVisible();
+    await expect(leagueSelect).toHaveValue(leagueName);
   });
 
   test('displays league badge when selected', async ({ page }) => {
