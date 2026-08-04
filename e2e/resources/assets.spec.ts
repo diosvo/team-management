@@ -1,6 +1,13 @@
 import { expect, test } from '@playwright/test';
+import {
+  uniqueName as makeUniqueName,
+  testDeleteWithCheckbox,
+  testSearchWithQueryParams,
+  testTableHeaders,
+} from '../setup/helpers';
+import { DialogPOM } from '../setup/pom';
 
-const uniqueName = () => `E2E Asset ${Date.now()}`;
+const uniqueName = () => makeUniqueName('E2E Asset');
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/assets');
@@ -36,31 +43,20 @@ test.describe('Assets Page', () => {
   });
 
   test('renders the table with headers', async ({ page }) => {
-    for (const header of [
+    await testTableHeaders(page, [
       'Name',
       'Category',
       'Quantity',
       'Condition',
       'Last Updated',
       'Note',
-    ]) {
-      await expect(
-        page.getByRole('columnheader', { name: header }),
-      ).toBeVisible();
-    }
+    ]);
   });
 });
 
 test.describe('Filtering', () => {
   test('filters assets by name and updates query params', async ({ page }) => {
-    const searchInput = page.getByPlaceholder('Search...');
-    await searchInput.fill('Ball');
-
-    await expect(page).toHaveURL(/q=Ball/);
-
-    // Clear search
-    await searchInput.clear();
-    await expect(page).not.toHaveURL(/q=/);
+    await testSearchWithQueryParams(page, 'Ball', /q=Ball/);
   });
 
   test('filters assets by Condition and updates query params', async ({
@@ -121,11 +117,9 @@ test.describe('Add Asset', () => {
   });
 
   test('disables Submit button when form is empty', async ({ page }) => {
-    await page.getByRole('button', { name: 'Add' }).click();
-
-    await expect(
-      page.getByRole('dialog').getByRole('button', { name: 'Add' }),
-    ).toBeDisabled();
+    const dialog = new DialogPOM(page);
+    await dialog.open('Add');
+    await dialog.expectSubmitDisabled('Add');
   });
 
   test('adds a new asset with all fields', async ({ page }) => {
@@ -182,30 +176,7 @@ test.describe('Update Asset', () => {
 
 test.describe('Delete Asset', () => {
   test('selects and deletes assets via checkboxes', async ({ page }) => {
-    const searchInput = page.getByPlaceholder('Search...');
-    await searchInput.fill('E2E');
-
-    const count = await page
-      .getByRole('checkbox', { name: 'Select row' })
-      .count();
-
-    if (count > 0) {
-      const selectAll = page.getByRole('checkbox', { name: 'Select all rows' });
-      await selectAll.click({ force: true });
-
-      // Selection action bar should appear
-      await expect(page.getByText(`${count} selected`)).toBeVisible();
-      await page.getByRole('button', { name: 'Delete' }).click();
-
-      // Success toast
-      await expect(
-        page.getByText(`Successfully deleted ${count} asset(s).`),
-      ).toBeVisible();
-
-      // Action bar should disappear after deletion
-      await expect(page.getByText(`${count} selected`)).not.toBeVisible();
-    }
-
+    await testDeleteWithCheckbox(page, 'E2E', /Successfully deleted.*asset/i);
     await page.getByText('No items found').waitFor({ state: 'visible' });
   });
 });
