@@ -52,10 +52,3 @@ ALTER TYPE "session_status" RENAME VALUE 'SCHEDULED' TO 'scheduled';
 ALTER TYPE "session_status" RENAME VALUE 'ACTIVE' TO 'active';
 ALTER TYPE "session_status" RENAME VALUE 'COMPLETED' TO 'completed';
 ALTER TYPE "session_status" RENAME VALUE 'CANCELLED' TO 'cancelled';
-
-ALTER TYPE "achievement_type" RENAME VALUE 'CHAMPION' TO 'champion';
-ALTER TYPE "achievement_type" RENAME VALUE 'RUNNER_UP' TO 'runner_up';
-ALTER TYPE "achievement_type" RENAME VALUE 'THIRD_PLACE' TO 'third_place';
-ALTER TYPE "achievement_type" RENAME VALUE 'MVP' TO 'mvp';
-ALTER TYPE "achievement_type" RENAME VALUE 'TOP_SCORER' TO 'top_scorer';
-ALTER TYPE "achievement_type" RENAME VALUE 'CUSTOM' TO 'custom';

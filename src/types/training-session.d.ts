@@ -1,10 +1,6 @@
-import { SessionStatus } from '@/utils/enum';
-
 import { Attendance, Coach } from '@/drizzle/schema';
 import { Location } from '@/drizzle/schema/location';
 import { TrainingSession } from '@/drizzle/schema/training';
-
-export type SessionStatusValues = keyof typeof SessionStatus;
 
 export interface TrainingSessionWithDetails extends TrainingSession {
   location: Pick<Location, 'name'> | null;
