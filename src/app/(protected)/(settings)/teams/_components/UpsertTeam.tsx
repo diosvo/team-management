@@ -21,7 +21,7 @@ import { toaster } from '@/components/ui/toaster';
 
 import { getDefaults } from '@/lib/zod';
 import { UpsertTeamSchema, type UpsertTeamSchemaValues } from '@/schemas/team';
-import { CACHE_KEY } from '@/utils/constant';
+import { CACHE_KEY } from '@/utils/constants';
 
 import { uploadLogo, upsertTeam } from '@/actions/team';
 import ImageUploader from '@/components/common/ImageUploader';

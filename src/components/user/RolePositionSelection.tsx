@@ -26,7 +26,7 @@ import {
   COACH_POSITIONS_SELECTION,
   PLAYER_POSITIONS_SELECTION,
   USER_ROLE_SELECTION,
-} from '@/utils/constant';
+} from '@/utils/constants';
 import { PlayerPosition, UserRole } from '@/utils/enum';
 import { Option } from '@/utils/type';
 

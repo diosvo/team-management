@@ -32,7 +32,7 @@ import { RolePositionSelection } from '@/components/user/RolePositionSelection';
 import { ControlledStateSelection } from '@/components/user/StateSelection';
 import Visibility from '@/components/Visibility';
 
-import { CACHE_KEY, ESTABLISHED_DATE } from '@/utils/constant';
+import { CACHE_KEY, ESTABLISHED_DATE } from '@/utils/constants';
 import {
   CoachPosition,
   PlayerPosition,

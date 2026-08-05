@@ -4,7 +4,7 @@ import {
   CURRENT_DATE,
   SELECTABLE_ASSET_CATEGORIES,
   SELECTABLE_ASSET_CONDITIONS,
-} from '@/utils/constant';
+} from '@/utils/constants';
 import { AssetCategory, AssetCondition } from '@/utils/enum';
 
 export const UpsertAssetSchema = z.object({

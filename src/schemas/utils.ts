@@ -7,7 +7,7 @@ import {
   SELECTABLE_PLAYER_POSITIONS,
   SELECTABLE_USER_ROLES,
   SELECTABLE_USER_STATES,
-} from '@/utils/constant';
+} from '@/utils/constants';
 import {
   CoachPosition,
   PlayerPosition,

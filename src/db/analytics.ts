@@ -15,7 +15,7 @@ import {
 import { AttendanceStatusValues } from '@/types/attendance';
 import { IntervalValues } from '@/types/common';
 
-import { LOCALE_DATE_FORMAT } from '@/utils/constant';
+import { LOCALE_DATE_FORMAT } from '@/utils/constants';
 import { AttendanceStatus, SessionStatus } from '@/utils/enum';
 import { TIME_DURATION } from '@/utils/formatter';
 

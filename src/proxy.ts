@@ -8,7 +8,7 @@ import {
   PUBLIC_ROUTES,
   RESOURCES,
 } from '@/routes';
-import { COOKIE } from '@/utils/constant';
+import { COOKIE } from '@/utils/constants';
 import { UserRole } from '@/utils/enum';
 import { can } from './utils/permissions';
 

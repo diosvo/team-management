@@ -6,7 +6,7 @@ import usePermissions from '@/hooks/use-permissions';
 
 import { useRosterFilters } from '@/lib/nuqs';
 import type { FilterDef } from '@/types/filters';
-import { USER_ROLE_SELECTION, USER_STATE_SELECTION } from '@/utils/constant';
+import { USER_ROLE_SELECTION, USER_STATE_SELECTION } from '@/utils/constants';
 
 const STATE_FILTER: FilterDef = {
   key: 'state',

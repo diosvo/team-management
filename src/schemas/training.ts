@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { CURRENT_DATE } from '@/utils/constant';
+import { CURRENT_DATE } from '@/utils/constants';
 import { SessionStatus } from '@/utils/enum';
 
 export const UpsertSessionSchema = z

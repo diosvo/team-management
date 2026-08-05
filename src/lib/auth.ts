@@ -3,7 +3,7 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { betterAuth } from 'better-auth/minimal';
 import { nextCookies } from 'better-auth/next-js';
 
-import { COOKIE } from '@/utils/constant';
+import { COOKIE } from '@/utils/constants';
 import { UserRole, UserState } from '@/utils/enum';
 import env from '@env';
 

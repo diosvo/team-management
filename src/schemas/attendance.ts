@@ -1,4 +1,4 @@
-import { SELECTABLE_ATTENDANCE_STATUS } from '@/utils/constant';
+import { SELECTABLE_ATTENDANCE_STATUS } from '@/utils/constants';
 import { AttendanceStatus } from '@/utils/enum';
 import { z } from 'zod';
 

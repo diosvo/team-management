@@ -29,6 +29,20 @@
       "when": 1784028242391,
       "tag": "0003_update_team_image",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1785937708000,
+      "tag": "0005_update_test_type_unit_enum",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1785937709000,
+      "tag": "0006_lowercase_all_enum_values",
+      "breakpoints": true
     }
   ]
 }

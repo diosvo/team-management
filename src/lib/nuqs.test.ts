@@ -9,7 +9,7 @@ import {
   CURRENT_DATE,
   INTERVAL_VALUES,
   SESSION_STATUS_VALUES,
-} from '@/utils/constant';
+} from '@/utils/constants';
 import {
   AttendanceStatus,
   Interval,

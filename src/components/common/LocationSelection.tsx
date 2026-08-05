@@ -7,7 +7,7 @@ import { Control, FieldPath, FieldValues } from 'react-hook-form';
 
 import SearchableSelect from '../SearchableSelect';
 
-import { CACHE_KEY } from '@/utils/constant';
+import { CACHE_KEY } from '@/utils/constants';
 
 import { getLocations } from '@/actions/location';
 

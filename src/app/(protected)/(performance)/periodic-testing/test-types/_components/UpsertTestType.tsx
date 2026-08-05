@@ -20,7 +20,7 @@ import { Radio, RadioGroup } from '@/components/ui/radio';
 import { toaster } from '@/components/ui/toaster';
 
 import { getDefaults } from '@/lib/zod';
-import { TEST_TYPE_UNIT_SELECTION } from '@/utils/constant';
+import { TEST_TYPE_UNIT_SELECTION } from '@/utils/constants';
 
 import { upsertTestType } from '@/actions/test-type';
 import {

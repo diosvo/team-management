@@ -30,7 +30,7 @@ import {
 import Visibility from '@/components/Visibility';
 
 import { getDefaults } from '@/lib/zod';
-import { CACHE_KEY, ESTABLISHED_DATE } from '@/utils/constant';
+import { CACHE_KEY, ESTABLISHED_DATE } from '@/utils/constants';
 import { LeagueStatus } from '@/utils/enum';
 
 import { User } from '@/drizzle/schema';

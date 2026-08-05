@@ -28,7 +28,7 @@ import { PlayerSelection } from '@/components/user/PlayerSelection';
 import Visibility from '@/components/Visibility';
 
 import { useAttendanceFilters } from '@/lib/nuqs';
-import { CACHE_KEY, CURRENT_DATE, ESTABLISHED_DATE } from '@/utils/constant';
+import { CACHE_KEY, CURRENT_DATE, ESTABLISHED_DATE } from '@/utils/constants';
 import { AttendanceStatus } from '@/utils/enum';
 
 import { User } from '@/drizzle/schema';

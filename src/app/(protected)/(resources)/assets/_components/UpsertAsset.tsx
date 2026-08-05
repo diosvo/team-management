@@ -34,7 +34,7 @@ import {
   ASSET_CONDITION_SELECTION,
   CURRENT_DATE,
   ESTABLISHED_DATE,
-} from '@/utils/constant';
+} from '@/utils/constants';
 import { AssetCondition } from '@/utils/enum';
 
 import { upsertAsset } from '@/actions/asset';

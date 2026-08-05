@@ -422,7 +422,7 @@ describe('User Actions', () => {
   describe('updateTeamInfo', () => {
     const teamInfoData: EditTeamInfoValues = {
       user: {
-        role: MOCK_USER.role,
+        role: MOCK_USER.role as EditTeamInfoValues['user']['role'],
         state: MOCK_USER.state,
         join_date: MOCK_USER.join_date,
       },

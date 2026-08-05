@@ -1,6 +1,6 @@
 import { format } from 'date-fns';
 
-import { DEFAULT_DAY_FORMAT, LOCALE_DATE_FORMAT } from './constant';
+import { DEFAULT_DAY_FORMAT, LOCALE_DATE_FORMAT } from './constants';
 import {
   formatDate,
   formatDatetime,

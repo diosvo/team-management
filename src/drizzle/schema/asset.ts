@@ -9,15 +9,21 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core';
 
-import { AssetCategory, AssetCondition } from '@/utils/enum';
+import { AssetCategory, AssetCondition, enumValues } from '@/utils/enum';
 
 import { created_at, updated_at } from '../helpers';
 import { TeamTable } from './team';
 import { User, UserTable } from './user';
 
-export const assetConditionEnum = pgEnum('asset_condition', AssetCondition);
+export const assetConditionEnum = pgEnum(
+  'asset_condition',
+  enumValues(AssetCondition),
+);
 
-export const assetCategoryEnum = pgEnum('asset_catogory', AssetCategory);
+export const assetCategoryEnum = pgEnum(
+  'asset_catogory',
+  enumValues(AssetCategory),
+);
 
 export const AssetTable = pgTable('asset', {
   asset_id: uuid().primaryKey().defaultRandom(),

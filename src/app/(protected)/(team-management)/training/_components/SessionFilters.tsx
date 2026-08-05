@@ -4,7 +4,7 @@ import Filters from '@/components/filters/Filters';
 
 import { useTrainingFilters } from '@/lib/nuqs';
 import type { FilterDef } from '@/types/filters';
-import { SESSION_STATUS_SELECTION } from '@/utils/constant';
+import { SESSION_STATUS_SELECTION } from '@/utils/constants';
 
 const FILTERS: Array<FilterDef> = [
   { key: 'interval', label: 'Time', control: { type: 'interval' } },

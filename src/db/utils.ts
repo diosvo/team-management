@@ -1,7 +1,7 @@
 import { format } from 'date-fns';
 import { Column, gte, SQL, sql } from 'drizzle-orm';
 
-import { DEFAULT_DATE_FORMAT } from '@/utils/constant';
+import { DEFAULT_DATE_FORMAT } from '@/utils/constants';
 
 export function calculatePercentage(value: SQL<number>, total: SQL<number>) {
   return sql<number>`ROUND((${value} * 100.0 / NULLIF(${total}, 0))::numeric, 1)`.mapWith(

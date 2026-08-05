@@ -5,7 +5,7 @@ import Filters from '@/components/filters/Filters';
 import type { FilterDef } from '@/types/filters';
 
 import { useMatchFilters } from '@/lib/nuqs';
-import { GAME_TYPE_SELECTION, MATCH_TYPE_SELECTION } from '@/utils/constant';
+import { GAME_TYPE_SELECTION, MATCH_TYPE_SELECTION } from '@/utils/constants';
 
 const FILTERS: Array<FilterDef> = [
   { key: 'interval', label: 'Time', control: { type: 'interval' } },

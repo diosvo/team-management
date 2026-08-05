@@ -10,7 +10,7 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core';
 
-import { UserRole, UserState } from '@/utils/enum';
+import { enumValues, UserRole, UserState } from '@/utils/enum';
 
 import { created_at, expires_at, updated_at } from '../helpers';
 import { AssetTable } from './asset';
@@ -18,8 +18,8 @@ import { Coach, CoachTable } from './coach';
 import { Player, PlayerTable } from './player';
 import { TeamTable } from './team';
 
-export const userRoleEnum = pgEnum('user_role', UserRole);
-export const userStateEnum = pgEnum('user_state', UserState);
+export const userRoleEnum = pgEnum('user_role', enumValues(UserRole));
+export const userStateEnum = pgEnum('user_state', enumValues(UserState));
 
 export const UserTable = pgTable('user', {
   id: text().primaryKey(),

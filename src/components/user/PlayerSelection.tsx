@@ -13,7 +13,7 @@ import SearchableSelect from '@/components/SearchableSelect';
 import { EmptyState } from '@/components/ui/empty-state';
 
 import { getActivePlayers } from '@/actions/user';
-import { CACHE_KEY } from '@/utils/constant';
+import { CACHE_KEY } from '@/utils/constants';
 
 type UserSelector = Selector<Array<User>>;
 

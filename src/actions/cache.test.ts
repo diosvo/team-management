@@ -1,7 +1,7 @@
 import { revalidatePath, revalidateTag } from 'next/cache';
 
 import { MOCK_USER } from '@/test/mocks/user';
-import { CACHE_TAG } from '@/utils/constant';
+import { CACHE_TAG } from '@/utils/constants';
 
 import { revalidate } from './cache';
 

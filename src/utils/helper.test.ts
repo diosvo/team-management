@@ -1,4 +1,4 @@
-import { ALL } from './constant';
+import { ALL } from './constants';
 import {
   AssetCondition,
   AttendanceStatus,
@@ -15,7 +15,7 @@ describe('getColor', () => {
     { value: ALL.value, expected: 'blue' },
     { value: null, expected: 'gray' },
     { value: undefined, expected: 'gray' },
-    { value: 'unknown', expected: 'black' },
+    { value: 'unrecognized_value', expected: 'black' },
     // UserState
     { value: UserState.ACTIVE, expected: 'green' },
     { value: UserState.TEMPORARILY_ABSENT, expected: 'orange' },

@@ -35,7 +35,7 @@ import { User } from '@/drizzle/schema/user';
 import { getLeagues } from '@/actions/league';
 
 import usePermissions from '@/hooks/use-permissions';
-import { CACHE_KEY } from '@/utils/constant';
+import { CACHE_KEY } from '@/utils/constants';
 import { buildRegistrationPdf } from '../_helpers/pdf';
 import { useSavedRegistrations } from '../_helpers/useSavedRegistrations';
 
