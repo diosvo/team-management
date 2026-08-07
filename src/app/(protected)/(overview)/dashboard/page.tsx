@@ -1,23 +1,20 @@
 import { Metadata } from 'next';
+import { Suspense } from 'react';
 
-import { HStack, SimpleGrid } from '@chakra-ui/react';
+import { HStack, SimpleGrid, Skeleton } from '@chakra-ui/react';
 
 import PageTitle from '@/components/PageTitle';
 
-import {
-  getAttendanceHistory,
-  getAttendanceSummary,
-  getMatchesRate,
-  getMostAbsenceReasons,
-} from '@/actions/analytics';
 import { loadDashboardFilters } from '@/lib/nuqs';
 
-import AbsenceReasonsBreakdown from './_components/AbsenceReasonsBreakdown';
-import AttendanceTrend from './_components/AttendanceTrend';
+import {
+  AbsenceReasonsBreakdownSection,
+  AttendanceTrendSection,
+  MatchesRateSection,
+  PlayerAttendanceRankingSection,
+} from './_components/AnalyticsSections';
 import DashboardFilters from './_components/DashboardFilters';
-import MatchesRate from './_components/MatchesRate';
 import OverviewStats from './_components/OverviewStats';
-import PlayerAttendanceRanking from './_components/PlayerAttendanceRanking';
 import QuickActions from './_components/QuickActions';
 import UpcomingMatches from './_components/UpcomingMatches';
 import UpcomingSessions from './_components/UpcomingSessions';
@@ -27,24 +24,28 @@ export const metadata: Metadata = {
   description: 'Overview',
 };
 
+const cardFallback = <Skeleton height="180px" borderRadius="md" />;
+const chartFallback = <Skeleton height="320px" borderRadius="md" />;
+
 export default async function DashboardsPage(props: PageProps<'/dashboard'>) {
   const params = await loadDashboardFilters(props.searchParams);
-
-  const attendanceHistory = await getAttendanceHistory(params.interval);
-  const attendanceSummary = await getAttendanceSummary(params.interval);
-  const mostAbsenceReasons = await getMostAbsenceReasons(params.interval);
-  const matchesRate = await getMatchesRate(params.interval);
 
   return (
     <>
       <SimpleGrid columns={{ base: 1, lg: 2 }} gap={6}>
-        <OverviewStats />
+        <Suspense fallback={cardFallback}>
+          <OverviewStats />
+        </Suspense>
         <QuickActions />
       </SimpleGrid>
 
       <SimpleGrid columns={{ base: 1, lg: 3 }} gap={6}>
-        <UpcomingSessions />
-        <UpcomingMatches />
+        <Suspense fallback={cardFallback}>
+          <UpcomingSessions />
+        </Suspense>
+        <Suspense fallback={cardFallback}>
+          <UpcomingMatches />
+        </Suspense>
       </SimpleGrid>
 
       <HStack justifyContent="space-between">
@@ -57,10 +58,18 @@ export default async function DashboardsPage(props: PageProps<'/dashboard'>) {
         columns={{ base: 1, md: 2, lg: 3 }}
         gap={6}
       >
-        <MatchesRate records={matchesRate} />
-        <AttendanceTrend records={attendanceHistory} />
-        <PlayerAttendanceRanking records={attendanceSummary} />
-        <AbsenceReasonsBreakdown reasons={mostAbsenceReasons} />
+        <Suspense fallback={chartFallback}>
+          <MatchesRateSection interval={params.interval} />
+        </Suspense>
+        <Suspense fallback={chartFallback}>
+          <AttendanceTrendSection interval={params.interval} />
+        </Suspense>
+        <Suspense fallback={chartFallback}>
+          <PlayerAttendanceRankingSection interval={params.interval} />
+        </Suspense>
+        <Suspense fallback={chartFallback}>
+          <AbsenceReasonsBreakdownSection interval={params.interval} />
+        </Suspense>
       </SimpleGrid>
     </>
   );

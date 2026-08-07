@@ -11,6 +11,7 @@ import { insertPlayer, updatePlayer } from '@/db/player';
 import {
   deleteUser,
   fetchActivePlayers,
+  getRosterUsers,
   getUsers as fetchUsers,
   getUserById,
   updateUser,
@@ -41,7 +42,7 @@ export const getUsers = withAuth(
 );
 
 export const getRoster = withAuth(
-  async ({ team_id }) => await fetchUsers(team_id),
+  async ({ team_id }) => await getRosterUsers(team_id),
 );
 
 export const getUserProfile = withAuth(async (user, target_id: string) => {
@@ -116,6 +117,8 @@ export const getAvatar = profile(
   ['view'],
   async function getAvatar(_, image_path: Nullish<string>) {
     if (!image_path) return null;
+    // Avatars live under users/ only — reject probes for other private blobs
+    if (!image_path.startsWith('users/')) forbidden();
 
     return await getFile(image_path as string);
   },
@@ -124,11 +127,15 @@ export const getAvatar = profile(
 export const uploadAvatar = profile(
   ['edit'],
   async function uploadAvatar(
-    _,
+    user,
     user_id: string,
     old_path: Nullish<string>,
     file: File,
   ) {
+    // Avatars are self-service only; old_path must be the target's own blob
+    if (user.id !== user_id) forbidden();
+    if (old_path && !old_path.startsWith('users/' + user_id)) forbidden();
+
     try {
       const { pathname } = await uploadFile('users/' + user_id, file, {
         contentType: file.type,
@@ -155,10 +162,13 @@ export const uploadAvatar = profile(
 export const updatePersonalInfo = profile(
   ['edit'],
   async function updatePersonal(
-    _,
+    user,
     user_id: string,
     values: EditPersonalInfoValues,
   ) {
+    const { isAdmin } = hasPermissions(user.role);
+    if (!isAdmin && user.id !== user_id) forbidden();
+
     try {
       await updateUser(user_id, values);
 
@@ -176,7 +186,13 @@ export const updatePersonalInfo = profile(
 
 export const updateTeamInfo = profile(
   ['edit'],
-  async function updateTeam(_, user_id: string, values: EditTeamInfoValues) {
+  async function updateTeam(user, user_id: string, values: EditTeamInfoValues) {
+    const { isAdmin } = hasPermissions(user.role);
+    // Non-admins may only edit themselves and never change their own role
+    if (!isAdmin && (user.id !== user_id || values.user.role !== user.role)) {
+      forbidden();
+    }
+
     try {
       const { user: userData, player: playerData, coach: coachData } = values;
 

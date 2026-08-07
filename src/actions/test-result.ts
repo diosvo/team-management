@@ -44,16 +44,21 @@ export const createTestResult = periodicTesting(
     const toUpdate: Array<InsertTestResult> = [];
 
     try {
-      // Check each result to see if it already exists
-      for (const result of results) {
-        const existing = await getTestResultByUserAndTypeIds(result);
+      // Check all results at once to see which already exist — the grid
+      // submits players × test types rows, so serial lookups don't scale
+      const existings = await Promise.all(
+        results.map((result) => getTestResultByUserAndTypeIds(result)),
+      );
+
+      results.forEach((result, index) => {
+        const existing = existings[index];
 
         if (existing) {
           toUpdate.push({ ...result, result_id: existing.result_id });
         } else {
           toCreate.push(result);
         }
-      }
+      });
 
       // Perform batch operations
       if (toCreate.length > 0) await insertTestResult(toCreate);

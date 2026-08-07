@@ -52,8 +52,10 @@ export default function AttendanceTrend({
   });
 
   const avgRate =
-    records.reduce((sum, record) => sum + record.present_rate, 0) /
-    records.length;
+    records.length > 0
+      ? records.reduce((sum, record) => sum + record.present_rate, 0) /
+        records.length
+      : 0;
 
   return (
     <Card
@@ -61,14 +63,14 @@ export default function AttendanceTrend({
       description={
         <>
           Overall team attendance percentage
-          {avgRate && (
+          {avgRate > 0 ? (
             <>
               :&nbsp;
               <Span color={avgRate >= TARGET_RATE ? 'green.600' : 'red.600'}>
                 {avgRate.toFixed(1)}%
               </Span>
             </>
-          )}
+          ) : null}
         </>
       }
     >

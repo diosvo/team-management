@@ -1,6 +1,9 @@
 'use server';
 
+import { forbidden } from 'next/navigation';
+
 import { AttendanceStatus } from '@/utils/enum';
+import { hasPermissions } from '@/utils/permissions';
 import { ResponseFactory } from '@/utils/response';
 
 import {
@@ -23,14 +26,15 @@ export const getAttendanceByDate = withAuth(
 
 export const submitLeave = attendance(
   ['create'],
-  async function submit(
-    { team_id },
-    values: Omit<InsertAttendance, 'team_id'>,
-  ) {
+  async function submit(user, values: Omit<InsertAttendance, 'team_id'>) {
+    // Players may only submit leave for themselves
+    const { isPlayer } = hasPermissions(user.role);
+    if (isPlayer && values.player_id !== user.id) forbidden();
+
     try {
       await insertAttendance({
         ...values,
-        team_id,
+        team_id: user.team_id,
       });
 
       revalidate.attendances();

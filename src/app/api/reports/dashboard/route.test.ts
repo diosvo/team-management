@@ -24,6 +24,7 @@ function createPage() {
     setViewport: vi.fn().mockResolvedValue(undefined),
     goto: vi.fn().mockResolvedValue(undefined),
     waitForSelector: vi.fn().mockResolvedValue(undefined),
+    waitForFunction: vi.fn().mockResolvedValue(undefined),
     // Two evaluate calls: DOM rewrite (undefined) then scrollHeight (number).
     evaluate: vi
       .fn()

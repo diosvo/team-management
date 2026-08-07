@@ -11,6 +11,8 @@ import {
   mockWithAuth,
   mockWithResource,
   mockWithResourceAction,
+  resetMockAuthUser,
+  setMockAuthUser,
 } from '@/test/mocks/auth';
 import { MOCK_TEAM } from '@/test/mocks/team';
 import {
@@ -28,6 +30,7 @@ import { insertPlayer, updatePlayer } from '@/db/player';
 import {
   deleteUser as deleteDbUser,
   fetchActivePlayers,
+  getRosterUsers,
   getUsers as getDbUsers,
   getUserById,
   updateUser as updateDbUser,
@@ -54,6 +57,7 @@ vi.mock('./auth', () => ({
 
 vi.mock('@/db/user', () => ({
   fetchActivePlayers: vi.fn(),
+  getRosterUsers: vi.fn(),
   getUsers: vi.fn(),
   getUserById: vi.fn(),
   updateUser: vi.fn(),
@@ -181,13 +185,13 @@ describe('User Actions', () => {
   });
 
   describe('getRoster', () => {
-    test('calls getUsers with team_id', async () => {
+    test('calls getRosterUsers with team_id', async () => {
       const mockUsers = [MOCK_USER_WITH_PLAYER, MOCK_USER_WITH_COACH];
-      vi.mocked(getDbUsers).mockResolvedValue(mockUsers);
+      vi.mocked(getRosterUsers).mockResolvedValue(mockUsers);
 
       const result = await getRoster();
 
-      expect(getDbUsers).toHaveBeenCalledWith(MOCK_TEAM.team_id);
+      expect(getRosterUsers).toHaveBeenCalledWith(MOCK_TEAM.team_id);
       expect(result).toEqual(mockUsers);
     });
   });
@@ -435,7 +439,35 @@ describe('User Actions', () => {
       },
     };
 
+    // Editing another user (and changing roles) is an admin-only path
+    const asAdmin = () =>
+      setMockAuthUser({ ...MOCK_USER, role: UserRole.SUPER_ADMIN });
+
+    afterEach(() => {
+      resetMockAuthUser();
+    });
+
+    test('forbids a non-admin from editing another user', async () => {
+      await expect(
+        updateTeamInfo('someone-else', teamInfoData),
+      ).rejects.toThrow();
+
+      expect(updateDbUser).not.toHaveBeenCalled();
+    });
+
+    test('forbids a non-admin from changing their own role', async () => {
+      const escalation: EditTeamInfoValues = {
+        ...teamInfoData,
+        user: { ...teamInfoData.user, role: UserRole.COACH },
+      };
+
+      await expect(updateTeamInfo(MOCK_USER.id, escalation)).rejects.toThrow();
+
+      expect(updateDbUser).not.toHaveBeenCalled();
+    });
+
     test('updates team info for player successfully', async () => {
+      asAdmin();
       vi.mocked(updateDbUser).mockResolvedValue({
         ...mockResult,
         command: 'UPDATE',
@@ -463,6 +495,7 @@ describe('User Actions', () => {
     });
 
     test('updates team info for coach successfully', async () => {
+      asAdmin();
       const coachInfoData: EditTeamInfoValues = {
         ...teamInfoData,
         user: {

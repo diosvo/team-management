@@ -1,9 +1,51 @@
 import { and, eq, ne } from 'drizzle-orm';
 
 import db from '@/drizzle';
-import { CoachTable, User, UserTable } from '@/drizzle/schema';
+import { CoachTable, Player, User, UserTable } from '@/drizzle/schema';
 
 import { UserRole, UserState } from '@/utils/enum';
+
+/**
+ * The subset of the user row the roster table renders. The full row carries
+ * PII (dob, phone, citizen id) that must not cross the RSC boundary.
+ */
+export type RosterUser = Pick<
+  User,
+  'id' | 'name' | 'email' | 'state' | 'role' | 'emailVerified'
+> & {
+  player?: Nullish<Pick<Player, 'jersey_number' | 'position'>>;
+};
+
+export async function getRosterUsers(
+  team_id: string,
+): Promise<Array<RosterUser>> {
+  try {
+    return await db.query.UserTable.findMany({
+      columns: {
+        id: true,
+        name: true,
+        email: true,
+        state: true,
+        role: true,
+        emailVerified: true,
+      },
+      where: and(
+        eq(UserTable.team_id, team_id),
+        ne(UserTable.role, UserRole.SUPER_ADMIN),
+      ),
+      with: {
+        player: {
+          columns: {
+            jersey_number: true,
+            position: true,
+          },
+        },
+      },
+    });
+  } catch {
+    return [];
+  }
+}
 
 export async function getUsers(team_id: string): Promise<Array<User>> {
   try {

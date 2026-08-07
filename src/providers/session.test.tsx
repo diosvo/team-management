@@ -9,6 +9,7 @@ import authClient from '@/lib/auth-client';
 
 import SessionProvider, {
   type Session,
+  type SessionUser,
   useSessionContext,
 } from './session';
 
@@ -27,12 +28,14 @@ const mockUseSession = authClient.useSession as unknown as Mock;
 const buildSession = (user: Record<string, unknown> = {}): Session =>
   ({ session: {}, user }) as unknown as Session;
 
-const renderProvider = (initialSession: Session) =>
+/** Builds the narrow user projection the server layout serializes. */
+const buildUser = (user: Record<string, unknown> = {}): SessionUser =>
+  user as unknown as SessionUser;
+
+const renderProvider = (initialUser: Nullable<SessionUser>) =>
   renderHook(() => useSessionContext(), {
     wrapper: ({ children }: PropsWithChildren) => (
-      <SessionProvider initialSession={initialSession}>
-        {children}
-      </SessionProvider>
+      <SessionProvider initialUser={initialUser}>{children}</SessionProvider>
     ),
   });
 
@@ -73,14 +76,14 @@ describe('SessionProvider', () => {
       });
     });
 
-    test('client session takes precedence over the server session', () => {
-      const initialSession = buildSession({ role: UserRole.GUEST });
+    test('client session takes precedence over the server user', () => {
+      const initialUser = buildUser({ role: UserRole.GUEST });
       mockUseSession.mockReturnValue({
         data: buildSession({ role: UserRole.SUPER_ADMIN }),
         isPending: false,
       });
 
-      const { result } = renderProvider(initialSession);
+      const { result } = renderProvider(initialUser);
 
       expect(result.current.role).toBe(UserRole.SUPER_ADMIN);
     });
@@ -98,20 +101,22 @@ describe('SessionProvider', () => {
   });
 
   describe('while the client hook is pending', () => {
-    test('falls back to the server session', () => {
-      const initialSession = buildSession({ role: UserRole.PLAYER });
+    test('falls back to the server user', () => {
+      const initialUser = buildUser({ role: UserRole.PLAYER });
       mockUseSession.mockReturnValue({ data: null, isPending: true });
 
-      const { result } = renderProvider(initialSession);
+      const { result } = renderProvider(initialUser);
 
-      expect(result.current.session).toBe(initialSession);
+      // The full session only ever comes from the client hook.
+      expect(result.current.session).toBeNull();
+      expect(result.current.user).toBe(initialUser);
       expect(result.current.role).toBe(UserRole.PLAYER);
       expect(result.current.isAuthenticated).toBe(true);
-      // We have a server session, so we are not "loading".
+      // We have a server user, so we are not "loading".
       expect(result.current.isLoading).toBe(false);
     });
 
-    test('is loading when there is no server session to fall back to', () => {
+    test('is loading when there is no server user to fall back to', () => {
       mockUseSession.mockReturnValue({ data: null, isPending: true });
 
       const { result } = renderProvider(null);
@@ -139,11 +144,11 @@ describe('SessionProvider', () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    test('ignores the server session once the client hook resolves empty', () => {
-      const initialSession = buildSession({ role: UserRole.SUPER_ADMIN });
+    test('ignores the server user once the client hook resolves empty', () => {
+      const initialUser = buildUser({ role: UserRole.SUPER_ADMIN });
       mockUseSession.mockReturnValue({ data: null, isPending: false });
 
-      const { result } = renderProvider(initialSession);
+      const { result } = renderProvider(initialUser);
 
       // Client resolved to "no session" (e.g. after sign-out), so we drop the
       // stale server value instead of trusting it.

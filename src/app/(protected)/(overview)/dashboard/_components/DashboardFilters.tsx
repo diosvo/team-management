@@ -1,5 +1,6 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { Button, HStack, Menu, Portal } from '@chakra-ui/react';
 import { ChevronDown, FileDown, Send } from 'lucide-react';
 import { useState } from 'react';
@@ -11,12 +12,16 @@ import { triggerDownload } from '@/lib/download';
 import { MatchSearchParamsKeys, useDashboardFilters } from '@/lib/nuqs';
 import { formatDuration } from '@/utils/formatter';
 
-import EmailReport from './EmailReport';
+// The dialog (react-hook-form, zod, searchable select) loads only when the
+// user actually opens "Send to..." — never on the initial dashboard render.
+const EmailReport = dynamic(() => import('./EmailReport'), { ssr: false });
 
 export default function DashboardFilters() {
   const [{ interval }, setSearchParams] = useDashboardFilters();
   const [downloading, setDownloading] = useState(false);
   const [open, setOpen] = useState(false);
+  // Latched so the dialog stays mounted after first open (keeps exit animation)
+  const [emailReportMounted, setEmailReportMounted] = useState(false);
 
   const formattedPeriod = formatDuration(interval);
   // Collapse non-digit runs (the "/" in dates and the " - " separator) into a
@@ -78,7 +83,10 @@ export default function DashboardFilters() {
                 <Menu.Item
                   value="email"
                   _hover={{ cursor: 'pointer' }}
-                  onClick={() => setOpen(true)}
+                  onClick={() => {
+                    setEmailReportMounted(true);
+                    setOpen(true);
+                  }}
                 >
                   <Send size={14} /> Send to...
                 </Menu.Item>
@@ -93,13 +101,15 @@ export default function DashboardFilters() {
         />
       </HStack>
 
-      <EmailReport
-        open={open}
-        interval={interval}
-        filename={filename}
-        formattedPeriod={formattedPeriod}
-        onOpenChange={setOpen}
-      />
+      {emailReportMounted ? (
+        <EmailReport
+          open={open}
+          interval={interval}
+          filename={filename}
+          formattedPeriod={formattedPeriod}
+          onOpenChange={setOpen}
+        />
+      ) : null}
     </>
   );
 }
