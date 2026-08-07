@@ -1,4 +1,4 @@
-# Product Requirements Documentation
+# Product requirements documentation
 
 This folder contains the product requirements documentation for **Team Management**.
 
@@ -8,38 +8,37 @@ This folder contains the product requirements documentation for **Team Managemen
 | ------------------------------------------------- | ---------------------------------------------------------------------------------------- |
 | [00-overview](./00-overview.md)                   | Vision, personas, goals & metrics, non-goals, constraints, shared requirements           |
 | [01-roles-permissions](./01-roles-permissions.md) | Auth layers, role definitions, full permission matrix, client-side enforcement           |
-| [ARCHITECTURE.md](../../ARCHITECTURE.md)          | Technical architecture (repo root — included in the PDF between roles and feature specs) |
-| [features/README](./features/README.md)           | Feature catalog with routes, statuses, and links to every spec                           |
+| [ARCHITECTURE.md](../../ARCHITECTURE.md)          | Technical architecture (repo root, included in the PDF between roles and feature specs)  |
+| [features/README](./features/README.md)           | Feature catalog with routes, statuses, and links to every spec                            |
 | `features/**`                                     | One spec per feature/page (summary → permissions → UX flows → FRs → ACs → tech appendix) |
-| [90-roadmap](./90-roadmap.md)                     | Release plan: shipped / in progress / planned / not planned                              |
-| [99-changelog](./99-changelog.md)                 | Revision history of the PRD itself                                                       |
+| [90-roadmap](./90-roadmap.md)                     | Release plan: shipped / in progress / planned / not planned                               |
+| [99-changelog](./99-changelog.md)                 | Revision history of the PRD itself                                                        |
 
 Read in order: **Overview → Roles & Permissions → Feature catalog → individual specs → Roadmap**.
 
 ## Conventions
 
-- Every feature spec starts with a status line: `> Route: \`/x\` · Nav group: **X** · Status: **Draft | Approved | Shipped**`. Keep it current — it's the at-a-glance lifecycle marker in both GitHub and the PDF.
+- Every feature spec starts with a status line: `> Route: \`/x\` · Nav group: **X** · Status: **Draft | Approved | Shipped**`. Keep it current: it's the at-a-glance lifecycle marker in both GitHub and the PDF.
 - Numbered files (`00`, `01`, `90`, `99`) are the linear read; the gap before `90` leaves room for new sections without renumbering.
 - Record meaningful doc changes in [99-changelog](./99-changelog.md).
 
 ## PDF export
 
-All docs are stitched into a single PDF by `scripts/build-prd-pdf.mjs` (Puppeteer via `md-to-pdf`). Section order is controlled by the `MANIFEST` array in that script — **add a new page there** to include it in the PDF.
+All docs are stitched into a single PDF by `scripts/build-prd-pdf.mjs` (Puppeteer via `md-to-pdf`). Section order is controlled by the `MANIFEST` array in that script, so **add a new page there** to include it in the PDF.
 
 ### CI (GitHub Actions)
 
-**Workflow:** `.github/workflows/prd-pdf.yml` — named **PRD PDF**
+**Workflow:** `.github/workflows/prd-pdf.yml`, named **📂 Product Requirements Document**
 
-Triggers automatically on push to `main` when any of the following change:
+Runs automatically on push to `main` and on pull requests targeting `main`, when any of the following change:
 
 - `docs/prd/**`
 - `scripts/build-prd-pdf.mjs`
 - `scripts/prd-pdf.css`
 
-Or run manually: **Actions → PRD PDF → Run workflow**.
+Or run manually: **Actions → 📂 Product Requirements Document → Run workflow**.
 
-**Output:** `sgr-team-management-prd.pdf` uploaded as a build artifact.
-Open the workflow run → **Artifacts** → download **Product Requirements Document**.
+**Output:** `sgr-team-management-prd.pdf` uploaded as a build artifact. Open the workflow run → **Artifacts** → download **Product Requirements Document**.
 
 ### Local preview
 

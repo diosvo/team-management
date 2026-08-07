@@ -1,16 +1,13 @@
-# Feature Specs
+# Feature specs
 
-Specs are organized **by page**, mirroring the app's sidebar navigation
-(`SIDEBAR_GROUP` in `src/app/(protected)/_helpers/utils.ts`). Each page has one
-spec; its individual functionalities are sections **inside** that spec
-(§5 Functional Requirements).
+Specs are organized **by page**, mirroring the app's sidebar navigation (`SIDEBAR_GROUP` in `src/app/(protected)/_helpers/utils.ts`). Each page has one spec; its individual functionalities are sections **inside** that spec (§5 Functional Requirements).
 
 Each spec follows the same template:
 
-- Status line (`> Route · Nav group · Status`) — keep it current
+- Status line (`> Route · Nav group · Status`): keep it current
 - User-facing behavior (readable by end users)
 - Requirements + Acceptance Criteria (for engineering/QA)
-- Technical appendix (data/API/permissions) if possible.
+- Technical appendix (data/API/permissions) if possible
 
 ## Feature catalog
 
@@ -30,8 +27,7 @@ Each spec follows the same template:
 | **Settings**        | Locations        | `/locations`        | Draft  | [locations](./settings/locations.md)                  |
 | **Account**         | Profile          | `/profile/[id]`     | Draft  | [profile](./profile.md)                               |
 
-> **Dashboard** includes the **PDF Reports** capability (formerly the standalone
-> "Analytics Reports" spec) as a functionality under §5.
+> **Dashboard** includes the **PDF Reports** capability (formerly the standalone “Analytics Reports” spec) as a functionality under §5.
 
 ### Not yet documented
 

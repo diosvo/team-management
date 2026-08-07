@@ -1,6 +1,6 @@
-# PRD Changelog
+# PRD changelog
 
-Revision history of the **documentation itself** (not the app — that's git history and releases). Add a row for meaningful changes: new/removed specs, scope decisions, status changes. Typo-level edits don't need an entry.
+Revision history of the **documentation itself** (not the app, which is tracked in git history and releases). Add a row for meaningful changes: new/removed specs, scope decisions, status changes. Typo-level edits don't need an entry.
 
 | Date       | Change                                                                                                        |
 | ---------- | ------------------------------------------------------------------------------------------------------------- |

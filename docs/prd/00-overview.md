@@ -1,14 +1,14 @@
-# Product Overview — Saigon Rovers Basketball Team Management
+# Product overview: Saigon Rovers Basketball Team Management
 
 > Status: **Draft** · The strategic top of the PRD. Feature-level detail lives in [`features/`](./features/README.md).
 
-## 1. Vision & Problem
+## 1. Vision and problem
 
 Team Management is a web app for managing a basketball club's teams, people, and operations (rosters, schedules, assets) with role-based access.
 
 ### Problem
 
-Teams often track key operational info in spreadsheets/chats, causing:
+Club operations are tracked in spreadsheets and group chats, which causes:
 
 - stale information
 - unclear ownership
@@ -16,9 +16,9 @@ Teams often track key operational info in spreadsheets/chats, causing:
 
 ### Vision
 
-One private, role-based hub that is the club's single source of truth: any member can answer "who, when, where" in seconds, and the people responsible for a workflow (attendance, registration, testing) can run it end-to-end without leaving the app.
+One private, role-based hub that is the club's single source of truth: any member can answer “who, when, where” in seconds, and the people responsible for a workflow (attendance, registration, testing) can run it end-to-end without leaving the app.
 
-## 2. Personas & Target Users
+## 2. Personas and target users
 
 The role model is small and static; users are trusted club members invited by an admin.
 
@@ -32,9 +32,9 @@ The role model is small and static; users are trusted club members invited by an
 
 Full capability-by-role detail: [01-roles-permissions](./01-roles-permissions.md).
 
-## 3. Goals & Success Metrics
+## 3. Goals and success metrics
 
-> Metrics below are proposals — confirm and prune to the 2–3 that matter (see [Open Questions](#11-open-questions)).
+> Metrics below are proposals. Confirm and prune to the 2–3 that matter (see [Open Questions](#11-open-questions)).
 
 | Goal                                             | Signal of success (proposed)                                   |
 | ------------------------------------------------ | -------------------------------------------------------------- |
@@ -43,56 +43,55 @@ Full capability-by-role detail: [01-roles-permissions](./01-roles-permissions.md
 | Self-service answers                             | Members find schedule/roster/rules without asking in chat      |
 | Safe delegation                                  | Captains/coaches run their workflows without admin involvement |
 
-## 4. Non-Goals (Out of Scope)
+## 4. Non-goals (out of scope)
 
-Explicitly not planned without a new product signal — the app targets a trusted, small, single-club portal:
+Explicitly not planned without a new product signal. The app targets a trusted, small, single-club portal:
 
-- **Injury/medical tracking, payments/fees, audit logs** — revisit only on real demand.
-- **Multi-club / public-facing product** — one club, private portal; opponents are lightweight records, not tenants.
-- **Native mobile apps** — responsive web only.
-- **Self-service sign-up** — membership is invite-only by design.
+- **Injury/medical tracking, payments/fees, audit logs**: revisit only on real demand.
+- **Multi-club / public-facing product**: one club, private portal; opponents are lightweight records, not tenants.
+- **Native mobile apps**: responsive web only.
+- **Self-service sign-up**: membership is invite-only by design.
 
-## 5. Assumptions & Constraints
+## 5. Assumptions and constraints
 
 - Application is a private team portal; users are trusted team members (invited via email by admin).
 - The role set is small and static (`GUEST`, `PLAYER`, `COACH`, `SUPER_ADMIN`, plus the Captain flag).
-- Single club with typical team sizes (tens of users, not thousands) — informs performance targets.
+- Single club with team sizes in the tens of users, not thousands, which informs performance targets.
 
-## 6. Primary Use Cases (Jobs-to-be-done)
+## 6. Primary use cases (jobs to be done)
 
 - A player checks team info, training schedule, and performance metrics.
 - A coach manages training sessions, attendance, and match records.
 - A captain handles registration, manages the roster, and edits team rules.
 - An admin manages teams, configuration, and all operational data.
 
-## 7. Feature Map (High-level)
+## 7. Feature map (high level)
 
 This is a high-level map; details live in the [`Feature Specs`](./features/README.md) docs.
 
-## 8. Product Principles (Shared UX expectations)
+## 8. Product principles (shared UX expectations)
 
 - **Role clarity:** users should never wonder why they can/can't do something.
 - **Fast search:** lists must support filtering.
 - **Safe destructive actions:** deletions require confirmation + clear feedback.
 - **Deep-linkable state:** filters should be reflected in the URL where reasonable.
 
-## 9. Shared Requirements (Cross-feature)
+## 9. Shared requirements (cross-feature)
 
 ### Authorization
 
 - UI may hide controls, but **server must enforce** permissions.
 
-### Filtering & Search State
+### Filtering and search state
 
 The **URL is the single source of truth** for search (`q`), pagination (`page`), and filters. Any UI holding local state (the search box, the Advanced Filters drawer draft) is only a _mirror_ of the URL and must follow one two-way contract:
 
 - **Local → URL** on commit (Apply / debounced typing / stat card click).
-- **URL → Local** whenever the URL changes from _outside_ that component (card click, back button, reset, deep link) - so mirrors never drift or clobber the URL.
+- **URL → Local** whenever the URL changes from _outside_ that component (card click, back button, reset, deep link), so mirrors never drift or clobber the URL.
 
-The `URL → Local` resync is centralized in the `useSyncedState` hook; every filter mirror
-reuses it rather than re-implementing sync.
+The `URL → Local` resync is centralized in the `useSyncedState` hook; every filter mirror reuses it rather than re-implementing sync.
 
-```
+```text
                  commit (Apply / debounce / card click)
    ┌──────────────────────────────────────────────►┐
 LOCAL MIRROR                                       URL
@@ -103,20 +102,17 @@ LOCAL MIRROR                                       URL
 
 Cases the contract guarantees:
 
-- **Search box** — a card click that sets `q=''` clears the input; stale text can't be
-  pushed back into the URL.
-- **Advanced Filters drawer** — draft opens from the URL, diverges only locally while
-  editing; Apply commits, interact-outside reverts, external URL changes resync the draft.
-- **Card click / back button / deep link** — one URL write fans out to every mirror
-  (search box + drawer) so the whole page reflects it.
+- **Search box**: a card click that sets `q=''` clears the input; stale text can't be pushed back into the URL.
+- **Advanced Filters drawer**: draft opens from the URL, diverges only locally while editing; Apply commits, interact-outside reverts, external URL changes resync the draft.
+- **Card click / back button / deep link**: one URL write fans out to every mirror (search box + drawer) so the whole page reflects it.
 
-## 10. Non-Functional Requirements
+## 10. Non-functional requirements
 
-- **Performance:** common pages load quickly for typical team sizes.
+- **Performance:** common pages render within 2 seconds at the team sizes in §5.
 - **Accessibility:** keyboard navigation and accessible dialogs.
 - **Reliability:** clear loading/error states; avoid duplicate submits.
 
-## 11. Open Questions
+## 11. Open questions
 
 - Which 2–3 success metrics in §3 are the ones we actually commit to (and how do we measure them)?
-- Which features require audit logs vs. basic activity logging? (Currently a non-goal — see §4.)
+- Which features require audit logs vs. basic activity logging? (Currently a non-goal, see §4.)

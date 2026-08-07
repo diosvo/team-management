@@ -13,7 +13,7 @@ export const RichTextEditorContext =
 RichTextEditorContext.displayName = "RichTextEditorContext"
 
 export function useRichTextEditorContext() {
-  const context = React.useContext(RichTextEditorContext)
+  const context = React.use(RichTextEditorContext)
   if (!context) {
     throw new Error(
       "useRichTextEditorContext must be used within a RichTextEditorRoot",

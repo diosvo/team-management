@@ -1,4 +1,6 @@
-# Authentication & Authorization
+# Authentication and authorization
+
+Who can do what in the app, and where each rule is enforced. Three layers gate every request: the proxy on page navigation, `withResource` inside server actions, and the client session for UI affordances. Only the server-action layer is authoritative; §2 is the reference matrix of role by resource.
 
 ## Auth layers
 
@@ -9,22 +11,18 @@ Runs on every page navigation (not server actions).
 - Checks for a session cookie; if missing, redirects to `/login`.
 - If a session cookie is present but the cache is expired, redirects to `/login`.
 - Resolves the current pathname to a `Resource` and calls `can(role, resource, 'view')`; if denied, redirects to `/forbidden`.
-- **Does not run** for server action requests (`next-action` header) — server actions enforce their own auth.
+- **Does not run** for server action requests (`next-action` header), because server actions enforce their own auth.
 
 ### Layer 2: `withAuth` / `withResource` (`src/actions/auth.ts`)
 
 The only layer that cannot be bypassed. Runs inside every server action.
 
-- `withAuth` — verifies the session and injects the `user` context into the action.
-- `withResource(resource)(actions, fn)` — calls `withAuth`, then checks that the user's ability includes **all** listed actions on the resource via `defineAbility`. Returns `forbidden()` if not.
+- `withAuth`: verifies the session and injects the `user` context into the action.
+- `withResource(resource)(actions, fn)`: calls `withAuth`, then checks that the user's ability includes **all** listed actions on the resource via `defineAbility`. Returns `forbidden()` if not.
 
 ### Layer 3: Layout / client (`authClient.useSession`)
 
-Proactive client-side UX. Reads the session client-side and controls which UI elements are rendered. Does not enforce security — server is the source of truth.
-
----
-
-# Roles, Permissions & Glossary
+Proactive client-side UX. Reads the session client-side and controls which UI elements are rendered. Does not enforce security; the server is the source of truth.
 
 ## 1. Roles
 
@@ -36,7 +34,9 @@ Proactive client-side UX. Reads the session client-side and controls which UI el
 | `SUPER_ADMIN` | Full access to all resources and actions.                                                        |
 | Captain       | A `PLAYER` with `is_captain = true`. Inherits PLAYER permissions plus elevated actions (see §2). |
 
-## 2. Permission Matrix
+## 2. Permission matrix
+
+Mirrors `ROLE_CONFIG` and `CAPTAIN_PERMISSIONS` in `src/utils/permissions.ts`.
 
 | Resource           | GUEST | PLAYER           | COACH              | SUPER_ADMIN | Captain (extra)      |
 | ------------------ | ----- | ---------------- | ------------------ | ----------- | -------------------- |
@@ -47,9 +47,9 @@ Proactive client-side UX. Reads the session client-side and controls which UI el
 | `attendance`       | —     | view, create     | view, create, edit | all         | —                    |
 | `registration`     | —     | view             | view               | all         | create, edit         |
 | `matches`          | view  | view             | view, create, edit | all         | create, edit         |
-| `periodic-testing` | —     | view             | view, create, edit | all         | —                    |
+| `periodic-testing` | —     | view             | all                | all         | all                  |
 | `assets`           | —     | —                | view               | all         | —                    |
-| `teams`            | —     | —                | view               | all         | —                    |
+| `teams`            | —     | view             | view               | all         | —                    |
 | `leagues`          | —     | —                | view               | all         | —                    |
 | `locations`        | —     | —                | view               | all         | —                    |
 | `profile`          | —     | view, edit (own) | view, edit (own)   | all         | —                    |
@@ -95,4 +95,4 @@ Renders children visibly or hidden based on any boolean condition (not permissio
 - **`withResource`:** server-side HOF that enforces `resource:action` permission before executing a server action
 - **`withAuth`:** server-side HOF that verifies the session and provides user context
 - **Captain flag:** `is_captain` field on the user record; grants additional permissions on top of the PLAYER role
-- **Query params:** URL parameters (e.g. `?q=ball&condition=Good`) used to persist filter state
+- **Query params:** URL parameters (e.g. `?q=ball&condition=good`) used to persist filter state

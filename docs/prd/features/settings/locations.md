@@ -7,13 +7,13 @@
 - **Locations** manages the venues used for training sessions and matches.
 - This is a lightweight reference page; locations are selected when creating sessions or matches.
 
-## 2. Goals / Metrics
+## 2. Goals / metrics
 
 ### Goals
 
 - Maintain a clean list of venues available to the team.
 
-## 3. Users & Permissions
+## 3. Users and permissions
 
 | Role             | View | Add | Edit | Delete |
 | ---------------- | ---- | --- | ---- | ------ |
@@ -23,7 +23,7 @@
 | SUPER_ADMIN      | Yes  | Yes | Yes  | Yes    |
 | PLAYER (Captain) | No   | No  | No   | No     |
 
-## 4. UX / Flows
+## 4. UX / flows
 
 ### Entry point
 
@@ -34,24 +34,24 @@
 - Table lists all locations with name and address.
 - Client-side name search.
 
-### Create / Edit
+### Create / edit
 
 - SUPER_ADMIN sees **+ Add**; clicking it opens a dialog.
 - Clicking a row opens the same dialog pre-filled.
 
-## 5. Functional Requirements
+## 5. Functional requirements
 
 - **FR-1:** COACH and SUPER_ADMIN can view locations.
 - **FR-2:** Name search filters the list client-side.
 - **FR-3:** SUPER_ADMIN can create, edit, and delete locations.
 - **FR-4:** Changes show a success or error toast.
 
-## 6. Acceptance Criteria (Given/When/Then)
+## 6. Acceptance criteria (Given/When/Then)
 
 - **AC-1:** Given I am a COACH, when I open Locations, then I see the list but no add, edit, or delete controls.
 - **AC-2:** Given I am SUPER_ADMIN, when I add a location, then it is available in the Training and Matches dialogs.
 
-## 7. Technical Appendix
+## 7. Technical appendix
 
 ### Data model (logical)
 
@@ -62,6 +62,6 @@ Location:
 
 ### API
 
-- `getLocations()` — fetch all locations
-- `upsertLocation(id?, data)` — create or update
-- `removeLocation(id)` — delete
+- `getLocations()`: fetch all locations
+- `upsertLocation(id?, data)`: create or update
+- `removeLocation(id)`: delete

@@ -5,21 +5,21 @@
 ## 1. Summary
 
 - **Assets** page lets users view team assets and key metrics.
-- Only SUPER_ADMIN can add, edit, and delete assets.
+- Only COACH and SUPER_ADMIN can view the page; only SUPER_ADMIN can add, edit, and delete assets.
 
-## 2. Goals / Metrics
+## 2. Goals / metrics
 
 ### Goals
 
-- Let team staff find assets quickly by name or condition.
-- Allow admins to keep inventory accurate with minimal effort.
+- Let team staff find an asset by name, category, or condition without scanning the whole list.
+- Allow admins to keep inventory accurate from a single dialog.
 
 ### Metrics
 
 - Total number of assets.
-- Number of assets that need to be replaced (condition = "Poor").
+- Number of assets that need to be replaced (condition `poor`).
 
-## 3. Users & Permissions
+## 3. Users and permissions
 
 | Role             | View assets + metrics | Filter | Add | Edit | Bulk delete |
 | ---------------- | --------------------- | ------ | --- | ---- | ----------- |
@@ -29,13 +29,15 @@
 | SUPER_ADMIN      | Yes                   | Yes    | Yes | Yes  | Yes         |
 | PLAYER (Captain) | No                    | No     | No  | No   | No          |
 
-## 4. UX / Flows
+> Captain permissions add nothing on the `assets` resource, so a captain has the same (no) access as any other player.
+
+## 4. UX / flows
 
 ### Entry point
 
 - Sidebar → **Assets**
 
-### View & filter
+### View and filter
 
 - The Metrics section shows total assets and assets needing replacement. Clicking a metric card filters the list.
 - List view shows assets and supports filtering by:
@@ -58,12 +60,12 @@
 - Authorized users see a checkbox column.
 - Selecting one or more assets enables deletion (popover).
 
-## 5. Functional Requirements
+## 5. Functional requirements
 
 ### Viewing
 
-- **FR-1:** All roles can view the assets list.
-- **FR-2:** All roles can view asset metrics section.
+- **FR-1:** COACH and SUPER_ADMIN can view the assets list; GUEST, PLAYER, and Captain are redirected to `/forbidden`.
+- **FR-2:** The same roles that can view the list can view the asset metrics section.
 
 ### Filtering + query params
 
@@ -77,7 +79,7 @@
 - **FR-7:** Only SUPER_ADMIN can edit assets.
 - **FR-8:** Asset dialog fields:
   - Required: Name, Quantity
-  - Optional: Category (default=Equipment), Condition (default=Good), Note
+  - Optional: Category (default `equipment`), Condition (default `good`), Note
 - **FR-9:** After a successful create or edit, the list and metrics update without a full page refresh.
 
 ### Delete
@@ -86,14 +88,15 @@
 - **FR-11:** Deletion shows success/error toast message.
 - **FR-12:** After a successful deletion, the list and metrics update without a full page refresh.
 
-## 6. Acceptance Criteria (Given/When/Then)
+## 6. Acceptance criteria (Given/When/Then)
 
-- **AC-1:** Given I am a GUEST, when I open Assets, then I do not see “+ Add” or delete checkboxes.
+- **AC-1:** Given I am a COACH, when I open Assets, then I see the list and metrics but no “+ Add” button and no delete checkboxes.
 - **AC-2:** Given I am SUPER_ADMIN, when I add an asset with Name and Quantity, then it is created and visible in the list.
-- **AC-3:** Given I filter by name "net", category "Equipment" and condition "Good", then the URL includes `q=net`, `category=EQUIPMENT` and `condition=GOOD`.
+- **AC-3:** Given I filter by name “net”, category “Equipment” and condition “Good”, then the URL includes `q=net`, `category=equipment` and `condition=good`.
 - **AC-4:** Given I am a COACH, when I attempt to delete assets (UI or API), then the request is rejected.
+- **AC-5:** Given I am a GUEST or PLAYER, when I navigate to `/assets`, then I am redirected to `/forbidden`.
 
-## 7. Technical Appendix
+## 7. Technical appendix
 
 ### Data model (logical)
 
@@ -101,8 +104,8 @@ Asset:
 
 - `name`: string (required)
 - `quantity`: integer (default 1)
-- `category`: enum [default "Equipment", "Training", "Others"]
-- `condition`: enum [default "Good", "Fair", "Poor"]
+- `category`: enum [`equipment`, `training`, `others`] (default `equipment`)
+- `condition`: enum [`poor`, `fair`, `good`, `obsolete`] (default `good`)
 - `note`: string (optional)
 
 ### Query params contract
@@ -114,4 +117,4 @@ Asset:
 
 Example:
 
-- `?q=ball&category=EQUIPMENT&condition=GOOD&page=1`
+- `?q=ball&category=equipment&condition=good&page=1`

@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useMemo } from 'react';
+import { createContext, use, useMemo } from 'react';
 
 import type { User } from '@/drizzle/schema/user';
 import type { UserRole } from '@/utils/enum';
@@ -71,7 +71,7 @@ export default function SessionProvider({
 }
 
 export function useSessionContext() {
-  const ctx = useContext(SessionContext);
+  const ctx = use(SessionContext);
   if (!ctx)
     throw new Error(
       'useSessionContext must be used within a <SessionProvider>',
