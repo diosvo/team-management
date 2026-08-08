@@ -157,7 +157,6 @@ export default function RegistrationPageClient() {
             description="Pick which competition this registration is for."
           >
             <SearchableSelect
-              controlledMode={false}
               multiple={false}
               label={CACHE_KEY.LEAGUES}
               action={getLeagues}

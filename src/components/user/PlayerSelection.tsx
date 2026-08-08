@@ -9,7 +9,9 @@ import { Control, FieldPath, FieldValues } from 'react-hook-form';
 
 import { User } from '@/drizzle/schema/user';
 
-import SearchableSelect from '@/components/SearchableSelect';
+import SearchableSelect, {
+  SearchableSelectField,
+} from '@/components/SearchableSelect';
 import { EmptyState } from '@/components/ui/empty-state';
 
 import { getActivePlayers } from '@/actions/user';
@@ -24,7 +26,6 @@ export function PlayerSelection({
 }: UserSelector) {
   return (
     <SearchableSelect
-      controlledMode={false}
       multiple={true}
       label={CACHE_KEY.PLAYERS}
       action={getActivePlayers}
@@ -90,8 +91,7 @@ export function OnePlayerSelection<T extends FieldValues>({
   label = 'player',
 }: OnePlayerSelectionProps<T>) {
   return (
-    <SearchableSelect
-      controlledMode
+    <SearchableSelectField
       name={name}
       label={label}
       control={control}

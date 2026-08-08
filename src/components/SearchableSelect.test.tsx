@@ -4,7 +4,9 @@ import { SWRConfig } from 'swr';
 
 import { renderWithUI, screen, waitFor } from '@/test/utilities';
 
-import SearchableSelect from './SearchableSelect';
+import SearchableSelect, {
+  SearchableSelectField,
+} from './SearchableSelect';
 
 type MockItem = {
   id: string;
@@ -39,13 +41,12 @@ describe('SearchableSelect', () => {
     vi.clearAllMocks();
   });
 
-  describe('uncontrolled mode', () => {
+  describe('SearchableSelect (uncontrolled)', () => {
     describe('multiple', () => {
       const onChange = vi.fn();
 
       const defaultProps = {
         ...baseProps,
-        controlledMode: false as const,
         multiple: true as const,
         value: [] as Array<MockItem>,
         onChange,
@@ -151,7 +152,6 @@ describe('SearchableSelect', () => {
 
       const defaultProps = {
         ...baseProps,
-        controlledMode: false as const,
         multiple: false as const,
         value: null as Nullable<MockItem>,
         onChange,
@@ -211,7 +211,7 @@ describe('SearchableSelect', () => {
     });
   });
 
-  describe('controlled mode', () => {
+  describe('SearchableSelectField (react-hook-form)', () => {
     describe('multiple', () => {
       type FormValues = { field: string[] };
 
@@ -220,9 +220,8 @@ describe('SearchableSelect', () => {
           defaultValues: { field: [] },
         });
         return (
-          <SearchableSelect
+          <SearchableSelectField
             {...baseProps}
-            controlledMode={true}
             multiple={true}
             control={control}
             name="field"
@@ -258,9 +257,8 @@ describe('SearchableSelect', () => {
           const value = watch('field');
           return (
             <>
-              <SearchableSelect
+              <SearchableSelectField
                 {...baseProps}
-                controlledMode={true}
                 multiple={true}
                 control={control}
                 name="field"
@@ -296,9 +294,8 @@ describe('SearchableSelect', () => {
               >
                 Trigger Error
               </button>
-              <SearchableSelect
+              <SearchableSelectField
                 {...baseProps}
-                controlledMode={true}
                 multiple={true}
                 control={control}
                 name="field"
@@ -327,9 +324,8 @@ describe('SearchableSelect', () => {
           defaultValues: { field: null },
         });
         return (
-          <SearchableSelect
+          <SearchableSelectField
             {...baseProps}
-            controlledMode={true}
             multiple={false}
             control={control}
             name="field"
@@ -365,9 +361,8 @@ describe('SearchableSelect', () => {
           const value = watch('field');
           return (
             <>
-              <SearchableSelect
+              <SearchableSelectField
                 {...baseProps}
-                controlledMode={true}
                 multiple={false}
                 control={control}
                 name="field"
@@ -403,9 +398,8 @@ describe('SearchableSelect', () => {
               >
                 Trigger Error
               </button>
-              <SearchableSelect
+              <SearchableSelectField
                 {...baseProps}
-                controlledMode={true}
                 multiple={false}
                 control={control}
                 name="field"
