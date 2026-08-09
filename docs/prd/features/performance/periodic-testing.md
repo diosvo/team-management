@@ -83,6 +83,7 @@ The matrix drives cell editability off the actual ability (`can('periodic-testin
 
 - **FR-4:** Only editors (SUPER_ADMIN, COACH, Captain) can access `/add-result`.
 - **FR-5:** The batch form upserts all submitted scores in one operation (create new, update existing).
+- **FR-12:** A cell's identity is the triple `{player, test type, date}`. Resolving which submitted cells already exist takes one query regardless of batch size, followed by one insert for the new cells and one update pass for the existing ones.
 
 ### Inline edit / delete
 
@@ -131,11 +132,23 @@ TestResult (`test_result`):
 - `page` (number): matrix pagination
 - `type` (string[]): test-type names to show as columns (empty = all). The matrix still honors this param, but no control in the filters row sets it, so it is reachable only by editing the URL.
 
+### Batch upsert
+
+The add-result form submits a players × test-types grid, so the cell count multiplies out: a 15-player, 6-type session is 90 rows in one call. Deciding create-versus-update per cell used to mean one `findFirst` per cell, all issued at once against a pool capped at a single connection (`Pool({ max: 1 })`, see [ARCHITECTURE §12](../../../../ARCHITECTURE.md#12-known-gaps--risks)).
+
+`getExistingTestResults(results)` replaces that with one query:
+
+1. Collect the distinct `player_id`s, `type_id`s and `date`s in the batch and filter with `IN` on each. `date` is nullable, so a separate `IS NULL` branch matches undated cells.
+2. Those filters return the cross product of the three lists, a superset of what was submitted that can include a row for a player/type pair nobody submitted. The function therefore re-checks each returned row against the exact set of submitted keys before counting it as existing.
+3. The result is a `Map` from `testResultKey(result)` (`date|player_id|type_id`) to the existing `result_id`. The action uses that map to split the batch into inserts and updates.
+
+A failed lookup now propagates instead of resolving to `null`, so a database error reaches the user as an error toast. The old per-cell lookup reported the same failure as “no existing results”, which made the action retry every cell as an insert.
+
 ### API (`src/actions/test-result.ts`, `src/actions/test-type.ts`)
 
 - `getTestDates()`: fetch the list of dates that have results (populates the selector)
 - `getTestResult(date)`: fetch matrix (`{ headers, players }`) by date; empty when no date
-- `createTestResult(values[])`: batch upsert (create or update per player/type/date)
+- `createTestResult(values[])`: batch upsert (create or update per player/type/date), splitting the batch with `getExistingTestResults`
 - `updateTestResultById({ result_id, result })`: single inline update
 - `deleteTestResultById(result_id)`: single inline delete (clearing a cell)
 - `canCreateTestResult()`: permission-check helper

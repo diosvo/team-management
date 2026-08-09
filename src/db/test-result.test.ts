@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, lte } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 
 import db from '@/drizzle';
 import { InsertTestResult, TestResultTable } from '@/drizzle/schema';
@@ -19,8 +19,8 @@ import {
 
 import {
   getDates,
+  getExistingTestResults,
   getTestResultByDate,
-  getTestResultByUserAndTypeIds,
   insertTestResult,
   updateTestResultById,
   updateTestResults,
@@ -28,6 +28,7 @@ import {
 
 vi.mock('@/drizzle', () => ({
   default: {
+    select: vi.fn(),
     selectDistinct: vi.fn(),
     query: {
       TestResultTable: {
@@ -194,47 +195,58 @@ describe('getTestResultByDate', () => {
   });
 });
 
-describe('getTestResultByUserAndTypeIds', () => {
+describe('getExistingTestResults', () => {
+  const key = ({ date, player_id, type_id }: InsertTestResult) =>
+    `${date ?? ''}|${player_id}|${type_id}`;
+
+  const mockSelect = (rows: Array<unknown>) => {
+    const where = vi.fn().mockResolvedValue(rows);
+    const from = vi.fn().mockReturnValue({ where });
+    vi.mocked(db.select).mockReturnValue({ from } as never);
+    return { from, where };
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  test('returns test result when found', async () => {
-    vi.mocked(db.query.TestResultTable.findFirst).mockResolvedValue(
-      MOCK_TEST_RESULT,
+  test('returns an empty map without querying when nothing is submitted', async () => {
+    const result = await getExistingTestResults([]);
+
+    expect(result.size).toBe(0);
+    expect(db.select).not.toHaveBeenCalled();
+  });
+
+  test('maps every submitted cell that already exists to its result_id', async () => {
+    mockSelect([MOCK_TEST_RESULT]);
+
+    const result = await getExistingTestResults([MOCK_TEST_RESULT_INPUT]);
+
+    expect(db.select).toHaveBeenCalledTimes(1);
+    expect(result.get(key(MOCK_TEST_RESULT_INPUT))).toBe(
+      MOCK_TEST_RESULT.result_id,
     );
+  });
 
-    const result = await getTestResultByUserAndTypeIds(MOCK_TEST_RESULT_INPUT);
+  test('ignores rows outside the submitted cells', async () => {
+    // The IN filters return the cross product, so a row for another player's
+    // test type can come back even though it was never submitted
+    mockSelect([{ ...MOCK_TEST_RESULT, player_id: MOCK_TEST_PLAYER_2.id }]);
 
-    expect(result).toEqual(MOCK_TEST_RESULT);
-    expect(db.query.TestResultTable.findFirst).toHaveBeenCalledWith({
-      where: and(
-        and(
-          gte(TestResultTable.date, MOCK_TEST_RESULT_INPUT.date!),
-          lte(TestResultTable.date, MOCK_TEST_RESULT_INPUT.date!),
-        ),
-        eq(TestResultTable.player_id, MOCK_TEST_RESULT_INPUT.player_id),
-        eq(TestResultTable.type_id, MOCK_TEST_RESULT_INPUT.type_id),
-      ),
+    const result = await getExistingTestResults([MOCK_TEST_RESULT_INPUT]);
+
+    expect(result.size).toBe(0);
+  });
+
+  test('propagates database errors', async () => {
+    const from = vi.fn().mockReturnValue({
+      where: vi.fn().mockRejectedValue(new Error('Database error')),
     });
-  });
+    vi.mocked(db.select).mockReturnValue({ from } as never);
 
-  test('returns undefined when no matching result found', async () => {
-    vi.mocked(db.query.TestResultTable.findFirst).mockResolvedValue(undefined);
-
-    const result = await getTestResultByUserAndTypeIds(MOCK_TEST_RESULT_INPUT);
-
-    expect(result).toBeUndefined();
-  });
-
-  test('returns null when database query fails', async () => {
-    vi.mocked(db.query.TestResultTable.findFirst).mockRejectedValue(
-      new Error('Database error'),
-    );
-
-    const result = await getTestResultByUserAndTypeIds(MOCK_TEST_RESULT_INPUT);
-
-    expect(result).toBeNull();
+    await expect(
+      getExistingTestResults([MOCK_TEST_RESULT_INPUT]),
+    ).rejects.toThrow('Database error');
   });
 });
 
@@ -257,9 +269,9 @@ describe('insertTestResult', () => {
     const message = 'Insert failed';
     mockInsertFailure(message);
 
-    await expect(
-      insertTestResult([{} as InsertTestResult]),
-    ).rejects.toThrow(message);
+    await expect(insertTestResult([{} as InsertTestResult])).rejects.toThrow(
+      message,
+    );
   });
 });
 

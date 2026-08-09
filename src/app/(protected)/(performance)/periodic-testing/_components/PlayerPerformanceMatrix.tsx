@@ -18,8 +18,8 @@ import {
   deleteTestResultById,
   updateTestResultById,
 } from '@/actions/test-result';
-import { PlayerTestResult, TestResult } from '@/types/periodic-testing';
 import { usePeriodicTestingFilters } from '@/lib/nuqs';
+import type { PlayerTestResult, TestResult } from '@/types/periodic-testing';
 
 const PAGE_SIZE = 10;
 
@@ -137,8 +137,6 @@ function PlayerPerformanceMatrix({ result }: { result: TestResult }) {
   const [{ q, page, type, date }, setSearchParams] =
     usePeriodicTestingFilters();
   const { can } = usePermissions();
-  // Drive editability off the actual ability so it matches the server actions
-  // (covers SUPER_ADMIN, COACH, and Captain — not viewer roles).
   const editable = can('periodic-testing', 'edit');
 
   const predicate = useCallback(

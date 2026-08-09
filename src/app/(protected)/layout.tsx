@@ -1,8 +1,7 @@
 import { redirect, RedirectType } from 'next/navigation';
 
 import { verifySession } from '@/actions/auth';
-import type { User } from '@/drizzle/schema/user';
-import SessionProvider, { type SessionUser } from '@/providers/session';
+import SessionProvider from '@/providers/session';
 import { LOGIN_PATH } from '@/routes';
 
 import AppShell from './_components/AppShell';
@@ -18,22 +17,9 @@ export default async function ProtectedLayout({
     redirect(LOGIN_PATH, RedirectType.replace);
   }
 
-  // Serialize only what the client shell needs — never the session token.
-  const { id, name, email, image, role, state, team_id, is_captain } =
-    session.user as User;
-  const initialUser: SessionUser = {
-    id,
-    name,
-    email,
-    image,
-    role,
-    state,
-    team_id,
-    is_captain,
-  };
-
+  // Only `session.user` crosses to the client — the session token stays server-side.
   return (
-    <SessionProvider initialUser={initialUser}>
+    <SessionProvider initialUser={session.user}>
       <AppShell>{children}</AppShell>
     </SessionProvider>
   );

@@ -5,13 +5,12 @@ import { Mock } from 'vitest';
 
 import { UserRole } from '@/utils/enum';
 
+import type auth from '@/lib/auth';
 import authClient from '@/lib/auth-client';
 
-import SessionProvider, {
-  type Session,
-  type SessionUser,
-  useSessionContext,
-} from './session';
+import SessionProvider, { useSessionContext } from './session';
+
+type SessionUser = typeof auth.$Infer.Session.user;
 
 vi.mock('@/lib/auth-client', () => ({
   default: {
@@ -22,13 +21,13 @@ vi.mock('@/lib/auth-client', () => ({
 const mockUseSession = authClient.useSession as unknown as Mock;
 
 /**
- * Builds a session-shaped object. The provider only reads `session.user`
- * fields (`role`, `is_captain`), so we keep the payload minimal and cast.
+ * Builds a session-shaped object. The provider only reads `session.user`, so we
+ * keep the payload minimal and cast.
  */
-const buildSession = (user: Record<string, unknown> = {}): Session =>
-  ({ session: {}, user }) as unknown as Session;
+const buildSession = (user: Record<string, unknown> = {}) =>
+  ({ session: {}, user }) as unknown as typeof auth.$Infer.Session;
 
-/** Builds the narrow user projection the server layout serializes. */
+/** Builds the user projection the server layout serializes. */
 const buildUser = (user: Record<string, unknown> = {}): SessionUser =>
   user as unknown as SessionUser;
 
@@ -58,7 +57,7 @@ describe('SessionProvider', () => {
   });
 
   describe('client session resolved', () => {
-    test('derives user, role and captain flag from the client session', () => {
+    test('exposes the user from the client session', () => {
       mockUseSession.mockReturnValue({
         data: buildSession({ role: UserRole.COACH, is_captain: true }),
         isPending: false,
@@ -66,11 +65,9 @@ describe('SessionProvider', () => {
 
       const { result } = renderProvider(null);
 
-      expect(result.current.role).toBe(UserRole.COACH);
-      expect(result.current.isCaptain).toBe(true);
       expect(result.current.isAuthenticated).toBe(true);
       expect(result.current.isLoading).toBe(false);
-      expect(result.current.user).toEqual({
+      expect(result.current.user).toMatchObject({
         role: UserRole.COACH,
         is_captain: true,
       });
@@ -85,18 +82,7 @@ describe('SessionProvider', () => {
 
       const { result } = renderProvider(initialUser);
 
-      expect(result.current.role).toBe(UserRole.SUPER_ADMIN);
-    });
-
-    test('defaults isCaptain to false when the flag is absent', () => {
-      mockUseSession.mockReturnValue({
-        data: buildSession({ role: UserRole.PLAYER }),
-        isPending: false,
-      });
-
-      const { result } = renderProvider(null);
-
-      expect(result.current.isCaptain).toBe(false);
+      expect(result.current.user?.role).toBe(UserRole.SUPER_ADMIN);
     });
   });
 
@@ -107,10 +93,7 @@ describe('SessionProvider', () => {
 
       const { result } = renderProvider(initialUser);
 
-      // The full session only ever comes from the client hook.
-      expect(result.current.session).toBeNull();
       expect(result.current.user).toBe(initialUser);
-      expect(result.current.role).toBe(UserRole.PLAYER);
       expect(result.current.isAuthenticated).toBe(true);
       // We have a server user, so we are not "loading".
       expect(result.current.isLoading).toBe(false);
@@ -121,10 +104,7 @@ describe('SessionProvider', () => {
 
       const { result } = renderProvider(null);
 
-      expect(result.current.session).toBeNull();
       expect(result.current.user).toBeNull();
-      expect(result.current.role).toBeNull();
-      expect(result.current.isCaptain).toBe(false);
       expect(result.current.isAuthenticated).toBe(false);
       expect(result.current.isLoading).toBe(true);
     });
@@ -136,10 +116,7 @@ describe('SessionProvider', () => {
 
       const { result } = renderProvider(null);
 
-      expect(result.current.session).toBeNull();
       expect(result.current.user).toBeNull();
-      expect(result.current.role).toBeNull();
-      expect(result.current.isCaptain).toBe(false);
       expect(result.current.isAuthenticated).toBe(false);
       expect(result.current.isLoading).toBe(false);
     });
@@ -152,7 +129,7 @@ describe('SessionProvider', () => {
 
       // Client resolved to "no session" (e.g. after sign-out), so we drop the
       // stale server value instead of trusting it.
-      expect(result.current.session).toBeNull();
+      expect(result.current.user).toBeNull();
       expect(result.current.isAuthenticated).toBe(false);
     });
   });

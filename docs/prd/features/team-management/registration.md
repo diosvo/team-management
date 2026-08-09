@@ -72,8 +72,20 @@ Fields in an attached template are matched by name, case-insensitively. Each pla
 
 The same aliases are shown in the field-naming guide rendered in the wizard's template step.
 
+### Module split: PDF engine vs. roster helpers
+
+PDF generation happens in the browser via `pdf-lib` + `@pdf-lib/fontkit`, and only steps 3 and 4 of the wizard can trigger it. Splitting the helpers by weight keeps that dependency out of the route's first-load JavaScript:
+
+| Module               | Holds                                                                | Imported                             |
+| -------------------- | -------------------------------------------------------------------- | ------------------------------------ |
+| `_helpers/roster.ts` | Column definitions, `toRow`, CSV building, PDF/CSV download triggers  | statically                           |
+| `_helpers/pdf.ts`    | `buildRegistrationPdf` and everything touching `pdf-lib`              | `await import()` at the point of use |
+
+The preview table, the CSV export, and the saved-registrations list need only `roster.ts`, so none of them loads the PDF engine. Three places import `pdf.ts` on demand: the export handler, the preview effect, and the save-registration handler. The bundler caches the chunk after the first call, so a second export doesn't refetch it.
+
 ### API
 
-- `buildRegistrationPdf(players, league, template?)`: generate and return the PDF
+- `buildRegistrationPdf(players, league, template?)`: generate and return the PDF (dynamically imported from `_helpers/pdf.ts`)
+- `buildRosterCsv(players)` / `downloadCsv` / `downloadPdf`: `_helpers/roster.ts`, safe to import statically
 - Active players: `getActivePlayers()`
 - Leagues: `getLeagues()`

@@ -6,9 +6,10 @@ import { getDbErrorMessage } from '@/db/pg-error';
 import {
   deleteTestResultById as deleteAction,
   getDates,
+  getExistingTestResults,
   getTestResultByDate,
-  getTestResultByUserAndTypeIds,
   insertTestResult,
+  testResultKey,
   updateTestResultById as updateAction,
   updateTestResults,
 } from '@/db/test-result';
@@ -44,17 +45,13 @@ export const createTestResult = periodicTesting(
     const toUpdate: Array<InsertTestResult> = [];
 
     try {
-      // Check all results at once to see which already exist — the grid
-      // submits players × test types rows, so serial lookups don't scale
-      const existings = await Promise.all(
-        results.map((result) => getTestResultByUserAndTypeIds(result)),
-      );
+      const existings = await getExistingTestResults(results);
 
-      results.forEach((result, index) => {
-        const existing = existings[index];
+      results.forEach((result) => {
+        const result_id = existings.get(testResultKey(result));
 
-        if (existing) {
-          toUpdate.push({ ...result, result_id: existing.result_id });
+        if (result_id) {
+          toUpdate.push({ ...result, result_id });
         } else {
           toCreate.push(result);
         }

@@ -29,6 +29,8 @@
 | SUPER_ADMIN      | Yes  | Yes          | Yes                  | Yes    |
 | PLAYER (Captain) | Yes  | Yes          | No                   | No     |
 
+> Leave is self-service for players. `attendance:create` opens the leave form, but the `player_id` in the payload is independent of who is calling. `submitLeave` therefore rejects (`forbidden`) any request where a PLAYER, captain included, files leave for a different member. COACH and SUPER_ADMIN may still file on anyone's behalf, which is what the bulk dialog relies on.
+
 ## 4. UX / flows
 
 ### Entry point
@@ -55,7 +57,7 @@
 
 - **FR-1:** All permitted roles can view the attendance list filtered by date.
 - **FR-2:** Filter by player name and status; filter state stored in URL.
-- **FR-3:** PLAYER and above can submit a leave request with a reason.
+- **FR-3:** PLAYER and above can submit a leave request with a reason. A PLAYER (captain included) may only submit for themselves; a request naming another `player_id` is rejected.
 - **FR-4:** COACH and SUPER_ADMIN can mark and update individual statuses.
 - **FR-5:** SUPER_ADMIN can bulk-enter attendance for multiple players.
 - **FR-6:** Duplicate records for the same player on the same date are prevented by the `unique_player_per_date` index. This also blocks a second record on a two-session day, which is an open item in [TODO.md](../../../../TODO.md).
@@ -67,6 +69,7 @@
 - **AC-1:** Given I am a PLAYER, when I submit a leave request, then an Absent record is created with my reason.
 - **AC-2:** Given I am a COACH, when I mark a player On Time, then the status updates immediately.
 - **AC-3:** Given a player already has a record for today, when a duplicate is submitted, then it is rejected.
+- **AC-4:** Given I am a PLAYER, when a leave request is submitted with another member's `player_id`, then it is rejected and no record is created.
 
 ## 7. Technical appendix
 
@@ -91,6 +94,6 @@ Attendance (`attendance`):
 ### API
 
 - `getAttendanceByDate(date)`: fetch records and stats
-- `submitLeave(values)`: player leave request
+- `submitLeave(values)`: player leave request; `team_id` comes from the session, and a PLAYER caller must match `values.player_id`
 - `updateStatus(id, status)`: update a single record
 - `removeAttendance(id)`: delete a record

@@ -132,9 +132,16 @@ export const uploadAvatar = profile(
     old_path: Nullish<string>,
     file: File,
   ) {
-    // Avatars are self-service only; old_path must be the target's own blob
+    // Avatars are self-service only
     if (user.id !== user_id) forbidden();
-    if (old_path && !old_path.startsWith('users/' + user_id)) forbidden();
+
+    // The blob we are about to delete must be the one this user currently owns.
+    // A `users/<user_id>` prefix check is not enough: blob keys carry a random
+    // suffix (`users/1-abc`), so `users/1` would also match `users/12-abc`.
+    if (old_path) {
+      const target = await getUserById(user_id);
+      if (old_path !== target?.image) forbidden();
+    }
 
     try {
       const { pathname } = await uploadFile('users/' + user_id, file, {

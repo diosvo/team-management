@@ -56,6 +56,7 @@
 - **FR-5:** Jersey numbers are unique per team.
 - **FR-6:** SUPER_ADMIN and Captain can remove members (bulk delete supported).
 - **FR-7:** Changes show a success or error toast.
+- **FR-8:** The roster list reads a narrowed projection of each member: name, email, role, state, verification flag, jersey number, and position. The query never selects the personal data the table doesn't render (date of birth, phone number, citizen ID), so it never reaches the browser. Full records are available only at `/profile/[id]`, which applies its own ownership rules.
 
 ## 6. Acceptance criteria (Given/When/Then)
 
@@ -64,10 +65,20 @@
 - **AC-3:** Given I am SUPER_ADMIN, when I remove a member, then they no longer appear in the roster.
 - **AC-4:** Given I am a Captain, when I open Roster, then I see the **+ Add** and remove controls and can invite and remove members like a SUPER_ADMIN.
 - **AC-5:** Given I invite a new member, when the invite succeeds, then they receive a “Create a new password” email linking to `/new-password`.
+- **AC-6:** Given I am any role viewing Roster, when I inspect the page payload, then it contains no date of birth, phone number, or citizen ID for any member.
 
 ## 7. Technical appendix
 
 ### Data model (logical)
+
+The table renders the `RosterUser` projection (`src/db/user.ts`), not the full user row:
+
+| Field                                           | In the roster payload |
+| ----------------------------------------------- | --------------------- |
+| `id`, `name`, `email`, `role`, `state`          | Yes                   |
+| `email_verified`                                | Yes                   |
+| `player.jersey_number`, `player.position`       | Yes                   |
+| `dob`, `phone_number`, `citizen_identification` | No: profile only      |
 
 User:
 
@@ -87,6 +98,6 @@ User:
 
 ### API
 
-- `getRoster()`: fetch all members
+- `getRoster()`: fetch all members as `RosterUser` (via `getRosterUsers`), excluding SUPER_ADMIN rows
 - `addUser(values)`: invite new member
 - `removeUser(id)`: remove member

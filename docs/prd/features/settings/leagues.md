@@ -42,7 +42,7 @@
 - SUPER_ADMIN sees **+ Add**; clicking it opens a dialog.
 - Clicking a row opens the same dialog pre-filled.
 - The dialog includes a player multi-select to manage the league roster.
-- Ongoing and Ended leagues are read-only.
+- Ongoing and Ended leagues are read-only: the fields are disabled, and the selected-players list stops responding to clicks, so you can review an existing roster but not change it. A read-only empty list also omits the “Select players from the list above” hint, which would otherwise point at a control that does nothing.
 
 ### Delete
 
@@ -55,7 +55,7 @@
 - **FR-3:** SUPER_ADMIN can create and edit leagues.
 - **FR-4:** Status follows the dates: `upcoming` before the start date, `ongoing` between the dates, `ended` after the end date.
 - **FR-5:** The league dialog includes a player picker to sync the roster.
-- **FR-6:** Ongoing and Ended leagues cannot be edited or deleted.
+- **FR-6:** Ongoing and Ended leagues cannot be edited or deleted. Read-only also covers the roster list: clicking a selected player does not remove them.
 - **FR-7:** Deleting an Upcoming league also removes its player associations.
 - **FR-8:** Changes show a success or error toast.
 
@@ -64,6 +64,8 @@
 - **AC-1:** Given I am a COACH, when I open Leagues, then I see the list but no add, edit, or delete controls.
 - **AC-2:** Given a league is Ongoing, when SUPER_ADMIN tries to delete it, then the action is rejected.
 - **AC-3:** Given I create a league with a start date in the future, then its status is Upcoming.
+- **AC-4:** Given an Ongoing league is open in the dialog, when I click one of its selected players, then the player stays in the roster.
+- **AC-5:** Given I save a roster where some players cannot be added, then the successful changes still apply and the response names each failed player.
 
 ## 7. Technical appendix
 
@@ -84,8 +86,14 @@ League:
 - `q` (string): name search
 - `status` (string): status filter
 
+### Roster sync
+
+`upsertLeague` diffs the submitted `player_ids` against the stored roster, then applies the adds and removes. Each one targets a distinct `league_team_roster` row, so the action issues the whole batch together and collects it with `Promise.allSettled` instead of awaiting one player at a time. A 20-player league then costs one round trip of latency rather than 20.
+
+Partial failure is expected and non-fatal. `Promise.allSettled` preserves order, so each rejection still maps back to the player that caused it and produces a per-player message (`"<db message> (id: <short id>)"`). Successful adds and removes stand.
+
 ### API
 
 - `getLeagues()`: fetch all leagues
-- `upsertLeague(id?, data, player_ids)`: create or update + sync roster
+- `upsertLeague(id?, data, player_ids)`: create or update + sync roster (parallel, per-player errors)
 - `removeLeague(id)`: delete (Upcoming only)

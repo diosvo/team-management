@@ -358,8 +358,12 @@ describe('User Actions', () => {
       });
     });
 
-    test('deletes the old avatar when an old path is provided', async () => {
-      const oldPath = 'users/user-123/old-avatar.png';
+    test('deletes the old avatar when it is the one on record', async () => {
+      const oldPath = 'users/user-123-old-avatar.png';
+      vi.mocked(getUserById).mockResolvedValue({
+        ...MOCK_USER,
+        image: oldPath,
+      });
       vi.mocked(uploadFile).mockResolvedValue({ pathname } as Awaited<
         ReturnType<typeof uploadFile>
       >);
@@ -371,6 +375,21 @@ describe('User Actions', () => {
       await uploadAvatar(MOCK_USER.id, oldPath, file);
 
       expect(deleteFile).toHaveBeenCalledWith(oldPath);
+    });
+
+    test('forbids deleting a blob the user does not own', async () => {
+      // `users/user-123` is a prefix of another user's key, but not the record
+      vi.mocked(getUserById).mockResolvedValue({
+        ...MOCK_USER,
+        image: 'users/user-123-own.png',
+      });
+
+      await expect(
+        uploadAvatar(MOCK_USER.id, 'users/user-1234-other.png', file),
+      ).rejects.toThrow();
+
+      expect(uploadFile).not.toHaveBeenCalled();
+      expect(deleteFile).not.toHaveBeenCalled();
     });
 
     test('returns error when upload fails', async () => {

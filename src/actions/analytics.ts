@@ -3,8 +3,8 @@
 import { differenceInDays } from 'date-fns';
 import { cache } from 'react';
 
-import { MatchesRateRecord } from '@/types/analytics';
-import { IntervalValues } from '@/types/common';
+import type { MatchesRateRecord } from '@/types/analytics';
+import type { IntervalValues } from '@/types/common';
 import { Interval, MatchStatus, MatchType } from '@/utils/enum';
 
 import {
@@ -33,8 +33,6 @@ function createAnalyticsAction<T>(
 /**
  * Request-scoped, primitive-keyed wrapper so the overview stats and the
  * matches-rate chart share one query when they ask for the same interval.
- * (`cache()` compares arguments by reference, so the params object is built
- * inside the cached function.)
  */
 const fetchGameMatches = cache((team_id: string, interval: IntervalValues) =>
   fetchMatches({

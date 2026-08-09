@@ -37,6 +37,7 @@
 ### Edit
 
 - Authorized users see an **Edit** toggle that switches the view to an editable text editor.
+- The editor is TipTap/ProseMirror and never renders on the server (`immediatelyRender: false`), so it loads as a separate client-only chunk behind a skeleton instead of shipping with the page. Read-only viewers, meaning every PLAYER and COACH, never download it.
 - Clicking **Save** persists the changes and returns to read-only view.
 - Clicking **Cancel** discards changes.
 

@@ -34,7 +34,10 @@ import { CACHE_KEY, ESTABLISHED_DATE } from '@/utils/constants';
 import { LeagueStatus } from '@/utils/enum';
 
 import { User } from '@/drizzle/schema';
-import { UpsertLeagueSchema, UpsertLeagueSchemaValues } from '@/schemas/league';
+import {
+  UpsertLeagueSchema,
+  type UpsertLeagueSchemaValues,
+} from '@/schemas/league';
 
 import { getPlayersInLeague, upsertLeague } from '@/actions/league';
 
@@ -195,6 +198,7 @@ export const UpsertLeague = createOverlay(({ action, item, ...rest }) => {
                   />
                 </Visibility>
                 <SelectedPlayers
+                  disabled={isReadonly}
                   selection={selection}
                   onSelectionChange={setSelection}
                   borderWidth={1}

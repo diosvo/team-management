@@ -1,9 +1,9 @@
-import { and, desc, eq, gte, lte } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNull, or } from 'drizzle-orm';
 
 import db from '@/drizzle';
-import { InsertTestResult, TestResultTable } from '@/drizzle/schema';
+import { type InsertTestResult, TestResultTable } from '@/drizzle/schema';
 
-import { PlayerTestResult, TestResult } from '@/types/periodic-testing';
+import type { PlayerTestResult, TestResult } from '@/types/periodic-testing';
 
 export async function getDates(): Promise<Array<string>> {
   try {
@@ -81,21 +81,68 @@ export async function getTestResultByDate(date: string): Promise<TestResult> {
   }
 }
 
-export async function getTestResultByUserAndTypeIds(result: InsertTestResult) {
-  try {
-    return await db.query.TestResultTable.findFirst({
-      where: and(
-        and(
-          gte(TestResultTable.date, result.date!),
-          lte(TestResultTable.date, result.date!),
-        ),
-        eq(TestResultTable.player_id, result.player_id),
-        eq(TestResultTable.type_id, result.type_id),
+/** Identity of a grid cell: one result per player, test type and date. */
+export function testResultKey(result: {
+  player_id: string;
+  type_id: string;
+  date?: Nullish<string>;
+}): string {
+  return `${result.date ?? ''}|${result.player_id}|${result.type_id}`;
+}
+
+/**
+ * Resolves which of the submitted cells already exist, in a single query.
+ * The grid submits players × test types rows, so one lookup per cell would
+ * open hundreds of concurrent connections.
+ *
+ * @returns a map of {@link testResultKey} to the existing `result_id`
+ */
+export async function getExistingTestResults(
+  results: Array<InsertTestResult>,
+): Promise<Map<string, string>> {
+  const existings = new Map<string, string>();
+  if (results.length === 0) return existings;
+
+  const player_ids = [...new Set(results.map(({ player_id }) => player_id))];
+  const type_ids = [...new Set(results.map(({ type_id }) => type_id))];
+  const dates = [...new Set(results.map(({ date }) => date ?? null))];
+  const defined_dates = dates.filter((date): date is string => date !== null);
+
+  const by_date = defined_dates.length
+    ? inArray(TestResultTable.date, defined_dates)
+    : undefined;
+  // `date` is nullable, so undated cells have to be matched separately
+  const date_filter =
+    dates.length > defined_dates.length
+      ? or(by_date, isNull(TestResultTable.date))
+      : by_date;
+
+  // The filters are a superset of the submitted cells (their cross product),
+  // so match on the exact key below rather than trusting the rows returned.
+  const rows = await db
+    .select({
+      result_id: TestResultTable.result_id,
+      player_id: TestResultTable.player_id,
+      type_id: TestResultTable.type_id,
+      date: TestResultTable.date,
+    })
+    .from(TestResultTable)
+    .where(
+      and(
+        inArray(TestResultTable.player_id, player_ids),
+        inArray(TestResultTable.type_id, type_ids),
+        date_filter,
       ),
-    });
-  } catch {
-    return null;
-  }
+    );
+
+  const submitted = new Set(results.map(testResultKey));
+
+  rows.forEach((row) => {
+    const key = testResultKey(row);
+    if (submitted.has(key)) existings.set(key, row.result_id);
+  });
+
+  return existings;
 }
 
 export async function insertTestResult(results: Array<InsertTestResult>) {

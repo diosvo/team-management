@@ -41,6 +41,8 @@
 ### View
 
 - Analytics are scoped by an `interval` selector carried in the URL query params.
+- Cards appear one at a time: the page shell and the filter row render immediately, and each card swaps its skeleton for content as its own query resolves. A slow query delays only its own card.
+- With no data in the selected range, cards show an empty state rather than a placeholder figure. The attendance trend, for example, omits the average-rate line instead of reporting `0.0%` or `NaN%`.
 
 ### Export (PDF Reports)
 
@@ -52,6 +54,8 @@
 
 - **FR-1:** All roles can view the dashboard analytics.
 - **FR-2:** The `interval` selector updates the analytics and is reflected in the URL.
+- **FR-17:** Each card fetches independently and streams in behind its own loading skeleton; the page does not wait for the slowest query before showing anything.
+- **FR-18:** A card with no data in the selected range shows an empty state, not a zero or `NaN` figure.
 
 ### PDF Reports
 
@@ -101,12 +105,25 @@ manual click  ───────▶ │  puppeteer-core + @sparticuz/     │
 
 - **AC-1:** Given I am on the Dashboard with `interval=last_month`, when I click “Download report”, then I receive a PDF matching the on-screen analytics for that interval.
 - **AC-2:** Given report generation fails, when I click download, then I see an error toast and no file is downloaded.
+- **AC-3:** Given an interval with no attendance records, when the attendance trend renders, then the description shows no average rate at all: neither `0.0%` nor `NaN%`.
+- **AC-4:** Given one analytics query is slow, when I open the Dashboard, then the other cards render without waiting for it.
+- **AC-5:** Given I download a report, when the PDF is produced, then it contains the rendered charts and no loading skeletons.
 
 ## 7. Technical appendix
+
+### Rendering: one boundary per card
+
+The page is a Server Component that awaits only the `interval` from the URL. Every card is its own async Server Component (`_components/AnalyticsSections.tsx`) wrapped in its own `<Suspense>`, so the four analytics queries run alongside the overview, sessions, and matches cards, and each card renders as its query resolves. Awaiting them in the page body instead would run the queries one after another and delay the whole response until the last one finished.
+
+That has two consequences:
+
+- **Shared queries run once**: two cards sometimes need the same read. The overview tile and the matches-rate chart both need this year's games; the overview tile and the upcoming-matches card both need upcoming matches. Both reads use React's `cache()` keyed on primitives (`team_id`, `interval`), so parallel cards asking for the same data share one query per request.
+- **Charts load client-side**: recharts renders SVG in the browser and dominates the route's client bundle (check with `pnpm analyze`), so each chart is a `next/dynamic` import with `ssr: false` behind a skeleton (`_components/LazyCharts.tsx`) and stays out of first-load JavaScript. The email-report dialog mounts only once opened. The two Quick Actions dialogs are gated to mutually exclusive roles, so a player never downloads the bulk-attendance dialog and an admin never downloads the leave-request one.
 
 ### Report API (Phase 1)
 
 - `POST /api/reports/dashboard`: accepts `{ interval, filename }`, launches Chromium, forwards session cookies, renders the live dashboard, strips the DOM to the analytics grid (2 columns), and returns PDF bytes via `page.pdf()`.
+- The charts now mount client-side, so the route waits for the dashboard's skeleton placeholders to clear before capturing, on top of waiting for `#reports-dashboard`. That wait is best effort: it caps at 5s and swallows the timeout, because an empty dashboard renders empty states rather than skeletons and must still export.
 - Browser is always closed in a `finally` block; no temp file is written.
 
 ### Data model: `reports` (Phase 2, logical)

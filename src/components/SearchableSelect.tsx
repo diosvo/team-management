@@ -63,11 +63,9 @@ export type SearchableSelectFieldProps<
  * For a react-hook-form field, use {@link SearchableSelectField} instead.
  */
 export default function SearchableSelect<T>(props: SearchableSelectProps<T>) {
-  const items = useItems(props);
-  const shared = { ...items, ...toBaseProps(props) };
+  const items = _useItems(props);
+  const shared = { ...items, ..._toBaseProps(props) };
 
-  // Narrowing on `props.multiple` (rather than a destructured copy) is what lets
-  // the value/onChange pair stay correlated without casts.
   if (props.multiple) {
     return (
       <ComboboxBase
@@ -90,8 +88,11 @@ export default function SearchableSelect<T>(props: SearchableSelectProps<T>) {
 }
 
 /**
- * Select bound to a react-hook-form field. Submits `itemToValue(item)`:
- * an array of ids when `multiple`, a single id or `null` otherwise.
+ * Select bound to a react-hook-form field.
+ *
+ * Submits:
+ * - `multiple`: `itemToValue(item)` - an array of ids
+ * - `single`: `id` or `null`.
  */
 export function SearchableSelectField<
   T,
@@ -103,8 +104,8 @@ export function SearchableSelectField<
   ...props
 }: SearchableSelectFieldProps<T, TFieldValues>) {
   const { itemToValue } = props;
-  const items = useItems(props);
-  const shared = { ...items, ...toBaseProps(props) };
+  const items = _useItems(props);
+  const shared = { ...items, ..._toBaseProps(props) };
 
   return (
     <Controller
@@ -155,7 +156,7 @@ export function SearchableSelectField<
 
 //#region INTERNAL
 /** Loads the option list once per `label` and shares it across both variants. */
-function useItems<T>({
+function _useItems<T>({
   label,
   action,
   swrOptions,
@@ -171,7 +172,7 @@ function useItems<T>({
   return { allItems: data ?? [], isLoading, isValidating, error };
 }
 
-function toBaseProps<T>(props: BaseProps<T>) {
+function _toBaseProps<T>(props: BaseProps<T>) {
   return {
     label: props.label,
     itemToString: props.itemToString,

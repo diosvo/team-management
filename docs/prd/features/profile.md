@@ -41,6 +41,22 @@ The page computes a `viewOnly` flag that disables the **Edit** action on the Per
 
 Avatar upload is gated separately: only the **profile owner** can change the avatar (any role, own profile only).
 
+### Server-side ownership rules
+
+`viewOnly` only disables controls; it decides nothing. Every non-GUEST role holds `profile:edit`, so the resource check alone would accept an edit that any member submits for any `user_id`. Each write therefore re-checks ownership against the session user and returns `forbidden()` on a mismatch:
+
+| Action               | Rule                                                                                                             |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `updatePersonalInfo` | SUPER_ADMIN: any member. Everyone else: own `user_id` only.                                                       |
+| `updateTeamInfo`     | SUPER_ADMIN: any member. Everyone else: own `user_id` only, and the submitted role must equal their current role. |
+| `uploadAvatar`       | Own `user_id` only, for every role. The `old_path` being deleted must equal the record's `image`.                 |
+| `getAvatar`          | The path must start with `users/`.                                                                                |
+
+Two of these need the reasoning spelled out:
+
+- **Role escalation**: team info includes `role`, so a self-edit that submits a different role is rejected outright rather than silently ignored. Only SUPER_ADMIN changes roles.
+- **Blob ownership**: comparing `old_path` against the stored `image` is stricter than a `users/<user_id>` prefix test, which cannot separate one user's key from another's. Blob keys get a random suffix, so `users/1` prefix-matches `users/12-abc`. Equality leaves the caller's own record as the only deletable blob.
+
 ## 4. UX / flows
 
 ### Entry points
@@ -85,6 +101,10 @@ Avatar upload is gated separately: only the **profile owner** can change the ava
 - **FR-8:** Only SUPER_ADMIN can change a member's Role and Position.
 - **FR-9:** Save actions show a success or error toast; a failed save does not exit edit mode.
 - **FR-10:** The page shows when the profile was last updated.
+- **FR-11:** Personal and Team writes are rejected (`forbidden`) when a non-admin targets a `user_id` other than their own, regardless of what the UI allowed.
+- **FR-12:** A non-admin cannot change their own role: a team-info save whose `role` differs from the caller's current role is rejected.
+- **FR-13:** Avatar upload is rejected when the target `user_id` is not the caller's, and when the `old_path` to delete is not the path currently stored on that user's record.
+- **FR-14:** Avatar reads are limited to the `users/` prefix, so the action cannot resolve unrelated private blobs (for example team logos).
 
 ## 6. Acceptance criteria (Given/When/Then)
 
@@ -96,6 +116,9 @@ Avatar upload is gated separately: only the **profile owner** can change the ava
 - **AC-6:** Given I upload an avatar over 100 KB, or in a format other than PNG or JPEG, then it is rejected before upload with an error toast.
 - **AC-7:** Given I upload a valid avatar on my own profile, then the avatar updates, the previous file is removed, and the session reflects the new image.
 - **AC-8:** Given I am a GUEST, when I navigate to a profile URL, then I am blocked (forbidden).
+- **AC-9:** Given I am a PLAYER, when a personal- or team-info save is submitted for another member's `user_id`, then it is rejected and nothing is written.
+- **AC-10:** Given I am a PLAYER, when a team-info save is submitted with `role` set to `coach`, then it is rejected and my role is unchanged.
+- **AC-11:** Given an avatar upload passes an `old_path` that is not the path on my user record, then the upload is rejected and no blob is deleted.
 
 ## 7. Technical appendix
 
@@ -123,11 +146,13 @@ Player: `position`, `jersey_number` (unique per team) · Coach: `position`.
 
 ### API (server actions)
 
+The four write/read actions below are wrapped in `withResource('profile')` (`getUserProfile` uses `withAuth` and does its own GUEST check); each one that takes a `user_id` or a blob path additionally enforces the ownership rules in §3.
+
 - `getUserProfile(id)`: returns `{ targetUser, viewOnly }`; `notFound()` if missing, `forbidden()` for GUEST.
-- `getAvatar(image_path)`: resolves a private blob path to a data URL (`null` when unset).
-- `uploadAvatar(user_id, old_path, file)`: uploads, updates `image`, removes the old blob, returns `{ image }`.
-- `updatePersonalInfo(user_id, values)`: updates name/dob/phone/citizen ID.
-- `updateTeamInfo(user_id, values)`: updates user + role-specific (player/coach) data.
+- `getAvatar(image_path)`: resolves a private blob path to a data URL (`null` when unset); `forbidden()` for a path outside `users/`.
+- `uploadAvatar(user_id, old_path, file)`: uploads, updates `image`, removes the old blob, returns `{ image }`. `forbidden()` unless `user_id` is the caller and `old_path` matches the stored `image`.
+- `updatePersonalInfo(user_id, values)`: updates name/dob/phone/citizen ID. `forbidden()` when a non-admin targets another member.
+- `updateTeamInfo(user_id, values)`: updates user + role-specific (player/coach) data. `forbidden()` when a non-admin targets another member or submits a changed role.
 
 ### Client data
 

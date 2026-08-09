@@ -81,6 +81,8 @@ This is a high-level map; details live in the [`Feature Specs`](./features/READM
 ### Authorization
 
 - UI may hide controls, but **server must enforce** permissions.
+- A permission grant covers a role and a resource, not a row. Where access depends on _which_ record (my profile, my leave request, my avatar), the action also checks the target against the session user. Full rules in [01-roles-permissions §3](./01-roles-permissions.md).
+- Send the client only what it renders. Server Components narrow their reads to the displayed columns rather than passing whole rows across the boundary, so unused personal data never leaves the server.
 
 ### Filtering and search state
 
@@ -108,7 +110,7 @@ Cases the contract guarantees:
 
 ## 10. Non-functional requirements
 
-- **Performance:** common pages render within 2 seconds at the team sizes in §5.
+- **Performance:** common pages render within 2 seconds at the team sizes in §5. Two conventions serve this. A page gives each section its own loading boundary instead of awaiting every query before it responds. A dependency that only some users can trigger (chart library, rich-text editor, PDF engine) loads on demand rather than in the route's first-load JavaScript.
 - **Accessibility:** keyboard navigation and accessible dialogs.
 - **Reliability:** clear loading/error states; avoid duplicate submits.
 

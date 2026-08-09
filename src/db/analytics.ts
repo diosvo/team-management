@@ -13,8 +13,8 @@ import {
 } from 'drizzle-orm';
 import { cache } from 'react';
 
-import { AttendanceStatusValues } from '@/types/attendance';
-import { IntervalValues } from '@/types/common';
+import type { AttendanceStatusValues } from '@/types/attendance';
+import type { IntervalValues } from '@/types/common';
 
 import { LOCALE_DATE_FORMAT } from '@/utils/constants';
 import { AttendanceStatus, SessionStatus } from '@/utils/enum';

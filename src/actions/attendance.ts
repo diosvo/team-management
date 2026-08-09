@@ -13,7 +13,7 @@ import {
   updateAttendance,
 } from '@/db/attendance';
 import { getDbErrorMessage } from '@/db/pg-error';
-import { InsertAttendance } from '@/drizzle/schema';
+import type { InsertAttendance } from '@/drizzle/schema';
 
 import { withAuth, withResource } from './auth';
 import { revalidate } from './cache';
