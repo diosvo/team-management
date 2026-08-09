@@ -1,12 +1,11 @@
 'use client';
 
 import { useMemo, useTransition } from 'react';
-import Link from 'next/link';
 
-import { Badge, IconButton } from '@chakra-ui/react';
+import { Badge } from '@chakra-ui/react';
 import { isPast } from 'date-fns';
 import { capitalize } from 'es-toolkit/string';
-import { CircuitBoard, Trophy } from 'lucide-react';
+import { CircuitBoard } from 'lucide-react';
 
 import Authorized from '@/components/Authorized';
 import DataTable, { type Column } from '@/components/DataTable';
@@ -27,7 +26,10 @@ import { League } from '@/drizzle/schema';
 
 import { UpsertLeague } from './UpsertLeague';
 
-type LeagueWithPlayerCount = League & { player_count: number };
+type LeagueWithPlayerCount = League & {
+  player_count: number;
+  achievement_type: string[];
+};
 
 export default function LeagueTable({
   leagues,
@@ -48,6 +50,8 @@ export default function LeagueTable({
   );
   const { items, currentData, selection, setSelection, totalCount } =
     useTableState(leagues, predicate, page);
+
+  console.log(currentData);
 
   const removeItems = async () => {
     const id = toaster.create({
@@ -96,12 +100,11 @@ export default function LeagueTable({
     {
       header: '',
       align: 'center',
-      // Ended leagues (derived from dates, the stored status can be stale)
-      // link straight to the "record achievement" dialog.
       cell: (item) =>
-        isPast(item.end_date) && (
+        isPast(item.end_date) &&
+        item.achievement_type && (
           <Authorized resource="achievements" action="create">
-            <IconButton
+            {/* <IconButton
               asChild
               size="xs"
               variant="ghost"
@@ -111,7 +114,10 @@ export default function LeagueTable({
               <Link href={`/achievements?record=${item.league_id}`}>
                 <Trophy />
               </Link>
-            </IconButton>
+            </IconButton> */}
+            {item.achievement_type.map((type) => (
+              <>{type}</>
+            ))}
           </Authorized>
         ),
     },

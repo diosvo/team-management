@@ -4,7 +4,7 @@ import {
   ESTABLISHED_DATE,
   INDIVIDUAL_ACHIEVEMENT_TYPES,
   SELECTABLE_ACHIEVEMENT_TYPES,
-} from '@/utils/constant';
+} from '@/utils/constants';
 import { AchievementType } from '@/utils/enum';
 
 export const UpsertAchievementSchema = z
@@ -15,7 +15,7 @@ export const UpsertAchievementSchema = z
     title: z
       .string()
       .min(3, {
-        message: 'Be at least 3 characters long.',
+        error: 'Be at least 3 characters long.',
       })
       .max(128, {
         error: 'Be at most 128 characters long.',
@@ -23,10 +23,10 @@ export const UpsertAchievementSchema = z
     year: z
       .int()
       .min(new Date(ESTABLISHED_DATE).getFullYear(), {
-        message: 'Be after the club was founded.',
+        error: 'Be after the club was founded.',
       })
       .max(new Date().getFullYear(), {
-        message: 'Not be in the future.',
+        error: 'Not be in the future.',
       })
       .default(new Date().getFullYear()),
     league_id: z.uuid().nullish(),

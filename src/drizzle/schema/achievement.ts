@@ -9,13 +9,16 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core';
 
-import { AchievementType } from '@/utils/enum';
+import { AchievementType, enumValues } from '@/utils/enum';
 import { created_at, updated_at } from '../helpers';
 
 import { LeagueTable } from './league';
 import { PlayerTable } from './player';
 
-export const achievementTypeEnum = pgEnum('achievement_type', AchievementType);
+export const achievementTypeEnum = pgEnum(
+  'achievement_type',
+  enumValues(AchievementType),
+);
 
 export const AchievementTable = pgTable(
   'achievement',
@@ -37,10 +40,10 @@ export const AchievementTable = pgTable(
     updated_at,
   },
   (table) => [
-    // One honor of each type per league, except CUSTOM which may repeat
+    // One honor of each type per league, except "custom" which may repeat
     uniqueIndex('achievement_league_type_idx')
       .on(table.league_id, table.type)
-      .where(sql`${table.league_id} IS NOT NULL AND ${table.type} != 'CUSTOM'`),
+      .where(sql`${table.league_id} IS NOT NULL AND ${table.type} != 'custom'`),
   ],
 );
 

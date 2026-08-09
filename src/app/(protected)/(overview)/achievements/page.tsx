@@ -2,8 +2,9 @@ import { Metadata } from 'next';
 
 import { getAchievements } from '@/actions/achievement';
 
+import AchievementFooter from './_components/AchievementFooter';
 import AchievementHeader from './_components/AchievementHeader';
-import AchievementStats from './_components/AchievementStats';
+import AchievementHero from './_components/AchievementHero';
 import AchievementTimeline from './_components/AchievementTimeline';
 
 export const metadata: Metadata = {
@@ -17,8 +18,9 @@ export default async function AchievementsPage() {
   return (
     <>
       <AchievementHeader />
-      <AchievementStats achievements={achievements} />
+      <AchievementHero />
       <AchievementTimeline achievements={achievements} />
+      {achievements.length > 0 && <AchievementFooter />}
     </>
   );
 }

@@ -43,6 +43,7 @@ export const upsertAchievement = achievements(
       if (!league) {
         return ResponseFactory.error('League not found');
       }
+
       if (!isPast(league.end_date)) {
         return ResponseFactory.error(
           'Achievements can only be recorded for ended leagues',

@@ -1,4 +1,4 @@
-import { HStack, SimpleGrid, Skeleton, VStack } from '@chakra-ui/react';
+import { Grid, HStack, Skeleton, Stack, VStack } from '@chakra-ui/react';
 
 export default function AchievementsLoading() {
   return (
@@ -8,17 +8,22 @@ export default function AchievementsLoading() {
         <Skeleton height={10} width={28} />
       </HStack>
 
-      <SimpleGrid columns={{ base: 2, md: 4 }} gap={6}>
-        {Array.from({ length: 4 }).map((_, index) => (
-          <Skeleton key={index} height="88px" />
-        ))}
-      </SimpleGrid>
+      <Skeleton height={{ base: '180px', md: '260px' }} />
 
-      <SimpleGrid columns={{ base: 1, md: 2 }} gap={4}>
-        {Array.from({ length: 4 }).map((_, index) => (
-          <Skeleton key={index} height="120px" />
-        ))}
-      </SimpleGrid>
+      {Array.from({ length: 3 }).map((_, index) => (
+        <Grid
+          key={index}
+          templateColumns={{ base: '72px 40px 1fr', md: '160px 56px 1fr' }}
+          columnGap={{ base: 2, md: 4 }}
+        >
+          <Skeleton height={10} />
+          <Skeleton borderRadius="full" boxSize={{ base: 10, md: 14 }} />
+          <Stack gap={2}>
+            <Skeleton height={12} />
+            <Skeleton height={12} />
+          </Stack>
+        </Grid>
+      ))}
     </VStack>
   );
 }

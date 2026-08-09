@@ -2,7 +2,7 @@ import { axe } from 'jest-axe';
 
 import { MOCK_ACHIEVEMENT } from '@/test/mocks/achievement';
 import { renderWithUI, screen, within } from '@/test/utilities';
-import { ESTABLISHED_DATE } from '@/utils/constant';
+import { ESTABLISHED_DATE } from '@/utils/constants';
 import { AchievementType } from '@/utils/enum';
 
 import { AchievementWithRelations } from '@/db/achievement';

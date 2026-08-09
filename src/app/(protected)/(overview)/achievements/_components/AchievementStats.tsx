@@ -2,12 +2,11 @@ import { SimpleGrid } from '@chakra-ui/react';
 
 import { Stat } from '@/components/ui/stat';
 
-import { ESTABLISHED_DATE } from '@/utils/constant';
 import { AchievementType } from '@/utils/enum';
 
 import { AchievementWithRelations } from '@/db/achievement';
 
-import { PODIUM_TYPES } from '../_helpers/utils';
+import { getYearsActive, PODIUM_TYPES } from '../_helpers/utils';
 
 export default function AchievementStats({
   achievements,
@@ -20,8 +19,7 @@ export default function AchievementStats({
   const podiums = achievements.filter(({ type }) =>
     PODIUM_TYPES.includes(type as (typeof PODIUM_TYPES)[number]),
   ).length;
-  const yearsActive =
-    new Date().getFullYear() - new Date(ESTABLISHED_DATE).getFullYear() + 1;
+  const yearsActive = getYearsActive();
 
   return (
     <SimpleGrid columns={{ base: 2, md: 4 }} gap={6}>

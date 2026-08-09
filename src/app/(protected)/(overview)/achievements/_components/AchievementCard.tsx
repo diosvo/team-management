@@ -2,17 +2,7 @@
 
 import { useTransition } from 'react';
 
-import {
-  Avatar,
-  Badge,
-  Card as ChakraCard,
-  Circle,
-  HStack,
-  IconButton,
-  Span,
-  Text,
-  VStack,
-} from '@chakra-ui/react';
+import { Box, HStack, IconButton, Text, VStack } from '@chakra-ui/react';
 import { Pencil, Trash2 } from 'lucide-react';
 
 import Authorized from '@/components/Authorized';
@@ -33,8 +23,22 @@ export default function AchievementCard({
 }) {
   const [isPending, startTransition] = useTransition();
 
-  const { label, colorPalette, icon: Icon } = ACHIEVEMENT_STYLE[achievement.type];
+  const {
+    label,
+    colorPalette,
+    icon: Icon,
+  } = ACHIEVEMENT_STYLE[achievement.type];
   const { league, player } = achievement;
+
+  // Individual honors read better under the player's name than the league's.
+  const caption =
+    [
+      player?.user.name ?? league?.name,
+      league &&
+        `${formatDate(league.start_date)} – ${formatDate(league.end_date)}`,
+    ]
+      .filter(Boolean)
+      .join(' • ') || 'Standalone honor';
 
   const removeItem = () => {
     const id = toaster.create({
@@ -51,94 +55,66 @@ export default function AchievementCard({
   };
 
   return (
-    <ChakraCard.Root
-      size="sm"
+    <HStack
+      gap={4}
+      paddingBlock={2}
+      className="group"
+      alignItems="start"
       colorPalette={colorPalette}
-      borderLeftWidth="4px"
-      borderLeftColor="colorPalette.solid"
-      _hover={{ shadow: 'sm', transition: 'box-shadow 0.2s' }}
     >
-      <ChakraCard.Body>
-        <HStack gap={3} alignItems="start">
-          <Circle
-            size={10}
-            backgroundColor="colorPalette.subtle"
-            color="colorPalette.fg"
+      <Box color="colorPalette.solid">
+        <Icon size={20} role="img" aria-label={label} />
+      </Box>
+      <VStack flex={1} alignItems="stretch">
+        <Text fontWeight="semibold">{achievement.title}</Text>
+        <Text fontSize="sm" color="gray.700">
+          {caption}
+        </Text>
+      </VStack>
+      <HStack
+        className="group"
+        opacity={{ base: 1, md: 0 }}
+        transition="opacity 0.2s"
+        _groupHover={{ opacity: 1 }}
+        _focusWithin={{ opacity: 1 }}
+      >
+        <Authorized resource="achievements" action="edit">
+          <IconButton
+            size="xs"
+            variant="ghost"
+            aria-label="Edit achievement"
+            disabled={isPending}
+            onClick={() =>
+              UpsertAchievement.open('update-achievement', {
+                action: 'Update',
+                item: {
+                  achievement_id: achievement.achievement_id,
+                  type: achievement.type,
+                  title: achievement.title,
+                  year: achievement.year,
+                  league_id: achievement.league_id,
+                  player_id: achievement.player_id,
+                  description: achievement.description,
+                },
+              })
+            }
           >
-            <Icon size={20} />
-          </Circle>
-          <VStack flex={1} alignItems="stretch" gap={1}>
-            <HStack>
-              <Text fontWeight="bold">{achievement.title}</Text>
-              <Badge
-                size="sm"
-                variant="surface"
-                borderRadius="full"
-                marginLeft="auto"
-              >
-                {label}
-              </Badge>
-            </HStack>
-            <Span fontSize="sm" color="gray.600">
-              {league
-                ? `${league.name} · ${formatDate(league.start_date)} – ${formatDate(league.end_date)}`
-                : 'Standalone honor'}
-            </Span>
-            {player && (
-              <HStack gap={2}>
-                <Avatar.Root size="2xs" variant="outline">
-                  <Avatar.Fallback name={player.user.name} />
-                  <Avatar.Image src={player.user.image ?? undefined} />
-                </Avatar.Root>
-                <Span fontSize="sm">{player.user.name}</Span>
-              </HStack>
-            )}
-            {achievement.description && (
-              <Text fontSize="sm" color="gray.500">
-                {achievement.description}
-              </Text>
-            )}
-          </VStack>
-          <VStack gap={1}>
-            <Authorized resource="achievements" action="edit">
-              <IconButton
-                size="xs"
-                variant="ghost"
-                aria-label="Edit achievement"
-                disabled={isPending}
-                onClick={() =>
-                  UpsertAchievement.open('update-achievement', {
-                    action: 'Update',
-                    item: {
-                      achievement_id: achievement.achievement_id,
-                      type: achievement.type,
-                      title: achievement.title,
-                      year: achievement.year,
-                      league_id: achievement.league_id,
-                      player_id: achievement.player_id,
-                      description: achievement.description,
-                    },
-                  })
-                }
-              >
-                <Pencil />
-              </IconButton>
-            </Authorized>
-            <Authorized resource="achievements" action="delete">
-              <IconButton
-                size="xs"
-                variant="ghost"
-                colorPalette="red"
-                aria-label="Delete achievement"
-                disabled={isPending}
-                onClick={removeItem}
-              >
-                <Trash2 />
-              </IconButton>
-            </Authorized>
-          </VStack>
-        </HStack>
-      </ChakraCard.Body>
-    </ChakraCard.Root>
+            <Pencil />
+          </IconButton>
+        </Authorized>
+        <Authorized resource="achievements" action="delete">
+          <IconButton
+            size="xs"
+            variant="ghost"
+            colorPalette="red"
+            aria-label="Delete achievement"
+            disabled={isPending}
+            onClick={removeItem}
+          >
+            <Trash2 />
+          </IconButton>
+        </Authorized>
+      </HStack>
+    </HStack>
   );
 }

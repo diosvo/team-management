@@ -4,7 +4,9 @@ import usePermissions from '@/hooks/use-permissions';
 
 import { MOCK_ACHIEVEMENT } from '@/test/mocks/achievement';
 import { renderWithUI, screen } from '@/test/utilities';
+import { ESTABLISHED_DATE } from '@/utils/constants';
 import { AchievementType } from '@/utils/enum';
+import { formatDate } from '@/utils/formatter';
 
 import { AchievementWithRelations } from '@/db/achievement';
 
@@ -54,7 +56,7 @@ describe('AchievementTimeline', () => {
     ).toBeInTheDocument();
   });
 
-  test('groups achievements by year with a pluralized count', () => {
+  test('groups achievements by year and captions the story so far', () => {
     setup([
       buildAchievement({ achievement_id: 'a-1', year: 2025 }),
       buildAchievement({
@@ -68,11 +70,34 @@ describe('AchievementTimeline', () => {
 
     expect(screen.getByText('2025')).toBeInTheDocument();
     expect(screen.getByText('2024')).toBeInTheDocument();
-    expect(screen.getByText('2 honors')).toBeInTheDocument();
-    expect(screen.getByText('1 honor')).toBeInTheDocument();
+    // Captions run oldest-first, so the earliest year opens the story.
+    expect(screen.getByText('Where It All Began.')).toBeInTheDocument();
+    expect(screen.getByText('First Steps, Big Dreams.')).toBeInTheDocument();
   });
 
-  test('renders a card for every achievement', () => {
+  test('quotes the first described honor of the year', () => {
+    setup([
+      buildAchievement({ achievement_id: 'a-1', year: 2025, description: null }),
+      buildAchievement({
+        achievement_id: 'a-2',
+        year: 2025,
+        description: 'We came, we fought, we conquered',
+      }),
+    ]);
+
+    expect(
+      screen.getByText('We came, we fought, we conquered'),
+    ).toBeInTheDocument();
+  });
+
+  test('closes the timeline with the founding year when it has no honors', () => {
+    setup([buildAchievement({ achievement_id: 'a-1', year: 2026 })]);
+
+    expect(screen.getByText('Team Founded')).toBeInTheDocument();
+    expect(screen.getByText(formatDate(ESTABLISHED_DATE))).toBeInTheDocument();
+  });
+
+  test('renders a row for every achievement', () => {
     setup([
       buildAchievement({
         achievement_id: 'a-1',

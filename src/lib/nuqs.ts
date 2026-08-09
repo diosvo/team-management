@@ -66,12 +66,6 @@ const testTypeSearchParams = {
   ).withDefault([]),
 };
 
-const achievementSearchParams = {
-  // League to pre-fill when opening the "record achievement" dialog
-  // (linked from ended rows on the leagues table).
-  record: parseAsString.withDefault(''),
-};
-
 const leagueSearchParams = {
   ...commonParams,
   status: parseAsArrayOf(
@@ -148,7 +142,6 @@ export const useTestTypeFilters = createFilters(testTypeSearchParams);
 export const usePeriodicTestingFilters = createFilters(
   periodicTestingSearchParams,
 );
-export const useAchievementFilters = createFilters(achievementSearchParams);
 export const useLeagueFilters = createFilters(leagueSearchParams);
 export const useMatchFilters = createFilters(matchSearchParams);
 export const useAttendanceFilters = createFilters(attendanceSearchParams, {

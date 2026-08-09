@@ -56,13 +56,14 @@ describe('AchievementCard', () => {
     vi.clearAllMocks();
   });
 
-  test('renders the title, type badge and league details', () => {
+  test('renders the title, type icon and league period', () => {
     setup();
 
     expect(screen.getByText('Summer Champions')).toBeInTheDocument();
-    expect(screen.getByText('Champion')).toBeInTheDocument();
-    expect(screen.getByText(/Summer League/)).toBeInTheDocument();
-    expect(screen.getByText('Won the summer league')).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'Champion' })).toBeInTheDocument();
+    expect(
+      screen.getByText('Summer League • 01/01/2024 – 31/12/2024'),
+    ).toBeInTheDocument();
   });
 
   test('renders a standalone caption when there is no league', () => {
@@ -71,7 +72,7 @@ describe('AchievementCard', () => {
     expect(screen.getByText('Standalone honor')).toBeInTheDocument();
   });
 
-  test('renders the awarded player for individual honors', () => {
+  test('names the awarded player instead of the league for individual honors', () => {
     setup({
       ...achievement,
       player_id: 'player-123',
@@ -81,7 +82,8 @@ describe('AchievementCard', () => {
       },
     });
 
-    expect(screen.getByText('Player Name')).toBeInTheDocument();
+    expect(screen.getByText(/Player Name/)).toBeInTheDocument();
+    expect(screen.queryByText(/Summer League/)).not.toBeInTheDocument();
   });
 
   test('hides the edit and delete actions without permission', () => {

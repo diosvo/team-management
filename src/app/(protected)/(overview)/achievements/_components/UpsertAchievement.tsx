@@ -21,7 +21,7 @@ import { getYear, isPast } from 'date-fns';
 import { Save } from 'lucide-react';
 import { Controller, useForm } from 'react-hook-form';
 
-import SearchableSelect from '@/components/SearchableSelect';
+import { SearchableSelectField } from '@/components/SearchableSelect';
 import { CloseButton } from '@/components/ui/close-button';
 import { Field } from '@/components/ui/field';
 import { toaster } from '@/components/ui/toaster';
@@ -33,12 +33,12 @@ import {
   CACHE_KEY,
   INDIVIDUAL_ACHIEVEMENT_TYPES,
   YEARS_SELECTION,
-} from '@/utils/constant';
+} from '@/utils/constants';
 import { AchievementType } from '@/utils/enum';
 
 import {
   UpsertAchievementSchema,
-  UpsertAchievementSchemaValues,
+  type UpsertAchievementSchemaValues,
 } from '@/schemas/achievement';
 
 import {
@@ -48,19 +48,15 @@ import {
 import { getLeagues } from '@/actions/league';
 import { getActivePlayers } from '@/actions/user';
 
-const ENDED_LEAGUES_KEY = 'ended leagues';
+const ENDED_LEAGUES_KEY = 'ended_leagues';
 
-// Only ended leagues can carry an achievement; derive from dates rather
-// than the stored (possibly stale) status column.
+// Only ended leagues can carry an achievement
 const getEndedLeagues = async () =>
   (await getLeagues()).filter(({ end_date }) => isPast(end_date));
 
 const types = createListCollection({ items: ACHIEVEMENT_TYPE_SELECTION });
 const years = createListCollection({
-  items: YEARS_SELECTION.map(({ label, value }) => ({
-    label,
-    value: String(value),
-  })),
+  items: YEARS_SELECTION,
 });
 
 const isIndividualType = (type: AchievementType) =>
@@ -92,7 +88,6 @@ export const UpsertAchievement = createOverlay(({ action, item, ...rest }) => {
   const league_id = watch('league_id');
   const isIndividual = isIndividualType(type as AchievementType);
 
-  // Shares the SWR cache the league SearchableSelect populates.
   const { data: endedLeagues } = useSWRImmutable(
     ENDED_LEAGUES_KEY,
     getEndedLeagues,
@@ -213,8 +208,7 @@ export const UpsertAchievement = createOverlay(({ action, item, ...rest }) => {
                     {...register('title')}
                   />
                 </Field>
-                <SearchableSelect
-                  controlledMode
+                <SearchableSelectField
                   multiple={false}
                   control={control}
                   name="league_id"
@@ -275,8 +269,7 @@ export const UpsertAchievement = createOverlay(({ action, item, ...rest }) => {
                   )}
                 />
                 <Visibility isVisible={isIndividual}>
-                  <SearchableSelect
-                    controlledMode
+                  <SearchableSelectField
                     multiple={false}
                     control={control}
                     name="player_id"

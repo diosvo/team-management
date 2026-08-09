@@ -17,13 +17,21 @@ export async function getLeagues() {
         team_rosters: {
           columns: { league_id: true },
         },
+        achievements: {
+          columns: { type: true },
+        },
       },
     });
 
-    return leagues.map((league) => ({
-      ...league,
-      player_count: league.team_rosters.length,
-    }));
+    return leagues.map((league) => {
+      const { team_rosters, achievements, ...rest } = league;
+
+      return {
+        ...rest,
+        player_count: team_rosters.length,
+        achievement_type: achievements.map((achievement) => achievement.type),
+      };
+    });
   } catch {
     return [];
   }
