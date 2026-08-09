@@ -11,9 +11,10 @@ import {
   SQL,
   sql,
 } from 'drizzle-orm';
+import { cache } from 'react';
 
-import { AttendanceStatusValues } from '@/types/attendance';
-import { IntervalValues } from '@/types/common';
+import type { AttendanceStatusValues } from '@/types/attendance';
+import type { IntervalValues } from '@/types/common';
 
 import { LOCALE_DATE_FORMAT } from '@/utils/constants';
 import { AttendanceStatus, SessionStatus } from '@/utils/enum';
@@ -25,7 +26,9 @@ import { AttendanceTable } from '@/drizzle/schema/attendance';
 
 import { calculatePercentage, countWhen, fromNow } from './utils';
 
-export async function getUpcomingMatches(team_id: string) {
+// Request-scoped: the overview stats and the upcoming-matches card both ask
+// for this during one dashboard render.
+export const getUpcomingMatches = cache(async (team_id: string) => {
   try {
     return await db.query.MatchTable.findMany({
       where: and(eq(MatchTable.home_team, team_id), fromNow(MatchTable.date)),
@@ -53,7 +56,7 @@ export async function getUpcomingMatches(team_id: string) {
   } catch {
     return [];
   }
-}
+});
 
 export async function getUpcomingSessions(team_id: string) {
   try {

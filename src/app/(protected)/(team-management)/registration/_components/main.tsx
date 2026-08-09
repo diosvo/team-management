@@ -36,7 +36,6 @@ import { getLeagues } from '@/actions/league';
 
 import usePermissions from '@/hooks/use-permissions';
 import { CACHE_KEY } from '@/utils/constants';
-import { buildRegistrationPdf } from '../_helpers/pdf';
 import { useSavedRegistrations } from '../_helpers/useSavedRegistrations';
 
 import PreviewPanel from './PreviewPanel';
@@ -73,6 +72,8 @@ export default function RegistrationPageClient() {
     const name = getUniqueName(league.name);
 
     try {
+      // pdf-lib is loaded on demand so it stays out of the route's initial JS
+      const { buildRegistrationPdf } = await import('../_helpers/pdf');
       const { bytes } = await buildRegistrationPdf({
         players: selection,
         league,
@@ -156,7 +157,6 @@ export default function RegistrationPageClient() {
             description="Pick which competition this registration is for."
           >
             <SearchableSelect
-              controlledMode={false}
               multiple={false}
               label={CACHE_KEY.LEAGUES}
               action={getLeagues}

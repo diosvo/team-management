@@ -18,12 +18,16 @@ import { buildPredicate } from '@/utils/filters';
 import { getColor } from '@/utils/helper';
 
 import { removeUser } from '@/actions/user';
-import { User } from '@/drizzle/schema/user';
+import type { RosterUser } from '@/db/user';
 
 const mask = (cc: string, num = 4) =>
   `${cc}`.slice(-num).padStart(`${cc}`.length, '*');
 
-export default function RosterTable({ users }: { users: Array<User> }) {
+export default function RosterTable({
+  users,
+}: {
+  users: Array<RosterUser>;
+}) {
   const router = useRouter();
   const { isAdmin, isCaptain, isGuest } = usePermissions();
   const [{ q, page, state, role }, setSearchParams] = useRosterFilters();
@@ -32,7 +36,7 @@ export default function RosterTable({ users }: { users: Array<User> }) {
 
   const predicate = useMemo(
     () =>
-      buildPredicate<User>({
+      buildPredicate<RosterUser>({
         search: { query: q, fields: ['name', 'email'] },
         match: { state, role },
       }),
@@ -56,19 +60,19 @@ export default function RosterTable({ users }: { users: Array<User> }) {
     setSelection([]);
   };
 
-  const columns: Array<Column<User>> = [
+  const columns: Array<Column<RosterUser>> = [
     ...(canManage
       ? [
           {
             header: 'Verified',
             align: 'center',
-            cell: (user: User) =>
+            cell: (user: RosterUser) =>
               user.emailVerified ? (
                 <Icon as={ShieldCheck} size="sm" color="green.500" />
               ) : (
                 <Icon as={ShieldAlert} size="sm" color="orange.500" />
               ),
-          } satisfies Column<User>,
+          } satisfies Column<RosterUser>,
         ]
       : []),
     { header: 'No.', cell: (user) => user.player?.jersey_number ?? '-' },

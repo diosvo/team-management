@@ -7,14 +7,14 @@
 - **Registration** generates tournament registration documents for a selected league and group of players.
 - A 4-step wizard collects player selection, league, an optional PDF template, and a preview before export.
 
-## 2. Goals / Metrics
+## 2. Goals / metrics
 
 ### Goals
 
-- Let authorized users quickly produce a formatted registration PDF or CSV for any league.
+- Let authorized users produce a formatted registration PDF or CSV for any league in one pass through the wizard.
 - Reduce manual data entry by pre-filling player data into PDF AcroForm fields.
 
-## 3. Users & Permissions
+## 3. Users and permissions
 
 | Role             | View | Generate / export |
 | ---------------- | ---- | ----------------- |
@@ -24,7 +24,7 @@
 | SUPER_ADMIN      | Yes  | Yes               |
 | PLAYER (Captain) | Yes  | Yes               |
 
-## 4. UX / Flows
+## 4. UX / flows
 
 ### Entry point
 
@@ -32,38 +32,60 @@
 
 ### Wizard steps
 
-1. **Select players** — multi-select active players; supports select-all.
-2. **Select league** — single league picker.
-3. **Attach template** _(optional)_ — upload a PDF with AcroForm fields; the system maps player data automatically.
-4. **Preview & export** — review the selection, add optional notes (≤ 256 chars), then export as PDF or CSV.
+1. **Select players**: multi-select active players; supports select-all.
+2. **Select league**: single league picker.
+3. **Attach template** _(optional)_: upload a PDF with AcroForm fields; the system maps player data automatically.
+4. **Preview & export**: review the selection, add optional notes (≤ 256 chars), then export as PDF or CSV.
 
 ### Saved registrations
 
 - Completed registrations can be saved locally and reloaded for future use.
 
-## 5. Functional Requirements
+## 5. Functional requirements
 
 - **FR-1:** Only active players appear in the player picker.
 - **FR-2:** SUPER_ADMIN and Captain can generate and export registrations.
 - **FR-3:** Export formats: PDF (with optional AcroForm mapping) and CSV.
-- **FR-4:** When a PDF template is attached, player fields are mapped using standard field names (e.g. `fullName`, `namSinh`, `soAo`).
+- **FR-4:** When a PDF template is attached, player fields are mapped by AcroForm field name using the aliases in §7.
 - **FR-5:** Notes field accepts up to 256 characters.
 - **FR-6:** Saved registrations are stored in local storage and can be deleted.
 
-## 6. Acceptance Criteria (Given/When/Then)
+## 6. Acceptance criteria (Given/When/Then)
 
 - **AC-1:** Given I am a COACH, when I open Registration, then I can view but cannot export.
 - **AC-2:** Given I am a Captain, when I complete the wizard, then I can download a PDF or CSV.
 - **AC-3:** Given I attach a PDF template with a `fullName` field, when I export, then player names are mapped into that field.
 
-## 7. Technical Appendix
+## 7. Technical appendix
 
 ### PDF field mapping
 
-Standard AcroForm field names: `fullName`, `namSinh`, `cccd`, `sdt`, `soAo` (jersey number), and others shown in the UI field-naming guide.
+Fields in an attached template are matched by name, case-insensitively. Each player column accepts any of these aliases (`_components/main.tsx`, `_helpers/pdf.ts`):
+
+| Column     | Accepted AcroForm field names |
+| ---------- | ----------------------------- |
+| Họ tên     | `hoTen`, `fullName`, `name`   |
+| Năm sinh   | `namSinh`, `dob`, `birth`     |
+| CCCD       | `cccd`, `cmnd`, `citizen`     |
+| Điện thoại | `dienThoai`, `sdt`, `phone`   |
+| Số áo      | `soAo`, `jersey`, `number`    |
+
+The same aliases are shown in the field-naming guide rendered in the wizard's template step.
+
+### Module split: PDF engine vs. roster helpers
+
+PDF generation happens in the browser via `pdf-lib` + `@pdf-lib/fontkit`, and only steps 3 and 4 of the wizard can trigger it. Splitting the helpers by weight keeps that dependency out of the route's first-load JavaScript:
+
+| Module               | Holds                                                                | Imported                             |
+| -------------------- | -------------------------------------------------------------------- | ------------------------------------ |
+| `_helpers/roster.ts` | Column definitions, `toRow`, CSV building, PDF/CSV download triggers  | statically                           |
+| `_helpers/pdf.ts`    | `buildRegistrationPdf` and everything touching `pdf-lib`              | `await import()` at the point of use |
+
+The preview table, the CSV export, and the saved-registrations list need only `roster.ts`, so none of them loads the PDF engine. Three places import `pdf.ts` on demand: the export handler, the preview effect, and the save-registration handler. The bundler caches the chunk after the first call, so a second export doesn't refetch it.
 
 ### API
 
-- `buildRegistrationPdf(players, league, template?)` — generate and return the PDF
+- `buildRegistrationPdf(players, league, template?)`: generate and return the PDF (dynamically imported from `_helpers/pdf.ts`)
+- `buildRosterCsv(players)` / `downloadCsv` / `downloadPdf`: `_helpers/roster.ts`, safe to import statically
 - Active players: `getActivePlayers()`
 - Leagues: `getLeagues()`

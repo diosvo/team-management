@@ -6,9 +6,10 @@ import { getDbErrorMessage } from '@/db/pg-error';
 import {
   deleteTestResultById as deleteAction,
   getDates,
+  getExistingTestResults,
   getTestResultByDate,
-  getTestResultByUserAndTypeIds,
   insertTestResult,
+  testResultKey,
   updateTestResultById as updateAction,
   updateTestResults,
 } from '@/db/test-result';
@@ -44,16 +45,17 @@ export const createTestResult = periodicTesting(
     const toUpdate: Array<InsertTestResult> = [];
 
     try {
-      // Check each result to see if it already exists
-      for (const result of results) {
-        const existing = await getTestResultByUserAndTypeIds(result);
+      const existings = await getExistingTestResults(results);
 
-        if (existing) {
-          toUpdate.push({ ...result, result_id: existing.result_id });
+      results.forEach((result) => {
+        const result_id = existings.get(testResultKey(result));
+
+        if (result_id) {
+          toUpdate.push({ ...result, result_id });
         } else {
           toCreate.push(result);
         }
-      }
+      });
 
       // Perform batch operations
       if (toCreate.length > 0) await insertTestResult(toCreate);

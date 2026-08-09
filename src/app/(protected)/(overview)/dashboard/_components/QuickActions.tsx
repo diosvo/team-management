@@ -1,8 +1,9 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 
-import { Flex, SimpleGrid, VStack } from '@chakra-ui/react';
+import { Flex, SimpleGrid, Skeleton, VStack } from '@chakra-ui/react';
 import {
   CalendarRange,
   ClipboardCheck,
@@ -12,10 +13,27 @@ import {
   Zap,
 } from 'lucide-react';
 
-import BulkAttendanceManager from '@/app/(protected)/(team-management)/attendance/_components/BulkAttendanceManager';
-import SubmitLeaveRequest from '@/app/(protected)/(team-management)/attendance/_components/SubmitLeaveRequest';
-
 import { Card } from '@/components/ui/card';
+
+// Each dialog is gated to a single role (player vs admin), so no visitor can
+// ever use both — load them lazily instead of shipping both to everyone.
+const tileFallback = () => <Skeleton borderRadius="md" />;
+
+const SubmitLeaveRequest = dynamic(
+  () =>
+    import(
+      '@/app/(protected)/(team-management)/attendance/_components/SubmitLeaveRequest'
+    ),
+  { ssr: false, loading: tileFallback },
+);
+
+const BulkAttendanceManager = dynamic(
+  () =>
+    import(
+      '@/app/(protected)/(team-management)/attendance/_components/BulkAttendanceManager'
+    ),
+  { ssr: false, loading: tileFallback },
+);
 
 import usePermissions from '@/hooks/use-permissions';
 import { useSessionContext } from '@/providers/session';

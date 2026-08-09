@@ -2,6 +2,7 @@
 
 import { Button, HStack, Menu, Portal } from '@chakra-ui/react';
 import { ChevronDown, FileDown, Send } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { useState } from 'react';
 
 import TimePicker from '@/components/filters/TimePicker';
@@ -11,7 +12,7 @@ import { triggerDownload } from '@/lib/download';
 import { MatchSearchParamsKeys, useDashboardFilters } from '@/lib/nuqs';
 import { formatDuration } from '@/utils/formatter';
 
-import EmailReport from './EmailReport';
+const EmailReport = dynamic(() => import('./EmailReport'), { ssr: false });
 
 export default function DashboardFilters() {
   const [{ interval }, setSearchParams] = useDashboardFilters();
@@ -93,13 +94,15 @@ export default function DashboardFilters() {
         />
       </HStack>
 
-      <EmailReport
-        open={open}
-        interval={interval}
-        filename={filename}
-        formattedPeriod={formattedPeriod}
-        onOpenChange={setOpen}
-      />
+      {open && (
+        <EmailReport
+          open={open}
+          interval={interval}
+          filename={filename}
+          formattedPeriod={formattedPeriod}
+          onOpenChange={setOpen}
+        />
+      )}
     </>
   );
 }

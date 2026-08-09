@@ -21,13 +21,7 @@ import useTableState from '@/hooks/use-table-state';
 import { League } from '@/drizzle/schema';
 import { User } from '@/drizzle/schema/user';
 
-import {
-  buildRegistrationPdf,
-  COLUMNS,
-  downloadCsv,
-  downloadPdf,
-  toRow,
-} from '../_helpers/pdf';
+import { COLUMNS, downloadCsv, downloadPdf, toRow } from '../_helpers/roster';
 
 type PreviewPanelProps = {
   players: Array<User>;
@@ -66,7 +60,12 @@ export default function PreviewPanel({
 
   const handlePdf = () => {
     setBusy(true);
-    toaster.promise(buildRegistrationPdf({ players, league, template }), {
+    // pdf-lib is loaded on demand so it stays out of the route's initial JS
+    const pdfPromise = import('../_helpers/pdf').then(
+      ({ buildRegistrationPdf }) =>
+        buildRegistrationPdf({ players, league, template }),
+    );
+    toaster.promise(pdfPromise, {
       loading: { title: 'Generating PDF...', description: 'Please wait.' },
       success: ({ bytes, filledCount, detectedFields }) => {
         downloadPdf(bytes, filename);
@@ -200,7 +199,10 @@ function PdfPreview({
     let objectUrl: Nullable<string> = null;
     let cancelled = false;
 
-    buildRegistrationPdf({ players, league, template })
+    import('../_helpers/pdf')
+      .then(({ buildRegistrationPdf }) =>
+        buildRegistrationPdf({ players, league, template }),
+      )
       .then(({ bytes }) => {
         if (cancelled) return;
         objectUrl = URL.createObjectURL(

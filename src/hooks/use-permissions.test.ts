@@ -23,7 +23,7 @@ vi.mock('@/lib/auth-client', () => ({
  * mocking that hook.
  */
 const wrapper = ({ children }: PropsWithChildren) =>
-  createElement(SessionProvider, { initialSession: null, children });
+  createElement(SessionProvider, { initialUser: null, children });
 
 const renderPermissions = () =>
   renderHook(() => usePermissions(), { wrapper });

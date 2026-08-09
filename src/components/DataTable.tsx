@@ -64,12 +64,13 @@ export default function DataTable<T>({
   onRowClick,
   ...rootProps
 }: DataTableProps<T>) {
-  const canSelect = selection?.canSelect ?? false;
-  const colSpan = columns.length + (canSelect ? 1 : 0);
+  const activeSelection = selection?.canSelect ? selection : null;
+  const colSpan = columns.length + (activeSelection ? 1 : 0);
 
-  const canSelectRow = (item: T) => selection?.isSelectable?.(item) ?? true;
-  const selectableItems = selection?.items.filter(canSelectRow) ?? [];
-  const selectionCount = selection?.selection.length ?? 0;
+  const canSelectRow = (item: T) =>
+    activeSelection?.isSelectable?.(item) ?? true;
+  const selectableItems = activeSelection?.items.filter(canSelectRow) ?? [];
+  const selectionCount = activeSelection?.selection.length ?? 0;
   const hasSelection = selectionCount > 0;
   const indeterminate = hasSelection && selectionCount < selectableItems.length;
 
@@ -84,19 +85,19 @@ export default function DataTable<T>({
         >
           <Table.Header>
             <Table.Row>
-              {canSelect && selection && (
+              {activeSelection && (
                 <Table.ColumnHeader width={6}>
                   <Checkbox
                     top={0.5}
                     aria-label="Select all rows"
                     disabled={
-                      selection.disabled || selectableItems.length === 0
+                      activeSelection.disabled || selectableItems.length === 0
                     }
                     checked={
                       indeterminate ? 'indeterminate' : selectionCount > 0
                     }
                     onCheckedChange={(changes) =>
-                      selection.setSelection(
+                      activeSelection.setSelection(
                         changes.checked ? selectableItems.map(rowId) : [],
                       )
                     }
@@ -122,20 +123,22 @@ export default function DataTable<T>({
                   <Table.Row
                     key={id}
                     data-selected={
-                      selection?.selection.includes(id) ? '' : undefined
+                      activeSelection?.selection.includes(id) ? '' : undefined
                     }
                     _hover={{ cursor: onRowClick ? 'pointer' : 'default' }}
                     onClick={onRowClick ? () => onRowClick(item) : undefined}
                   >
-                    {canSelect && selection && (
+                    {activeSelection && (
                       <Table.Cell onClick={(e) => e.stopPropagation()}>
                         <Checkbox
                           top={0.5}
                           aria-label="Select row"
-                          disabled={selection.disabled || !canSelectRow(item)}
-                          checked={selection.selection.includes(id)}
+                          disabled={
+                            activeSelection.disabled || !canSelectRow(item)
+                          }
+                          checked={activeSelection.selection.includes(id)}
                           onCheckedChange={(changes) =>
-                            selection.setSelection((prev) =>
+                            activeSelection.setSelection((prev) =>
                               changes.checked
                                 ? [...prev, id]
                                 : prev.filter((x) => x !== id),
@@ -178,13 +181,13 @@ export default function DataTable<T>({
         onPageChange={onPageChange}
       />
 
-      {canSelect && selection && (
+      {activeSelection && (
         <SelectionActionBar
           open={hasSelection}
           selectionCount={selectionCount}
-          onDelete={selection.onDelete}
+          onDelete={activeSelection.onDelete}
         >
-          {selection.actions}
+          {activeSelection.actions}
         </SelectionActionBar>
       )}
     </>

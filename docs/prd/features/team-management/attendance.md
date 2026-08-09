@@ -7,7 +7,7 @@
 - **Attendance** tracks daily attendance status (On Time, Late, Absent) for all team members.
 - Players can submit leave requests; coaches and admins can mark and update statuses.
 
-## 2. Goals / Metrics
+## 2. Goals / metrics
 
 ### Goals
 
@@ -19,7 +19,7 @@
 - Attendance rate (present / total) per session.
 - Most common absence reasons (surfaced in the Dashboard).
 
-## 3. Users & Permissions
+## 3. Users and permissions
 
 | Role             | View | Submit leave | Mark / update status | Delete |
 | ---------------- | ---- | ------------ | -------------------- | ------ |
@@ -29,7 +29,9 @@
 | SUPER_ADMIN      | Yes  | Yes          | Yes                  | Yes    |
 | PLAYER (Captain) | Yes  | Yes          | No                   | No     |
 
-## 4. UX / Flows
+> Leave is self-service for players. `attendance:create` opens the leave form, but the `player_id` in the payload is independent of who is calling. `submitLeave` therefore rejects (`forbidden`) any request where a PLAYER, captain included, files leave for a different member. COACH and SUPER_ADMIN may still file on anyone's behalf, which is what the bulk dialog relies on.
+
+## 4. UX / flows
 
 ### Entry point
 
@@ -51,32 +53,36 @@
 - Coaches and admins see quick-action buttons (On Time, Late, Absent) per row.
 - A **Bulk Attendance** dialog allows entering status for multiple players at once.
 
-## 5. Functional Requirements
+## 5. Functional requirements
 
 - **FR-1:** All permitted roles can view the attendance list filtered by date.
 - **FR-2:** Filter by player name and status; filter state stored in URL.
-- **FR-3:** PLAYER and above can submit a leave request with a reason.
+- **FR-3:** PLAYER and above can submit a leave request with a reason. A PLAYER (captain included) may only submit for themselves; a request naming another `player_id` is rejected.
 - **FR-4:** COACH and SUPER_ADMIN can mark and update individual statuses.
 - **FR-5:** SUPER_ADMIN can bulk-enter attendance for multiple players.
-- **FR-6:** Duplicate records for the same player on the same date are prevented.
+- **FR-6:** Duplicate records for the same player on the same date are prevented by the `unique_player_per_date` index. This also blocks a second record on a two-session day, which is an open item in [TODO.md](../../../../TODO.md).
 - **FR-7:** SUPER_ADMIN can delete an attendance record.
 - **FR-8:** Changes show a success or error toast.
 
-## 6. Acceptance Criteria (Given/When/Then)
+## 6. Acceptance criteria (Given/When/Then)
 
 - **AC-1:** Given I am a PLAYER, when I submit a leave request, then an Absent record is created with my reason.
 - **AC-2:** Given I am a COACH, when I mark a player On Time, then the status updates immediately.
 - **AC-3:** Given a player already has a record for today, when a duplicate is submitted, then it is rejected.
+- **AC-4:** Given I am a PLAYER, when a leave request is submitted with another member's `player_id`, then it is rejected and no record is created.
 
-## 7. Technical Appendix
+## 7. Technical appendix
 
-### Data model (logical)
+### Data model (`src/drizzle/schema/attendance.ts`)
 
-Attendance:
+Attendance (`attendance`):
 
-- `player_id`: FK → user
-- `date`: date
-- `status`: enum [`ON_TIME`, `LATE`, `ABSENT`]
+- `attendance_id`: uuid PK
+- `team_id`: FK → team (cascade)
+- `player_id`: FK → player (cascade)
+- `session_id`: FK → training_session, nullable (set null on session delete)
+- `status`: enum `attendance_status` (`on_time` | `absent` | `late`)
+- `date`: date, unique per `(player_id, date)`
 - `reason`: string (optional)
 
 ### Query params
@@ -87,7 +93,7 @@ Attendance:
 
 ### API
 
-- `getAttendanceByDate(date)` — fetch records and stats
-- `submitLeave(values)` — player leave request
-- `updateStatus(id, status)` — update a single record
-- `removeAttendance(id)` — delete a record
+- `getAttendanceByDate(date)`: fetch records and stats
+- `submitLeave(values)`: player leave request; `team_id` comes from the session, and a PLAYER caller must match `values.player_id`
+- `updateStatus(id, status)`: update a single record
+- `removeAttendance(id)`: delete a record

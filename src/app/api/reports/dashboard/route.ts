@@ -57,6 +57,17 @@ export async function POST(req: NextRequest) {
 
     await page.waitForSelector('#reports-dashboard', { timeout: 3000 });
 
+    // The charts stream in behind Suspense and load as client-only chunks, so
+    // wait for their skeleton placeholders to clear before capturing (best
+    // effort — an empty dashboard shows empty states, not skeletons)
+    await page
+      .waitForFunction(
+        () =>
+          !document.querySelector('#reports-dashboard .chakra-skeleton'),
+        { timeout: 5000 },
+      )
+      .catch(() => {});
+
     // Replace body content with only the dashboard grid — <head> stays intact
     // so all Chakra CSS variables and stylesheets remain active
     await page.evaluate(

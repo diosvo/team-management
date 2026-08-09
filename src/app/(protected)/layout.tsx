@@ -17,8 +17,9 @@ export default async function ProtectedLayout({
     redirect(LOGIN_PATH, RedirectType.replace);
   }
 
+  // Only `session.user` crosses to the client — the session token stays server-side.
   return (
-    <SessionProvider initialSession={session}>
+    <SessionProvider initialUser={session.user}>
       <AppShell>{children}</AppShell>
     </SessionProvider>
   );

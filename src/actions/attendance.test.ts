@@ -19,6 +19,7 @@ import {
   mockWithResourceAction,
 } from '@/test/mocks/auth';
 import { MOCK_TEAM } from '@/test/mocks/team';
+import { MOCK_USER } from '@/test/mocks/user';
 
 import { AttendanceStatus } from '@/utils/enum';
 
@@ -113,12 +114,21 @@ describe('Attendance Actions', () => {
   });
 
   describe('submitLeave', () => {
+    // The session user is a player, so leave can only be filed for themselves
     const leaveData = {
-      player_id: MOCK_ATTENDANCE_INPUT.player_id,
+      player_id: MOCK_USER.id,
       date: MOCK_ATTENDANCE_INPUT.date,
       status: MOCK_ATTENDANCE_INPUT.status,
       reason: MOCK_ATTENDANCE_INPUT.reason,
     };
+
+    test('forbids a player from submitting leave for someone else', async () => {
+      await expect(
+        submitLeave({ ...leaveData, player_id: 'someone-else' }),
+      ).rejects.toThrow();
+
+      expect(insertAttendance).not.toHaveBeenCalled();
+    });
 
     test('submits leave successfully and revalidates cache', async () => {
       vi.mocked(insertAttendance).mockResolvedValue({

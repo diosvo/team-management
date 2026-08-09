@@ -1,24 +1,14 @@
 import fontkit from '@pdf-lib/fontkit';
 import { PDFDocument, PDFTextField, rgb } from 'pdf-lib';
 
-import { triggerDownload, withExtension } from '@/lib/download';
-
 import type { League } from '@/drizzle/schema';
 import type { User } from '@/drizzle/schema/user';
 
-/**
- * @description Columns extracted for every player. The order is also the column
- * order used by the default (generated-from-scratch) form.
- */
-export const COLUMNS = [
-  { key: 'name', header: 'Họ tên', width: 200 },
-  { key: 'dob', header: 'Năm sinh', width: 70 },
-  { key: 'cmnd', header: 'CCCD', width: 110 },
-  { key: 'phone', header: 'Điện thoại', width: 90 },
-  { key: 'jersey', header: 'Số áo', width: 50 },
-] as const;
+import { toRow, type ColumnKey } from './roster';
 
-type ColumnKey = (typeof COLUMNS)[number]['key'];
+// NOTE: this module carries pdf-lib (~400KB). Import it dynamically
+// (`await import('../_helpers/pdf')`) from event handlers/effects only —
+// column and CSV helpers live in ./roster, which is safe to import statically.
 
 /**
  * @description Field-name patterns used to auto-map an uploaded AcroForm's
@@ -61,17 +51,6 @@ const loadFont = async (file: string): Promise<ArrayBuffer> => {
 
 const embedFont = async (pdf: PDFDocument, file: string) =>
   pdf.embedFont(await loadFont(file), { subset: false });
-
-const birthYear = (player: User) =>
-  player.dob ? String(new Date(player.dob).getFullYear()) : '';
-
-export const toRow = (player: User): Record<ColumnKey, string> => ({
-  name: player.name ?? '',
-  dob: birthYear(player),
-  cmnd: player.citizen_identification ?? '',
-  phone: player.phone_number ?? '',
-  jersey: player.player?.jersey_number?.toString() ?? '',
-});
 
 const TEAM_NAME = 'Saigon Rovers Basketball Club';
 const PDF_TITLE = 'HỒ SƠ ĐĂNG KÝ BÓNG RỔ';
@@ -297,29 +276,3 @@ export const buildRegistrationPdf = async ({
     ? fillUploadedFormPdf(pdf, fields, players)
     : generateRoster();
 };
-
-const escapeCsv = (value: string) =>
-  /[",\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
-
-export const buildRosterCsv = (players: Array<User>): string =>
-  [
-    COLUMNS.map((column) => column.header).join(','),
-    ...players.map((player) => {
-      const row = toRow(player);
-      return COLUMNS.map((column) => escapeCsv(row[column.key])).join(',');
-    }),
-  ].join('\n');
-
-export const downloadPdf = (bytes: Uint8Array, filename: string) =>
-  triggerDownload(
-    new Blob([bytes as BlobPart], { type: 'application/pdf' }),
-    withExtension(filename, '.pdf'),
-  );
-
-export const downloadCsv = (players: Array<User>, filename: string) =>
-  triggerDownload(
-    new Blob(['\uFEFF' + buildRosterCsv(players)], {
-      type: 'text/csv;charset=utf-8',
-    }),
-    withExtension(filename, '.csv'),
-  );

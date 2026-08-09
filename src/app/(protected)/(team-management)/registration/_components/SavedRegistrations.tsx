@@ -16,7 +16,7 @@ import useTableState from '@/hooks/use-table-state';
 import { useCommonParams } from '@/lib/nuqs';
 import { formatDatetime } from '@/utils/formatter';
 
-import { downloadPdf } from '../_helpers/pdf';
+import { downloadPdf } from '../_helpers/roster';
 import { SavedRegistration } from '../_helpers/useSavedRegistrations';
 
 type SavedRegistrationsProps = {

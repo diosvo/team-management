@@ -20,7 +20,7 @@ import { Controller, useForm } from 'react-hook-form';
 
 import Authorized from '@/components/Authorized';
 import LocationSelection from '@/components/common/LocationSelection';
-import SearchableSelect from '@/components/SearchableSelect';
+import { SearchableSelectField } from '@/components/SearchableSelect';
 import { CloseButton } from '@/components/ui/close-button';
 import { Field } from '@/components/ui/field';
 import { NumberInputField } from '@/components/ui/number-input';
@@ -120,8 +120,7 @@ export const UpsertMatch = createOverlay(({ action, item, ...rest }) => {
                 </Switch>
                 <Authorized resource="matches" action="edit">
                   <Visibility isVisible={isLeague}>
-                    <SearchableSelect
-                      controlledMode
+                    <SearchableSelectField
                       multiple={false}
                       control={control}
                       name="league_id"
@@ -150,8 +149,7 @@ export const UpsertMatch = createOverlay(({ action, item, ...rest }) => {
                     />
                   </Visibility>
                 </Authorized>
-                <SearchableSelect
-                  controlledMode
+                <SearchableSelectField
                   multiple={false}
                   control={control}
                   name="away_team"

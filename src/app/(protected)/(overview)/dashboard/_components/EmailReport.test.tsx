@@ -12,9 +12,15 @@ import EmailReport from './EmailReport';
 const RECIPIENTS = ['alice@example.com', 'bob@example.com'];
 
 // Drive the recipients field directly instead of exercising the full
-// SearchableSelect (covered by its own suite); a button toggles the selection.
+// SearchableSelectField (covered by its own suite); a button toggles the selection.
 vi.mock('@/components/SearchableSelect', () => ({
-  default: ({ control, name }: { control: unknown; name: string }) => {
+  SearchableSelectField: ({
+    control,
+    name,
+  }: {
+    control: unknown;
+    name: string;
+  }) => {
     const { field } = useController({ control: control as never, name });
     return (
       <button type="button" onClick={() => field.onChange(RECIPIENTS)}>

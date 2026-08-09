@@ -1,9 +1,10 @@
 'use server';
 
 import { differenceInDays } from 'date-fns';
+import { cache } from 'react';
 
-import { MatchesRateRecord } from '@/types/analytics';
-import { IntervalValues } from '@/types/common';
+import type { MatchesRateRecord } from '@/types/analytics';
+import type { IntervalValues } from '@/types/common';
 import { Interval, MatchStatus, MatchType } from '@/utils/enum';
 
 import {
@@ -29,9 +30,28 @@ function createAnalyticsAction<T>(
   );
 }
 
+/**
+ * Request-scoped, primitive-keyed wrapper so the overview stats and the
+ * matches-rate chart share one query when they ask for the same interval.
+ */
+const fetchGameMatches = cache((team_id: string, interval: IntervalValues) =>
+  fetchMatches({
+    team_id,
+    game_type: ['true'],
+    interval,
+    match_type: [],
+    // TODO: it could be optional in the API, but the current implementation requires it
+    page: 1,
+    q: '',
+  }),
+);
+
 export const getOverviewStats = withAuth(async ({ team_id }) => {
-  const active_players = await getActivePlayers();
-  const upcoming_matches = await getUpcomingMatches();
+  const [active_players, upcoming_matches, matches] = await Promise.all([
+    getActivePlayers(),
+    getUpcomingMatches(),
+    fetchGameMatches(team_id, Interval.THIS_YEAR),
+  ]);
 
   const next_game =
     upcoming_matches.length > 0 ? upcoming_matches[0].date : null;
@@ -39,20 +59,10 @@ export const getOverviewStats = withAuth(async ({ team_id }) => {
     ? differenceInDays(new Date(next_game), new Date())
     : null;
 
-  const matches = await fetchMatches({
-    team_id,
-    game_type: ['true'],
-    interval: Interval.THIS_YEAR,
-    match_type: [],
-    page: 1,
-    q: '',
-  });
-  const win_rate = matches.stats.avg_win_rate;
-
   return {
     active_players: active_players.length,
     next_game: next_game_date,
-    win_rate,
+    win_rate: matches.stats.avg_win_rate,
   };
 });
 
@@ -61,15 +71,7 @@ export const getMatchesRate = createAnalyticsAction(
     team_id,
     interval: IntervalValues,
   ): Promise<Array<MatchesRateRecord>> => {
-    const matchesData = await fetchMatches({
-      team_id,
-      game_type: ['true'],
-      interval,
-      match_type: [],
-      // TODO: it could be optional in the API, but the current implementation requires it
-      page: 1,
-      q: '',
-    });
+    const matchesData = await fetchGameMatches(team_id, interval);
 
     return Object.entries(
       matchesData.data.reduce(

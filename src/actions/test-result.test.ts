@@ -5,8 +5,8 @@ import { getDbErrorMessage } from '@/db/pg-error';
 import {
   deleteTestResultById as deleteAction,
   getDates,
+  getExistingTestResults,
   getTestResultByDate,
-  getTestResultByUserAndTypeIds,
   insertTestResult,
   updateTestResultById as updateAction,
   updateTestResults,
@@ -39,8 +39,10 @@ vi.mock('./auth', () => ({
 
 vi.mock('@/db/test-result', () => ({
   getDates: vi.fn(),
+  getExistingTestResults: vi.fn(),
   getTestResultByDate: vi.fn(),
-  getTestResultByUserAndTypeIds: vi.fn(),
+  testResultKey: (result: InsertTestResult) =>
+    `${result.date ?? ''}|${result.player_id}|${result.type_id}`,
   insertTestResult: vi.fn(),
   updateTestResultById: vi.fn(),
   updateTestResults: vi.fn(),
@@ -148,13 +150,15 @@ describe('Test Result Actions', () => {
   });
 
   describe('createTestResult', () => {
+    const keyOf = ({ date, player_id, type_id }: InsertTestResult) =>
+      `${date ?? ''}|${player_id}|${type_id}`;
     const newResult: InsertTestResult = {
       ...MOCK_TEST_RESULT_INPUT,
       type_id: 'type-new',
     };
 
     test('creates new results when none exist', async () => {
-      vi.mocked(getTestResultByUserAndTypeIds).mockResolvedValue(undefined);
+      vi.mocked(getExistingTestResults).mockResolvedValue(new Map());
       vi.mocked(insertTestResult).mockResolvedValue({
         ...mockResult,
         command: 'INSERT',
@@ -162,9 +166,9 @@ describe('Test Result Actions', () => {
 
       const result = await createTestResult([MOCK_TEST_RESULT_INPUT]);
 
-      expect(getTestResultByUserAndTypeIds).toHaveBeenCalledWith(
+      expect(getExistingTestResults).toHaveBeenCalledWith([
         MOCK_TEST_RESULT_INPUT,
-      );
+      ]);
       expect(insertTestResult).toHaveBeenCalledWith([MOCK_TEST_RESULT_INPUT]);
       expect(updateTestResults).not.toHaveBeenCalled();
       expect(result).toEqual({
@@ -174,8 +178,8 @@ describe('Test Result Actions', () => {
     });
 
     test('updates existing results when they already exist', async () => {
-      vi.mocked(getTestResultByUserAndTypeIds).mockResolvedValue(
-        MOCK_TEST_RESULT,
+      vi.mocked(getExistingTestResults).mockResolvedValue(
+        new Map([[keyOf(MOCK_TEST_RESULT_INPUT), MOCK_TEST_RESULT.result_id]]),
       );
       vi.mocked(updateTestResults).mockResolvedValue([
         { ...mockResult, command: 'UPDATE' },
@@ -183,9 +187,9 @@ describe('Test Result Actions', () => {
 
       const result = await createTestResult([MOCK_TEST_RESULT_INPUT]);
 
-      expect(getTestResultByUserAndTypeIds).toHaveBeenCalledWith(
+      expect(getExistingTestResults).toHaveBeenCalledWith([
         MOCK_TEST_RESULT_INPUT,
-      );
+      ]);
       expect(updateTestResults).toHaveBeenCalledWith([
         { ...MOCK_TEST_RESULT_INPUT, result_id: MOCK_TEST_RESULT.result_id },
       ]);
@@ -197,9 +201,10 @@ describe('Test Result Actions', () => {
     });
 
     test('handles mixed create and update in batch', async () => {
-      vi.mocked(getTestResultByUserAndTypeIds)
-        .mockResolvedValueOnce(MOCK_TEST_RESULT) // first result exists
-        .mockResolvedValueOnce(undefined); // second result is new
+      // only the first result exists; the second one is new
+      vi.mocked(getExistingTestResults).mockResolvedValue(
+        new Map([[keyOf(MOCK_TEST_RESULT_INPUT), MOCK_TEST_RESULT.result_id]]),
+      );
       vi.mocked(updateTestResults).mockResolvedValue([
         { ...mockResult, command: 'UPDATE' },
       ]);
@@ -225,7 +230,7 @@ describe('Test Result Actions', () => {
 
     test('returns error response when batch operation fails', async () => {
       const errorMessage = 'Insert failed';
-      vi.mocked(getTestResultByUserAndTypeIds).mockResolvedValue(undefined);
+      vi.mocked(getExistingTestResults).mockResolvedValue(new Map());
       vi.mocked(insertTestResult).mockRejectedValue(new Error(errorMessage));
       vi.mocked(getDbErrorMessage).mockReturnValue({
         message: errorMessage,

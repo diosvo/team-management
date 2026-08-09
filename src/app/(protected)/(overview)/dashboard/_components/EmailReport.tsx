@@ -15,7 +15,7 @@ import { capitalize } from 'es-toolkit/string';
 import { Base64 } from 'js-base64';
 import { useForm, useWatch } from 'react-hook-form';
 
-import SearchableSelect from '@/components/SearchableSelect';
+import { SearchableSelectField } from '@/components/SearchableSelect';
 import { toaster } from '@/components/ui/toaster';
 
 import { formatValueUnit } from '@/utils/formatter';
@@ -25,13 +25,13 @@ import { EmailReportSchema, EmailReportSchemaValues } from '@/schemas/report';
 
 import AnalyticsReport from '../../reports/_components/AnalyticsReport';
 
-interface EmailReportProps {
+type EmailReportProps = {
   open: boolean;
   interval: string;
   formattedPeriod: string;
   filename: string;
   onOpenChange: (open: boolean) => void;
-}
+};
 
 export default function EmailReport({
   interval,
@@ -122,8 +122,7 @@ export default function EmailReport({
               <Dialog.Title>Email Analytics Report</Dialog.Title>
             </Dialog.Header>
             <Dialog.Body>
-              <SearchableSelect
-                controlledMode
+              <SearchableSelectField
                 multiple
                 name="recipients"
                 label="recipients"

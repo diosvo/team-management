@@ -111,27 +111,27 @@ async function syncLeagueRoster(
   const toAdd = player_ids.filter((id) => !currentPlayerIds.includes(id));
   const toRemove = currentPlayerIds.filter((id) => !player_ids.includes(id));
 
-  const errors: Array<string> = [];
+  // Each add/remove targets a distinct row, so run the whole batch in
+  // parallel and keep the per-player error messages via allSettled
+  const tasks = [
+    ...toAdd.map((player_id) => ({
+      run: () => addPlayerToLeagueRoster(team_id, league_id, player_id),
+      describe: (message: string) =>
+        `${message} (id: ${player_id.slice(0, 8)})`,
+    })),
+    ...toRemove.map((player_id) => ({
+      run: () => removePlayerFromLeagueRoster(team_id, league_id, player_id),
+      describe: (message: string) =>
+        `Failed to remove player (id: ${player_id.slice(0, 8)}) - ${message}`,
+    })),
+  ];
 
-  for (const player_id of toAdd) {
-    try {
-      await addPlayerToLeagueRoster(team_id, league_id, player_id);
-    } catch (error) {
-      const shortId = player_id.slice(0, 8);
-      const { message } = getDbErrorMessage(error);
-      errors.push(`${message} (id: ${shortId})`);
-    }
-  }
+  const settled = await Promise.allSettled(tasks.map((task) => task.run()));
 
-  for (const player_id of toRemove) {
-    try {
-      await removePlayerFromLeagueRoster(team_id, league_id, player_id);
-    } catch (error) {
-      const shortId = player_id.slice(0, 8);
-      const { message } = getDbErrorMessage(error);
-      errors.push(`Failed to remove player (id: ${shortId}) - ${message}`);
-    }
-  }
+  return settled.flatMap((result, index) => {
+    if (result.status === 'fulfilled') return [];
 
-  return errors;
+    const { message } = getDbErrorMessage(result.reason);
+    return [tasks[index].describe(message)];
+  });
 }

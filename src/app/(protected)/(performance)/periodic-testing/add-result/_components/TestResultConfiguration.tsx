@@ -34,7 +34,6 @@ export default function TestResultConfiguration({
         }
       />
       <SearchableSelect
-        controlledMode={false}
         multiple={true}
         label="types"
         action={getTestTypes}

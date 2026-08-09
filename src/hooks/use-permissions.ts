@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 
+import type { UserRole } from '@/utils/enum';
 import {
   defineAbility,
   hasPermissions,
@@ -36,7 +37,9 @@ const NO_ACCESS: Omit<PermissionsResult, 'isLoading'> = {
 } as const;
 
 export default function usePermissions() {
-  const { role, isCaptain, isLoading } = useSessionContext();
+  const { user, isLoading } = useSessionContext();
+  const role = (user?.role as Nullable<UserRole>) ?? null;
+  const isCaptain = user?.is_captain ?? false;
 
   return useMemo(() => {
     if (!role) return { isLoading, ...NO_ACCESS };

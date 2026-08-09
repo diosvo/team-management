@@ -1,6 +1,6 @@
-# Architecture — Saigon Rovers Basketball Club Portal
+# Architecture: Saigon Rovers Basketball Club Portal
 
-> Official architecture document for `saigon-rovers-basketball-club-portal`. Everything here is generated from the **actual source code** — schema in `src/drizzle/schema/`, auth in `src/lib/auth.ts` + `src/proxy.ts` + `src/actions/auth.ts`, permissions in `src/utils/permissions.ts`. Where the code doesn't answer a question, the section says so explicitly. This is not a README — for setup steps see [README.md](README.md) and [DEVELOPMENT.md](DEVELOPMENT.md).
+> Official architecture document for `saigon-rovers-basketball-club-portal`. Everything here is generated from the **actual source code**: schema in `src/drizzle/schema/`, auth in `src/lib/auth.ts` + `src/proxy.ts` + `src/actions/auth.ts`, permissions in `src/utils/permissions.ts`. Where the code doesn't answer a question, the section says so explicitly. This is not a README. For setup steps see [README.md](README.md) and [DEVELOPMENT.md](DEVELOPMENT.md).
 
 **Contents**
 
@@ -22,11 +22,9 @@
 16. [Project identification](#16-project-identification)
 17. [Glossary / acronyms](#17-glossary--acronyms)
 
----
-
 ## 1. System overview
 
-A team-management portal for a basketball club: an admin provisions accounts, and coaches/players/guests manage roster, training, attendance, matches, performance testing, assets, and analytics. It is a **Next.js 16 App Router** application deployed to **Vercel**, with all mutations flowing through **React Server Actions** rather than a REST API. There is **no public sign-up** — accounts are created by an admin (or a team captain) and activated through a password-reset email.
+A team-management portal for a basketball club: an admin provisions accounts, and coaches/players/guests manage roster, training, attendance, matches, performance testing, assets, and analytics. It is a **Next.js 16 App Router** application deployed to **Vercel**, with all mutations flowing through **React Server Actions** rather than a REST API. There is **no public sign-up**: accounts are created by an admin (or a team captain) and activated through a password-reset email.
 
 ```mermaid
 flowchart LR
@@ -56,13 +54,11 @@ flowchart LR
     server -- "password reset /<br/>email feature" --> resend
 ```
 
-- **Hosting** — the Next.js app deploys to Vercel; the database is local PostgreSQL in development and [Neon](https://vercel.com/marketplace/neon) in production (same Drizzle schema, `drizzle.config.ts`).
-- **Files** — user avatars and team logos are stored in **Vercel Blob** (`src/lib/blob.ts`, private access, path scheme `users/<id>` and `teams/<team_id>`).
-- **Email** — **Resend** (`src/lib/resend.ts`) sends the password-setup email during account provisioning and powers the Emails / analytics-report feature.
-- **Auth** — **Better Auth** (`better-auth/minimal` + `@better-auth/infra` `dash()` plugin) with the Drizzle adapter; email/password only, no self-signup.
-- **Rendering** — pages are React Server Components; interactivity lives in colocated `_components` client components. There is no separate API tier — server actions (`src/actions/*`) are the write path, and two route handlers exist for Better Auth and for PDF report export.
-
----
+- **Hosting**: the Next.js app deploys to Vercel; the database is local PostgreSQL in development and [Neon](https://vercel.com/marketplace/neon) in production (same Drizzle schema, `drizzle.config.ts`).
+- **Files**: user avatars and team logos are stored in **Vercel Blob** (`src/lib/blob.ts`, private access, path scheme `users/<id>` and `teams/<team_id>`).
+- **Email**: **Resend** (`src/lib/resend.ts`) sends the password-setup email during account provisioning and powers the Emails / analytics-report feature.
+- **Auth**: **Better Auth** (`better-auth/minimal` + `@better-auth/infra` `dash()` plugin) with the Drizzle adapter; email/password only, no self-signup.
+- **Rendering**: pages are React Server Components; interactivity lives in colocated `_components` client components. There is no separate API tier: server actions (`src/actions/*`) are the write path, and two route handlers exist for Better Auth and for PDF report export.
 
 ## 2. Tech stack
 
@@ -93,16 +89,14 @@ flowchart LR
 | E2E testing            | Playwright                                      | `^1.61.1`              | `playwright.config.ts`, `e2e/`                 |
 | Package manager        | pnpm (workspace)                                | —                      | `pnpm-workspace.yaml`                          |
 
----
-
 ## 3. Directory structure
 
-```
+```text
 team-management/
 ├── src/
 │   ├── app/                    # Next.js App Router (route groups do not add URL segments)
 │   │   ├── (auth)/             # Public auth pages: /login, /forgot-password, /new-password
-│   │   ├── (protected)/        # Authenticated app — gated by layout.tsx (verifySession)
+│   │   ├── (protected)/        # Authenticated app, gated by layout.tsx (verifySession)
 │   │   │   ├── (overview)/     #   /dashboard, /team-rule (+ reports/_components, no route)
 │   │   │   ├── (performance)/  #   /periodic-testing (+ /add-result, /test-types)
 │   │   │   ├── (resources)/    #   /assets, /emails
@@ -117,8 +111,8 @@ team-management/
 │   │   │   └── reports/dashboard/  # POST → Puppeteer-rendered PDF of the dashboard
 │   │   ├── layout.tsx          # Root layout: Nuqs → Chakra → Toaster (+ Vercel analytics)
 │   │   └── forbidden.tsx       # 403 UI boundary
-│   ├── actions/                # 'use server' write path — one file per domain, permission-guarded
-│   ├── db/                     # Data-access layer — db.query.* per domain + pg-error mapping
+│   ├── actions/                # 'use server' write path: one file per domain, permission-guarded
+│   ├── db/                     # Data-access layer: db.query.* per domain + pg-error mapping
 │   ├── drizzle/                # Schema, migrations, seed SQL, migrate/reset scripts, db instance
 │   │   ├── schema/             #   12 modules → 19 tables + PG enums
 │   │   ├── migrations/         #   4 generated migrations + snapshots
@@ -143,9 +137,7 @@ team-management/
 ├── next.config.ts / tsconfig.json / vitest.config.mts / playwright.config.ts
 ```
 
-> Route groups in parentheses (`(protected)`, `(team-management)`, …) organize files **without** adding URL segments — `(protected)/(team-management)/roster` resolves to `/roster`.
-
----
+> Route groups in parentheses (`(protected)`, `(team-management)`, …) organize files **without** adding URL segments, so `(protected)/(team-management)/roster` resolves to `/roster`.
 
 ## 4. Entity relationship overview
 
@@ -221,14 +213,12 @@ flowchart TB
 
 Structural notes:
 
-- There is only **one** `session` table (Better Auth) — it belongs to `user`, not to `team`.
+- There is only **one** `session` table (Better Auth): it belongs to `user`, not to `team`.
 - `verification` is a standalone Better Auth table (password-reset tokens); it has no foreign keys.
 - `league_team` (league ⨯ team) is a junction table in its own right; `league_team_roster` adds the player dimension.
-- A `match` references **two** teams directly (`home_team` / `away_team`, must differ) — teams are not linked to matches only through the league.
+- A `match` references **two** teams directly (`home_team` / `away_team`, must differ), so teams are not linked to matches only through the league.
 - `test_result` links to **both** `test_type` and `player`.
 - `location` is used by both `match` and `training_session`.
-
----
 
 ## 5. Database relationships (detailed ERD)
 
@@ -447,13 +437,11 @@ erDiagram
 
 ### Migrations & seed
 
-`src/drizzle/migrations/` (dialect postgresql, 4 migrations): `0000_base_tables`, `0001_update_asset_table` (adds `OBSOLETE`, `assigned_to`, `acquired_date`), `0002_complete_doctor_doom` (recreates `test_result.type_id` FK as `ON DELETE restrict`), `0003_update_team_image` (renames `team.logo_url` → `team.image`, to `text`). Raw bootstrap/seed SQL lives in `src/drizzle/sql/` (`team.sql` default team, `admin_user.sql`, `team_rule.sql`, `periodic-testing.sql`, and `seed_data.sql` — a re-runnable mock-data importer targeting 20 teams / 100 users / 100 rows per domain).
-
----
+`src/drizzle/migrations/` (dialect postgresql, 4 migrations): `0000_base_tables`, `0001_update_asset_table` (adds `OBSOLETE`, `assigned_to`, `acquired_date`), `0002_complete_doctor_doom` (recreates `test_result.type_id` FK as `ON DELETE restrict`), `0003_update_team_image` (renames `team.logo_url` → `team.image`, to `text`). Raw bootstrap/seed SQL lives in `src/drizzle/sql/` (`team.sql` default team, `admin_user.sql`, `team_rule.sql`, `periodic-testing.sql`, and `seed_data.sql`, a re-runnable mock-data importer targeting 20 teams / 100 users / 100 rows per domain).
 
 ## 6. Authentication & authorization
 
-Better Auth (email & password, **no** email verification) with a **three-layer** defense: middleware → server → client. Session lifetime is **1 hour** (`COOKIE.expires`), the signed cookie cache also lasts 1 hour (`COOKIE.maxAge`), cookie prefix `sgr` (`src/utils/constant.ts:31`). Config: `src/lib/auth.ts` (`betterAuth`, plugins `dash()` + `nextCookies()`, `additionalFields` role/state/team_id/is_captain). Client: `src/lib/auth-client.ts` (`createAuthClient` + `inferAdditionalFields`).
+Better Auth (email & password, **no** email verification) with a **three-layer** defense: middleware → server → client. Session lifetime is **1 hour** (`COOKIE.expires`), and the signed cookie cache lasts the same 1 hour (`COOKIE.maxAge`). The cookie prefix is `sgr` (`src/utils/constant.ts:31`). Config: `src/lib/auth.ts` (`betterAuth`, plugins `dash()` + `nextCookies()`, `additionalFields` role/state/team_id/is_captain). Client: `src/lib/auth-client.ts` (`createAuthClient` + `inferAdditionalFields`).
 
 ### 6.1 Roles & permission model (`src/utils/permissions.ts`)
 
@@ -476,15 +464,15 @@ sequenceDiagram
     participant DB as PostgreSQL
 
     U->>MW: GET /roster (navigation)
-    Note over MW: Requests with a next-action header bypass<br/>middleware — server actions guard themselves
+    Note over MW: Requests with a next-action header bypass<br/>middleware, so server actions guard themselves
 
-    MW->>MW: getSessionCookie() — presence check only, no DB
+    MW->>MW: getSessionCookie(): presence check only, no DB
     alt No cookie + protected route
         MW-->>U: redirect /login
     else Cookie + auth route (/, /login, /forgot-password, /new-password)
         MW-->>U: redirect /dashboard
     else Cookie + protected route
-        MW->>MW: getCookieCache() — verify signed cookie cache<br/>(maxAge 1 h, still no DB)
+        MW->>MW: getCookieCache(): verify signed cookie cache<br/>(maxAge 1 hour, still no DB)
         alt Cookie cache expired / invalid
             MW-->>U: redirect /login
         else Valid
@@ -497,7 +485,7 @@ sequenceDiagram
         end
     end
 
-    RSC->>BA: verifySession() — React cache, once per request
+    RSC->>BA: verifySession(): React cache, once per request
     BA->>DB: auth.api.getSession() (session row, expiresIn = 1 h)
     alt No session (expired / revoked)
         RSC-->>U: redirect /login (replace)
@@ -536,8 +524,9 @@ sequenceDiagram
 ```
 
 - The **middleware** permission check covers **`view` only**; granular `create`/`edit`/`delete` checks happen in server actions via `withResource`, which also honors **captain** overrides.
-- `getCookieCache()` never touches the database — full validation against the `session` table happens in `verifySession()` (`cache()`-wrapped, once per request) on the server.
-- The client `SessionProvider` does not poll; a missing-session redirect is done server-side by the protected layout and, as a fallback, client-side in `AppShell`.
+- `withResource` authorizes a resource, not a record. Actions whose access depends on the target row re-check it against the injected `user` and call `forbidden()` on a mismatch: `submitLeave` (a PLAYER may only file for themselves), `updatePersonalInfo` / `updateTeamInfo` (non-admins: self only, and the submitted `role` must match their current one), `uploadAvatar` (self only; the `old_path` must equal the stored `image`, because blob keys get a random suffix and a `users/<id>` prefix also matches `users/<id>2-…`), and `getAvatar` (path confined to `users/`). Identifiers naming the caller's own scope, `team_id` above all, come from the session rather than the arguments.
+- `getCookieCache()` never touches the database. Full validation against the `session` table happens in `verifySession()` (`cache()`-wrapped, once per request) on the server.
+- The client `SessionProvider` does not poll; a missing-session redirect is done server-side by the protected layout and, as a fallback, client-side in `AppShell`. The layout passes the provider only `session.user`, so the session record and its token stay server-side; the provider exposes that user plus `isLoading` / `isAuthenticated`, and consumers such as `usePermissions` derive role and captain flag from it.
 
 ### 6.4 Account provisioning & password reset
 
@@ -558,8 +547,6 @@ flowchart TB
 
     K["Existing user: /forgot-password<br/>authClient.requestPasswordReset()"] --> H
 ```
-
----
 
 ## 7. Key modules / features
 
@@ -588,10 +575,8 @@ Each feature is a Server Component page under `src/app/(protected)/…` whose in
 
 **API route handlers** (the only non-action server endpoints):
 
-- `src/app/api/auth/[...all]/route.ts` — Better Auth catch-all (`toNextJsHandler`, `GET`/`POST`): sign-in, sign-out, session, password reset.
-- `src/app/api/reports/dashboard/route.ts` — `POST`, `maxDuration = 30`. Auth-gated (401 if no session); launches headless Chromium (`getBrowser`), **forwards the request's auth cookies** into the browser, navigates to the origin, isolates `#reports-dashboard`, and returns an `application/pdf` attachment.
-
----
+- `src/app/api/auth/[...all]/route.ts`: Better Auth catch-all (`toNextJsHandler`, `GET`/`POST`): sign-in, sign-out, session, password reset.
+- `src/app/api/reports/dashboard/route.ts`: `POST`, `maxDuration = 30`. Auth-gated (401 if no session); launches headless Chromium (`getBrowser`), **forwards the request's auth cookies** into the browser, navigates to the origin, isolates `#reports-dashboard`, and returns an `application/pdf` attachment.
 
 ## 8. External services
 
@@ -605,9 +590,7 @@ Each feature is a Server Component page under `src/app/(protected)/…` whose in
 | Chromium pack                     | Serverless headless browser for PDF   | `src/lib/puppeteer.ts`                      | `CHROMIUM_PACK_URL` (production)                               |
 | Vercel Analytics + Speed Insights | Web analytics (production only)       | `src/app/layout.tsx`                        | —                                                              |
 
-Notes: `BLOB_STORE_ID`, `BETTER_AUTH_*`, and `CRON_SECRET` appear in `.env` but are **not** part of the validated `env.config.ts` schema — Better Auth reads its own vars directly from `process.env`. Resend's sender is currently `Acme <onboarding@resend.dev>` (`src/lib/resend.ts:7`) with every subject prefixed `SGR - `. `next.config.ts` allowlists remote images from `https://blob.vercel-storage.com/**`.
-
----
+Notes: `BLOB_STORE_ID`, `BETTER_AUTH_*`, and `CRON_SECRET` appear in `.env` but are **not** part of the validated `env.config.ts` schema, because Better Auth reads its own vars directly from `process.env`. Resend's sender is currently `Acme <onboarding@resend.dev>` (`src/lib/resend.ts:7`) with every subject prefixed `SGR - `. `next.config.ts` allowlists remote images from `https://blob.vercel-storage.com/**`.
 
 ## 9. Configuration & environments
 
@@ -630,35 +613,33 @@ Environment variables are loaded and **Zod-validated** in `env.config.ts` (impor
 
 **Dev vs prod differences** derived from code:
 
-- **Database** — local PostgreSQL in dev, Neon in prod (same schema).
-- **Chromium** — dev drives system Chrome (`channel: 'chrome'`); prod fetches a Brotli Chromium pack from `CHROMIUM_PACK_URL` (`src/lib/puppeteer.ts`).
-- **Analytics** — Vercel Analytics + Speed Insights render only when `NODE_ENV === 'production'` (`src/app/layout.tsx`).
-- **Error detail** — the reports route returns the raw error message only in development, a generic message otherwise (`api/reports/dashboard/route.ts`).
-
----
+- **Database**: local PostgreSQL in dev, Neon in prod (same schema).
+- **Chromium**: dev drives system Chrome (`channel: 'chrome'`); prod fetches a Brotli Chromium pack from `CHROMIUM_PACK_URL` (`src/lib/puppeteer.ts`).
+- **Analytics**: Vercel Analytics + Speed Insights render only when `NODE_ENV === 'production'` (`src/app/layout.tsx`).
+- **Error detail**: the reports route returns the raw error message only in development, a generic message otherwise (`api/reports/dashboard/route.ts`).
 
 ## 10. Cross-cutting concerns
 
-- **Input validation** — Zod schemas in `src/schemas/*` (one per domain), consumed by react-hook-form via `@hookform/resolvers` on the client and re-validated inside actions. `src/lib/zod.ts` provides `getDefaults()` (pull `ZodDefault` values into form defaults) and a dev `onError` logger.
-- **Authorization** — centralized in `src/utils/permissions.ts` (`can` / `defineAbility`), enforced at three layers (middleware view-gate, server-action `withResource`, client `usePermissions`/`Authorized`/`Visibility` components). See §6.
-- **Response shape** — server actions return `ResponseFactory.success(message, data?)` / `ResponseFactory.error(message)` (`src/utils/response.ts`) — a uniform `{ success, message, data? }` envelope.
-- **Database errors** — `src/db/pg-error.ts` maps Postgres SQLSTATE codes (`PgErrorCode`) to user-friendly messages via `getDbErrorMessage()`, unwrapping `DrizzleQueryError` → `pg.DatabaseError`. Actions catch specific constraint names (e.g. `unique_player_per_date`, `player_jersey_number_unique`, the `test_result → test_type` FK) to return friendly errors.
-- **Caching / revalidation** — `src/actions/cache.ts` exposes a `revalidate` map calling `revalidatePath()` per entity after mutations. `CACHE_TAG`-based `revalidateTag` is scaffolded but currently commented out. Client reads use SWR (`use-image.ts` uses `useSWRImmutable`); URL state uses **nuqs** (`src/lib/nuqs.ts`) with per-resource param parsers, client hooks (`useRosterFilters`, …) and server loaders (`loadMatchFilters`, …).
-- **File uploads** — `src/lib/blob.ts` (`getFile`/`uploadFile`/`deleteFile`): private access, `addRandomSuffix: true`; uploads replace and then delete the previous blob. `getFile` returns a base64 `data:` URL. Paths: `users/<id>` (avatars), `teams/<team_id>` (logos).
-- **PDF generation** — two paths: server-side dashboard export via Puppeteer (`src/lib/puppeteer.ts` + reports route), and client-side registration forms via `pdf-lib` + `@pdf-lib/fontkit` (`registration/_helpers/pdf.ts`, with AcroForm field auto-mapping and CSV export).
-- **Styling / theming** — Chakra UI v3 with a custom system (primary `#8c271e`) in `src/providers/chakra.tsx`; Emotion SSR via `useServerInsertedHTML`. Toaster and shared primitives in `src/components/ui/`.
-- **Accessibility** — jest-axe is wired into the test harness (`toHaveNoViolations`, custom `axeInteractiveStat` helper) so components are checked for a11y violations in unit tests.
-
----
+- **Input validation**: Zod schemas in `src/schemas/*` (one per domain), consumed by react-hook-form via `@hookform/resolvers` on the client and re-validated inside actions. `src/lib/zod.ts` provides `getDefaults()` (pull `ZodDefault` values into form defaults) and a dev `onError` logger.
+- **Authorization**: centralized in `src/utils/permissions.ts` (`can` / `defineAbility`), enforced at three layers (middleware view-gate, server-action `withResource`, client `usePermissions`/`Authorized`/`Visibility` components). See §6.
+- **Response shape**: server actions return `ResponseFactory.success(message, data?)` / `ResponseFactory.error(message)` (`src/utils/response.ts`), a uniform `{ success, message, data? }` envelope.
+- **Database errors**: `src/db/pg-error.ts` maps Postgres SQLSTATE codes (`PgErrorCode`) to user-friendly messages via `getDbErrorMessage()`, unwrapping `DrizzleQueryError` → `pg.DatabaseError`. Actions catch specific constraint names (e.g. `unique_player_per_date`, `player_jersey_number_unique`, the `test_result → test_type` FK) to return friendly errors.
+- **Request-scoped dedup**: reads that more than one card or component needs in a single render are wrapped in React's `cache()` and keyed on primitives (`getUpcomingMatches(team_id)`, the dashboard's game-matches fetch keyed on `team_id` + `interval`, and `verifySession()`). Parallel Server Components asking for the same data then share one query instead of issuing duplicates.
+- **Streaming & code splitting**: pages give each section its own `<Suspense>` boundary rather than awaiting every query in the page body, so a slow query delays only its own card (see the dashboard's `AnalyticsSections`). Dependencies that only some users can trigger load through `next/dynamic` or `await import()`: recharts (`ssr: false`, since it renders SVG client-side anyway), the TipTap editor (never server-rendered), `pdf-lib` (imported at the point a document is built), the email-report dialog, and role-gated dialogs whose two variants are mutually exclusive. `pnpm analyze` shows the resulting first-load size per route.
+- **Caching / revalidation**: `src/actions/cache.ts` exposes a `revalidate` map calling `revalidatePath()` per entity after mutations. `CACHE_TAG`-based `revalidateTag` is scaffolded but currently commented out. Client reads use SWR (`use-image.ts` uses `useSWRImmutable`); URL state uses **nuqs** (`src/lib/nuqs.ts`) with per-resource param parsers, client hooks (`useRosterFilters`, …) and server loaders (`loadMatchFilters`, …).
+- **File uploads**: `src/lib/blob.ts` (`getFile`/`uploadFile`/`deleteFile`) uses private access and `addRandomSuffix: true`; uploads replace and then delete the previous blob. `getFile` returns a base64 `data:` URL. Paths: `users/<id>` (avatars), `teams/<team_id>` (logos).
+- **PDF generation**: two paths exist. Server-side dashboard export runs via Puppeteer (`src/lib/puppeteer.ts` + reports route), and client-side registration forms via `pdf-lib` + `@pdf-lib/fontkit` (`registration/_helpers/pdf.ts`, with AcroForm field auto-mapping). The registration helpers are split by weight: columns, `toRow`, CSV building and the download triggers live in `_helpers/roster.ts` and are imported statically, while `_helpers/pdf.ts` (everything touching `pdf-lib`) is reachable only through `await import()`, so the preview table and CSV export don't load the PDF engine.
+- **Styling / theming**: Chakra UI v3 with a custom system (primary `#8c271e`) in `src/providers/chakra.tsx`; Emotion SSR via `useServerInsertedHTML`. Toaster and shared primitives in `src/components/ui/`.
+- **Accessibility**: jest-axe is wired into the test harness (`toHaveNoViolations`, custom `axeInteractiveStat` helper) so components are checked for a11y violations in unit tests.
 
 ## 11. Build, test & deploy
 
-**Scripts** (`package.json`): `dev`, `build`, `analyze`; DB — `db:generate`, `db:migrate` (`tsx src/drizzle/scripts/migrate.ts`), `db:reset`, `db:drop`, `db:studio`; testing — `test` (Vitest), `test:ui`, `e2e` (Playwright), `e2e:ui`.
+**Scripts** (`package.json`): `dev`, `build`, `analyze`; DB: `db:generate`, `db:migrate` (`tsx src/drizzle/scripts/migrate.ts`), `db:reset`, `db:drop`, `db:studio`; testing: `test` (Vitest), `test:ui`, `e2e` (Playwright), `e2e:ui`.
 
 **Testing**
 
-- **Unit (Vitest)** — jsdom environment, `test/setup.ts` mocks Next.js (`next/headers`, `next/navigation`, `next/image`, `next/cache`), Chakra browser APIs, Resend, nuqs, and Drizzle operators so `db/` modules run without a real database. **118** colocated `*.test.ts(x)` files; `test/db-operations.ts` provides chainable Drizzle mock factories and `test/mocks/` holds per-domain fixtures. Coverage excludes UI primitives, drizzle, schemas, providers, and auth libs (`vitest.config.mts`).
-- **E2E (Playwright)** — `testDir: e2e`, projects `auth` (unauthenticated) and `admin` (depends on a `setup` project that logs in with `PW_USERNAME`/`PW_PASSWORD` and saves storage state to `playwright/.auth/admin.json`). Specs: `e2e/auth/login.spec.ts`, `e2e/resources/assets.spec.ts` (full CRUD). `webServer` runs `pnpm dev`.
+- **Unit (Vitest)**: jsdom environment, `test/setup.ts` mocks Next.js (`next/headers`, `next/navigation`, `next/image`, `next/cache`), Chakra browser APIs, Resend, nuqs, and Drizzle operators so `db/` modules run without a real database. **131** colocated `*.test.ts(x)` files; `test/db-operations.ts` provides chainable Drizzle mock factories and `test/mocks/` holds per-domain fixtures. Coverage excludes UI primitives, drizzle, schemas, providers, and auth libs (`vitest.config.mts`).
+- **E2E (Playwright)**: `testDir: e2e`, projects `auth` (unauthenticated) and `admin` (depends on a `setup` project that logs in with `PW_USERNAME`/`PW_PASSWORD` and saves storage state to `playwright/.auth/admin.json`). 19 spec files holding 577 tests, grouped as `auth/`, `overview/`, `performance/`, `resources/`, `settings/`, `team-management/`, plus `cross-cutting.spec.ts`. `webServer` runs `pnpm dev`.
 
 **CI/CD (`.github/workflows/`)**
 
@@ -666,28 +647,24 @@ Environment variables are loaded and **Zod-validated** in `env.config.ts` (impor
 | ----------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
 | `preview.yaml`    | PR → `main`                                                  | `unit-test` (`pnpm test`) → gated `build-and-deploy` to **Vercel preview**                                         |
 | `production.yaml` | push → `main`                                                | `vercel pull/build --prod/deploy --prod` to **Vercel production** (⚠️ no test gate)                                |
-| `playwright.yml`  | PR → `main`                                                  | E2E job — **currently disabled** (`if: ${{ false }}`) pending an isolated test DB                                  |
+| `playwright.yml`  | PR → `main`                                                  | E2E job, **currently disabled** (`if: ${{ false }}`) pending an isolated test DB                                  |
 | `prd-pdf.yml`     | manual / push / PR touching `docs/prd/**` or the PRD scripts | isolated `md-to-pdf@5` install → `node scripts/build-prd-pdf.mjs` → uploads `sgr-team-management-prd.pdf` artifact |
 
-**PRD PDF pipeline** — `scripts/build-prd-pdf.mjs` stitches the ordered `MANIFEST` of markdown files under `docs/prd/` into one document (cover + page breaks), then renders it to `sgr-team-management-prd.pdf` via `md-to-pdf` (Puppeteer/Chromium) using `scripts/prd-pdf.css`. `md-to-pdf` is installed in an isolated `.prd-tools/` and symlinked into `scripts/node_modules` to avoid disturbing the app's pnpm deps.
+**PRD PDF pipeline**: `scripts/build-prd-pdf.mjs` stitches the ordered `MANIFEST` of markdown files under `docs/prd/` into one document (cover + page breaks), then renders it to `sgr-team-management-prd.pdf` via `md-to-pdf` (Puppeteer/Chromium) using `scripts/prd-pdf.css`. `md-to-pdf` is installed in an isolated `.prd-tools/` and symlinked into `scripts/node_modules` to avoid disturbing the app's pnpm deps.
 
-**Hosting** — Vercel (Next.js 16). `next.config.ts` keeps `puppeteer-core` and `@sparticuz/chromium-min` as `serverExternalPackages`, tunes image `deviceSizes`/`imageSizes`/`formats`, and enables `experimental.authInterrupts` + `optimizePackageImports: ['@chakra-ui/react']`.
-
----
+**Hosting**: Vercel (Next.js 16). `next.config.ts` keeps `puppeteer-core` and `@sparticuz/chromium-min` as `serverExternalPackages`, tunes image `deviceSizes`/`imageSizes`/`formats`, and enables `experimental.authInterrupts` + `optimizePackageImports: ['@chakra-ui/react']`.
 
 ## 12. Known gaps / risks
 
 - **Production deploy has no test gate.** `preview.yaml` runs `pnpm test` before deploying, but `production.yaml` (push to `main`) deploys straight to production with no unit-test step. A failing test can ship to prod.
 - **E2E tests are disabled in CI** (`playwright.yml` → `if: ${{ false }}`), pending an isolated test database. Regressions in end-to-end flows won't be caught automatically.
-- **Misspelled Postgres enum** — the asset category enum is registered as `asset_catogory` (`src/drizzle/schema/asset.ts`). It works, but renaming later requires a migration.
-- **`CRON_SECRET` is defined but unused** — it appears in `.env` with no consumer in the codebase (no `vercel.json` cron, no scheduled route). The `ReportTrigger.SCHEDULED` enum value exists but no scheduler was found; report sending is currently manual.
-- **Default Resend sender** — emails are sent from `Acme <onboarding@resend.dev>` (`src/lib/resend.ts:7`), the Resend sandbox identity, not a club-branded verified domain.
-- **Auth `additionalFields` comments are swapped** — in `src/lib/auth.ts` the inline comments on `state`/`role` reference the wrong enum (cosmetic only; the `type`/`defaultValue` are correct).
-- **Single DB connection** — `Pool({ max: 1 })` (`src/drizzle/index.ts`) is intentional for serverless but caps concurrency per instance; worth revisiting if moving off serverless.
-- **`documents` resource is scaffolded but disabled** — present in `RESOURCES` and the sidebar (`disabled: true`) with no route/page.
-- **Middleware view-gate is prefix-based** — `resolveResource` matches by `pathname.startsWith('/<resource>')`; a new route whose prefix collides with a resource name could be gated unexpectedly.
-
----
+- **Misspelled Postgres enum**: the asset category enum is registered as `asset_catogory` (`src/drizzle/schema/asset.ts`). It works, but renaming later requires a migration.
+- **`CRON_SECRET` is defined but unused**: it appears in `.env` with no consumer in the codebase (no `vercel.json` cron, no scheduled route). The `ReportTrigger.SCHEDULED` enum value exists but no scheduler was found; report sending is currently manual.
+- **Default Resend sender**: emails are sent from `Acme <onboarding@resend.dev>` (`src/lib/resend.ts:7`), the Resend sandbox identity, not a club-branded verified domain.
+- **Auth `additionalFields` comments are swapped**: in `src/lib/auth.ts` the inline comments on `state`/`role` reference the wrong enum (cosmetic only; the `type`/`defaultValue` are correct).
+- **Single DB connection**: `Pool({ max: 1 })` (`src/drizzle/index.ts`) is intentional for serverless but caps concurrency per instance; worth revisiting if moving off serverless.
+- **`documents` resource is scaffolded but disabled**: present in `RESOURCES` and the sidebar (`disabled: true`) with no route/page.
+- **Middleware view-gate is prefix-based**: `resolveResource` matches by `pathname.startsWith('/<resource>')`; a new route whose prefix collides with a resource name could be gated unexpectedly.
 
 ## 13. Security considerations
 
@@ -695,35 +672,37 @@ Environment variables are loaded and **Zod-validated** in `env.config.ts` (impor
 | --- | --- | --- |
 | Authentication | Better Auth email/password, **no email verification**, **no public sign-up** (admin-provisioned) | `src/lib/auth.ts` |
 | Password reset | Token-based, delivered by Resend; tokens stored in the `verification` table | `auth.ts` `sendResetPassword`, `verification` table |
-| Session | Signed cookie (prefix `sgr`), 1 h expiry + 1 h cookie cache; server validation via `auth.api.getSession()` | `src/utils/constant.ts`, `src/actions/auth.ts` |
+| Session | Signed cookie (prefix `sgr`), 1 hour expiry + 1 hour cookie cache; server validation via `auth.api.getSession()` | `src/utils/constant.ts`, `src/actions/auth.ts` |
 | Password storage | Hashed by Better Auth, stored in `account.password` | `account` table |
-| Authorization | RBAC — `can()` / `defineAbility()` over `<resource>:<action>` permissions, plus captain overrides | `src/utils/permissions.ts` |
+| Authorization | RBAC: `can()` / `defineAbility()` over `<resource>:<action>` permissions, plus captain overrides | `src/utils/permissions.ts` |
 | Defense-in-depth | 3 layers: middleware (view-gate) → server action (`withResource`) → client (`usePermissions`) | `src/proxy.ts`, `src/actions/auth.ts` |
+| Record-level access | Actions on per-member data re-check the target against the session user (`forbidden()` on mismatch): self-only leave, self-only profile edits, role pinned for non-admins, avatar blob matched against the stored `image` | `src/actions/attendance.ts`, `src/actions/user.ts` |
+| Client payload | The protected layout passes only `session.user` to `SessionProvider`, so the session token is never serialized to the client; list reads narrow their columns (`RosterUser`) so undisplayed personal data never crosses the React Server Component boundary | `src/app/(protected)/layout.tsx`, `src/db/user.ts` |
 | CSRF / origin | `trustedOrigins` restricted to `DEV_URL` + `PRODUCTION_URL` | `src/lib/auth.ts:32` |
 | File access | Vercel Blob objects are **private** (`access: 'private'`), fetched server-side and returned as base64 data URLs | `src/lib/blob.ts` |
 | Transport / at-rest encryption | TLS in transit and at-rest encryption are provided by the managed platforms (Vercel, Neon, Vercel Blob, Resend); not configured in application code | > Not Found in repo (platform-managed) |
 | Secrets | Env vars validated by Zod (`env.config.ts`); auth secrets read directly from `process.env`; CI secrets via GitHub Actions | `env.config.ts`, `.github/workflows/*` |
 
-Notable boundary: the PDF report route (`api/reports/dashboard`) **forwards the caller's auth cookies** into a headless Chromium instance so protected pages render — it is auth-gated (401 without a session), but the cookie-forwarding is a trust boundary worth keeping in mind.
+Notable boundary: the PDF report route (`api/reports/dashboard`) **forwards the caller's auth cookies** into a headless Chromium instance so protected pages render. It is auth-gated (401 without a session), but the cookie-forwarding is a trust boundary worth keeping in mind.
 
 ## 14. Development environment & tooling
 
-- **Local setup** — see [README.md](README.md) and [DEVELOPMENT.md](DEVELOPMENT.md). Package manager is **pnpm**; run `pnpm dev` (Next dev server), `pnpm db:migrate` / `pnpm db:studio` for the database. Env vars go in `.env` (validated by `env.config.ts`).
-- **Testing frameworks** — Vitest + Testing Library + jest-axe (unit, 118 files), Playwright (E2E). Details in [§11](#11-build-test--deploy).
-- **Code quality** — ESLint via `eslint-config-next/core-web-vitals` (`eslint.config.mjs`); TypeScript in `strict` mode with `@/*` path aliases (`tsconfig.json`). `next experimental-analyze` (`pnpm analyze`) for bundle inspection.
-- **DB tooling** — drizzle-kit (`db:generate`, `db:drop`, `db:studio`) and custom `tsx` scripts (`db:migrate`, `db:reset`); raw seed SQL in `src/drizzle/sql/`.
+- **Local setup**: see [README.md](README.md) and [DEVELOPMENT.md](DEVELOPMENT.md). Package manager is **pnpm**; run `pnpm dev` (Next dev server), `pnpm db:migrate` / `pnpm db:studio` for the database. Env vars go in `.env` (validated by `env.config.ts`).
+- **Testing frameworks**: Vitest + Testing Library + jest-axe (unit, 131 files), Playwright (E2E). Details in [§11](#11-build-test--deploy).
+- **Code quality**: ESLint via `eslint-config-next/core-web-vitals` (`eslint.config.mjs`); TypeScript in `strict` mode with `@/*` path aliases (`tsconfig.json`). `next experimental-analyze` (`pnpm analyze`) for bundle inspection.
+- **DB tooling**: drizzle-kit (`db:generate`, `db:drop`, `db:studio`) and custom `tsx` scripts (`db:migrate`, `db:reset`); raw seed SQL in `src/drizzle/sql/`.
 
 ## 15. Future considerations / roadmap
 
-Sourced from [TODO.md](TODO.md) — a schema-review checklist. Highest-priority (⭐) items reject real-world data or block real workflows:
+Sourced from [TODO.md](TODO.md), a schema-review checklist. Highest-priority (⭐) items reject real-world data or block real workflows:
 
-- ⭐ **Relax `player` height/weight checks** — current bounds (`height ≤ 200`, `weight ≤ 100`) reject legitimate players; widen in a migration.
-- ⭐ **Attendance one-record-per-day limit** — `unique_player_per_date` blocks two-session days; re-key on `(player_id, session_id)`.
-- ⭐ **`player.jersey_number` is globally unique** — should be per-team, but `player` has no `team_id` (comes via `user`); tied to membership history.
-- **Team membership history (biggest structural gap)** — `user.team_id` is a single FK, so transfers/rejoins lose history and `match_player_stats` lacks team context. Consider a `user_team` membership table.
+- ⭐ **Relax `player` height/weight checks**: current bounds (`height ≤ 200`, `weight ≤ 100`) reject legitimate players; widen in a migration.
+- ⭐ **Attendance one-record-per-day limit**: `unique_player_per_date` blocks two-session days; re-key on `(player_id, session_id)`.
+- ⭐ **`player.jersey_number` is globally unique**: should be per-team, but `player` has no `team_id` (comes via `user`); tied to membership history.
+- **Team membership history (biggest structural gap)**: `user.team_id` is a single FK, so transfers/rejoins lose history and `match_player_stats` lacks team context. Consider a `user_team` membership table.
 - **Scope `asset.name` uniqueness to `(team_id, name)`**; **add a `match` status enum**; **give `match.home_team`/`away_team` an explicit `onDelete`**; **make `league_team_roster` reference `league_team`**; **make `test_result.date` NOT NULL**.
-- **No tables behind `emails` / `documents` / `reports` resources** — routes and permissions exist, but there's no send log, document metadata, or report registry (reports go to Blob with no DB index).
-- **Simplification candidates** — `league.status` is derivable, `attendance.team_id` is redundant, `rule` could fold into `team`.
+- **No tables behind `emails` / `documents` / `reports` resources**: routes and permissions exist, but there's no send log, document metadata, or report registry (reports go to Blob with no DB index).
+- **Simplification candidates**: `league.status` is derivable, `attendance.team_id` is redundant, `rule` could fold into `team`.
 - **Out of scope** (no product signal yet): injury/medical tracking, payments/fees, audit logs.
 
 Beyond the schema: enabling the disabled E2E CI job once an isolated test DB exists, and adding a unit-test gate to production deploys (see [§12](#12-known-gaps--risks)).
@@ -734,7 +713,7 @@ Beyond the schema: enabling the disabled E2E CI job once an isolated test DB exi
 | --- | --- |
 | **Project name** | Saigon Rovers Basketball Club Portal (`saigon-rovers-basketball-club-portal`) |
 | **Repository** | `git@github.com:diosvo/team-management.git` |
-| **Author / maintainer** | Dios Vo — <vtmn1212@gmail.com> ([LinkedIn](https://www.linkedin.com/in/diosvo/)) |
+| **Author / maintainer** | Dios Vo, <vtmn1212@gmail.com> ([LinkedIn](https://www.linkedin.com/in/diosvo/)) |
 | **Version** | `1.0.0` (`package.json`) |
 | **Default branch** | `main` (production deploys from here) |
 | **Hosting** | Vercel (app) + Neon (database) |
@@ -744,19 +723,17 @@ Beyond the schema: enabling the disabled E2E CI job once an isolated test DB exi
 
 | Term | Definition |
 | --- | --- |
-| **RSC** | React Server Component — server-rendered component; the default for pages here |
+| **RSC** | React Server Component: server-rendered component, the default for pages here |
 | **Server Action** | A `'use server'` function invoked from the client as the write path (no REST API) |
-| **RBAC** | Role-Based Access Control — the `can()` / `ROLE_CONFIG` permission model |
+| **RBAC** | Role-Based Access Control: the `can()` / `ROLE_CONFIG` permission model |
 | **Resource** | A permission-scoped area of the app (e.g. `roster`, `matches`); 16 total in `src/routes.ts` |
 | **Ability** | Object returned by `defineAbility(role, isCaptain)` with `can` / `canAll` / `canAny` |
 | **Captain** | A `PLAYER` with `is_captain=true`, granted extra permissions via `CAPTAIN_PERMISSIONS` |
 | **Provisioning** | Admin/captain creating an account (no self-signup) that the user activates via reset email |
-| **Blob** | Vercel Blob — private object storage for avatars and team logos |
+| **Blob** | Vercel Blob: private object storage for avatars and team logos |
 | **ERD** | Entity Relationship Diagram (see [§5](#5-database-relationships-detailed-erd)) |
-| **PRD** | Product Requirements Document — specs under `docs/prd/`, built into a PDF |
-| **SGR** | Saigon Rovers — the club; used as the email subject prefix and app abbreviation |
+| **PRD** | Product Requirements Document: specs under `docs/prd/`, built into a PDF |
+| **SGR** | Saigon Rovers: the club; used as the email subject prefix and app abbreviation |
 | **Cookie cache** | Better Auth's signed session snapshot in the cookie, checked without a DB hit |
-
----
 
 _Analyzed on 2026-07-22 from the `dev_242` branch: `package.json` + all config files, `src/app` route tree, `src/actions` + `src/db` + `src/drizzle/schema`, `src/lib` + `src/utils` + `src/proxy.ts`, `.github/workflows`, and the test/e2e/PRD tooling. Diagrams reflect 19 tables and 16 permission resources present in the source at that time._

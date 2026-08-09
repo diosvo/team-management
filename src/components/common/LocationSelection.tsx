@@ -5,7 +5,7 @@ import NextLink from 'next/link';
 import { Link as ChakraLink, LinkProps, Span, Stack } from '@chakra-ui/react';
 import { Control, FieldPath, FieldValues } from 'react-hook-form';
 
-import SearchableSelect from '../SearchableSelect';
+import { SearchableSelectField } from '../SearchableSelect';
 
 import { CACHE_KEY } from '@/utils/constants';
 
@@ -47,8 +47,7 @@ export default function LocationSelection<TFieldValues extends FieldValues>({
   isDisabled,
 }: LocationSelectionProps<TFieldValues>) {
   return (
-    <SearchableSelect
-      controlledMode
+    <SearchableSelectField
       multiple={false}
       control={control}
       name={'location_id' as FieldPath<TFieldValues>}

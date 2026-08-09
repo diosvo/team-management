@@ -101,9 +101,13 @@ describe('SelectedPlayers', () => {
     vi.clearAllMocks();
   });
 
-  const setup = (selection: Array<User> = [MOCK_USER_WITH_PLAYER]) =>
+  const setup = (
+    selection: Array<User> = [MOCK_USER_WITH_PLAYER],
+    disabled = false,
+  ) =>
     renderWithUI(
       <SelectedPlayers
+        disabled={disabled}
         selection={selection}
         onSelectionChange={onSelectionChange}
       />,
@@ -120,6 +124,18 @@ describe('SelectedPlayers', () => {
     setup([]);
 
     expect(screen.getByText('No players selected')).toBeInTheDocument();
+    expect(
+      screen.getByText('Select players from the list above.'),
+    ).toBeInTheDocument();
+  });
+
+  test('hides the empty state hint when disabled', () => {
+    setup([], true);
+
+    expect(screen.getByText('No players selected')).toBeInTheDocument();
+    expect(
+      screen.queryByText('Select players from the list above.'),
+    ).not.toBeInTheDocument();
   });
 
   test('renders selected player names', () => {
@@ -145,5 +161,16 @@ describe('SelectedPlayers', () => {
     await user.click(playerItem);
 
     expect(onSelectionChange).toHaveBeenCalledWith([]);
+  });
+
+  test('does not remove a player on click when disabled', async () => {
+    const { user } = setup([MOCK_USER_WITH_PLAYER], true);
+
+    const playerItem = screen
+      .getByText(MOCK_USER_WITH_PLAYER.name)
+      .closest('li')!;
+    await user.click(playerItem);
+
+    expect(onSelectionChange).not.toHaveBeenCalled();
   });
 });

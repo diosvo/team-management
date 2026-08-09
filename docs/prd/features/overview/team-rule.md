@@ -7,14 +7,14 @@
 - The **Team Rule** page displays the team's rules and policies as rich text.
 - Authorized users can edit the content; all others have a read-only view.
 
-## 2. Goals / Metrics
+## 2. Goals / metrics
 
 ### Goals
 
 - Give all members a single source of truth for team rules.
-- Let authorized users keep rules up to date with a simple editor.
+- Let authorized users keep rules up to date from the page itself, with no export or re-upload step.
 
-## 3. Users & Permissions
+## 3. Users and permissions
 
 | Role             | View | Edit |
 | ---------------- | ---- | ---- |
@@ -24,7 +24,7 @@
 | SUPER_ADMIN      | Yes  | Yes  |
 | PLAYER (Captain) | Yes  | Yes  |
 
-## 4. UX / Flows
+## 4. UX / flows
 
 ### Entry point
 
@@ -37,23 +37,24 @@
 ### Edit
 
 - Authorized users see an **Edit** toggle that switches the view to an editable text editor.
+- The editor is TipTap/ProseMirror and never renders on the server (`immediatelyRender: false`), so it loads as a separate client-only chunk behind a skeleton instead of shipping with the page. Read-only viewers, meaning every PLAYER and COACH, never download it.
 - Clicking **Save** persists the changes and returns to read-only view.
 - Clicking **Cancel** discards changes.
 
-## 5. Functional Requirements
+## 5. Functional requirements
 
 - **FR-1:** PLAYER, COACH, SUPER_ADMIN, and Captain can view the team rule.
 - **FR-2:** SUPER_ADMIN and Captain can edit the rule content.
 - **FR-3:** Saving shows a success or error toast.
 - **FR-4:** The rule last-updated timestamp is tracked server-side.
 
-## 6. Acceptance Criteria (Given/When/Then)
+## 6. Acceptance criteria (Given/When/Then)
 
-- **AC-1:** Given I am a GUEST, when I navigate to `/team-rule`, then I see a forbidden or no-access state.
+- **AC-1:** Given I am a GUEST, when I navigate to `/team-rule`, then I am redirected to `/forbidden`.
 - **AC-2:** Given I am a PLAYER, when I view Team Rule, then I see the content but no edit control.
 - **AC-3:** Given I am a Captain, when I edit and save the content, then the updated rule is visible to all permitted roles.
 
-## 7. Technical Appendix
+## 7. Technical appendix
 
 ### Data model (logical)
 
@@ -64,5 +65,5 @@ Rule:
 
 ### API
 
-- `getRule()` — fetch current rule
-- `upsertRule(content)` — create or update
+- `getRule()`: fetch current rule
+- `upsertRule(content)`: create or update

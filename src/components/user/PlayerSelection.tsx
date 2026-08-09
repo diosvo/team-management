@@ -9,7 +9,9 @@ import { Control, FieldPath, FieldValues } from 'react-hook-form';
 
 import { User } from '@/drizzle/schema/user';
 
-import SearchableSelect from '@/components/SearchableSelect';
+import SearchableSelect, {
+  SearchableSelectField,
+} from '@/components/SearchableSelect';
 import { EmptyState } from '@/components/ui/empty-state';
 
 import { getActivePlayers } from '@/actions/user';
@@ -24,7 +26,6 @@ export function PlayerSelection({
 }: UserSelector) {
   return (
     <SearchableSelect
-      controlledMode={false}
       multiple={true}
       label={CACHE_KEY.PLAYERS}
       action={getActivePlayers}
@@ -90,8 +91,7 @@ export function OnePlayerSelection<T extends FieldValues>({
   label = 'player',
 }: OnePlayerSelectionProps<T>) {
   return (
-    <SearchableSelect
-      controlledMode
+    <SearchableSelectField
       name={name}
       label={label}
       control={control}
@@ -105,16 +105,20 @@ export function OnePlayerSelection<T extends FieldValues>({
 }
 
 export function SelectedPlayers({
+  disabled,
   selection,
   onSelectionChange,
   ...props
 }: UserSelector & BoxProps) {
   const handleRemovePlayer = useCallback(
-    (id: string) =>
+    (id: string) => {
+      if (disabled) return;
+
       onSelectionChange(
         selection.filter(({ id: player_id }) => id !== player_id),
-      ),
-    [selection],
+      );
+    },
+    [disabled, selection],
   );
 
   return (
@@ -125,12 +129,18 @@ export function SelectedPlayers({
             <List.Item
               key={user.id}
               width="max-content"
-              _hover={{
-                cursor: 'pointer',
-                color: 'tomato',
-                textDecoration: 'line-through',
-                transition: 'all 0.2s',
-              }}
+              _hover={
+                disabled
+                  ? {
+                      pointerEvents: 'none',
+                    }
+                  : {
+                      cursor: 'pointer',
+                      color: 'tomato',
+                      textDecoration: 'line-through',
+                      transition: 'all 0.2s',
+                    }
+              }
               onClick={() => handleRemovePlayer(user.id)}
             >
               {PlayerItem(user)}
@@ -141,7 +151,7 @@ export function SelectedPlayers({
         <EmptyState
           size="sm"
           title="No players selected"
-          description="Please select players to add them to the league."
+          description={disabled ? '' : 'Select players from the list above.'}
           icon={<UserRoundX />}
         />
       )}
