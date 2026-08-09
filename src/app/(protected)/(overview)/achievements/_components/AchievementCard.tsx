@@ -72,9 +72,9 @@ export default function AchievementCard({
         </Text>
       </VStack>
       <HStack
-        className="group"
-        opacity={{ base: 1, md: 0 }}
+        opacity={0}
         transition="opacity 0.2s"
+        display={{ base: 'none', md: 'flex' }}
         _groupHover={{ opacity: 1 }}
         _focusWithin={{ opacity: 1 }}
       >

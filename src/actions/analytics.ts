@@ -16,6 +16,7 @@ import {
 } from '@/db/analytics';
 import { getMatches as fetchMatches } from '@/db/match';
 
+import { getAchievements } from './achievement';
 import { withAuth } from './auth';
 import { getActivePlayers } from './user';
 
@@ -47,11 +48,13 @@ const fetchGameMatches = cache((team_id: string, interval: IntervalValues) =>
 );
 
 export const getOverviewStats = withAuth(async ({ team_id }) => {
-  const [active_players, upcoming_matches, matches] = await Promise.all([
-    getActivePlayers(),
-    getUpcomingMatches(),
-    fetchGameMatches(team_id, Interval.THIS_YEAR),
-  ]);
+  const [active_players, upcoming_matches, matches, achievements] =
+    await Promise.all([
+      getActivePlayers(),
+      getUpcomingMatches(),
+      fetchGameMatches(team_id, Interval.THIS_YEAR),
+      getAchievements(),
+    ]);
 
   const next_game =
     upcoming_matches.length > 0 ? upcoming_matches[0].date : null;
@@ -63,6 +66,7 @@ export const getOverviewStats = withAuth(async ({ team_id }) => {
     active_players: active_players.length,
     next_game: next_game_date,
     win_rate: matches.stats.avg_win_rate,
+    achievements: achievements.length,
   };
 });
 

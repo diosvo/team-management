@@ -1,5 +1,4 @@
 import { ColorPalette } from '@chakra-ui/react';
-import { getYear } from 'date-fns';
 import {
   Award,
   Crown,
@@ -10,7 +9,6 @@ import {
   Trophy,
 } from 'lucide-react';
 
-import { ESTABLISHED_DATE } from '@/utils/constants';
 import { AchievementType } from '@/utils/enum';
 
 type AchievementStyle = {
@@ -59,23 +57,17 @@ export const PODIUM_TYPES = [
   AchievementType.THIRD_PLACE,
 ] as const;
 
-/** The milestone that opens the timeline, before any honor was won */
-export const FOUNDING_YEAR = getYear(new Date(ESTABLISHED_DATE));
-
 export const FOUNDING_STYLE: AchievementStyle = {
   label: 'Team Founded',
-  colorPalette: 'red',
+  colorPalette: 'green',
   icon: Flag,
 };
-
-/** Seasons played so far, counting the founding one */
-export const getYearsActive = () => getYear(new Date()) - FOUNDING_YEAR + 1;
 
 /**
  * The club's story told year by year, from the first season onwards. Years
  * beyond the written arc reuse the captions after "Where It All Began".
  */
-export const YEAR_TAGLINES = [
+const YEAR_TAGLINES = [
   'Where It All Began.',
   'First Steps, Big Dreams.',
   'Rising Higher.',

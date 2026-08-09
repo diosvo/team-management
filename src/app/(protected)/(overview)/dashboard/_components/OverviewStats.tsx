@@ -4,25 +4,35 @@ import { Card } from '@/components/ui/card';
 import { Stat } from '@/components/ui/stat';
 
 import { getOverviewStats } from '@/actions/analytics';
+import { getYearsActive } from '@/app/(protected)/_helpers/utils';
 
 export default async function OverviewStats() {
   const stats = await getOverviewStats();
 
   return (
-    <Card title="Overview" description="Key performance indicators at a glance">
-      <SimpleGrid columns={3} gap={4}>
-        <Stat label="Active Players" value={stats.active_players} color="red" />
+    <Card
+      title="Overview"
+      description={`${getYearsActive} of playing together`}
+    >
+      <SimpleGrid columns={4} gap={4}>
         <Stat
           label="Next Game"
           value={stats.next_game}
           unit="days remaining"
           hidden={stats.next_game == null}
         />
+        <Stat label="Active Players" value={stats.active_players} color="red" />
         <Stat
           label="Win Rate"
           value={stats.win_rate}
           unit="%"
           color={stats.win_rate > 50 ? 'green' : 'red'}
+        />
+        <Stat
+          label="Achievements"
+          value={stats.achievements}
+          unit="(champions, mvp, etc.)"
+          color={stats.achievements > 0 ? 'green' : 'red'}
         />
       </SimpleGrid>
     </Card>

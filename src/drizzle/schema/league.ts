@@ -101,6 +101,10 @@ export const LeagueTeamRosterRelations = relations(
       fields: [LeagueTeamRosterTable.team_id],
       references: [TeamTable.team_id],
     }),
+    league_team: one(LeagueTeamTable, {
+      fields: [LeagueTeamRosterTable.league_id, LeagueTeamRosterTable.team_id],
+      references: [LeagueTeamTable.league_id, LeagueTeamTable.team_id],
+    }),
     player: one(PlayerTable, {
       fields: [LeagueTeamRosterTable.player_id],
       references: [PlayerTable.id],

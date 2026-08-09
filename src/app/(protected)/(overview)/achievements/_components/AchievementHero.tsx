@@ -11,16 +11,12 @@ import {
   VStack,
 } from '@chakra-ui/react';
 
+import { getYearsActive } from '@/app/(protected)/_helpers/utils';
 import BackgroundLayer from '@/assets/images/bg-layer.webp';
-import { formatValueUnit } from '@/utils/formatter';
-
-import { getYearsActive } from '../_helpers/utils';
 
 const anton = Anton({ subsets: ['latin'], weight: '400' });
 
 export default function AchievementHero() {
-  const years = getYearsActive();
-
   return (
     <Center
       position="relative"
@@ -68,7 +64,7 @@ export default function AchievementHero() {
             textTransform="uppercase"
             fontSize={{ base: '2xs', md: 'sm' }}
           >
-            {years} {formatValueUnit(years, 'year')} of playing together
+            {getYearsActive} of playing together
           </Text>
           <Separator flex={1} borderColor="primary" opacity={0.4} />
         </HStack>

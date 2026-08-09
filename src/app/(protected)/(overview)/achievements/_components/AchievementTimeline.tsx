@@ -1,3 +1,5 @@
+import { Bebas_Neue } from 'next/font/google';
+
 import {
   Box,
   Circle,
@@ -13,20 +15,22 @@ import { Quote, Trophy } from 'lucide-react';
 
 import { EmptyState } from '@/components/ui/empty-state';
 
-import { ESTABLISHED_DATE } from '@/utils/constants';
+import { ESTABLISHED_DATE, FOUNDING_YEAR } from '@/utils/constants';
 import { formatDate } from '@/utils/formatter';
 
 import { AchievementWithRelations } from '@/db/achievement';
 
-import { Bebas_Neue } from 'next/font/google';
-import {
-  FOUNDING_STYLE,
-  FOUNDING_YEAR,
-  getYearTagline,
-} from '../_helpers/utils';
+import { FOUNDING_STYLE, getYearTagline } from '../_helpers/utils';
 import AchievementCard from './AchievementCard';
 
 const neuse = Bebas_Neue({ subsets: ['latin'], weight: '400' });
+
+/**
+ * Distance from the top of a row to the middle of its first line. The year,
+ * the timeline dot and the first honor all anchor here so they read as one
+ * line, whatever the heading size is at the current breakpoint.
+ */
+const ANCHOR = '1.25rem';
 
 type YearGroup = {
   year: number;
@@ -82,8 +86,8 @@ export default function AchievementTimeline({
         return (
           <Grid
             key={year}
-            templateColumns={{ base: '72px 40px 1fr', md: '160px 56px 1fr' }}
-            columnGap={{ base: 2, md: 4 }}
+            templateColumns={{ base: '1fr 3fr', md: '1fr 8fr' }}
+            columnGap={{ base: 4, md: 6 }}
           >
             <GridItem>
               <Heading
@@ -92,6 +96,7 @@ export default function AchievementTimeline({
                 fontStyle="italic"
                 fontFamily={neuse.style.fontFamily}
                 size={{ base: 'xl', md: '3xl' }}
+                lineHeight={`calc(${ANCHOR} * 2)`}
               >
                 {year}
               </Heading>
@@ -104,35 +109,38 @@ export default function AchievementTimeline({
               </Text>
             </GridItem>
 
-            <GridItem position="relative" aria-hidden="true">
-              <Box
-                position="absolute"
-                left="50%"
-                top={0}
-                width="2px"
-                marginLeft="-1px"
-                backgroundColor="blackAlpha.100"
-                height={isLast ? { base: '16px', md: '20px' } : 'full'}
-              />
-              <Circle
-                position="absolute"
-                left="50%"
-                top={6}
-                transform="translateX(-50%)"
-                size={{ base: 1, md: 2 }}
-                backgroundColor="blackAlpha.700"
-              />
-            </GridItem>
-
             <GridItem
+              position="relative"
+              paddingLeft={{ base: 4, md: 8 }}
               paddingBottom={{ base: 4, md: 6 }}
               marginBottom={{ base: 4, md: 6 }}
               borderBottomWidth={isLast ? undefined : '1px'}
               borderBottomColor="gray.100"
             >
+              <Box
+                aria-hidden="true"
+                position="absolute"
+                top={0}
+                left={0}
+                width="0.5"
+                transform="translateX(-50%)"
+                backgroundColor="blackAlpha.100"
+                height={isLast ? ANCHOR : undefined}
+                bottom={isLast ? undefined : { base: -4, md: -6 }}
+              />
+              <Circle
+                aria-hidden="true"
+                position="absolute"
+                top={ANCHOR}
+                left={0}
+                transform="translate(-50%, -50%)"
+                size={2}
+                backgroundColor="blackAlpha.700"
+              />
+
               <Grid
                 gap={{ base: 3, xl: 8 }}
-                templateColumns={{ base: '1fr', xl: '1fr 360px' }}
+                templateColumns={{ base: '1fr', xl: '2fr 1fr' }}
               >
                 <Stack gap={1}>
                   {items.length > 0 ? (
@@ -143,8 +151,8 @@ export default function AchievementTimeline({
                       />
                     ))
                   ) : (
-                    <HStack gap={4} alignItems="start">
-                      <Box color="primary">
+                    <HStack gap={4} paddingBlock={2} alignItems="start">
+                      <Box color={FOUNDING_STYLE.colorPalette}>
                         <FOUNDING_STYLE.icon
                           size={20}
                           role="img"

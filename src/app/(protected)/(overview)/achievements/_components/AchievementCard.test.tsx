@@ -86,23 +86,22 @@ describe('AchievementCard', () => {
     expect(screen.queryByText(/Summer League/)).not.toBeInTheDocument();
   });
 
+  // The actions only surface on hover (desktop) and are dropped on mobile, so
+  // jsdom sees them as `display: none` and needs `hidden` to reach them.
+  const action = (name: RegExp) =>
+    screen.queryByRole('button', { name, hidden: true });
+
   test('hides the edit and delete actions without permission', () => {
     setup();
 
-    expect(
-      screen.queryByRole('button', { name: /edit achievement/i }),
-    ).not.toBeInTheDocument();
-    expect(
-      screen.queryByRole('button', { name: /delete achievement/i }),
-    ).not.toBeInTheDocument();
+    expect(action(/edit achievement/i)).not.toBeInTheDocument();
+    expect(action(/delete achievement/i)).not.toBeInTheDocument();
   });
 
   test('opens the dialog in update mode when the edit button is clicked', async () => {
     const { user } = setup(achievement, { canManage: true });
 
-    await user.click(
-      screen.getByRole('button', { name: /edit achievement/i }),
-    );
+    await user.click(action(/edit achievement/i)!);
 
     expect(mockOpen).toHaveBeenCalledWith('update-achievement', {
       action: 'Update',
@@ -126,9 +125,7 @@ describe('AchievementCard', () => {
 
     const { user } = setup(achievement, { canManage: true });
 
-    await user.click(
-      screen.getByRole('button', { name: /delete achievement/i }),
-    );
+    await user.click(action(/delete achievement/i)!);
 
     await waitFor(() => {
       expect(removeAchievement).toHaveBeenCalledWith(
