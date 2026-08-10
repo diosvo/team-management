@@ -15,15 +15,31 @@ import { Quote, Trophy } from 'lucide-react';
 
 import { EmptyState } from '@/components/ui/empty-state';
 
-import { ESTABLISHED_DATE, FOUNDING_YEAR } from '@/utils/constants';
+import { FOUNDING_STYLE } from '@/utils/constants/achievement';
+import { ESTABLISHED_DATE, FOUNDING_YEAR } from '@/utils/constants/app';
 import { formatDate } from '@/utils/formatter';
 
 import { AchievementWithRelations } from '@/db/achievement';
 
-import { FOUNDING_STYLE, getYearTagline } from '../_helpers/utils';
 import AchievementCard from './AchievementCard';
 
 const neuse = Bebas_Neue({ subsets: ['latin'], weight: '400' });
+const YEAR_TAGLINES = [
+  'Where It All Began.',
+  'First Steps, Big Dreams.',
+  'Rising Higher.',
+  'The Foundation.',
+  'Building Momentum.',
+  'Relentless Growth.',
+  'Stronger Together.',
+];
+
+function getYearTagline(index: number): string {
+  if (index <= 0) return YEAR_TAGLINES[0];
+
+  const [, ...rest] = YEAR_TAGLINES;
+  return rest[(index - 1) % rest.length];
+}
 
 /**
  * Distance from the top of a row to the middle of its first line. The year,

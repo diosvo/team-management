@@ -8,12 +8,12 @@ import { Pencil, Trash2 } from 'lucide-react';
 import Authorized from '@/components/Authorized';
 import { toaster } from '@/components/ui/toaster';
 
+import { ACHIEVEMENT_STYLE } from '@/utils/constants/achievement';
 import { formatDate } from '@/utils/formatter';
 
 import { removeAchievement } from '@/actions/achievement';
 import { AchievementWithRelations } from '@/db/achievement';
 
-import { ACHIEVEMENT_STYLE } from '../_helpers/utils';
 import { UpsertAchievement } from './UpsertAchievement';
 
 export default function AchievementCard({
