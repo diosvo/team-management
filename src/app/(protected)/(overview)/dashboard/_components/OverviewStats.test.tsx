@@ -3,6 +3,7 @@ import { Mock } from 'vitest';
 import { renderWithUI, screen } from '@/test/utilities';
 
 import { getOverviewStats } from '@/actions/analytics';
+import { getYearsActive } from '@/app/(protected)/_helpers/utils';
 import OverviewStats from './OverviewStats';
 
 vi.mock('@/actions/analytics', () => ({
@@ -12,7 +13,12 @@ vi.mock('@/actions/analytics', () => ({
 describe('OverviewStats', () => {
   const mockGetOverviewStats = getOverviewStats as unknown as Mock;
 
-  const DEFAULT_STATS = { active_players: 12, next_game: 3, win_rate: 75 };
+  const DEFAULT_STATS = {
+    active_players: 12,
+    next_game: 3,
+    win_rate: 75,
+    achievements: 2,
+  };
 
   const setup = async (
     stats?: Partial<Awaited<ReturnType<typeof getOverviewStats>>>,
@@ -30,7 +36,7 @@ describe('OverviewStats', () => {
 
     expect(screen.getByText('Overview')).toBeInTheDocument();
     expect(
-      screen.getByText('Key performance indicators at a glance'),
+      screen.getByText(`${getYearsActive} of playing together`),
     ).toBeInTheDocument();
   });
 
@@ -46,6 +52,9 @@ describe('OverviewStats', () => {
 
     expect(screen.getByText('Win Rate')).toBeInTheDocument();
     expect(screen.getByText('75')).toBeInTheDocument();
+
+    expect(screen.getByText('Achievements')).toBeInTheDocument();
+    expect(screen.getByText('2')).toBeInTheDocument();
   });
 
   test('hides the next game stat when there is no upcoming game', async () => {

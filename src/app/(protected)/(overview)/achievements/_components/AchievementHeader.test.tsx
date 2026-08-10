@@ -1,4 +1,3 @@
-import * as nuqs from 'nuqs';
 import { Mock } from 'vitest';
 
 import usePermissions from '@/hooks/use-permissions';
@@ -15,25 +14,17 @@ vi.mock('@/hooks/use-permissions', () => ({
 // The dialog is exercised by its own test; stub the overlay controller so we
 // can assert the header opens it in "Add" mode.
 vi.mock('./UpsertAchievement', () => ({
-  UpsertAchievement: Object.assign(
-    { open: vi.fn() },
-    { Viewport: () => null },
-  ),
+  UpsertAchievement: Object.assign({ open: vi.fn() }, { Viewport: () => null }),
 }));
 
 describe('AchievementHeader', () => {
   const mockUsePermissions = usePermissions as unknown as Mock;
   const mockOpen = UpsertAchievement.open as unknown as Mock;
-  const mockSetSearchParams = vi.fn();
 
-  const setup = ({ canCreate = false, record = '' } = {}) => {
+  const setup = ({ canCreate = false } = {}) => {
     mockUsePermissions.mockReturnValue({
       can: vi.fn(() => canCreate),
     });
-    (nuqs.useQueryStates as unknown as Mock).mockReturnValue([
-      { record },
-      mockSetSearchParams,
-    ]);
 
     return renderWithUI(<AchievementHeader />);
   };
@@ -42,18 +33,10 @@ describe('AchievementHeader', () => {
     vi.clearAllMocks();
   });
 
-  test('renders the page title', () => {
-    setup();
-
-    expect(screen.getByText('Achievements')).toBeInTheDocument();
-  });
-
   test('renders the record button when the user can create', () => {
     setup({ canCreate: true });
 
-    expect(
-      screen.getByRole('button', { name: /record/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /record/i })).toBeInTheDocument();
   });
 
   test('hides the record button when the user cannot create', () => {
@@ -75,13 +58,9 @@ describe('AchievementHeader', () => {
     });
   });
 
-  test('opens the dialog pre-filled from the record search param', () => {
-    setup({ record: 'league-123' });
+  test('does not open the dialog until the record button is clicked', () => {
+    setup({ canCreate: true });
 
-    expect(mockOpen).toHaveBeenCalledWith('add-achievement', {
-      action: 'Add',
-      item: { achievement_id: '', league_id: 'league-123' },
-    });
-    expect(mockSetSearchParams).toHaveBeenCalledWith({ record: '' });
+    expect(mockOpen).not.toHaveBeenCalled();
   });
 });

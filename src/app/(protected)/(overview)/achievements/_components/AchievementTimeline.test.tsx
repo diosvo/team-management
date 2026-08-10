@@ -12,6 +12,13 @@ import { AchievementWithRelations } from '@/db/achievement';
 
 import AchievementTimeline from './AchievementTimeline';
 
+vi.mock('next/font/google', () => ({
+  Bebas_Neue: () => ({
+    className: 'bebas',
+    style: { fontFamily: 'Bebas Neue' },
+  }),
+}));
+
 vi.mock('@/hooks/use-permissions', () => ({
   default: vi.fn(),
 }));
@@ -77,7 +84,11 @@ describe('AchievementTimeline', () => {
 
   test('quotes the first described honor of the year', () => {
     setup([
-      buildAchievement({ achievement_id: 'a-1', year: 2025, description: null }),
+      buildAchievement({
+        achievement_id: 'a-1',
+        year: 2025,
+        description: null,
+      }),
       buildAchievement({
         achievement_id: 'a-2',
         year: 2025,

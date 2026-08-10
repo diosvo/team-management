@@ -7,6 +7,7 @@ import {
   LeagueTeamRosterTable,
 } from '@/drizzle/schema/league';
 import { UpsertLeagueSchemaValues } from '@/schemas/league';
+import { AchievementType } from '@/utils/enum';
 
 import {
   mockDeleteFailure,
@@ -73,12 +74,16 @@ describe('getLeagues', () => {
     vi.clearAllMocks();
   });
 
-  test('returns leagues with player count when database query succeeds', async () => {
+  test('returns leagues with player count and achievement types when database query succeeds', async () => {
     const mockLeagueData = {
       ...MOCK_LEAGUE,
       team_rosters: [
         { league_id: MOCK_LEAGUE.league_id },
         { league_id: MOCK_LEAGUE.league_id },
+      ],
+      achievements: [
+        { type: AchievementType.CHAMPION },
+        { type: AchievementType.MVP },
       ],
     };
     vi.mocked(db.query.LeagueTable.findMany).mockResolvedValue([
@@ -87,10 +92,12 @@ describe('getLeagues', () => {
 
     const result = await getLeagues();
 
+    const { team_rosters, achievements, ...league } = mockLeagueData;
     expect(result).toEqual([
       {
-        ...mockLeagueData,
+        ...league,
         player_count: 2,
+        achievement_type: [AchievementType.CHAMPION, AchievementType.MVP],
       },
     ]);
     // Validate query construction
@@ -99,6 +106,9 @@ describe('getLeagues', () => {
       with: {
         team_rosters: {
           columns: { league_id: true },
+        },
+        achievements: {
+          columns: { type: true },
         },
       },
     });

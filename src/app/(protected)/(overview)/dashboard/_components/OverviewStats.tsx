@@ -31,7 +31,7 @@ export default async function OverviewStats() {
         <Stat
           label="Achievements"
           value={stats.achievements}
-          unit="(champions, mvp, etc.)"
+          unit="champions, mvp, ..."
           color={stats.achievements > 0 ? 'green' : 'red'}
         />
       </SimpleGrid>

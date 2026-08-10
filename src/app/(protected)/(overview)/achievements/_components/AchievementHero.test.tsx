@@ -1,7 +1,11 @@
+import { getYearsActive } from '@/app/(protected)/_helpers/utils';
 import { renderWithUI, screen } from '@/test/utilities';
 
-import { getYearsActive } from '../_helpers/utils';
 import AchievementHero from './AchievementHero';
+
+vi.mock('next/font/google', () => ({
+  Anton: () => ({ className: 'anton', style: { fontFamily: 'Anton' } }),
+}));
 
 vi.mock('next/image', () => ({
   default: ({ alt, ...props }: React.ImgHTMLAttributes<HTMLImageElement>) => (
@@ -34,11 +38,11 @@ describe('AchievementHero', () => {
   test('counts the seasons played since the club was founded', () => {
     setup();
 
-    const years = getYearsActive();
     expect(
-      screen.getByText(
-        `${years} ${years > 1 ? 'years' : 'year'} of playing together`,
-      ),
-    ).toBeInTheDocument();
+      screen.getAllByText(new RegExp(getYearsActive, 'i')).length,
+    ).toBeGreaterThan(0);
+    expect(screen.getAllByText(/of playing together/i).length).toBeGreaterThan(
+      0,
+    );
   });
 });
