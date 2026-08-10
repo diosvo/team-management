@@ -12,6 +12,7 @@ import {
 import { enumValues, LeagueStatus } from '@/utils/enum';
 import { created_at, updated_at } from '../helpers';
 
+import { AchievementTable } from './achievement';
 import { MatchTable } from './match';
 import { PlayerTable } from './player';
 import { TeamTable } from './team';
@@ -71,6 +72,7 @@ export const LeagueRelations = relations(LeagueTable, ({ many }) => ({
   matches: many(MatchTable),
   league_teams: many(LeagueTeamTable),
   team_rosters: many(LeagueTeamRosterTable),
+  achievements: many(AchievementTable),
 }));
 
 export const LeagueTeamRelations = relations(
@@ -98,6 +100,10 @@ export const LeagueTeamRosterRelations = relations(
     team: one(TeamTable, {
       fields: [LeagueTeamRosterTable.team_id],
       references: [TeamTable.team_id],
+    }),
+    league_team: one(LeagueTeamTable, {
+      fields: [LeagueTeamRosterTable.league_id, LeagueTeamRosterTable.team_id],
+      references: [LeagueTeamTable.league_id, LeagueTeamTable.team_id],
     }),
     player: one(PlayerTable, {
       fields: [LeagueTeamRosterTable.player_id],

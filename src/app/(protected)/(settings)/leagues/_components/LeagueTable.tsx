@@ -1,17 +1,22 @@
 'use client';
 
+import Link from 'next/link';
 import { useMemo, useTransition } from 'react';
 
-import { Badge } from '@chakra-ui/react';
+import { Badge, IconButton } from '@chakra-ui/react';
+import { isPast } from 'date-fns';
 import { capitalize } from 'es-toolkit/string';
 import { CircuitBoard } from 'lucide-react';
 
+import Authorized from '@/components/Authorized';
 import DataTable, { type Column } from '@/components/DataTable';
 import HighlightText from '@/components/HighlightText';
 import { toaster } from '@/components/ui/toaster';
+import { Tooltip } from '@/components/ui/tooltip';
 
 import { useLeagueFilters } from '@/lib/nuqs';
-import { LeagueStatus } from '@/utils/enum';
+import { ACHIEVEMENT_STYLE } from '@/utils/constants/achievement';
+import { AchievementType, LeagueStatus } from '@/utils/enum';
 import { buildPredicate } from '@/utils/filters';
 import { formatDate } from '@/utils/formatter';
 import { getColor } from '@/utils/helper';
@@ -24,7 +29,10 @@ import { League } from '@/drizzle/schema';
 
 import { UpsertLeague } from './UpsertLeague';
 
-type LeagueWithPlayerCount = League & { player_count: number };
+type LeagueWithPlayerCount = League & {
+  player_count: number;
+  achievement_type: Array<AchievementType>;
+};
 
 export default function LeagueTable({
   leagues,
@@ -71,6 +79,37 @@ export default function LeagueTable({
   };
 
   const columns: Array<Column<LeagueWithPlayerCount>> = [
+    {
+      header: '',
+      headerProps: { width: '1px' },
+      align: 'center',
+      cell: (item) => {
+        const [type] = item.achievement_type;
+
+        if (!isPast(item.end_date) || !type) return null;
+
+        const { icon: Icon, colorPalette, label } = ACHIEVEMENT_STYLE[type];
+
+        return (
+          <Authorized resource="achievements" action="create">
+            <Tooltip content={label}>
+              <IconButton
+                asChild
+                size="2xs"
+                variant="ghost"
+                colorPalette={colorPalette}
+                aria-label="Record achievement"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <Link href={`/achievements?record=${item.league_id}`}>
+                  <Icon role="img" aria-label={label} />
+                </Link>
+              </IconButton>
+            </Tooltip>
+          </Authorized>
+        );
+      },
+    },
     {
       header: 'Name',
       cell: (item) => <HighlightText query={q}>{item.name}</HighlightText>,

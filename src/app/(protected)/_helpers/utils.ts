@@ -1,3 +1,4 @@
+import { formatDistanceToNow } from 'date-fns';
 import {
   BadgeCheck,
   Dumbbell,
@@ -7,6 +8,7 @@ import {
   LayoutDashboard,
   MailSearch,
   MapPinHouse,
+  Medal,
   Package,
   PersonStanding,
   ShieldCheck,
@@ -15,6 +17,7 @@ import {
   UsersRound,
 } from 'lucide-react';
 
+import { ESTABLISHED_DATE } from '@/utils/constants';
 import type { Resource } from '@/utils/permissions';
 
 type SidebarGroup = {
@@ -25,6 +28,8 @@ type SidebarGroup = {
     disabled?: boolean;
   }>;
 };
+
+export const getYearsActive = formatDistanceToNow(new Date(ESTABLISHED_DATE));
 
 /** Convert a kebab-case URL segment or resource key into a Title Case label */
 export function segmentToLabel(segment: string): string {
@@ -38,6 +43,7 @@ export const SIDEBAR_GROUP: Array<SidebarGroup> = [
     title: 'Overview',
     items: [
       { icon: LayoutDashboard, resource: 'dashboard' },
+      { icon: Medal, resource: 'achievements' },
       { icon: ShieldCheck, resource: 'team-rule' },
     ],
   },

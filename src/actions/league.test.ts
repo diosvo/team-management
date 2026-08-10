@@ -92,7 +92,7 @@ describe('League Actions', () => {
   const leagueDetails = {
     ...MOCK_LEAGUE,
     player_count: 0,
-    team_rosters: [],
+    achievement_type: [],
   };
 
   beforeEach(() => {

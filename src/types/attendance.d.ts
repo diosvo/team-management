@@ -1,10 +1,9 @@
-import { AttendanceStatus } from '@/utils/enum';
+import { AttendanceStatus, enumUnion } from '@/utils/enum';
 
 import { Attendance } from '@/drizzle/schema/attendance';
 import { User } from '@/drizzle/schema/user';
 
-export type AttendanceStatusValues =
-  (typeof AttendanceStatus)[keyof typeof AttendanceStatus];
+export type AttendanceStatusValues = enumUnion<typeof AttendanceStatus>;
 
 export interface AttendanceWithPlayer extends Attendance {
   player: {

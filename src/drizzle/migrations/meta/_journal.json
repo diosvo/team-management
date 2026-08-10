@@ -33,15 +33,29 @@
     {
       "idx": 4,
       "version": "7",
-      "when": 1785937708000,
-      "tag": "0005_update_test_type_unit_enum",
+      "when": 1785937707000,
+      "tag": "0004_add_achievement_table",
       "breakpoints": true
     },
     {
       "idx": 5,
       "version": "7",
+      "when": 1785937708000,
+      "tag": "0005_update_test_type_unit_enum",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
       "when": 1785937709000,
       "tag": "0006_lowercase_all_enum_values",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1785937710000,
+      "tag": "0007_lowercase_achievement_type",
       "breakpoints": true
     }
   ]

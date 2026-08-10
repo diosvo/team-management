@@ -13,6 +13,7 @@ export const ROLE_CONFIG: Record<UserRole, RoleConfig> = {
     RESOURCES.map((resource) => [resource, ALL_ACTIONS]),
   ),
   [UserRole.COACH]: {
+    achievements: ['view', 'create', 'edit'],
     dashboard: ['view'],
     'team-rule': ['view'],
     roster: ['view'],
@@ -28,6 +29,7 @@ export const ROLE_CONFIG: Record<UserRole, RoleConfig> = {
     profile: ['view', 'edit'],
   },
   [UserRole.PLAYER]: {
+    achievements: ['view'],
     dashboard: ['view'],
     'team-rule': ['view'],
     roster: ['view'],
@@ -40,6 +42,7 @@ export const ROLE_CONFIG: Record<UserRole, RoleConfig> = {
     teams: ['view'],
   },
   [UserRole.GUEST]: {
+    achievements: ['view'],
     dashboard: ['view'],
     roster: ['view'],
     matches: ['view'],
