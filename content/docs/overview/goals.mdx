@@ -1,0 +1,31 @@
+---
+title: "Goals"
+description: "Goals, success metrics, and non-functional requirements."
+---
+
+## Goals and success metrics
+
+> Metrics below are proposals. Confirm and prune to the 2–3 that matter (see [Open questions](#open-questions)).
+
+| Goal                                             | Signal of success (proposed)                                   |
+| ------------------------------------------------ | -------------------------------------------------------------- |
+| Replace spreadsheets/chat as the operational hub | Roster, schedule, and match data maintained in-app only        |
+| Reliable attendance & performance history        | Attendance recorded for ≥ 90% of training sessions             |
+| Self-service answers                             | Members find schedule/roster/rules without asking in chat      |
+| Safe delegation                                  | Captains/coaches run their workflows without admin involvement |
+
+## Non-functional requirements
+
+- **Performance:** common pages render within 2 seconds at the team sizes in
+  the [assumptions](/docs/overview/vision#assumptions-and-constraints). Two
+  conventions serve this. A page gives each section its own loading boundary
+  instead of awaiting every query before it responds. A dependency that only
+  some users can trigger (chart library, rich-text editor, PDF engine) loads
+  on demand rather than in the route's first-load JavaScript.
+- **Accessibility:** keyboard navigation and accessible dialogs.
+- **Reliability:** clear loading/error states; avoid duplicate submits.
+
+## Open questions
+
+- Which 2–3 success metrics above are the ones we actually commit to (and how do we measure them)?
+- Which features require audit logs vs. basic activity logging? (Currently a non-goal, see [Non-goals](/docs/overview/vision#non-goals-out-of-scope).)

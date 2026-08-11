@@ -1,0 +1,90 @@
+---
+title: "Data Model"
+description: "Database entities and the relationships between them."
+---
+
+> Source of truth: `src/drizzle/schema/` (12 modules, 19 tables). Every table
+> also carries `created_at` / `updated_at` (omitted below). Column-level detail
+> lives in `ARCHITECTURE.md` §5.
+
+## Entity relationships
+
+<Mermaid
+  chart={`
+erDiagram
+    %% ===== Identity (Better Auth) =====
+    user ||--o{ session : "logs in"
+    user ||--o{ account : "credentials"
+    user ||--o| player : "extends"
+    user ||--o| coach : "extends"
+
+    %% ===== Team domain =====
+    team ||--o{ user : "has members"
+    team ||--o| rule : "one rule doc"
+    team ||--o{ asset : "owns"
+    user |o--o{ asset : "assigned_to (optional)"
+
+    %% ===== Performance =====
+    team ||--o{ test_type : "defines"
+    test_type ||--o{ test_result : "measured as"
+    player ||--o{ test_result : "records"
+
+    %% ===== Training =====
+    team ||--o{ training_session : "schedules"
+    coach |o--o{ training_session : "leads (optional)"
+    location |o--o{ training_session : "hosted at (optional)"
+    training_session |o--o{ attendance : "tracked by (optional)"
+    team ||--o{ attendance : "scopes"
+    player ||--o{ attendance : "one per date"
+
+    %% ===== Competition =====
+    league ||--o{ league_team : "enrolls"
+    team ||--o{ league_team : "joins"
+    league_team ||--o{ league_team_roster : "fields"
+    player ||--o{ league_team_roster : "plays in"
+    league |o--o{ match : "friendly if absent"
+    location |o--o{ match : "played at (optional)"
+    team ||--o{ match : "home_team"
+    team ||--o{ match : "away_team"
+    match ||--o{ match_player_stats : "per player"
+    player ||--o{ match_player_stats : "box score"
+
+    %% ===== Honors =====
+    league |o--o{ achievement : "awarded in (optional)"
+    player |o--o{ achievement : "awarded to (optional)"
+`}
+/>
+
+`verification` (Better Auth password-reset tokens) is standalone — it has no
+foreign keys and is omitted from the diagram.
+
+## Entities by domain
+
+| Domain          | Entity               | Purpose                                                        | Key constraints                                                                     |
+| --------------- | -------------------- | -------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| **Identity**    | `user`               | Every person; carries `role`, `state`, and a required `team_id` | `email` unique; cascade-deleted with its team                                       |
+|                 | `session`, `account` | Better Auth login sessions and credentials                     | Cascade-deleted with the user                                                       |
+|                 | `verification`       | Password-reset tokens                                          | No foreign keys                                                                     |
+|                 | `player`             | Extension of `user` (shared `id`)                              | `jersey_number` unique, 0–99; height/weight checks                                  |
+|                 | `coach`              | Extension of `user` (shared `id`)                              | —                                                                                   |
+| **Team**        | `team`               | The club and opponents                                         | Partial unique index: only one `is_default` team                                    |
+|                 | `rule`               | Team rule document                                             | `team_id` unique → strict 1:1 with `team`                                           |
+|                 | `asset`              | Equipment inventory                                            | `assigned_to` → user, `set null` on delete                                          |
+| **Performance** | `test_type`          | Per-team test definitions                                      | Name unique within a team                                                           |
+|                 | `test_result`        | A player's measurement                                         | `type_id` delete is `restrict` — types with results can't be removed                |
+| **Training**    | `training_session`   | Scheduled practice                                             | Coach and location optional (`set null`)                                            |
+|                 | `attendance`         | Player presence per date                                       | Unique (`player_id`, `date`); survives session deletion (`set null`)                |
+| **Competition** | `league`             | A competition window                                           | Name unique                                                                         |
+|                 | `league_team`        | League ⨯ team junction                                         | Composite PK (`league_id`, `team_id`)                                               |
+|                 | `league_team_roster` | Adds the player dimension                                      | Composite PK (`league_id`, `team_id`, `player_id`)                                  |
+|                 | `match`              | A game; references **two** teams directly                      | Check: `home_team != away_team`; no `league_id` ⇒ friendly match                    |
+|                 | `match_player_stats` | Per-player box score                                           | Composite PK (`match_id`, `player_id`)                                              |
+|                 | `location`           | Venue for matches and training                                 | Referenced with `set null` from both                                                |
+| **Honors**      | `achievement`        | Manually recorded honors                                       | One honor per (`league`, `type`) except `custom`; league/player links survive deletes (`set null`) |
+
+## Deletion behavior at a glance
+
+- **Cascade from `team`:** users, assets, rules, test types, training sessions, attendance, league junctions — deleting a team removes its whole subtree.
+- **Cascade from `user`:** sessions, accounts, player/coach extensions (and from `player`: attendance, roster entries, stats, test results).
+- **`set null` (record survives):** `asset.assigned_to`, `match.location_id`, `training_session.coach_id` / `location_id`, `attendance.session_id`, `achievement.league_id` / `player_id`.
+- **`restrict`:** `test_result.type_id` — a test type with recorded results cannot be deleted.

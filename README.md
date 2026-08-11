@@ -1,6 +1,6 @@
 # Saigon Rovers Basketball Club Management
 
-A private web portal for a basketball club: roster, training, attendance, matches, performance testing, and assets, all behind role-based access. This page covers the technology stack and how to run the app and its tests locally. For the system design see [ARCHITECTURE.md](ARCHITECTURE.md); for naming and folder conventions see [DEVELOPMENT.md](DEVELOPMENT.md).
+A private web portal for a basketball club: roster, training, attendance, matches, performance testing, and assets, all behind role-based access. This page covers the technology stack and how to run the app and its tests locally. For the system design see the [Architecture docs page](content/docs/project/architecture.mdx) (served at `/docs/project/architecture`); for naming and folder conventions see [DEVELOPMENT.md](DEVELOPMENT.md).
 
 ## 🧑‍💻 Technology stack
 

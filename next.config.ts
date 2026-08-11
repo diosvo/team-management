@@ -1,3 +1,4 @@
+import { createMDX } from 'fumadocs-mdx/next';
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
@@ -34,4 +35,7 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ['puppeteer-core', '@sparticuz/chromium-min'],
 };
 
-export default nextConfig;
+// Docs (/docs) are Fumadocs pages compiled from content/docs via fumadocs-mdx.
+const withMDX = createMDX();
+
+export default withMDX(nextConfig);

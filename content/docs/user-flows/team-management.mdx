@@ -1,0 +1,65 @@
+---
+title: "Team Management"
+description: "How rosters, training, attendance, registration, and matches flow together."
+---
+
+> Feature-level detail lives in the [Team Management specs](/docs/features/team-management/roster).
+> These flows show how the workflows hand off to each other and who runs each step.
+
+## From roster to match day
+
+<Mermaid
+  chart={`
+flowchart TD
+    subgraph Captain
+        R[Roster: invite / remove players] --> REG[Registration: register players for a league]
+    end
+    subgraph Coach
+        T[Training: schedule sessions] --> A[Attendance: record per session]
+        M[Matches: record results]
+    end
+    R --> T
+    REG --> M
+    A --> D[Dashboard: attendance trend, rankings]
+    M --> D
+    PT[Periodic Testing: record player metrics] --> D
+`}
+/>
+
+## Training and attendance
+
+<Mermaid
+  chart={`
+sequenceDiagram
+    autonumber
+    actor Coach
+    actor Player
+    participant App
+
+    Coach->>App: Schedule training session (date, location)
+    App-->>Player: Session appears in Training
+    alt player can't attend
+        Player->>App: Submit leave request (own player_id only)
+    end
+    Coach->>App: Take attendance for the session
+    App->>App: Update attendance rate + dashboard stats
+`}
+/>
+
+## League registration
+
+<Mermaid
+  chart={`
+flowchart LR
+    A[Captain opens Registration] --> B[Select league]
+    B --> C[Select players from roster]
+    C --> D[Upload registration PDF]
+    D --> E[Saved registration]
+    E --> F[Export]
+`}
+/>
+
+Roles beyond the happy path: `SUPER_ADMIN` can run every step; `COACH` can
+create and edit training, attendance, and matches; a plain `PLAYER` only views
+these pages and submits their own leave requests — see the
+[permission matrix](/docs/access/roles-permissions#2-permission-matrix).

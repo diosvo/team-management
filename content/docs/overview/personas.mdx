@@ -1,0 +1,16 @@
+---
+title: "Personas"
+description: "Target users and what each role needs from the app."
+---
+
+The role model is small and static; users are trusted club members invited by an admin.
+
+| Persona                | Role flag          | What they need from the app                                                                                    |
+| ---------------------- | ------------------ | -------------------------------------------------------------------------------------------------------------- |
+| **Visitor / trialist** | `GUEST`            | Read-only look at the club: dashboard, roster, matches.                                                        |
+| **Player**             | `PLAYER`           | Check training schedule, team rules, own attendance and performance metrics; keep own profile current.         |
+| **Team captain**       | `PLAYER` + Captain | Everything a player has, plus run registration, manage the roster (invite/remove), record matches, edit rules. |
+| **Coach**              | `COACH`            | Plan training sessions, take attendance, record match results, track player testing/performance over time.     |
+| **Club administrator** | `SUPER_ADMIN`      | Configure teams, leagues, locations; manage all people and data; full access everywhere.                       |
+
+Full capability-by-role detail: [Roles & Permissions](/docs/access/roles-permissions).

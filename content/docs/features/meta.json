@@ -1,0 +1,14 @@
+{
+  "title": "Features",
+  "pages": [
+    "index",
+    "dashboard",
+    "achievements",
+    "team-rule",
+    "team-management",
+    "performance",
+    "resources",
+    "settings",
+    "profile"
+  ]
+}

@@ -1,0 +1,42 @@
+/*
+ * Tailwind + Fumadocs styles for /docs.
+ *
+ * This file is imported by src/app/docs/layout.tsx, so it is only loaded on
+ * /docs routes — but once loaded it stays for the session (client-side
+ * navigation does not unload stylesheets), so everything here must be safe
+ * to apply alongside the Chakra UI app:
+ *
+ * 1. The @layer statement below pins the combined cascade-layer order once,
+ *    at build time. Chakra's four layers (emitted at runtime via Emotion)
+ *    keep their internal order and stay ahead of Tailwind's, so there is no
+ *    declaration-order race between the two systems.
+ * 2. Tailwind's preflight is intentionally NOT imported: Chakra ships its
+ *    own reset, and the Fumadocs preset provides the docs typography.
+ * 3. source(none) + explicit @source limits utility generation to docs code
+ *    and content — a class-like string in app code can never emit CSS here.
+ */
+@layer reset, base, tokens, recipes, theme, components, utilities;
+
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities) source(none);
+
+@source './';
+@source '../../../content/docs';
+
+@import 'fumadocs-ui/css/neutral.css';
+@import 'fumadocs-ui/css/preset.css';
+
+:root {
+  --color-fd-background: hsl(0, 0%, 100%);
+  --color-fd-card: hsl(0, 0%, 99%);
+  --color-fd-muted: hsl(0, 0%, 97.5%);
+  --color-fd-accent: hsla(0, 0%, 95%, 50%);
+  --color-fd-primary: #8c271e;
+  --color-fd-primary-foreground: hsl(0, 0%, 98%);
+}
+
+html > body[data-scroll-locked] {
+  /* must outrank the inline styles set by the scroll-lock library */
+  margin-right: 0px !important;
+  --removed-body-scroll-bar-size: 0px !important;
+}

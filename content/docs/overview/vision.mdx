@@ -1,0 +1,39 @@
+---
+title: "Vision"
+description: "The problem, the product vision, non-goals, and constraints."
+---
+
+## Vision and problem
+
+Team Management is a web app for managing a basketball club's teams, people,
+and operations (rosters, schedules, assets) with role-based access.
+
+### Problem
+
+Club operations are tracked in spreadsheets and group chats, which causes:
+
+- stale information
+- unclear ownership
+- poor visibility across roles
+
+### Vision
+
+One private, role-based hub that is the club's single source of truth: any
+member can answer “who, when, where” in seconds, and the people responsible
+for a workflow (attendance, registration, testing) can run it end-to-end
+without leaving the app.
+
+## Non-goals (out of scope)
+
+Explicitly not planned without a new product signal. The app targets a trusted, small, single-club portal:
+
+- **Injury/medical tracking, payments/fees, audit logs**: revisit only on real demand.
+- **Multi-club / public-facing product**: one club, private portal; opponents are lightweight records, not tenants.
+- **Native mobile apps**: responsive web only.
+- **Self-service sign-up**: membership is invite-only by design.
+
+## Assumptions and constraints
+
+- Application is a private team portal; users are trusted team members (invited via email by admin).
+- The role set is small and static (`GUEST`, `PLAYER`, `COACH`, `SUPER_ADMIN`, plus the Captain flag).
+- Single club with team sizes in the tens of users, not thousands, which informs performance targets.

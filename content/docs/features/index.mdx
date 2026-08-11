@@ -1,0 +1,44 @@
+---
+title: "Feature Catalog"
+description: "Every page in the app with its route, status, and spec."
+---
+
+Specs are organized **by page**, mirroring the app's sidebar navigation (`SIDEBAR_GROUP` in `src/app/(protected)/_helpers/utils.ts`). Each page has one spec; its individual functionalities are sections **inside** that spec (§5 Functional Requirements).
+
+Each spec follows the same template:
+
+- Status line (`> Route · Nav group · Status`): keep it current
+- User-facing behavior (readable by end users)
+- Requirements + Acceptance Criteria (for engineering/QA)
+- Technical appendix (data/API/permissions) if possible
+
+How the underlying database entities relate to each other is documented in the [Data Model](/docs/overview/data-model).
+
+## Feature catalog
+
+| Nav group           | Page             | Route               | Status | Spec                                                  |
+| ------------------- | ---------------- | ------------------- | ------ | ----------------------------------------------------- |
+| **Overview**        | Dashboard        | `/dashboard`        | Draft  | [dashboard](/docs/features/dashboard)                  |
+| **Overview**        | Achievements     | `/achievements`     | Draft  | [achievements](/docs/features/achievements)            |
+| **Overview**        | Team Rule        | `/team-rule`        | Draft  | [team-rule](/docs/features/team-rule)                  |
+| **Team Management** | Roster           | `/roster`           | Draft  | [roster](/docs/features/team-management/roster)                 |
+| **Team Management** | Training         | `/training`         | Draft  | [training](/docs/features/team-management/training)             |
+| **Team Management** | Attendance       | `/attendance`       | Draft  | [attendance](/docs/features/team-management/attendance)         |
+| **Team Management** | Registration     | `/registration`     | Draft  | [registration](/docs/features/team-management/registration)     |
+| **Team Management** | Matches          | `/matches`          | Draft  | [matches](/docs/features/team-management/matches)               |
+| **Performance**     | Periodic Testing | `/periodic-testing` | Draft  | [periodic-testing](/docs/features/performance/periodic-testing) |
+| **Resources**       | Assets           | `/assets`           | Draft  | [assets](/docs/features/resources/assets)                       |
+| **Settings**        | Teams            | `/teams`            | Draft  | [teams](/docs/features/settings/teams)                          |
+| **Settings**        | Leagues          | `/leagues`          | Draft  | [leagues](/docs/features/settings/leagues)                      |
+| **Settings**        | Locations        | `/locations`        | Draft  | [locations](/docs/features/settings/locations)                  |
+| **Account**         | Profile          | `/profile/[id]`     | Draft  | [profile](/docs/features/profile)                               |
+
+> **Dashboard** includes the **PDF Reports** capability (formerly the standalone “Analytics Reports” spec) as a functionality under §5.
+>
+> **Periodic Testing** also owns the sub-routes `/periodic-testing/test-types` and `/periodic-testing/add-result`, documented inside its spec.
+
+### Not yet documented
+
+- Auth pages: `/login`, `/forgot-password`, `/new-password`
+- Resources → **Emails** (`/emails`)
+- Resources → **Documents** (`/documents`, disabled in the sidebar)
