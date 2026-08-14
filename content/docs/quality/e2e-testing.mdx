@@ -1,0 +1,560 @@
+---
+title: "E2E Testing"
+description: "How the Playwright suite is laid out, which helpers to reuse, and how to run and debug it."
+---
+
+How the Playwright suite is laid out, which helpers to reuse, and how to run and debug it. The suite lives in `e2e/`, holds 577 tests across 19 spec files, and is organized by feature domain plus one cross-cutting spec. Run it with `pnpm e2e`.
+
+> The CI job is currently **disabled**. See [CI/CD integration](#cicd-integration) before assuming a regression would have been caught automatically.
+
+## Test structure
+
+### Domain-based organization
+
+<Mermaid
+  chart={`
+flowchart TD
+    root["e2e/"] --> auth["auth/<br/>login, forgot & new password"]
+    root --> overview["overview/<br/>dashboard, team rules"]
+    root --> performance["performance/<br/>periodic testing"]
+    root --> resources["resources/<br/>assets, emails"]
+    root --> settings["settings/<br/>teams, leagues, locations"]
+    root --> tm["team-management/<br/>matches, roster, training,<br/>attendance, registration"]
+    root --> setup["setup/<br/>storage state, helpers, page objects"]
+    root --> cc["cross-cutting.spec.ts<br/>shared tests across all features"]
+    setup --> authts["auth.ts<br/>setup project: logs in,<br/>saves storage state"]
+    setup --> helpers["helpers.ts<br/>reusable assertions and flows"]
+    setup --> pom["pom.ts<br/>DialogPOM, TablePOM page objects"]
+`}
+/>
+
+### Projects
+
+`playwright.config.ts` defines three projects:
+
+- **`auth`**: unauthenticated specs, scoped to `e2e/auth`
+- **`setup`**: signs in with `PW_USERNAME` / `PW_PASSWORD` and writes `playwright/.auth/admin.json`
+- **`admin`**: everything except `e2e/auth/**`, reusing the storage state from `setup`
+
+Only Desktop Chrome is configured. The mobile-viewport projects are present but commented out, so responsive assertions run by resizing the viewport inside a test rather than through a separate project.
+
+## Test helpers
+
+### `e2e/setup/helpers.ts`
+
+Reusable test utilities to reduce duplication:
+
+- **Navigation**: `waitForNavigation`, `testUrlPersistence`
+- **Search & filters**: `testSearchWithQueryParams`, `testFilterWithQueryParams`, `testCheckboxFilter`, `testCheckboxFilterReset`
+- **Forms**: `testFormValidationDisabled`, `testDialogOpenClose`, `testEnterToSubmit`, `testEscapeToCancel`
+- **Tables**: `testTableHeaders`, `testEmptyState`, `testPaginationNavigation`, `testRowClickEdit`, `testStatsCardClick`
+- **Interactions**: `testKeyboardNavigation`, `testDeleteWithCheckbox`
+- **Assertions**: `testNoErrors`, `testNoLoadingState`, `testSuccessToast`
+- **Utilities**: `uniqueName`, `testHighlightedText`
+
+### `e2e/setup/pom.ts`
+
+Page objects for the two widgets that appear on nearly every page: `DialogPOM` (open, fill, submit, close) and `TablePOM` (rows, headers, selection).
+
+### Usage example
+
+```typescript
+import { testNoErrors, testTableHeaders } from '../setup/helpers';
+
+test('loads without errors', async ({ page }) => {
+  await testNoErrors(page);
+});
+
+test('displays table headers', async ({ page }) => {
+  await testTableHeaders(page, ['Name', 'Email', 'Status']);
+});
+```
+
+## Test patterns
+
+### 1. Page load tests
+
+Every page should verify:
+
+- ✅ Correct title
+- ✅ Page heading visible
+- ✅ No error messages
+- ✅ No persistent loading state
+
+```typescript
+test.describe('Page Name', () => {
+  test('has correct title', async ({ page }) => {
+    await expect(page).toHaveTitle(/Page Title/);
+  });
+
+  test('displays page heading', async ({ page }) => {
+    await expect(
+      page.getByRole('heading', { name: 'Page Name' }),
+    ).toBeVisible();
+  });
+
+  test('loads without errors', async ({ page }) => {
+    await testNoErrors(page);
+  });
+});
+```
+
+### 2. Search and filter tests
+
+- ✅ Search updates URL query params
+- ✅ Search persists on page reload
+- ✅ Highlighted search results
+- ✅ Filter updates URL
+- ✅ Combined search + filters
+- ✅ Clear/reset functionality
+
+```typescript
+test('filters by name and updates query params', async ({ page }) => {
+  const searchInput = page.getByPlaceholder(/search/i);
+  await searchInput.fill('test');
+  await expect(page).toHaveURL(/q=test/);
+
+  await searchInput.clear();
+  await expect(page).not.toHaveURL(/q=/);
+});
+```
+
+### 3. CRUD operations
+
+#### Add
+
+- ✅ Opens dialog with correct title
+- ✅ Form fields visible
+- ✅ Submit disabled when empty
+- ✅ Success toast after creation
+- ✅ Dialog closes on success
+- ✅ Table updates without reload
+
+#### Update
+
+- ✅ Row click opens edit dialog
+- ✅ Pre-populated with current values
+- ✅ Success toast after update
+- ✅ Changes reflect in table
+- ✅ Timestamp updates
+
+#### Delete
+
+- ✅ Checkbox selection
+- ✅ Select all functionality
+- ✅ Selection count displayed
+- ✅ Confirmation (if applicable)
+- ✅ Success toast
+- ✅ Selection cleared after delete
+
+### 4. Form validation
+
+- ✅ Required fields enforced
+- ✅ Input format validation (email, date, number)
+- ✅ Duplicate prevention
+- ✅ Whitespace trimming
+- ✅ Min/max length validation
+- ✅ Character limits
+
+```typescript
+test('validates required fields', async ({ page }) => {
+  await page.getByRole('button', { name: 'Add' }).click();
+
+  const submitButton = page
+    .getByRole('dialog')
+    .getByRole('button', { name: 'Submit' });
+
+  await expect(submitButton).toBeDisabled();
+});
+```
+
+### 5. Keyboard navigation
+
+- ✅ Tab key navigation
+- ✅ Enter to submit
+- ✅ Escape to cancel/close
+- ✅ Arrow keys for navigation
+- ✅ Shift+Tab for reverse navigation
+
+```typescript
+test('closes dialog on Escape', async ({ page }) => {
+  await page.getByRole('button', { name: 'Add' }).click();
+
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+
+  await page.keyboard.press('Escape');
+  await expect(dialog).not.toBeVisible();
+});
+```
+
+### 6. Responsive design
+
+- ✅ Mobile (375×667)
+- ✅ Tablet (768×1024)
+- ✅ Desktop (1920×1080)
+- ✅ No horizontal scroll
+- ✅ Touch-friendly targets
+
+### 7. Accessibility
+
+- ✅ ARIA labels present
+- ✅ Keyboard navigation
+- ✅ Focus management
+- ✅ Screen reader support
+- ✅ Semantic HTML
+
+## Feature-specific tests
+
+Test counts below come from counting `test(` declarations per file; re-check them when you add specs.
+
+### Authentication
+
+#### Login (`auth/login.spec.ts`)
+
+- Page load and form display
+- Form validation (email format, required fields)
+- Authentication flow (valid/invalid credentials)
+- Loading states during submission
+- Navigation to forgot password
+- Keyboard navigation (Tab, Enter)
+- Accessibility (ARIA labels, autocomplete)
+- Responsive design (mobile, tablet)
+- Error handling and display
+
+**Test coverage**: 19 tests
+
+#### Forgot password (`auth/forgot-password.spec.ts`)
+
+- Email submission form
+- Real-time email validation
+- Submit button enable/disable logic
+- Success/error message display
+- Form state management (clear on mount)
+- Navigation back to login
+- Loading states and field disabling
+- Keyboard navigation
+- Accessibility features
+- Responsive layouts
+
+**Test coverage**: 28 tests
+
+#### New password (`auth/new-password.spec.ts`)
+
+- Password creation form
+- Real-time password rule validation:
+  - Length (8-128 characters)
+  - Contains at least one letter
+  - Contains at least one number
+  - Contains at least one special character
+- Visual feedback for rule compliance (green checkmarks)
+- Token parameter handling (URL query)
+- Password visibility toggle
+- Form submission with token validation
+- Keyboard navigation and submission
+- Accessibility (ARIA labels, list structure)
+- Responsive design
+
+**Test coverage**: 40 tests
+
+### Overview
+
+#### Dashboard (`overview/dashboard.spec.ts`, 38 tests)
+
+- Stats cards display
+- Quick actions navigation
+- Upcoming sessions/matches
+- Charts rendering (attendance trend, match rate)
+- Player rankings
+- Filter functionality
+
+#### Team rule (`overview/team-rule.spec.ts`, 28 tests)
+
+- Preview/edit mode toggle
+- Rich-text rendering
+- Save/cancel functionality
+- Form validation
+- Character limits
+- Permission checks
+
+### Performance
+
+#### Periodic testing (`performance/periodic-testing.spec.ts`, 39 tests)
+
+- Stats display
+- Date filter
+- Performance matrix
+- Editable cells with keyboard navigation
+- Enter to save, Escape to cancel
+- Tab navigation between cells
+- Numeric validation
+
+#### Add result (`performance/add-result.spec.ts`, 46 tests)
+
+- Configuration form
+- Test type selection
+- Player table with dynamic columns
+- Score input with Tab/Enter navigation
+- Bulk actions (fill all, clear all)
+- Form validation
+
+#### Test types (`performance/test-types.spec.ts`, 52 tests)
+
+- CRUD operations
+- Name/unit validation
+- Duplicate prevention
+- Search and filter
+- Sorting capabilities
+
+### Resources
+
+#### Assets (`resources/assets.spec.ts`, 13 tests)
+
+- Stats cards click to filter
+- Category/condition filters
+- CRUD operations
+- Bulk deletion
+
+#### Emails (`resources/emails.spec.ts`, 21 tests)
+
+- Sent emails table
+- Status filters
+- Static template preview
+- Accordion expansion
+
+### Settings
+
+Teams (21 tests), leagues (27 tests), and locations (28 tests) share the standard patterns:
+
+- Standard CRUD patterns
+- Search by multiple fields
+- Date validation (leagues)
+- Map links (locations)
+- Logo upload (teams)
+- Status-based filtering (leagues)
+
+### Team management
+
+#### Matches (`team-management/matches.spec.ts`, 30 tests)
+
+- Win streak, win rate stats
+- Opponent selection
+- Score tracking
+- Result badges
+- Date filtering
+
+#### Roster (`team-management/roster.spec.ts`, 28 tests)
+
+- Player search
+- State/role filters
+- Jersey numbers
+- Position badges
+- Data masking for guests
+- Export functionality
+
+#### Training (`team-management/training.spec.ts`, 33 tests)
+
+- Session scheduling
+- Location links
+- Attendance rate
+- Date range filtering
+
+#### Attendance (`team-management/attendance.spec.ts`, 33 tests)
+
+- Date picker
+- Bulk status updates
+- Stats cards
+- Integration with training
+
+#### Registration (`team-management/registration.spec.ts`, 36 tests)
+
+- Multi-step form
+- League/player selection
+- PDF upload
+- Saved registrations
+- Export functionality
+
+## Cross-cutting tests
+
+The `cross-cutting.spec.ts` file holds 17 tests that apply to multiple pages:
+
+1. **Page load**: error-free loading, no persistent loading states
+2. **Keyboard navigation**: tab navigation, skip links
+3. **Responsive design**: mobile, tablet, desktop viewports
+4. **Search functionality**: URL params, persistence
+5. **Pagination**: navigation, URL state
+6. **Empty states**: no-results messaging
+7. **Dialog behavior**: Escape, cancel, click outside
+8. **Form validation**: empty form handling
+9. **Toast notifications**: appearance, dismissal
+10. **URL state management**: multiple filters, navigation persistence
+
+## Best practices
+
+### 1. Don't write self-satisfying assertions
+
+A guard that checks the same condition as the assertion inside it can never fail:
+
+```typescript
+// ✗ Passes whether or not the element exists.
+if (await element.isVisible()) {
+  await expect(element).toBeVisible();
+}
+
+// ✗ Passes for any value; `typeof` is always a string.
+expect(typeof (await button.isVisible())).toBe('boolean');
+```
+
+When data varies between environments, assert the invariant instead of the variable part:
+
+```typescript
+// ✓ The table always renders, even with zero rows.
+await expect(page.getByRole('table')).toBeVisible();
+
+// ✓ A coach must never see the create control.
+await expect(page.getByRole('button', { name: /add/i })).toBeHidden();
+```
+
+### 2. Unique test data
+
+Use `uniqueName()` from `setup/helpers.ts` so parallel runs and reruns don't collide:
+
+```typescript
+const name = uniqueName(); // e.g. "E2E Test 1754531200000"
+```
+
+### 3. Wait for state, not for time
+
+```typescript
+// ✓ Wait for the condition you actually care about.
+await expect(page.getByRole('row')).not.toHaveCount(0);
+
+// ✗ Last resort only: a fixed delay slows the suite and still races.
+await page.waitForTimeout(500);
+```
+
+Note that `networkidle` is discouraged by Playwright for app code; prefer a web-first assertion on the element you need.
+
+### 4. Clean up test data
+
+The suite runs against a real database, so anything a spec creates it should also remove:
+
+```typescript
+test.afterEach(async ({ page }) => {
+  // Delete rows created by this spec, matched on the unique name prefix.
+});
+```
+
+## Running tests
+
+```bash
+# Run all tests
+pnpm e2e
+
+# Open the Playwright UI runner
+pnpm e2e:ui
+
+# Run a specific test file
+pnpm e2e overview/dashboard.spec.ts
+pnpm e2e cross-cutting.spec.ts
+
+# Run in headed mode (see browser)
+pnpm e2e --headed
+
+# Run in debug mode
+pnpm e2e --debug
+
+# Run a specific test by name
+pnpm e2e -g "has correct title"
+
+# Run one project (auth | setup | admin)
+pnpm e2e --project=admin
+```
+
+Authenticated specs depend on the `setup` project, which needs `PW_USERNAME` and `PW_PASSWORD` in `.env`. Running the `admin` project triggers `setup` automatically.
+
+## Test coverage
+
+### Current coverage
+
+- ✅ 19 spec files
+- ✅ 577 individual tests
+- ✅ All major features covered
+- ✅ CRUD operations
+- ✅ Search and filtering
+- ✅ Pagination
+- ✅ Form validation
+- ✅ Keyboard navigation
+- ✅ Responsive design
+- ✅ Accessibility basics
+- ✅ Cross-cutting tests
+
+### Areas for future enhancement
+
+- 🔄 Animation and transition testing (no `animations.spec.ts` exists today)
+- 🔄 Core Web Vitals and performance budgets
+- 🔄 Visual regression testing
+- 🔄 API contract testing
+- 🔄 Database state verification
+- 🔄 Email/notification testing
+- 🔄 File upload/download testing
+- 🔄 Print/PDF generation testing
+- 🔄 Offline functionality
+- 🔄 i18n/l10n testing
+
+## Debugging tests
+
+### 1. Use Playwright Inspector
+
+```bash
+pnpm e2e --debug
+```
+
+### 2. Add console logs
+
+```typescript
+test('debug test', async ({ page }) => {
+  console.log('Current URL:', page.url());
+  const element = page.getByRole('button');
+  console.log('Button count:', await element.count());
+});
+```
+
+### 3. Take screenshots
+
+```typescript
+await page.screenshot({ path: 'debug-screenshot.png' });
+```
+
+### 4. Pause execution
+
+```typescript
+await page.pause(); // Opens Playwright Inspector
+```
+
+Traces are captured on retry (`trace: 'retry-with-trace'`), and the HTML report is written to `playwright/report`.
+
+## CI/CD integration
+
+**Workflow:** `.github/workflows/playwright.yml`, named **🧪 End-To-End Testing**
+
+The job triggers on pull requests targeting `main`, but it is **skipped**: the job carries `if: ${{ false }}` until an isolated test database exists, so end-to-end runs happen locally only. Until that changes, a broken end-to-end flow will not fail CI.
+
+## Contributing
+
+When adding new tests:
+
+1. Follow existing patterns
+2. Use helpers from `setup/helpers.ts` and page objects from `setup/pom.ts`
+3. Add tests to `cross-cutting.spec.ts` if applicable
+4. Include both positive and negative test cases
+5. Test edge cases (empty states, max values, and similar)
+6. Document complex test logic
+7. Keep tests independent (no shared state)
+
+## Resources
+
+- [Playwright documentation](https://playwright.dev)
+- [Playwright best practices](https://playwright.dev/docs/best-practices)
+- [Playwright selectors guide](https://playwright.dev/docs/selectors)
+- [Playwright accessibility testing](https://playwright.dev/docs/accessibility-testing)

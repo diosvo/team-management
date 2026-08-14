@@ -1,6 +1,6 @@
 # Development guide
 
-Conventions for working in this repo: how to name entities, components, and actions; when `next/image` is worth reaching for; how to run and change the database; and which Chakra badge variant fits a given value. For the system design, see [ARCHITECTURE.md](ARCHITECTURE.md).
+Conventions for working in this repo: how to name entities, components, and actions; when `next/image` is worth reaching for; how to run and change the database; and which Chakra badge variant fits a given value. For the system design, see the [Architecture docs page](content/docs/project/architecture.mdx) (served at `/docs/project/architecture`).
 
 ## Folder organization
 

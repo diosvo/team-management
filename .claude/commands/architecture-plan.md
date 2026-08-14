@@ -1,7 +1,7 @@
-# /architecture-plan — Generate Project Architecture Document (ARCHITECTURE.md)
+# /architecture-plan — Generate Project Architecture Document
 
-> **Trigger:** User asks to analyze system architecture, generate an onboarding/audit document, or wants an official `ARCHITECTURE.md` for the project.
-> **Output:** Exactly **one** Markdown file — `ARCHITECTURE.md`.
+> **Trigger:** User asks to analyze system architecture, generate an onboarding/audit document, or wants the official architecture document for the project.
+> **Output:** Exactly **one** MDX file — `content/docs/project/architecture.mdx` (the Fumadocs page served at `/docs/project/architecture`).
 
 ---
 
@@ -9,7 +9,7 @@
 
 You are a **Principal Software Architect** with 20+ years of experience designing large-scale systems.
 
-**Task:** analyze the **ENTIRE** current source code and produce exactly one file, `ARCHITECTURE.md`.
+**Task:** analyze the **ENTIRE** current source code and produce exactly one file, `content/docs/project/architecture.mdx`.
 
 **Mandatory principles:**
 
@@ -74,7 +74,12 @@ Produce the document with these sections, in this order. Use Mermaid diagrams wh
 
 ## Output contract
 
-- Write **exactly one file**: `ARCHITECTURE.md` at the repo root.
-- If `ARCHITECTURE.md` already exists, update it in place rather than creating a duplicate.
-- Do not create any other files.
+- Write **exactly one file**: `content/docs/project/architecture.mdx`.
+- If it already exists, update it in place rather than creating a duplicate.
+- Do not create any other files (no root `ARCHITECTURE.md` — it was migrated into the docs).
+- The file is **MDX** compiled by fumadocs-mdx, so:
+  - Start with frontmatter (`title: Architecture`, `description: …`); no H1 in the body (the title renders it).
+  - Diagrams use `<Mermaid chart={\`…\`} />` (registered globally), **never** ```mermaid fences.
+  - Raw `<…>` or `{…}` outside code spans breaks the MDX compile — backtick them (e.g. emails, `<resource>:<action>`).
+  - Skip a hand-written table of contents; the docs layout renders one.
 - End with a short changelog note at the bottom: what was analyzed and the date.

@@ -61,7 +61,8 @@ export default defineConfig({
         storageState: 'playwright/.auth/admin.json',
       },
       dependencies: ['setup'],
-      testIgnore: 'e2e/auth/**',
+      // visual/** belongs to playwright.visual.config.ts
+      testIgnore: ['e2e/auth/**', 'e2e/visual/**'],
     },
     // #endregion
 

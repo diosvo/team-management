@@ -1,0 +1,90 @@
+---
+title: "Authentication"
+description: "How a member gets an account, signs in, and how every request is gated."
+---
+
+> Grounded in [Roles & Permissions](/docs/access/roles-permissions). There is no
+> self-service sign-up: accounts are provisioned by an admin or captain, and the
+> member activates the account through a password-reset email.
+
+## Account provisioning and activation
+
+<Mermaid
+  chart={`
+sequenceDiagram
+    autonumber
+    actor Admin as Admin / Captain
+    actor Member as New member
+    participant App
+    participant Email as Email service
+
+    Admin->>App: Create account (invite from Roster)
+    App->>Email: Send activation (password reset) email
+    Email-->>Member: Reset link with token
+    Member->>App: Open /new-password?token=...
+    App->>App: Validate token, password rules (8–128 chars, letter + number + special)
+    Member->>App: Submit new password
+    App-->>Member: Account active → redirect to /login
+`}
+/>
+
+## Sign-in and session
+
+<Mermaid
+  chart={`
+sequenceDiagram
+    autonumber
+    actor User
+    participant Login as /login
+    participant Auth as Better Auth
+    participant App
+
+    User->>Login: Email + password
+    Login->>Auth: Verify credentials
+    alt invalid credentials
+        Auth-->>Login: Error (shown inline)
+    else valid
+        Auth-->>User: Session cookie (signed cookie cache)
+        User->>App: Navigate to /dashboard
+    end
+`}
+/>
+
+## Request gating (every page navigation)
+
+Three layers gate every request; only the server-action layer is authoritative.
+
+<Mermaid
+  chart={`
+flowchart TD
+    A[Page navigation] --> B{Session cookie present<br/>and cache fresh?}
+    B -- no --> L[Redirect to /login]
+    B -- yes --> C{"can(role, resource, 'view')"}
+    C -- denied --> F[Redirect to /forbidden]
+    C -- allowed --> P[Render page]
+    P --> D[User triggers a server action]
+    D --> E{withAuth / withResource:<br/>role allows all listed actions?}
+    E -- no --> X[forbidden]
+    E -- yes --> O{Ownership check<br/>where the record matters}
+    O -- mismatch --> X
+    O -- ok --> S[Action runs]
+`}
+/>
+
+- **Layer 1 — proxy** (`src/proxy.ts`): cookie presence + view-permission gate on page navigations; it does not run for server actions.
+- **Layer 2 — `withAuth` / `withResource`**: the only layer that cannot be bypassed; runs inside every server action, plus per-record ownership re-checks.
+- **Layer 3 — client session**: hides UI affordances only; never trusted for security.
+
+## Forgot password
+
+<Mermaid
+  chart={`
+flowchart LR
+    A[/login/] -->|Forgot password?| B[/forgot-password/]
+    B --> C[Submit email]
+    C --> D[Reset email sent]
+    D --> E[/new-password?token=.../]
+    E --> F[Password rules validated live]
+    F --> A
+`}
+/>

@@ -19,7 +19,10 @@ const system = createSystem(defaultConfig, {
   globalCss: {
     'html, body': {
       maxWidth: '100vw',
-      overflowX: 'hidden',
+      // `clip` (not `hidden`): hidden forces overflow-y to `auto`, turning
+      // body into a scroll container and silently disabling every
+      // `position: sticky` descendant (e.g. the /docs sidebar).
+      overflowX: 'clip',
     },
   },
 });

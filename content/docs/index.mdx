@@ -1,0 +1,28 @@
+---
+title: Introduction
+description: Documentation for the Saigon Rovers Basketball Club portal.
+---
+
+Internal documentation for the club portal — product requirements, roles and
+permissions, feature specs, user flows, and the end-to-end testing setup.
+
+## Where to start
+
+- [Overview](/docs/overview) — vision, goals, personas, and shared product principles.
+- [Features](/docs/features) — the feature catalog with one spec per page.
+- [Roles & Permissions](/docs/access/roles-permissions) — auth layers and the full permission matrix.
+- [User Flows](/docs/user-flows/authentication) — end-to-end journeys through the app.
+- [E2E Testing](/docs/quality/e2e-testing) — how the Playwright suite is set up and run.
+- [Roadmap](/docs/project/roadmap) and [Changelog](/docs/project/changelog) — where the product is going and how the PRD evolved.
+
+Read in order: **Overview → Roles & Permissions → Feature catalog → individual
+specs → Roadmap**.
+
+## Conventions
+
+- Every feature spec starts with a status line
+  (`> Route: /x · Nav group: X · Status: Draft | Approved | Shipped`). Keep it
+  current: it is the at-a-glance lifecycle marker of the spec.
+- Record meaningful doc changes in the [changelog](/docs/project/changelog).
+- Code changes can trigger documentation suggestions (see the docs automation
+  workflow), but PRDs remain human-reviewed and are the source of truth.
