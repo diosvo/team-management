@@ -15,7 +15,7 @@ export function Mermaid({ chart }: { chart: string }) {
       try {
         mermaid.initialize({
           startOnLoad: false,
-          securityLevel: 'loose',
+          securityLevel: 'strict',
           fontFamily: 'inherit',
           themeCSS: 'margin: 1.5rem auto 0;',
           // Docs are light-only (theme switching is disabled in the layout).

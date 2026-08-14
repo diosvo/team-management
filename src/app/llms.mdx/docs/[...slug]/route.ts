@@ -12,10 +12,11 @@ export async function GET(
   _req: Request,
   { params }: { params: Promise<{ slug: Array<string> }> },
 ) {
-  const slugs = [...(await params).slug];
-  // remove the appended "content.md"
-  slugs.pop();
-  const page = source.getPage(slugs);
+  const { slug } = await params;
+  if (slug.at(-1) !== 'content.md') {
+    return new Response('not found', { status: 404 });
+  }
+  const page = source.getPage(slug.slice(0, -1));
 
   if (!page) {
     return new Response('not found', { status: 404 });
