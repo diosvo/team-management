@@ -57,6 +57,13 @@
       "when": 1785937710000,
       "tag": "0007_lowercase_achievement_type",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1786766556909,
+      "tag": "0008_drop_global_jersey_unique",
+      "breakpoints": true
     }
   ]
 }

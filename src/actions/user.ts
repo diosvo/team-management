@@ -7,16 +7,16 @@ import { ResponseFactory } from '@/utils/response';
 
 import { insertCoach, updateCoach } from '@/db/coach';
 import { getDbErrorMessage } from '@/db/pg-error';
-import { insertPlayer, updatePlayer } from '@/db/player';
+import { insertPlayer, isJerseyNumberTaken, updatePlayer } from '@/db/player';
 import {
   deleteUser,
   fetchActivePlayers,
-  getRosterUsers,
   getUsers as fetchUsers,
+  getRosterUsers,
   getUserById,
   updateUser,
 } from '@/db/user';
-import {
+import type {
   AddUserValues,
   EditPersonalInfoValues,
   EditTeamInfoValues,
@@ -203,11 +203,26 @@ export const updateTeamInfo = profile(
     try {
       const { user: userData, player: playerData, coach: coachData } = values;
 
-      // Update user
-      await updateUser(user_id, userData);
-
       // Update role-specific tables based on the user's role
       const { isPlayer, isCoach } = hasPermissions(userData.role);
+
+      // Jersey numbers are unique within a team only
+      if (isPlayer && playerData.jersey_number != null) {
+        const taken = await isJerseyNumberTaken(
+          user.team_id,
+          playerData.jersey_number,
+          user_id,
+        );
+
+        if (taken) {
+          return ResponseFactory.error(
+            `Jersey number '${playerData.jersey_number}' is already taken`,
+          );
+        }
+      }
+
+      // Update user
+      await updateUser(user_id, userData);
 
       // TODO: Create new player or coach if they don't exist
       // Remove the old one when switching role
@@ -230,13 +245,7 @@ export const updateTeamInfo = profile(
 
       return ResponseFactory.success('Updated team information successfully');
     } catch (error) {
-      const { message, constraint } = getDbErrorMessage(error);
-
-      if (constraint === 'player_jersey_number_unique') {
-        return ResponseFactory.error(
-          `Jersey number '${values.player.jersey_number}' is already taken`,
-        );
-      }
+      const { message } = getDbErrorMessage(error);
       return ResponseFactory.error(message);
     }
   },

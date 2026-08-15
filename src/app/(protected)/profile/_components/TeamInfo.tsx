@@ -194,7 +194,7 @@ export default function TeamInfo({
               name="user.state"
               disabled={isPending}
             />
-            <Visibility isVisible={isPlayer}>
+            <Visibility isVisible={isAdmin || isPlayer}>
               <Field
                 label="Jersey Number"
                 invalid={!!errors.player?.jersey_number}

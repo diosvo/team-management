@@ -6,16 +6,9 @@ Follow-up items from a review of the data model in `src/drizzle/schema/` (see th
 
 ## 1. Needs enhancement (existing relations with real problems)
 
-- [ ] ⭐ **Relax `player` height/weight checks** (`src/drizzle/schema/player.ts`)
-      `height BETWEEN 0 AND 200` and `weight BETWEEN 0 AND 100` reject a 2.05 m center or a 110 kg player, both normal in basketball. Legitimate inserts will fail.
-      _Fix: widen bounds (e.g. height ≤ 250, weight ≤ 200) in a migration._
-
 - [ ] **Attendance allows only one record per player per day** (`src/drizzle/schema/attendance.ts`)
       The `unique_player_per_date` index blocks taking attendance twice on a two-session day (morning practice + evening scrimmage).
       _Fix: key on `(player_id, session_id)`; keep the date-based uniqueness only for session-less records. Also note `attendance.date` duplicates `training_session.date` when linked, so the two can silently disagree._
-
-- [ ] ⭐ **`player.jersey_number` is globally unique** (`src/drizzle/schema/player.ts`)
-      Two players on different teams can't both wear #23. Should be unique per team, but `player` has no `team_id` (it comes via `user`), so the constraint can't currently be expressed. Tied to the membership-history item in section 3.
 
 - [ ] **`asset.name` is globally unique** (`src/drizzle/schema/asset.ts`)
       Two teams can't both own a “Ball pump”. Scope uniqueness to `(team_id, name)`, the same pattern `test_type` already uses.
