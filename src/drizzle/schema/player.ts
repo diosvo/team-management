@@ -30,7 +30,8 @@ export const PlayerTable = pgTable(
       .primaryKey()
       .references(() => UserTable.id, { onDelete: 'cascade' }),
     is_captain: boolean().default(false).notNull(),
-    jersey_number: integer().unique(),
+    // `isJerseyNumberTaken` enforces it in the action layer instead.
+    jersey_number: integer(),
     position: playerPositionEnum().default(PlayerPosition.UNKNOWN),
     height: integer(),
     weight: integer(),

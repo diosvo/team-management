@@ -26,7 +26,7 @@ import {
 
 import { insertCoach, updateCoach } from '@/db/coach';
 import { getDbErrorMessage } from '@/db/pg-error';
-import { insertPlayer, updatePlayer } from '@/db/player';
+import { insertPlayer, isJerseyNumberTaken, updatePlayer } from '@/db/player';
 import {
   deleteUser as deleteDbUser,
   fetchActivePlayers,
@@ -71,6 +71,7 @@ vi.mock('@/db/coach', () => ({
 
 vi.mock('@/db/player', () => ({
   insertPlayer: vi.fn(),
+  isJerseyNumberTaken: vi.fn(),
   updatePlayer: vi.fn(),
 }));
 
@@ -462,6 +463,10 @@ describe('User Actions', () => {
     const asAdmin = () =>
       setMockAuthUser({ ...MOCK_USER, role: UserRole.SUPER_ADMIN });
 
+    beforeEach(() => {
+      vi.mocked(isJerseyNumberTaken).mockResolvedValue(false);
+    });
+
     afterEach(() => {
       resetMockAuthUser();
     });
@@ -548,26 +553,44 @@ describe('User Actions', () => {
       });
     });
 
-    test('handles jersey number constraint error', async () => {
-      vi.mocked(updateDbUser).mockResolvedValue({
-        ...mockResult,
-        command: 'UPDATE',
-      });
-      vi.mocked(updatePlayer).mockRejectedValue({
-        code: '23505',
-        detail: 'Key (jersey_number)=(9) already exists.',
-      });
-      vi.mocked(getDbErrorMessage).mockReturnValue({
-        message: 'Duplicate key',
-        constraint: 'player_jersey_number_unique',
-      });
+    test('rejects a jersey number already worn on the same team', async () => {
+      vi.mocked(isJerseyNumberTaken).mockResolvedValue(true);
 
       const result = await updateTeamInfo(MOCK_USER.id, teamInfoData);
 
+      // Scoped to the editor's team, and the player being edited is exempt
+      expect(isJerseyNumberTaken).toHaveBeenCalledWith(
+        MOCK_USER.team_id,
+        MOCK_PLAYER.jersey_number,
+        MOCK_USER.id,
+      );
+      // Nothing is written when the number clashes
+      expect(updateDbUser).not.toHaveBeenCalled();
+      expect(updatePlayer).not.toHaveBeenCalled();
       expect(result).toEqual({
         success: false,
         message: "Jersey number '9' is already taken",
       });
+    });
+
+    test('skips the jersey check when the player has no number', async () => {
+      asAdmin();
+      vi.mocked(updateDbUser).mockResolvedValue({
+        ...mockResult,
+        command: 'UPDATE',
+      });
+      vi.mocked(updatePlayer).mockResolvedValue({
+        ...mockResult,
+        command: 'UPDATE',
+      });
+
+      const result = await updateTeamInfo(MOCK_PLAYER.id, {
+        ...teamInfoData,
+        player: { ...teamInfoData.player, jersey_number: null },
+      });
+
+      expect(isJerseyNumberTaken).not.toHaveBeenCalled();
+      expect(result.success).toBe(true);
     });
 
     test('returns error response when update fails', async () => {

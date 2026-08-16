@@ -54,11 +54,12 @@ export function mockSelectSuccess(returnValue: unknown) {
     }),
   );
 
-  const mockWhereWithGroupBy = vi
-    .fn()
-    .mockImplementation(() =>
-      createThenableWithMethods(returnValue, { groupBy: mockGroupBy }),
-    );
+  const mockWhereWithGroupBy = vi.fn().mockImplementation(() =>
+    createThenableWithMethods(returnValue, {
+      groupBy: mockGroupBy,
+      limit: mockLimit,
+    }),
+  );
 
   const mockLeftJoin = vi
     .fn()
@@ -111,11 +112,12 @@ export function mockSelectFailure(errorMessage: string | Error) {
       createThenableWithMethodsRejected(errorMessage, { orderBy: mockOrderBy }),
     );
 
-  const mockWhereWithGroupBy = vi
-    .fn()
-    .mockImplementation(() =>
-      createThenableWithMethodsRejected(errorMessage, { groupBy: mockGroupBy }),
-    );
+  const mockWhereWithGroupBy = vi.fn().mockImplementation(() =>
+    createThenableWithMethodsRejected(errorMessage, {
+      groupBy: mockGroupBy,
+      limit: mockLimit,
+    }),
+  );
 
   const mockLeftJoin = vi.fn().mockImplementation(() =>
     createThenableWithMethodsRejected(errorMessage, {
