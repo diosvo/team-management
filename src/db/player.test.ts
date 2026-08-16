@@ -111,19 +111,21 @@ describe('isJerseyNumberTaken', () => {
   });
 
   test('reports a clash within the team', async () => {
-    mockSelectSuccess([{ id: 'player-456' }]);
+    mockSelectSuccess([{ id }]);
 
     const result = await isJerseyNumberTaken(
       team_id,
       jersey_number as number,
-      MOCK_PLAYER.id,
+      id,
     );
 
     expect(result).toBe(true);
   });
 
   test('scopes the lookup to the team and excludes the player being edited', async () => {
-    const { mockLeftJoin, mockWhereWithGroupBy } = mockSelectSuccess([]);
+    const { mockLeftJoin, mockWhereWithGroupBy, mockLimit } = mockSelectSuccess(
+      [],
+    );
 
     const result = await isJerseyNumberTaken(
       team_id,
@@ -150,5 +152,6 @@ describe('isJerseyNumberTaken', () => {
       },
       { field: PlayerTable.id, value: id, type: 'ne' },
     ]);
+    expect(mockLimit).toHaveBeenCalledWith(1);
   });
 });
