@@ -19,7 +19,8 @@ export async function isJerseyNumberTaken(
         eq(PlayerTable.jersey_number, jersey_number),
         ne(PlayerTable.id, exclude_player_id),
       ),
-    );
+    )
+    .limit(1);
 
   return conflicts.length > 0;
 }
