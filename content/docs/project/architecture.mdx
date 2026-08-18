@@ -182,7 +182,6 @@ flowchart TB
     coach -. "optional" .-> training_session
     location -. "optional" .-> training_session
     training_session -. "optional" .-> attendance
-    team -- "1 : N" --> attendance
     player -- "1 : N" --> attendance
 
     league -- "1 : N" --> league_team
@@ -352,11 +351,10 @@ erDiagram
     }
     attendance {
         uuid attendance_id PK
-        uuid team_id FK
         text player_id FK
         uuid session_id FK "nullable"
         attendance_status status
-        date date "unique (player_id, date)"
+        date date "FK with session_id; unique (player_id, date) when session-less"
         varchar reason
     }
 
@@ -403,7 +401,6 @@ erDiagram
     coach |o--o{ training_session : "leads"
     location |o--o{ training_session : "hosts"
     training_session |o--o{ attendance : "tracked by"
-    team ||--o{ attendance : ""
     player ||--o{ attendance : "checks in"
 
     team ||--o{ test_type : "defines"
@@ -416,10 +413,10 @@ erDiagram
 
 | Child column                                                                                                                                                    | References                                         | On delete                                                    |
 | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- | ------------------------------------------------------------ |
-| `user.team_id`, `rule.team_id`, `asset.team_id`, `test_type.team_id`, `training_session.team_id`, `attendance.team_id`, `league_team.*`, `league_team_roster.*` | `team` / `league` / `player`                       | **cascade**                                                  |
+| `user.team_id`, `rule.team_id`, `asset.team_id`, `test_type.team_id`, `training_session.team_id`, `league_team.*`, `league_team_roster.*` | `team` / `league` / `player`                       | **cascade**                                                  |
 | `session.user_id`, `account.user_id`, `player.id`, `coach.id`                                                                                                   | `user`                                             | **cascade**                                                  |
-| `attendance.player_id`, `match_player_stats.player_id`, `test_result.player_id`, `match.league_id`, `match_player_stats.match_id`                               | `player` / `league` / `match`                      | **cascade**                                                  |
-| `asset.assigned_to`, `attendance.session_id`, `match.location_id`, `training_session.coach_id`, `training_session.location_id`                                  | `user` / `training_session` / `location` / `coach` | **set null**                                                 |
+| `attendance.player_id`, `attendance.(session_id, date)`, `match_player_stats.player_id`, `test_result.player_id`, `match.league_id`, `match_player_stats.match_id`                               | `player` / `league` / `match`                      | **cascade**                                                  |
+| `asset.assigned_to`, `match.location_id`, `training_session.coach_id`, `training_session.location_id`                                  | `user` / `training_session` / `location` / `coach` | **set null**                                                 |
 | `test_result.type_id`                                                                                                                                           | `test_type`                                        | **restrict** (guarded in `removeTestType`, migration `0002`) |
 | `match.home_team`, `match.away_team`                                                                                                                            | `team`                                             | **no action** (default)                                      |
 
@@ -695,7 +692,7 @@ Sourced from [TODO.md](https://github.com/diosvo/team-management/blob/main/TODO.
 - **Team membership history (biggest structural gap)**: `user.team_id` is a single FK, so transfers/rejoins lose history and `match_player_stats` lacks team context. Consider a `user_team` membership table.
 - **Scope `asset.name` uniqueness to `(team_id, name)`**; **add a `match` status enum**; **give `match.home_team`/`away_team` an explicit `onDelete`**; **make `league_team_roster` reference `league_team`**; **make `test_result.date` NOT NULL**.
 - **No tables behind `emails` / `documents` / `reports` resources**: routes and permissions exist, but there's no send log, document metadata, or report registry (reports go to Blob with no DB index).
-- **Simplification candidates**: `league.status` is derivable, `attendance.team_id` is redundant, `rule` could fold into `team`.
+- **Simplification candidates**: `league.status` is derivable, `rule` could fold into `team`.
 - **Out of scope** (no product signal yet): injury/medical tracking, payments/fees, audit logs.
 
 Beyond the schema: enabling the disabled E2E CI job once an isolated test DB exists, and adding a unit-test gate to production deploys (see [§12](#12-known-gaps--risks)).

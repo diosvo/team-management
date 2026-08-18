@@ -2,6 +2,7 @@ import { and, desc, eq } from 'drizzle-orm';
 
 import db from '@/drizzle';
 import { AttendanceTable, InsertAttendance } from '@/drizzle/schema/attendance';
+import { UserTable } from '@/drizzle/schema/user';
 
 import { AttendanceStats, AttendanceWithPlayer } from '@/types/attendance';
 import { DataWithStats } from '@/types/common';
@@ -12,23 +13,26 @@ export async function getAttendanceByDate(
   date: string,
 ): Promise<DataWithStats<AttendanceWithPlayer, AttendanceStats>> {
   try {
-    const records = await db.query.AttendanceTable.findMany({
-      where: and(
-        eq(AttendanceTable.team_id, team_id),
-        eq(AttendanceTable.date, date),
-      ),
-      with: {
-        player: {
-          columns: {},
-          with: {
-            user: {
-              columns: { name: true },
-            },
-          },
-        },
-      },
-      orderBy: desc(AttendanceTable.status),
-    });
+    // Attendance is scoped to a team through its player, so the join both
+    // filters by team and supplies the name the table renders.
+    const rows = await db
+      .select({
+        attendance: AttendanceTable,
+        name: UserTable.name,
+      })
+      .from(AttendanceTable)
+      .innerJoin(UserTable, eq(UserTable.id, AttendanceTable.player_id))
+      .where(
+        and(eq(UserTable.team_id, team_id), eq(AttendanceTable.date, date)),
+      )
+      .orderBy(desc(AttendanceTable.status));
+
+    const records: Array<AttendanceWithPlayer> = rows.map(
+      ({ attendance, name }) => ({
+        ...attendance,
+        player: { user: { name } },
+      }),
+    );
 
     // Calculate statistics
     const total_records = records.length;

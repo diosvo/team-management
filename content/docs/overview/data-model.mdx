@@ -34,8 +34,7 @@ erDiagram
     coach |o--o{ training_session : "leads (optional)"
     location |o--o{ training_session : "hosted at (optional)"
     training_session |o--o{ attendance : "tracked by (optional)"
-    team ||--o{ attendance : "scopes"
-    player ||--o{ attendance : "one per date"
+    player ||--o{ attendance : "one per session"
 
     %% ===== Competition =====
     league ||--o{ league_team : "enrolls"
@@ -73,7 +72,7 @@ foreign keys and is omitted from the diagram.
 | **Performance** | `test_type`          | Per-team test definitions                                      | Name unique within a team                                                           |
 |                 | `test_result`        | A player's measurement                                         | `type_id` delete is `restrict` — types with results can't be removed                |
 | **Training**    | `training_session`   | Scheduled practice                                             | Coach and location optional (`set null`)                                            |
-|                 | `attendance`         | Player presence per date                                       | Unique (`player_id`, `date`); survives session deletion (`set null`)                |
+|                 | `attendance`         | Player presence per session                                    | Unique (`player_id`, `session_id`), or (`player_id`, `date`) when session-less      |
 | **Competition** | `league`             | A competition window                                           | Name unique                                                                         |
 |                 | `league_team`        | League ⨯ team junction                                         | Composite PK (`league_id`, `team_id`)                                               |
 |                 | `league_team_roster` | Adds the player dimension                                      | Composite PK (`league_id`, `team_id`, `player_id`)                                  |
@@ -84,7 +83,7 @@ foreign keys and is omitted from the diagram.
 
 ## Deletion behavior at a glance
 
-- **Cascade from `team`:** users, assets, rules, test types, training sessions, attendance, league junctions — deleting a team removes its whole subtree.
+- **Cascade from `team`:** users, assets, rules, test types, training sessions, league junctions — deleting a team removes its whole subtree (attendance follows its player).
 - **Cascade from `user`:** sessions, accounts, player/coach extensions (and from `player`: attendance, roster entries, stats, test results).
-- **`set null` (record survives):** `asset.assigned_to`, `match.location_id`, `training_session.coach_id` / `location_id`, `attendance.session_id`, `achievement.league_id` / `player_id`.
+- **`set null` (record survives):** `asset.assigned_to`, `match.location_id`, `training_session.coach_id` / `location_id`, `achievement.league_id` / `player_id`.
 - **`restrict`:** `test_result.type_id` — a test type with recorded results cannot be deleted.

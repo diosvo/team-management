@@ -57,6 +57,7 @@ export function mockSelectSuccess(returnValue: unknown) {
   const mockWhereWithGroupBy = vi.fn().mockImplementation(() =>
     createThenableWithMethods(returnValue, {
       groupBy: mockGroupBy,
+      orderBy: mockOrderBy,
       limit: mockLimit,
     }),
   );
@@ -67,10 +68,17 @@ export function mockSelectSuccess(returnValue: unknown) {
       createThenableWithMethods(returnValue, { where: mockWhereWithGroupBy }),
     );
 
+  const mockInnerJoin = vi
+    .fn()
+    .mockImplementation(() =>
+      createThenableWithMethods(returnValue, { where: mockWhereWithGroupBy }),
+    );
+
   const mockWhere = vi.fn().mockImplementation(() =>
     createThenableWithMethods(returnValue, {
       groupBy: mockGroupBy,
       leftJoin: mockLeftJoin,
+      innerJoin: mockInnerJoin,
     }),
   );
 
@@ -78,6 +86,7 @@ export function mockSelectSuccess(returnValue: unknown) {
     createThenableWithMethods(returnValue, {
       where: mockWhere,
       leftJoin: mockLeftJoin,
+      innerJoin: mockInnerJoin,
     }),
   );
 
@@ -94,6 +103,7 @@ export function mockSelectSuccess(returnValue: unknown) {
     mockOrderBy,
     mockLimit,
     mockLeftJoin,
+    mockInnerJoin,
   };
 }
 
@@ -115,6 +125,7 @@ export function mockSelectFailure(errorMessage: string | Error) {
   const mockWhereWithGroupBy = vi.fn().mockImplementation(() =>
     createThenableWithMethodsRejected(errorMessage, {
       groupBy: mockGroupBy,
+      orderBy: mockOrderBy,
       limit: mockLimit,
     }),
   );
@@ -125,10 +136,17 @@ export function mockSelectFailure(errorMessage: string | Error) {
     }),
   );
 
+  const mockInnerJoin = vi.fn().mockImplementation(() =>
+    createThenableWithMethodsRejected(errorMessage, {
+      where: mockWhereWithGroupBy,
+    }),
+  );
+
   const mockWhere = vi.fn().mockImplementation(() =>
     createThenableWithMethodsRejected(errorMessage, {
       groupBy: mockGroupBy,
       leftJoin: mockLeftJoin,
+      innerJoin: mockInnerJoin,
     }),
   );
 
@@ -136,6 +154,7 @@ export function mockSelectFailure(errorMessage: string | Error) {
     createThenableWithMethodsRejected(errorMessage, {
       where: mockWhere,
       leftJoin: mockLeftJoin,
+      innerJoin: mockInnerJoin,
     }),
   );
 
@@ -150,6 +169,7 @@ export function mockSelectFailure(errorMessage: string | Error) {
     mockOrderBy,
     mockLimit,
     mockLeftJoin,
+    mockInnerJoin,
   };
 }
 

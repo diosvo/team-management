@@ -32,12 +32,12 @@ vi.mock('@/drizzle/schema', () => ({
     id: 'id',
     name: 'name',
     email: 'email',
+    team_id: 'team_id',
   },
 }));
 
 vi.mock('@/drizzle/schema/attendance', () => ({
   AttendanceTable: {
-    team_id: 'team_id',
     date: 'date',
     status: 'status',
     reason: 'reason',
@@ -52,9 +52,13 @@ describe('getTeamAttendanceHistory', () => {
   });
 
   test('returns attendance history when database query succeeds', async () => {
-    const { mockFrom, mockWhere, mockGroupBy, mockOrderBy } = mockSelectSuccess(
-      MOCK_ATTENDANCE_HISTORY,
-    );
+    const {
+      mockFrom,
+      mockInnerJoin,
+      mockWhereWithGroupBy,
+      mockGroupBy,
+      mockOrderBy,
+    } = mockSelectSuccess(MOCK_ATTENDANCE_HISTORY);
 
     const result = await getTeamAttendanceHistory(
       MOCK_TEAM.team_id,
@@ -65,7 +69,8 @@ describe('getTeamAttendanceHistory', () => {
     // Verify query construction
     expect(db.select).toHaveBeenCalled();
     expect(mockFrom).toHaveBeenCalledWith(AttendanceTable);
-    expect(mockWhere).toHaveBeenCalled();
+    expect(mockInnerJoin).toHaveBeenCalled();
+    expect(mockWhereWithGroupBy).toHaveBeenCalled();
     expect(mockGroupBy).toHaveBeenCalledWith(AttendanceTable.date);
     expect(mockOrderBy).toHaveBeenCalled();
   });
@@ -100,7 +105,7 @@ describe('getPlayersAttendanceSummary', () => {
   });
 
   test('returns players attendance summary when database query succeeds', async () => {
-    const { mockFrom, mockLeftJoin, mockWhereWithGroupBy, mockGroupBy } =
+    const { mockFrom, mockInnerJoin, mockWhereWithGroupBy, mockGroupBy } =
       mockSelectSuccess(MOCK_PLAYERS_ATTENDANCE_SUMMARY.top_performers);
     mockSelectSuccess(MOCK_PLAYERS_ATTENDANCE_SUMMARY.need_attention);
 
@@ -113,7 +118,7 @@ describe('getPlayersAttendanceSummary', () => {
     // Verify query construction
     expect(db.select).toHaveBeenCalled();
     expect(mockFrom).toHaveBeenCalledWith(AttendanceTable);
-    expect(mockLeftJoin).toHaveBeenCalled();
+    expect(mockInnerJoin).toHaveBeenCalled();
     expect(mockWhereWithGroupBy).toHaveBeenCalled();
     expect(mockGroupBy).toHaveBeenCalled();
   });
@@ -203,8 +208,14 @@ describe('getMostCommonAbsenceReasons', () => {
   });
 
   test('returns absence reasons when database query succeeds', async () => {
-    const { mockFrom, mockWhere, mockGroupBy, mockOrderBy, mockLimit } =
-      mockSelectSuccess(MOCK_ABSENCE_REASONS);
+    const {
+      mockFrom,
+      mockInnerJoin,
+      mockWhereWithGroupBy,
+      mockGroupBy,
+      mockOrderBy,
+      mockLimit,
+    } = mockSelectSuccess(MOCK_ABSENCE_REASONS);
 
     const result = await getMostCommonAbsenceReasons(
       MOCK_TEAM.team_id,
@@ -215,7 +226,8 @@ describe('getMostCommonAbsenceReasons', () => {
     // Verify query construction
     expect(db.select).toHaveBeenCalled();
     expect(mockFrom).toHaveBeenCalledWith(AttendanceTable);
-    expect(mockWhere).toHaveBeenCalled();
+    expect(mockInnerJoin).toHaveBeenCalled();
+    expect(mockWhereWithGroupBy).toHaveBeenCalled();
     expect(mockGroupBy).toHaveBeenCalled();
     expect(mockOrderBy).toHaveBeenCalled();
     expect(mockLimit).toHaveBeenCalledWith(5);

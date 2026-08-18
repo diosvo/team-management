@@ -1,5 +1,13 @@
 import { relations } from 'drizzle-orm';
-import { date, pgEnum, pgTable, text, time, uuid } from 'drizzle-orm/pg-core';
+import {
+  date,
+  pgEnum,
+  pgTable,
+  text,
+  time,
+  unique,
+  uuid,
+} from 'drizzle-orm/pg-core';
 
 import { enumValues, SessionStatus } from '@/utils/enum';
 
@@ -14,22 +22,30 @@ export const sessionStatusEnum = pgEnum(
   enumValues(SessionStatus),
 );
 
-export const TrainingSessionTable = pgTable('training_session', {
-  session_id: uuid().primaryKey().defaultRandom(),
-  team_id: uuid()
-    .notNull()
-    .references(() => TeamTable.team_id, { onDelete: 'cascade' }),
-  coach_id: text().references(() => CoachTable.id, { onDelete: 'set null' }),
-  location_id: uuid().references(() => LocationTable.location_id, {
-    onDelete: 'set null',
-  }),
-  date: date().notNull(),
-  start_time: time().notNull(),
-  end_time: time().notNull(),
-  status: sessionStatusEnum().notNull().default(SessionStatus.SCHEDULED),
-  created_at,
-  updated_at,
-});
+export const TrainingSessionTable = pgTable(
+  'training_session',
+  {
+    session_id: uuid().primaryKey().defaultRandom(),
+    team_id: uuid()
+      .notNull()
+      .references(() => TeamTable.team_id, { onDelete: 'cascade' }),
+    coach_id: text().references(() => CoachTable.id, { onDelete: 'set null' }),
+    location_id: uuid().references(() => LocationTable.location_id, {
+      onDelete: 'set null',
+    }),
+    date: date().notNull(),
+    start_time: time().notNull(),
+    end_time: time().notNull(),
+    status: sessionStatusEnum().notNull().default(SessionStatus.SCHEDULED),
+    created_at,
+    updated_at,
+  },
+  (table) => [
+    // Redundant on its own (`session_id` is already the PK), but required as
+    // the target of `attendance`'s composite (session_id, date) foreign key.
+    unique('training_session_id_date_unique').on(table.session_id, table.date),
+  ],
+);
 
 export const TrainingSessionRelations = relations(
   TrainingSessionTable,

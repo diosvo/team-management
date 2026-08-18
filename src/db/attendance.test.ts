@@ -2,12 +2,15 @@ import { and, desc, eq } from 'drizzle-orm';
 
 import db from '@/drizzle';
 import { AttendanceTable, InsertAttendance } from '@/drizzle/schema/attendance';
+import { UserTable } from '@/drizzle/schema/user';
 
 import {
   mockDeleteFailure,
   mockDeleteSuccess,
   mockInsertFailure,
   mockInsertSuccess,
+  mockSelectFailure,
+  mockSelectSuccess,
   mockUpdateFailure,
   mockUpdateSuccess,
 } from '@/test/db-operations';
@@ -29,11 +32,7 @@ import {
 
 vi.mock('@/drizzle', () => ({
   default: {
-    query: {
-      AttendanceTable: {
-        findMany: vi.fn(),
-      },
-    },
+    select: vi.fn(),
     insert: vi.fn(() => ({
       values: vi.fn(),
     })),
@@ -50,14 +49,28 @@ vi.mock('@/drizzle', () => ({
 
 vi.mock('@/drizzle/schema/attendance', () => ({
   AttendanceTable: {
-    team_id: 'team_id',
     attendance_id: 'attendance_id',
+    player_id: 'player_id',
     date: 'date',
     status: 'status',
   },
 }));
 
+vi.mock('@/drizzle/schema/user', () => ({
+  UserTable: {
+    id: 'id',
+    name: 'name',
+    team_id: 'team_id',
+  },
+}));
+
 const MOCK_ATTENDANCE_ID = MOCK_ATTENDANCE_ON_TIME.attendance_id;
+
+// Rows as the joined query returns them, before they are folded back into the
+// nested `player.user.name` shape the table renders.
+const MOCK_JOINED_ROWS = MOCK_ATTENDANCE_BY_DATE.map(
+  ({ player, ...attendance }) => ({ attendance, name: player.user.name }),
+);
 
 describe('getAttendanceByDate', () => {
   beforeEach(() => {
@@ -65,9 +78,8 @@ describe('getAttendanceByDate', () => {
   });
 
   test('returns attendance records with stats when database query succeeds', async () => {
-    vi.mocked(db.query.AttendanceTable.findMany).mockResolvedValue(
-      MOCK_ATTENDANCE_BY_DATE,
-    );
+    const { mockFrom, mockInnerJoin, mockWhereWithGroupBy, mockOrderBy } =
+      mockSelectSuccess(MOCK_JOINED_ROWS);
 
     const result = await getAttendanceByDate(
       MOCK_TEAM.team_id,
@@ -76,23 +88,23 @@ describe('getAttendanceByDate', () => {
 
     expect(result).toEqual(MOCK_ATTENDANCE_RESPONSE);
     // Verify query construction
-    expect(db.query.AttendanceTable.findMany).toHaveBeenCalledWith({
-      where: and(
-        eq(AttendanceTable.team_id, MOCK_TEAM.team_id),
+    expect(db.select).toHaveBeenCalledWith({
+      attendance: AttendanceTable,
+      name: UserTable.name,
+    });
+    expect(mockFrom).toHaveBeenCalledWith(AttendanceTable);
+    // The team is reached through the player, not stored on the record
+    expect(mockInnerJoin).toHaveBeenCalledWith(
+      UserTable,
+      eq(UserTable.id, AttendanceTable.player_id),
+    );
+    expect(mockWhereWithGroupBy).toHaveBeenCalledWith(
+      and(
+        eq(UserTable.team_id, MOCK_TEAM.team_id),
         eq(AttendanceTable.date, MOCK_ATTENDANCE_DATE),
       ),
-      with: {
-        player: {
-          columns: {},
-          with: {
-            user: {
-              columns: { name: true },
-            },
-          },
-        },
-      },
-      orderBy: desc(AttendanceTable.status),
-    });
+    );
+    expect(mockOrderBy).toHaveBeenCalledWith(desc(AttendanceTable.status));
   });
 
   test.each([
@@ -107,7 +119,7 @@ describe('getAttendanceByDate', () => {
   ])(
     'returns default stats when database query $description',
     async ({ mockError }) => {
-      vi.mocked(db.query.AttendanceTable.findMany).mockRejectedValue(mockError);
+      mockSelectFailure(mockError as string | Error);
 
       const result = await getAttendanceByDate(
         MOCK_TEAM.team_id,

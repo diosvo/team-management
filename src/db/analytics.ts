@@ -111,6 +111,7 @@ export async function getTeamAttendanceHistory(
         present_rate: calculatePercentage(attendedCountSql, totalCountSql),
       })
       .from(AttendanceTable)
+      .innerJoin(UserTable, eq(UserTable.id, AttendanceTable.player_id))
       .where(_getDateRangeFilter(team_id, interval))
       .groupBy(AttendanceTable.date)
       .orderBy(desc(AttendanceTable.date));
@@ -145,7 +146,7 @@ export async function getPlayersAttendanceSummary(
       db
         .select(baseSelect)
         .from(AttendanceTable)
-        .leftJoin(UserTable, eq(AttendanceTable.player_id, UserTable.id))
+        .innerJoin(UserTable, eq(UserTable.id, AttendanceTable.player_id))
         .where(_getDateRangeFilter(team_id, interval))
         .groupBy(AttendanceTable.player_id, UserTable.name)
         .having(having)
@@ -190,6 +191,7 @@ export async function getMostCommonAbsenceReasons(
         ),
       })
       .from(AttendanceTable)
+      .innerJoin(UserTable, eq(UserTable.id, AttendanceTable.player_id))
       .where(
         and(
           _getDateRangeFilter(team_id, interval),
@@ -217,11 +219,12 @@ function _countStatus(status: AttendanceStatusValues) {
   return countWhen(eq(AttendanceTable.status, status as AttendanceStatus));
 }
 
+/** Callers must join `user` on `attendance.player_id` — that is what scopes the team. */
 function _getDateRangeFilter(team_id: string, interval: IntervalValues) {
   const { start, end } = TIME_DURATION[interval];
 
   return and(
-    eq(AttendanceTable.team_id, team_id),
+    eq(UserTable.team_id, team_id),
     gte(AttendanceTable.date, start.toISOString()),
     lte(AttendanceTable.date, end.toISOString()),
   );

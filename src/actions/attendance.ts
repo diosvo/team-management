@@ -26,16 +26,13 @@ export const getAttendanceByDate = withAuth(
 
 export const submitLeave = attendance(
   ['create'],
-  async function submit(user, values: Omit<InsertAttendance, 'team_id'>) {
+  async function submit(user, values: InsertAttendance) {
     // Players may only submit leave for themselves
     const { isPlayer } = hasPermissions(user.role);
     if (isPlayer && values.player_id !== user.id) forbidden();
 
     try {
-      await insertAttendance({
-        ...values,
-        team_id: user.team_id,
-      });
+      await insertAttendance(values);
 
       revalidate.attendances();
 
@@ -46,7 +43,11 @@ export const submitLeave = attendance(
         return ResponseFactory.error('Invalid or missing player ID');
       }
 
-      if (constraint === 'unique_player_per_date') {
+      // Session-less records collide per date, session-linked ones per session.
+      if (
+        constraint === 'unique_player_per_date' ||
+        constraint === 'unique_player_per_session'
+      ) {
         const shortId = values.player_id.slice(0, 8);
         return ResponseFactory.error(`${shortId}: Already submitted`);
       }

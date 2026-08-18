@@ -138,10 +138,7 @@ describe('Attendance Actions', () => {
 
       const result = await submitLeave(leaveData);
 
-      expect(insertAttendance).toHaveBeenCalledWith({
-        ...leaveData,
-        team_id: MOCK_TEAM.team_id,
-      });
+      expect(insertAttendance).toHaveBeenCalledWith(leaveData);
       expect(revalidate.attendances).toHaveBeenCalled();
       expect(result).toEqual({
         success: true,
@@ -166,24 +163,27 @@ describe('Attendance Actions', () => {
       });
     });
 
-    test('returns error when unique_player_per_date constraint is violated', async () => {
-      vi.mocked(insertAttendance).mockRejectedValue(
-        new Error('Unique constraint'),
-      );
-      vi.mocked(getDbErrorMessage).mockReturnValue({
-        message: 'Duplicate entry',
-        constraint: 'unique_player_per_date',
-      });
+    test.each(['unique_player_per_date', 'unique_player_per_session'])(
+      'returns error when %s constraint is violated',
+      async (constraint) => {
+        vi.mocked(insertAttendance).mockRejectedValue(
+          new Error('Unique constraint'),
+        );
+        vi.mocked(getDbErrorMessage).mockReturnValue({
+          message: 'Duplicate entry',
+          constraint,
+        });
 
-      const result = await submitLeave(leaveData);
+        const result = await submitLeave(leaveData);
 
-      const shortId = leaveData.player_id.slice(0, 8);
-      expect(revalidate.attendances).not.toHaveBeenCalled();
-      expect(result).toEqual({
-        success: false,
-        message: `${shortId}: Already submitted`,
-      });
-    });
+        const shortId = leaveData.player_id.slice(0, 8);
+        expect(revalidate.attendances).not.toHaveBeenCalled();
+        expect(result).toEqual({
+          success: false,
+          message: `${shortId}: Already submitted`,
+        });
+      },
+    );
 
     test('returns generic error message for other database errors', async () => {
       const errorMessage = 'Database connection failed';
