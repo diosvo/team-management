@@ -219,7 +219,6 @@ function _countStatus(status: AttendanceStatusValues) {
   return countWhen(eq(AttendanceTable.status, status as AttendanceStatus));
 }
 
-/** Callers must join `user` on `attendance.player_id` — that is what scopes the team. */
 function _getDateRangeFilter(team_id: string, interval: IntervalValues) {
   const { start, end } = TIME_DURATION[interval];
 
