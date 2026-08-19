@@ -1,6 +1,7 @@
-import { relations } from 'drizzle-orm';
+import { relations, sql } from 'drizzle-orm';
 import {
   date,
+  foreignKey,
   pgEnum,
   pgTable,
   text,
@@ -13,7 +14,6 @@ import { AttendanceStatus, enumValues } from '@/utils/enum';
 
 import { created_at, updated_at } from '../helpers';
 import { PlayerTable } from './player';
-import { TeamTable } from './team';
 import { TrainingSessionTable } from './training';
 
 export const attendanceStatusEnum = pgEnum(
@@ -25,15 +25,10 @@ export const AttendanceTable = pgTable(
   'attendance',
   {
     attendance_id: uuid().primaryKey().defaultRandom(),
-    team_id: uuid()
-      .notNull()
-      .references(() => TeamTable.team_id, { onDelete: 'cascade' }),
     player_id: text()
       .notNull()
       .references(() => PlayerTable.id, { onDelete: 'cascade' }),
-    session_id: uuid().references(() => TrainingSessionTable.session_id, {
-      onDelete: 'set null',
-    }),
+    session_id: uuid(),
     status: attendanceStatusEnum().notNull().default(AttendanceStatus.ON_TIME),
     date: date().notNull(),
     reason: varchar({ length: 128 }),
@@ -41,8 +36,27 @@ export const AttendanceTable = pgTable(
     updated_at,
   },
   (table) => [
-    // Ensure one attendance record per player per date
-    uniqueIndex('unique_player_per_date').on(table.player_id, table.date),
+    // Keep `date` on the row for fast queries, while the composite FK ensures
+    // it matches the session and reschedules cascade correctly. NULL session_id
+    // skips the check so leave requests work.
+    foreignKey({
+      columns: [table.session_id, table.date],
+      foreignColumns: [
+        TrainingSessionTable.session_id,
+        TrainingSessionTable.date,
+      ],
+      name: 'attendance_session_id_date_fk',
+    })
+      .onUpdate('cascade')
+      .onDelete('cascade'),
+    // One record per player per session.
+    uniqueIndex('unique_player_per_session')
+      .on(table.player_id, table.session_id)
+      .where(sql`${table.session_id} IS NOT NULL`),
+    // Leave requests use one record per player per date.
+    uniqueIndex('unique_player_per_date')
+      .on(table.player_id, table.date)
+      .where(sql`${table.session_id} IS NULL`),
   ],
 );
 

@@ -352,69 +352,40 @@ INSERT INTO seed_session_map(idx, session_id, team_id)
 SELECT idx, session_id, team_id FROM numbered;
 
 -- ============================================================
--- 12) ATTENDANCE (100) - unique (player_id, date)
+-- 12) ATTENDANCE (100)
+-- Unique on (player_id, session_id) for session-linked records, and on
+-- (player_id, date) for session-less ones. `date` must equal the session's own
+-- date -- the composite (session_id, date) foreign key enforces it -- so each
+-- row takes its date from the session it attends, and players are paired only
+-- with sessions run by their own team.
 -- ============================================================
-WITH player_ids AS (
-  SELECT p.id, row_number() OVER (ORDER BY p.id) AS rn
-  FROM player p
-),
-rows AS (
+WITH pairs AS (
   SELECT
-    gs,
-    (SELECT id FROM player_ids WHERE rn = 1 + ((gs - 1) % (SELECT count(*) FROM player_ids))) AS player_id,
-    (date '2026-02-01' + gs) AS att_date
-  FROM generate_series(1, 100) gs
+    ts.session_id,
+    ts.date AS att_date,
+    p.id AS player_id,
+    row_number() OVER (ORDER BY ts.date, ts.session_id, p.id) AS ord
+  FROM training_session ts
+  JOIN "user" u ON u.team_id = ts.team_id
+  JOIN player p ON p.id = u.id
 )
 INSERT INTO attendance (
-  attendance_id, team_id, player_id, session_id, status, date, reason, created_at, updated_at
+  attendance_id, player_id, session_id, status, date, reason, created_at, updated_at
 )
 SELECT
   gen_random_uuid(),
-  u.team_id,
-  r.player_id,
-  (SELECT session_id FROM seed_session_map WHERE idx = 1 + ((r.gs - 1) % 100)),
-  (ARRAY['ON_TIME','ABSENT','LATE'])[1 + ((r.gs - 1) % 3)]::attendance_status,
-  r.att_date,
-  CASE WHEN r.gs % 3 = 1 THEN NULL
-       WHEN r.gs % 3 = 2 THEN 'Traffic'
+  pr.player_id,
+  pr.session_id,
+  (ARRAY['ON_TIME','ABSENT','LATE'])[1 + ((pr.ord - 1) % 3)]::attendance_status,
+  pr.att_date,
+  CASE WHEN pr.ord % 3 = 1 THEN NULL
+       WHEN pr.ord % 3 = 2 THEN 'Traffic'
        ELSE 'Sick'
   END,
   now(),
   now()
-FROM rows r
-JOIN "user" u ON u.id = r.player_id
-ON CONFLICT DO NOTHING;
-
--- Top-up attendance to exactly 100 if ON CONFLICT dropped rows for any reason
-WITH existing AS (SELECT count(*)::int AS c FROM attendance),
-need AS (SELECT greatest(0, 100 - (SELECT c FROM existing)) AS n),
-player_ids AS (
-  SELECT p.id, row_number() OVER (ORDER BY p.id) AS rn FROM player p
-),
-extra AS (
-  SELECT
-    gs,
-    (SELECT id FROM player_ids WHERE rn = 1 + ((gs - 1) % (SELECT count(*) FROM player_ids))) AS player_id,
-    (date '2027-01-01' + gs) AS att_date
-  FROM generate_series(1, 200) gs
-)
-INSERT INTO attendance (
-  attendance_id, team_id, player_id, session_id, status, date, reason, created_at, updated_at
-)
-SELECT
-  gen_random_uuid(),
-  u.team_id,
-  e.player_id,
-  (SELECT session_id FROM seed_session_map WHERE idx = 1 + ((e.gs - 1) % 100)),
-  'ON_TIME'::attendance_status,
-  e.att_date,
-  NULL,
-  now(),
-  now()
-FROM extra e
-JOIN "user" u ON u.id = e.player_id, need
-WHERE need.n > 0
-LIMIT (SELECT n FROM need)
+FROM pairs pr
+WHERE pr.ord <= 100
 ON CONFLICT DO NOTHING;
 
 -- ============================================================
