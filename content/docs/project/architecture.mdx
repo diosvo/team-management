@@ -269,7 +269,7 @@ erDiagram
     asset {
         uuid asset_id PK
         uuid team_id FK
-        varchar name UK
+        varchar name "unique (team_id, name)"
         text assigned_to FK "nullable -> user"
         date acquired_date
         asset_catogory category "PG enum name is misspelled"
@@ -280,7 +280,7 @@ erDiagram
     player {
         text id PK,FK "= user.id (extends user)"
         boolean is_captain
-        integer jersey_number UK "check: 0..99"
+        integer jersey_number "check: 0..99; unique per team in the action layer"
         player_position position
         integer height "check: 0..200"
         integer weight "check: 0..100"
@@ -352,7 +352,7 @@ erDiagram
     attendance {
         uuid attendance_id PK
         text player_id FK
-        uuid session_id FK "nullable"
+        uuid session_id FK "nullable; unique (player_id, session_id) when set"
         attendance_status status
         date date "FK with session_id; unique (player_id, date) when session-less"
         varchar reason
@@ -422,7 +422,7 @@ erDiagram
 
 ### Migrations & seed
 
-`src/drizzle/migrations/` (dialect postgresql, 4 migrations): `0000_base_tables`, `0001_update_asset_table` (adds `OBSOLETE`, `assigned_to`, `acquired_date`), `0002_complete_doctor_doom` (recreates `test_result.type_id` FK as `ON DELETE restrict`), `0003_update_team_image` (renames `team.logo_url` → `team.image`, to `text`). Raw bootstrap/seed SQL lives in `src/drizzle/sql/` (`team.sql` default team, `admin_user.sql`, `team_rule.sql`, `periodic-testing.sql`, and `seed_data.sql`, a re-runnable mock-data importer targeting 20 teams / 100 users / 100 rows per domain).
+`src/drizzle/migrations/` (dialect postgresql, 11 migrations): `0000_base_tables`, `0001_update_asset_table` (adds `OBSOLETE`, `assigned_to`, `acquired_date`), `0002_complete_doctor_doom` (recreates `test_result.type_id` FK as `ON DELETE restrict`), `0003_update_team_image` (renames `team.logo_url` → `team.image`, to `text`), `0004_add_achievement_table`, `0005_update_test_type_unit_enum`, `0006_lowercase_all_enum_values`, `0007_lowercase_achievement_type`, `0008_drop_global_jersey_unique` (jersey uniqueness moves to the action layer), `0009_attendance_per_session` (composite `(session_id, date)` FK + the two partial unique indexes), `0010_unique_asset_name` (drops the global `asset.name` unique, adds `team_asset_name` on `(team_id, name)`, drops the redundant `attendance.team_id`). Raw bootstrap/seed SQL lives in `src/drizzle/sql/` (`team.sql` default team, `admin_user.sql`, `team_rule.sql`, `periodic-testing.sql`, and `seed_data.sql`, a re-runnable mock-data importer targeting 20 teams / 100 users / 100 rows per domain).
 
 ## 6. Authentication & authorization
 
@@ -614,7 +614,7 @@ Environment variables are loaded and **Zod-validated** in `env.config.ts` (impor
 - **Input validation**: Zod schemas in `src/schemas/*` (one per domain), consumed by react-hook-form via `@hookform/resolvers` on the client and re-validated inside actions. `src/lib/zod.ts` provides `getDefaults()` (pull `ZodDefault` values into form defaults) and a dev `onError` logger.
 - **Authorization**: centralized in `src/utils/permissions.ts` (`can` / `defineAbility`), enforced at three layers (middleware view-gate, server-action `withResource`, client `usePermissions`/`Authorized`/`Visibility` components). See §6.
 - **Response shape**: server actions return `ResponseFactory.success(message, data?)` / `ResponseFactory.error(message)` (`src/utils/response.ts`), a uniform `{ success, message, data? }` envelope.
-- **Database errors**: `src/db/pg-error.ts` maps Postgres SQLSTATE codes (`PgErrorCode`) to user-friendly messages via `getDbErrorMessage()`, unwrapping `DrizzleQueryError` → `pg.DatabaseError`. Actions catch specific constraint names (e.g. `unique_player_per_date`, `player_jersey_number_unique`, the `test_result → test_type` FK) to return friendly errors.
+- **Database errors**: `src/db/pg-error.ts` maps Postgres SQLSTATE codes (`PgErrorCode`) to user-friendly messages via `getDbErrorMessage()`, unwrapping `DrizzleQueryError` → `pg.DatabaseError`. Actions catch specific constraint names (e.g. `unique_player_per_date` / `unique_player_per_session`, `attendance_player_id_player_id_fk`, the `test_result → test_type` FK) to return friendly errors. Jersey-number uniqueness has no database constraint: `isJerseyNumberTaken` pre-checks it in the action layer instead, since `player` only reaches its team through `user`.
 - **Request-scoped dedup**: reads that more than one card or component needs in a single render are wrapped in React's `cache()` and keyed on primitives (`getUpcomingMatches(team_id)`, the dashboard's game-matches fetch keyed on `team_id` + `interval`, and `verifySession()`). Parallel Server Components asking for the same data then share one query instead of issuing duplicates.
 - **Streaming & code splitting**: pages give each section its own `<Suspense>` boundary rather than awaiting every query in the page body, so a slow query delays only its own card (see the dashboard's `AnalyticsSections`). Dependencies that only some users can trigger load through `next/dynamic` or `await import()`: recharts (`ssr: false`, since it renders SVG client-side anyway), the TipTap editor (never server-rendered), `pdf-lib` (imported at the point a document is built), the email-report dialog, and role-gated dialogs whose two variants are mutually exclusive. `pnpm analyze` shows the resulting first-load size per route.
 - **Caching / revalidation**: `src/actions/cache.ts` exposes a `revalidate` map calling `revalidatePath()` per entity after mutations. `CACHE_TAG`-based `revalidateTag` is scaffolded but currently commented out. Client reads use SWR (`use-image.ts` uses `useSWRImmutable`); URL state uses **nuqs** (`src/lib/nuqs.ts`) with per-resource param parsers, client hooks (`useRosterFilters`, …) and server loaders (`loadMatchFilters`, …).
@@ -686,11 +686,11 @@ Notable boundary: the PDF report route (`api/reports/dashboard`) **forwards the 
 
 Sourced from [TODO.md](https://github.com/diosvo/team-management/blob/main/TODO.md), a schema-review checklist. Highest-priority (⭐) items reject real-world data or block real workflows:
 
-- ⭐ **Relax `player` height/weight checks**: current bounds (`height ≤ 200`, `weight ≤ 100`) reject legitimate players; widen in a migration.
-- ⭐ **Attendance one-record-per-day limit**: `unique_player_per_date` blocks two-session days; re-key on `(player_id, session_id)`.
-- ⭐ **`player.jersey_number` is globally unique**: should be per-team, but `player` has no `team_id` (comes via `user`); tied to membership history.
+- ⭐ **Add a `match` status enum**: scores default to 0, so a scheduled-but-unplayed match is indistinguishable from a 0–0 result.
+- ⭐ **`match.home_team` / `away_team` have no `onDelete`**: deleting a team with match history throws a raw FK error.
 - **Team membership history (biggest structural gap)**: `user.team_id` is a single FK, so transfers/rejoins lose history and `match_player_stats` lacks team context. Consider a `user_team` membership table.
-- **Scope `asset.name` uniqueness to `(team_id, name)`**; **add a `match` status enum**; **give `match.home_team`/`away_team` an explicit `onDelete`**; **make `league_team_roster` reference `league_team`**; **make `test_result.date` NOT NULL**.
+- **Make `league_team_roster` reference `league_team`**; **make `test_result.date` NOT NULL**.
+- Recently closed: jersey-number uniqueness per team (`0008`), attendance per session (`0009`), `asset.name` unique per team and the redundant `attendance.team_id` dropped (`0010`).
 - **No tables behind `emails` / `documents` / `reports` resources**: routes and permissions exist, but there's no send log, document metadata, or report registry (reports go to Blob with no DB index).
 - **Simplification candidates**: `league.status` is derivable, `rule` could fold into `team`.
 - **Out of scope** (no product signal yet): injury/medical tracking, payments/fees, audit logs.

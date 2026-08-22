@@ -55,7 +55,7 @@ title: "Roster"
 - **FR-2:** Filter by name, email, role, and active/inactive state; filter state stored in URL.
 - **FR-3:** SUPER_ADMIN and Captain can invite new members.
 - **FR-4:** Invite creates the account with a temporary password and triggers a password-reset email through Resend, which the invitee uses to set their own password at `/new-password`.
-- **FR-5:** Jersey numbers are unique per team.
+- **FR-5:** Jersey numbers are unique per team, enforced in the action layer (`isJerseyNumberTaken`, `src/db/player.ts`) because `player` reaches its team through `user`. A duplicate is rejected with “Jersey number '`<n>`' is already taken”.
 - **FR-6:** SUPER_ADMIN and Captain can remove members (bulk delete supported).
 - **FR-7:** Changes show a success or error toast.
 - **FR-8:** The roster list reads a narrowed projection of each member: name, email, role, state, verification flag, jersey number, and position. The query never selects the personal data the table doesn't render (date of birth, phone number, citizen ID), so it never reaches the browser. Full records are available only at `/profile/[id]`, which applies its own ownership rules.
@@ -89,7 +89,7 @@ User:
 - `role`: enum [`player`, `coach`, `super_admin`, `guest`]
 - `state`: enum [`active`, `inactive`, `temporarily_absent`, `unknown`]
 - `position`: string (player / coach specific)
-- `jersey_number`: integer (player only; currently globally unique, see [TODO.md](https://github.com/diosvo/team-management/blob/main/TODO.md))
+- `jersey_number`: integer (player only; 0–99, unique per team — checked in the action layer, not by a database constraint)
 - `email_verified`: boolean
 
 ### Query params

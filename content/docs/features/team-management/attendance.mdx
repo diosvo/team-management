@@ -62,7 +62,7 @@ title: "Attendance"
 - **FR-3:** PLAYER and above can submit a leave request with a reason. A PLAYER (captain included) may only submit for themselves; a request naming another `player_id` is rejected.
 - **FR-4:** COACH and SUPER_ADMIN can mark and update individual statuses.
 - **FR-5:** SUPER_ADMIN can bulk-enter attendance for multiple players.
-- **FR-6:** Duplicate records for the same player on the same date are prevented by the `unique_player_per_date` index. This also blocks a second record on a two-session day, which is an open item in [TODO.md](https://github.com/diosvo/team-management/blob/main/TODO.md).
+- **FR-6:** Duplicates are prevented by two partial unique indexes: `unique_player_per_session` on `(player_id, session_id)` for records attached to a training session, and `unique_player_per_date` on `(player_id, date)` for session-less records (leave requests). A player can therefore hold one record per session on a two-session day, but only one session-less record per date.
 - **FR-7:** SUPER_ADMIN can delete an attendance record.
 - **FR-8:** Changes show a success or error toast.
 
@@ -70,7 +70,7 @@ title: "Attendance"
 
 - **AC-1:** Given I am a PLAYER, when I submit a leave request, then an Absent record is created with my reason.
 - **AC-2:** Given I am a COACH, when I mark a player On Time, then the status updates immediately.
-- **AC-3:** Given a player already has a record for today, when a duplicate is submitted, then it is rejected.
+- **AC-3:** Given a player already has a record for a session, when a second record for the same session is submitted, then it is rejected; given a two-session day, when records for both sessions are submitted, then both are accepted.
 - **AC-4:** Given I am a PLAYER, when a leave request is submitted with another member's `player_id`, then it is rejected and no record is created.
 
 ## 7. Technical appendix
@@ -80,12 +80,17 @@ title: "Attendance"
 Attendance (`attendance`):
 
 - `attendance_id`: uuid PK
-- `team_id`: FK → team (cascade)
-- `player_id`: FK → player (cascade)
-- `session_id`: FK → training_session, nullable (set null on session delete)
+- `player_id`: FK → player (cascade); the team comes from the player, the table has no `team_id`
+- `session_id`: uuid, nullable — part of the composite FK below
 - `status`: enum `attendance_status` (`on_time` | `absent` | `late`)
-- `date`: date, unique per `(player_id, date)`
+- `date`: date, required
 - `reason`: string (optional)
+
+Constraints:
+
+- Composite FK `(session_id, date)` → `training_session (session_id, date)`, `on update cascade` / `on delete cascade`. The stored `date` therefore cannot drift from its session, and rescheduling a session moves its attendance rows with it. A `NULL` `session_id` skips the check, so leave requests need no session.
+- `unique_player_per_session` on `(player_id, session_id)` where `session_id IS NOT NULL`.
+- `unique_player_per_date` on `(player_id, date)` where `session_id IS NULL`.
 
 ### Query params
 
@@ -96,6 +101,6 @@ Attendance (`attendance`):
 ### API
 
 - `getAttendanceByDate(date)`: fetch records and stats
-- `submitLeave(values)`: player leave request; `team_id` comes from the session, and a PLAYER caller must match `values.player_id`
+- `submitLeave(values)`: player leave request; a PLAYER caller must match `values.player_id`. A `unique_player_per_date` or `unique_player_per_session` violation is returned as “`<player>`: Already submitted”
 - `updateStatus(id, status)`: update a single record
 - `removeAttendance(id)`: delete a record
