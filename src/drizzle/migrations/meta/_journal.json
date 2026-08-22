@@ -71,6 +71,13 @@
       "when": 1786766556910,
       "tag": "0009_attendance_per_session",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1787417420407,
+      "tag": "0010_unique_asset_name",
+      "breakpoints": true
     }
   ]
 }

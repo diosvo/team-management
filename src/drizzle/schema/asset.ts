@@ -5,6 +5,7 @@ import {
   pgEnum,
   pgTable,
   text,
+  uniqueIndex,
   uuid,
   varchar,
 } from 'drizzle-orm/pg-core';
@@ -25,21 +26,30 @@ export const assetCategoryEnum = pgEnum(
   enumValues(AssetCategory),
 );
 
-export const AssetTable = pgTable('asset', {
-  asset_id: uuid().primaryKey().defaultRandom(),
-  team_id: uuid()
-    .notNull()
-    .references(() => TeamTable.team_id, { onDelete: 'cascade' }),
-  name: varchar({ length: 64 }).unique().notNull(),
-  assigned_to: text().references(() => UserTable.id, { onDelete: 'set null' }),
-  acquired_date: date(),
-  category: assetCategoryEnum().default(AssetCategory.EQUIPMENT).notNull(),
-  quantity: integer().notNull().default(1),
-  condition: assetConditionEnum().default(AssetCondition.GOOD).notNull(),
-  note: varchar({ length: 128 }),
-  created_at,
-  updated_at,
-});
+export const AssetTable = pgTable(
+  'asset',
+  {
+    asset_id: uuid().primaryKey().defaultRandom(),
+    team_id: uuid()
+      .notNull()
+      .references(() => TeamTable.team_id, { onDelete: 'cascade' }),
+    name: varchar({ length: 64 }).notNull(),
+    assigned_to: text().references(() => UserTable.id, {
+      onDelete: 'set null',
+    }),
+    acquired_date: date(),
+    category: assetCategoryEnum().default(AssetCategory.EQUIPMENT).notNull(),
+    quantity: integer().notNull().default(1),
+    condition: assetConditionEnum().default(AssetCondition.GOOD).notNull(),
+    note: varchar({ length: 128 }),
+    created_at,
+    updated_at,
+  },
+  (table) => [
+    // Ensure name is unique within a team
+    uniqueIndex('team_asset_name').on(table.team_id, table.name),
+  ],
+);
 
 export const AssetRelations = relations(AssetTable, ({ one }) => ({
   team: one(TeamTable, {
