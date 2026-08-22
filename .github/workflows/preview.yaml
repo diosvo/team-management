@@ -3,6 +3,12 @@ name: 🔍 Preview Deployment
 env:
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
 
 on:
   pull_request:
@@ -44,10 +50,41 @@ jobs:
         run: pnpm install --global vercel@latest
 
       - name: 🔽 Pull Vercel Environment Information
-        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+        run: vercel pull --yes --environment=preview --token="$VERCEL_TOKEN"
 
       - name: 🔨 Build
-        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+        run: vercel build --token="$VERCEL_TOKEN"
 
       - name: 🚀 Deploy to Vercel
-        run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
+        id: deploy
+        run: |
+          set -euo pipefail
+          deploy_output="$(vercel deploy --prebuilt --yes --token="$VERCEL_TOKEN" 2>&1)"
+          URL="$(printf '%s\n' "$deploy_output" | grep -Eo 'https://[^[:space:]]+' | tail -n 1)"
+
+          if [ -z "$URL" ]; then
+            echo "$deploy_output"
+            echo "No preview URL was produced by the deploy step." >&2
+            exit 1
+          fi
+
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          echo "Preview URL: $URL"
+
+      - name: 💬 Comment PR with Preview URL
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const url = '${{ steps.deploy.outputs.url }}';
+            if (!url) {
+              core.setFailed('No preview URL was produced by the deploy step.');
+              return;
+            }
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `## 🚢 Preview URL\n\n${url}`
+            });
