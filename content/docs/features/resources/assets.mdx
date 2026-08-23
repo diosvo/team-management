@@ -42,6 +42,7 @@ title: "Assets"
 ### View and filter
 
 - The Metrics section shows total assets and assets needing replacement. Clicking a metric card filters the list.
+- The list is ordered by acquired date (most recent first, undated assets on top), then by name.
 - List view shows assets and supports filtering by:
   - name (text)
   - category (select)
@@ -51,11 +52,11 @@ title: "Assets"
 ### Create
 
 - Authorized users see **+ Add**
-- Clicking **+ Add** opens a dialog.
+- Clicking **+ Add** opens a dialog. On success the dialog stays open with the fields cleared, so several assets can be entered in a row.
 
 ### Edit
 
-- SUPER_ADMIN can click an asset row to open the same dialog pre-filled.
+- SUPER_ADMIN can click an asset row to open the same dialog pre-filled. On success the dialog closes.
 
 ### Delete
 
@@ -68,27 +69,30 @@ title: "Assets"
 
 - **FR-1:** COACH and SUPER_ADMIN can view the assets list; GUEST, PLAYER, and Captain are redirected to `/forbidden`.
 - **FR-2:** The same roles that can view the list can view the asset metrics section.
+- **FR-3:** The list only ever contains the signed-in user's team, ordered by acquired date descending, then name ascending. Postgres sorts `DESC` as `NULLS FIRST`, so assets with no acquired date lead the list.
 
 ### Filtering + query params
 
-- **FR-3:** Filter by name, category, and condition.
-- **FR-4:** URL reflects filters (query params).
-- **FR-5:** Back/forward restores filters from the URL.
+- **FR-4:** Filter by name, category, and condition.
+- **FR-5:** URL reflects filters (query params).
+- **FR-6:** Back/forward restores filters from the URL.
 
 ### Create/edit
 
-- **FR-6:** Only SUPER_ADMIN can create assets.
-- **FR-7:** Only SUPER_ADMIN can edit assets.
-- **FR-8:** Asset dialog fields:
+- **FR-7:** Only SUPER_ADMIN can create assets.
+- **FR-8:** Only SUPER_ADMIN can edit assets.
+- **FR-9:** Asset dialog fields:
   - Required: Name, Quantity
   - Optional: Category (default `equipment`), Condition (default `good`), Note
-- **FR-9:** After a successful create or edit, the list and metrics update without a full page refresh.
+- **FR-10:** Asset names are unique **within a team** (`team_asset_name` unique index on `(team_id, name)`). Creating or renaming an asset to a name already used by another asset on the same team is rejected with an error toast; two different teams can each own a “Ball pump”.
+- **FR-11:** After a successful create or edit, the list and metrics update without a full page refresh.
+- **FR-12:** On a successful **Add** the dialog stays open and the form resets; on a successful **Update** the dialog closes. A failed submit leaves the dialog open with the entered values intact.
 
 ### Delete
 
-- **FR-10:** Only SUPER_ADMIN can bulk delete assets.
-- **FR-11:** Deletion shows success/error toast message.
-- **FR-12:** After a successful deletion, the list and metrics update without a full page refresh.
+- **FR-13:** Only SUPER_ADMIN can bulk delete assets.
+- **FR-14:** Deletion shows success/error toast message.
+- **FR-15:** After a successful deletion, the list and metrics update without a full page refresh.
 
 ## 6. Acceptance criteria (Given/When/Then)
 
@@ -97,18 +101,23 @@ title: "Assets"
 - **AC-3:** Given I filter by name “net”, category “Equipment” and condition “Good”, then the URL includes `q=net`, `category=equipment` and `condition=good`.
 - **AC-4:** Given I am a COACH, when I attempt to delete assets (UI or API), then the request is rejected.
 - **AC-5:** Given I am a GUEST or PLAYER, when I navigate to `/assets`, then I am redirected to `/forbidden`.
+- **AC-6:** Given my team already owns “Ball pump”, when I add a second asset named “Ball pump”, then it is rejected with an error toast; when a member of another team adds “Ball pump”, then it is created.
+- **AC-7:** Given I am SUPER_ADMIN, when I add an asset successfully, then the dialog stays open with empty fields and the new asset appears in the list.
 
 ## 7. Technical appendix
 
 ### Data model (logical)
 
-Asset:
+Asset (`src/drizzle/schema/asset.ts`):
 
-- `name`: string (required)
+- `name`: varchar(64), required, unique per team (`team_asset_name` index on `(team_id, name)`)
 - `quantity`: integer (default 1)
 - `category`: enum [`equipment`, `training`, `others`] (default `equipment`)
 - `condition`: enum [`poor`, `fair`, `good`, `obsolete`] (default `good`)
 - `note`: string (optional)
+- `acquired_date`: date (optional; drives the default list order)
+- `assigned_to`: FK → user, `set null` when the user is deleted
+- `team_id`: FK → team, cascade delete
 
 ### Query params contract
 

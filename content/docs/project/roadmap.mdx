@@ -14,7 +14,7 @@ description: "Release plan: shipped, in progress, planned, and not planned."
 
 All pages in the [feature catalog](/docs/features): Dashboard (incl. PDF reports), Team Rule, Roster, Training, Attendance, Registration, Matches, Periodic Testing, Assets, Settings (Teams / Leagues / Locations), Profile.
 
-Recent platform work: Better Auth integration, media storage on Vercel Blob (user images, team logos).
+Recent platform work: Better Auth integration, media storage on Vercel Blob (user images, team logos), and data-model hardening — jersey numbers unique per team, attendance keyed per training session, asset names unique per team.
 
 ## In progress
 
@@ -25,7 +25,7 @@ _Nothing in progress._
 ## Planned / next
 
 - **Documents** (`/documents`): currently disabled in the sidebar; needs a spec under `features/resources/` plus document-metadata storage.
-- **Data-model hardening**: the ⭐ items in [TODO.md](https://github.com/diosvo/team-management/blob/main/TODO.md), namely jersey-number uniqueness per team, player height/weight bounds, and attendance per session.
+- **Data-model hardening**: the remaining ⭐ items in [TODO.md](https://github.com/diosvo/team-management/blob/main/TODO.md), namely a `match` status enum, explicit `onDelete` for `match.home_team` / `away_team`, `league_team_roster` → `league_team`, and a NOT NULL `test_result.date`. (Jersey-number uniqueness per team, attendance per session, and per-team asset names have shipped.)
 - **Auth page specs**: `/login`, `/forgot-password`, `/new-password` are undocumented (listed in the feature catalog as gaps).
 
 ## Later / ideas (unprioritized)

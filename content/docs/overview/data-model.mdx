@@ -64,11 +64,11 @@ foreign keys and is omitted from the diagram.
 | **Identity**    | `user`               | Every person; carries `role`, `state`, and a required `team_id` | `email` unique; cascade-deleted with its team                                       |
 |                 | `session`, `account` | Better Auth login sessions and credentials                     | Cascade-deleted with the user                                                       |
 |                 | `verification`       | Password-reset tokens                                          | No foreign keys                                                                     |
-|                 | `player`             | Extension of `user` (shared `id`)                              | `jersey_number` unique, 0–99; height/weight checks                                  |
+|                 | `player`             | Extension of `user` (shared `id`)                              | `jersey_number` 0–99, unique per team (action layer); height/weight checks          |
 |                 | `coach`              | Extension of `user` (shared `id`)                              | —                                                                                   |
 | **Team**        | `team`               | The club and opponents                                         | Partial unique index: only one `is_default` team                                    |
 |                 | `rule`               | Team rule document                                             | `team_id` unique → strict 1:1 with `team`                                           |
-|                 | `asset`              | Equipment inventory                                            | `assigned_to` → user, `set null` on delete                                          |
+|                 | `asset`              | Equipment inventory                                            | Name unique within a team (`team_asset_name`); `assigned_to` → user, `set null` on delete |
 | **Performance** | `test_type`          | Per-team test definitions                                      | Name unique within a team                                                           |
 |                 | `test_result`        | A player's measurement                                         | `type_id` delete is `restrict` — types with results can't be removed                |
 | **Training**    | `training_session`   | Scheduled practice                                             | Coach and location optional (`set null`)                                            |

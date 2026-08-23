@@ -6,13 +6,6 @@ Follow-up items from a review of the data model in `src/drizzle/schema/` (see th
 
 ## 1. Needs enhancement (existing relations with real problems)
 
-- [ ] **Attendance allows only one record per player per day** (`src/drizzle/schema/attendance.ts`)
-      The `unique_player_per_date` index blocks taking attendance twice on a two-session day (morning practice + evening scrimmage).
-      _Fix: key on `(player_id, session_id)`; keep the date-based uniqueness only for session-less records. Also note `attendance.date` duplicates `training_session.date` when linked, so the two can silently disagree._
-
-- [ ] **`asset.name` is globally unique** (`src/drizzle/schema/asset.ts`)
-      Two teams can't both own a “Ball pump”. Scope uniqueness to `(team_id, name)`, the same pattern `test_type` already uses.
-
 - [ ] **`match` has no status** (`src/drizzle/schema/match.ts`)
       Scores default to 0, so a scheduled-but-unplayed match is indistinguishable from a 0–0 result. Add a status enum (scheduled / completed / cancelled), mirroring `training_session.status`.
 
@@ -29,8 +22,6 @@ Follow-up items from a review of the data model in `src/drizzle/schema/` (see th
 ## 2. Simplification candidates (possibly no need)
 
 - [ ] **`league.status` is derivable state**: computable from `start_date`/`end_date`; stored, it goes stale unless curated. Decide: compute at read time, or keep manual and accept the drift.
-
-- [ ] **`attendance.team_id` is redundant**: derivable via `player → user → team_id`, with no consistency guarantee between the two paths. Keep only if it demonstrably helps query performance; otherwise drop.
 
 - [ ] **`rule` as a separate table**: 1:1 with `team`, one text column; could be `team.rule_content`. Only worth keeping separate for future versioned/multiple rules. Low stakes, fine to leave as-is.
 

@@ -1,4 +1,4 @@
-import { asc, eq } from 'drizzle-orm';
+import { asc, desc, eq } from 'drizzle-orm';
 
 import db from '@/drizzle';
 import { AssetTable, InsertAsset } from '@/drizzle/schema/asset';
@@ -67,7 +67,7 @@ describe('getAssets', () => {
     // Verify query construction
     expect(db.query.AssetTable.findMany).toHaveBeenCalledWith({
       where: eq(AssetTable.team_id, MOCK_TEAM.team_id),
-      orderBy: asc(AssetTable.acquired_date),
+      orderBy: [desc(AssetTable.acquired_date), asc(AssetTable.name)],
       with: {
         user: {
           columns: {
