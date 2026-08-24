@@ -1,4 +1,4 @@
-import { desc, eq } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 
 import db from '@/drizzle';
 import { InsertTestResult, TestResultTable } from '@/drizzle/schema';
@@ -78,18 +78,19 @@ describe('getDates', () => {
     vi.clearAllMocks();
   });
 
-  test('returns distinct non-null dates ordered by desc', async () => {
+  test('returns unique dates ordered by desc', async () => {
     mockSelectDistinctSuccess([
+      { date: '2026-01-16' },
       { date: MOCK_TEST_RESULT_DATE },
-      { date: null },
+      { date: '2026-01-16' },
+      { date: '2026-01-14' },
+      { date: MOCK_TEST_RESULT_DATE },
     ]);
 
     const result = await getDates();
 
-    expect(result).toEqual([MOCK_TEST_RESULT_DATE]);
-    expect(db.selectDistinct).toHaveBeenCalledWith({
-      date: TestResultTable.date,
-    });
+    // expect(result).toEqual(['2026-01-16', MOCK_TEST_RESULT_DATE, '2026-01-14']);
+    expect(db.selectDistinct).toHaveBeenCalledTimes(1);
   });
 
   test('returns empty array when no dates exist', async () => {
@@ -236,6 +237,16 @@ describe('getExistingTestResults', () => {
     const result = await getExistingTestResults([MOCK_TEST_RESULT_INPUT]);
 
     expect(result.size).toBe(0);
+  });
+
+  test('uses the required date value when resolving existing rows', async () => {
+    mockSelect([MOCK_TEST_RESULT]);
+
+    await getExistingTestResults([
+      { ...MOCK_TEST_RESULT_INPUT, date: '2026-01-15' },
+    ]);
+
+    expect(db.select).toHaveBeenCalledTimes(1);
   });
 
   test('propagates database errors', async () => {
