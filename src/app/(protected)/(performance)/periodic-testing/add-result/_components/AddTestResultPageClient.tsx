@@ -14,7 +14,7 @@ import { toaster } from '@/components/ui/toaster';
 import { createTestResult } from '@/actions/test-result';
 import { InsertTestResult } from '@/drizzle/schema';
 
-import { TestConfigurationSelection } from '@/types/periodic-testing';
+import type { TestConfigurationSelection } from '@/types/periodic-testing';
 import { DEFAULT_DATE_FORMAT } from '@/utils/constants';
 
 import TestResultConfiguration from './TestResultConfiguration';
@@ -32,8 +32,6 @@ export default function AddTestResultPageClient() {
   // Entered scores, keyed by `${player_id}-${type_id}`.
   const [results, setResults] = useState<Record<string, string>>({});
 
-  // Derive the payload from the current selection + entered scores instead of
-  // mirroring it into state via an effect.
   const tableData = useMemo<Array<InsertTestResult>>(() => {
     const { players, types, date } = selection;
     if (!players.length || !types.length) return [];
@@ -48,18 +46,19 @@ export default function AddTestResultPageClient() {
     );
   }, [selection, results]);
 
-  const onSave = (data: Array<InsertTestResult>) => {
+  const onSave = () => {
     const id = toaster.create({
       type: 'loading',
       title: 'Saving...',
     });
 
     startTransition(async () => {
-      const { success, message: description } = await createTestResult(data);
+      const { success, message: description } =
+        await createTestResult(tableData);
 
       toaster.update(id, {
         type: success ? 'success' : 'error',
-        title: 'Results saved successfully',
+        title: success ? 'Results saved' : 'Error saving results',
         description,
       });
 
@@ -113,7 +112,7 @@ export default function AddTestResultPageClient() {
               !tableData.length ||
               isPending
             }
-            onClick={() => onSave(tableData)}
+            onClick={onSave}
           >
             <Save />
             Save

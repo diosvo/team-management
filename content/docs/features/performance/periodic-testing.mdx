@@ -140,7 +140,7 @@ The add-result form submits a players × test-types grid, so the cell count mult
 
 `getExistingTestResults(results)` replaces that with one query:
 
-1. Collect the distinct `player_id`s, `type_id`s and `date`s in the batch and filter with `IN` on each. `date` is nullable, so a separate `IS NULL` branch matches undated cells.
+1. Collect the distinct `player_id`s, `type_id`s and `date`s in the batch and filter with `IN` on each. `date` is required by the current schema, so there is no separate null-date branch.
 2. Those filters return the cross product of the three lists, a superset of what was submitted that can include a row for a player/type pair nobody submitted. The function therefore re-checks each returned row against the exact set of submitted keys before counting it as existing.
 3. The result is a `Map` from `testResultKey(result)` (`date|player_id|type_id`) to the existing `result_id`. The action uses that map to split the batch into inserts and updates.
 

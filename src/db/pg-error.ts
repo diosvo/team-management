@@ -383,10 +383,7 @@ const PostgresErrorHandlers: Record<
     constraint: error.constraint || null,
   }),
   [PgErrorCode.NOT_NULL_VIOLATION]: (error) => ({
-    message: withDetail(
-      `A required field is missing. The column '${error.column}' cannot be null.`,
-      error.detail,
-    ),
+    message: `A required field is missing. The column '${error.column}' cannot be null.`,
     constraint: error.column || null,
   }),
   [PgErrorCode.UNDEFINED_COLUMN]: (error) => ({

@@ -1,7 +1,10 @@
-import { and, desc, eq, inArray, isNull, or } from 'drizzle-orm';
+import { and, desc, eq, inArray } from 'drizzle-orm';
 
 import db from '@/drizzle';
-import { type InsertTestResult, TestResultTable } from '@/drizzle/schema';
+import {
+  type InsertTestResult,
+  TestResultTable,
+} from '@/drizzle/schema/periodic-testing';
 
 import type { PlayerTestResult, TestResult } from '@/types/periodic-testing';
 
@@ -12,10 +15,7 @@ export async function getDates(): Promise<Array<string>> {
       .from(TestResultTable)
       .orderBy(desc(TestResultTable.date));
 
-    // Filter out null dates and cast to array string
-    return dates
-      .map(({ date }) => date)
-      .filter((date): date is string => date != null);
+    return dates.map(({ date }) => date);
   } catch {
     return [];
   }
@@ -105,17 +105,11 @@ export async function getExistingTestResults(
 
   const player_ids = [...new Set(results.map(({ player_id }) => player_id))];
   const type_ids = [...new Set(results.map(({ type_id }) => type_id))];
-  const dates = [...new Set(results.map(({ date }) => date ?? null))];
-  const defined_dates = dates.filter((date): date is string => date !== null);
+  const dates = [...new Set(results.map(({ date }) => date))];
 
-  const by_date = defined_dates.length
-    ? inArray(TestResultTable.date, defined_dates)
+  const date_filter = dates.length
+    ? inArray(TestResultTable.date, dates)
     : undefined;
-  // `date` is nullable, so undated cells have to be matched separately
-  const date_filter =
-    dates.length > defined_dates.length
-      ? or(by_date, isNull(TestResultTable.date))
-      : by_date;
 
   // The filters are a superset of the submitted cells (their cross product),
   // so match on the exact key below rather than trusting the rows returned.

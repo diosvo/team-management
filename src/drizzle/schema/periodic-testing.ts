@@ -57,7 +57,7 @@ export const TestResultTable = pgTable('test_result', {
     // Block deleting a test type that still has results (guarded in removeTestType).
     .references(() => TestTypeTable.type_id, { onDelete: 'restrict' }),
   result: decimal({ precision: 10, scale: 3 }).notNull(),
-  date: date(),
+  date: date().notNull(),
   created_at,
   updated_at,
 });
