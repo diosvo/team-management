@@ -1,7 +1,7 @@
 import { relations } from 'drizzle-orm';
 import {
   date,
-  pgEnum,
+  foreignKey,
   pgTable,
   primaryKey,
   text,
@@ -9,7 +9,7 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core';
 
-import { enumValues, LeagueStatus } from '@/utils/enum';
+import { LeagueStatus } from '@/utils/enum';
 import { created_at, updated_at } from '../helpers';
 
 import { AchievementTable } from './achievement';
@@ -17,17 +17,11 @@ import { MatchTable } from './match';
 import { PlayerTable } from './player';
 import { TeamTable } from './team';
 
-export const leagueStatusEnum = pgEnum(
-  'league_status',
-  enumValues(LeagueStatus),
-);
-
 export const LeagueTable = pgTable('league', {
   league_id: uuid().primaryKey().defaultRandom(),
   name: varchar({ length: 128 }).unique().notNull(),
   start_date: date().notNull(),
   end_date: date().notNull(),
-  status: leagueStatusEnum().default(LeagueStatus.UPCOMING).notNull(),
   description: varchar({ length: 128 }),
   created_at,
   updated_at,
@@ -65,6 +59,13 @@ export const LeagueTeamRosterTable = pgTable(
   },
   (table) => [
     primaryKey({ columns: [table.league_id, table.team_id, table.player_id] }),
+    foreignKey({
+      columns: [table.league_id, table.team_id],
+      foreignColumns: [LeagueTeamTable.league_id, LeagueTeamTable.team_id],
+      name: 'league_team_roster_league_team_fk',
+    })
+      .onUpdate('cascade')
+      .onDelete('cascade'),
   ],
 );
 
@@ -112,6 +113,9 @@ export const LeagueTeamRosterRelations = relations(
   }),
 );
 
-export type League = typeof LeagueTable.$inferSelect;
+type LeagueRow = typeof LeagueTable.$inferSelect;
+
+/** A league row plus the status derived from its dates at read time. */
+export type League = LeagueRow & { status: LeagueStatus };
 export type InsertLeague = typeof LeagueTable.$inferInsert;
 export type InsertLeagueTeamRoster = typeof LeagueTeamRosterTable.$inferInsert;

@@ -12,16 +12,10 @@ Follow-up items from a review of the data model in `src/drizzle/schema/` (see th
 - [ ] **`match.home_team` / `away_team` have no `onDelete` behavior** (`src/drizzle/schema/match.ts`)
       Deleting a team with match history throws a raw FK error, the only ungraceful deletion path in the schema. Decide: explicit `restrict` (and a friendly guard in the delete action) or another strategy.
 
-- [ ] **`league_team_roster` doesn't reference `league_team`** (`src/drizzle/schema/league.ts`)
-      Independent FKs allow registering a player for a `(league, team)` pair never entered into the league, and nothing verifies the player belongs to that team.
-      _Fix: composite FK `(league_id, team_id) → league_team`; validate player-team membership in the action layer._
-
 - [ ] **`test_result.date` is nullable** (`src/drizzle/schema/periodic-testing.ts`)
       Undated results are useless for trend/progress charts, the main purpose of periodic testing. Make it `NOT NULL` (backfill existing nulls first).
 
 ## 2. Simplification candidates (possibly no need)
-
-- [ ] **`league.status` is derivable state**: computable from `start_date`/`end_date`; stored, it goes stale unless curated. Decide: compute at read time, or keep manual and accept the drift.
 
 - [ ] **`rule` as a separate table**: 1:1 with `team`, one text column; could be `team.rule_content`. Only worth keeping separate for future versioned/multiple rules. Low stakes, fine to leave as-is.
 

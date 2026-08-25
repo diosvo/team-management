@@ -8,7 +8,7 @@ import {
   UserState,
 } from './enum';
 
-import { colorRank, getColor } from './helper';
+import { colorRank, deriveDateStatus, getColor } from './helper';
 
 describe('getColor', () => {
   const cases = [
@@ -60,4 +60,51 @@ describe('colorRank', () => {
   test.each(cases)('returns $expected for $value', ({ value, expected }) => {
     expect(colorRank(value as number)).toBe(expected);
   });
+});
+
+describe('deriveDateStatus', () => {
+  const TODAY = new Date('2026-06-15T12:00:00Z');
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(TODAY);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  const cases = [
+    {
+      description: 'start date is still ahead',
+      start_date: '2026-07-01',
+      end_date: '2026-08-01',
+      expected: LeagueStatus.UPCOMING,
+    },
+    {
+      description: 'today sits between the dates',
+      start_date: '2026-06-01',
+      end_date: '2026-07-01',
+      expected: LeagueStatus.ONGOING,
+    },
+    {
+      description: 'end date has passed',
+      start_date: '2026-01-01',
+      end_date: '2026-05-01',
+      expected: LeagueStatus.ENDED,
+    },
+    {
+      description: 'the league starts today',
+      start_date: '2026-06-15',
+      end_date: '2026-07-01',
+      expected: LeagueStatus.ONGOING,
+    },
+  ];
+
+  test.each(cases)(
+    'returns $expected when $description',
+    ({ start_date, end_date, expected }) => {
+      expect(deriveDateStatus(start_date, end_date)).toBe(expected);
+    },
+  );
 });

@@ -1,4 +1,5 @@
-import { ColorPalette } from '@chakra-ui/react';
+import { type ColorPalette } from '@chakra-ui/react';
+import { isFuture, isPast } from 'date-fns';
 
 import { ALL } from './constants';
 import {
@@ -71,4 +72,13 @@ export function colorRank(rate: number): ColorPalette {
   if (rate >= 80) return 'green';
   if (rate >= 50) return 'orange';
   return 'red';
+}
+
+export function deriveDateStatus(
+  start_date: string,
+  end_date: string,
+): LeagueStatus {
+  if (isFuture(start_date)) return LeagueStatus.UPCOMING;
+  if (isPast(end_date)) return LeagueStatus.ENDED;
+  return LeagueStatus.ONGOING;
 }

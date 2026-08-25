@@ -17,7 +17,7 @@ export default async function LeaguesPage() {
   return (
     <>
       <LeagueHeader />
-      <LeagueFilters leagues={leagues} />
+      <LeagueFilters />
       <LeagueTable leagues={leagues} />
     </>
   );

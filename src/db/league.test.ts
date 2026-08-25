@@ -5,9 +5,10 @@ import {
   InsertLeague,
   LeagueTable,
   LeagueTeamRosterTable,
+  LeagueTeamTable,
 } from '@/drizzle/schema/league';
 import { UpsertLeagueSchemaValues } from '@/schemas/league';
-import { AchievementType } from '@/utils/enum';
+import { AchievementType, LeagueStatus } from '@/utils/enum';
 
 import {
   mockDeleteFailure,
@@ -26,9 +27,11 @@ import { MOCK_PLAYER, MOCK_USER } from '@/test/mocks/user';
 import {
   addPlayerToLeagueRoster,
   deleteLeague,
+  getLeagueById,
   getLeagues,
   getPlayersInLeague,
   insertLeague,
+  registerTeamInLeague,
   removePlayerFromLeagueRoster,
   updateLeague,
 } from './league';
@@ -38,6 +41,7 @@ vi.mock('@/drizzle', () => ({
     query: {
       LeagueTable: {
         findMany: vi.fn(),
+        findFirst: vi.fn(),
       },
       LeagueTeamRosterTable: {
         findMany: vi.fn(),
@@ -66,6 +70,10 @@ vi.mock('@/drizzle/schema/league', () => ({
     team_id: 'team_id',
     league_id: 'league_id',
     player_id: 'player_id',
+  },
+  LeagueTeamTable: {
+    team_id: 'team_id',
+    league_id: 'league_id',
   },
 }));
 
@@ -132,6 +140,58 @@ describe('getLeagues', () => {
       expect(result).toEqual([]);
     },
   );
+});
+
+describe('getLeagueById', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  test.each([
+    {
+      description: 'has not started',
+      start_date: '2099-01-01',
+      end_date: '2099-12-31',
+      expected: LeagueStatus.UPCOMING,
+    },
+    {
+      description: 'is running',
+      start_date: '2020-01-01',
+      end_date: '2099-12-31',
+      expected: LeagueStatus.ONGOING,
+    },
+    {
+      description: 'is over',
+      start_date: '2020-01-01',
+      end_date: '2020-12-31',
+      expected: LeagueStatus.ENDED,
+    },
+  ])(
+    'derives $expected status when the league $description',
+    async ({ start_date, end_date, expected }) => {
+      vi.mocked(db.query.LeagueTable.findFirst).mockResolvedValue({
+        ...MOCK_LEAGUE,
+        start_date,
+        end_date,
+      });
+
+      const result = await getLeagueById(MOCK_LEAGUE.league_id);
+
+      expect(result?.status).toBe(expected);
+    },
+  );
+
+  test('returns undefined when the league does not exist', async () => {
+    vi.mocked(db.query.LeagueTable.findFirst).mockResolvedValue(undefined);
+
+    const result = await getLeagueById(MOCK_LEAGUE.league_id);
+
+    expect(result).toBeUndefined();
+    expect(eq).toHaveBeenCalledWith(
+      LeagueTable.league_id,
+      MOCK_LEAGUE.league_id,
+    );
+  });
 });
 
 describe('getPlayersInLeague', () => {
@@ -288,6 +348,59 @@ describe('deleteLeague', () => {
     mockDeleteFailure(message);
 
     await expect(deleteLeague(MOCK_LEAGUE.league_id)).rejects.toThrow(message);
+  });
+});
+
+describe('registerTeamInLeague', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  function mockOnConflictInsert(returnValue: unknown) {
+    const mockOnConflictDoNothing = vi.fn().mockResolvedValue(returnValue);
+    const mockValues = vi
+      .fn()
+      .mockReturnValue({ onConflictDoNothing: mockOnConflictDoNothing });
+
+    vi.mocked(db.insert).mockReturnValue({
+      values: mockValues,
+    } as unknown as ReturnType<typeof db.insert>);
+
+    return { mockValues, mockOnConflictDoNothing };
+  }
+
+  test('enters the team into the league, ignoring a pair that already exists', async () => {
+    const { mockValues, mockOnConflictDoNothing } = mockOnConflictInsert({
+      rowCount: 0,
+    });
+
+    const result = await registerTeamInLeague(
+      MOCK_LEAGUE.league_id,
+      MOCK_TEAM.team_id,
+    );
+
+    expect(result).toEqual({ rowCount: 0 });
+    // Verify query construction
+    expect(db.insert).toHaveBeenCalledWith(LeagueTeamTable);
+    expect(mockValues).toHaveBeenCalledWith({
+      league_id: MOCK_LEAGUE.league_id,
+      team_id: MOCK_TEAM.team_id,
+    });
+    expect(mockOnConflictDoNothing).toHaveBeenCalled();
+  });
+
+  test('throws error when the insert fails', async () => {
+    const message = 'Insert failed';
+    const mockValues = vi.fn().mockReturnValue({
+      onConflictDoNothing: vi.fn().mockRejectedValue(new Error(message)),
+    });
+    vi.mocked(db.insert).mockReturnValue({
+      values: mockValues,
+    } as unknown as ReturnType<typeof db.insert>);
+
+    await expect(
+      registerTeamInLeague(MOCK_LEAGUE.league_id, MOCK_TEAM.team_id),
+    ).rejects.toThrow(message);
   });
 });
 

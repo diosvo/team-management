@@ -100,7 +100,7 @@ SELECT
   (date '1988-01-01' + ((gs * 97) % 9000)) AS dob,
   NULL::varchar(10) AS phone_number,
   NULL::varchar(12) AS citizen_identification,
-  'ACTIVE'::user_state AS state,
+  'active'::user_state AS state,
   CASE
     WHEN gs = 1 THEN 'SUPER_ADMIN'::user_role
     WHEN gs BETWEEN 2 AND 21 THEN 'COACH'::user_role
@@ -205,7 +205,7 @@ SELECT
 FROM generate_series(1, 100) gs;
 
 -- ============================================================
--- 8) LEAGUE (100) - unique name; league_status includes ENDED
+-- 8) LEAGUE (100) - unique name; status is derived from the dates on read
 -- ============================================================
 DROP TABLE IF EXISTS seed_league_map;
 CREATE TEMP TABLE seed_league_map (
@@ -215,14 +215,15 @@ CREATE TEMP TABLE seed_league_map (
 
 WITH ins AS (
   INSERT INTO league (
-    league_id, name, start_date, end_date, status, description, created_at, updated_at
+    league_id, name, start_date, end_date, description, created_at, updated_at
   )
+  -- Spread the windows across past/current/future so all three derived
+  -- statuses show up in the seeded data.
   SELECT
     gen_random_uuid(),
     'Mock League ' || gs,
-    date '2024-01-01' + (gs * 2),
-    date '2024-02-01' + (gs * 2),
-    (ARRAY['UPCOMING','ONGOING','ENDED'])[1 + ((gs - 1) % 3)]::league_status,
+    CURRENT_DATE - 180 + (gs * 4),
+    CURRENT_DATE - 150 + (gs * 4),
     'Description ' || gs,
     now(),
     now()

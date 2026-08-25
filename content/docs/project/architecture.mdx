@@ -296,7 +296,6 @@ erDiagram
         varchar name UK
         date start_date
         date end_date
-        league_status status
         varchar description
     }
     league_team {
@@ -689,10 +688,9 @@ Sourced from [TODO.md](https://github.com/diosvo/team-management/blob/main/TODO.
 - ⭐ **Add a `match` status enum**: scores default to 0, so a scheduled-but-unplayed match is indistinguishable from a 0–0 result.
 - ⭐ **`match.home_team` / `away_team` have no `onDelete`**: deleting a team with match history throws a raw FK error.
 - **Team membership history (biggest structural gap)**: `user.team_id` is a single FK, so transfers/rejoins lose history and `match_player_stats` lacks team context. Consider a `user_team` membership table.
-- **Make `league_team_roster` reference `league_team`**; **make `test_result.date` NOT NULL**.
-- Recently closed: jersey-number uniqueness per team (`0008`), attendance per session (`0009`), `asset.name` unique per team and the redundant `attendance.team_id` dropped (`0010`).
+- Recently closed: jersey-number uniqueness per team (`0008`), attendance per session (`0009`), `asset.name` unique per team and the redundant `attendance.team_id` dropped (`0010`), `test_result.date` NOT NULL (`0011`), the `league_team_roster` → `league_team` composite FK and the derivable `league.status` column dropped (`0012`).
 - **No tables behind `emails` / `documents` / `reports` resources**: routes and permissions exist, but there's no send log, document metadata, or report registry (reports go to Blob with no DB index).
-- **Simplification candidates**: `league.status` is derivable, `rule` could fold into `team`.
+- **Simplification candidates**: `rule` could fold into `team`.
 - **Out of scope** (no product signal yet): injury/medical tracking, payments/fees, audit logs.
 
 Beyond the schema: enabling the disabled E2E CI job once an isolated test DB exists, and adding a unit-test gate to production deploys (see [§12](#12-known-gaps--risks)).
