@@ -173,6 +173,29 @@ export function mockSelectFailure(errorMessage: string | Error) {
   };
 }
 
+export function mockSelectDistinctSuccess(returnValue: unknown) {
+  const mockOrderBy = vi.fn().mockResolvedValue(returnValue);
+  const mockFrom = vi.fn().mockReturnValue({ orderBy: mockOrderBy });
+
+  vi.mocked(db.selectDistinct).mockReturnValue({
+    from: mockFrom,
+  } as unknown as ReturnType<typeof db.selectDistinct>);
+
+  return { mockFrom, mockOrderBy };
+}
+
+export function mockSelectDistinctFailure(errorMessage: string) {
+  const error = new Error(errorMessage);
+  const mockOrderBy = vi.fn().mockRejectedValue(error);
+  const mockFrom = vi.fn().mockReturnValue({ orderBy: mockOrderBy });
+
+  vi.mocked(db.selectDistinct).mockReturnValue({
+    from: mockFrom,
+  } as unknown as ReturnType<typeof db.selectDistinct>);
+
+  return { mockFrom, mockOrderBy };
+}
+
 export function mockInsertSuccess(returnValue: unknown) {
   const mockValues = vi.fn().mockResolvedValue(returnValue);
   vi.mocked(db.insert).mockReturnValue({

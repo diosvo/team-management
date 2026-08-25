@@ -1,11 +1,16 @@
-import { eq } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 
 import db from '@/drizzle';
-import { InsertTestResult, TestResultTable } from '@/drizzle/schema';
+import {
+  InsertTestResult,
+  TestResultTable,
+} from '@/drizzle/schema/periodic-testing';
 
 import {
   mockInsertFailure,
   mockInsertSuccess,
+  mockSelectDistinctFailure,
+  mockSelectDistinctSuccess,
   mockUpdateFailure,
   mockUpdateSuccess,
 } from '@/test/db-operations';
@@ -47,7 +52,7 @@ vi.mock('@/drizzle', () => ({
   },
 }));
 
-vi.mock('@/drizzle/schema', () => ({
+vi.mock('@/drizzle/schema/periodic-testing', () => ({
   TestResultTable: {
     result_id: 'result_id',
     player_id: 'player_id',
@@ -56,41 +61,26 @@ vi.mock('@/drizzle/schema', () => ({
   },
 }));
 
-function mockSelectDistinctSuccess(returnValue: unknown) {
-  const mockOrderBy = vi.fn().mockResolvedValue(returnValue);
-  const mockFrom = vi.fn().mockReturnValue({ orderBy: mockOrderBy });
-  vi.mocked(db.selectDistinct).mockReturnValue({
-    from: mockFrom,
-  } as unknown as ReturnType<typeof db.selectDistinct>);
-  return { mockFrom, mockOrderBy };
-}
-
-function mockSelectDistinctFailure() {
-  const mockOrderBy = vi.fn().mockRejectedValue(new Error('Database error'));
-  const mockFrom = vi.fn().mockReturnValue({ orderBy: mockOrderBy });
-  vi.mocked(db.selectDistinct).mockReturnValue({
-    from: mockFrom,
-  } as unknown as ReturnType<typeof db.selectDistinct>);
-}
-
 describe('getDates', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  test('returns unique dates ordered by desc', async () => {
-    mockSelectDistinctSuccess([
+  test('flattens the distinct dates the query returns', async () => {
+    const { mockFrom, mockOrderBy } = mockSelectDistinctSuccess([
       { date: '2026-01-16' },
       { date: MOCK_TEST_RESULT_DATE },
-      { date: '2026-01-16' },
       { date: '2026-01-14' },
-      { date: MOCK_TEST_RESULT_DATE },
     ]);
 
     const result = await getDates();
 
-    // expect(result).toEqual(['2026-01-16', MOCK_TEST_RESULT_DATE, '2026-01-14']);
-    expect(db.selectDistinct).toHaveBeenCalledTimes(1);
+    expect(result).toEqual(['2026-01-16', MOCK_TEST_RESULT_DATE, '2026-01-14']);
+    expect(db.selectDistinct).toHaveBeenCalledWith({
+      date: TestResultTable.date,
+    });
+    expect(mockFrom).toHaveBeenCalledWith(TestResultTable);
+    expect(mockOrderBy).toHaveBeenCalledWith(desc(TestResultTable.date));
   });
 
   test('returns empty array when no dates exist', async () => {
@@ -102,7 +92,7 @@ describe('getDates', () => {
   });
 
   test('returns empty array when database query fails', async () => {
-    mockSelectDistinctFailure();
+    mockSelectDistinctFailure('Database error');
 
     const result = await getDates();
 
