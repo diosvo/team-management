@@ -19,6 +19,7 @@ import {
 
 import { ESTABLISHED_DATE } from '@/utils/constants';
 import type { Resource } from '@/utils/permissions';
+import { ColorPalette } from '@chakra-ui/react';
 
 type SidebarGroup = {
   title: string;
@@ -29,6 +30,7 @@ type SidebarGroup = {
   }>;
 };
 
+const TEAM_ID = 'saigon.rovers';
 export const getYearsActive = formatDistanceToNow(new Date(ESTABLISHED_DATE));
 
 /** Convert a kebab-case URL segment or resource key into a Title Case label */
@@ -76,6 +78,28 @@ export const SIDEBAR_GROUP: Array<SidebarGroup> = [
       { icon: Trophy, resource: 'leagues' },
       { icon: MapPinHouse, resource: 'locations' },
     ],
+  },
+];
+
+export const SOCIAL_LINKS: Array<{
+  label: string;
+  href: string;
+  color: ColorPalette;
+}> = [
+  {
+    label: 'Facebook',
+    href: 'facebook.com/' + TEAM_ID,
+    color: 'blue',
+  },
+  {
+    label: 'Instagram',
+    href: 'instagram.com/' + TEAM_ID,
+    color: 'pink',
+  },
+  {
+    label: 'TikTok',
+    href: 'tiktok.com/@' + TEAM_ID,
+    color: 'black',
   },
 ];
 

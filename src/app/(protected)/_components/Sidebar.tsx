@@ -1,26 +1,46 @@
 'use client';
 
-import Link, { useLinkStatus } from 'next/link';
+import { useLinkStatus } from 'next/link';
 import { usePathname } from 'next/navigation';
-import React, { memo, useEffect, useMemo, useRef } from 'react';
+import {
+  memo,
+  useEffect,
+  useMemo,
+  useRef,
+  type Dispatch,
+  type SetStateAction,
+} from 'react';
 
 import {
   Button,
+  HStack,
   Icon,
   IconButton,
+  Link,
+  Menu,
+  Portal,
   Separator,
   Spinner,
   Text,
   VStack,
 } from '@chakra-ui/react';
-import { ChevronLeft, ChevronRight, type LucideIcon } from 'lucide-react';
+import {
+  BookMarked,
+  ChevronLeft,
+  ChevronRight,
+  Flag,
+  Globe,
+  type LucideIcon,
+} from 'lucide-react';
 
 import { Tooltip } from '@/components/ui/tooltip';
+import Visibility from '@/components/Visibility';
 import usePermissions from '@/hooks/use-permissions';
 import {
   BUTTON_CONFIG,
   SCROLL_AREA_CSS,
   SIDEBAR_GROUP,
+  SOCIAL_LINKS,
   TOGGLE_CSS,
   segmentToLabel,
 } from '../_helpers/utils';
@@ -91,7 +111,7 @@ export default function Sidebar({
   setIsExpanded,
 }: {
   isExpanded: boolean;
-  setIsExpanded: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsExpanded: Dispatch<SetStateAction<boolean>>;
 }) {
   const pathname = usePathname();
   const { can } = usePermissions();
@@ -198,6 +218,73 @@ export default function Sidebar({
           </VStack>
         ))}
       </VStack>
+
+      <Separator />
+
+      <HStack justifyContent="center">
+        <IconButton
+          size="2xs"
+          variant="ghost"
+          colorPalette="pink"
+          title="Documentation"
+          asChild
+        >
+          <Link href="/docs" target="_blank" rel="noreferrer">
+            <BookMarked />
+          </Link>
+        </IconButton>
+
+        <Visibility isVisible={isExpanded}>
+          <Menu.Root>
+            <Menu.Trigger colorPalette="blue" asChild>
+              <IconButton size="2xs" variant="ghost" title="Social Links">
+                <Globe />
+              </IconButton>
+            </Menu.Trigger>
+            <Portal>
+              <Menu.Positioner>
+                <Menu.Content>
+                  {SOCIAL_LINKS.map(({ label, href, color }) => (
+                    <Menu.Item
+                      value={label}
+                      key={label}
+                      _highlighted={{
+                        color: `${color}.700`,
+                        backgroundColor: `${color}.100`,
+                      }}
+                      _hover={{ cursor: 'pointer' }}
+                      asChild
+                    >
+                      <Link
+                        href={'https://' + href}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {label}
+                      </Link>
+                    </Menu.Item>
+                  ))}
+                </Menu.Content>
+              </Menu.Positioner>
+            </Portal>
+          </Menu.Root>
+          <IconButton
+            size="2xs"
+            variant="ghost"
+            colorPalette="green"
+            title="Suggestions + feedback + ideas"
+            asChild
+          >
+            <Link
+              href="github.com/diosvo/team-management/issues/new?title=Feedback%20for%20%E2%80%9CTeam%20Rule%E2%80%9D&labels=maintenance&project=team-management&assignees=diosvo"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <Flag />
+            </Link>
+          </IconButton>
+        </Visibility>
+      </HStack>
     </VStack>
   );
 }
