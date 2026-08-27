@@ -1,6 +1,6 @@
 'use client';
 
-import { useLinkStatus } from 'next/link';
+import Link, { useLinkStatus } from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   memo,
@@ -13,10 +13,10 @@ import {
 
 import {
   Button,
+  Link as ChakraLink,
   HStack,
   Icon,
   IconButton,
-  Link,
   Menu,
   Portal,
   Separator,
@@ -34,11 +34,11 @@ import {
 } from 'lucide-react';
 
 import { Tooltip } from '@/components/ui/tooltip';
-import Visibility from '@/components/Visibility';
 import usePermissions from '@/hooks/use-permissions';
 import {
   BUTTON_CONFIG,
   SCROLL_AREA_CSS,
+  SIDEBAR_CSS,
   SIDEBAR_GROUP,
   SOCIAL_LINKS,
   TOGGLE_CSS,
@@ -88,6 +88,7 @@ const NavButton = memo(function NavButton({
         paddingInline={isExpanded ? undefined : 2}
         disabled={isDisabled}
         asChild={!isDisabled}
+        css={SIDEBAR_CSS}
       >
         {isDisabled ? (
           <>
@@ -152,6 +153,7 @@ export default function Sidebar({
       alignItems="stretch"
       paddingBlock={4}
       paddingInline={2}
+      css={SIDEBAR_CSS}
     >
       <Tooltip
         showArrow
@@ -221,69 +223,66 @@ export default function Sidebar({
 
       <Separator />
 
-      <HStack justifyContent="center">
-        <IconButton
-          size="2xs"
-          variant="ghost"
-          colorPalette="pink"
-          title="Documentation"
-          asChild
-        >
-          <Link href="/docs" target="_blank" rel="noreferrer">
-            <BookMarked />
-          </Link>
-        </IconButton>
+      <HStack justifyContent="center" flexWrap="wrap">
+        <Tooltip content="Documentation">
+          <IconButton size="2xs" variant="ghost" colorPalette="pink" asChild>
+            <ChakraLink href="/docs" target="_blank" rel="noreferrer">
+              <BookMarked />
+            </ChakraLink>
+          </IconButton>
+        </Tooltip>
 
-        <Visibility isVisible={isExpanded}>
-          <Menu.Root>
-            <Menu.Trigger colorPalette="blue" asChild>
-              <IconButton size="2xs" variant="ghost" title="Social Links">
+        <Menu.Root>
+          <Menu.Trigger asChild>
+            <Tooltip content="Social Links">
+              <IconButton
+                size="2xs"
+                variant="ghost"
+                colorPalette="blue"
+                aria-label="Social Links"
+              >
                 <Globe />
               </IconButton>
-            </Menu.Trigger>
-            <Portal>
-              <Menu.Positioner>
-                <Menu.Content>
-                  {SOCIAL_LINKS.map(({ label, href, color }) => (
-                    <Menu.Item
-                      value={label}
-                      key={label}
-                      _highlighted={{
-                        color: `${color}.700`,
-                        backgroundColor: `${color}.100`,
-                      }}
-                      _hover={{ cursor: 'pointer' }}
-                      asChild
+            </Tooltip>
+          </Menu.Trigger>
+          <Portal>
+            <Menu.Positioner>
+              <Menu.Content>
+                {SOCIAL_LINKS.map(({ label, href, color }) => (
+                  <Menu.Item
+                    value={label}
+                    key={label}
+                    _highlighted={{
+                      color: `${color}.700`,
+                      backgroundColor: `${color}.100`,
+                    }}
+                    _hover={{ cursor: 'pointer' }}
+                    asChild
+                  >
+                    <ChakraLink
+                      href={'https://' + href}
+                      target="_blank"
+                      rel="noopener noreferrer"
                     >
-                      <Link
-                        href={'https://' + href}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        {label}
-                      </Link>
-                    </Menu.Item>
-                  ))}
-                </Menu.Content>
-              </Menu.Positioner>
-            </Portal>
-          </Menu.Root>
-          <IconButton
-            size="2xs"
-            variant="ghost"
-            colorPalette="green"
-            title="Suggestions + feedback + ideas"
-            asChild
-          >
-            <Link
-              href="github.com/diosvo/team-management/issues/new?title=Feedback%20for%20%E2%80%9CTeam%20Rule%E2%80%9D&labels=maintenance&project=team-management&assignees=diosvo"
+                      {label}
+                    </ChakraLink>
+                  </Menu.Item>
+                ))}
+              </Menu.Content>
+            </Menu.Positioner>
+          </Portal>
+        </Menu.Root>
+        <Tooltip content="Suggestions + feedback + ideas">
+          <IconButton size="2xs" variant="ghost" colorPalette="green" asChild>
+            <ChakraLink
+              href="https://github.com/diosvo/team-management/issues/new?title=Feedback%20for%20%E2%80%9CTeam%20Rule%E2%80%9D&labels=maintenance&project=team-management&assignees=diosvo"
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
             >
               <Flag />
-            </Link>
+            </ChakraLink>
           </IconButton>
-        </Visibility>
+        </Tooltip>
       </HStack>
     </VStack>
   );

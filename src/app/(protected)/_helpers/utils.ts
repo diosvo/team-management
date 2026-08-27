@@ -1,3 +1,4 @@
+import type { ColorPalette } from '@chakra-ui/react';
 import { formatDistanceToNow } from 'date-fns';
 import {
   BadgeCheck,
@@ -19,7 +20,6 @@ import {
 
 import { ESTABLISHED_DATE } from '@/utils/constants';
 import type { Resource } from '@/utils/permissions';
-import { ColorPalette } from '@chakra-ui/react';
 
 type SidebarGroup = {
   title: string;
@@ -99,7 +99,7 @@ export const SOCIAL_LINKS: Array<{
   {
     label: 'TikTok',
     href: 'tiktok.com/@' + TEAM_ID,
-    color: 'black',
+    color: 'gray',
   },
 ];
 
@@ -129,8 +129,13 @@ export const SCROLL_AREA_CSS = {
   },
 } as const;
 
-// Collapse button hides while scrolling so it never overlaps the scrollbar.
+// Smooth animations for sidebar expand/collapse and toggle button
+export const SIDEBAR_CSS = {
+  transition: 'all 0.3s ease',
+} as const;
+
+// Toggle button also hides opacity while scrolling
 export const TOGGLE_CSS = {
-  transition: 'opacity 0.2s ease',
+  ...SIDEBAR_CSS,
   '[data-scrolling] &': { opacity: 0, pointerEvents: 'none' },
 } as const;
