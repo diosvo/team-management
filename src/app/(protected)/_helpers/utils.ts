@@ -1,3 +1,4 @@
+import type { ColorPalette } from '@chakra-ui/react';
 import { formatDistanceToNow } from 'date-fns';
 import {
   BadgeCheck,
@@ -29,6 +30,7 @@ type SidebarGroup = {
   }>;
 };
 
+const TEAM_ID = 'saigon.rovers';
 export const getYearsActive = formatDistanceToNow(new Date(ESTABLISHED_DATE));
 
 /** Convert a kebab-case URL segment or resource key into a Title Case label */
@@ -79,6 +81,28 @@ export const SIDEBAR_GROUP: Array<SidebarGroup> = [
   },
 ];
 
+export const SOCIAL_LINKS: Array<{
+  label: string;
+  href: string;
+  color: ColorPalette;
+}> = [
+  {
+    label: 'Facebook',
+    href: 'facebook.com/' + TEAM_ID,
+    color: 'blue',
+  },
+  {
+    label: 'Instagram',
+    href: 'instagram.com/' + TEAM_ID,
+    color: 'pink',
+  },
+  {
+    label: 'TikTok',
+    href: 'tiktok.com/@' + TEAM_ID,
+    color: 'gray',
+  },
+];
+
 // Static config - hoisted so no object identity churn between renders
 export const BUTTON_CONFIG = {
   size: { base: 'xs', md: 'sm', mdTo2xl: 'md' },
@@ -105,8 +129,13 @@ export const SCROLL_AREA_CSS = {
   },
 } as const;
 
-// Collapse button hides while scrolling so it never overlaps the scrollbar.
+// Smooth animations for sidebar expand/collapse and toggle button
+export const SIDEBAR_CSS = {
+  transition: 'all 0.3s ease',
+} as const;
+
+// Toggle button also hides opacity while scrolling
 export const TOGGLE_CSS = {
-  transition: 'opacity 0.2s ease',
+  ...SIDEBAR_CSS,
   '[data-scrolling] &': { opacity: 0, pointerEvents: 'none' },
 } as const;
