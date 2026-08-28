@@ -26,6 +26,12 @@ const envSchema = z.object({
     .describe(
       'The URL to the Brotli pack of the Chromium executable. Required for production deployment.',
     ),
+  GITHUB_TOKEN: z
+    .string()
+    .default('')
+    .describe(
+      'Token with Issues read/write access on the feedback repository. Required to send in-app feedback for reporters without a GitHub account.',
+    ),
   PW_USERNAME: z.string().default(''),
   PW_PASSWORD: z.string().default(''),
 });

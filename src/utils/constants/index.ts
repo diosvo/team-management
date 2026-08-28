@@ -3,6 +3,7 @@ export * from './app';
 export * from './asset';
 export * from './attendance';
 export * from './email';
+export * from './feedback';
 export * from './interval';
 export * from './league';
 export * from './match';

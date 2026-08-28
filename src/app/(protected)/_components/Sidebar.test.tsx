@@ -30,7 +30,10 @@ vi.mock('next/navigation', async (importOriginal) => ({
 
 vi.mock('@/hooks/use-permissions', () => ({ default: vi.fn() }));
 
-const FEEDBACK_URL_PART = 'github.com/diosvo/team-management/issues/new';
+// The dialog has its own suite; the footer only has to mount it.
+vi.mock('@/components/FeedbackDialog', () => ({
+  default: () => <button aria-label="Suggestions + feedback + ideas" />,
+}));
 
 /** Allow only the given resources through `can()` */
 const only =
@@ -294,27 +297,21 @@ describe('Sidebar', () => {
   });
 
   describe('footer links', () => {
-    test.each([
-      ['Documentation', 'href="/docs"'],
-      ['Suggestions + feedback + ideas', `href*="${FEEDBACK_URL_PART}"`],
-    ])('%s opens in a new tab securely', (name, selector) => {
+    test('Documentation opens in a new tab securely', () => {
       setup();
 
-      const link = getLink(name);
-      expect(link).toBe(document.querySelector(`a[${selector}]`));
+      const link = getLink('Documentation');
+      expect(link).toBe(document.querySelector('a[href="/docs"]'));
       expect(link).toHaveAttribute('target', '_blank');
       expect(link).toHaveAttribute('rel', 'noopener noreferrer');
     });
 
-    test('feedback link includes the GitHub issue query parameters', () => {
+    test('offers the feedback dialog', () => {
       setup();
 
-      const href = getLink('Suggestions + feedback + ideas').getAttribute(
-        'href',
-      );
-      expect(href).toContain('title=Feedback');
-      expect(href).toContain('labels=maintenance');
-      expect(href).toContain('assignees=diosvo');
+      expect(
+        screen.getByRole('button', { name: 'Suggestions + feedback + ideas' }),
+      ).toBeInTheDocument();
     });
 
     // The menu uses trigger `id` and `data-scope`; the tooltip must not overwrite them.

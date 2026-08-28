@@ -16,11 +16,12 @@ import { useForm } from 'react-hook-form';
 import { Alert } from '@/components/ui/alert';
 import { Field } from '@/components/ui/field';
 
+import authClient from '@/lib/auth-client';
 import { getDefaults } from '@/lib/zod';
+
 import { authErrorMessage } from '@/utils/rate-limit';
 import type { Response } from '@/utils/response';
 
-import authClient from '@/lib/auth-client';
 import { LOGIN_PATH } from '@/routes';
 import {
   ForgotPasswordSchema,
