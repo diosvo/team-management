@@ -16,7 +16,7 @@ import { mockWithAuth, mockWithResource } from '@/test/mocks/auth';
 import { MOCK_MATCH } from '@/test/mocks/match';
 import { MOCK_TEAM } from '@/test/mocks/team';
 import { thisYear } from '@/utils/datetime';
-import { MatchStatus } from '@/utils/enum';
+import { MatchResult } from '@/utils/enum';
 
 import { getAchievements } from './achievement';
 
@@ -53,6 +53,7 @@ const gameMatchesQuery = ({ from, to }: { from: string; to: string }) => ({
   from,
   to,
   match_type: [],
+  status: [],
   page: 1,
   q: '',
 });
@@ -207,11 +208,11 @@ describe('Analytics Actions', () => {
     test('tallies each outcome by league and friendly', async () => {
       vi.mocked(getMatches).mockResolvedValue(
         matchesResponse([
-          { result: MatchStatus.WIN, league_id: 'league-1' },
-          { result: MatchStatus.WIN, league_id: null },
-          { result: MatchStatus.WIN, league_id: null },
-          { result: MatchStatus.DRAW, league_id: 'league-1' },
-          { result: MatchStatus.LOSS, league_id: null },
+          { result: MatchResult.WIN, league_id: 'league-1' },
+          { result: MatchResult.WIN, league_id: null },
+          { result: MatchResult.WIN, league_id: null },
+          { result: MatchResult.DRAW, league_id: 'league-1' },
+          { result: MatchResult.LOSS, league_id: null },
         ]),
       );
 

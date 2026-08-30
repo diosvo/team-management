@@ -6,7 +6,7 @@ import { cache } from 'react';
 import type { MatchesRateRecord } from '@/types/analytics';
 import type { DateRange } from '@/types/common';
 import { thisYear } from '@/utils/datetime';
-import { MatchStatus, MatchType } from '@/utils/enum';
+import { MatchResult, MatchType } from '@/utils/enum';
 
 import {
   getUpcomingMatches as fetchUpcomingMatches,
@@ -47,6 +47,9 @@ const fetchGameMatches = cache(
       from,
       to,
       match_type: [],
+      // Unfiltered: `getMatches` already scopes the stats to played matches, and
+      // the overview needs the scheduled ones for its next-game countdown.
+      status: [],
       // TODO: it could be optional in the API, but the current implementation requires it
       page: 1,
       q: '',
@@ -88,13 +91,13 @@ export const getMatchesRate = createAnalyticsAction(
         (acc, match) => {
           const type = match.league_id ? MatchType.LEAGUE : MatchType.FRIENDLY;
           switch (match.result) {
-            case MatchStatus.WIN:
+            case MatchResult.WIN:
               acc.win[type] += 1;
               break;
-            case MatchStatus.DRAW:
+            case MatchResult.DRAW:
               acc.draw[type] += 1;
               break;
-            case MatchStatus.LOSS:
+            case MatchResult.LOSS:
               acc.lose[type] += 1;
               break;
             default:

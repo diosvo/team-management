@@ -6,12 +6,6 @@ Follow-up items from a review of the data model in `src/drizzle/schema/` (see th
 
 ## 1. Needs enhancement (existing relations with real problems)
 
-- [ ] **`match` has no status** (`src/drizzle/schema/match.ts`)
-      Scores default to 0, so a scheduled-but-unplayed match is indistinguishable from a 0–0 result. Add a status enum (scheduled / completed / cancelled), mirroring `training_session.status`.
-
-- [ ] **`match.home_team` / `away_team` have no `onDelete` behavior** (`src/drizzle/schema/match.ts`)
-      Deleting a team with match history throws a raw FK error, the only ungraceful deletion path in the schema. Decide: explicit `restrict` (and a friendly guard in the delete action) or another strategy.
-
 - [ ] **`test_result.date` is nullable** (`src/drizzle/schema/periodic-testing.ts`)
       Undated results are useless for trend/progress charts, the main purpose of periodic testing. Make it `NOT NULL` (backfill existing nulls first).
 
@@ -30,8 +24,6 @@ Follow-up items from a review of the data model in `src/drizzle/schema/` (see th
       _Added in `0016_flag_external_teams`._ `team.is_external` now marks opponents, and `getTeams` / `updateTeam` / `deleteTeam` filter on it instead of `is_default = false`; `insertTeam` sets it. A `default_team_not_external` check keeps the club's own team out of the opponent set. Backfilled as `NOT is_default`, which is what the flag replaced — deriving it from "has no users" instead would have made any team that does have members invisible in every UI.
 
 - [ ] **No tables behind `emails`, `documents`, `reports` resources**: the routes and permissions exist (`src/routes.ts`) but there's no email send log, no document metadata, and no registry of generated reports (they go to Blob with no DB index). Needed if those pages should list history.
-
-- [ ] **No per-match lineup / call-up concept**: `match_player_stats` only stores players who accrued stats; there's no “selected but didn't play”. Add only if registration/roster is meant to feed match-day squads.
 
 ## Explicitly out of scope
 

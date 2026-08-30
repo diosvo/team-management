@@ -32,6 +32,7 @@ test.describe('Matches Page', () => {
     await testTableHeaders(page, [
       'Opponent',
       'League',
+      'Status',
       'Score',
       'Result',
       'Location',

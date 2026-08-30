@@ -15,6 +15,7 @@ import usePermissions, {
   type PermissionsResult,
 } from '@/hooks/use-permissions';
 import type { MatchWithTeams } from '@/types/match';
+import { MatchResult, MatchStatus } from '@/utils/enum';
 
 import { removeMatch } from '@/actions/match';
 
@@ -100,7 +101,26 @@ describe('MatchTable', () => {
         `${LOSS_MATCH.home_team_score} - ${LOSS_MATCH.away_team_score}`,
       ),
     ).toBeInTheDocument();
-    expect(screen.getByText(LOSS_MATCH.result)).toBeInTheDocument();
+    expect(screen.getByText(MatchResult.LOSS)).toBeInTheDocument();
+  });
+
+  test('shows no result for a match that has not been played', () => {
+    setup({
+      matches: [
+        {
+          ...LOSS_MATCH,
+          status: MatchStatus.SCHEDULED,
+          home_team_score: 0,
+          away_team_score: 0,
+          result: null,
+        },
+      ],
+    });
+
+    expect(screen.getByText(MatchStatus.SCHEDULED)).toBeInTheDocument();
+    expect(screen.queryByText(MatchResult.LOSS)).not.toBeInTheDocument();
+    // Neither a score nor a result for an unplayed fixture.
+    expect(screen.getAllByText('-')).toHaveLength(2);
   });
 
   test('shows the empty state when there are no matches', () => {

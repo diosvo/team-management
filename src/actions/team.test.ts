@@ -1,3 +1,4 @@
+import { countTeamMatches } from '@/db/match';
 import { getDbErrorMessage } from '@/db/pg-error';
 import {
   deleteTeam,
@@ -31,6 +32,10 @@ vi.mock('@/db/team', () => ({
   insertTeam: vi.fn(),
   updateTeam: vi.fn(),
   deleteTeam: vi.fn(),
+}));
+
+vi.mock('@/db/match', () => ({
+  countTeamMatches: vi.fn(),
 }));
 
 vi.mock('@/lib/blob', () => ({
@@ -192,6 +197,10 @@ describe('Team Actions', () => {
   });
 
   describe('removeTeam', () => {
+    beforeEach(() => {
+      vi.mocked(countTeamMatches).mockResolvedValue(0);
+    });
+
     test('deletes a team and revalidates', async () => {
       const result = await removeTeam(MOCK_AWAY_TEAM.team_id);
 
@@ -200,6 +209,20 @@ describe('Team Actions', () => {
       expect(result).toEqual({
         success: true,
         message: 'Deleted team successfully',
+      });
+    });
+
+    test('refuses to delete a team that has match history', async () => {
+      vi.mocked(countTeamMatches).mockResolvedValue(3);
+
+      const result = await removeTeam(MOCK_AWAY_TEAM.team_id);
+
+      expect(deleteTeam).not.toHaveBeenCalled();
+      expect(revalidate.teams).not.toHaveBeenCalled();
+      expect(result).toEqual({
+        success: false,
+        message:
+          'This team appears in 3 match(es). Delete those matches first, or keep the team to preserve the record.',
       });
     });
 

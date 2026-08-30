@@ -46,13 +46,14 @@ describe('MatchFilters', () => {
 
   setupTestLifecycle();
 
-  test('provides the range, game type and match type filters', () => {
+  test('provides the range, game type, match type and status filters', () => {
     setup();
 
     expect(propsSpy.filters).toMatchObject([
       { key: 'range', label: 'Time' },
       { key: 'game_type', label: 'Game Type' },
       { key: 'match_type', label: 'Match Type' },
+      { key: 'status', label: 'Status' },
     ]);
   });
 
@@ -63,6 +64,7 @@ describe('MatchFilters', () => {
     expect(propsSpy.defaults).toMatchObject({
       game_type: [],
       match_type: [],
+      status: [],
       ...thisYear(),
     });
   });

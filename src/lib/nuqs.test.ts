@@ -188,6 +188,7 @@ describe('Client-Side Filter Hooks', () => {
         game_type: [],
         ...thisYear(),
         match_type: [],
+        status: [],
       });
     });
   });

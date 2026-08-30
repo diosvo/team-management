@@ -3,7 +3,7 @@ import {
   AssetCondition,
   AttendanceStatus,
   LeagueStatus,
-  MatchStatus,
+  MatchResult,
   SessionStatus,
   UserState,
 } from './enum';
@@ -35,10 +35,10 @@ describe('getColor', () => {
     { value: LeagueStatus.UPCOMING, expected: 'orange' },
     { value: LeagueStatus.ONGOING, expected: 'green' },
     { value: LeagueStatus.ENDED, expected: 'red' },
-    // MatchStatus
-    { value: MatchStatus.WIN, expected: 'green' },
-    { value: MatchStatus.LOSS, expected: 'red' },
-    { value: MatchStatus.DRAW, expected: 'gray' },
+    // MatchResult
+    { value: MatchResult.WIN, expected: 'green' },
+    { value: MatchResult.LOSS, expected: 'red' },
+    { value: MatchResult.DRAW, expected: 'gray' },
     // AttendanceStatus
     { value: AttendanceStatus.ON_TIME, expected: 'green' },
     { value: AttendanceStatus.ABSENT, expected: 'red' },

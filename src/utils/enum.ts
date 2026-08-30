@@ -94,7 +94,19 @@ export const AchievementType = createEnum([
 ] as const);
 export type AchievementType = enumUnion<typeof AchievementType>;
 
-export const MatchStatus = createEnum(['win', 'loss', 'draw'] as const);
+/** Outcome of a played match, derived from the scores. */
+export const MatchResult = createEnum(['win', 'loss', 'draw'] as const);
+export type MatchResult = enumUnion<typeof MatchResult>;
+
+/**
+ * Lifecycle of a match, mirroring `SessionStatus`. Only a `completed` match
+ * carries a score, so an unplayed fixture is never read as a 0-0 draw.
+ */
+export const MatchStatus = createEnum([
+  'scheduled',
+  'completed',
+  'cancelled',
+] as const);
 export type MatchStatus = enumUnion<typeof MatchStatus>;
 
 export const MatchType = createEnum(['league', 'friendly'] as const);

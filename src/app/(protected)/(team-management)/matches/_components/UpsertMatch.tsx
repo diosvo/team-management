@@ -6,6 +6,7 @@ import {
   Badge,
   Button,
   Dialog,
+  Fieldset,
   HStack,
   Input,
   NumberInputRoot,
@@ -25,12 +26,20 @@ import { SearchableSelectField } from '@/components/SearchableSelect';
 import { CloseButton } from '@/components/ui/close-button';
 import { Field } from '@/components/ui/field';
 import { NumberInputField } from '@/components/ui/number-input';
+import { Radio, RadioGroup } from '@/components/ui/radio';
 import { Switch } from '@/components/ui/switch';
 import { toaster } from '@/components/ui/toaster';
+import { Tooltip } from '@/components/ui/tooltip';
 import Visibility from '@/components/Visibility';
 
-import { CACHE_KEY, CURRENT_DATE, ESTABLISHED_DATE } from '@/utils/constants';
+import {
+  CACHE_KEY,
+  CURRENT_DATE,
+  ESTABLISHED_DATE,
+  MATCH_STATUS_SELECTION,
+} from '@/utils/constants';
 import { formatDatetime } from '@/utils/datetime';
+import { MatchStatus } from '@/utils/enum';
 import { getColor } from '@/utils/helper';
 
 import { getDefaults } from '@/lib/zod';
@@ -51,6 +60,7 @@ export const UpsertMatch = createOverlay(({ action, item, ...rest }) => {
     control,
     watch,
     reset,
+    setValue,
     register,
     handleSubmit,
     formState: { isValid, errors },
@@ -62,6 +72,8 @@ export const UpsertMatch = createOverlay(({ action, item, ...rest }) => {
       date: item.date ?? CURRENT_DATE,
     },
   });
+
+  const isPlayed = watch('status') === MatchStatus.COMPLETED;
 
   const onSubmit = (data: UpsertMatchSchemaValues) => {
     const id = toaster.create({
@@ -94,7 +106,7 @@ export const UpsertMatch = createOverlay(({ action, item, ...rest }) => {
               <CloseButton />
             </Dialog.CloseTrigger>
             <Dialog.Header>
-              <Dialog.Title>{action} result</Dialog.Title>
+              <Dialog.Title>{action} match</Dialog.Title>
             </Dialog.Header>
             <Dialog.Body>
               <VStack alignItems="stretch" gap={4}>
@@ -189,50 +201,92 @@ export const UpsertMatch = createOverlay(({ action, item, ...rest }) => {
                   </Field>
                 </HStack>
                 <LocationSelection control={control} isDisabled={isPending} />
-                <HStack alignItems="start">
-                  <Field
-                    label="Our Score"
-                    invalid={!!errors.home_team_score}
-                    errorText={errors.home_team_score?.message}
-                  >
-                    <Controller
-                      name="home_team_score"
-                      control={control}
-                      render={({ field }) => (
-                        <NumberInputRoot
-                          width="full"
-                          disabled={field.disabled}
-                          name={field.name}
-                          value={String(field.value)}
-                          onValueChange={({ value }) => field.onChange(value)}
-                        >
-                          <NumberInputField onBlur={field.onBlur} />
-                        </NumberInputRoot>
-                      )}
-                    />
-                  </Field>
-                  <Field
-                    label="Their Score"
-                    invalid={!!errors.away_team_score}
-                    errorText={errors.away_team_score?.message}
-                  >
-                    <Controller
-                      name="away_team_score"
-                      control={control}
-                      render={({ field }) => (
-                        <NumberInputRoot
-                          width="full"
-                          disabled={field.disabled}
-                          name={field.name}
-                          value={String(field.value)}
-                          onValueChange={({ value }) => field.onChange(value)}
-                        >
-                          <NumberInputField onBlur={field.onBlur} />
-                        </NumberInputRoot>
-                      )}
-                    />
-                  </Field>
-                </HStack>
+                <Fieldset.Root invalid={!!errors.status} disabled={isPending}>
+                  <Fieldset.Legend color="GrayText">Status</Fieldset.Legend>
+                  <Controller
+                    name="status"
+                    control={control}
+                    render={({ field }) => (
+                      <RadioGroup
+                        size="sm"
+                        marginTop={2}
+                        name={field.name}
+                        value={field.value}
+                        onValueChange={({ value }) => {
+                          field.onChange(value);
+                          // A match that was not played holds no score — the
+                          // `unplayed_match_has_no_score` constraint says so.
+                          if (value !== MatchStatus.COMPLETED) {
+                            setValue('home_team_score', 0);
+                            setValue('away_team_score', 0);
+                          }
+                        }}
+                      >
+                        <HStack gap={4}>
+                          {MATCH_STATUS_SELECTION.map((option) => (
+                            <Tooltip
+                              key={option.value}
+                              content={option.description}
+                            >
+                              <Radio value={option.value} onBlur={field.onBlur}>
+                                {option.label}
+                              </Radio>
+                            </Tooltip>
+                          ))}
+                        </HStack>
+                      </RadioGroup>
+                    )}
+                  />
+                  <Fieldset.ErrorText>
+                    {errors.status?.message}
+                  </Fieldset.ErrorText>
+                </Fieldset.Root>
+                <Visibility isVisible={isPlayed}>
+                  <HStack alignItems="start">
+                    <Field
+                      label="Our Score"
+                      invalid={!!errors.home_team_score}
+                      errorText={errors.home_team_score?.message}
+                    >
+                      <Controller
+                        name="home_team_score"
+                        control={control}
+                        render={({ field }) => (
+                          <NumberInputRoot
+                            width="full"
+                            disabled={field.disabled}
+                            name={field.name}
+                            value={String(field.value)}
+                            onValueChange={({ value }) => field.onChange(value)}
+                          >
+                            <NumberInputField onBlur={field.onBlur} />
+                          </NumberInputRoot>
+                        )}
+                      />
+                    </Field>
+                    <Field
+                      label="Their Score"
+                      invalid={!!errors.away_team_score}
+                      errorText={errors.away_team_score?.message}
+                    >
+                      <Controller
+                        name="away_team_score"
+                        control={control}
+                        render={({ field }) => (
+                          <NumberInputRoot
+                            width="full"
+                            disabled={field.disabled}
+                            name={field.name}
+                            value={String(field.value)}
+                            onValueChange={({ value }) => field.onChange(value)}
+                          >
+                            <NumberInputField onBlur={field.onBlur} />
+                          </NumberInputRoot>
+                        )}
+                      />
+                    </Field>
+                  </HStack>
+                </Visibility>
               </VStack>
             </Dialog.Body>
             <Dialog.Footer justifyContent="space-between">

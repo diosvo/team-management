@@ -18,6 +18,7 @@ import { MOCK_MATCH, MOCK_MATCH_RESPONSE } from '@/test/mocks/match';
 import { MOCK_USER } from '@/test/mocks/user';
 
 import type { MatchSearchParams } from '@/lib/nuqs';
+import { MatchStatus } from '@/utils/enum';
 
 import { getMatches, removeMatch, upsertMatch } from './match';
 
@@ -78,6 +79,7 @@ describe('Match Actions', () => {
       game_type: ['true'],
       ...MOCK_DATE_RANGE,
       match_type: [],
+      status: [],
       page: 1,
       q: '',
     };
@@ -98,6 +100,7 @@ describe('Match Actions', () => {
       const emptyResponse = {
         stats: {
           total_matches: 0,
+          played_matches: 0,
           win_streak: 0,
           avg_win_rate: 0,
           avg_points_per_game: 0,
@@ -127,6 +130,7 @@ describe('Match Actions', () => {
       date: '2024-01-20',
       time: '19:00',
       away_team: 'team-away',
+      status: MatchStatus.COMPLETED,
       home_team_score: 85,
       away_team_score: 80,
     };

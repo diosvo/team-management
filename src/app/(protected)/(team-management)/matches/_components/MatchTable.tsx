@@ -3,6 +3,7 @@
 import { useCallback, useTransition } from 'react';
 
 import { Badge, HStack, Span } from '@chakra-ui/react';
+import { capitalize } from 'es-toolkit/string';
 
 import { LeagueLink } from '@/components/common/LeagueSelection';
 import { LocationLink } from '@/components/common/LocationSelection';
@@ -16,6 +17,7 @@ import useTableState from '@/hooks/use-table-state';
 import { useMatchFilters } from '@/lib/nuqs';
 import type { MatchWithTeams } from '@/types/match';
 import { formatDate, formatDay } from '@/utils/datetime';
+import { MatchStatus } from '@/utils/enum';
 import { getColor } from '@/utils/helper';
 
 import { removeMatch } from '@/actions/match';
@@ -72,20 +74,38 @@ export default function MatchTable({
       cell: (item) => <LeagueLink name={item.league?.name} />,
     },
     {
-      header: 'Score',
-      cell: (item) => `${item.home_team_score} - ${item.away_team_score}`,
-    },
-    {
-      header: 'Result',
+      header: 'Status',
       cell: (item) => (
         <Badge
           variant="surface"
           borderRadius="full"
-          colorPalette={getColor(item.result)}
+          colorPalette={getColor(item.status)}
         >
-          {item.result}
+          {capitalize(item.status)}
         </Badge>
       ),
+    },
+    {
+      header: 'Score',
+      cell: (item) =>
+        item.status === MatchStatus.COMPLETED
+          ? `${item.home_team_score} - ${item.away_team_score}`
+          : '-',
+    },
+    {
+      header: 'Result',
+      cell: (item) =>
+        item.result ? (
+          <Badge
+            variant="surface"
+            borderRadius="full"
+            colorPalette={getColor(item.result)}
+          >
+            {capitalize(item.result)}
+          </Badge>
+        ) : (
+          '-'
+        ),
     },
     {
       header: 'Location',
