@@ -16,9 +16,10 @@ import { ReportSchedule } from '@/drizzle/schema';
 
 import { DEFAULT_TIMEZONE, reportDownloadUrl } from '@/utils/constants';
 import { Interval, ReportStatus, ReportTrigger } from '@/utils/enum';
-import { formatDuration } from '@/utils/formatter';
+import { formatDateRange, intervalRange } from '@/utils/datetime';
 
 import {
+  dashboardPath,
   renderReportPdf,
   reportExpiresAt,
   reportFilename,
@@ -106,7 +107,13 @@ export async function executeSchedule({
   session_team_id,
 }: ExecuteScheduleOptions): Promise<ExecuteScheduleResult> {
   const { schedule_id, team_id, interval, recipients } = schedule;
-  const period = formatDuration(interval);
+  // Resolve the window in the team's zone, so a run at 08:00 ICT on the 1st
+  // still reads "last month" even though it is the previous day in UTC.
+  const range = intervalRange(
+    interval,
+    new TZDate(scheduled_for, DEFAULT_TIMEZONE),
+  );
+  const period = formatDateRange(range);
 
   // 1. Idempotency gate — insert the run row FIRST. A unique violation means
   //    this occurrence was already executed (overlapping tick, manual re-fire,
@@ -162,7 +169,7 @@ export async function executeSchedule({
       if (!pathname) {
         const buffer = await renderReportPdf({
           origin,
-          path: `/dashboard?interval=${interval}`,
+          path: dashboardPath(range),
           host,
           cookies,
           period,

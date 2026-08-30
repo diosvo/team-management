@@ -7,7 +7,7 @@ import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 
 import { getUpcomingMatches } from '@/actions/analytics';
-import { formatDate, formatDay } from '@/utils/formatter';
+import { formatDate, formatDay } from '@/utils/datetime';
 
 export default async function UpcomingMatches() {
   const matches = await getUpcomingMatches();

@@ -5,9 +5,14 @@ import {
   screen,
   setupTestLifecycle,
 } from '@/test/utilities';
+import { formatDate, thisDay } from '@/utils/datetime';
 import { AttendanceStatus } from '@/utils/enum';
 
 import AttendanceFilters from './AttendanceFilters';
+
+// A fixed past day, so the trigger shows the date rather than "Today".
+const DAY = '2026-02-01';
+const RANGE = { from: DAY, to: DAY };
 
 describe('AttendanceFilters', () => {
   const setSearchParams = vi.fn();
@@ -15,20 +20,18 @@ describe('AttendanceFilters', () => {
   const setup = (overrides: Record<string, unknown> = {}) => {
     const state = {
       q: '',
-      date: '2026-02-01',
+      ...RANGE,
       status: [],
       page: 1,
       ...overrides,
     };
     mockUseQueryStates(state, setSearchParams);
 
-    const view = renderWithUI(<AttendanceFilters />);
-    const dateInput = view.container.querySelector(
-      'input[type="date"]',
-    ) as HTMLInputElement;
-
-    return { ...view, dateInput };
+    return renderWithUI(<AttendanceFilters />);
   };
+
+  const trigger = () =>
+    screen.getByRole('button', { name: `Date: ${formatDate(DAY)}` });
 
   setupTestLifecycle();
 
@@ -44,12 +47,23 @@ describe('AttendanceFilters', () => {
     expect(screen.getByPlaceholderText('Search...')).toBeInTheDocument();
   });
 
-  test('renders the date picker with the committed value', () => {
-    const date = '2026-03-15';
-    const { dateInput } = setup({ date });
+  test('renders the date picker with the committed day', () => {
+    setup();
 
-    expect(dateInput).toBeInTheDocument();
-    expect(dateInput.value).toBe(date);
+    expect(trigger()).toBeInTheDocument();
+  });
+
+  test('offers day shortcuts only and writes a one-day window', async () => {
+    const { user } = setup();
+
+    await user.click(trigger());
+    await screen.findByRole('grid');
+
+    expect(screen.queryByRole('button', { name: 'Last month' })).toBeNull();
+
+    await user.click(screen.getByRole('button', { name: 'Today' }));
+
+    expect(setSearchParams).toHaveBeenCalledWith({ ...thisDay(), page: 1 });
   });
 
   test('renders the advanced filters trigger', () => {

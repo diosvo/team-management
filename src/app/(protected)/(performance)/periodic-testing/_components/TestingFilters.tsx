@@ -8,7 +8,7 @@ import { CalendarSearch } from 'lucide-react';
 import Filters from '@/components/filters/Filters';
 
 import { usePeriodicTestingFilters } from '@/lib/nuqs';
-import { formatDate } from '@/utils/formatter';
+import { formatDate } from '@/utils/datetime';
 
 export default function TestingFilters({ dates }: { dates: Array<string> }) {
   const [values, setSearchParams] = usePeriodicTestingFilters();

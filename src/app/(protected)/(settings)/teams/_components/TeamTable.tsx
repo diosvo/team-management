@@ -14,8 +14,8 @@ import usePermissions from '@/hooks/use-permissions';
 import useTableState from '@/hooks/use-table-state';
 import { useCommonParams } from '@/lib/nuqs';
 import { CACHE_KEY } from '@/utils/constants';
+import { formatDatetime } from '@/utils/datetime';
 import { buildPredicate } from '@/utils/filters';
-import { formatDatetime } from '@/utils/formatter';
 
 import { removeTeam } from '@/actions/team';
 import type { Team } from '@/drizzle/schema';

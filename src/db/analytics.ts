@@ -7,24 +7,22 @@ import {
   gte,
   inArray,
   lt,
-  lte,
   SQL,
   sql,
 } from 'drizzle-orm';
 import { cache } from 'react';
 
 import type { AttendanceStatusValues } from '@/types/attendance';
-import type { IntervalValues } from '@/types/common';
+import type { DateRange } from '@/types/common';
 
 import { LOCALE_DATE_FORMAT } from '@/utils/constants';
 import { AttendanceStatus, SessionStatus } from '@/utils/enum';
-import { TIME_DURATION } from '@/utils/formatter';
 
 import db from '@/drizzle';
 import { MatchTable, TrainingSessionTable, UserTable } from '@/drizzle/schema';
 import { AttendanceTable } from '@/drizzle/schema/attendance';
 
-import { calculatePercentage, countWhen, fromNow } from './utils';
+import { calculatePercentage, countWhen, fromNow, withinRange } from './utils';
 
 // Request-scoped: the overview stats and the upcoming-matches card both ask
 // for this during one dashboard render.
@@ -92,7 +90,7 @@ export async function getUpcomingSessions(team_id: string) {
 
 export async function getTeamAttendanceHistory(
   team_id: string,
-  interval: IntervalValues,
+  range: DateRange,
 ) {
   try {
     const totalCountSql = _getTotalCountSql();
@@ -112,7 +110,7 @@ export async function getTeamAttendanceHistory(
       })
       .from(AttendanceTable)
       .innerJoin(UserTable, eq(UserTable.id, AttendanceTable.player_id))
-      .where(_getDateRangeFilter(team_id, interval))
+      .where(_getDateRangeFilter(team_id, range))
       .groupBy(AttendanceTable.date)
       .orderBy(desc(AttendanceTable.date));
   } catch {
@@ -122,7 +120,7 @@ export async function getTeamAttendanceHistory(
 
 export async function getPlayersAttendanceSummary(
   team_id: string,
-  interval: IntervalValues,
+  range: DateRange,
 ) {
   try {
     const totalCountSql = _getTotalCountSql();
@@ -147,7 +145,7 @@ export async function getPlayersAttendanceSummary(
         .select(baseSelect)
         .from(AttendanceTable)
         .innerJoin(UserTable, eq(UserTable.id, AttendanceTable.player_id))
-        .where(_getDateRangeFilter(team_id, interval))
+        .where(_getDateRangeFilter(team_id, range))
         .groupBy(AttendanceTable.player_id, UserTable.name)
         .having(having)
         .orderBy(order)
@@ -175,7 +173,7 @@ export async function getPlayersAttendanceSummary(
 
 export async function getMostCommonAbsenceReasons(
   team_id: string,
-  interval: IntervalValues,
+  range: DateRange,
 ) {
   try {
     const reasonSql = sql<string>`COALESCE(NULLIF(${AttendanceTable.reason}, ''), 'Unknown')`;
@@ -194,7 +192,7 @@ export async function getMostCommonAbsenceReasons(
       .innerJoin(UserTable, eq(UserTable.id, AttendanceTable.player_id))
       .where(
         and(
-          _getDateRangeFilter(team_id, interval),
+          _getDateRangeFilter(team_id, range),
           inArray(AttendanceTable.status, [
             AttendanceStatus.ABSENT,
             AttendanceStatus.LATE,
@@ -219,13 +217,10 @@ function _countStatus(status: AttendanceStatusValues) {
   return countWhen(eq(AttendanceTable.status, status as AttendanceStatus));
 }
 
-function _getDateRangeFilter(team_id: string, interval: IntervalValues) {
-  const { start, end } = TIME_DURATION[interval];
-
+function _getDateRangeFilter(team_id: string, range: DateRange) {
   return and(
     eq(UserTable.team_id, team_id),
-    gte(AttendanceTable.date, start.toISOString()),
-    lte(AttendanceTable.date, end.toISOString()),
+    withinRange(AttendanceTable.date, range),
   );
 }
 

@@ -11,7 +11,7 @@ import PageTitle from '@/components/PageTitle';
 
 import { INTERVAL_LABEL, reportDownloadUrl } from '@/utils/constants';
 import { ReportStatus } from '@/utils/enum';
-import { formatDatetime } from '@/utils/formatter';
+import { formatDatetime } from '@/utils/datetime';
 import { getColor } from '@/utils/helper';
 
 import { ReportHistory as ReportHistoryRow } from '@/drizzle/schema';
@@ -23,7 +23,7 @@ const COLUMNS: Array<Column<ReportHistoryRow>> = [
   { header: 'Period', cell: (item) => item.period },
   {
     header: 'Time Duration',
-    cell: (item) => INTERVAL_LABEL.get(item.interval) ?? item.interval,
+    cell: (item) => INTERVAL_LABEL[item.interval],
   },
   {
     header: 'Status',

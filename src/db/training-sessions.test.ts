@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, inArray, lte } from 'drizzle-orm';
+import { and, desc, eq, inArray } from 'drizzle-orm';
 
 import db from '@/drizzle';
 import {
@@ -6,9 +6,8 @@ import {
   TrainingSessionTable,
 } from '@/drizzle/schema';
 
-import { Interval, SessionStatus } from '@/utils/enum';
+import { SessionStatus } from '@/utils/enum';
 import type { TrainingSearchParams } from '@/lib/nuqs';
-import { TIME_DURATION } from '@/utils/formatter';
 
 import {
   mockDeleteReturningFailure,
@@ -18,6 +17,7 @@ import {
   mockUpdateReturningFailure,
   mockUpdateReturningSuccess,
 } from '@/test/db-operations';
+import { MOCK_DATE_RANGE } from '@/test/mocks/analytics';
 import { MOCK_TEAM } from '@/test/mocks/team';
 import {
   MOCK_SESSIONS_DB_RESULT,
@@ -32,6 +32,7 @@ import {
   insertSession,
   updateSession,
 } from './training-session';
+import { withinRange } from './utils';
 
 vi.mock('@/drizzle', () => ({
   default: {
@@ -76,7 +77,7 @@ describe('getSessions', () => {
   });
 
   const mockParams: TrainingSearchParams = {
-    interval: Interval.THIS_MONTH,
+    ...MOCK_DATE_RANGE,
     status: [],
     page: 1,
     q: '',
@@ -89,15 +90,12 @@ describe('getSessions', () => {
 
     const result = await getSessions(MOCK_TEAM.team_id, mockParams);
 
-    const { start, end } = TIME_DURATION[mockParams.interval];
-
     expect(result).toEqual(MOCK_TRAINING_SESSION_RESPONSE);
     // Verify query construction
     expect(db.query.TrainingSessionTable.findMany).toHaveBeenCalledWith({
       where: and(
         eq(TrainingSessionTable.team_id, MOCK_TEAM.team_id),
-        gte(TrainingSessionTable.date, start.toISOString()),
-        lte(TrainingSessionTable.date, end.toISOString()),
+        withinRange(TrainingSessionTable.date, MOCK_DATE_RANGE),
       ),
       with: {
         location: { columns: { name: true } },
@@ -123,14 +121,11 @@ describe('getSessions', () => {
 
     await getSessions(MOCK_TEAM.team_id, paramsWithStatus);
 
-    const { start, end } = TIME_DURATION[paramsWithStatus.interval];
-
     expect(db.query.TrainingSessionTable.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: and(
           eq(TrainingSessionTable.team_id, MOCK_TEAM.team_id),
-          gte(TrainingSessionTable.date, start.toISOString()),
-          lte(TrainingSessionTable.date, end.toISOString()),
+          withinRange(TrainingSessionTable.date, MOCK_DATE_RANGE),
           inArray(TrainingSessionTable.status, [SessionStatus.COMPLETED]),
         ),
       }),
@@ -165,9 +160,7 @@ describe('getSessions', () => {
     'returns default stats when database query $description',
     async ({ mockError }) => {
       // Suppress the expected error log from the catch block.
-      const errorSpy = vi
-        .spyOn(console, 'error')
-        .mockImplementation(() => {});
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
       vi.mocked(db.query.TrainingSessionTable.findMany).mockRejectedValue(
         mockError,

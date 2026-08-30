@@ -4,6 +4,7 @@ import auth from '@/lib/auth';
 import { getBrowser } from '@/lib/puppeteer';
 import { uploadFile } from '@/lib/blob';
 
+import type { DateRange } from '@/types/common';
 import { Interval } from '@/utils/enum';
 
 /** Days a generated report stays downloadable before the retention job prunes it. */
@@ -15,6 +16,10 @@ export function reportExpiresAt(): Date {
 }
 
 /** Blob pathname for a report PDF, unique-suffixed on upload. */
+/** The dashboard page a report PDF is rendered from. */
+export const dashboardPath = (range: DateRange): string =>
+  `/dashboard?${new URLSearchParams({ ...range })}`;
+
 export function reportFilename(interval: Interval, period: string): string {
   const stamp = period.replace(/[^0-9]/g, '');
   return `analytics-${interval}-${stamp}.pdf`;
@@ -23,7 +28,7 @@ export function reportFilename(interval: Interval, period: string): string {
 export interface RenderOptions {
   /** Origin to render, e.g. `https://portal.app`. */
   origin: string;
-  /** Path under the origin, e.g. `/dashboard?interval=last_month`. */
+  /** Path under the origin, e.g. `/dashboard?from=2026-09-01&to=2026-09-30`. */
   path?: string;
   /** Cookie domain (request host). */
   host: string;

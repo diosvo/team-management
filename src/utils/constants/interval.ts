@@ -1,17 +1,8 @@
-import type { IntervalValues } from '@/types/common';
-import { Interval } from '../enum';
 import type { Selection } from '../type';
+import { Interval } from '../enum';
 import { ESTABLISHED_DATE } from './app';
 
 const START_YEAR = new Date(ESTABLISHED_DATE).getFullYear();
-
-export const MONTHS_SELECTION: Selection<number> = Array.from(
-  { length: 12 },
-  (_, i) => ({
-    label: (i + 1).toString(),
-    value: i + 1,
-  }),
-);
 
 export const YEARS_SELECTION: Selection<number> = Array.from(
   { length: new Date().getFullYear() - START_YEAR + 1 },
@@ -21,25 +12,10 @@ export const YEARS_SELECTION: Selection<number> = Array.from(
   }),
 );
 
-export const INTERVAL_SELECTION: Selection<IntervalValues> = [
-  {
-    label: 'This month',
-    value: Interval.THIS_MONTH,
-  },
-  {
-    label: 'Last month',
-    value: Interval.LAST_MONTH,
-  },
-  {
-    label: 'This year',
-    value: Interval.THIS_YEAR,
-  },
-  {
-    label: 'Last year',
-    value: Interval.LAST_YEAR,
-  },
-];
-export const INTERVAL_VALUES = INTERVAL_SELECTION.map(({ value }) => value);
-export const INTERVAL_LABEL = new Map(
-  INTERVAL_SELECTION.map(({ label, value }) => [value, label]),
-);
+/** Display names for a report window: report history and the range presets. */
+export const INTERVAL_LABEL: Record<Interval, string> = {
+  [Interval.THIS_MONTH]: 'This month',
+  [Interval.LAST_MONTH]: 'Last month',
+  [Interval.THIS_YEAR]: 'This year',
+  [Interval.LAST_YEAR]: 'Last year',
+};

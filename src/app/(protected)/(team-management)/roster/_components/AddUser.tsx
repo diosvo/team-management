@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Plus, UserRoundPlus } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 
+import { DatePickerField } from '@/components/date-picker/DatePicker';
 import { CloseButton } from '@/components/ui/close-button';
 import { Field } from '@/components/ui/field';
 import { toaster } from '@/components/ui/toaster';
@@ -99,11 +100,12 @@ export default function AddUser() {
                   />
                 </Field>
                 <Field label="DOB">
-                  <Input
-                    type="date"
+                  <DatePickerField
+                    control={control}
+                    name="dob"
                     min="1997-01-01"
+                    presets={false}
                     disabled={isPending}
-                    {...register('dob')}
                   />
                 </Field>
               </SimpleGrid>

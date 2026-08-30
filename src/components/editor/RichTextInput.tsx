@@ -163,6 +163,9 @@ function useFieldAttributes() {
   const controlId = field?.ids.control;
   const labelId = field?.ids.label;
   const describedBy = field?.ariaDescribedby;
+  // The error text is linked via `aria-errormessage` (only once it renders),
+  // not `aria-describedby`; read it off the props a native control would get.
+  const errorMessage = field?.getInputProps()['aria-errormessage'];
   const invalid = field?.invalid;
   const required = field?.required;
 
@@ -176,11 +179,12 @@ function useFieldAttributes() {
             'aria-multiline': 'true',
             'aria-labelledby': labelId,
             ...(describedBy && { 'aria-describedby': describedBy }),
+            ...(errorMessage && { 'aria-errormessage': errorMessage }),
             ...(invalid && { 'aria-invalid': 'true' }),
             ...(required && { 'aria-required': 'true' }),
           }
         : undefined,
-    [controlId, labelId, describedBy, invalid, required],
+    [controlId, labelId, describedBy, errorMessage, invalid, required],
   );
 }
 

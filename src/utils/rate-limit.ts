@@ -1,6 +1,6 @@
 import { addSeconds } from 'date-fns';
 
-import { formatTime } from './formatter';
+import { formatTime } from './datetime';
 import { Status } from './response';
 
 const GENERIC_MESSAGE = 'Rate limit exceeded. Please try again later.';

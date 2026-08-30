@@ -14,7 +14,7 @@ import { toaster } from '@/components/ui/toaster';
 
 import useTableState from '@/hooks/use-table-state';
 import { useCommonParams } from '@/lib/nuqs';
-import { formatDatetime } from '@/utils/formatter';
+import { formatDatetime } from '@/utils/datetime';
 
 import { downloadPdf } from '../_helpers/roster';
 import type { SavedRegistration } from '../_helpers/useSavedRegistrations';

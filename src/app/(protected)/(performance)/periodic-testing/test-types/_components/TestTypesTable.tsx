@@ -13,8 +13,8 @@ import usePermissions from '@/hooks/use-permissions';
 import useTableState from '@/hooks/use-table-state';
 
 import { useTestTypeFilters } from '@/lib/nuqs';
+import { formatDatetime } from '@/utils/datetime';
 import { buildPredicate } from '@/utils/filters';
-import { formatDatetime } from '@/utils/formatter';
 
 import { removeTestType } from '@/actions/test-type';
 import type { TestType } from '@/drizzle/schema';

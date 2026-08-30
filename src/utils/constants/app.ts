@@ -8,6 +8,11 @@ export const CURRENT_DATE = new Date().toISOString().split('T')[0];
 export const DEFAULT_DAY_FORMAT = 'EEEE';
 export const DEFAULT_DATE_FORMAT = 'yyyy-MM-dd';
 export const LOCALE_DATE_FORMAT = 'dd/MM/yyyy';
+/**
+ * Must stay in step with `LOCALE_DATE_FORMAT`: the date picker derives its
+ * placeholder from the locale, and only accepts the locale's separator.
+ */
+export const LOCALE = 'en-GB';
 export const DEFAULT_TIME_FORMAT = 'h:mm a';
 export const LOCALE_TIME_FORMAT = 'HH:mm:ss';
 export const LOCALE_DATETIME_FORMAT =

@@ -17,7 +17,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 
 import { FOUNDING_STYLE } from '@/utils/constants/achievement';
 import { ESTABLISHED_DATE, FOUNDING_YEAR } from '@/utils/constants/app';
-import { formatDate } from '@/utils/formatter';
+import { formatDate } from '@/utils/datetime';
 
 import type { AchievementWithRelations } from '@/db/achievement';
 

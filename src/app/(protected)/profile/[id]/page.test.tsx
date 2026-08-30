@@ -3,7 +3,7 @@ import { MOCK_USER } from '@/test/mocks/user';
 import { renderWithUI, screen, setupTestLifecycle } from '@/test/utilities';
 
 import { getUserProfile } from '@/actions/user';
-import { formatDatetime } from '@/utils/formatter';
+import { formatDatetime } from '@/utils/datetime';
 
 import ProfilePage from './page';
 

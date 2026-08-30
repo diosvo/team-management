@@ -15,7 +15,7 @@ import {
 import usePermissions from '@/hooks/use-permissions';
 import { SCHEDULED_INTERVAL_LABEL } from '@/utils/constants';
 import { Interval } from '@/utils/enum';
-import { formatDatetime } from '@/utils/formatter';
+import { formatDatetime } from '@/utils/datetime';
 import type { Action } from '@/utils/permissions';
 
 import {

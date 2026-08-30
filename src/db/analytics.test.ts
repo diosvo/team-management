@@ -1,12 +1,11 @@
 import db from '@/drizzle';
 import { AttendanceTable } from '@/drizzle/schema/attendance';
 
-import { Interval } from '@/utils/enum';
-
 import { mockSelectFailure, mockSelectSuccess } from '@/test/db-operations';
 import {
   MOCK_ABSENCE_REASONS,
   MOCK_ATTENDANCE_HISTORY,
+  MOCK_DATE_RANGE,
   MOCK_PLAYER_RECORDS_MANY_NEED_ATTENTION,
   MOCK_PLAYER_RECORDS_MANY_TOP,
   MOCK_PLAYER_RECORDS_NEED_ATTENTION,
@@ -62,7 +61,7 @@ describe('getTeamAttendanceHistory', () => {
 
     const result = await getTeamAttendanceHistory(
       MOCK_TEAM.team_id,
-      Interval.THIS_MONTH,
+      MOCK_DATE_RANGE,
     );
 
     expect(result).toEqual(MOCK_ATTENDANCE_HISTORY);
@@ -91,7 +90,7 @@ describe('getTeamAttendanceHistory', () => {
 
       const result = await getTeamAttendanceHistory(
         MOCK_TEAM.team_id,
-        Interval.THIS_MONTH,
+        MOCK_DATE_RANGE,
       );
 
       expect(result).toEqual([]);
@@ -111,7 +110,7 @@ describe('getPlayersAttendanceSummary', () => {
 
     const result = await getPlayersAttendanceSummary(
       MOCK_TEAM.team_id,
-      Interval.THIS_MONTH,
+      MOCK_DATE_RANGE,
     );
 
     expect(result).toEqual(MOCK_PLAYERS_ATTENDANCE_SUMMARY);
@@ -129,7 +128,7 @@ describe('getPlayersAttendanceSummary', () => {
 
     const result = await getPlayersAttendanceSummary(
       MOCK_TEAM.team_id,
-      Interval.THIS_MONTH,
+      MOCK_DATE_RANGE,
     );
 
     expect(result.top_performers).toHaveLength(2);
@@ -143,7 +142,7 @@ describe('getPlayersAttendanceSummary', () => {
 
     const result = await getPlayersAttendanceSummary(
       MOCK_TEAM.team_id,
-      Interval.THIS_MONTH,
+      MOCK_DATE_RANGE,
     );
 
     expect(result.need_attention).toHaveLength(2);
@@ -157,7 +156,7 @@ describe('getPlayersAttendanceSummary', () => {
 
     const result = await getPlayersAttendanceSummary(
       MOCK_TEAM.team_id,
-      Interval.THIS_MONTH,
+      MOCK_DATE_RANGE,
     );
 
     expect(result.top_performers.length).toBeLessThanOrEqual(3);
@@ -169,7 +168,7 @@ describe('getPlayersAttendanceSummary', () => {
 
     const result = await getPlayersAttendanceSummary(
       MOCK_TEAM.team_id,
-      Interval.THIS_MONTH,
+      MOCK_DATE_RANGE,
     );
 
     expect(result.need_attention.length).toBeLessThanOrEqual(3);
@@ -191,7 +190,7 @@ describe('getPlayersAttendanceSummary', () => {
 
       const result = await getPlayersAttendanceSummary(
         MOCK_TEAM.team_id,
-        Interval.THIS_MONTH,
+        MOCK_DATE_RANGE,
       );
 
       expect(result).toEqual({
@@ -219,7 +218,7 @@ describe('getMostCommonAbsenceReasons', () => {
 
     const result = await getMostCommonAbsenceReasons(
       MOCK_TEAM.team_id,
-      Interval.THIS_MONTH,
+      MOCK_DATE_RANGE,
     );
 
     expect(result).toEqual(MOCK_ABSENCE_REASONS);
@@ -236,7 +235,7 @@ describe('getMostCommonAbsenceReasons', () => {
   test('limits results to 5 reasons', async () => {
     const { mockLimit } = mockSelectSuccess(MOCK_ABSENCE_REASONS);
 
-    await getMostCommonAbsenceReasons(MOCK_TEAM.team_id, Interval.THIS_MONTH);
+    await getMostCommonAbsenceReasons(MOCK_TEAM.team_id, MOCK_DATE_RANGE);
 
     expect(mockLimit).toHaveBeenCalledWith(5);
   });
@@ -257,7 +256,7 @@ describe('getMostCommonAbsenceReasons', () => {
 
       const result = await getMostCommonAbsenceReasons(
         MOCK_TEAM.team_id,
-        Interval.THIS_MONTH,
+        MOCK_DATE_RANGE,
       );
 
       expect(result).toEqual([]);

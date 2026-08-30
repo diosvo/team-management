@@ -24,7 +24,7 @@ import useTableState from '@/hooks/use-table-state';
 import type { TrainingSessionWithDetails } from '@/types/training-session';
 
 import { useTrainingFilters } from '@/lib/nuqs';
-import { formatDate, formatDay } from '@/utils/formatter';
+import { formatDate, formatDay } from '@/utils/datetime';
 import { getColor } from '@/utils/helper';
 
 import { removeSession } from '@/actions/training-session';
@@ -67,7 +67,10 @@ export default function SessionTable({
       cell: (item) => (
         <ChakraLink colorPalette="blue" asChild>
           <NextLink
-            href={{ pathname: '/attendance', query: { date: item.date } }}
+            href={{
+              pathname: '/attendance',
+              query: { from: item.date, to: item.date },
+            }}
             onClick={(e) => e.stopPropagation()}
           >
             <HStack>

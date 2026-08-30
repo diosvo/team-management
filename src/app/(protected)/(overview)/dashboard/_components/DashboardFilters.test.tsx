@@ -8,17 +8,19 @@ import {
   screen,
   waitFor,
 } from '@/test/utilities';
-import { Interval } from '@/utils/enum';
-import { formatDuration } from '@/utils/formatter';
+import type { DateRange } from '@/types/common';
+import { formatDateRange, thisYear } from '@/utils/datetime';
 
 import DashboardFilters from './DashboardFilters';
 
-// Mirror the payload the component derives from the selected interval so the
+const LAST_YEAR: DateRange = { from: '2025-01-01', to: '2025-12-31' };
+
+// Mirror the payload the component derives from the selected window so the
 // expectations stay correct regardless of the year the suite runs in.
-const expectedPayload = (interval: Interval) => {
-  const period = formatDuration(interval);
+const expectedPayload = (range: DateRange) => {
+  const period = formatDateRange(range);
   const filename = `sgr-report-${period.replace(/\D+/g, '-')}.pdf`;
-  return { interval, filename };
+  return { ...range, filename };
 };
 
 vi.mock('@/lib/download', () => ({
@@ -32,10 +34,7 @@ describe('DashboardFilters', () => {
   const mockFetch = vi.fn();
 
   const setup = (overrides = {}) => {
-    mockUseQueryStates(
-      { interval: Interval.THIS_YEAR, ...overrides },
-      mockSetSearchParams,
-    );
+    mockUseQueryStates({ ...thisYear(), ...overrides }, mockSetSearchParams);
 
     return renderWithUI(<DashboardFilters />);
   };
@@ -63,14 +62,16 @@ describe('DashboardFilters', () => {
     await expectNoA11yViolations(container);
   });
 
-  test('renders the actions menu and the selected interval', () => {
+  test('renders the actions menu and the selected window', () => {
     setup();
 
     expect(
       screen.getByRole('button', { name: /Actions/i }),
     ).toBeInTheDocument();
-    expect(screen.getByRole('combobox')).toBeInTheDocument();
-    expect(screen.getAllByText('This year').length).toBeGreaterThan(0);
+    // A window that matches a preset is announced by the preset's name.
+    expect(
+      screen.getByRole('button', { name: 'Time: This year' }),
+    ).toBeInTheDocument();
   });
 
   describe('handleDownload', () => {
@@ -84,12 +85,12 @@ describe('DashboardFilters', () => {
       const { user } = setup();
       await clickDownload(user);
 
-      const { interval, filename } = expectedPayload(Interval.THIS_YEAR);
+      const { from, to, filename } = expectedPayload(thisYear());
 
       await waitFor(() => {
         expect(mockFetch).toHaveBeenCalledWith('/api/reports/dashboard', {
           method: 'POST',
-          body: JSON.stringify({ interval, filename }),
+          body: JSON.stringify({ from, to, filename }),
         });
       });
 
@@ -97,23 +98,23 @@ describe('DashboardFilters', () => {
       expect(mockToaster.error).not.toHaveBeenCalled();
     });
 
-    test('sends the currently selected interval in the request body', async () => {
+    test('sends the currently selected window in the request body', async () => {
       const blob = new Blob(['pdf'], { type: 'application/pdf' });
       mockFetch.mockResolvedValue({
         ok: true,
         blob: vi.fn().mockResolvedValue(blob),
       });
 
-      const { user } = setup({ interval: Interval.LAST_YEAR });
+      const { user } = setup(LAST_YEAR);
       await clickDownload(user);
 
-      const { interval, filename } = expectedPayload(Interval.LAST_YEAR);
+      const { from, to, filename } = expectedPayload(LAST_YEAR);
 
       await waitFor(() => {
         expect(mockFetch).toHaveBeenCalledWith(
           '/api/reports/dashboard',
           expect.objectContaining({
-            body: JSON.stringify({ interval, filename }),
+            body: JSON.stringify({ from, to, filename }),
           }),
         );
       });
@@ -161,19 +162,21 @@ describe('DashboardFilters', () => {
     });
   });
 
-  describe('TimePicker', () => {
-    test('updates the interval search param and resets the page on change', async () => {
+  describe('DateRangePicker', () => {
+    test('writes the picked window to the URL and resets the page', async () => {
       const { user } = setup();
 
-      await user.click(screen.getByRole('combobox'));
-      const options = await screen.findAllByText('Last year');
-      const item =
-        options.find((el) => el.closest('[data-part="item"]')) ?? options[0];
-      await user.click(item);
+      await user.click(screen.getByRole('button', { name: 'Time: This year' }));
+      await user.click(
+        await screen.findByRole('button', { name: 'Last year' }),
+      );
 
-      expect(mockSetSearchParams).toHaveBeenCalledWith(
-        { interval: Interval.LAST_YEAR, page: 1 },
-        { shallow: false },
+      const { from, to } = LAST_YEAR;
+      await waitFor(() =>
+        expect(mockSetSearchParams).toHaveBeenCalledWith(
+          { from, to, page: 1 },
+          { shallow: false },
+        ),
       );
     });
   });

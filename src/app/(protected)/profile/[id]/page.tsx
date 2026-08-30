@@ -5,7 +5,7 @@ import { Text } from '@chakra-ui/react';
 import PageTitle from '@/components/PageTitle';
 
 import { getUserProfile } from '@/actions/user';
-import { formatDatetime } from '@/utils/formatter';
+import { formatDatetime } from '@/utils/datetime';
 
 import ProfileLayout from '../_components/ProfileLayout';
 

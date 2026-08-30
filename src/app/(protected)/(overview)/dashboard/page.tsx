@@ -28,7 +28,8 @@ const cardFallback = <Skeleton height="180px" borderRadius="md" />;
 const chartFallback = <Skeleton height="320px" borderRadius="md" />;
 
 export default async function DashboardsPage(props: PageProps<'/dashboard'>) {
-  const params = await loadDashboardFilters(props.searchParams);
+  const { from, to } = await loadDashboardFilters(props.searchParams);
+  const range = { from, to };
 
   return (
     <>
@@ -59,16 +60,16 @@ export default async function DashboardsPage(props: PageProps<'/dashboard'>) {
         gap={6}
       >
         <Suspense fallback={chartFallback}>
-          <MatchesRateSection interval={params.interval} />
+          <MatchesRateSection range={range} />
         </Suspense>
         <Suspense fallback={chartFallback}>
-          <AttendanceTrendSection interval={params.interval} />
+          <AttendanceTrendSection range={range} />
         </Suspense>
         <Suspense fallback={chartFallback}>
-          <PlayerAttendanceRankingSection interval={params.interval} />
+          <PlayerAttendanceRankingSection range={range} />
         </Suspense>
         <Suspense fallback={chartFallback}>
-          <AbsenceReasonsBreakdownSection interval={params.interval} />
+          <AbsenceReasonsBreakdownSection range={range} />
         </Suspense>
       </SimpleGrid>
     </>

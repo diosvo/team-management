@@ -107,6 +107,7 @@ export const AttendanceStatus = createEnum([
 ] as const);
 export type AttendanceStatus = enumUnion<typeof AttendanceStatus>;
 
+/** Report windows. Backs the `report_interval` pg enum used by the scheduler. */
 export const Interval = createEnum([
   'this_month',
   'last_month',

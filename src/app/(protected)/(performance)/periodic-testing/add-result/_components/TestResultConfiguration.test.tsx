@@ -1,10 +1,11 @@
 import {
   expectNoA11yViolations,
-  fireEvent,
   renderWithUI,
   screen,
   setupTestLifecycle,
+  waitFor,
 } from '@/test/utilities';
+import { formatDate } from '@/utils/datetime';
 
 import {
   MOCK_EMPTY_TEST_CONFIGURATION,
@@ -89,12 +90,18 @@ describe('TestResultConfiguration', () => {
     });
   });
 
-  test('updates the date when the date input changes', () => {
-    const { setSelection } = setup();
+  test('updates the date when the date input changes', async () => {
+    const { user, setSelection } = setup();
 
-    const input = screen.getByDisplayValue(MOCK_TEST_RESULT_DATE);
-    fireEvent.change(input, { target: { value: '2026-02-02' } });
+    // The picker shows the locale format, but still reports an ISO day.
+    const input = screen.getByDisplayValue(formatDate(MOCK_TEST_RESULT_DATE));
+    await user.clear(input);
+    await user.type(input, '02/02/2026');
+    // The picker commits the typed value on blur.
+    await user.tab();
 
-    expect(applyUpdater(setSelection)).toMatchObject({ date: '2026-02-02' });
+    await waitFor(() =>
+      expect(applyUpdater(setSelection)).toMatchObject({ date: '2026-02-02' }),
+    );
   });
 });

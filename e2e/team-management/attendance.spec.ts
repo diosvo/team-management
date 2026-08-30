@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import {
   testCheckboxFilter,
   testCheckboxFilterReset,
@@ -39,28 +39,37 @@ test.describe('Attendance Page', () => {
   });
 });
 
+// The trigger is labelled "Date: <day>" ("Date: Today" by default).
+const dateTrigger = (page: Page) =>
+  page.getByRole('button', { name: /^Date:/ });
+
 test.describe('Attendance - Date Selection', () => {
-  test('displays date picker', async ({ page }) => {
-    const dateInput = page.getByLabel('Date');
-    await expect(dateInput).toBeVisible();
+  test('displays the date picker, opened on today', async ({ page }) => {
+    await expect(dateTrigger(page)).toBeVisible();
+    await expect(dateTrigger(page)).toHaveText(/Today/);
   });
 
-  test('changes attendance data when date is selected', async ({ page }) => {
-    const dateInput = page.getByLabel('Date');
-    if (await dateInput.isVisible()) {
-      await dateInput.fill('2026-08-01');
+  test('writes the picked day to both query params', async ({ page }) => {
+    await dateTrigger(page).click();
+    await page.getByRole('button', { name: 'Yesterday' }).click();
 
-      // URL should contain date parameter
-      await expect(page).toHaveURL(/date=2026-08-01/);
-    }
+    await expect(page).toHaveURL(/from=(\d{4}-\d{2}-\d{2}).*to=\1/);
   });
 
-  test('maintains date selection in URL', async ({ page }) => {
-    const dateInput = page.getByLabel('Date');
-    if (await dateInput.isVisible()) {
-      await dateInput.fill('2026-07-15');
-      await expect(page).toHaveURL(/date=2026-07-15/);
-    }
+  test('shows the picked day on the trigger', async ({ page }) => {
+    await dateTrigger(page).click();
+    await page.getByRole('button', { name: 'Tomorrow' }).click();
+
+    await expect(dateTrigger(page)).toHaveText(/Tomorrow/);
+  });
+
+  test('offers day shortcuts only', async ({ page }) => {
+    await dateTrigger(page).click();
+
+    await expect(page.getByRole('button', { name: 'Today' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Last month' })).toHaveCount(
+      0,
+    );
   });
 });
 
@@ -292,19 +301,17 @@ test.describe('Attendance Stats Integration', () => {
     await expect(absent).toBeVisible();
   });
 
-  test('stats update when date changes', async ({ page }) => {
-    const dateInput = page.getByLabel('Date');
-    if (await dateInput.isVisible()) {
-      // Get current stats
-      const totalPresent = page.getByText('Total Present').locator('..');
-      await expect(totalPresent).toBeVisible();
+  test('stats update when the day changes', async ({ page }) => {
+    // Get current stats
+    const totalPresent = page.getByText('Total Present').locator('..');
+    await expect(totalPresent).toBeVisible();
 
-      // Change date
-      await dateInput.fill('2026-08-01');
+    // Change the day
+    await dateTrigger(page).click();
+    await page.getByRole('button', { name: 'Yesterday' }).click();
 
-      // Stats should still be visible (may have different values)
-      await expect(totalPresent).toBeVisible();
-    }
+    // Stats should still be visible (may have different values)
+    await expect(totalPresent).toBeVisible();
   });
 
   test('stats reflect filtered data', async ({ page }) => {
@@ -341,9 +348,10 @@ test.describe('Attendance - Integration', () => {
       if (href?.includes('attendance')) {
         await dateLink.click();
 
-        // Should be on attendance page with date
+        // Should be on attendance page, opened on the session's day
         await expect(page).toHaveURL(/attendance/);
-        await expect(page).toHaveURL(/date=/);
+        await expect(page).toHaveURL(/from=/);
+        await expect(page).toHaveURL(/to=/);
       }
     }
   });
@@ -369,17 +377,17 @@ test.describe('Attendance - Integration', () => {
     }
   });
 
-  test('date persists in URL after page reload', async ({ page }) => {
-    const dateInput = page.getByLabel('Date');
-    if (await dateInput.isVisible()) {
-      await dateInput.fill('2026-07-15');
-      await expect(page).toHaveURL(/date=2026-07-15/);
+  test('day persists in URL after page reload', async ({ page }) => {
+    await dateTrigger(page).click();
+    await page.getByRole('button', { name: 'Yesterday' }).click();
 
-      // Reload page
-      await page.reload();
+    await expect(page).toHaveURL(/from=\d{4}-\d{2}-\d{2}/);
+    const url = page.url();
 
-      // Date should still be in URL
-      await expect(page).toHaveURL(/date=2026-07-15/);
-    }
+    // Reload page
+    await page.reload();
+
+    // Window should still be in URL
+    await expect(page).toHaveURL(url);
   });
 });

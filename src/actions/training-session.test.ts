@@ -14,6 +14,7 @@ import {
   mockWithResource,
   mockWithResourceAction,
 } from '@/test/mocks/auth';
+import { MOCK_DATE_RANGE } from '@/test/mocks/analytics';
 import { MOCK_TEAM } from '@/test/mocks/team';
 import {
   MOCK_TRAINING_SESSION,
@@ -22,7 +23,6 @@ import {
 } from '@/test/mocks/training-sessions';
 import { MOCK_COACH_WITH_NAME } from '@/test/mocks/user';
 
-import { Interval } from '@/utils/enum';
 
 import type { TrainingSearchParams } from '@/lib/nuqs';
 
@@ -103,7 +103,7 @@ describe('Training Session Actions', () => {
 
   describe('getSessions', () => {
     const mockParams: TrainingSearchParams = {
-      interval: Interval.THIS_MONTH,
+      ...MOCK_DATE_RANGE,
       status: [],
       page: 1,
       q: '',

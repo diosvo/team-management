@@ -6,12 +6,13 @@ import {
   parseAsString,
   parseAsStringEnum,
   type inferParserType,
+  type LoaderInput,
   type Options,
+  type ParserMap,
 } from 'nuqs/server';
 
+import type { DateRange } from '@/types/common';
 import {
-  CURRENT_DATE,
-  INTERVAL_VALUES,
   SELECTABLE_ASSET_CATEGORIES,
   SELECTABLE_ASSET_CONDITIONS,
   SELECTABLE_ATTENDANCE_STATUS,
@@ -24,7 +25,7 @@ import {
   SELECTABLE_USER_ROLES,
   SELECTABLE_USER_STATES,
 } from '@/utils/constants';
-import { Interval } from '@/utils/enum';
+import { thisDay, thisYear } from '@/utils/datetime';
 
 export const commonParams = {
   page: parseAsInteger.withDefault(1),
@@ -49,6 +50,9 @@ export const assetSearchParams = {
   condition: parseAsArrayOf(
     parseAsStringEnum([...SELECTABLE_ASSET_CONDITIONS]),
   ).withDefault([]),
+  // Optional acquired-date window. Empty means all time.
+  from: parseAsString.withDefault(''),
+  to: parseAsString.withDefault(''),
 };
 
 const periodicTestingSearchParams = {
@@ -73,29 +77,64 @@ const leagueSearchParams = {
   ).withDefault([]),
 };
 
+/**
+ * Shared inclusive ISO-day window for range-filtered pages. No parser default:
+ * the window is filled per read so a long-lived process does not keep serving
+ * the startup day.
+ */
+const dateRangeParams = { from: parseAsString, to: parseAsString };
+
+// A type literal, not `DateRange`: an interface would drop the index
+// signature that `Filters` reads the values through.
+type WithWindow<V> = Omit<V, 'from' | 'to'> & { from: string; to: string };
+
+/**
+ * Shared fallback window for range-filtered pages; keep client and loader in sync.
+ */
+type RangeFilters<T> = {
+  params: T & typeof dateRangeParams;
+  window: () => DateRange;
+};
+
+const withWindow = <V extends object>(
+  values: V,
+  window: () => DateRange,
+): WithWindow<V> => {
+  const { from, to } = values as Partial<Record<'from' | 'to', string | null>>;
+  const fallback = window();
+  return {
+    ...values,
+    from: from ?? fallback.from,
+    to: to ?? fallback.to,
+  } as WithWindow<V>;
+};
+
 export const matchSearchParams = {
   ...commonParams,
+  ...dateRangeParams,
   game_type: parseAsArrayOf(
     parseAsStringEnum(SELECTABLE_GAME_TYPES),
   ).withDefault([]),
-  interval: parseAsStringEnum(INTERVAL_VALUES).withDefault(Interval.THIS_YEAR),
   match_type: parseAsArrayOf(
     parseAsStringEnum([...SELECTABLE_MATCH_TYPES]),
   ).withDefault([]),
 };
+const matchFilters = { params: matchSearchParams, window: thisYear };
 
 const attendanceSearchParams = {
   ...commonParams,
-  date: parseAsString.withDefault(CURRENT_DATE),
+  ...dateRangeParams,
   status: parseAsArrayOf(
     parseAsStringEnum([...SELECTABLE_ATTENDANCE_STATUS]),
   ).withDefault([]),
 };
+const attendanceFilters = { params: attendanceSearchParams, window: thisDay };
 
 const dashboardSearchParams = {
   ...commonParams,
-  interval: parseAsStringEnum(INTERVAL_VALUES).withDefault(Interval.THIS_YEAR),
+  ...dateRangeParams,
 };
+const dashboardFilters = { params: dashboardSearchParams, window: thisYear };
 
 const emailSearchParams = {
   ...commonParams,
@@ -106,11 +145,12 @@ const emailSearchParams = {
 
 const trainingSearchParams = {
   ...commonParams,
-  interval: parseAsStringEnum(INTERVAL_VALUES).withDefault(Interval.THIS_MONTH),
+  ...dateRangeParams,
   status: parseAsArrayOf(
     parseAsStringEnum([...SELECTABLE_SESSION_STATUS]),
   ).withDefault([]),
 };
+const trainingFilters = { params: trainingSearchParams, window: thisYear };
 
 /* ================== 👯‍♂️ Client-Side Hooks 👯‍♂️ ================== */
 
@@ -122,12 +162,37 @@ function createFilters<T extends UseQueryStatesKeysMap>(
   params: T,
   options: Options = {},
 ) {
-  const useFilters = () => useQueryStates(params, options);
-  useFilters.defaults = getDefaults(params);
-
   return Object.assign(() => useQueryStates(params, options), {
     defaults: getDefaults(params),
   });
+}
+
+/** {@link createFilters} for a page whose `from`/`to` default to `window()`. */
+function createRangeFilters<T extends UseQueryStatesKeysMap>(
+  { params, window }: RangeFilters<T>,
+  options: Options = {},
+) {
+  const useFilters = () => {
+    const [values, setValues] = useQueryStates(params, options);
+    return [withWindow(values, window), setValues] as const;
+  };
+  // `defineProperty`, not `Object.assign`: assign would read the getter once
+  // and freeze the window it was meant to keep fresh.
+  return Object.defineProperty(useFilters, 'defaults', {
+    get: () => withWindow(getDefaults(params), window),
+  }) as typeof useFilters & {
+    readonly defaults: WithWindow<inferParserType<T>>;
+  };
+}
+
+/** `createLoader` for a page whose `from`/`to` default to `window()`. */
+function createRangeLoader<T extends ParserMap>({
+  params,
+  window,
+}: RangeFilters<T>) {
+  const load = createLoader(params);
+  return async (input: LoaderInput | Promise<LoaderInput>) =>
+    withWindow(load(await input), window);
 }
 
 export const useCommonParams = (options: Options = {}) =>
@@ -143,14 +208,14 @@ export const usePeriodicTestingFilters = createFilters(
   periodicTestingSearchParams,
 );
 export const useLeagueFilters = createFilters(leagueSearchParams);
-export const useMatchFilters = createFilters(matchSearchParams);
-export const useAttendanceFilters = createFilters(attendanceSearchParams, {
+export const useMatchFilters = createRangeFilters(matchFilters);
+export const useAttendanceFilters = createRangeFilters(attendanceFilters, {
   shallow: false,
 });
-export const useTrainingFilters = createFilters(trainingSearchParams, {
+export const useTrainingFilters = createRangeFilters(trainingFilters, {
   shallow: false,
 });
-export const useDashboardFilters = createFilters(dashboardSearchParams, {
+export const useDashboardFilters = createRangeFilters(dashboardFilters, {
   shallow: false,
 });
 export const useEmailFilters = createFilters(emailSearchParams);
@@ -160,10 +225,10 @@ export const useEmailFilters = createFilters(emailSearchParams);
 export const loadPeriodicTestingFilters = createLoader(
   periodicTestingSearchParams,
 );
-export const loadMatchFilters = createLoader(matchSearchParams);
-export const loadAttendanceFilters = createLoader(attendanceSearchParams);
-export const loadDashboardFilters = createLoader(dashboardSearchParams);
-export const loadTrainingFilters = createLoader(trainingSearchParams);
+export const loadMatchFilters = createRangeLoader(matchFilters);
+export const loadAttendanceFilters = createRangeLoader(attendanceFilters);
+export const loadDashboardFilters = createRangeLoader(dashboardFilters);
+export const loadTrainingFilters = createRangeLoader(trainingFilters);
 
 /* ================== 🧮 Types & Enums 🧮 ================== */
 

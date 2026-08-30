@@ -4,10 +4,14 @@ import Filters from '@/components/filters/Filters';
 
 import { useTrainingFilters } from '@/lib/nuqs';
 import type { FilterDef } from '@/types/filters';
-import { SESSION_STATUS_SELECTION } from '@/utils/constants';
+import { ESTABLISHED_DATE, SESSION_STATUS_SELECTION } from '@/utils/constants';
 
 const FILTERS: Array<FilterDef> = [
-  { key: 'interval', label: 'Time', control: { type: 'interval' } },
+  {
+    key: 'range',
+    label: 'Time',
+    control: { type: 'date-range', min: ESTABLISHED_DATE },
+  },
   {
     key: 'status',
     label: 'Status',
