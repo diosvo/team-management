@@ -1,29 +1,21 @@
 import { eq } from 'drizzle-orm';
 
 import db from '@/drizzle';
-import { type InsertRule, RuleTable } from '@/drizzle/schema/rule';
+import { type Team, TeamTable } from '@/drizzle/schema/team';
 
-import {
-  mockInsertFailure,
-  mockInsertSuccess,
-  mockUpdateFailure,
-  mockUpdateSuccess,
-} from '@/test/db-operations';
+import { mockUpdateFailure, mockUpdateSuccess } from '@/test/db-operations';
 import { MOCK_RULE } from '@/test/mocks/rule';
 import { MOCK_TEAM } from '@/test/mocks/team';
 
-import { getRule, insertRule, updateRule } from './rule';
+import { getRule, upsertRule } from './rule';
 
 vi.mock('@/drizzle', () => ({
   default: {
     query: {
-      RuleTable: {
+      TeamTable: {
         findFirst: vi.fn(),
       },
     },
-    insert: vi.fn(() => ({
-      values: vi.fn(),
-    })),
     update: vi.fn(() => ({
       set: vi.fn(() => ({
         where: vi.fn(),
@@ -32,10 +24,9 @@ vi.mock('@/drizzle', () => ({
   },
 }));
 
-vi.mock('@/drizzle/schema/rule', () => ({
-  RuleTable: {
+vi.mock('@/drizzle/schema/team', () => ({
+  TeamTable: {
     team_id: 'team_id',
-    rule_id: 'rule_id',
   },
 }));
 
@@ -44,16 +35,27 @@ describe('getRule', () => {
     vi.clearAllMocks();
   });
 
-  test('returns rule when database query succeeds', async () => {
-    vi.mocked(db.query.RuleTable.findFirst).mockResolvedValue(MOCK_RULE);
+  test('returns the rule columns when the query succeeds', async () => {
+    vi.mocked(db.query.TeamTable.findFirst).mockResolvedValue(
+      // The query narrows to two columns; the mock's type does not.
+      MOCK_RULE as Team,
+    );
 
     const result = await getRule(MOCK_TEAM.team_id);
 
     expect(result).toEqual(MOCK_RULE);
-    // Verify query construction
-    expect(db.query.RuleTable.findFirst).toHaveBeenCalledWith({
-      where: eq(RuleTable.team_id, MOCK_TEAM.team_id),
+    // Verify query construction: only the two rule columns are selected
+    expect(db.query.TeamTable.findFirst).toHaveBeenCalledWith({
+      columns: { rule_content: true, rule_updated_at: true },
+      where: eq(TeamTable.team_id, MOCK_TEAM.team_id),
     });
+  });
+
+  test('returns null when the team does not exist', async () => {
+    vi.mocked(db.query.TeamTable.findFirst).mockResolvedValue(undefined);
+
+    const result = await getRule(MOCK_TEAM.team_id);
+    expect(result).toBeNull();
   });
 
   test.each([
@@ -66,71 +68,51 @@ describe('getRule', () => {
       mockError: 'Unknown error',
     },
   ])('returns null when database query $description', async ({ mockError }) => {
-    vi.mocked(db.query.RuleTable.findFirst).mockRejectedValue(mockError);
+    vi.mocked(db.query.TeamTable.findFirst).mockRejectedValue(mockError);
 
     const result = await getRule(MOCK_TEAM.team_id);
     expect(result).toBeNull();
   });
 });
 
-describe('insertRule', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  const mockInsertData: InsertRule = {
-    team_id: MOCK_TEAM.team_id,
-    content: 'New rule content',
-  };
-
-  test('inserts rule successfully', async () => {
-    const mockValues = mockInsertSuccess({ rule_id: MOCK_RULE.rule_id });
-
-    const result = await insertRule(mockInsertData);
-
-    expect(result).toEqual({ rule_id: MOCK_RULE.rule_id });
-    // Verify query construction
-    expect(db.insert).toHaveBeenCalledWith(RuleTable);
-    expect(mockValues).toHaveBeenCalledWith(mockInsertData);
-  });
-
-  test('throws error when insert fails', async () => {
-    const message = 'Insert failed';
-    mockInsertFailure(message);
-
-    await expect(insertRule(mockInsertData)).rejects.toThrow(message);
-  });
-});
-
-describe('updateRule', () => {
+describe('upsertRule', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   const newContent = 'Updated content';
 
-  test('updates rule successfully', async () => {
-    const { mockWhere, mockSet } = mockUpdateSuccess({ rule_id: 1 });
+  test('writes content and stamps its own revision time', async () => {
+    vi.useFakeTimers();
+    const now = new Date('2026-08-30T10:00:00.000Z');
+    vi.setSystemTime(now);
 
-    const result = await updateRule(MOCK_RULE.rule_id, newContent);
+    const { mockWhere, mockSet } = mockUpdateSuccess({ rowCount: 1 });
 
-    expect(result).toEqual({ rule_id: 1 });
+    const result = await upsertRule(MOCK_TEAM.team_id, newContent);
+
+    expect(result).toEqual({ rowCount: 1 });
     // Verify query construction
-    expect(db.update).toHaveBeenCalledWith(RuleTable);
-    expect(mockSet).toHaveBeenCalledWith({ content: newContent });
-    expect(eq).toHaveBeenCalledWith(RuleTable.rule_id, MOCK_RULE.rule_id);
+    expect(db.update).toHaveBeenCalledWith(TeamTable);
+    expect(mockSet).toHaveBeenCalledWith({
+      rule_content: newContent,
+      rule_updated_at: now,
+    });
+    expect(eq).toHaveBeenCalledWith(TeamTable.team_id, MOCK_TEAM.team_id);
     expect(mockWhere).toHaveBeenCalledWith({
-      field: RuleTable.rule_id,
-      value: MOCK_RULE.rule_id,
+      field: TeamTable.team_id,
+      value: MOCK_TEAM.team_id,
       type: 'eq',
     });
+
+    vi.useRealTimers();
   });
 
   test('throws error when update fails', async () => {
     const message = 'Update failed';
     mockUpdateFailure(message);
 
-    await expect(updateRule(MOCK_RULE.rule_id, newContent)).rejects.toThrow(
+    await expect(upsertRule(MOCK_TEAM.team_id, newContent)).rejects.toThrow(
       message,
     );
   });

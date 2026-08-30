@@ -1,4 +1,4 @@
-import type { Coach, Player, User } from '@/drizzle/schema';
+import type { Coach, Player, User, UserTeam } from '@/drizzle/schema';
 import type { SessionUser } from '@/providers/session';
 import type { AddUserValues } from '@/schemas/user';
 import {
@@ -44,6 +44,16 @@ export const MOCK_USER: User = {
 export const MOCK_SESSION_USER: SessionUser = {
   ...MOCK_USER,
   is_captain: false,
+};
+
+export const MOCK_USER_TEAM: UserTeam = {
+  user_team_id: 'user-team-123',
+  user_id: MOCK_USER.id,
+  team_id: MOCK_TEAM.team_id,
+  join_date: MOCK_USER_INPUT.join_date!,
+  leave_date: null,
+  created_at: new Date('2026-01-01'),
+  updated_at: new Date('2026-01-01'),
 };
 
 export const MOCK_PLAYER: Player = {

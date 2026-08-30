@@ -84,6 +84,8 @@ Team:
 
 - `team_id`: uuid (PK)
 - `is_default`: boolean (the app's own team; hidden from this page)
+- `is_external`: boolean (an opponent; this page lists exactly these rows, and
+  a check constraint forbids a team being both default and external)
 - `name`: string (3–128)
 - `email`: string (unique, optional)
 - `establish_year`: integer (2000 to current year, default current year)

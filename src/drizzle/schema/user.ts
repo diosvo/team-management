@@ -17,6 +17,7 @@ import { AssetTable } from './asset';
 import { type Coach, CoachTable } from './coach';
 import { type Player, PlayerTable } from './player';
 import { TeamTable } from './team';
+import { UserTeamTable } from './user-team';
 
 export const userRoleEnum = pgEnum('user_role', enumValues(UserRole));
 export const userStateEnum = pgEnum('user_state', enumValues(UserState));
@@ -30,6 +31,9 @@ export const UserTable = pgTable('user', {
   createdAt: created_at,
   updatedAt: updated_at,
   // Additional fields
+  // The team the user is on right now. The full history — including past
+  // stints after a transfer or a rejoin — lives in `user_team`, which also
+  // owns the join/leave dates.
   team_id: uuid()
     .notNull()
     .references(() => TeamTable.team_id, { onDelete: 'cascade' }),
@@ -38,8 +42,6 @@ export const UserTable = pgTable('user', {
   citizen_identification: varchar({ length: 12 }),
   state: userStateEnum().default(UserState.UNKNOWN).notNull(),
   role: userRoleEnum().default(UserRole.PLAYER).notNull(),
-  join_date: date(),
-  leave_date: date(),
 });
 
 export const UserRelations = relations(UserTable, ({ one, many }) => ({
@@ -47,6 +49,7 @@ export const UserRelations = relations(UserTable, ({ one, many }) => ({
     fields: [UserTable.team_id],
     references: [TeamTable.team_id],
   }),
+  memberships: many(UserTeamTable),
   coach: one(CoachTable, {
     fields: [UserTable.id],
     references: [CoachTable.id],
@@ -104,5 +107,9 @@ export type User = UserInfo &
     player: Player;
     coach: Coach;
     is_captain: boolean;
+    // Flattened from the user's open `user_team` stint, so callers keep reading
+    // `user.join_date` without knowing where the dates are stored.
+    join_date: Nullish<string>;
+    leave_date: Nullish<string>;
   }>;
 export type InsertUser = typeof UserTable.$inferInsert;

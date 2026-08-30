@@ -136,7 +136,8 @@ User:
 - `image`: string, private blob pathname of the avatar (nullable)
 - `role`: enum [`player`, `coach`, `super_admin`, `guest`]
 - `state`: enum [`active`, `inactive`, `temporarily_absent`, `unknown`]
-- `join_date`: date
+- `join_date`: date, read from and written to the member's open `user_team`
+  stint rather than a column on `user`
 
 Player: `position`, `jersey_number` (unique per team) · Coach: `position`.
 

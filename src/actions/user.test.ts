@@ -36,6 +36,7 @@ import {
   updateUser as updateDbUser,
   updateUserTeamInfo,
 } from '@/db/user';
+import { insertMembership } from '@/db/user-team';
 import { deleteFile, getFile, uploadFile } from '@/lib/blob';
 
 import {
@@ -64,6 +65,10 @@ vi.mock('@/db/user', () => ({
   updateUser: vi.fn(),
   updateUserTeamInfo: vi.fn(),
   deleteUser: vi.fn(),
+}));
+
+vi.mock('@/db/user-team', () => ({
+  insertMembership: vi.fn(),
 }));
 
 vi.mock('@/db/coach', () => ({
@@ -258,6 +263,12 @@ describe('User Actions', () => {
         position: newPlayerData.position,
       });
       expect(auth.api.requestPasswordReset).toHaveBeenCalled();
+      // The invite opens the user's first membership stint
+      expect(insertMembership).toHaveBeenCalledWith(
+        'new-user-id',
+        MOCK_TEAM.team_id,
+        newPlayerData.join_date,
+      );
       expect(revalidate.roster).toHaveBeenCalled();
       expect(result).toEqual({
         success: true,
@@ -448,7 +459,7 @@ describe('User Actions', () => {
       user: {
         role: MOCK_USER.role as EditTeamInfoValues['user']['role'],
         state: MOCK_USER.state,
-        join_date: MOCK_USER.join_date,
+        join_date: MOCK_USER.join_date ?? null,
       },
       player: {
         jersey_number: MOCK_PLAYER.jersey_number,
@@ -499,7 +510,11 @@ describe('User Actions', () => {
 
       // Role unchanged, so nothing is removed
       expect(updateUserTeamInfo).toHaveBeenCalledWith(MOCK_PLAYER.id, {
-        user: teamInfoData.user,
+        user: {
+          role: teamInfoData.user.role,
+          state: teamInfoData.user.state,
+        },
+        membership: { join_date: teamInfoData.user.join_date },
         player: teamInfoData.player,
         coach: undefined,
         remove: { player: false, coach: false },
@@ -528,7 +543,11 @@ describe('User Actions', () => {
       const result = await updateTeamInfo(MOCK_COACH.id, coachInfoData);
 
       expect(updateUserTeamInfo).toHaveBeenCalledWith(MOCK_COACH.id, {
-        user: coachInfoData.user,
+        user: {
+          role: coachInfoData.user.role,
+          state: coachInfoData.user.state,
+        },
+        membership: { join_date: coachInfoData.user.join_date },
         player: undefined,
         coach: coachInfoData.coach,
         remove: { player: false, coach: false },
@@ -549,9 +568,12 @@ describe('User Actions', () => {
         user,
       });
 
+      const { join_date, ...columns } = user;
+
       expect(getUserById).toHaveBeenCalledWith(MOCK_PLAYER.id);
       expect(updateUserTeamInfo).toHaveBeenCalledWith(MOCK_PLAYER.id, {
-        user,
+        user: columns,
+        membership: { join_date },
         player: undefined,
         coach: teamInfoData.coach,
         remove: { player: true, coach: false },
@@ -568,8 +590,10 @@ describe('User Actions', () => {
 
       const result = await updateTeamInfo(MOCK_COACH.id, teamInfoData);
 
+      const { join_date, ...columns } = teamInfoData.user;
       expect(updateUserTeamInfo).toHaveBeenCalledWith(MOCK_COACH.id, {
-        user: teamInfoData.user,
+        user: columns,
+        membership: { join_date },
         player: teamInfoData.player,
         coach: undefined,
         remove: { player: false, coach: true },
@@ -586,8 +610,11 @@ describe('User Actions', () => {
         user,
       });
 
+      const { join_date, ...columns } = user;
+
       expect(updateUserTeamInfo).toHaveBeenCalledWith(MOCK_PLAYER.id, {
-        user,
+        user: columns,
+        membership: { join_date },
         player: undefined,
         coach: undefined,
         remove: { player: true, coach: false },

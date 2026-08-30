@@ -19,7 +19,7 @@ vi.mock('@/drizzle', () => ({
 
 vi.mock('@/drizzle/schema/team', () => ({
   TeamTable: {
-    is_default: 'is_default',
+    is_external: 'is_external',
     name: 'name',
   },
 }));
@@ -38,7 +38,7 @@ describe('getTeams', () => {
     expect(result).toEqual([MOCK_TEAM]);
     // Verify query construction
     expect(db.query.TeamTable.findMany).toHaveBeenCalledWith({
-      where: eq(TeamTable.is_default, false),
+      where: eq(TeamTable.is_external, true),
       orderBy: asc(TeamTable.name),
     });
   });

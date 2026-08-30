@@ -14,7 +14,7 @@ description: "Release plan: shipped, in progress, planned, and not planned."
 
 All pages in the [feature catalog](/docs/features): Dashboard (incl. PDF reports), Team Rule, Roster, Training, Attendance, Registration, Matches, Periodic Testing, Assets, Settings (Teams / Leagues / Locations), Profile.
 
-Recent platform work: Better Auth integration, media storage on Vercel Blob (user images, team logos), and data-model hardening — jersey numbers unique per team, attendance keyed per training session, asset names unique per team.
+Recent platform work: Better Auth integration, media storage on Vercel Blob (user images, team logos), and data-model hardening — jersey numbers unique per team, attendance keyed per training session, asset names unique per team, team membership history (`user_team`), opponents flagged with `team.is_external`, and the team rule folded onto `team`.
 
 ## In progress
 
@@ -25,13 +25,12 @@ _Nothing in progress._
 ## Planned / next
 
 - **Documents** (`/documents`): currently disabled in the sidebar; needs a spec under `features/resources/` plus document-metadata storage.
-- **Data-model hardening**: the remaining ⭐ items in [TODO.md](https://github.com/diosvo/team-management/blob/main/TODO.md), namely a `match` status enum, explicit `onDelete` for `match.home_team` / `away_team`, `league_team_roster` → `league_team`, and a NOT NULL `test_result.date`. (Jersey-number uniqueness per team, attendance per session, and per-team asset names have shipped.)
+- **Data-model hardening**: the remaining ⭐ items in [TODO.md](https://github.com/diosvo/team-management/blob/main/TODO.md), namely a `match` status enum, explicit `onDelete` for `match.home_team` / `away_team`, and `league_team_roster` → `league_team`. (Jersey-number uniqueness per team, attendance per session, per-team asset names, a required `test_result.date`, membership history, external-team flagging, and the rule merge have shipped.)
 - **Auth page specs**: `/login`, `/forgot-password`, `/new-password` are undocumented (listed in the feature catalog as gaps).
 
 ## Later / ideas (unprioritized)
 
 - History for generated emails/reports (no DB index today; see TODO.md §3).
-- Team membership history (`user_team` table) if transfers or multi-squad become real.
 - Per-match lineup / call-up tracking, if registration should feed match-day squads.
 
 ## Not planned

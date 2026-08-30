@@ -2,6 +2,7 @@
 
 import { forbidden, notFound } from 'next/navigation';
 
+import { ESTABLISHED_DATE } from '@/utils/constants';
 import type { CoachPosition, PlayerPosition } from '@/utils/enum';
 import { ResponseFactory } from '@/utils/response';
 
@@ -17,6 +18,7 @@ import {
   updateUser,
   updateUserTeamInfo,
 } from '@/db/user';
+import { insertMembership } from '@/db/user-team';
 import type {
   AddUserValues,
   EditPersonalInfoValues,
@@ -72,8 +74,10 @@ export const addUser = roster(
     // TODO: check rate limiting first
 
     try {
+      // `join_date` opens the membership stint rather than sitting on the user
+      const { join_date, ...details } = values;
       const user = {
-        ...values,
+        ...details,
         team_id,
       };
       const { isPlayer, isCoach } = hasPermissions(user.role);
@@ -84,6 +88,12 @@ export const addUser = roster(
           password: 'TemporaryPassword123!',
         },
       });
+
+      await insertMembership(
+        data.user.id,
+        team_id,
+        join_date ?? ESTABLISHED_DATE,
+      );
 
       if (isPlayer) {
         await insertPlayer({
@@ -232,8 +242,13 @@ export const updateTeamInfo = profile(
       const previous = hasPermissions(target.role);
       const switching = target.role !== userData.role;
 
+      // `join_date` belongs to the open membership stint, so it is corrected
+      // there instead of on the user row.
+      const { join_date, ...userColumns } = userData;
+
       await updateUserTeamInfo(user_id, {
-        user: userData,
+        user: userColumns,
+        membership: join_date ? { join_date } : undefined,
         player: isPlayer ? playerData : undefined,
         coach: isCoach ? coachData : undefined,
         remove: {

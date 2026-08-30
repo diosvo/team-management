@@ -1,9 +1,10 @@
-import { and, eq, ne } from 'drizzle-orm';
+import { and, eq, isNull, ne } from 'drizzle-orm';
 
 import db from '@/drizzle';
 import { CoachTable } from '@/drizzle/schema/coach';
 import { PlayerTable } from '@/drizzle/schema/player';
-import { type User, UserTable } from '@/drizzle/schema/user';
+import { type InsertUser, type User, UserTable } from '@/drizzle/schema/user';
+import { UserTeamTable } from '@/drizzle/schema/user-team';
 
 import { UserRole, UserState } from '@/utils/enum';
 
@@ -20,6 +21,7 @@ import {
   MOCK_COACH,
   MOCK_PLAYER,
   MOCK_USER,
+  MOCK_USER_TEAM,
   MOCK_USER_WITH_COACH,
   MOCK_USER_WITH_PLAYER,
 } from '@/test/mocks/user';
@@ -69,6 +71,13 @@ vi.mock('@/drizzle/schema/user', () => ({
 vi.mock('@/drizzle/schema/coach', () => ({
   CoachTable: {
     id: 'coach_id',
+  },
+}));
+
+vi.mock('@/drizzle/schema/user-team', () => ({
+  UserTeamTable: {
+    user_id: 'user_id',
+    leave_date: 'leave_date',
   },
 }));
 
@@ -253,13 +262,16 @@ describe('getUserById', () => {
     vi.clearAllMocks();
   });
 
-  test('returns user when database query succeeds', async () => {
-    vi.mocked(db.query.UserTable.findFirst).mockResolvedValue(
-      MOCK_USER_WITH_PLAYER,
-    );
+  test('flattens the open membership onto the user', async () => {
+    vi.mocked(db.query.UserTable.findFirst).mockResolvedValue({
+      ...MOCK_USER_WITH_PLAYER,
+      memberships: [MOCK_USER_TEAM],
+      // The `with` clause widens the row; the mock's type is the bare user.
+    } as never);
 
     const result = await getUserById(MOCK_PLAYER.id);
 
+    // `join_date` / `leave_date` read the same as before the move to `user_team`
     expect(result).toEqual(MOCK_USER_WITH_PLAYER);
     // Verify query construction
     expect(eq).toHaveBeenCalledWith(UserTable.id, MOCK_PLAYER.id);
@@ -268,8 +280,29 @@ describe('getUserById', () => {
       with: {
         coach: true,
         player: true,
+        memberships: {
+          where: isNull(UserTeamTable.leave_date),
+          limit: 1,
+        },
       },
     });
+  });
+
+  test('reports null dates when the user has no open membership', async () => {
+    vi.mocked(db.query.UserTable.findFirst).mockResolvedValue({
+      ...MOCK_USER_WITH_PLAYER,
+      memberships: [],
+    } as never);
+
+    const result = await getUserById(MOCK_PLAYER.id);
+
+    expect(result).toMatchObject({ join_date: null, leave_date: null });
+  });
+
+  test('returns null when the user does not exist', async () => {
+    vi.mocked(db.query.UserTable.findFirst).mockResolvedValue(undefined);
+
+    expect(await getUserById(MOCK_PLAYER.id)).toBeNull();
   });
 
   test('returns null when database query fails', async () => {
@@ -340,7 +373,7 @@ describe('updateUserTeamInfo', () => {
     return { tx, values, onConflictDoUpdate, set, deleteWhere };
   }
 
-  const user: Partial<User> = { role: UserRole.COACH };
+  const user: Partial<InsertUser> = { role: UserRole.COACH };
   const coach = { position: MOCK_COACH.position };
   const player = { jersey_number: MOCK_PLAYER.jersey_number };
 
@@ -390,7 +423,25 @@ describe('updateUserTeamInfo', () => {
 
     expect(tx.insert).toHaveBeenCalledWith(PlayerTable);
     expect(tx.update).toHaveBeenCalledWith(UserTable);
+    expect(tx.update).not.toHaveBeenCalledWith(UserTeamTable);
     expect(tx.delete).not.toHaveBeenCalled();
+  });
+
+  test('corrects the open membership stint inside the transaction', async () => {
+    const { tx, set } = mockTransaction();
+    const membership = { join_date: MOCK_USER_TEAM.join_date };
+
+    await updateUserTeamInfo(MOCK_USER.id, {
+      user: { role: UserRole.PLAYER },
+      membership,
+      player,
+      remove: { player: false, coach: false },
+    });
+
+    expect(tx.update).toHaveBeenCalledWith(UserTeamTable);
+    expect(set).toHaveBeenCalledWith(membership);
+    expect(isNull).toHaveBeenCalledWith(UserTeamTable.leave_date);
+    expect(db.update).not.toHaveBeenCalled();
   });
 
   test('rejects so every write rolls back when a step fails', async () => {

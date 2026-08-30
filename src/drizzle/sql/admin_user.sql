@@ -6,8 +6,7 @@ INSERT INTO
     name,
     password,
     role,
-    state,
-    join_date
+    state
   )
 VALUES
   (
@@ -17,7 +16,16 @@ VALUES
     'Dios Vo',
     '$2b$10$nA5l3ktusgnsNuyKavObiewv3787mtatMHmKP/s3c.c6Z6JTfWqW2',
     'SUPER_ADMIN',
-    'ACTIVE',
+    'ACTIVE'
+  );
+
+-- The stint that used to be `user.join_date`
+INSERT INTO
+  user_team (user_id, team_id, join_date)
+VALUES
+  (
+    'e08c520f-64f3-4612-a1d4-028a847c203e',
+    '06117045-05f5-49d9-8411-0e1ef8bfe4bf',
     '2024-02-20'
   );
 

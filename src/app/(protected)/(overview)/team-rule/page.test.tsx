@@ -37,11 +37,8 @@ describe('TeamRulePage', () => {
 
   test('passes the fetched rule to RuleEditor', async () => {
     const mockRule = {
-      rule_id: 'rule-1',
-      team_id: 'team-1',
-      content: 'Always respect each other.',
-      created_at: new Date('2026-01-01'),
-      updated_at: new Date('2026-01-15'),
+      rule_content: 'Always respect each other.',
+      rule_updated_at: new Date('2026-01-15'),
     };
     mockGetRule.mockResolvedValue(mockRule);
 
