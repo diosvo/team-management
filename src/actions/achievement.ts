@@ -35,8 +35,6 @@ export const upsertAchievement = achievements(
     achievement_id: string,
     achievement: UpsertAchievementSchemaValues,
   ) {
-    // Derive the status from dates instead of trusting `league.status`,
-    // which is only refreshed when the league itself is edited.
     if (achievement.league_id) {
       const league = await getLeagueById(achievement.league_id);
 

@@ -1,4 +1,4 @@
-import { eq, ne } from 'drizzle-orm';
+import { eq, inArray, ne } from 'drizzle-orm';
 
 import db from '@/drizzle';
 import { InsertPlayer, PlayerTable } from '@/drizzle/schema/player';
@@ -14,7 +14,12 @@ import {
 import { MOCK_TEAM } from '@/test/mocks/team';
 import { MOCK_PLAYER } from '@/test/mocks/user';
 
-import { insertPlayer, isJerseyNumberTaken, updatePlayer } from './player';
+import {
+  getTeamPlayerIds,
+  insertPlayer,
+  isJerseyNumberTaken,
+  updatePlayer,
+} from './player';
 
 vi.mock('@/drizzle', () => ({
   default: {
@@ -102,6 +107,46 @@ describe('updatePlayer', () => {
     mockUpdateFailure(message);
 
     await expect(updatePlayer(MOCK_PLAYER)).rejects.toThrow(message);
+  });
+});
+
+describe('getTeamPlayerIds', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  test('returns only the ids that are players on the team', async () => {
+    const { mockInnerJoin, mockWhereWithGroupBy } = mockSelectSuccess([{ id }]);
+
+    const result = await getTeamPlayerIds(team_id, [id, 'player-elsewhere']);
+
+    expect(result).toEqual([id]);
+    // Verify query construction: the team is only reachable through `user`
+    expect(mockInnerJoin).toHaveBeenCalledWith(UserTable, {
+      field: UserTable.id,
+      value: PlayerTable.id,
+      type: 'eq',
+    });
+    expect(eq).toHaveBeenCalledWith(UserTable.team_id, team_id);
+    expect(inArray).toHaveBeenCalledWith(PlayerTable.id, [
+      id,
+      'player-elsewhere',
+    ]);
+    expect(mockWhereWithGroupBy).toHaveBeenCalledWith([
+      { field: UserTable.team_id, value: team_id, type: 'eq' },
+      {
+        field: PlayerTable.id,
+        values: [id, 'player-elsewhere'],
+        type: 'in',
+      },
+    ]);
+  });
+
+  test('skips the query entirely when there is nothing to check', async () => {
+    const result = await getTeamPlayerIds(team_id, []);
+
+    expect(result).toEqual([]);
+    expect(db.select).not.toHaveBeenCalled();
   });
 });
 

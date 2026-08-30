@@ -12,7 +12,6 @@ import { getDbErrorMessage } from '@/db/pg-error';
 
 import { revalidate } from '@/actions/cache';
 import { UpsertAchievementSchemaValues } from '@/schemas/achievement';
-import { LeagueStatus } from '@/utils/enum';
 
 import {
   mockWithAuth,
@@ -171,12 +170,8 @@ describe('Achievement Actions', () => {
         });
       });
 
-      test('accepts a league ended by dates even when the stored status is stale', async () => {
-        // Status column says ONGOING, but end_date is in the past.
-        vi.mocked(getLeagueById).mockResolvedValue({
-          ...MOCK_LEAGUE,
-          status: LeagueStatus.ONGOING,
-        });
+      test('accepts a league whose end date has passed', async () => {
+        vi.mocked(getLeagueById).mockResolvedValue(MOCK_LEAGUE);
         vi.mocked(isPast).mockReturnValue(true);
         vi.mocked(insertAchievement).mockResolvedValue([
           { achievement_id: MOCK_ACHIEVEMENT.achievement_id },

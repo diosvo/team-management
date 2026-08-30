@@ -62,14 +62,14 @@ export const UpsertLeague = createOverlay(({ action, item, ...rest }) => {
     reset,
     register,
     handleSubmit,
-    formState: { isValid, errors, defaultValues },
+    formState: { isValid, errors },
   } = useForm({
     resolver: zodResolver(UpsertLeagueSchema),
     defaultValues: getDefaults(UpsertLeagueSchema, item),
   });
 
   const isReadonly =
-    action === 'Update' && defaultValues?.status !== LeagueStatus.UPCOMING;
+    action === 'Update' && item.status !== LeagueStatus.UPCOMING;
 
   const disabledField = isPending || isReadonly;
 

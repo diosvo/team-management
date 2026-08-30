@@ -1,7 +1,6 @@
 import { z } from 'zod';
 
-import { CURRENT_DATE, SELECTABLE_LEAGUE_STATUS } from '@/utils/constants';
-import { LeagueStatus } from '@/utils/enum';
+import { CURRENT_DATE } from '@/utils/constants';
 
 export const UpsertLeagueSchema = z
   .object({
@@ -15,10 +14,6 @@ export const UpsertLeagueSchema = z
       }),
     start_date: z.iso.date().default(CURRENT_DATE),
     end_date: z.iso.date().default(CURRENT_DATE),
-    status: z
-      .enum(SELECTABLE_LEAGUE_STATUS)
-      .optional()
-      .default(LeagueStatus.UPCOMING),
     location_id: z.uuid().optional(),
     description: z
       .string()

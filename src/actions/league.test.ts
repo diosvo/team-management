@@ -1,19 +1,18 @@
-import { isFuture, isPast } from 'date-fns';
-
 import {
   addPlayerToLeagueRoster,
   deleteLeague,
   getLeagues as fetchLeagues,
   getPlayersInLeague as fetchPlayersInLeague,
   insertLeague,
+  registerTeamInLeague,
   removePlayerFromLeagueRoster,
   updateLeague,
 } from '@/db/league';
 import { getDbErrorMessage } from '@/db/pg-error';
+import { getTeamPlayerIds } from '@/db/player';
 
 import { revalidate } from '@/actions/cache';
 import { UpsertLeagueSchemaValues } from '@/schemas/league';
-import { LeagueStatus } from '@/utils/enum';
 
 import {
   mockWithAuth,
@@ -42,8 +41,13 @@ vi.mock('@/db/league', () => ({
   insertLeague: vi.fn(),
   updateLeague: vi.fn(),
   deleteLeague: vi.fn(),
+  registerTeamInLeague: vi.fn(),
   addPlayerToLeagueRoster: vi.fn(),
   removePlayerFromLeagueRoster: vi.fn(),
+}));
+
+vi.mock('@/db/player', () => ({
+  getTeamPlayerIds: vi.fn(),
 }));
 
 vi.mock('@/db/pg-error', () => ({
@@ -54,11 +58,6 @@ vi.mock('@/actions/cache', () => ({
   revalidate: {
     leagues: vi.fn(),
   },
-}));
-
-vi.mock('date-fns', () => ({
-  isFuture: vi.fn(),
-  isPast: vi.fn(),
 }));
 
 describe('permissions', () => {
@@ -101,6 +100,8 @@ describe('League Actions', () => {
       message: errorMessage,
       constraint: null,
     });
+    // By default every requested player is on the acting user's team.
+    vi.mocked(getTeamPlayerIds).mockImplementation(async (_, ids) => ids);
   });
 
   describe('getLeagues', () => {
@@ -148,19 +149,12 @@ describe('League Actions', () => {
     const updateReturn = { ...mockResult, command: 'UPDATE' };
 
     describe('insert new league', () => {
-      test('creates new league with UPCOMING status when start date is in future', async () => {
-        vi.mocked(isFuture).mockReturnValue(true);
-        vi.mocked(isPast).mockReturnValue(false);
+      test('creates a new league from the submitted fields only', async () => {
         vi.mocked(insertLeague).mockResolvedValue(insertReturn);
 
         const result = await upsertLeague('', leagueData, []);
 
-        expect(isFuture).toHaveBeenCalledWith(leagueData.start_date);
-        expect(insertLeague).toHaveBeenCalledWith({
-          ...leagueData,
-          team_id: MOCK_TEAM.team_id,
-          status: LeagueStatus.UPCOMING,
-        });
+        expect(insertLeague).toHaveBeenCalledWith(leagueData);
         expect(revalidate.leagues).toHaveBeenCalled();
         expect(result).toEqual({
           success: true,
@@ -168,48 +162,18 @@ describe('League Actions', () => {
         });
       });
 
-      test('creates new league with ENDED status when end date is in past', async () => {
-        vi.mocked(isFuture).mockReturnValue(false);
-        vi.mocked(isPast).mockReturnValue(true);
+      test('enters the acting team into the new league', async () => {
         vi.mocked(insertLeague).mockResolvedValue(insertReturn);
 
-        const result = await upsertLeague('', leagueData, []);
+        await upsertLeague('', leagueData, []);
 
-        expect(isPast).toHaveBeenCalledWith(leagueData.end_date);
-        expect(insertLeague).toHaveBeenCalledWith({
-          ...leagueData,
-          team_id: MOCK_TEAM.team_id,
-          status: LeagueStatus.ENDED,
-        });
-        expect(revalidate.leagues).toHaveBeenCalled();
-        expect(result).toEqual({
-          success: true,
-          message: 'Added league successfully',
-        });
-      });
-
-      test('creates new league with ONGOING status when dates are current', async () => {
-        vi.mocked(isFuture).mockReturnValue(false);
-        vi.mocked(isPast).mockReturnValue(false);
-        vi.mocked(insertLeague).mockResolvedValue(insertReturn);
-
-        const result = await upsertLeague('', leagueData, []);
-
-        expect(insertLeague).toHaveBeenCalledWith({
-          ...leagueData,
-          team_id: MOCK_TEAM.team_id,
-          status: LeagueStatus.ONGOING,
-        });
-        expect(revalidate.leagues).toHaveBeenCalled();
-        expect(result).toEqual({
-          success: true,
-          message: 'Added league successfully',
-        });
+        expect(registerTeamInLeague).toHaveBeenCalledWith(
+          MOCK_LEAGUE.league_id,
+          MOCK_TEAM.team_id,
+        );
       });
 
       test('returns error when insert fails', async () => {
-        vi.mocked(isFuture).mockReturnValue(false);
-        vi.mocked(isPast).mockReturnValue(false);
         vi.mocked(insertLeague).mockRejectedValue(new Error(errorMessage));
 
         const result = await upsertLeague('', leagueData, []);
@@ -224,9 +188,7 @@ describe('League Actions', () => {
     });
 
     describe('update existing league', () => {
-      test('updates existing league with UPCOMING status', async () => {
-        vi.mocked(isFuture).mockReturnValue(true);
-        vi.mocked(isPast).mockReturnValue(false);
+      test('updates existing league from the submitted fields only', async () => {
         vi.mocked(updateLeague).mockResolvedValue(updateReturn);
 
         const result = await upsertLeague(
@@ -235,57 +197,10 @@ describe('League Actions', () => {
           [],
         );
 
-        expect(updateLeague).toHaveBeenCalledWith(MOCK_LEAGUE.league_id, {
-          ...MOCK_LEAGUE_INPUT,
-          team_id: MOCK_TEAM.team_id,
-          status: LeagueStatus.UPCOMING,
-        });
-        expect(revalidate.leagues).toHaveBeenCalled();
-        expect(result).toEqual({
-          success: true,
-          message: 'Updated league successfully',
-        });
-      });
-
-      test('updates existing league with ENDED status', async () => {
-        vi.mocked(isFuture).mockReturnValue(false);
-        vi.mocked(isPast).mockReturnValue(true);
-        vi.mocked(updateLeague).mockResolvedValue(updateReturn);
-
-        const result = await upsertLeague(
+        expect(updateLeague).toHaveBeenCalledWith(
           MOCK_LEAGUE.league_id,
           leagueData,
-          [],
         );
-
-        expect(updateLeague).toHaveBeenCalledWith(MOCK_LEAGUE.league_id, {
-          ...leagueData,
-          team_id: MOCK_TEAM.team_id,
-          status: LeagueStatus.ENDED,
-        });
-        expect(revalidate.leagues).toHaveBeenCalled();
-        expect(result).toEqual({
-          success: true,
-          message: 'Updated league successfully',
-        });
-      });
-
-      test('updates existing league with ONGOING status', async () => {
-        vi.mocked(isFuture).mockReturnValue(false);
-        vi.mocked(isPast).mockReturnValue(false);
-        vi.mocked(updateLeague).mockResolvedValue(updateReturn);
-
-        const result = await upsertLeague(
-          MOCK_LEAGUE.league_id,
-          leagueData,
-          [],
-        );
-
-        expect(updateLeague).toHaveBeenCalledWith(MOCK_LEAGUE.league_id, {
-          ...leagueData,
-          team_id: MOCK_TEAM.team_id,
-          status: LeagueStatus.ONGOING,
-        });
         expect(revalidate.leagues).toHaveBeenCalled();
         expect(result).toEqual({
           success: true,
@@ -294,8 +209,6 @@ describe('League Actions', () => {
       });
 
       test('returns error when update fails', async () => {
-        vi.mocked(isFuture).mockReturnValue(false);
-        vi.mocked(isPast).mockReturnValue(false);
         vi.mocked(updateLeague).mockRejectedValue(new Error(errorMessage));
 
         const result = await upsertLeague(
@@ -313,8 +226,6 @@ describe('League Actions', () => {
       });
 
       test('syncs roster by adding and removing players on update', async () => {
-        vi.mocked(isFuture).mockReturnValue(false);
-        vi.mocked(isPast).mockReturnValue(false);
         vi.mocked(updateLeague).mockResolvedValue(updateReturn);
         vi.mocked(fetchPlayersInLeague).mockResolvedValue([
           { ...MOCK_USER, id: 'player-old' },
@@ -346,9 +257,33 @@ describe('League Actions', () => {
         });
       });
 
+      test('rejects players who are not on the acting team', async () => {
+        vi.mocked(updateLeague).mockResolvedValue(updateReturn);
+        vi.mocked(fetchPlayersInLeague).mockResolvedValue([]);
+        vi.mocked(getTeamPlayerIds).mockResolvedValue(['player-ours-123']);
+
+        const result = await upsertLeague(MOCK_LEAGUE.league_id, leagueData, [
+          'player-ours-123',
+          'player-theirs-456',
+        ]);
+
+        expect(getTeamPlayerIds).toHaveBeenCalledWith(MOCK_TEAM.team_id, [
+          'player-ours-123',
+          'player-theirs-456',
+        ]);
+        expect(addPlayerToLeagueRoster).toHaveBeenCalledExactlyOnceWith(
+          MOCK_TEAM.team_id,
+          MOCK_LEAGUE.league_id,
+          'player-ours-123',
+        );
+        expect(result).toEqual({
+          success: false,
+          message: 'Player (id: player-t) is not on this team',
+        });
+        expect(revalidate.leagues).not.toHaveBeenCalled();
+      });
+
       test('returns roster sync error message when add/remove operations fail', async () => {
-        vi.mocked(isFuture).mockReturnValue(false);
-        vi.mocked(isPast).mockReturnValue(false);
         vi.mocked(updateLeague).mockResolvedValue(updateReturn);
         vi.mocked(fetchPlayersInLeague).mockResolvedValue([
           { ...MOCK_USER, id: 'player-old-id-123' },

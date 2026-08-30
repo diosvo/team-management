@@ -11,8 +11,9 @@ title: "Achievements"
   championships, podium finishes, years active).
 - Because the database only stores our own team's matches, a final league
   placement cannot be computed automatically. Achievements are therefore
-  **recorded manually** — but only for leagues that have **ended** (derived from
-  `end_date` at read time, since the stored `league.status` can be stale).
+  **recorded manually** — but only for leagues that have **ended**, checked
+  against `end_date`. League status is not stored at all; it is derived from the
+  dates on every read.
 - Standalone honors (tournaments, cups not tracked as leagues) are supported by
   leaving the league empty; individual honors (MVP, Top Scorer) reference a
   player.
