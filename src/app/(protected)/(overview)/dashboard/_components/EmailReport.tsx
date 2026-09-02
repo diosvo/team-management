@@ -56,7 +56,7 @@ export default function EmailReport({
     try {
       const response = await fetch('/api/reports/dashboard', {
         method: 'POST',
-        body: JSON.stringify({ period: formattedPeriod, filename }),
+        body: JSON.stringify({ interval, filename }),
       });
 
       if (!response.ok) {

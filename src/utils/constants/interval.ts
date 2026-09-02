@@ -40,3 +40,6 @@ export const INTERVAL_SELECTION: Selection<IntervalValues> = [
   },
 ];
 export const INTERVAL_VALUES = INTERVAL_SELECTION.map(({ value }) => value);
+export const INTERVAL_LABEL = new Map(
+  INTERVAL_SELECTION.map(({ label, value }) => [value, label]),
+);
