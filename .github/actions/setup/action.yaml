@@ -1,0 +1,11 @@
+name: Setup
+description: Install pnpm and the project's dependencies.
+
+runs:
+  using: composite
+  steps:
+    - name: 🚚 Setup pnpm & install dependencies
+      uses: pnpm/setup@v2
+      with:
+        version: '^11.0.0'
+        cache: true

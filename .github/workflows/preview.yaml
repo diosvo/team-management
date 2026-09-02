@@ -1,90 +1,105 @@
 name: 🔍 Preview Deployment
 
-env:
-  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+on:
+  pull_request:
+    branches: [main]
 
 permissions:
   contents: read
   issues: write
   pull-requests: write
 
-on:
-  pull_request:
-    branches: [main] # Trigger on PRs targeting main branch
+concurrency:
+  group: preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 jobs:
-  unit-test:
+  preview:
+    uses: ./.github/workflows/test-and-deploy.yaml
+    with:
+      environment: preview
+      vercel-environment: preview
+      build-args: ""
+      deploy-args: "--prebuilt --yes"
+    secrets: inherit
+
+  report-pr:
+    needs: preview
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     steps:
-      - name: 📥 Checkout Code
-        uses: actions/checkout@v7
-
-      - name: 🚚 Setup pnpm
-        uses: pnpm/action-setup@v6
+      - name: 📥 Download test report
+        continue-on-error: true
+        uses: actions/download-artifact@v8
         with:
-          version: latest
-          cache: true
+          name: ${{ needs.preview.outputs.summary_artifact }}
+          path: .
 
-      - name: 📦 Install dependencies
-        run: pnpm install
-
-      - name: 🧪 Unit Tests
-        run: pnpm test
-
-  build-and-deploy:
-    needs: unit-test
-    runs-on: ubuntu-latest
-    steps:
-      - name: 📥 Checkout Code
-        uses: actions/checkout@v7
-
-      - name: 🚚 Setup pnpm
-        uses: pnpm/action-setup@v6
-        with:
-          version: latest
-          cache: true
-
-      - name: 📦 Install Vercel CLI
-        run: pnpm install --global vercel@latest
-
-      - name: 🔽 Pull Vercel Environment Information
-        run: vercel pull --yes --environment=preview --token="$VERCEL_TOKEN"
-
-      - name: 🔨 Build
-        run: vercel build --token="$VERCEL_TOKEN"
-
-      - name: 🚀 Deploy to Vercel
-        id: deploy
-        run: |
-          set -euo pipefail
-          deploy_output="$(vercel deploy --prebuilt --yes --token="$VERCEL_TOKEN" 2>&1)"
-          URL="$(printf '%s\n' "$deploy_output" | grep -Eo 'https://[^[:space:]]+' | tail -n 1)"
-
-          if [ -z "$URL" ]; then
-            echo "$deploy_output"
-            echo "No preview URL was produced by the deploy step." >&2
-            exit 1
-          fi
-
-          echo "url=$URL" >> "$GITHUB_OUTPUT"
-          echo "Preview URL: $URL"
-
-      - name: 💬 Comment PR with Preview URL
-        if: github.event_name == 'pull_request'
-        uses: actions/github-script@v7
+      - name: 💬 Upsert PR comment
+        uses: actions/github-script@v9
+        env:
+          DEPLOY_RESULT: ${{ needs.preview.result }}
+          PREVIEW_URL: ${{ needs.preview.outputs.preview_url }}
+          MARKER: '<!-- preview-deploy-report -->'
+          SUMMARY_FILE: ${{ needs.preview.outputs.summary_file }}
         with:
           script: |
-            const url = '${{ steps.deploy.outputs.url }}';
-            if (!url) {
-              core.setFailed('No preview URL was produced by the deploy step.');
-              return;
+            const fs = require('node:fs');
+            const { DEPLOY_RESULT, PREVIEW_URL, SUMMARY_FILE, MARKER } = process.env;
+
+            let report = '⚠️ No unit-test summary found.';
+            try {
+              const raw = fs.readFileSync(SUMMARY_FILE, 'utf8');
+              const lines = raw
+                .split('\n')
+                .filter((line) =>
+                  line.startsWith('- **Test Files**:') ||
+                  line.startsWith('- **Test Results**:')
+                );
+
+              if (lines.length) {
+                report = lines.join('\n');
+              }
+            } catch (err) {
+              core.warning(`Could not read ${SUMMARY_FILE}: ${err.message}`);
             }
 
-            await github.rest.issues.createComment({
+            const body = [
+              MARKER,
+              '## 🚢 Preview URL',
+              '',
+              DEPLOY_RESULT === 'success' && PREVIEW_URL
+                ? PREVIEW_URL
+                : `Not deployed — \`preview\` result: ${DEPLOY_RESULT}.`,
+              '',
+              '## 🧪 Test Report',
+              '',
+              report,
+            ].join('\n');
+
+            const issue = {
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: `## 🚢 Preview URL\n\n${url}`
+            };
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              ...issue,
+              per_page: 100,
             });
+            const existing = comments.find(
+              (c) => c.user?.type === 'Bot' && c.body?.includes(MARKER),
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                ...issue,
+                comment_id: existing.id,
+                body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                ...issue,
+                body
+              });
+            }
+

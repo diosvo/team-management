@@ -1,0 +1,21 @@
+name: Upload Artifact
+description: Upload a report artifact with the repository's shared defaults.
+
+inputs:
+  name:
+    description: Name the artifact is uploaded under.
+    required: true
+  path:
+    description: File or directory to upload.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: 📤 Upload ${{ inputs.name }}
+      uses: actions/upload-artifact@v7
+      with:
+        name: ${{ inputs.name }}
+        path: ${{ inputs.path }}
+        if-no-files-found: warn
+        retention-days: 3
