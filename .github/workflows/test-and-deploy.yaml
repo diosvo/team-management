@@ -1,0 +1,119 @@
+name: 🧪 Test & Deploy
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: Deployment environment label.
+        required: true
+        type: string
+      vercel-environment:
+        description: Vercel target environment.
+        required: true
+        type: string
+      run-unit-test:
+        description: >-
+          Run the unit-test job before deploying. Callers triggered by a PR
+          want this; deploys from an already-tested branch can skip it.
+        required: false
+        type: boolean
+        default: true
+      build-args:
+        description: Extra arguments for the Vercel build command.
+        required: false
+        type: string
+        default: ""
+      deploy-args:
+        description: Extra arguments for the Vercel deploy command.
+        required: false
+        type: string
+        default: "--prebuilt --yes"
+      summary-artifact:
+        description: Artifact name used for the unit-test summary.
+        required: false
+        type: string
+        default: unit-test-summary
+      summary-file:
+        description: Local file path to capture CI summary output.
+        required: false
+        type: string
+        default: unit-test-summary.md
+    secrets:
+      VERCEL_ORG_ID:
+        required: true
+      VERCEL_PROJECT_ID:
+        required: true
+      VERCEL_TOKEN:
+        required: true
+    outputs:
+      preview_url:
+        description: Deployment URL returned by Vercel.
+        value: ${{ jobs.deploy.outputs.preview_url }}
+      summary_artifact:
+        description: Artifact name the unit-test summary was uploaded under.
+        value: ${{ inputs.summary-artifact }}
+      summary_file:
+        description: File name of the unit-test summary inside that artifact.
+        value: ${{ inputs.summary-file }}
+
+jobs:
+  unit-test:
+    if: ${{ inputs.run-unit-test }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v7
+
+      - name: 🚚 Setup
+        uses: ./.github/actions/setup
+
+      - name: 🧪 Unit Tests
+        run: |
+          pnpm test || status=$?
+          cp "$GITHUB_STEP_SUMMARY" "${{ inputs.summary-file }}" ||
+            echo "::warning::No step summary to capture for ${{ inputs.summary-file }}"
+          exit $status
+
+      - name: 📤 Upload test report
+        if: ${{ !cancelled() }}
+        uses: ./.github/actions/upload-artifact
+        with:
+          name: ${{ inputs.summary-artifact }}
+          path: ${{ inputs.summary-file }}
+
+  deploy:
+    needs: unit-test
+    if: ${{ !cancelled() && (needs.unit-test.result == 'success' || needs.unit-test.result == 'skipped') }}
+    runs-on: ubuntu-latest
+    outputs:
+      preview_url: ${{ steps.deploy.outputs.url }}
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v7
+
+      - name: 🚚 Setup
+        uses: ./.github/actions/setup
+
+      - name: 📦 Install Vercel CLI
+        run: pnpm install --global vercel@latest
+
+      - name: 🔽 Pull Vercel Environment Information
+        run: vercel pull --yes --environment=${{ inputs.vercel-environment }} --token="$VERCEL_TOKEN"
+
+      - name: 🔨 Build
+        run: vercel build ${{ inputs.build-args }} --token="$VERCEL_TOKEN"
+
+      - name: 🚀 Deploy to Vercel
+        id: deploy
+        run: |
+          set -euo pipefail
+          output="$(vercel deploy ${{ inputs.deploy-args }} --token="$VERCEL_TOKEN")"
+          url="$(printf '%s\n' "$output" | grep -Eo 'https://[^[:space:]]+' | tail -n 1 || true)"
+          : "${url:?No deployment URL was produced by the deploy step}"
+
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "Deployment URL: $url" >> "$GITHUB_STEP_SUMMARY"
