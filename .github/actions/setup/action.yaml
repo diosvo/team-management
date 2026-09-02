@@ -1,0 +1,14 @@
+name: Setup
+description: Install pnpm and the project's dependencies.
+
+# Checkout deliberately lives in the calling job: a local composite action
+# cannot be resolved until the repository is on the runner.
+
+runs:
+  using: composite
+  steps:
+    - name: 🚚 Setup pnpm & install dependencies
+      uses: pnpm/setup@v2
+      with:
+        version: '^11.0.0'
+        cache: true

@@ -2,7 +2,7 @@ name: 🔍 Preview Deployment
 
 on:
   pull_request:
-    branches: [main] # Trigger on PRs targeting main branch
+    branches: [main]
 
 permissions:
   contents: read
@@ -13,76 +13,18 @@ concurrency:
   group: preview-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
-env:
-  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-  SUMMARY_ARTIFACT: unit-test-summary
-  SUMMARY_FILE: unit-test-summary.md
-
 jobs:
-  unit-test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: 📥 Checkout Code
-        uses: actions/checkout@v7
-
-      - name: 🚚 Setup pnpm & install dependencies
-        uses: pnpm/setup@v2
-        with:
-          version: '^11.0.0'
-          cache: true
-
-      - name: 🧪 Unit Tests
-        env:
-          GITHUB_STEP_SUMMARY: ${{ env.SUMMARY_FILE }}
-        run: pnpm test
-
-      - name: 📝 Publish test report to the job page
-        if: ${{ !cancelled() }}
-        run: |
-          if [ -f "$SUMMARY_FILE" ]; then
-            cat "$SUMMARY_FILE" >> "$GITHUB_STEP_SUMMARY"
-          fi
-
-      - name: 📤 Upload test report
-        if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v7
-        with:
-          name: ${{ env.SUMMARY_ARTIFACT }}
-          path: ${{ env.SUMMARY_FILE }}
-          if-no-files-found: warn
-          retention-days: 3
-
-  build-and-deploy:
-    needs: unit-test
-    runs-on: ubuntu-latest
-    outputs:
-      preview_url: ${{ steps.deploy.outputs.url }}
-    steps:
-      - name: 📥 Checkout Code
-        uses: actions/checkout@v7
-
-      - name: 📦 Install Vercel CLI
-        run: npm install --global vercel@latest
-
-      - name: 🔽 Pull Vercel Environment Information
-        run: vercel pull --yes --environment=preview --token="$VERCEL_TOKEN"
-
-      - name: 🔨 Build
-        run: vercel build --token="$VERCEL_TOKEN"
-
-      - name: 🚀 Deploy to Vercel
-        id: deploy
-        run: |
-          url="$(vercel deploy --prebuilt --yes --token="$VERCEL_TOKEN")"
-          : "${url:?No preview URL was produced by the deploy step}"
-
-          echo "url=$url" >> "$GITHUB_OUTPUT"
-          echo "Preview URL: $url" >> "$GITHUB_STEP_SUMMARY"
+  preview:
+    uses: ./.github/workflows/test-and-deploy.yaml
+    with:
+      environment: preview
+      vercel-environment: preview
+      build-args: ""
+      deploy-args: "--prebuilt --yes"
+    secrets: inherit
 
   report-pr:
-    needs: [unit-test, build-and-deploy]
+    needs: preview
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     steps:
@@ -90,16 +32,16 @@ jobs:
         continue-on-error: true
         uses: actions/download-artifact@v8
         with:
-          name: ${{ env.SUMMARY_ARTIFACT }}
+          name: ${{ needs.preview.outputs.summary_artifact }}
           path: .
 
-      - name: 💬 Upsert PR comment with Preview URL + Test Report
+      - name: 💬 Upsert PR comment
         uses: actions/github-script@v9
         env:
-          DEPLOY_RESULT: ${{ needs.build-and-deploy.result }}
-          PREVIEW_URL: ${{ needs.build-and-deploy.outputs.preview_url }}
-          TEST_RESULT: ${{ needs.unit-test.result }}
+          DEPLOY_RESULT: ${{ needs.preview.result }}
+          PREVIEW_URL: ${{ needs.preview.outputs.preview_url }}
           MARKER: '<!-- preview-deploy-report -->'
+          SUMMARY_FILE: ${{ needs.preview.outputs.summary_file }}
         with:
           script: |
             const fs = require('node:fs');
@@ -128,7 +70,7 @@ jobs:
               '',
               DEPLOY_RESULT === 'success' && PREVIEW_URL
                 ? PREVIEW_URL
-                : `Not deployed — \`build-and-deploy\` result: ${DEPLOY_RESULT}.`,
+                : `Not deployed — \`preview\` result: ${DEPLOY_RESULT}.`,
               '',
               '## 🧪 Test Report',
               '',
