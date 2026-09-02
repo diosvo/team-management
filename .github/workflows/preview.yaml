@@ -90,28 +90,16 @@ jobs:
               (c) => c.user?.type === 'Bot' && c.body?.includes(MARKER),
             );
 
-            let comment_id;
             if (existing) {
-              comment_id = existing.id;
               await github.rest.issues.updateComment({
                 ...issue,
-                comment_id,
+                comment_id: existing.id,
                 body
               });
             } else {
-              const created = await github.rest.issues.createComment({
-                ...issue, 
+              await github.rest.issues.createComment({
+                ...issue,
                 body
               });
-              comment_id = created.data.id;
-            }
-
-            try {
-              await github.request(
-                'PUT /repos/{owner}/{repo}/issues/comments/{comment_id}/pin',
-                { ...context.repo, comment_id },
-              );
-            } catch (err) {
-              core.warning(`Could not pin comment ${comment_id}: ${err.message}`);
             }
 
