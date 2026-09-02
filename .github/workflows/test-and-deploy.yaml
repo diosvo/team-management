@@ -68,16 +68,11 @@ jobs:
         uses: ./.github/actions/setup
 
       - name: 🧪 Unit Tests
-        env:
-          GITHUB_STEP_SUMMARY: ${{ inputs.summary-file }}
-        run: pnpm test
-
-      - name: 📝 Publish test report
-        if: ${{ !cancelled() }}
         run: |
-          if [ -f "${{ inputs.summary-file }}" ]; then
-            cat "${{ inputs.summary-file }}" >> "$GITHUB_STEP_SUMMARY"
-          fi
+          pnpm test || status=$?
+          cp "$GITHUB_STEP_SUMMARY" "${{ inputs.summary-file }}" ||
+            echo "::warning::No step summary to capture for ${{ inputs.summary-file }}"
+          exit $status
 
       - name: 📤 Upload test report
         if: ${{ !cancelled() }}
@@ -88,8 +83,6 @@ jobs:
 
   deploy:
     needs: unit-test
-    # A skipped unit-test job would otherwise skip this one too; a failed one
-    # must still block the deploy.
     if: ${{ !cancelled() && (needs.unit-test.result == 'success' || needs.unit-test.result == 'skipped') }}
     runs-on: ubuntu-latest
     outputs:
