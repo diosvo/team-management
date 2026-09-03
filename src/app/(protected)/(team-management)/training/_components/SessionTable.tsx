@@ -21,7 +21,7 @@ import { Tooltip } from '@/components/ui/tooltip';
 import usePermissions from '@/hooks/use-permissions';
 import useTableState from '@/hooks/use-table-state';
 
-import { TrainingSessionWithDetails } from '@/types/training-session';
+import type { TrainingSessionWithDetails } from '@/types/training-session';
 
 import { useTrainingFilters } from '@/lib/nuqs';
 import { formatDate, formatDay } from '@/utils/formatter';

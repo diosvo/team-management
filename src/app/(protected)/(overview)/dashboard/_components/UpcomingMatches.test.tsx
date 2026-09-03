@@ -1,9 +1,8 @@
-import { Mock } from 'vitest';
 
 import { MOCK_LEAGUE } from '@/test/mocks/league';
 import { MOCK_LOCATION, MOCK_LOCATION_2 } from '@/test/mocks/location';
 import { MOCK_MATCH } from '@/test/mocks/match';
-import { renderWithUI, screen } from '@/test/utilities';
+import { renderWithUI, screen, setupTestLifecycle } from '@/test/utilities';
 
 import { getUpcomingMatches } from '@/actions/analytics';
 import UpcomingMatches from './UpcomingMatches';
@@ -13,13 +12,18 @@ vi.mock('@/actions/analytics', () => ({
 }));
 
 describe('UpcomingMatches', () => {
-  const mockGetUpcomingMatches = getUpcomingMatches as unknown as Mock;
+  const mockGetUpcomingMatches = vi.mocked(getUpcomingMatches);
+
+  // `date` arrives as a string from the action. A date-only string
+  // ('yyyy-MM-dd') is parsed as UTC midnight, so `isToday` would miss the badge
+  // on runners west of UTC; a full timestamp pins it to the current instant.
+  const TODAY = new Date().toISOString();
 
   const MOCK_MATCHES = [
     {
       ...MOCK_MATCH,
       match_id: 'match-today',
-      date: new Date(),
+      date: TODAY,
       time: '10:00',
       location: { name: MOCK_LOCATION.name },
       league: { league_id: MOCK_LEAGUE.league_id, name: MOCK_LEAGUE.name },
@@ -27,21 +31,21 @@ describe('UpcomingMatches', () => {
     {
       ...MOCK_MATCH,
       match_id: 'match-friendly',
-      date: new Date('2099-12-31'),
+      date: '2099-12-31',
       time: '14:00',
       location: { name: MOCK_LOCATION_2.name },
       league: null,
     },
   ];
 
-  const setup = async (matches: unknown[]) => {
+  const setup = async (
+    matches: Awaited<ReturnType<typeof getUpcomingMatches>>,
+  ) => {
     mockGetUpcomingMatches.mockResolvedValue(matches);
     return renderWithUI(await UpcomingMatches());
   };
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  setupTestLifecycle();
 
   test('renders the card title and description', async () => {
     await setup([]);

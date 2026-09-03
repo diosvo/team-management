@@ -1,7 +1,14 @@
-import { Mock } from 'vitest';
-
-import { MOCK_USER } from '@/test/mocks/user';
-import { renderWithUI, screen, waitFor } from '@/test/utilities';
+import { MOCK_SESSION_USER, MOCK_USER } from '@/test/mocks/user';
+import {
+  createSessionMock,
+  createSWRMock,
+  createToasterMock,
+  expectNoA11yViolations,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+  waitFor,
+} from '@/test/utilities';
 
 import { uploadAvatar } from '@/actions/user';
 import { useUserAvatar } from '@/hooks/use-image';
@@ -31,27 +38,28 @@ vi.mock('@/lib/auth-client', () => ({
   },
 }));
 
-vi.mock('@/components/ui/toaster', () => ({
-  toaster: {
-    create: vi.fn(() => 'toast-id'),
-    update: vi.fn(),
-  },
-}));
+vi.mock('@/components/ui/toaster', () => createToasterMock());
 
 describe('AvatarUploader', () => {
-  const mockUploadAvatar = uploadAvatar as unknown as Mock;
-  const mockUseUserAvatar = useUserAvatar as unknown as Mock;
-  const mockUseSessionContext = useSessionContext as unknown as Mock;
+  setupTestLifecycle();
+
+  const mockUploadAvatar = vi.mocked(uploadAvatar);
+  const mockUseUserAvatar = vi.mocked(useUserAvatar);
+  const mockUseSessionContext = vi.mocked(useSessionContext);
 
   const setup = ({
     isOwner = true,
     image = undefined as string | undefined,
     user = MOCK_USER,
   } = {}) => {
-    mockUseUserAvatar.mockReturnValue({ data: image });
-    mockUseSessionContext.mockReturnValue({
-      user: isOwner ? { id: user.id } : { id: 'someone-else' },
-    });
+    mockUseUserAvatar.mockReturnValue(
+      createSWRMock<Nullable<string>>({ data: image }),
+    );
+    mockUseSessionContext.mockReturnValue(
+      createSessionMock({
+        user: { ...MOCK_SESSION_USER, id: isOwner ? user.id : 'someone-else' },
+      }),
+    );
 
     return renderWithUI(<AvatarUploader user={user} />);
   };
@@ -61,34 +69,44 @@ describe('AvatarUploader', () => {
 
   const file = new File(['avatar'], 'avatar.png', { type: 'image/png' });
 
-  beforeEach(() => {
-    vi.clearAllMocks();
+  test('should be accessible', async () => {
+    const { container } = setup();
+
+    await expectNoA11yViolations(container);
   });
 
-  test('renders the user name and role', () => {
+  test('renders the user name and role', async () => {
     setup();
 
-    // The name appears twice: the avatar fallback and the profile label.
-    expect(screen.getAllByText(MOCK_USER.name).length).toBeGreaterThan(0);
-    expect(screen.getByText(MOCK_USER.role)).toBeInTheDocument();
+    await waitFor(() => {
+      // The name appears twice: the avatar fallback and the profile label.
+      expect(screen.getAllByText(MOCK_USER.name).length).toBeGreaterThan(0);
+      expect(screen.getByText(MOCK_USER.role)).toBeInTheDocument();
+    });
   });
 
-  test('renders the avatar image resolved by the hook', () => {
+  test('renders the avatar image resolved by the hook', async () => {
     setup({ image: 'data:image/png;base64,abc' });
 
-    expect(mockUseUserAvatar).toHaveBeenCalledWith(MOCK_USER.image);
+    await waitFor(() => {
+      expect(mockUseUserAvatar).toHaveBeenCalledWith(MOCK_USER.image);
+    });
   });
 
-  test('disables the file input for non-owners', () => {
+  test('disables the file input for non-owners', async () => {
     const { container } = setup({ isOwner: false });
 
-    expect(getFileInput(container)).toBeDisabled();
+    await waitFor(() => {
+      expect(getFileInput(container)).toBeDisabled();
+    });
   });
 
-  test('enables the file input for the profile owner', () => {
+  test('enables the file input for the profile owner', async () => {
     const { container } = setup({ isOwner: true });
 
-    expect(getFileInput(container)).toBeEnabled();
+    await waitFor(() => {
+      expect(getFileInput(container)).toBeEnabled();
+    });
   });
 
   test('uploads the avatar and refreshes the session on success', async () => {

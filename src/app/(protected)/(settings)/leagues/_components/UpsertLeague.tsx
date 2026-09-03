@@ -33,7 +33,7 @@ import { getDefaults } from '@/lib/zod';
 import { CACHE_KEY, ESTABLISHED_DATE } from '@/utils/constants';
 import { LeagueStatus } from '@/utils/enum';
 
-import { User } from '@/drizzle/schema';
+import type { User } from '@/drizzle/schema';
 import {
   UpsertLeagueSchema,
   type UpsertLeagueSchemaValues,

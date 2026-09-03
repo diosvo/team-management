@@ -1,4 +1,4 @@
-import { InsertMatch, Match } from '@/drizzle/schema';
+import type { InsertMatch, Match } from '@/drizzle/schema';
 
 import { MatchStatus } from '@/utils/enum';
 import { MOCK_LEAGUE } from './league';

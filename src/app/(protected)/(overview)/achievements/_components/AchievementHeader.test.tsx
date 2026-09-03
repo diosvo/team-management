@@ -1,8 +1,12 @@
-import { Mock } from 'vitest';
 
 import usePermissions from '@/hooks/use-permissions';
 
-import { renderWithUI, screen } from '@/test/utilities';
+import {
+  createPermissionsMock,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+} from '@/test/utilities';
 
 import AchievementHeader from './AchievementHeader';
 import { UpsertAchievement } from './UpsertAchievement';
@@ -18,20 +22,18 @@ vi.mock('./UpsertAchievement', () => ({
 }));
 
 describe('AchievementHeader', () => {
-  const mockUsePermissions = usePermissions as unknown as Mock;
-  const mockOpen = UpsertAchievement.open as unknown as Mock;
+  const mockUsePermissions = vi.mocked(usePermissions);
+  const mockOpen = vi.mocked(UpsertAchievement.open);
 
   const setup = ({ canCreate = false } = {}) => {
-    mockUsePermissions.mockReturnValue({
+    mockUsePermissions.mockReturnValue(createPermissionsMock({
       can: vi.fn(() => canCreate),
-    });
+    }));
 
     return renderWithUI(<AchievementHeader />);
   };
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  setupTestLifecycle();
 
   test('renders the record button when the user can create', () => {
     setup({ canCreate: true });

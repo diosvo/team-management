@@ -1,4 +1,4 @@
-import { ColorPalette } from '@chakra-ui/react';
+import type { ColorPalette } from '@chakra-ui/react';
 import { type LucideIcon } from 'lucide-react';
 
 export type AchievementStyle = {

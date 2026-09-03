@@ -7,7 +7,7 @@ import {
   updateSession,
 } from '@/db/training-session';
 import { getTeamHeadCoach } from '@/db/user';
-import { UpsertSessionSchemaValues } from '@/schemas/training';
+import type { UpsertSessionSchemaValues } from '@/schemas/training';
 
 import {
   mockWithAuth,
@@ -24,7 +24,7 @@ import { MOCK_COACH_WITH_NAME } from '@/test/mocks/user';
 
 import { Interval } from '@/utils/enum';
 
-import { TrainingSearchParams } from '@/lib/nuqs';
+import type { TrainingSearchParams } from '@/lib/nuqs';
 
 import {
   getCoach,

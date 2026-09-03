@@ -21,7 +21,10 @@ import { toaster } from '@/components/ui/toaster';
 import { formatValueUnit } from '@/utils/formatter';
 
 import { getReportRecipients, sendReportEmail } from '@/actions/report';
-import { EmailReportSchema, EmailReportSchemaValues } from '@/schemas/report';
+import {
+  EmailReportSchema,
+  type EmailReportSchemaValues,
+} from '@/schemas/report';
 
 import AnalyticsReport from '../../reports/_components/AnalyticsReport';
 

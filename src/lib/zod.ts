@@ -1,4 +1,4 @@
-import { FieldErrors } from 'react-hook-form';
+import type { FieldErrors } from 'react-hook-form';
 import { z } from 'zod';
 
 type ZodItem<T extends z.ZodRawShape> = z.infer<z.ZodObject<T>>;

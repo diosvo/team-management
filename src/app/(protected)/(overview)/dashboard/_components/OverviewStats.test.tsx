@@ -1,6 +1,5 @@
-import { Mock } from 'vitest';
 
-import { renderWithUI, screen } from '@/test/utilities';
+import { renderWithUI, screen, setupTestLifecycle } from '@/test/utilities';
 
 import { getOverviewStats } from '@/actions/analytics';
 import { getYearsActive } from '@/app/(protected)/_helpers/utils';
@@ -11,7 +10,7 @@ vi.mock('@/actions/analytics', () => ({
 }));
 
 describe('OverviewStats', () => {
-  const mockGetOverviewStats = getOverviewStats as unknown as Mock;
+  const mockGetOverviewStats = vi.mocked(getOverviewStats);
 
   const DEFAULT_STATS = {
     active_players: 12,
@@ -27,9 +26,7 @@ describe('OverviewStats', () => {
     return renderWithUI(await OverviewStats());
   };
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  setupTestLifecycle();
 
   test('renders the card title and description', async () => {
     await setup();

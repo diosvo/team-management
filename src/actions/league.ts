@@ -14,7 +14,7 @@ import {
 } from '@/db/league';
 import { getDbErrorMessage } from '@/db/pg-error';
 import { getTeamPlayerIds } from '@/db/player';
-import { UpsertLeagueSchemaValues } from '@/schemas/league';
+import type { UpsertLeagueSchemaValues } from '@/schemas/league';
 
 import { withAuth, withResource } from './auth';
 import { revalidate } from './cache';

@@ -25,7 +25,7 @@ import { formatDatetime } from '@/utils/formatter';
 import { getColor } from '@/utils/helper';
 
 import { removeAttendance, updateStatus } from '@/actions/attendance';
-import { AttendanceWithPlayer } from '@/types/attendance';
+import type { AttendanceWithPlayer } from '@/types/attendance';
 
 const ACTIONS = [
   {

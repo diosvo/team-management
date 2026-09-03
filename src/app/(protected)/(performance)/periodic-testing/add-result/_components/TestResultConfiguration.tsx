@@ -6,7 +6,7 @@ import SearchableSelect from '@/components/SearchableSelect';
 import { Field } from '@/components/ui/field';
 import { PlayerSelectionWithActions } from '@/components/user/PlayerSelection';
 
-import { TestConfigurationSelection } from '@/types/periodic-testing';
+import type { TestConfigurationSelection } from '@/types/periodic-testing';
 import { ESTABLISHED_DATE } from '@/utils/constants';
 
 import { getTestTypes } from '@/actions/test-type';

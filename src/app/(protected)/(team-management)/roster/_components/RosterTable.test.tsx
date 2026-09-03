@@ -1,16 +1,21 @@
-import * as nuqs from 'nuqs';
-import { Mock } from 'vitest';
-
-import { toaster } from '@/components/ui/toaster';
-
 import { MOCK_USER } from '@/test/mocks/user';
-import { renderWithUI, screen, waitFor } from '@/test/utilities';
+import {
+  createPermissionsMock,
+  createToasterMock,
+  expectNoA11yViolations,
+  mockToaster,
+  mockUseQueryStates,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+  waitFor,
+} from '@/test/utilities';
 
 import usePermissions from '@/hooks/use-permissions';
 import { UserRole, UserState } from '@/utils/enum';
 
 import { removeUser } from '@/actions/user';
-import { User } from '@/drizzle/schema/user';
+import type { User } from '@/drizzle/schema/user';
 
 import RosterTable from './RosterTable';
 
@@ -32,11 +37,7 @@ vi.mock('@/actions/user', () => ({
   removeUser: vi.fn(),
 }));
 
-vi.mock('@/components/ui/toaster', () => ({
-  toaster: {
-    create: vi.fn(),
-  },
-}));
+vi.mock('@/components/ui/toaster', () => createToasterMock());
 
 const ALICE: User = {
   ...MOCK_USER,
@@ -57,36 +58,35 @@ const BOB: User = {
 };
 
 describe('RosterTable', () => {
-  const mockUsePermissions = usePermissions as unknown as Mock;
-  const mockRemoveUser = removeUser as unknown as Mock;
+  const mockUsePermissions = vi.mocked(usePermissions);
+  const mockRemoveUser = vi.mocked(removeUser);
 
-  const setup = (
-    {
-      users = [ALICE, BOB],
-      perms = {},
-      params = {},
-    }: {
-      users?: Array<User>;
-      perms?: Record<string, boolean>;
-      params?: Record<string, unknown>;
-    } = {},
-  ) => {
-    mockUsePermissions.mockReturnValue({
+  const setup = ({
+    users = [ALICE, BOB],
+    perms = {},
+    params = {},
+  }: {
+    users?: Array<User>;
+    perms?: Record<string, boolean>;
+    params?: Record<string, unknown>;
+  } = {}) => {
+    mockUsePermissions.mockReturnValue(createPermissionsMock({
       isAdmin: false,
       isCaptain: false,
       isGuest: false,
       ...perms,
-    });
-    (nuqs.useQueryStates as unknown as Mock).mockReturnValue([
-      { page: 1, q: '', role: [], state: [], ...params },
-      vi.fn(),
-    ]);
+    }));
+    mockUseQueryStates({ page: 1, q: '', role: [], state: [], ...params });
 
     return renderWithUI(<RosterTable users={users} />);
   };
 
-  beforeEach(() => {
-    vi.clearAllMocks();
+  setupTestLifecycle();
+
+  test('should be accessible', async () => {
+    const { container } = setup({});
+
+    await expectNoA11yViolations(container);
   });
 
   test('renders a row for each user', () => {
@@ -161,7 +161,7 @@ describe('RosterTable', () => {
 
   describe('selection', () => {
     test('deletes the selected users and reports success', async () => {
-      mockRemoveUser.mockResolvedValue({ success: true });
+      mockRemoveUser.mockResolvedValue({ success: true, message: '' });
 
       const { user } = setup({ perms: { isAdmin: true } });
 
@@ -175,15 +175,15 @@ describe('RosterTable', () => {
         expect(ids).toEqual(expect.arrayContaining(['alice', 'bob']));
       });
 
-      expect(toaster.create).toHaveBeenCalledWith(
+      expect(mockToaster.create).toHaveBeenCalledWith(
         expect.objectContaining({ type: 'success' }),
       );
     });
 
     test('warns when some deletions fail', async () => {
       mockRemoveUser
-        .mockResolvedValueOnce({ success: true })
-        .mockResolvedValueOnce({ success: false });
+        .mockResolvedValueOnce({ success: true, message: '' })
+        .mockResolvedValueOnce({ success: false, message: '' });
 
       const { user } = setup({ perms: { isAdmin: true } });
 
@@ -193,7 +193,7 @@ describe('RosterTable', () => {
       await user.click(screen.getByRole('button', { name: /Delete/ }));
 
       await waitFor(() => {
-        expect(toaster.create).toHaveBeenCalledWith(
+        expect(mockToaster.create).toHaveBeenCalledWith(
           expect.objectContaining({ type: 'warning' }),
         );
       });

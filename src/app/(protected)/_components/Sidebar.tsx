@@ -226,7 +226,12 @@ export default function Sidebar({
       <HStack justifyContent="center" flexWrap="wrap">
         <Tooltip content="Documentation">
           <IconButton size="2xs" variant="ghost" colorPalette="pink" asChild>
-            <ChakraLink href="/docs" target="_blank" rel="noreferrer">
+            <ChakraLink
+              href="/docs"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Documentation"
+            >
               <BookMarked />
             </ChakraLink>
           </IconButton>
@@ -278,6 +283,7 @@ export default function Sidebar({
               href="https://github.com/diosvo/team-management/issues/new?title=Feedback%20for%20%E2%80%9CTeam%20Rule%E2%80%9D&labels=maintenance&project=team-management&assignees=diosvo"
               target="_blank"
               rel="noopener noreferrer"
+              aria-label="Suggestions + feedback + ideas"
             >
               <Flag />
             </ChakraLink>

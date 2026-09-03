@@ -1,8 +1,13 @@
 import { act } from 'react';
 
-import { axe } from 'jest-axe';
-
-import { fireEvent, renderWithUI, screen, waitFor } from '@/test/utilities';
+import {
+  expectNoA11yViolations,
+  fireEvent,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+  waitFor,
+} from '@/test/utilities';
 
 import type { FilterDef } from '@/types/filters.d';
 import { Interval } from '@/utils/enum';
@@ -44,19 +49,11 @@ type Values = { status: Array<string>; date: string };
 
 const defaults: Values = { status: [], date: '' };
 
-// ---------------------------------------------------------------------------
-// Query helpers
-// ---------------------------------------------------------------------------
-
 const checkbox = (name: string) => screen.getByRole('checkbox', { name });
 const button = (name: RegExp) => screen.getByRole('button', { name });
 
 const activeCheckbox = () => checkbox('Active');
 const inactiveCheckbox = () => checkbox('Inactive');
-
-// ---------------------------------------------------------------------------
-// Tests
-// ---------------------------------------------------------------------------
 
 describe('Filters', () => {
   const onApply = vi.fn();
@@ -74,15 +71,12 @@ describe('Filters', () => {
       />,
     );
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  setupTestLifecycle();
 
   test('should be accessible', async () => {
     const { container } = setup();
 
-    const result = await axe(container);
-    expect(result).toHaveNoViolations();
+    await expectNoA11yViolations(container);
   });
 
   describe('search input', () => {

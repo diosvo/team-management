@@ -1,7 +1,12 @@
 import { and, eq, ne } from 'drizzle-orm';
 
 import db from '@/drizzle';
-import { CoachTable, Player, User, UserTable } from '@/drizzle/schema';
+import {
+  CoachTable,
+  type Player,
+  type User,
+  UserTable,
+} from '@/drizzle/schema';
 
 import { UserRole, UserState } from '@/utils/enum';
 

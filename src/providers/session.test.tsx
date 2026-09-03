@@ -1,16 +1,18 @@
-import { PropsWithChildren } from 'react';
+import type { PropsWithChildren } from 'react';
 
 import { renderHook } from '@testing-library/react';
-import { Mock } from 'vitest';
+
+import { setupTestLifecycle } from '@/test/utilities';
 
 import { UserRole } from '@/utils/enum';
 
 import type auth from '@/lib/auth';
 import authClient from '@/lib/auth-client';
 
-import SessionProvider, { useSessionContext } from './session';
-
-type SessionUser = typeof auth.$Infer.Session.user;
+import SessionProvider, {
+  useSessionContext,
+  type SessionUser,
+} from './session';
 
 vi.mock('@/lib/auth-client', () => ({
   default: {
@@ -18,7 +20,7 @@ vi.mock('@/lib/auth-client', () => ({
   },
 }));
 
-const mockUseSession = authClient.useSession as unknown as Mock;
+const mockUseSession = vi.mocked(authClient.useSession);
 
 /**
  * Builds a session-shaped object. The provider only reads `session.user`, so we
@@ -31,6 +33,22 @@ const buildSession = (user: Record<string, unknown> = {}) =>
 const buildUser = (user: Record<string, unknown> = {}): SessionUser =>
   user as unknown as SessionUser;
 
+type SessionStore = ReturnType<typeof authClient.useSession>;
+
+/**
+ * Drives the client hook. The provider only reads `data` and `isPending`, so
+ * the rest of the store is filled with inert values to satisfy its return type.
+ */
+const mockSessionStore = (store: Partial<SessionStore>) =>
+  mockUseSession.mockReturnValue({
+    data: null,
+    error: null,
+    isPending: false,
+    isRefetching: false,
+    refetch: vi.fn(),
+    ...store,
+  } as SessionStore);
+
 const renderProvider = (initialUser: Nullable<SessionUser>) =>
   renderHook(() => useSessionContext(), {
     wrapper: ({ children }: PropsWithChildren) => (
@@ -39,9 +57,7 @@ const renderProvider = (initialUser: Nullable<SessionUser>) =>
   });
 
 describe('SessionProvider', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  setupTestLifecycle();
 
   describe('useSessionContext', () => {
     test('throws when used outside of a <SessionProvider>', () => {
@@ -58,7 +74,7 @@ describe('SessionProvider', () => {
 
   describe('client session resolved', () => {
     test('exposes the user from the client session', () => {
-      mockUseSession.mockReturnValue({
+      mockSessionStore({
         data: buildSession({ role: UserRole.COACH, is_captain: true }),
         isPending: false,
       });
@@ -75,7 +91,7 @@ describe('SessionProvider', () => {
 
     test('client session takes precedence over the server user', () => {
       const initialUser = buildUser({ role: UserRole.GUEST });
-      mockUseSession.mockReturnValue({
+      mockSessionStore({
         data: buildSession({ role: UserRole.SUPER_ADMIN }),
         isPending: false,
       });
@@ -89,7 +105,7 @@ describe('SessionProvider', () => {
   describe('while the client hook is pending', () => {
     test('falls back to the server user', () => {
       const initialUser = buildUser({ role: UserRole.PLAYER });
-      mockUseSession.mockReturnValue({ data: null, isPending: true });
+      mockSessionStore({ data: null, isPending: true });
 
       const { result } = renderProvider(initialUser);
 
@@ -100,7 +116,7 @@ describe('SessionProvider', () => {
     });
 
     test('is loading when there is no server user to fall back to', () => {
-      mockUseSession.mockReturnValue({ data: null, isPending: true });
+      mockSessionStore({ data: null, isPending: true });
 
       const { result } = renderProvider(null);
 
@@ -112,7 +128,7 @@ describe('SessionProvider', () => {
 
   describe('no session', () => {
     test('resolves to an unauthenticated, non-loading state', () => {
-      mockUseSession.mockReturnValue({ data: null, isPending: false });
+      mockSessionStore({ data: null, isPending: false });
 
       const { result } = renderProvider(null);
 
@@ -123,7 +139,7 @@ describe('SessionProvider', () => {
 
     test('ignores the server user once the client hook resolves empty', () => {
       const initialUser = buildUser({ role: UserRole.SUPER_ADMIN });
-      mockUseSession.mockReturnValue({ data: null, isPending: false });
+      mockSessionStore({ data: null, isPending: false });
 
       const { result } = renderProvider(initialUser);
 

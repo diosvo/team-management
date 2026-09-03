@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { PropsWithChildren } from 'react';
+import type { PropsWithChildren } from 'react';
 
 import { DocsLayout } from 'fumadocs-ui/layouts/docs';
 import { RootProvider } from 'fumadocs-ui/provider/next';

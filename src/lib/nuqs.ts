@@ -1,11 +1,11 @@
 import { useQueryStates, type UseQueryStatesKeysMap } from 'nuqs';
 import {
   createLoader,
-  inferParserType,
   parseAsArrayOf,
   parseAsInteger,
   parseAsString,
   parseAsStringEnum,
+  type inferParserType,
   type Options,
 } from 'nuqs/server';
 

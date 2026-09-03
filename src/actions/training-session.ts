@@ -2,7 +2,7 @@
 
 import { ResponseFactory } from '@/utils/response';
 
-import { TrainingSearchParams } from '@/lib/nuqs';
+import type { TrainingSearchParams } from '@/lib/nuqs';
 
 import { getDbErrorMessage } from '@/db/pg-error';
 import {
@@ -12,7 +12,7 @@ import {
   updateSession,
 } from '@/db/training-session';
 import { getTeamHeadCoach } from '@/db/user';
-import { UpsertSessionSchemaValues } from '@/schemas/training';
+import type { UpsertSessionSchemaValues } from '@/schemas/training';
 
 import { withAuth, withResource } from './auth';
 import { revalidate } from './cache';

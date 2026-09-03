@@ -1,10 +1,14 @@
-import { axe } from 'jest-axe';
-import * as nuqs from 'nuqs';
-import { SWRConfig } from 'swr';
-import { Mock } from 'vitest';
-
 import { MOCK_USER_WITH_PLAYER } from '@/test/mocks/user';
-import { renderWithUI, screen, waitFor } from '@/test/utilities';
+import {
+  createToasterMock,
+  expectNoA11yViolations,
+  mockUseQueryStates,
+  renderWithUI,
+  screen,
+  waitFor,
+  waitForStable,
+  withFreshSWR,
+} from '@/test/utilities';
 
 import { submitLeave } from '@/actions/attendance';
 import { getActivePlayers } from '@/actions/user';
@@ -19,28 +23,25 @@ vi.mock('@/actions/user', () => ({
   getActivePlayers: vi.fn(),
 }));
 
-vi.mock('@/components/ui/toaster', () => ({
-  toaster: { create: vi.fn(), update: vi.fn(), remove: vi.fn() },
-}));
-
-const withFreshSWR = (ui: React.ReactElement) => (
-  <SWRConfig value={{ provider: () => new Map() }}>{ui}</SWRConfig>
-);
+vi.mock('@/components/ui/toaster', () => createToasterMock());
 
 describe('BulkAttendanceManager', () => {
-  const setSearchParams = vi.fn();
   const mockSubmitLeave = vi.mocked(submitLeave);
   const mockGetActivePlayers = vi.mocked(getActivePlayers);
 
-  const setup = () => {
-    (nuqs.useQueryStates as unknown as Mock).mockReturnValue([
-      {},
-      setSearchParams,
-    ]);
+  const setup = async () => {
+    mockUseQueryStates({});
 
-    return renderWithUI(
+    const result = renderWithUI(
       withFreshSWR(<BulkAttendanceManager trigger={<button>Open</button>} />),
     );
+
+    // Flush the SWR players fetch and the form's initial validation so their
+    // state updates land inside act(...).
+    await waitFor(() => expect(mockGetActivePlayers).toHaveBeenCalled());
+    await waitForStable();
+
+    return result;
   };
 
   beforeEach(() => {
@@ -50,21 +51,20 @@ describe('BulkAttendanceManager', () => {
   });
 
   test('should be accessible', async () => {
-    const { container } = setup();
+    const { container } = await setup();
 
-    const result = await axe(container);
-    expect(result).toHaveNoViolations();
+    await expectNoA11yViolations(container);
   });
 
-  test('renders the trigger and keeps the dialog closed initially', () => {
-    setup();
+  test('renders the trigger and keeps the dialog closed initially', async () => {
+    await setup();
 
     expect(screen.getByRole('button', { name: 'Open' })).toBeInTheDocument();
     expect(screen.queryByText('Mark Bulk Attendance')).not.toBeInTheDocument();
   });
 
   test('opens the dialog with a date field', async () => {
-    const { user } = setup();
+    const { user } = await setup();
 
     await user.click(screen.getByRole('button', { name: 'Open' }));
 
@@ -73,13 +73,10 @@ describe('BulkAttendanceManager', () => {
   });
 
   test('marks every active player on time when none are selected', async () => {
-    const { user } = setup();
+    const { user } = await setup();
 
     await user.click(screen.getByRole('button', { name: 'Open' }));
     await screen.findByText('Mark Bulk Attendance');
-
-    // Wait for the active players to load via SWR before submitting.
-    await waitFor(() => expect(mockGetActivePlayers).toHaveBeenCalled());
 
     await user.click(screen.getByRole('button', { name: /submit/i }));
 

@@ -2,7 +2,7 @@ import { asc, desc, eq } from 'drizzle-orm';
 
 import db from '@/drizzle';
 import { AchievementTable } from '@/drizzle/schema/achievement';
-import { UpsertAchievementSchemaValues } from '@/schemas/achievement';
+import type { UpsertAchievementSchemaValues } from '@/schemas/achievement';
 
 import {
   mockDeleteFailure,

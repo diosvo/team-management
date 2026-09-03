@@ -1,4 +1,4 @@
-import { Metadata } from 'next';
+import type { Metadata } from 'next';
 
 import PageTitle from '@/components/PageTitle';
 import { Span } from '@chakra-ui/react';

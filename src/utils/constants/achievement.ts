@@ -8,7 +8,7 @@ import {
   Trophy,
 } from 'lucide-react';
 
-import { AchievementStyle } from '@/types/achievements';
+import type { AchievementStyle } from '@/types/achievements';
 
 import { AchievementType } from '../enum';
 import type { Selection } from '../type';

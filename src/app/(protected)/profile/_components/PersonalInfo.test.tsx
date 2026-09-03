@@ -1,7 +1,13 @@
-import { Mock } from 'vitest';
-
 import { MOCK_USER } from '@/test/mocks/user';
-import { renderWithUI, screen, waitFor } from '@/test/utilities';
+import {
+  createToasterMock,
+  expectNoA11yViolations,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+  waitFor,
+  waitForStable,
+} from '@/test/utilities';
 
 import { updatePersonalInfo } from '@/actions/user';
 import { formatDate } from '@/utils/formatter';
@@ -12,51 +18,61 @@ vi.mock('@/actions/user', () => ({
   updatePersonalInfo: vi.fn(),
 }));
 
-vi.mock('@/components/ui/toaster', () => ({
-  toaster: {
-    create: vi.fn(() => 'toast-id'),
-    update: vi.fn(),
-  },
-}));
+vi.mock('@/components/ui/toaster', () => createToasterMock());
 
 describe('PersonalInfo', () => {
-  const mockUpdatePersonalInfo = updatePersonalInfo as unknown as Mock;
+  setupTestLifecycle();
 
-  const setup = (viewOnly = false) =>
-    renderWithUI(<PersonalInfo user={MOCK_USER} viewOnly={viewOnly} />);
+  const mockUpdatePersonalInfo = vi.mocked(updatePersonalInfo);
 
-  const enterEditMode = async (user: ReturnType<typeof setup>['user']) => {
+  const setup = async (viewOnly = false) => {
+    const result = renderWithUI(
+      <PersonalInfo user={MOCK_USER} viewOnly={viewOnly} />,
+    );
+
+    // The form's initial validation resolves asynchronously; flush it here so
+    // that state update lands inside act(...).
+    await waitForStable();
+
+    return result;
+  };
+
+  const enterEditMode = async (
+    user: Awaited<ReturnType<typeof setup>>['user'],
+  ) => {
     await user.click(screen.getByRole('button'));
     return screen.findByPlaceholderText('Anonymous');
   };
 
-  beforeEach(() => {
-    vi.clearAllMocks();
+  test('should be accessible', async () => {
+    const { container } = await setup();
+
+    await expectNoA11yViolations(container);
   });
 
-  test('renders the stored values in read-only mode', () => {
-    setup();
+  test('renders the stored values in read-only mode', async () => {
+    await setup();
 
     expect(screen.getByText(MOCK_USER.email)).toBeInTheDocument();
     expect(screen.getByText(MOCK_USER.name)).toBeInTheDocument();
     expect(screen.getByText(formatDate(MOCK_USER.dob))).toBeInTheDocument();
   });
 
-  test('renders a dash for the unset optional fields', () => {
-    setup();
+  test('renders a dash for the unset optional fields', async () => {
+    await setup();
 
     // phone_number and citizen_identification are null on MOCK_USER.
     expect(screen.getAllByText('-')).toHaveLength(2);
   });
 
-  test('disables editing when viewOnly is set', () => {
-    setup(true);
+  test('disables editing when viewOnly is set', async () => {
+    await setup(true);
 
     expect(screen.getByRole('button')).toBeDisabled();
   });
 
   test('switches to inputs when editing, keeping email locked', async () => {
-    const { user } = setup();
+    const { user } = await setup();
 
     const nameInput = await enterEditMode(user);
 
@@ -71,7 +87,7 @@ describe('PersonalInfo', () => {
       message: 'Updated',
     });
 
-    const { container, user } = setup();
+    const { container, user } = await setup();
 
     const nameInput = await enterEditMode(user);
     await user.clear(nameInput);
@@ -92,7 +108,7 @@ describe('PersonalInfo', () => {
   });
 
   test('leaves edit mode without saving when cancelled', async () => {
-    const { user } = setup();
+    const { user } = await setup();
 
     const nameInput = await enterEditMode(user);
     expect(nameInput).toBeInTheDocument();
@@ -100,7 +116,9 @@ describe('PersonalInfo', () => {
     await user.click(screen.getByRole('button', { name: /close/i }));
 
     await waitFor(() =>
-      expect(screen.queryByPlaceholderText('Anonymous')).not.toBeInTheDocument(),
+      expect(
+        screen.queryByPlaceholderText('Anonymous'),
+      ).not.toBeInTheDocument(),
     );
     expect(mockUpdatePersonalInfo).not.toHaveBeenCalled();
   });

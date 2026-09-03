@@ -69,10 +69,22 @@ jobs:
 
       - name: 🧪 Unit Tests
         run: |
-          pnpm test || status=$?
+          pnpm test:coverage || status=$?
+
+          jq -r '.total | "- **Coverage**: \(.lines.pct)% lines · \(.branches.pct)% branches · \(.functions.pct)% functions · \(.statements.pct)% statements"' \
+            coverage/coverage-summary.json >> "$GITHUB_STEP_SUMMARY" ||
+            echo "::warning::No coverage summary to capture"
+
           cp "$GITHUB_STEP_SUMMARY" "${{ inputs.summary-file }}" ||
             echo "::warning::No step summary to capture for ${{ inputs.summary-file }}"
           exit $status
+
+      # `next build` only type-checks files its routes reach, so type errors in
+      # specs never fail a deploy.
+      # Vitest transpiles without checking types at all.
+      # This step is the only thing covering them.
+      - name: 🔎 Type Check
+        run: pnpm typecheck
 
       - name: 📤 Upload test report
         if: ${{ !cancelled() }}

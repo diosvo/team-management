@@ -3,11 +3,11 @@ import { asc, avg, count, desc, eq, sql } from 'drizzle-orm';
 import db from '@/drizzle';
 import {
   AchievementTable,
-  InsertAchievement,
+  type InsertAchievement,
 } from '@/drizzle/schema/achievement';
 import { MatchPlayerStatsTable, MatchTable } from '@/drizzle/schema/match';
 import { UserTable } from '@/drizzle/schema/user';
-import { UpsertAchievementSchemaValues } from '@/schemas/achievement';
+import type { UpsertAchievementSchemaValues } from '@/schemas/achievement';
 
 export async function getAchievements() {
   try {

@@ -1,4 +1,4 @@
-import { Metadata } from 'next';
+import type { Metadata } from 'next';
 
 import { getMatches } from '@/actions/match';
 import { loadMatchFilters } from '@/lib/nuqs';

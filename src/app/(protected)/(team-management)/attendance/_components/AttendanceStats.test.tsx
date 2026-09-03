@@ -1,10 +1,14 @@
-import * as nuqs from 'nuqs';
-import { Mock } from 'vitest';
-
 import { MOCK_ATTENDANCE_STATS } from '@/test/mocks/attendance';
-import { axeInteractiveStat, renderWithUI, screen } from '@/test/utilities';
+import {
+  axeInteractiveStat,
+  expectNoA11yViolations,
+  mockUseQueryStates,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+} from '@/test/utilities';
 
-import { AttendanceStats as StatsType } from '@/types/attendance';
+import type { AttendanceStats as StatsType } from '@/types/attendance';
 import { AttendanceStatus } from '@/utils/enum';
 
 import AttendanceStats from './AttendanceStats';
@@ -13,23 +17,17 @@ describe('AttendanceStats', () => {
   const setSearchParams = vi.fn();
 
   const setup = (stats: StatsType = MOCK_ATTENDANCE_STATS) => {
-    (nuqs.useQueryStates as unknown as Mock).mockReturnValue([
-      {},
-      setSearchParams,
-    ]);
+    mockUseQueryStates({}, setSearchParams);
 
     return renderWithUI(<AttendanceStats stats={stats} />);
   };
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  setupTestLifecycle();
 
   test('should be accessible', async () => {
     const { container } = setup();
 
-    const result = await axeInteractiveStat(container);
-    expect(result).toHaveNoViolations();
+    await expectNoA11yViolations(container, axeInteractiveStat);
   });
 
   test('renders all stat cards with their labels', () => {

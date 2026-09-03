@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm';
 
 import db from '@/drizzle';
-import { CoachTable, InsertCoach } from '@/drizzle/schema/coach';
+import { CoachTable, type InsertCoach } from '@/drizzle/schema/coach';
 
 import {
   mockInsertFailure,

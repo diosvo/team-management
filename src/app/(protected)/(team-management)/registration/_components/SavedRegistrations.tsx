@@ -17,7 +17,7 @@ import { useCommonParams } from '@/lib/nuqs';
 import { formatDatetime } from '@/utils/formatter';
 
 import { downloadPdf } from '../_helpers/roster';
-import { SavedRegistration } from '../_helpers/useSavedRegistrations';
+import type { SavedRegistration } from '../_helpers/useSavedRegistrations';
 
 type SavedRegistrationsProps = {
   items: Array<SavedRegistration>;

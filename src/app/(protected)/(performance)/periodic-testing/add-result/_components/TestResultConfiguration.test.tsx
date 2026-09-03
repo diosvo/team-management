@@ -1,4 +1,10 @@
-import { fireEvent, renderWithUI, screen } from '@/test/utilities';
+import {
+  expectNoA11yViolations,
+  fireEvent,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+} from '@/test/utilities';
 
 import {
   MOCK_EMPTY_TEST_CONFIGURATION,
@@ -51,8 +57,12 @@ describe('TestResultConfiguration', () => {
     return updater(MOCK_EMPTY_TEST_CONFIGURATION);
   };
 
-  beforeEach(() => {
-    vi.clearAllMocks();
+  setupTestLifecycle();
+
+  test('should be accessible', async () => {
+    const { container } = setup();
+
+    await expectNoA11yViolations(container);
   });
 
   test('renders the test date field', () => {

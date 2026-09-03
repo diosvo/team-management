@@ -1,7 +1,6 @@
-import { axe } from 'jest-axe';
 import { Mail } from 'lucide-react';
 
-import { renderWithUI, screen } from '@/test/utilities';
+import { expectNoA11yViolations, renderWithUI, screen } from '@/test/utilities';
 import TextField from './TextField';
 
 describe('TextField', () => {
@@ -20,8 +19,7 @@ describe('TextField', () => {
   test('should be accessible', async () => {
     const { container } = setup();
 
-    const result = await axe(container);
-    expect(result).toHaveNoViolations();
+    await expectNoA11yViolations(container);
   });
 
   describe('vertical direction (default)', () => {

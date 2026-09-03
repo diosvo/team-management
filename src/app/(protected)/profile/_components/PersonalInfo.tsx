@@ -14,12 +14,15 @@ import { Field } from '@/components/ui/field';
 import { toaster } from '@/components/ui/toaster';
 import { Tooltip } from '@/components/ui/tooltip';
 
-import { User } from '@/drizzle/schema/user';
+import type { User } from '@/drizzle/schema/user';
 import { getDefaults } from '@/lib/zod';
 import { formatDate } from '@/utils/formatter';
 
 import { updatePersonalInfo } from '@/actions/user';
-import { EditPersonalInfoSchema, EditPersonalInfoValues } from '@/schemas/user';
+import {
+  EditPersonalInfoSchema,
+  type EditPersonalInfoValues,
+} from '@/schemas/user';
 
 export default function PersonalInfo({
   user,
@@ -81,6 +84,7 @@ export default function PersonalInfo({
               <IconButton
                 size="sm"
                 type="submit"
+                aria-label="Save"
                 disabled={!isDirty || !isValid || isPending}
               >
                 <Save />
@@ -93,6 +97,7 @@ export default function PersonalInfo({
               size="sm"
               variant="subtle"
               disabled={viewOnly}
+              aria-label={viewOnly ? 'View Only' : 'Edit'}
               onClick={() => setIsEditing(true)}
             >
               <Edit />

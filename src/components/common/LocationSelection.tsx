@@ -2,8 +2,13 @@
 
 import NextLink from 'next/link';
 
-import { Link as ChakraLink, LinkProps, Span, Stack } from '@chakra-ui/react';
-import { Control, FieldPath, FieldValues } from 'react-hook-form';
+import {
+  Link as ChakraLink,
+  type LinkProps,
+  Span,
+  Stack,
+} from '@chakra-ui/react';
+import type { Control, FieldPath, FieldValues } from 'react-hook-form';
 
 import { SearchableSelectField } from '../SearchableSelect';
 

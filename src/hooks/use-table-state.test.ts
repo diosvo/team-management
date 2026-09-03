@@ -1,5 +1,5 @@
 import { act, renderHook } from '@testing-library/react';
-import { Mock } from 'vitest';
+import type { Mock } from 'vitest';
 
 import usePermissions from './use-permissions';
 import useTableState from './use-table-state';

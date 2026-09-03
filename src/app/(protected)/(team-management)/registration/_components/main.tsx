@@ -29,8 +29,8 @@ import {
   SelectedPlayers,
 } from '@/components/user/PlayerSelection';
 
-import { League } from '@/drizzle/schema';
-import { User } from '@/drizzle/schema/user';
+import type { League } from '@/drizzle/schema';
+import type { User } from '@/drizzle/schema/user';
 
 import { getLeagues } from '@/actions/league';
 
@@ -181,7 +181,12 @@ export default function RegistrationPageClient() {
             action={
               <Popover.Root>
                 <Popover.Trigger asChild>
-                  <IconButton size="sm" variant="ghost" colorPalette="blue">
+                  <IconButton
+                    size="sm"
+                    variant="ghost"
+                    colorPalette="blue"
+                    aria-label="Field names"
+                  >
                     <HelpCircle size={14} />
                   </IconButton>
                 </Popover.Trigger>

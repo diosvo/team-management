@@ -18,8 +18,8 @@ import { toaster } from '@/components/ui/toaster';
 
 import useTableState from '@/hooks/use-table-state';
 
-import { League } from '@/drizzle/schema';
-import { User } from '@/drizzle/schema/user';
+import type { League } from '@/drizzle/schema';
+import type { User } from '@/drizzle/schema/user';
 
 import { COLUMNS, downloadCsv, downloadPdf, toRow } from '../_helpers/roster';
 

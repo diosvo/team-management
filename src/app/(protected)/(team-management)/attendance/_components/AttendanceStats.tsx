@@ -5,7 +5,7 @@ import { SimpleGrid } from '@chakra-ui/react';
 import { Stat } from '@/components/ui/stat';
 
 import { useAttendanceFilters } from '@/lib/nuqs';
-import { AttendanceStats as StatsType } from '@/types/attendance';
+import type { AttendanceStats as StatsType } from '@/types/attendance';
 import { AttendanceStatus } from '@/utils/enum';
 import { colorRank } from '@/utils/helper';
 

@@ -1,11 +1,14 @@
 import { and, desc, eq } from 'drizzle-orm';
 
 import db from '@/drizzle';
-import { AttendanceTable, InsertAttendance } from '@/drizzle/schema/attendance';
+import {
+  AttendanceTable,
+  type InsertAttendance,
+} from '@/drizzle/schema/attendance';
 import { UserTable } from '@/drizzle/schema/user';
 
-import { AttendanceStats, AttendanceWithPlayer } from '@/types/attendance';
-import { DataWithStats } from '@/types/common';
+import type { AttendanceStats, AttendanceWithPlayer } from '@/types/attendance';
+import type { DataWithStats } from '@/types/common';
 import { AttendanceStatus } from '@/utils/enum';
 
 export async function getAttendanceByDate(

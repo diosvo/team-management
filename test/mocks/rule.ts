@@ -1,4 +1,4 @@
-import { Rule } from '@/drizzle/schema';
+import type { Rule } from '@/drizzle/schema';
 import { MOCK_TEAM } from './team';
 
 export const MOCK_RULE: Rule = {

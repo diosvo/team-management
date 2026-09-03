@@ -8,7 +8,7 @@ import {
   insertTestType,
   updateTestType,
 } from '@/db/test-type';
-import { UpsertTestTypeSchemaValues } from '@/schemas/periodic-testing';
+import type { UpsertTestTypeSchemaValues } from '@/schemas/periodic-testing';
 
 import { ResponseFactory } from '@/utils/response';
 import { withAuth, withResource } from './auth';

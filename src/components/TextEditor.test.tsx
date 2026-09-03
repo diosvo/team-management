@@ -1,8 +1,11 @@
-import { useEditor } from '@tiptap/react';
-import { axe } from 'jest-axe';
-import { Mock } from 'vitest';
+import { useEditor, type Editor } from '@tiptap/react';
 
-import { renderWithUI, screen } from '@/test/utilities';
+import {
+  expectNoA11yViolations,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+} from '@/test/utilities';
 import TextEditor from './TextEditor';
 
 vi.mock('@tiptap/react', () => ({
@@ -62,9 +65,17 @@ describe('TextEditor', () => {
     onSave,
   };
 
+  /**
+   * `mockEditor` implements only the chainable surface `TextEditor` touches,
+   * not the whole tiptap `Editor` class, so the assertion lives here once
+   * rather than at every `mockReturnValue`.
+   */
+  const mockUseEditor = () =>
+    vi.mocked(useEditor).mockReturnValue(mockEditor as unknown as Editor);
+
   const setup = (overrides = {}) => {
     const props = { ...defaultProps, ...overrides };
-    (useEditor as Mock).mockReturnValue(mockEditor);
+    mockUseEditor();
     return renderWithUI(<TextEditor {...props} />);
   };
 
@@ -78,13 +89,12 @@ describe('TextEditor', () => {
       undo: vi.fn(() => true),
       redo: vi.fn(() => true),
     });
-    (useEditor as Mock).mockReturnValue(mockEditor);
+    mockUseEditor();
   });
 
   test('should be accessible', async () => {
     const { container } = setup();
-    const result = await axe(container);
-    expect(result).toHaveNoViolations();
+    await expectNoA11yViolations(container);
   });
 
   test('renders editor with content', () => {

@@ -1,6 +1,4 @@
-import { axe } from 'jest-axe';
-
-import { renderWithUI, screen } from '@/test/utilities';
+import { expectNoA11yViolations, renderWithUI, screen } from '@/test/utilities';
 
 import TestingStats from './TestingStats';
 
@@ -11,8 +9,7 @@ describe('TestingStats', () => {
   test('should be accessible', async () => {
     const { container } = setup();
 
-    const result = await axe(container);
-    expect(result).toHaveNoViolations();
+    await expectNoA11yViolations(container);
   });
 
   test('renders all stat cards with their labels', () => {

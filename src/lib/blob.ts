@@ -1,4 +1,4 @@
-import { del, get, put, PutCommandOptions } from '@vercel/blob';
+import { del, get, put, type PutCommandOptions } from '@vercel/blob';
 import { fromUint8Array } from 'js-base64';
 
 export async function getFile(pathname: string): Promise<Nullable<string>> {

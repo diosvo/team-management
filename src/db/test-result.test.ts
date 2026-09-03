@@ -2,7 +2,7 @@ import { desc, eq } from 'drizzle-orm';
 
 import db from '@/drizzle';
 import {
-  InsertTestResult,
+  type InsertTestResult,
   TestResultTable,
 } from '@/drizzle/schema/periodic-testing';
 

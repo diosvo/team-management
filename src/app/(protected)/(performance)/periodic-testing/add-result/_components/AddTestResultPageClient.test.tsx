@@ -1,6 +1,10 @@
-import { Mock } from 'vitest';
-
-import { renderWithUI, screen, waitFor } from '@/test/utilities';
+import {
+  createToasterMock,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+  waitFor,
+} from '@/test/utilities';
 
 import { createTestResult } from '@/actions/test-result';
 
@@ -20,20 +24,11 @@ vi.mock('@/actions/test-result', () => ({
   createTestResult: vi.fn(),
 }));
 
-vi.mock('@/components/ui/toaster', () => ({
-  toaster: {
-    create: vi.fn(() => 'toast-id'),
-    update: vi.fn(),
-  },
-}));
+vi.mock('@/components/ui/toaster', () => createToasterMock());
 
 // Drive the internal selection state from the configuration step marker.
 vi.mock('./TestResultConfiguration', () => ({
-  default: ({
-    setSelection,
-  }: {
-    setSelection: (next: unknown) => void;
-  }) => (
+  default: ({ setSelection }: { setSelection: (next: unknown) => void }) => (
     <button
       onClick={() =>
         setSelection({
@@ -53,13 +48,11 @@ vi.mock('./TestResultTable', () => ({
 }));
 
 describe('AddTestResultPageClient', () => {
-  const mockCreate = createTestResult as unknown as Mock;
+  const mockCreate = vi.mocked(createTestResult);
 
   const setup = () => renderWithUI(<AddTestResultPageClient />);
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  setupTestLifecycle();
 
   test('renders both step cards', () => {
     setup();

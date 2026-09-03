@@ -1,4 +1,7 @@
-import { Achievement, InsertAchievement } from '@/drizzle/schema/achievement';
+import type {
+  Achievement,
+  InsertAchievement,
+} from '@/drizzle/schema/achievement';
 import { AchievementType } from '@/utils/enum';
 
 export const MOCK_ACHIEVEMENT_INPUT: InsertAchievement = {

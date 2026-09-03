@@ -6,7 +6,7 @@ import {
   updateMatch as updateDbMatch,
 } from '@/db/match';
 import { getDbErrorMessage } from '@/db/pg-error';
-import { UpsertMatchSchemaValues } from '@/schemas/match';
+import type { UpsertMatchSchemaValues } from '@/schemas/match';
 
 import {
   mockWithAuth,
@@ -16,7 +16,7 @@ import {
 import { MOCK_MATCH, MOCK_MATCH_RESPONSE } from '@/test/mocks/match';
 import { MOCK_USER } from '@/test/mocks/user';
 
-import { MatchSearchParams } from '@/lib/nuqs';
+import type { MatchSearchParams } from '@/lib/nuqs';
 import { Interval } from '@/utils/enum';
 
 import { getMatches, removeMatch, upsertMatch } from './match';

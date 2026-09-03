@@ -1,7 +1,7 @@
 import { asc, eq } from 'drizzle-orm';
 
 import db from '@/drizzle';
-import { InsertLocation, LocationTable } from '@/drizzle/schema';
+import { type InsertLocation, LocationTable } from '@/drizzle/schema';
 
 import {
   mockDeleteFailure,

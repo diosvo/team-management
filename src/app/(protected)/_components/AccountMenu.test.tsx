@@ -1,11 +1,18 @@
-import { Mock } from 'vitest';
-
-import { MOCK_USER } from '@/test/mocks/user';
-import { renderWithUI, screen } from '@/test/utilities';
+import { MOCK_SESSION_USER } from '@/test/mocks/user';
+import {
+  authCallbacks,
+  createSessionMock,
+  createSWRMock,
+  expectNoA11yViolations,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+  waitFor,
+} from '@/test/utilities';
 
 import { useUserAvatar } from '@/hooks/use-image';
 import authClient from '@/lib/auth-client';
-import { useSessionContext } from '@/providers/session';
+import { useSessionContext, type SessionUser } from '@/providers/session';
 import { LOGIN_PATH } from '@/routes';
 
 import AccountMenu from './AccountMenu';
@@ -26,16 +33,17 @@ vi.mock('@/lib/auth-client', () => ({
 }));
 
 describe('AccountMenu', () => {
-  const mockUseSessionContext = useSessionContext as unknown as Mock;
-  const mockUseUserAvatar = useUserAvatar as unknown as Mock;
-  const mockSignOut = authClient.signOut as unknown as Mock;
+  setupTestLifecycle();
 
-  const setup = (user: typeof MOCK_USER | null = MOCK_USER) => {
-    mockUseSessionContext.mockReturnValue({
-      user,
-      isAuthenticated: !!user,
-    });
-    mockUseUserAvatar.mockReturnValue({ data: null, isLoading: false });
+  const mockUseSessionContext = vi.mocked(useSessionContext);
+  const mockUseUserAvatar = vi.mocked(useUserAvatar);
+  const mockSignOut = vi.mocked(authClient.signOut);
+
+  const setup = (user: Nullable<SessionUser> = MOCK_SESSION_USER) => {
+    mockUseSessionContext.mockReturnValue(createSessionMock({ user }));
+    mockUseUserAvatar.mockReturnValue(
+      createSWRMock<Nullable<string>>({ data: null }),
+    );
     return renderWithUI(<AccountMenu />);
   };
 
@@ -43,8 +51,11 @@ describe('AccountMenu', () => {
     await user.click(screen.getByRole('button'));
   };
 
-  beforeEach(() => {
-    vi.clearAllMocks();
+  test('should be accessible', async () => {
+    const { user } = setup();
+    await openMenu(user);
+
+    await expectNoA11yViolations();
   });
 
   test('renders nothing when there is no authenticated user', () => {
@@ -53,10 +64,12 @@ describe('AccountMenu', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  test('renders the avatar trigger when a user is authenticated', () => {
+  test('renders the avatar trigger when a user is authenticated', async () => {
     setup();
 
-    expect(screen.getByRole('button')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByRole('button')).toBeInTheDocument();
+    });
   });
 
   test('shows Profile and My Performance links when the menu is open', async () => {
@@ -80,7 +93,10 @@ describe('AccountMenu', () => {
     const profileItem = await screen.findByRole('menuitem', {
       name: /profile/i,
     });
-    expect(profileItem).toHaveAttribute('href', `/profile/${MOCK_USER.id}`);
+    expect(profileItem).toHaveAttribute(
+      'href',
+      `/profile/${MOCK_SESSION_USER.id}`,
+    );
   });
 
   test('My Performance link points to the user performance page', async () => {
@@ -91,7 +107,10 @@ describe('AccountMenu', () => {
     const perfItem = await screen.findByRole('menuitem', {
       name: /my performance/i,
     });
-    expect(perfItem).toHaveAttribute('href', `/performance/${MOCK_USER.id}`);
+    expect(perfItem).toHaveAttribute(
+      'href',
+      `/performance/${MOCK_SESSION_USER.id}`,
+    );
   });
 
   test('shows a Logout option when the menu is open', async () => {
@@ -103,11 +122,10 @@ describe('AccountMenu', () => {
   });
 
   test('calls signOut and redirects to login when Logout is clicked', async () => {
-    mockSignOut.mockImplementation(
-      async (opts?: { fetchOptions?: { onSuccess?: () => void } }) => {
-        opts?.fetchOptions?.onSuccess?.();
-      },
-    );
+    mockSignOut.mockImplementation(async (options) => {
+      const { fetchOptions } = (options ?? {}) as { fetchOptions?: unknown };
+      authCallbacks(fetchOptions).onSuccess?.();
+    });
     const { user } = setup();
 
     await openMenu(user);

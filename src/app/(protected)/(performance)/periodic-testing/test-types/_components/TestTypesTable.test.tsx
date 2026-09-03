@@ -1,22 +1,27 @@
-import * as nuqs from 'nuqs';
-import { Mock } from 'vitest';
-
-import { toaster } from '@/components/ui/toaster';
-
 import {
   MOCK_TEST_TYPE,
   MOCK_TEST_TYPE_2,
 } from '@/test/mocks/periodic-testing';
-import { renderWithUI, screen, waitFor } from '@/test/utilities';
+import {
+  createPermissionsMock,
+  createToasterMock,
+  expectNoA11yViolations,
+  mockToaster,
+  mockUseQueryStates,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+  waitFor,
+} from '@/test/utilities';
 
 import usePermissions from '@/hooks/use-permissions';
 import { TestTypeUnit } from '@/utils/enum';
 
 import { removeTestType } from '@/actions/test-type';
-import { TestType } from '@/drizzle/schema';
+import type { TestType } from '@/drizzle/schema';
 
-import { UpsertTestType } from './UpsertTestType';
 import TestTypesTable from './TestTypesTable';
+import { UpsertTestType } from './UpsertTestType';
 
 vi.mock('@/hooks/use-permissions', () => ({
   default: vi.fn(),
@@ -26,11 +31,7 @@ vi.mock('@/actions/test-type', () => ({
   removeTestType: vi.fn(),
 }));
 
-vi.mock('@/components/ui/toaster', () => ({
-  toaster: {
-    create: vi.fn(),
-  },
-}));
+vi.mock('@/components/ui/toaster', () => createToasterMock());
 
 // Stub the overlay controller; its dialog has its own test.
 vi.mock('./UpsertTestType', () => ({
@@ -38,9 +39,9 @@ vi.mock('./UpsertTestType', () => ({
 }));
 
 describe('TestTypesTable', () => {
-  const mockUsePermissions = usePermissions as unknown as Mock;
-  const mockRemoveTestType = removeTestType as unknown as Mock;
-  const mockOpen = UpsertTestType.open as unknown as Mock;
+  const mockUsePermissions = vi.mocked(usePermissions);
+  const mockRemoveTestType = vi.mocked(removeTestType);
+  const mockOpen = vi.mocked(UpsertTestType.open);
 
   const setup = ({
     data = [MOCK_TEST_TYPE, MOCK_TEST_TYPE_2],
@@ -51,22 +52,23 @@ describe('TestTypesTable', () => {
     perms?: Record<string, unknown>;
     params?: Record<string, unknown>;
   } = {}) => {
-    mockUsePermissions.mockReturnValue({
+    mockUsePermissions.mockReturnValue(createPermissionsMock({
       isGuest: false,
       isAdmin: false,
       can: () => false,
       ...perms,
-    });
-    (nuqs.useQueryStates as unknown as Mock).mockReturnValue([
-      { page: 1, q: '', unit: [], ...params },
-      vi.fn(),
-    ]);
+    }));
+    mockUseQueryStates({ page: 1, q: '', unit: [], ...params });
 
     return renderWithUI(<TestTypesTable data={data} />);
   };
 
-  beforeEach(() => {
-    vi.clearAllMocks();
+  setupTestLifecycle();
+
+  test('should be accessible', async () => {
+    const { container } = setup({});
+
+    await expectNoA11yViolations(container);
   });
 
   test('renders a row for each test type', () => {
@@ -128,7 +130,7 @@ describe('TestTypesTable', () => {
     const withDelete = { isAdmin: true, can: () => true };
 
     test('deletes the selected types and reports success', async () => {
-      mockRemoveTestType.mockResolvedValue({ success: true });
+      mockRemoveTestType.mockResolvedValue({ success: true, message: '' });
 
       const { user } = setup({ perms: withDelete });
 
@@ -139,19 +141,17 @@ describe('TestTypesTable', () => {
 
       await waitFor(() => {
         const ids = mockRemoveTestType.mock.calls.map(([id]) => id);
-        expect(ids).toEqual(
-          expect.arrayContaining(['type-123', 'type-456']),
-        );
+        expect(ids).toEqual(expect.arrayContaining(['type-123', 'type-456']));
       });
 
-      expect(toaster.create).toHaveBeenCalledWith(
+      expect(mockToaster.create).toHaveBeenCalledWith(
         expect.objectContaining({ type: 'success' }),
       );
     });
 
     test('warns when some deletions fail', async () => {
       mockRemoveTestType
-        .mockResolvedValueOnce({ success: true })
+        .mockResolvedValueOnce({ success: true, message: '' })
         .mockResolvedValueOnce({ success: false, message: 'nope' });
 
       const { user } = setup({ perms: withDelete });
@@ -162,7 +162,7 @@ describe('TestTypesTable', () => {
       await user.click(screen.getByRole('button', { name: /delete/i }));
 
       await waitFor(() => {
-        expect(toaster.create).toHaveBeenCalledWith(
+        expect(mockToaster.create).toHaveBeenCalledWith(
           expect.objectContaining({ type: 'warning' }),
         );
       });
