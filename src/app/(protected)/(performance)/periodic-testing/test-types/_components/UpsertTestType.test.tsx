@@ -1,6 +1,12 @@
-import { Mock } from 'vitest';
-
-import { act, renderWithUI, screen, waitFor } from '@/test/utilities';
+import {
+  act,
+  createToasterMock,
+  expectNoA11yViolations,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+  waitFor,
+} from '@/test/utilities';
 
 import { upsertTestType } from '@/actions/test-type';
 
@@ -10,15 +16,10 @@ vi.mock('@/actions/test-type', () => ({
   upsertTestType: vi.fn(),
 }));
 
-vi.mock('@/components/ui/toaster', () => ({
-  toaster: {
-    create: vi.fn(() => 'toast-id'),
-    update: vi.fn(),
-  },
-}));
+vi.mock('@/components/ui/toaster', () => createToasterMock());
 
 describe('UpsertTestType', () => {
-  const mockUpsertTestType = upsertTestType as unknown as Mock;
+  const mockUpsertTestType = vi.mocked(upsertTestType);
 
   const open = async (
     action: 'Add' | 'Update' = 'Add',
@@ -35,14 +36,18 @@ describe('UpsertTestType', () => {
     return view;
   };
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  setupTestLifecycle();
 
   afterEach(() => {
     act(() => {
       UpsertTestType.removeAll();
     });
+  });
+
+  test('should be accessible', async () => {
+    await open();
+
+    await expectNoA11yViolations();
   });
 
   test('renders the dialog title and fields for the given action', async () => {

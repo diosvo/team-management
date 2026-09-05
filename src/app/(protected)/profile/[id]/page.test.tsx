@@ -1,7 +1,6 @@
-import { Mock } from 'vitest';
 
 import { MOCK_USER } from '@/test/mocks/user';
-import { renderWithUI, screen } from '@/test/utilities';
+import { renderWithUI, screen, setupTestLifecycle } from '@/test/utilities';
 
 import { getUserProfile } from '@/actions/user';
 import { formatDatetime } from '@/utils/formatter';
@@ -30,7 +29,7 @@ vi.mock('../_components/ProfileLayout', () => ({
 }));
 
 describe('ProfilePage', () => {
-  const mockGetUserProfile = getUserProfile as unknown as Mock;
+  const mockGetUserProfile = vi.mocked(getUserProfile);
 
   const setup = async ({
     id = MOCK_USER.id,

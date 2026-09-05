@@ -54,7 +54,8 @@ jobs:
                 .split('\n')
                 .filter((line) =>
                   line.startsWith('- **Test Files**:') ||
-                  line.startsWith('- **Test Results**:')
+                  line.startsWith('- **Test Results**:') ||
+                  line.startsWith('- **Coverage**:')
                 );
 
               if (lines.length) {

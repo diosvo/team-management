@@ -12,7 +12,7 @@ import { getDbErrorMessage } from '@/db/pg-error';
 import { getTeamPlayerIds } from '@/db/player';
 
 import { revalidate } from '@/actions/cache';
-import { UpsertLeagueSchemaValues } from '@/schemas/league';
+import type { UpsertLeagueSchemaValues } from '@/schemas/league';
 
 import {
   mockWithAuth,

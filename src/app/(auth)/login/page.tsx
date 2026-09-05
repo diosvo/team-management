@@ -20,7 +20,7 @@ import { PasswordInput } from '@/components/ui/password-input';
 import authClient from '@/lib/auth-client';
 
 import { DEFAULT_LOGIN_REDIRECT } from '@/routes';
-import { LoginSchema, LoginValues } from '@/schemas/auth';
+import { LoginSchema, type LoginValues } from '@/schemas/auth';
 
 export default function LoginPage() {
   const [error, setError] = useState<string>();

@@ -35,19 +35,53 @@ vi.mock('next/navigation', async () => {
 
 vi.mock('next/image', () => ({
   default: (props: {
-    src: string;
+    src: string | { src: string };
     alt: string;
+    fill?: boolean;
     width?: number;
     height?: number;
     className?: string;
     priority?: boolean;
     quality?: number;
+    sizes?: string;
+    loading?: 'eager' | 'lazy';
+    placeholder?: 'blur' | 'empty';
+    blurDataURL?: string;
+    fetchPriority?: 'high' | 'low' | 'auto';
+    onLoad?: React.ReactEventHandler<HTMLImageElement>;
+    onError?: React.ReactEventHandler<HTMLImageElement>;
     style?: React.CSSProperties;
+    [key: string]: unknown;
   }) => {
+    const {
+      src,
+      alt,
+      width,
+      height,
+      className,
+      style,
+      sizes,
+      loading,
+      fetchPriority,
+      onLoad,
+      onError,
+    } = props;
+
+    const resolvedSrc = typeof src === 'string' ? src : src.src;
+
+    // Avoid forwarding Next.js-only props like `fill` and `priority` to the DOM.
     return React.createElement('img', {
-      ...props,
-      src: props.src,
-      alt: props.alt,
+      src: resolvedSrc,
+      alt,
+      width,
+      height,
+      className,
+      style,
+      sizes,
+      loading,
+      fetchPriority,
+      onLoad,
+      onError,
     });
   },
 }));

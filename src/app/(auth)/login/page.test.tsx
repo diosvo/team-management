@@ -1,6 +1,11 @@
-import { Mock } from 'vitest';
-
-import { renderWithUI, screen, waitFor } from '@/test/utilities';
+import {
+  authCallbacks,
+  expectNoA11yViolations,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+  waitFor,
+} from '@/test/utilities';
 
 import authClient from '@/lib/auth-client';
 import { DEFAULT_LOGIN_REDIRECT } from '@/routes';
@@ -16,10 +21,14 @@ vi.mock('@/lib/auth-client', () => ({
 }));
 
 describe('LoginPage', () => {
-  const mockSignIn = authClient.signIn.email as unknown as Mock;
+  const mockSignIn = vi.mocked(authClient.signIn.email);
 
-  beforeEach(() => {
-    vi.clearAllMocks();
+  setupTestLifecycle();
+
+  test('should be accessible', async () => {
+    const { container } = renderWithUI(<LoginPage />);
+
+    await expectNoA11yViolations(container);
   });
 
   test('renders the login form', () => {
@@ -47,7 +56,9 @@ describe('LoginPage', () => {
   });
 
   test('submits form with valid credentials', async () => {
-    mockSignIn.mockImplementation((data, { onResponse }) => {
+    mockSignIn.mockImplementation((_data, options) => {
+      const { onResponse } = authCallbacks(options);
+
       onResponse?.();
     });
 
@@ -71,7 +82,9 @@ describe('LoginPage', () => {
 
   test('displays error message on failed login', async () => {
     const errorMessage = 'Invalid credentials';
-    mockSignIn.mockImplementation((data, { onError, onResponse }) => {
+    mockSignIn.mockImplementation((_data, options) => {
+      const { onError, onResponse } = authCallbacks(options);
+
       onError?.({ error: { message: errorMessage } });
       onResponse?.();
     });
@@ -88,7 +101,9 @@ describe('LoginPage', () => {
   });
 
   test('disables form inputs during submission', async () => {
-    mockSignIn.mockImplementation((data, { onRequest }) => {
+    mockSignIn.mockImplementation((_data, options) => {
+      const { onRequest } = authCallbacks(options);
+
       onRequest?.();
     });
 

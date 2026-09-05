@@ -1,7 +1,7 @@
 import { createElement, type PropsWithChildren } from 'react';
 
 import { renderHook } from '@testing-library/react';
-import { Mock } from 'vitest';
+import type { Mock } from 'vitest';
 
 import authClient from '@/lib/auth-client';
 import { UserRole } from '@/utils/enum';

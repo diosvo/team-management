@@ -1,4 +1,4 @@
-import { InsertTrainingSession, TrainingSession } from '@/drizzle/schema';
+import type { InsertTrainingSession, TrainingSession } from '@/drizzle/schema';
 
 import { AttendanceStatus, SessionStatus } from '@/utils/enum';
 

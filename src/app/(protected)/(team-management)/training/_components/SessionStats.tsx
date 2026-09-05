@@ -7,7 +7,7 @@ import { Stat } from '@/components/ui/stat';
 import { useTrainingFilters } from '@/lib/nuqs';
 import { SessionStatus } from '@/utils/enum';
 
-import { TrainingSessionStats } from '@/types/training-session';
+import type { TrainingSessionStats } from '@/types/training-session';
 
 export default function SessionStats({
   stats,

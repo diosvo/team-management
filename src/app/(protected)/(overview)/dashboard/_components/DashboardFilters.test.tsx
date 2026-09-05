@@ -1,10 +1,13 @@
-import * as nuqs from 'nuqs';
-import { Mock } from 'vitest';
-
-import { toaster } from '@/components/ui/toaster';
-
 import { triggerDownload } from '@/lib/download';
-import { renderWithUI, screen, waitFor } from '@/test/utilities';
+import {
+  createToasterMock,
+  expectNoA11yViolations,
+  mockToaster,
+  mockUseQueryStates,
+  renderWithUI,
+  screen,
+  waitFor,
+} from '@/test/utilities';
 import { Interval } from '@/utils/enum';
 import { formatDuration } from '@/utils/formatter';
 
@@ -22,22 +25,17 @@ vi.mock('@/lib/download', () => ({
   triggerDownload: vi.fn(),
 }));
 
-vi.mock('@/components/ui/toaster', () => ({
-  toaster: {
-    error: vi.fn(),
-  },
-}));
+vi.mock('@/components/ui/toaster', () => createToasterMock());
 
 describe('DashboardFilters', () => {
   const mockSetSearchParams = vi.fn();
   const mockFetch = vi.fn();
 
   const setup = (overrides = {}) => {
-    const mockQueryState = { interval: Interval.THIS_YEAR, ...overrides };
-    (nuqs.useQueryStates as unknown as Mock).mockReturnValue([
-      mockQueryState,
+    mockUseQueryStates(
+      { interval: Interval.THIS_YEAR, ...overrides },
       mockSetSearchParams,
-    ]);
+    );
 
     return renderWithUI(<DashboardFilters />);
   };
@@ -45,7 +43,9 @@ describe('DashboardFilters', () => {
   // Download lives behind the Actions menu — open it, then click the item.
   const clickDownload = async (user: ReturnType<typeof setup>['user']) => {
     await user.click(screen.getByRole('button', { name: /Actions/i }));
-    await user.click(await screen.findByRole('menuitem', { name: /Download/i }));
+    await user.click(
+      await screen.findByRole('menuitem', { name: /Download/i }),
+    );
   };
 
   beforeEach(() => {
@@ -55,6 +55,12 @@ describe('DashboardFilters', () => {
 
   afterEach(() => {
     vi.unstubAllGlobals();
+  });
+
+  test('should be accessible', async () => {
+    const { container } = setup();
+
+    await expectNoA11yViolations(container);
   });
 
   test('renders the actions menu and the selected interval', () => {
@@ -88,7 +94,7 @@ describe('DashboardFilters', () => {
       });
 
       expect(triggerDownload).toHaveBeenCalledWith(blob, filename);
-      expect(toaster.error).not.toHaveBeenCalled();
+      expect(mockToaster.error).not.toHaveBeenCalled();
     });
 
     test('sends the currently selected interval in the request body', async () => {
@@ -123,7 +129,7 @@ describe('DashboardFilters', () => {
       await clickDownload(user);
 
       await waitFor(() => {
-        expect(toaster.error).toHaveBeenCalledWith({
+        expect(mockToaster.error).toHaveBeenCalledWith({
           title: 'Download failed',
           description: 'Something went wrong',
         });

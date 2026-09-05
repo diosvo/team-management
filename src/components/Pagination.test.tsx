@@ -1,6 +1,9 @@
-import { axe } from 'jest-axe';
-
-import { renderWithUI, screen } from '@/test/utilities';
+import {
+  expectNoA11yViolations,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+} from '@/test/utilities';
 import Pagination from './Pagination';
 
 describe('Pagination', () => {
@@ -20,15 +23,12 @@ describe('Pagination', () => {
     return view;
   };
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  setupTestLifecycle();
 
   test('should be accessible', async () => {
     const { container } = setup();
 
-    const result = await axe(container);
-    expect(result).toHaveNoViolations();
+    await expectNoA11yViolations(container);
   });
 
   test('hides pagination when count is 0', () => {

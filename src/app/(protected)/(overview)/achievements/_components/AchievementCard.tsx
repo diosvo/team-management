@@ -12,7 +12,7 @@ import { ACHIEVEMENT_STYLE } from '@/utils/constants/achievement';
 import { formatDate } from '@/utils/formatter';
 
 import { removeAchievement } from '@/actions/achievement';
-import { AchievementWithRelations } from '@/db/achievement';
+import type { AchievementWithRelations } from '@/db/achievement';
 
 import { UpsertAchievement } from './UpsertAchievement';
 

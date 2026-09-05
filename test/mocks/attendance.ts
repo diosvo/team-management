@@ -1,7 +1,7 @@
-import { Attendance, InsertAttendance } from '@/drizzle/schema/attendance';
+import type { Attendance, InsertAttendance } from '@/drizzle/schema/attendance';
 
-import { AttendanceStats, AttendanceWithPlayer } from '@/types/attendance';
-import { DataWithStats } from '@/types/common';
+import type { AttendanceStats, AttendanceWithPlayer } from '@/types/attendance';
+import type { DataWithStats } from '@/types/common';
 import { AttendanceStatus } from '@/utils/enum';
 
 import { MOCK_PLAYER } from './user';

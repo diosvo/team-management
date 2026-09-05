@@ -25,7 +25,7 @@ import { TEST_TYPE_UNIT_SELECTION } from '@/utils/constants';
 import { upsertTestType } from '@/actions/test-type';
 import {
   UpsertTestTypeSchema,
-  UpsertTestTypeSchemaValues,
+  type UpsertTestTypeSchemaValues,
 } from '@/schemas/periodic-testing';
 
 export const UpsertTestType = createOverlay(({ action, item, ...rest }) => {

@@ -1,15 +1,23 @@
-import * as nuqs from 'nuqs';
-import { Mock } from 'vitest';
-
-import { toaster } from '@/components/ui/toaster';
-
 import { MOCK_AWAY_TEAM, MOCK_TEAM } from '@/test/mocks/team';
-import { renderWithUI, screen, waitFor } from '@/test/utilities';
+import {
+  createPermissionsMock,
+  createToasterMock,
+  expectNoA11yViolations,
+  mockToaster,
+  mockUseQueryStates,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+  waitFor,
+  waitForStable,
+} from '@/test/utilities';
 
-import usePermissions from '@/hooks/use-permissions';
+import usePermissions, {
+  type PermissionsResult,
+} from '@/hooks/use-permissions';
 
 import { removeTeam } from '@/actions/team';
-import { Team } from '@/drizzle/schema';
+import type { Team } from '@/drizzle/schema';
 
 import { useTeamLogo } from '@/hooks/use-image';
 import TeamTable from './TeamTable';
@@ -27,69 +35,78 @@ vi.mock('@/actions/team', () => ({
   removeTeam: vi.fn(),
 }));
 
-vi.mock('@/components/ui/toaster', () => ({
-  toaster: {
-    create: vi.fn(),
-  },
-}));
+vi.mock('@/components/ui/toaster', () => createToasterMock());
 
 vi.mock('./UpsertTeam', () => ({
   UpsertTeam: { open: vi.fn(), Viewport: () => null },
 }));
 
 describe('TeamTable', () => {
-  const mockUsePermissions = usePermissions as unknown as Mock;
-  const mockUseTeamLogo = useTeamLogo as unknown as Mock;
-  const mockRemoveTeam = removeTeam as unknown as Mock;
-  const mockOpen = UpsertTeam.open as unknown as Mock;
+  const mockUsePermissions = vi.mocked(usePermissions);
+  const mockUseTeamLogo = vi.mocked(useTeamLogo);
+  const mockRemoveTeam = vi.mocked(removeTeam);
+  const mockOpen = vi.mocked(UpsertTeam.open);
 
-  const setup = ({
+  const setup = async ({
     teams = [MOCK_TEAM, MOCK_AWAY_TEAM],
     can = () => false,
     params = {},
   }: Partial<{
     teams: Array<Team>;
-    can: (resource: string, action: string) => boolean;
+    can: PermissionsResult['can'];
     params: Record<string, unknown>;
   }> = {}) => {
-    mockUsePermissions.mockReturnValue({ can });
-    mockUseTeamLogo.mockReturnValue({ data: null, isLoading: false });
-    (nuqs.useQueryStates as unknown as Mock).mockReturnValue([
-      { page: 1, q: '', ...params },
-      vi.fn(),
-    ]);
+    mockUsePermissions.mockReturnValue(createPermissionsMock({ can }));
+    mockUseTeamLogo.mockReturnValue({
+      data: null,
+      error: undefined,
+      isLoading: false,
+      isValidating: false,
+      mutate: vi.fn(),
+    });
+    mockUseQueryStates({ page: 1, q: '', ...params });
 
-    return renderWithUI(<TeamTable teams={teams} />);
+    const result = renderWithUI(<TeamTable teams={teams} />);
+
+    // The avatar in each row settles its load state asynchronously; flush it
+    // here so those updates land inside act(...).
+    await waitForStable();
+
+    return result;
   };
 
-  beforeEach(() => {
-    vi.clearAllMocks();
+  setupTestLifecycle();
+
+  test('should be accessible', async () => {
+    const { container } = await setup({});
+
+    await expectNoA11yViolations(container);
   });
 
-  test('renders a row for each team', () => {
-    setup();
+  test('renders a row for each team', async () => {
+    await setup();
 
     expect(screen.getByText(MOCK_TEAM.name)).toBeInTheDocument();
     expect(screen.getByText(MOCK_AWAY_TEAM.name)).toBeInTheDocument();
     expect(screen.getByText(MOCK_TEAM.email!)).toBeInTheDocument();
   });
 
-  test('renders the column headers', () => {
-    setup();
+  test('renders the column headers', async () => {
+    await setup();
 
     ['Name', 'Email', 'Established', 'Last Updated'].forEach((header) => {
       expect(screen.getByText(header)).toBeInTheDocument();
     });
   });
 
-  test('shows the empty state when there are no teams', () => {
-    setup({ teams: [] });
+  test('shows the empty state when there are no teams', async () => {
+    await setup({ teams: [] });
 
     expect(screen.getByText('No teams found')).toBeInTheDocument();
   });
 
-  test('filters the teams by the search query', () => {
-    setup({ params: { q: 'saigon' } });
+  test('filters the teams by the search query', async () => {
+    await setup({ params: { q: 'saigon' } });
 
     // HighlightText splits the matched substring into its own node.
     expect(screen.getByText('Saigon', { exact: false })).toBeInTheDocument();
@@ -97,7 +114,7 @@ describe('TeamTable', () => {
   });
 
   test('opens the dialog in update mode when a row is clicked', async () => {
-    const { user } = setup({ can: (_, action) => action === 'edit' });
+    const { user } = await setup({ can: (_, action) => action === 'edit' });
 
     await user.click(screen.getByText(MOCK_TEAM.name));
 
@@ -108,7 +125,7 @@ describe('TeamTable', () => {
   });
 
   test('does not open the dialog when the user cannot edit', async () => {
-    const { user } = setup({ can: () => false });
+    const { user } = await setup({ can: () => false });
 
     await user.click(screen.getByText(MOCK_TEAM.name));
 
@@ -119,9 +136,9 @@ describe('TeamTable', () => {
     const canDelete = (_: string, action: string) => action === 'delete';
 
     test('deletes the selected teams and reports success', async () => {
-      mockRemoveTeam.mockResolvedValue({ success: true });
+      mockRemoveTeam.mockResolvedValue({ success: true, message: 'Removed' });
 
-      const { user } = setup({ can: canDelete });
+      const { user } = await setup({ can: canDelete });
 
       await user.click(
         screen.getByRole('checkbox', { name: 'Select all rows' }),
@@ -135,17 +152,17 @@ describe('TeamTable', () => {
         );
       });
 
-      expect(toaster.create).toHaveBeenCalledWith(
+      expect(mockToaster.create).toHaveBeenCalledWith(
         expect.objectContaining({ type: 'success' }),
       );
     });
 
     test('warns when some deletions fail', async () => {
       mockRemoveTeam
-        .mockResolvedValueOnce({ success: true })
+        .mockResolvedValueOnce({ success: true, message: 'Removed' })
         .mockResolvedValueOnce({ success: false, message: 'nope' });
 
-      const { user } = setup({ can: canDelete });
+      const { user } = await setup({ can: canDelete });
 
       await user.click(
         screen.getByRole('checkbox', { name: 'Select all rows' }),
@@ -153,7 +170,7 @@ describe('TeamTable', () => {
       await user.click(screen.getByRole('button', { name: /delete/i }));
 
       await waitFor(() => {
-        expect(toaster.create).toHaveBeenCalledWith(
+        expect(mockToaster.create).toHaveBeenCalledWith(
           expect.objectContaining({ type: 'warning' }),
         );
       });

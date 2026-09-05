@@ -2,7 +2,7 @@ import { createElement, type PropsWithChildren } from 'react';
 
 import { renderHook, waitFor } from '@testing-library/react';
 import { SWRConfig } from 'swr';
-import { Mock } from 'vitest';
+import type { Mock } from 'vitest';
 
 import { getAvatar } from '@/actions/user';
 

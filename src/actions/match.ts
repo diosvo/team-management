@@ -14,8 +14,8 @@ import {
   insertMatch,
   updateMatch,
 } from '@/db/match';
-import { MatchSearchParams } from '@/lib/nuqs';
-import { UpsertMatchSchemaValues } from '@/schemas/match';
+import type { MatchSearchParams } from '@/lib/nuqs';
+import type { UpsertMatchSchemaValues } from '@/schemas/match';
 
 export const getMatches = withAuth(
   async ({ team_id }, params: MatchSearchParams) =>

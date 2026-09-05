@@ -2,7 +2,7 @@ import { SimpleGrid } from '@chakra-ui/react';
 
 import { Stat } from '@/components/ui/stat';
 
-import { MatchStats } from '@/types/match';
+import type { MatchStats } from '@/types/match';
 
 export default function MatchesStats({ stats }: { stats: MatchStats }) {
   return (

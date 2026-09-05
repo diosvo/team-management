@@ -1,16 +1,16 @@
-import * as nuqs from 'nuqs';
-import { Mock } from 'vitest';
-
 import { MOCK_TRAINING_SESSION_RESPONSE } from '@/test/mocks/training-sessions';
 import {
   axeInteractiveStat,
+  expectNoA11yViolations,
+  mockUseQueryStates,
   renderWithUI,
   screen,
+  setupTestLifecycle,
 } from '@/test/utilities';
 
 import { SessionStatus } from '@/utils/enum';
 
-import { TrainingSessionStats } from '@/types/training-session';
+import type { TrainingSessionStats } from '@/types/training-session';
 
 import SessionStats from './SessionStats';
 
@@ -18,10 +18,7 @@ describe('SessionStats', () => {
   const setSearchParams = vi.fn();
 
   const setup = (overrides: Partial<TrainingSessionStats> = {}) => {
-    (nuqs.useQueryStates as unknown as Mock).mockReturnValue([
-      {},
-      setSearchParams,
-    ]);
+    mockUseQueryStates({}, setSearchParams);
 
     return renderWithUI(
       <SessionStats
@@ -30,15 +27,12 @@ describe('SessionStats', () => {
     );
   };
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  setupTestLifecycle();
 
   test('should be accessible', async () => {
     const { container } = setup();
 
-    const result = await axeInteractiveStat(container);
-    expect(result).toHaveNoViolations();
+    await expectNoA11yViolations(container, axeInteractiveStat);
   });
 
   test('renders all stat cards with their labels', () => {

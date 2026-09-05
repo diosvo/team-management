@@ -1,4 +1,4 @@
-import { User } from '@/drizzle/schema';
+import type { User } from '@/drizzle/schema';
 import { MOCK_USER } from './user';
 
 let currentUser: User = MOCK_USER;

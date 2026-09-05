@@ -1,4 +1,4 @@
-import { Location } from '@/drizzle/schema';
+import type { Location } from '@/drizzle/schema';
 
 export const MOCK_LOCATION: Location = {
   location_id: 'location-123',

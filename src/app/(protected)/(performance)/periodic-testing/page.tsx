@@ -1,4 +1,4 @@
-import { Metadata } from 'next';
+import type { Metadata } from 'next';
 
 import { getTestDates, getTestResult } from '@/actions/test-result';
 import { loadPeriodicTestingFilters } from '@/lib/nuqs';

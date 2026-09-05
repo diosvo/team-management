@@ -1,6 +1,11 @@
-import { Mock } from 'vitest';
 
-import { renderWithUI, screen } from '@/test/utilities';
+import {
+  createPermissionsMock,
+  expectNoA11yViolations,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+} from '@/test/utilities';
 
 import usePermissions from '@/hooks/use-permissions';
 
@@ -30,7 +35,7 @@ vi.mock('next/navigation', async (importOriginal) => {
 vi.mock('@/hooks/use-permissions', () => ({ default: vi.fn() }));
 
 describe('Sidebar', () => {
-  const mockUsePermissions = usePermissions as unknown as Mock;
+  const mockUsePermissions = vi.mocked(usePermissions);
   const setIsExpanded = vi.fn();
 
   const setup = ({
@@ -44,7 +49,7 @@ describe('Sidebar', () => {
     pathname: string;
     pending: boolean;
   }> = {}) => {
-    mockUsePermissions.mockReturnValue({ can });
+    mockUsePermissions.mockReturnValue(createPermissionsMock({ can }));
     mockUsePathname.mockReturnValue(pathname);
     mockUseLinkStatus.mockReturnValue({ pending });
     return renderWithUI(
@@ -55,6 +60,12 @@ describe('Sidebar', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     setIsExpanded.mockReset();
+  });
+
+  test('should be accessible', async () => {
+    const { container } = setup({});
+
+    await expectNoA11yViolations(container);
   });
 
   describe('permission filtering', () => {

@@ -1,4 +1,4 @@
-import { Stat as ChakraStat, ColorPalette, Span } from '@chakra-ui/react';
+import { Stat as ChakraStat, type ColorPalette, Span } from '@chakra-ui/react';
 
 import { formatValueUnit } from '@/utils/formatter';
 

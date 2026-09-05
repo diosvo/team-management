@@ -4,12 +4,12 @@ import { useMemo } from 'react';
 
 import { Chart, useChart } from '@chakra-ui/charts';
 import { ChartPie } from 'lucide-react';
-import { Pie, PieChart, PieSectorShapeProps, Sector } from 'recharts';
+import { Pie, PieChart, type PieSectorShapeProps, Sector } from 'recharts';
 
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 
-import { AbsenceReason } from '@/types/analytics';
+import type { AbsenceReason } from '@/types/analytics';
 
 const CHART_COLORS = ['#8884D8', '#83A6ED', '#8DD1E1', '#82CA9D', '#A4DE6C'];
 const UNKNOWN_COLOR = '#D2D4D7';

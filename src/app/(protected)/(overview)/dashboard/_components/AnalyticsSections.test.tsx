@@ -1,11 +1,10 @@
-import { Mock } from 'vitest';
 
 import {
   MOCK_ABSENCE_REASONS,
   MOCK_ATTENDANCE_HISTORY,
   MOCK_PLAYERS_ATTENDANCE_SUMMARY,
 } from '@/test/mocks/analytics';
-import { renderWithUI, screen } from '@/test/utilities';
+import { renderWithUI, screen, setupTestLifecycle } from '@/test/utilities';
 
 import {
   getAttendanceHistory,
@@ -62,13 +61,11 @@ vi.mock('./PlayerAttendanceRanking', () => ({
 const INTERVAL = Interval.LAST_YEAR;
 
 describe('AnalyticsSections', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  setupTestLifecycle();
 
   test('MatchesRateSection fetches by interval and passes records', async () => {
     const MOCK_MATCHES_RATE = [{ outcome: 'win', league: 3, friendly: 2 }];
-    (getMatchesRate as unknown as Mock).mockResolvedValue(MOCK_MATCHES_RATE);
+    (vi.mocked(getMatchesRate)).mockResolvedValue(MOCK_MATCHES_RATE);
 
     renderWithUI(await MatchesRateSection({ interval: INTERVAL }));
 
@@ -78,7 +75,7 @@ describe('AnalyticsSections', () => {
   });
 
   test('AttendanceTrendSection fetches by interval and passes records', async () => {
-    (getAttendanceHistory as unknown as Mock).mockResolvedValue(
+    (vi.mocked(getAttendanceHistory)).mockResolvedValue(
       MOCK_ATTENDANCE_HISTORY,
     );
 
@@ -91,7 +88,7 @@ describe('AnalyticsSections', () => {
   });
 
   test('PlayerAttendanceRankingSection fetches by interval and passes records', async () => {
-    (getAttendanceSummary as unknown as Mock).mockResolvedValue(
+    (vi.mocked(getAttendanceSummary)).mockResolvedValue(
       MOCK_PLAYERS_ATTENDANCE_SUMMARY,
     );
 
@@ -104,7 +101,7 @@ describe('AnalyticsSections', () => {
   });
 
   test('AbsenceReasonsBreakdownSection fetches by interval and passes reasons', async () => {
-    (getMostAbsenceReasons as unknown as Mock).mockResolvedValue(
+    (vi.mocked(getMostAbsenceReasons)).mockResolvedValue(
       MOCK_ABSENCE_REASONS,
     );
 

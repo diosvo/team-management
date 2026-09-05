@@ -24,7 +24,7 @@ import { submitLeave } from '@/actions/attendance';
 import { useSessionContext } from '@/providers/session';
 import {
   UpsertAttendanceSchema,
-  UpsertAttendanceSchemaValues,
+  type UpsertAttendanceSchemaValues,
 } from '@/schemas/attendance';
 
 export default function SubmitLeaveRequest({

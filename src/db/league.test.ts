@@ -2,12 +2,12 @@ import { and, desc, eq } from 'drizzle-orm';
 
 import db from '@/drizzle';
 import {
-  InsertLeague,
+  type InsertLeague,
   LeagueTable,
   LeagueTeamRosterTable,
   LeagueTeamTable,
 } from '@/drizzle/schema/league';
-import { UpsertLeagueSchemaValues } from '@/schemas/league';
+import type { UpsertLeagueSchemaValues } from '@/schemas/league';
 import { AchievementType, LeagueStatus } from '@/utils/enum';
 
 import {

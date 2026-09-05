@@ -1,8 +1,12 @@
-import * as nuqs from 'nuqs';
-import { Mock } from 'vitest';
-
 import { MOCK_ASSET_STATS } from '@/test/mocks/asset';
-import { axeInteractiveStat, renderWithUI, screen } from '@/test/utilities';
+import {
+  axeInteractiveStat,
+  expectNoA11yViolations,
+  mockUseQueryStates,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+} from '@/test/utilities';
 
 import { AssetCondition } from '@/utils/enum';
 
@@ -12,23 +16,17 @@ describe('AssetStats', () => {
   const setSearchParams = vi.fn();
 
   const setup = (stats = MOCK_ASSET_STATS, params = {}) => {
-    (nuqs.useQueryStates as unknown as Mock).mockReturnValue([
-      params,
-      setSearchParams,
-    ]);
+    mockUseQueryStates(params, setSearchParams);
 
     return renderWithUI(<AssetStats stats={stats} />);
   };
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  setupTestLifecycle();
 
   test('should be accessible', async () => {
     const { container } = setup();
 
-    const result = await axeInteractiveStat(container);
-    expect(result).toHaveNoViolations();
+    await expectNoA11yViolations(container, axeInteractiveStat);
   });
 
   test('renders all stat cards with their labels', () => {

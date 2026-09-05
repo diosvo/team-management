@@ -1,14 +1,14 @@
 import { and, desc, eq } from 'drizzle-orm';
 
 import db from '@/drizzle';
-import { User } from '@/drizzle/schema';
+import type { User } from '@/drizzle/schema';
 import {
-  InsertLeague,
+  type InsertLeague,
   LeagueTable,
   LeagueTeamRosterTable,
   LeagueTeamTable,
 } from '@/drizzle/schema/league';
-import { UpsertLeagueSchemaValues } from '@/schemas/league';
+import type { UpsertLeagueSchemaValues } from '@/schemas/league';
 import { deriveDateStatus } from '@/utils/helper';
 
 export async function getLeagues() {

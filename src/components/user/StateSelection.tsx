@@ -4,9 +4,14 @@ import {
   createListCollection,
   Portal,
   Select,
-  SelectRootProps,
+  type SelectRootProps,
 } from '@chakra-ui/react';
-import { Control, Controller, FieldPath, FieldValues } from 'react-hook-form';
+import {
+  type Control,
+  Controller,
+  type FieldPath,
+  type FieldValues,
+} from 'react-hook-form';
 
 import { Field } from '@/components/ui/field';
 import { Status } from '@/components/ui/status';

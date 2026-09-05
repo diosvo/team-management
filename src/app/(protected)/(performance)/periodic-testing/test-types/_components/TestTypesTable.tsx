@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 
+import { VisuallyHidden } from '@chakra-ui/react';
 import { formatDistanceToNow } from 'date-fns';
 
 import DataTable, { type Column } from '@/components/DataTable';
@@ -16,7 +17,7 @@ import { buildPredicate } from '@/utils/filters';
 import { formatDatetime } from '@/utils/formatter';
 
 import { removeTestType } from '@/actions/test-type';
-import { TestType } from '@/drizzle/schema';
+import type { TestType } from '@/drizzle/schema';
 
 import { UpsertTestType } from './UpsertTestType';
 
@@ -62,7 +63,9 @@ export default function TestTypesTable({ data }: { data: Array<TestType> }) {
     { header: 'Unit', cell: (item) => item.unit },
     { header: 'Last Updated', cell: (item) => formatDatetime(item.updated_at) },
     {
-      header: '',
+      // Named for screen readers only: the column repeats "Last Updated" as a
+      // relative time, so a visible header would be redundant.
+      header: <VisuallyHidden>Relative time</VisuallyHidden>,
       cell: (item) =>
         formatDistanceToNow(item.updated_at, { addSuffix: true }),
       cellProps: { color: 'GrayText' },

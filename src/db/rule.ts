@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm';
 
 import db from '@/drizzle';
-import { InsertRule, RuleTable } from '@/drizzle/schema/rule';
+import { type InsertRule, RuleTable } from '@/drizzle/schema/rule';
 
 export async function getRule(team_id: string) {
   try {

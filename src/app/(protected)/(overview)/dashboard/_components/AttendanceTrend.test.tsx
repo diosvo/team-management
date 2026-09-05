@@ -1,7 +1,7 @@
 import { MOCK_ATTENDANCE_HISTORY } from '@/test/mocks/analytics';
 import { renderWithUI, screen } from '@/test/utilities';
 
-import { AttendanceHistoryRecord } from '@/types/analytics';
+import type { AttendanceHistoryRecord } from '@/types/analytics';
 import AttendanceTrend from './AttendanceTrend';
 
 describe('AttendanceTrend', () => {

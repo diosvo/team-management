@@ -1,7 +1,7 @@
 import { and, asc, eq } from 'drizzle-orm';
 
 import db from '@/drizzle';
-import { InsertTeam, Team, TeamTable } from '@/drizzle/schema/team';
+import { type InsertTeam, type Team, TeamTable } from '@/drizzle/schema/team';
 
 export async function getTeams() {
   try {

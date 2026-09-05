@@ -1,6 +1,6 @@
 import { ActionBar, Button, Portal } from '@chakra-ui/react';
 import { Trash2 } from 'lucide-react';
-import { PropsWithChildren } from 'react';
+import type { PropsWithChildren } from 'react';
 
 type SelectionActionBarProps = PropsWithChildren<{
   open: boolean;

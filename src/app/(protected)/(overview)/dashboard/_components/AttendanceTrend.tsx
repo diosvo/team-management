@@ -16,7 +16,7 @@ import {
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 
-import { AttendanceHistoryRecord } from '@/types/analytics';
+import type { AttendanceHistoryRecord } from '@/types/analytics';
 
 const TARGET_RATE = 80 as const;
 

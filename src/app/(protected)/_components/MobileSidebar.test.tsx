@@ -1,6 +1,11 @@
-import { Mock } from 'vitest';
 
-import { renderWithUI, screen } from '@/test/utilities';
+import {
+  createSessionMock,
+  expectNoA11yViolations,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+} from '@/test/utilities';
 
 import { useSessionContext } from '@/providers/session';
 
@@ -14,15 +19,21 @@ vi.mock('./Sidebar', () => ({
 }));
 
 describe('MobileSidebar', () => {
-  const mockUseSessionContext = useSessionContext as unknown as Mock;
+  const mockUseSessionContext = vi.mocked(useSessionContext);
 
   const setup = (isAuthenticated = true) => {
-    mockUseSessionContext.mockReturnValue({ isAuthenticated });
+    mockUseSessionContext.mockReturnValue(
+      createSessionMock({ isAuthenticated }),
+    );
     return renderWithUI(<MobileSidebar />);
   };
 
-  beforeEach(() => {
-    vi.clearAllMocks();
+  setupTestLifecycle();
+
+  test('should be accessible', async () => {
+    const { container } = setup();
+
+    await expectNoA11yViolations(container);
   });
 
   test('renders nothing when there is no active session', () => {

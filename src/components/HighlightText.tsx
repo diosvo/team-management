@@ -1,4 +1,4 @@
-import { Highlight, HighlightProps } from '@chakra-ui/react';
+import { Highlight, type HighlightProps } from '@chakra-ui/react';
 
 interface HighlightTextProps extends Omit<HighlightProps, 'children'> {
   children: string | Array<string>;

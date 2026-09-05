@@ -1,5 +1,5 @@
 import { revalidate } from '@/actions/cache';
-import { InsertTestResult } from '@/drizzle/schema';
+import type { InsertTestResult } from '@/drizzle/schema';
 
 import { getDbErrorMessage } from '@/db/pg-error';
 import {

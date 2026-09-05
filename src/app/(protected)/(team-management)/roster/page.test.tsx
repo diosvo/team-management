@@ -1,7 +1,6 @@
-import { Mock } from 'vitest';
 
 import { MOCK_USER } from '@/test/mocks/user';
-import { renderWithUI, screen } from '@/test/utilities';
+import { renderWithUI, screen, setupTestLifecycle } from '@/test/utilities';
 
 import { getRoster } from '@/actions/user';
 
@@ -31,7 +30,7 @@ vi.mock('./_components/RosterTable', () => ({
 }));
 
 describe('RosterPage', () => {
-  const mockGetRoster = getRoster as unknown as Mock;
+  const mockGetRoster = vi.mocked(getRoster);
 
   const setup = async (users: Array<typeof MOCK_USER> = [MOCK_USER]) => {
     mockGetRoster.mockResolvedValue(users);
@@ -39,9 +38,7 @@ describe('RosterPage', () => {
     return renderWithUI(await RosterPage());
   };
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  setupTestLifecycle();
 
   test('renders all roster sections', async () => {
     await setup();

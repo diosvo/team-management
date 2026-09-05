@@ -1,6 +1,6 @@
 import {
   Avatar,
-  AvatarFallbackProps,
+  type AvatarFallbackProps,
   Box,
   Center,
   FileUpload,

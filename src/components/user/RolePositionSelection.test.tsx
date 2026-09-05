@@ -1,7 +1,11 @@
-import { axe } from 'jest-axe';
 import { useForm } from 'react-hook-form';
 
-import { renderWithUI, screen, waitFor } from '@/test/utilities';
+import {
+  expectNoA11yViolations,
+  renderWithUI,
+  screen,
+  waitFor,
+} from '@/test/utilities';
 
 import { PlayerPosition, UserRole } from '@/utils/enum';
 import { RolePositionSelection, RoleSelection } from './RolePositionSelection';
@@ -103,8 +107,7 @@ describe('RolePositionSelection', () => {
   test('should be accessible', async () => {
     const { container } = setup();
 
-    const result = await axe(container);
-    expect(result).toHaveNoViolations();
+    await expectNoA11yViolations(container);
   });
 
   test('renders Role and Position field labels', () => {

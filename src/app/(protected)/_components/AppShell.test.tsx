@@ -1,8 +1,12 @@
-import { Mock } from 'vitest';
+import {
+  createSessionMock,
+  createToasterMock,
+  mockToaster,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+} from '@/test/utilities';
 
-import { renderWithUI, screen } from '@/test/utilities';
-
-import { toaster } from '@/components/ui/toaster';
 import { useSessionContext } from '@/providers/session';
 import { LOGIN_PATH } from '@/routes';
 
@@ -17,9 +21,7 @@ vi.mock('next/navigation', async (importOriginal) => {
 
 vi.mock('@/providers/session', () => ({ useSessionContext: vi.fn() }));
 
-vi.mock('@/components/ui/toaster', () => ({
-  toaster: { dismiss: vi.fn() },
-}));
+vi.mock('@/components/ui/toaster', () => createToasterMock());
 
 // Stub the heavy children so AppShell can be tested in isolation.
 vi.mock('./AppHeader', () => ({
@@ -35,7 +37,7 @@ vi.mock('./Breadcrumbs', () => ({
 }));
 
 describe('AppShell', () => {
-  const mockUseSessionContext = useSessionContext as unknown as Mock;
+  const mockUseSessionContext = vi.mocked(useSessionContext);
 
   const setup = ({
     isAuthenticated = true,
@@ -44,7 +46,9 @@ describe('AppShell', () => {
     isAuthenticated?: boolean;
     isLoading?: boolean;
   } = {}) => {
-    mockUseSessionContext.mockReturnValue({ isAuthenticated, isLoading });
+    mockUseSessionContext.mockReturnValue(
+      createSessionMock({ isAuthenticated, isLoading }),
+    );
     return renderWithUI(
       <AppShell>
         <div data-testid="content" />
@@ -52,9 +56,7 @@ describe('AppShell', () => {
     );
   };
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  setupTestLifecycle();
 
   describe('rendering', () => {
     test('renders the header, sidebar and breadcrumbs', () => {
@@ -100,7 +102,7 @@ describe('AppShell', () => {
       unmount();
       vi.runAllTimers();
 
-      expect(toaster.dismiss).toHaveBeenCalled();
+      expect(mockToaster.dismiss).toHaveBeenCalled();
 
       vi.useRealTimers();
     });

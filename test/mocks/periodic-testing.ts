@@ -1,4 +1,4 @@
-import {
+import type {
   InsertTestResult,
   InsertTestType,
   TestResult,
@@ -6,7 +6,7 @@ import {
   User,
 } from '@/drizzle/schema';
 
-import {
+import type {
   TestConfigurationSelection,
   TestResult as TestResultType,
 } from '@/types/periodic-testing';
