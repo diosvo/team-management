@@ -1,12 +1,17 @@
-import { Mock } from 'vitest';
 
 import { removeAchievement } from '@/actions/achievement';
 import usePermissions from '@/hooks/use-permissions';
 
 import { MOCK_ACHIEVEMENT } from '@/test/mocks/achievement';
-import { renderWithUI, screen, waitFor } from '@/test/utilities';
+import {
+  createPermissionsMock,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+  waitFor,
+} from '@/test/utilities';
 
-import { AchievementWithRelations } from '@/db/achievement';
+import type { AchievementWithRelations } from '@/db/achievement';
 
 import AchievementCard from './AchievementCard';
 import { UpsertAchievement } from './UpsertAchievement';
@@ -38,23 +43,21 @@ const achievement: AchievementWithRelations = {
 };
 
 describe('AchievementCard', () => {
-  const mockUsePermissions = usePermissions as unknown as Mock;
-  const mockOpen = UpsertAchievement.open as unknown as Mock;
+  const mockUsePermissions = vi.mocked(usePermissions);
+  const mockOpen = vi.mocked(UpsertAchievement.open);
 
   const setup = (
     item = achievement,
     { canManage = false }: { canManage?: boolean } = {},
   ) => {
-    mockUsePermissions.mockReturnValue({
+    mockUsePermissions.mockReturnValue(createPermissionsMock({
       can: vi.fn(() => canManage),
-    });
+    }));
 
     return renderWithUI(<AchievementCard achievement={item} />);
   };
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  setupTestLifecycle();
 
   test('renders the title, type icon and league period', () => {
     setup();

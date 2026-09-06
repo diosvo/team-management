@@ -1,7 +1,7 @@
 'use client';
 
 import { useServerInsertedHTML } from 'next/navigation';
-import { PropsWithChildren, useRef, useState } from 'react';
+import { type PropsWithChildren, useRef, useState } from 'react';
 
 import { ChakraProvider, createSystem, defaultConfig } from '@chakra-ui/react';
 import createCache from '@emotion/cache';

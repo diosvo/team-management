@@ -7,16 +7,16 @@ import {
   HStack,
   Portal,
   Select,
-  SelectRootProps,
+  type SelectRootProps,
   Span,
   Stack,
 } from '@chakra-ui/react';
 import {
-  Control,
+  type Control,
   Controller,
-  FieldPath,
-  FieldValues,
-  UseFormSetValue,
+  type FieldPath,
+  type FieldValues,
+  type UseFormSetValue,
   useWatch,
 } from 'react-hook-form';
 
@@ -28,7 +28,7 @@ import {
   USER_ROLE_SELECTION,
 } from '@/utils/constants';
 import { PlayerPosition, UserRole } from '@/utils/enum';
-import { Option } from '@/utils/type';
+import type { Option } from '@/utils/type';
 
 type StateRoleProps = Omit<SelectRootProps, 'collection'> &
   Partial<{

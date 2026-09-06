@@ -1,11 +1,13 @@
-import { axe } from 'jest-axe';
-import { Mock } from 'vitest';
-
 import {
   MOCK_TEST_RESULT_DATE,
   MOCK_TEST_RESULT_RESPONSE,
 } from '@/test/mocks/periodic-testing';
-import { renderWithUI, screen } from '@/test/utilities';
+import {
+  expectNoA11yViolations,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+} from '@/test/utilities';
 
 import { getTestDates, getTestResult } from '@/actions/test-result';
 import { loadPeriodicTestingFilters } from '@/lib/nuqs';
@@ -55,9 +57,9 @@ vi.mock('./_components/PlayerPerformanceMatrix', () => ({
 const MOCK_DATE = MOCK_TEST_RESULT_DATE;
 
 describe('PeriodicTestingPage', () => {
-  const mockLoadFilters = loadPeriodicTestingFilters as unknown as Mock;
-  const mockGetResult = getTestResult as unknown as Mock;
-  const mockGetDates = getTestDates as unknown as Mock;
+  const mockLoadFilters = vi.mocked(loadPeriodicTestingFilters);
+  const mockGetResult = vi.mocked(getTestResult);
+  const mockGetDates = vi.mocked(getTestDates);
 
   const setup = async (searchParams: Record<string, unknown> = {}) => {
     const searchParamsPromise = Promise.resolve(searchParams);
@@ -93,8 +95,7 @@ describe('PeriodicTestingPage', () => {
   test('should be accessible', async () => {
     const { container } = await setup();
 
-    const result = await axe(container);
-    expect(result).toHaveNoViolations();
+    await expectNoA11yViolations(container);
   });
 
   test('renders every section', async () => {

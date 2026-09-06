@@ -14,7 +14,7 @@ import usePermissions from '@/hooks/use-permissions';
 import useTableState from '@/hooks/use-table-state';
 
 import { useMatchFilters } from '@/lib/nuqs';
-import { MatchWithTeams } from '@/types/match';
+import type { MatchWithTeams } from '@/types/match';
 import { formatDate, formatDay } from '@/utils/formatter';
 import { getColor } from '@/utils/helper';
 

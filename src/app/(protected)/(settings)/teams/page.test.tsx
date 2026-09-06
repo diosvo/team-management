@@ -1,7 +1,6 @@
-import { Mock } from 'vitest';
 
 import { MOCK_TEAM } from '@/test/mocks/team';
-import { renderWithUI, screen } from '@/test/utilities';
+import { renderWithUI, screen, setupTestLifecycle } from '@/test/utilities';
 
 import { getTeams } from '@/actions/team';
 
@@ -29,7 +28,7 @@ vi.mock('./_components/TeamTable', () => ({
 }));
 
 describe('TeamsPage', () => {
-  const mockGetTeams = getTeams as unknown as Mock;
+  const mockGetTeams = vi.mocked(getTeams);
 
   const setup = async (teams: Array<typeof MOCK_TEAM> = [MOCK_TEAM]) => {
     mockGetTeams.mockResolvedValue(teams);
@@ -37,9 +36,7 @@ describe('TeamsPage', () => {
     return renderWithUI(await TeamsPage());
   };
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  setupTestLifecycle();
 
   test('renders all team sections', async () => {
     await setup();

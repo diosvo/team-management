@@ -1,5 +1,6 @@
-import { Coach, Player, User } from '@/drizzle/schema';
-import { AddUserValues } from '@/schemas/user';
+import type { Coach, Player, User } from '@/drizzle/schema';
+import type { SessionUser } from '@/providers/session';
+import type { AddUserValues } from '@/schemas/user';
 import {
   CoachPosition,
   PlayerPosition,
@@ -33,6 +34,16 @@ export const MOCK_USER: User = {
   leave_date: null,
   state: MOCK_USER_INPUT.state,
   role: UserRole.PLAYER,
+};
+
+/**
+ * The user as better-auth projects it onto the session, which is what
+ * `useSessionContext` hands to components. It overlaps `MOCK_USER` but requires
+ * `is_captain`, which the database row only carries optionally.
+ */
+export const MOCK_SESSION_USER: SessionUser = {
+  ...MOCK_USER,
+  is_captain: false,
 };
 
 export const MOCK_PLAYER: Player = {

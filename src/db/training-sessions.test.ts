@@ -1,10 +1,13 @@
 import { and, desc, eq, gte, inArray, lte } from 'drizzle-orm';
 
 import db from '@/drizzle';
-import { InsertTrainingSession, TrainingSessionTable } from '@/drizzle/schema';
+import {
+  type InsertTrainingSession,
+  TrainingSessionTable,
+} from '@/drizzle/schema';
 
 import { Interval, SessionStatus } from '@/utils/enum';
-import { TrainingSearchParams } from '@/lib/nuqs';
+import type { TrainingSearchParams } from '@/lib/nuqs';
 import { TIME_DURATION } from '@/utils/formatter';
 
 import {

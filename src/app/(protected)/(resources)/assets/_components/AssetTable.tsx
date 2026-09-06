@@ -18,7 +18,7 @@ import { formatDate, formatDatetime } from '@/utils/formatter';
 import { getColor } from '@/utils/helper';
 
 import { removeAsset } from '@/actions/asset';
-import { Asset } from '@/drizzle/schema/asset';
+import type { Asset } from '@/drizzle/schema/asset';
 
 import { UpsertAsset } from './UpsertAsset';
 

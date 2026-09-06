@@ -1,6 +1,3 @@
-import * as nuqs from 'nuqs';
-import { Mock } from 'vitest';
-
 import {
   MOCK_TEST_PLAYER_2,
   MOCK_TEST_RESULT,
@@ -11,7 +8,16 @@ import {
   MOCK_TEST_TYPE_2,
 } from '@/test/mocks/periodic-testing';
 import { MOCK_PLAYER, MOCK_USER } from '@/test/mocks/user';
-import { renderWithUI, screen, waitFor } from '@/test/utilities';
+import {
+  createPermissionsMock,
+  createToasterMock,
+  expectNoA11yViolations,
+  mockUseQueryStates,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+  waitFor,
+} from '@/test/utilities';
 
 import usePermissions from '@/hooks/use-permissions';
 
@@ -20,7 +26,7 @@ import {
   deleteTestResultById,
   updateTestResultById,
 } from '@/actions/test-result';
-import { TestResult } from '@/types/periodic-testing';
+import type { TestResult } from '@/types/periodic-testing';
 
 import PlayerPerformanceMatrix from './PlayerPerformanceMatrix';
 
@@ -34,22 +40,17 @@ vi.mock('@/actions/test-result', () => ({
   deleteTestResultById: vi.fn(),
 }));
 
-vi.mock('@/components/ui/toaster', () => ({
-  toaster: {
-    create: vi.fn(() => 'toast-id'),
-    update: vi.fn(),
-  },
-}));
+vi.mock('@/components/ui/toaster', () => createToasterMock());
 
 // The first player's second-type cell is empty (see the mock), so it exercises
 // the "create result" path; the value shown for the first player.
 const FIRST_RESULT = MOCK_TEST_RESULT_INPUT.result;
 
 describe('PlayerPerformanceMatrix', () => {
-  const mockUsePermissions = usePermissions as unknown as Mock;
-  const mockCreate = createTestResult as unknown as Mock;
-  const mockUpdate = updateTestResultById as unknown as Mock;
-  const mockDelete = deleteTestResultById as unknown as Mock;
+  const mockUsePermissions = vi.mocked(usePermissions);
+  const mockCreate = vi.mocked(createTestResult);
+  const mockUpdate = vi.mocked(updateTestResultById);
+  const mockDelete = vi.mocked(deleteTestResultById);
 
   const setup = ({
     result = MOCK_TEST_RESULT_RESPONSE,
@@ -60,19 +61,26 @@ describe('PlayerPerformanceMatrix', () => {
     canEdit?: boolean;
     params?: Record<string, unknown>;
   } = {}) => {
-    mockUsePermissions.mockReturnValue({
+    mockUsePermissions.mockReturnValue(createPermissionsMock({
       can: () => canEdit,
+    }));
+    mockUseQueryStates({
+      page: 1,
+      q: '',
+      date: MOCK_TEST_RESULT_DATE,
+      type: [],
+      ...params,
     });
-    (nuqs.useQueryStates as unknown as Mock).mockReturnValue([
-      { page: 1, q: '', date: MOCK_TEST_RESULT_DATE, type: [], ...params },
-      vi.fn(),
-    ]);
 
     return renderWithUI(<PlayerPerformanceMatrix result={result} />);
   };
 
-  beforeEach(() => {
-    vi.clearAllMocks();
+  setupTestLifecycle();
+
+  test('should be accessible', async () => {
+    const { container } = setup({});
+
+    await expectNoA11yViolations(container);
   });
 
   test('renders a column header with its unit for each test type', () => {

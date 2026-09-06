@@ -1,6 +1,6 @@
 import { revalidate } from '@/actions/cache';
 import auth from '@/lib/auth';
-import {
+import type {
   AddUserValues,
   EditPersonalInfoValues,
   EditTeamInfoValues,

@@ -17,11 +17,11 @@ import { Alert } from '@/components/ui/alert';
 import { Field } from '@/components/ui/field';
 
 import { getDefaults } from '@/lib/zod';
-import { Response } from '@/utils/response';
+import type { Response } from '@/utils/response';
 
 import authClient from '@/lib/auth-client';
 import { LOGIN_PATH } from '@/routes';
-import { LoginSchema, LoginValues } from '@/schemas/auth';
+import { LoginSchema, type LoginValues } from '@/schemas/auth';
 
 export default function ForgotPasswordPage() {
   const [response, setResponse] = useState<Response>();

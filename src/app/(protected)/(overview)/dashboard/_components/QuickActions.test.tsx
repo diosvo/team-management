@@ -1,12 +1,18 @@
-import { ReactNode } from 'react';
-import { Mock } from 'vitest';
+import type { ReactNode } from 'react';
 
-import { MOCK_USER } from '@/test/mocks/user';
-import { renderWithUI, screen, waitFor } from '@/test/utilities';
+import { MOCK_SESSION_USER } from '@/test/mocks/user';
+import {
+  createPermissionsMock,
+  createSessionMock,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+  waitFor,
+} from '@/test/utilities';
 
 import usePermissions from '@/hooks/use-permissions';
 
-import { useSessionContext } from '@/providers/session';
+import { useSessionContext, type SessionUser } from '@/providers/session';
 
 import QuickActions from './QuickActions';
 
@@ -44,27 +50,27 @@ vi.mock(
 );
 
 describe('QuickActions', () => {
-  const mockUsePermissions = usePermissions as unknown as Mock;
-  const mockUseSessionContext = useSessionContext as unknown as Mock;
+  const mockUsePermissions = vi.mocked(usePermissions);
+  const mockUseSessionContext = vi.mocked(useSessionContext);
 
   const setup = ({
     isAdmin = false,
     isPlayer = false,
-    user = MOCK_USER,
+    user = MOCK_SESSION_USER,
   }: {
     isAdmin?: boolean;
     isPlayer?: boolean;
-    user?: typeof MOCK_USER | null;
+    user?: Nullable<SessionUser>;
   } = {}) => {
-    mockUsePermissions.mockReturnValue({ isAdmin, isPlayer });
-    mockUseSessionContext.mockReturnValue({ user });
+    mockUsePermissions.mockReturnValue(
+      createPermissionsMock({ isAdmin, isPlayer }),
+    );
+    mockUseSessionContext.mockReturnValue(createSessionMock({ user }));
 
     return renderWithUI(<QuickActions />);
   };
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  setupTestLifecycle();
 
   test('renders the card title and description once mounted', async () => {
     setup();
@@ -116,7 +122,9 @@ describe('QuickActions', () => {
     await user.click(await screen.findByText('My Stats'));
 
     await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith(`/performance/${MOCK_USER.id}`);
+      expect(mockPush).toHaveBeenCalledWith(
+        `/performance/${MOCK_SESSION_USER.id}`,
+      );
     });
   });
 });

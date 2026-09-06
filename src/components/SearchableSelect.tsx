@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import useSWR, { SWRConfiguration } from 'swr';
+import useSWR, { type SWRConfiguration } from 'swr';
 
 import {
   Combobox,
@@ -19,7 +19,7 @@ import {
   type FieldValues,
 } from 'react-hook-form';
 
-import { Field, FieldProps } from './ui/field';
+import { Field, type FieldProps } from './ui/field';
 import { toaster } from './ui/toaster';
 
 /** Everything both variants need, regardless of how the value is held. */

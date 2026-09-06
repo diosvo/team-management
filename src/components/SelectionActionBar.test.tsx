@@ -1,7 +1,11 @@
-import { axe } from 'jest-axe';
 import { act } from 'react';
 
-import { renderWithUI, screen } from '@/test/utilities';
+import {
+  expectNoA11yViolations,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+} from '@/test/utilities';
 import SelectionActionBar from './SelectionActionBar';
 
 describe('SelectionActionBar', () => {
@@ -24,9 +28,7 @@ describe('SelectionActionBar', () => {
     };
   };
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  setupTestLifecycle();
 
   test('should be accessible', async () => {
     const { container } = setup();
@@ -34,8 +36,7 @@ describe('SelectionActionBar', () => {
     // Wait for the action bar's async popover update to settle.
     await screen.findByText('3 selected');
 
-    const result = await axe(container);
-    expect(result).toHaveNoViolations();
+    await expectNoA11yViolations(container);
   });
 
   test('renders action bar when open is true', async () => {

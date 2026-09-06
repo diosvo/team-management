@@ -1,19 +1,17 @@
-import { axe } from 'jest-axe';
-import * as nuqs from 'nuqs';
-import { Mock } from 'vitest';
-
-import { renderWithUI, screen } from '@/test/utilities';
+import {
+  expectNoA11yViolations,
+  mockUseQueryStates,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+} from '@/test/utilities';
 import SearchInput from './SearchInput';
 
 describe('SearchInput', () => {
   const mockSetSearchParams = vi.fn();
 
   const setup = (overrides = {}) => {
-    const mockQueryState = { q: '', ...overrides };
-    (nuqs.useQueryStates as unknown as Mock).mockReturnValue([
-      mockQueryState,
-      mockSetSearchParams,
-    ]);
+    mockUseQueryStates({ q: '', ...overrides }, mockSetSearchParams);
 
     const view = renderWithUI(<SearchInput />);
     const input = screen.getByPlaceholderText('Search...');
@@ -24,9 +22,7 @@ describe('SearchInput', () => {
     };
   };
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  setupTestLifecycle();
 
   afterEach(() => {
     vi.clearAllTimers();
@@ -35,8 +31,7 @@ describe('SearchInput', () => {
   test('should be accessible', async () => {
     const { container } = setup();
 
-    const result = await axe(container);
-    expect(result).toHaveNoViolations();
+    await expectNoA11yViolations(container);
   });
 
   test('renders search input with correct attributes', () => {
@@ -106,10 +101,7 @@ describe('SearchInput', () => {
     expect(input.value).toBe('edited');
 
     // Simulate an external URL change (e.g. a stat card click resetting `q`).
-    (nuqs.useQueryStates as unknown as Mock).mockReturnValue([
-      { q: '' },
-      mockSetSearchParams,
-    ]);
+    mockUseQueryStates({ q: '' }, mockSetSearchParams);
     rerender(<SearchInput />);
 
     expect(input.value).toBe('');

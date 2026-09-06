@@ -1,8 +1,12 @@
 import { useController } from 'react-hook-form';
 
-import { toaster } from '@/components/ui/toaster';
-
-import { renderWithUI, screen, waitFor } from '@/test/utilities';
+import {
+  createToasterMock,
+  mockToaster,
+  renderWithUI,
+  screen,
+  waitFor,
+} from '@/test/utilities';
 import { Interval } from '@/utils/enum';
 
 import { sendReportEmail } from '@/actions/report';
@@ -35,12 +39,7 @@ vi.mock('@/actions/report', () => ({
   sendReportEmail: vi.fn(),
 }));
 
-vi.mock('@/components/ui/toaster', () => ({
-  toaster: {
-    success: vi.fn(),
-    error: vi.fn(),
-  },
-}));
+vi.mock('@/components/ui/toaster', () => createToasterMock());
 
 describe('EmailReport', () => {
   const mockSendReportEmail = vi.mocked(sendReportEmail);
@@ -144,7 +143,7 @@ describe('EmailReport', () => {
     });
 
     await waitFor(() => {
-      expect(toaster.success).toHaveBeenCalledWith(
+      expect(mockToaster.success).toHaveBeenCalledWith(
         expect.objectContaining({ title: 'Email sent' }),
       );
     });
@@ -165,7 +164,7 @@ describe('EmailReport', () => {
     );
 
     await waitFor(() => {
-      expect(toaster.error).toHaveBeenCalledWith({
+      expect(mockToaster.error).toHaveBeenCalledWith({
         title: 'Download failed',
         description: 'Something went wrong',
       });
@@ -187,7 +186,7 @@ describe('EmailReport', () => {
     );
 
     await waitFor(() => {
-      expect(toaster.error).toHaveBeenCalledWith(
+      expect(mockToaster.error).toHaveBeenCalledWith(
         expect.objectContaining({
           title: 'Email failed',
           description: 'boom',
@@ -195,7 +194,7 @@ describe('EmailReport', () => {
       );
     });
 
-    expect(toaster.success).not.toHaveBeenCalled();
+    expect(mockToaster.success).not.toHaveBeenCalled();
     expect(mockOnOpenChange).not.toHaveBeenCalled();
   });
 });

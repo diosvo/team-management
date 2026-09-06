@@ -19,7 +19,7 @@ describe('EmailLayout', () => {
     const html = EmailLayout('');
 
     expect(html).toContain(
-      '<img src="https://sgr-portal.vercel.app/icon.png" alt="icon" />',
+      '<img width="42" src="https://sgr-portal.vercel.app/icon.png" alt="icon" />',
     );
   });
 

@@ -1,6 +1,10 @@
-import { Mock } from 'vitest';
 
-import { renderWithUI, screen } from '@/test/utilities';
+import {
+  expectNoA11yViolations,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+} from '@/test/utilities';
 
 import { usePathname } from 'next/navigation';
 
@@ -22,15 +26,19 @@ vi.mock('next/navigation', async (importOriginal) => {
 });
 
 describe('Breadcrumbs', () => {
-  const mockUsePathname = usePathname as unknown as Mock;
+  const mockUsePathname = vi.mocked(usePathname);
 
   const setup = (pathname = '/') => {
     mockUsePathname.mockReturnValue(pathname);
     return renderWithUI(<Breadcrumbs />);
   };
 
-  beforeEach(() => {
-    vi.clearAllMocks();
+  setupTestLifecycle();
+
+  test('should be accessible', async () => {
+    const { container } = setup('/roster');
+
+    await expectNoA11yViolations(container);
   });
 
   test('renders nothing when at the root path', () => {

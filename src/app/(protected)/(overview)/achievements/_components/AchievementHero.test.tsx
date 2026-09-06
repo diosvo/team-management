@@ -7,13 +7,6 @@ vi.mock('next/font/google', () => ({
   Anton: () => ({ className: 'anton', style: { fontFamily: 'Anton' } }),
 }));
 
-vi.mock('next/image', () => ({
-  default: ({ alt, ...props }: React.ImgHTMLAttributes<HTMLImageElement>) => (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img alt={alt} {...props} />
-  ),
-}));
-
 vi.mock('@/assets/images/prd-logo.png', () => ({
   default: { src: '/mock-logo.png', height: 88, width: 88, blurDataURL: '' },
 }));
@@ -28,7 +21,10 @@ describe('AchievementHero', () => {
   test('renders the club logo and the headline', () => {
     setup();
 
-    expect(screen.getByAltText('Team Logo')).toBeInTheDocument();
+    expect(screen.getByAltText('Team Logo')).toHaveAttribute(
+      'src',
+      '/mock-layer.webp',
+    );
     expect(screen.getByText('Our Journey. Our Pride.')).toBeInTheDocument();
     expect(
       screen.getByText('Every season. Every challenge. Every achievement.'),

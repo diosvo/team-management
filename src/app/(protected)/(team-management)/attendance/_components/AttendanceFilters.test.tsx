@@ -1,8 +1,10 @@
-import { axe } from 'jest-axe';
-import * as nuqs from 'nuqs';
-import { Mock } from 'vitest';
-
-import { renderWithUI, screen } from '@/test/utilities';
+import {
+  expectNoA11yViolations,
+  mockUseQueryStates,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+} from '@/test/utilities';
 import { AttendanceStatus } from '@/utils/enum';
 
 import AttendanceFilters from './AttendanceFilters';
@@ -18,10 +20,7 @@ describe('AttendanceFilters', () => {
       page: 1,
       ...overrides,
     };
-    (nuqs.useQueryStates as unknown as Mock).mockReturnValue([
-      state,
-      setSearchParams,
-    ]);
+    mockUseQueryStates(state, setSearchParams);
 
     const view = renderWithUI(<AttendanceFilters />);
     const dateInput = view.container.querySelector(
@@ -31,15 +30,12 @@ describe('AttendanceFilters', () => {
     return { ...view, dateInput };
   };
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  setupTestLifecycle();
 
   test('should be accessible', async () => {
     const { container } = setup();
 
-    const result = await axe(container);
-    expect(result).toHaveNoViolations();
+    await expectNoA11yViolations(container);
   });
 
   test('renders the search input', () => {

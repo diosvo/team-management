@@ -27,7 +27,7 @@ import { formatDatetime, formatDay } from '@/utils/formatter';
 import { upsertSession } from '@/actions/training-session';
 import {
   UpsertSessionSchema,
-  UpsertSessionSchemaValues,
+  type UpsertSessionSchemaValues,
 } from '@/schemas/training';
 
 export const UpsertSession = createOverlay(({ action, item, ...rest }) => {

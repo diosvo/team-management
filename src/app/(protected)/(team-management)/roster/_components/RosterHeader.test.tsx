@@ -1,6 +1,10 @@
-import { Mock } from 'vitest';
 
-import { renderWithUI, screen } from '@/test/utilities';
+import {
+  createPermissionsMock,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+} from '@/test/utilities';
 
 import usePermissions from '@/hooks/use-permissions';
 
@@ -16,19 +20,17 @@ vi.mock('./AddUser', () => ({
 }));
 
 describe('RosterHeader', () => {
-  const mockUsePermissions = usePermissions as unknown as Mock;
+  const mockUsePermissions = vi.mocked(usePermissions);
 
   const setup = (canCreate = false) => {
-    mockUsePermissions.mockReturnValue({
+    mockUsePermissions.mockReturnValue(createPermissionsMock({
       can: vi.fn(() => canCreate),
-    });
+    }));
 
     return renderWithUI(<RosterHeader />);
   };
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  setupTestLifecycle();
 
   test('renders the roster page title', () => {
     setup();

@@ -1,6 +1,10 @@
-import { Mock } from 'vitest';
 
-import { renderWithUI, screen } from '@/test/utilities';
+import {
+  createPermissionsMock,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+} from '@/test/utilities';
 
 import usePermissions from '@/hooks/use-permissions';
 
@@ -16,21 +20,19 @@ vi.mock('./UpsertTeam', () => ({
 }));
 
 describe('TeamHeader', () => {
-  const mockUsePermissions = usePermissions as unknown as Mock;
-  const mockOpen = UpsertTeam.open as unknown as Mock;
+  const mockUsePermissions = vi.mocked(usePermissions);
+  const mockOpen = vi.mocked(UpsertTeam.open);
 
   const setup = (canCreate = false) => {
-    mockUsePermissions.mockReturnValue({
+    mockUsePermissions.mockReturnValue(createPermissionsMock({
       can: vi.fn(() => canCreate),
       isLoading: false,
-    });
+    }));
 
     return renderWithUI(<TeamHeader />);
   };
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  setupTestLifecycle();
 
   test('renders the page title', () => {
     setup();

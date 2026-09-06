@@ -43,9 +43,9 @@ import { formatDate } from '@/utils/formatter';
 import { getColor } from '@/utils/helper';
 
 import { updateTeamInfo } from '@/actions/user';
-import { User } from '@/drizzle/schema';
+import type { User } from '@/drizzle/schema';
 import usePermissions from '@/hooks/use-permissions';
-import { EditTeamInfoSchema, EditTeamInfoValues } from '@/schemas/user';
+import { EditTeamInfoSchema, type EditTeamInfoValues } from '@/schemas/user';
 
 export default function TeamInfo({
   user,
@@ -129,6 +129,7 @@ export default function TeamInfo({
               <IconButton
                 size="sm"
                 type="submit"
+                aria-label="Save"
                 disabled={!isDirty || !isValid || isPending}
               >
                 <Save />
@@ -141,6 +142,7 @@ export default function TeamInfo({
               size="sm"
               variant="subtle"
               disabled={viewOnly}
+              aria-label={viewOnly ? 'View Only' : 'Edit'}
               onClick={() => setIsEditing(true)}
             >
               <Edit />

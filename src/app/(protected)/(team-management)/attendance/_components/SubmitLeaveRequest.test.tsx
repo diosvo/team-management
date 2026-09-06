@@ -1,8 +1,12 @@
-import { axe } from 'jest-axe';
-import { Mock } from 'vitest';
-
-import { MOCK_USER } from '@/test/mocks/user';
-import { renderWithUI, screen, waitFor } from '@/test/utilities';
+import { MOCK_SESSION_USER } from '@/test/mocks/user';
+import {
+  createSessionMock,
+  createToasterMock,
+  expectNoA11yViolations,
+  renderWithUI,
+  screen,
+  waitFor,
+} from '@/test/utilities';
 
 import { submitLeave } from '@/actions/attendance';
 
@@ -18,15 +22,15 @@ vi.mock('@/actions/attendance', () => ({
   submitLeave: vi.fn(),
 }));
 
-vi.mock('@/components/ui/toaster', () => ({
-  toaster: { create: vi.fn(), update: vi.fn(), remove: vi.fn() },
-}));
+vi.mock('@/components/ui/toaster', () => createToasterMock());
 
 describe('SubmitLeaveRequest', () => {
   const mockSubmitLeave = vi.mocked(submitLeave);
 
   const setup = () => {
-    (useSessionContext as Mock).mockReturnValue({ user: MOCK_USER });
+    vi.mocked(useSessionContext).mockReturnValue(
+      createSessionMock({ user: MOCK_SESSION_USER }),
+    );
 
     return renderWithUI(<SubmitLeaveRequest trigger={<button>Open</button>} />);
   };
@@ -44,8 +48,7 @@ describe('SubmitLeaveRequest', () => {
   test('should be accessible', async () => {
     const { container } = setup();
 
-    const result = await axe(container);
-    expect(result).toHaveNoViolations();
+    await expectNoA11yViolations(container);
   });
 
   test('renders the trigger and keeps the dialog closed initially', () => {
@@ -76,7 +79,7 @@ describe('SubmitLeaveRequest', () => {
 
     await waitFor(() => expect(mockSubmitLeave).toHaveBeenCalledTimes(1));
     expect(mockSubmitLeave).toHaveBeenCalledWith(
-      expect.objectContaining({ player_id: MOCK_USER.id }),
+      expect.objectContaining({ player_id: MOCK_SESSION_USER.id }),
     );
   });
 });

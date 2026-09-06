@@ -87,8 +87,10 @@
     "e2e": "playwright test",
     "e2e:ui": "pnpm e2e --ui",
     "preinstall": "npx only-allow pnpm",
-    "test": "vitest",
-    "test:ui": "vitest --ui --coverage"
+    "test": "NODE_OPTIONS='--disable-warning=ExperimentalWarning' vitest",
+    "test:coverage": "pnpm test --coverage",
+    "test:ui": "pnpm test:coverage --ui",
+    "typecheck": "next typegen && tsc --noEmit"
   },
   "version": "1.0.0"
 }

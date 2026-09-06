@@ -14,8 +14,8 @@ import { enumValues, UserRole, UserState } from '@/utils/enum';
 
 import { created_at, expires_at, updated_at } from '../helpers';
 import { AssetTable } from './asset';
-import { Coach, CoachTable } from './coach';
-import { Player, PlayerTable } from './player';
+import { type Coach, CoachTable } from './coach';
+import { type Player, PlayerTable } from './player';
 import { TeamTable } from './team';
 
 export const userRoleEnum = pgEnum('user_role', enumValues(UserRole));

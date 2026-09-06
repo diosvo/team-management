@@ -16,7 +16,7 @@ import { Tooltip } from '@/components/ui/tooltip';
 import { useCommonParams } from '@/lib/nuqs';
 import { paginateData } from '@/utils/filters';
 
-import { TestConfigurationSelection } from '@/types/periodic-testing';
+import type { TestConfigurationSelection } from '@/types/periodic-testing';
 
 const PAGE_SIZE = 10;
 
@@ -32,6 +32,7 @@ const getResultKey = (player_id: string, type_id: string) =>
 
 type ResultCellProps = {
   cellKey: string;
+  label: string;
   value: string;
   onChange: (key: string, value: string) => void;
 };
@@ -39,6 +40,7 @@ type ResultCellProps = {
 // Memoized so editing one cell doesn't re-render the entire grid.
 const ResultCell = memo(function ResultCell({
   cellKey,
+  label,
   value,
   onChange,
 }: ResultCellProps) {
@@ -49,7 +51,8 @@ const ResultCell = memo(function ResultCell({
         value={value}
         onValueChange={({ value }) => onChange(cellKey, value)}
       >
-        <NumberInputField />
+        {/* Row and column headers don't name the input on their own. */}
+        <NumberInputField aria-label={label} />
       </NumberInputRoot>
     </Table.Cell>
   );
@@ -143,12 +146,13 @@ export default function TestResultTable({
                       {name}
                     </Table.Cell>
                   </Tooltip>
-                  {types.map(({ type_id }) => {
+                  {types.map(({ type_id, name: type }) => {
                     const key = getResultKey(id, type_id);
                     return (
                       <ResultCell
                         key={type_id}
                         cellKey={key}
+                        label={`${type} for ${name}`}
                         value={results[key] || '0'}
                         onChange={handleChange}
                       />

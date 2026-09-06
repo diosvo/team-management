@@ -1,7 +1,7 @@
 'use client';
 
 import { Card } from '@/components/ui/card';
-import { MatchesRateRecord } from '@/types/analytics';
+import type { MatchesRateRecord } from '@/types/analytics';
 import { Chart, useChart } from '@chakra-ui/charts';
 import { useRouter } from 'next/navigation';
 import {

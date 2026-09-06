@@ -1,7 +1,7 @@
 import { MOCK_ABSENCE_REASONS } from '@/test/mocks/analytics';
 import { renderWithUI, screen } from '@/test/utilities';
 
-import { AbsenceReason } from '@/types/analytics';
+import type { AbsenceReason } from '@/types/analytics';
 import AbsenceReasonsBreakdown from './AbsenceReasonsBreakdown';
 
 describe('AbsenceReasonsBreakdown', () => {

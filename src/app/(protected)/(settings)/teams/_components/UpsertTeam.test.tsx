@@ -1,7 +1,13 @@
-import { Mock } from 'vitest';
-
 import { MOCK_AWAY_TEAM } from '@/test/mocks/team';
-import { act, renderWithUI, screen, waitFor } from '@/test/utilities';
+import {
+  act,
+  createToasterMock,
+  expectNoA11yViolations,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+  waitFor,
+} from '@/test/utilities';
 
 import { uploadLogo, upsertTeam } from '@/actions/team';
 
@@ -16,12 +22,7 @@ vi.mock('@/hooks/use-image', () => ({
   useTeamLogo: vi.fn(() => ({ data: undefined, isLoading: false })),
 }));
 
-vi.mock('@/components/ui/toaster', () => ({
-  toaster: {
-    create: vi.fn(() => 'toast-id'),
-    update: vi.fn(),
-  },
-}));
+vi.mock('@/components/ui/toaster', () => createToasterMock());
 
 const logoFile = new File(['logo'], 'logo.png', { type: 'image/png' });
 vi.mock('@/components/common/ImageUploader', () => ({
@@ -33,8 +34,8 @@ vi.mock('@/components/common/ImageUploader', () => ({
 }));
 
 describe('UpsertTeam', () => {
-  const mockUpsertTeam = upsertTeam as unknown as Mock;
-  const mockUploadLogo = uploadLogo as unknown as Mock;
+  const mockUpsertTeam = vi.mocked(upsertTeam);
+  const mockUploadLogo = vi.mocked(uploadLogo);
 
   const open = async (
     action: 'Add' | 'Update' = 'Add',
@@ -51,14 +52,18 @@ describe('UpsertTeam', () => {
     return view;
   };
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  setupTestLifecycle();
 
   afterEach(() => {
     act(() => {
       UpsertTeam.removeAll();
     });
+  });
+
+  test('should be accessible', async () => {
+    await open();
+
+    await expectNoA11yViolations();
   });
 
   test('renders the dialog title and fields for the given action', async () => {

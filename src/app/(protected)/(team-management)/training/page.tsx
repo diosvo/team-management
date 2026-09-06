@@ -1,4 +1,4 @@
-import { Metadata } from 'next';
+import type { Metadata } from 'next';
 
 import { getSessions } from '@/actions/training-session';
 import { loadTrainingFilters } from '@/lib/nuqs';

@@ -1,11 +1,14 @@
-import { axe } from 'jest-axe';
-
 import {
   MOCK_ATTENDANCE_DATE,
   MOCK_ATTENDANCE_RESPONSE,
   MOCK_ATTENDANCE_STATS,
 } from '@/test/mocks/attendance';
-import { renderWithUI, screen } from '@/test/utilities';
+import {
+  expectNoA11yViolations,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+} from '@/test/utilities';
 
 import { getAttendanceByDate } from '@/actions/attendance';
 import { loadAttendanceFilters } from '@/lib/nuqs';
@@ -76,8 +79,7 @@ describe('AttendancePage', () => {
   test('should be accessible', async () => {
     const { container } = await setup();
 
-    const result = await axe(container);
-    expect(result).toHaveNoViolations();
+    await expectNoA11yViolations(container);
   });
 
   test('renders every section in order', async () => {

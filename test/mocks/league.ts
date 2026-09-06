@@ -1,4 +1,4 @@
-import { InsertLeague, League } from '@/drizzle/schema';
+import type { InsertLeague, League } from '@/drizzle/schema';
 import { LeagueStatus } from '@/utils/enum';
 
 export const MOCK_LEAGUE_INPUT: InsertLeague = {

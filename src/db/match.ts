@@ -1,15 +1,15 @@
 import { and, desc, eq, gte, isNotNull, isNull, lte } from 'drizzle-orm';
 
-import { DataWithStats } from '@/types/common';
-import { MatchStats, MatchWithTeams } from '@/types/match';
+import type { DataWithStats } from '@/types/common';
+import type { MatchStats, MatchWithTeams } from '@/types/match';
 
-import { MatchSearchParams } from '@/lib/nuqs';
+import type { MatchSearchParams } from '@/lib/nuqs';
 import { MatchStatus, MatchType } from '@/utils/enum';
 import { TIME_DURATION } from '@/utils/formatter';
 
 import db from '@/drizzle';
-import { InsertMatch, MatchTable } from '@/drizzle/schema';
-import { UpsertMatchSchemaValues } from '@/schemas/match';
+import { type InsertMatch, MatchTable } from '@/drizzle/schema';
+import type { UpsertMatchSchemaValues } from '@/schemas/match';
 
 export async function getMatches(
   params: MatchSearchParams & { team_id: string },

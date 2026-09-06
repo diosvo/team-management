@@ -1,7 +1,10 @@
-import { axe } from 'jest-axe';
-import { Mock } from 'vitest';
-
-import { renderWithUI, screen } from '@/test/utilities';
+import {
+  createPermissionsMock,
+  expectNoA11yViolations,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+} from '@/test/utilities';
 
 import usePermissions from '@/hooks/use-permissions';
 
@@ -12,25 +15,22 @@ vi.mock('@/hooks/use-permissions', () => ({
 }));
 
 describe('TestingHeader', () => {
-  const mockUsePermissions = usePermissions as unknown as Mock;
+  const mockUsePermissions = vi.mocked(usePermissions);
 
   const setup = (canCreate = false) => {
-    mockUsePermissions.mockReturnValue({
+    mockUsePermissions.mockReturnValue(createPermissionsMock({
       can: vi.fn(() => canCreate),
-    });
+    }));
 
     return renderWithUI(<TestingHeader />);
   };
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  setupTestLifecycle();
 
   test('should be accessible', async () => {
     const { container } = setup(true);
 
-    const result = await axe(container);
-    expect(result).toHaveNoViolations();
+    await expectNoA11yViolations(container);
   });
 
   test('always renders the page title', () => {

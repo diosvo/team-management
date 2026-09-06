@@ -1,8 +1,7 @@
-import { Mock } from 'vitest';
 
 import { MOCK_LOCATION, MOCK_LOCATION_2 } from '@/test/mocks/location';
 import { MOCK_TRAINING_SESSION } from '@/test/mocks/training-sessions';
-import { renderWithUI, screen } from '@/test/utilities';
+import { renderWithUI, screen, setupTestLifecycle } from '@/test/utilities';
 
 import { getUpcomingSessions } from '@/actions/analytics';
 import UpcomingSessions from './UpcomingSessions';
@@ -12,13 +11,18 @@ vi.mock('@/actions/analytics', () => ({
 }));
 
 describe('UpcomingSessions', () => {
-  const mockGetUpcomingSessions = getUpcomingSessions as unknown as Mock;
+  const mockGetUpcomingSessions = vi.mocked(getUpcomingSessions);
+
+  // `date` arrives as a string from the action. A date-only string
+  // ('yyyy-MM-dd') is parsed as UTC midnight, so `isToday` would miss the badge
+  // on runners west of UTC; a full timestamp pins it to the current instant.
+  const TODAY = new Date().toISOString();
 
   const MOCK_SESSIONS = [
     {
       ...MOCK_TRAINING_SESSION,
       session_id: 'session-today',
-      date: new Date(),
+      date: TODAY,
       start_time: '18:00',
       end_time: '20:00',
       location: { name: MOCK_LOCATION.name },
@@ -26,21 +30,21 @@ describe('UpcomingSessions', () => {
     {
       ...MOCK_TRAINING_SESSION,
       session_id: 'session-future',
-      date: new Date('2099-12-31'),
+      date: '2099-12-31',
       start_time: '09:00',
       end_time: '11:00',
       location: { name: MOCK_LOCATION_2.name },
     },
   ];
 
-  const setup = async (sessions: unknown[]) => {
+  const setup = async (
+    sessions: Awaited<ReturnType<typeof getUpcomingSessions>>,
+  ) => {
     mockGetUpcomingSessions.mockResolvedValue(sessions);
     return renderWithUI(await UpcomingSessions());
   };
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  setupTestLifecycle();
 
   test('renders the card title and description', async () => {
     await setup([]);

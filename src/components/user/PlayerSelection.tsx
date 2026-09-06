@@ -3,11 +3,18 @@
 import { useCallback } from 'react';
 import useSWRImmutable from 'swr/immutable';
 
-import { Box, BoxProps, Button, HStack, List, Span } from '@chakra-ui/react';
+import {
+  Box,
+  type BoxProps,
+  Button,
+  HStack,
+  List,
+  Span,
+} from '@chakra-ui/react';
 import { UserRoundX } from 'lucide-react';
-import { Control, FieldPath, FieldValues } from 'react-hook-form';
+import type { Control, FieldPath, FieldValues } from 'react-hook-form';
 
-import { User } from '@/drizzle/schema/user';
+import type { User } from '@/drizzle/schema/user';
 
 import SearchableSelect, {
   SearchableSelectField,

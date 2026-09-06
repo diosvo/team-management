@@ -1,4 +1,4 @@
-import { Metadata } from 'next';
+import type { Metadata } from 'next';
 import { forbidden } from 'next/navigation';
 
 import PageTitle from '@/components/PageTitle';

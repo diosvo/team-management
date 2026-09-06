@@ -1,6 +1,5 @@
-import { Mock } from 'vitest';
 
-import { renderWithUI, screen } from '@/test/utilities';
+import { renderWithUI, screen, setupTestLifecycle } from '@/test/utilities';
 
 import { loadDashboardFilters } from '@/lib/nuqs';
 import { Interval } from '@/utils/enum';
@@ -55,19 +54,18 @@ vi.mock('./_components/AnalyticsSections', () => ({
 }));
 
 describe('DashboardsPage', () => {
-  const mockLoadFilters = loadDashboardFilters as unknown as Mock;
+  const mockLoadFilters = vi.mocked(loadDashboardFilters);
 
   const setup = async (interval: Interval = Interval.THIS_YEAR) => {
-    mockLoadFilters.mockResolvedValue({ interval });
+    // `page`/`q` come from the shared params; the page forwards `interval`.
+    mockLoadFilters.mockResolvedValue({ interval, page: 1, q: '' });
 
     return renderWithUI(
       await DashboardsPage({ searchParams: Promise.resolve({}) } as never),
     );
   };
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  setupTestLifecycle();
 
   test('renders the analytics page title', async () => {
     await setup();

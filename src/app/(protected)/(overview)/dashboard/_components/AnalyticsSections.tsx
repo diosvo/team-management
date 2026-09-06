@@ -1,4 +1,4 @@
-import { IntervalValues } from '@/types/common';
+import type { IntervalValues } from '@/types/common';
 
 import {
   getAttendanceHistory,

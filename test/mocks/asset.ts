@@ -1,6 +1,6 @@
-import { Asset } from '@/drizzle/schema';
+import type { Asset } from '@/drizzle/schema';
 
-import { UpsertAssetSchemaValues } from '@/schemas/asset';
+import type { UpsertAssetSchemaValues } from '@/schemas/asset';
 import { AssetCategory, AssetCondition } from '@/utils/enum';
 
 import { MOCK_TEAM } from './team';

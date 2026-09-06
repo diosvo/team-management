@@ -1,14 +1,18 @@
-import { Mock } from 'vitest';
 
 import usePermissions from '@/hooks/use-permissions';
 
 import { MOCK_ACHIEVEMENT } from '@/test/mocks/achievement';
-import { renderWithUI, screen } from '@/test/utilities';
+import {
+  createPermissionsMock,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+} from '@/test/utilities';
 import { ESTABLISHED_DATE } from '@/utils/constants';
 import { AchievementType } from '@/utils/enum';
 import { formatDate } from '@/utils/formatter';
 
-import { AchievementWithRelations } from '@/db/achievement';
+import type { AchievementWithRelations } from '@/db/achievement';
 
 import AchievementTimeline from './AchievementTimeline';
 
@@ -41,19 +45,17 @@ const buildAchievement = (
 });
 
 describe('AchievementTimeline', () => {
-  const mockUsePermissions = usePermissions as unknown as Mock;
+  const mockUsePermissions = vi.mocked(usePermissions);
 
   const setup = (achievements: Array<AchievementWithRelations>) => {
-    mockUsePermissions.mockReturnValue({
+    mockUsePermissions.mockReturnValue(createPermissionsMock({
       can: vi.fn(() => false),
-    });
+    }));
 
     return renderWithUI(<AchievementTimeline achievements={achievements} />);
   };
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  setupTestLifecycle();
 
   test('renders the empty state when there are no achievements', () => {
     setup([]);

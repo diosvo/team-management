@@ -1,6 +1,12 @@
-import { Mock } from 'vitest';
-
-import { act, renderWithUI, screen, waitFor } from '@/test/utilities';
+import {
+  act,
+  createToasterMock,
+  expectNoA11yViolations,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+  waitFor,
+} from '@/test/utilities';
 
 import { upsertAchievement } from '@/actions/achievement';
 
@@ -19,15 +25,10 @@ vi.mock('@/actions/user', () => ({
   getActivePlayers: vi.fn(() => []),
 }));
 
-vi.mock('@/components/ui/toaster', () => ({
-  toaster: {
-    create: vi.fn(() => 'toast-id'),
-    update: vi.fn(),
-  },
-}));
+vi.mock('@/components/ui/toaster', () => createToasterMock());
 
 describe('UpsertAchievement', () => {
-  const mockUpsertAchievement = upsertAchievement as unknown as Mock;
+  const mockUpsertAchievement = vi.mocked(upsertAchievement);
 
   const open = async (
     action: 'Add' | 'Update' = 'Add',
@@ -43,14 +44,18 @@ describe('UpsertAchievement', () => {
     return view;
   };
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  setupTestLifecycle();
 
   afterEach(() => {
     act(() => {
       UpsertAchievement.removeAll();
     });
+  });
+
+  test('should be accessible', async () => {
+    await open();
+
+    await expectNoA11yViolations();
   });
 
   test('renders the dialog title and main fields for the given action', async () => {

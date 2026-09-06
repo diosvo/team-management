@@ -15,7 +15,7 @@ import { ControlledStateSelection } from '@/components/user/StateSelection';
 
 import { addUser } from '@/actions/user';
 import { getDefaults } from '@/lib/zod';
-import { AddUserSchema, AddUserValues } from '@/schemas/user';
+import { AddUserSchema, type AddUserValues } from '@/schemas/user';
 
 export default function AddUser() {
   const contentRef = useRef<HTMLDivElement>(null);

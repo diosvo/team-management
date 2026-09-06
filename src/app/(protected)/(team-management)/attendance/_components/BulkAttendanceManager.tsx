@@ -7,7 +7,7 @@ import {
   Button,
   CloseButton,
   Dialog,
-  DialogOpenChangeDetails,
+  type DialogOpenChangeDetails,
   HStack,
   Input,
   Portal,
@@ -31,13 +31,13 @@ import { useAttendanceFilters } from '@/lib/nuqs';
 import { CACHE_KEY, CURRENT_DATE, ESTABLISHED_DATE } from '@/utils/constants';
 import { AttendanceStatus } from '@/utils/enum';
 
-import { User } from '@/drizzle/schema';
+import type { User } from '@/drizzle/schema';
 
 import { submitLeave } from '@/actions/attendance';
 import { getActivePlayers } from '@/actions/user';
 import {
   BulkAttendanceSchema,
-  BulkAttendanceSchemaValues,
+  type BulkAttendanceSchemaValues,
 } from '@/schemas/attendance';
 
 export default function BulkAttendanceManager({

@@ -10,7 +10,7 @@ import {
 } from '@/db/location';
 
 import { getDbErrorMessage } from '@/db/pg-error';
-import { UpsertLocationSchemaValues } from '@/schemas/location';
+import type { UpsertLocationSchemaValues } from '@/schemas/location';
 
 import { withAuth, withResource } from './auth';
 import { revalidate } from './cache';

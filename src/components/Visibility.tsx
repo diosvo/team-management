@@ -1,4 +1,4 @@
-import { Activity, PropsWithChildren } from 'react';
+import { Activity, type PropsWithChildren } from 'react';
 
 type VisibilityProps = {
   isVisible: boolean;

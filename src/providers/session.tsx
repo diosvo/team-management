@@ -5,10 +5,10 @@ import { createContext, use, useMemo } from 'react';
 import type auth from '@/lib/auth';
 import authClient from '@/lib/auth-client';
 
-type User = typeof auth.$Infer.Session.user;
+export type SessionUser = typeof auth.$Infer.Session.user;
 
-type SessionContextValue = {
-  user: Nullable<User>;
+export type SessionContextValue = {
+  user: Nullable<SessionUser>;
   /** `true` only when we have no server user AND the client hook is still resolving. */
   isLoading: boolean;
   isAuthenticated: boolean;
@@ -17,7 +17,7 @@ type SessionContextValue = {
 const SessionContext = createContext<Nullable<SessionContextValue>>(null);
 
 type SessionProviderProps = {
-  initialUser: Nullable<User>;
+  initialUser: Nullable<SessionUser>;
   children: React.ReactNode;
 };
 
@@ -30,7 +30,7 @@ export default function SessionProvider({
 
   const value = useMemo<SessionContextValue>(() => {
     const session = data ?? null;
-    const user: Nullable<User> = session
+    const user: Nullable<SessionUser> = session
       ? session.user
       : isPending
         ? initialUser

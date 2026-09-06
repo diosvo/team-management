@@ -13,7 +13,7 @@ import {
 } from '@/db/achievement';
 import { getLeagueById } from '@/db/league';
 import { getDbErrorMessage } from '@/db/pg-error';
-import { UpsertAchievementSchemaValues } from '@/schemas/achievement';
+import type { UpsertAchievementSchemaValues } from '@/schemas/achievement';
 
 import { withAuth, withResource } from './auth';
 import { revalidate } from './cache';

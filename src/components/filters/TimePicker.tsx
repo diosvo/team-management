@@ -25,7 +25,7 @@ export default function TimePicker({
     >
       <Select.HiddenSelect />
       <Select.Control>
-        <Select.Trigger>
+        <Select.Trigger aria-label="Time range">
           <HStack>
             <CalendarSearch size={16} />
             <Select.ValueText placeholder="Time" />

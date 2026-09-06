@@ -1,6 +1,12 @@
-import { Mock } from 'vitest';
-
-import { renderWithUI, screen, waitFor } from '@/test/utilities';
+import {
+  authCallbacks,
+  createToasterMock,
+  expectNoA11yViolations,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+  waitFor,
+} from '@/test/utilities';
 
 import authClient from '@/lib/auth-client';
 import { LOGIN_PATH } from '@/routes';
@@ -29,17 +35,17 @@ vi.mock('@/lib/auth-client', () => ({
   },
 }));
 
-vi.mock('@/components/ui/toaster', () => ({
-  toaster: {
-    success: vi.fn(),
-  },
-}));
+vi.mock('@/components/ui/toaster', () => createToasterMock());
 
 describe('NewPasswordPage', () => {
-  const mockResetPassword = authClient.resetPassword as unknown as Mock;
+  const mockResetPassword = vi.mocked(authClient.resetPassword);
 
-  beforeEach(() => {
-    vi.clearAllMocks();
+  setupTestLifecycle();
+
+  test('should be accessible', async () => {
+    const { container } = renderWithUI(<NewPasswordPage />);
+
+    await expectNoA11yViolations(container);
   });
 
   test('renders the new password form', () => {
@@ -103,7 +109,9 @@ describe('NewPasswordPage', () => {
   });
 
   test('submits form with valid password', async () => {
-    mockResetPassword.mockImplementation((data, { onSuccess }) => {
+    mockResetPassword.mockImplementation((_data, options) => {
+      const { onSuccess } = authCallbacks(options);
+
       onSuccess?.();
     });
 
@@ -125,7 +133,9 @@ describe('NewPasswordPage', () => {
 
   test('displays error message on failed submission', async () => {
     const errorMessage = 'Invalid or expired token';
-    mockResetPassword.mockImplementation((data, { onError, onResponse }) => {
+    mockResetPassword.mockImplementation((_data, options) => {
+      const { onError, onResponse } = authCallbacks(options);
+
       onError?.({ error: { message: errorMessage } });
       onResponse?.();
     });
@@ -141,7 +151,9 @@ describe('NewPasswordPage', () => {
   });
 
   test('redirects to login page on successful password reset', async () => {
-    mockResetPassword.mockImplementation((data, { onSuccess, onResponse }) => {
+    mockResetPassword.mockImplementation((_data, options) => {
+      const { onSuccess, onResponse } = authCallbacks(options);
+
       onSuccess?.();
       onResponse?.();
     });
@@ -157,7 +169,9 @@ describe('NewPasswordPage', () => {
   });
 
   test('disables form inputs during submission', async () => {
-    mockResetPassword.mockImplementation((data, { onRequest }) => {
+    mockResetPassword.mockImplementation((_data, options) => {
+      const { onRequest } = authCallbacks(options);
+
       onRequest?.();
     });
 

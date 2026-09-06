@@ -22,6 +22,7 @@ export default function MobileSidebar() {
           size="sm"
           variant="outline"
           borderRadius="full"
+          aria-label="Open navigation"
         >
           <PanelRightOpen />
         </IconButton>

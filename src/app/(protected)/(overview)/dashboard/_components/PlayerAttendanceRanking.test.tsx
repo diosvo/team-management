@@ -1,12 +1,10 @@
-import { axe } from 'jest-axe';
-
 import {
   MOCK_PLAYER_RECORDS_NEED_ATTENTION,
   MOCK_PLAYER_RECORDS_TOP_PERFORMERS,
 } from '@/test/mocks/analytics';
-import { renderWithUI, screen } from '@/test/utilities';
+import { expectNoA11yViolations, renderWithUI, screen } from '@/test/utilities';
 
-import { PlayerSessionSummary } from '@/types/analytics';
+import type { PlayerSessionSummary } from '@/types/analytics';
 import PlayerAttendanceRanking from './PlayerAttendanceRanking';
 
 describe('PlayerAttendanceRanking', () => {
@@ -24,7 +22,7 @@ describe('PlayerAttendanceRanking', () => {
       need_attention: MOCK_PLAYER_RECORDS_NEED_ATTENTION,
     });
 
-    expect(await axe(container)).toHaveNoViolations();
+    await expectNoA11yViolations(container);
   });
 
   test('renders the card title and description', () => {

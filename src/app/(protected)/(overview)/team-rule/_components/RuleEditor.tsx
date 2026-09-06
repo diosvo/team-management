@@ -18,7 +18,7 @@ const TextEditor = dynamic(() => import('@/components/TextEditor'), {
   loading: () => <Skeleton height="240px" borderRadius="md" />,
 });
 
-import { NullishRule } from '@/drizzle/schema/rule';
+import type { NullishRule } from '@/drizzle/schema/rule';
 
 import { upsertRule } from '@/actions/rule';
 

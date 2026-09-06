@@ -16,7 +16,7 @@ import { buildPredicate } from '@/utils/filters';
 import { formatDatetime } from '@/utils/formatter';
 
 import { removeLocation } from '@/actions/location';
-import { Location } from '@/drizzle/schema';
+import type { Location } from '@/drizzle/schema';
 
 import { UpsertLocation } from './UpsertLocation';
 

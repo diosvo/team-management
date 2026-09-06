@@ -1,4 +1,4 @@
-import { Metadata } from 'next';
+import type { Metadata } from 'next';
 
 import PageTitle from '@/components/PageTitle';
 import { resend } from '@/lib/resend';

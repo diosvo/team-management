@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 
-import { Input, InputGroup, InputProps } from '@chakra-ui/react';
+import { Input, InputGroup, type InputProps } from '@chakra-ui/react';
 import { Search } from 'lucide-react';
 
 import { CloseButton } from '@/components/ui/close-button';

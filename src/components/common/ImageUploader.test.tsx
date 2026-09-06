@@ -1,16 +1,21 @@
-import { renderWithUI, screen, waitFor } from '@/test/utilities';
+import {
+  createToasterMock,
+  expectNoA11yViolations,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+  waitFor,
+} from '@/test/utilities';
 
 import { toaster } from '@/components/ui/toaster';
 
 import ImageUploader, { notifyRejection } from './ImageUploader';
 
-vi.mock('@/components/ui/toaster', () => ({
-  toaster: {
-    create: vi.fn(),
-  },
-}));
+vi.mock('@/components/ui/toaster', () => createToasterMock());
 
 describe('ImageUploader', () => {
+  setupTestLifecycle();
+
   const onChange = vi.fn();
 
   const setup = (props: Partial<Parameters<typeof ImageUploader>[0]> = {}) =>
@@ -31,39 +36,49 @@ describe('ImageUploader', () => {
 
   const pngFile = new File(['avatar'], 'avatar.png', { type: 'image/png' });
 
-  beforeEach(() => {
-    vi.clearAllMocks();
+  test('should be accessible', async () => {
+    const { container } = setup();
+
+    await expectNoA11yViolations(container);
   });
 
   describe('states', () => {
-    test('editable (default): input enabled, overlay visible, avatar shown', () => {
+    test('editable (default): input enabled, overlay visible, avatar shown', async () => {
       const { container } = setup();
 
-      expect(getFileInput(container)).toBeEnabled();
-      expect(getOverlay(container)).not.toHaveAttribute('hidden');
-      expect(screen.getByText('Test User')).toBeInTheDocument();
+      await waitFor(() => {
+        expect(getFileInput(container)).toBeEnabled();
+        expect(getOverlay(container)).not.toHaveAttribute('hidden');
+        expect(screen.getByText('Test User')).toBeInTheDocument();
+      });
     });
 
-    test('disabled: input disabled and overlay hidden', () => {
+    test('disabled: input disabled and overlay hidden', async () => {
       const { container } = setup({ state: 'disabled' });
 
-      expect(getFileInput(container)).toBeDisabled();
-      expect(getOverlay(container)).toHaveAttribute('hidden');
-      expect(screen.getByText('Test User')).toBeInTheDocument();
+      await waitFor(() => {
+        expect(getFileInput(container)).toBeDisabled();
+        expect(getOverlay(container)).toHaveAttribute('hidden');
+        expect(screen.getByText('Test User')).toBeInTheDocument();
+      });
     });
 
-    test('pending: input disabled and avatar replaced by skeleton', () => {
+    test('pending: input disabled and avatar replaced by skeleton', async () => {
       const { container } = setup({ state: 'pending' });
 
-      expect(getFileInput(container)).toBeDisabled();
-      expect(screen.queryByText('Test User')).not.toBeInTheDocument();
-      expect(container.querySelector('.chakra-skeleton')).toBeInTheDocument();
+      await waitFor(() => {
+        expect(getFileInput(container)).toBeDisabled();
+        expect(screen.queryByText('Test User')).not.toBeInTheDocument();
+        expect(container.querySelector('.chakra-skeleton')).toBeInTheDocument();
+      });
     });
 
-    test('renders the fallback without a src', () => {
+    test('renders the fallback without a src', async () => {
       setup({ src: undefined });
 
-      expect(screen.getByText('Test User')).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByText('Test User')).toBeInTheDocument();
+      });
     });
   });
 

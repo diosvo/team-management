@@ -1,7 +1,7 @@
 import { eq, inArray, ne } from 'drizzle-orm';
 
 import db from '@/drizzle';
-import { InsertPlayer, PlayerTable } from '@/drizzle/schema/player';
+import { type InsertPlayer, PlayerTable } from '@/drizzle/schema/player';
 import { UserTable } from '@/drizzle/schema/user';
 
 import {

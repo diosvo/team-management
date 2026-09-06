@@ -1,6 +1,6 @@
 'use server';
 
-import { InsertTestResult } from '@/drizzle/schema';
+import type { InsertTestResult } from '@/drizzle/schema';
 
 import { getDbErrorMessage } from '@/db/pg-error';
 import {

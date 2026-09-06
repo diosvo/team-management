@@ -2,9 +2,9 @@
 
 import {
   Table,
-  TableCellProps,
-  TableColumnHeaderProps,
-  TableRootProps,
+  type TableCellProps,
+  type TableColumnHeaderProps,
+  type TableRootProps,
 } from '@chakra-ui/react';
 
 import Pagination from '@/components/Pagination';

@@ -4,7 +4,7 @@ import { BetweenVerticalEnd, TrendingDown, TrendingUp } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 
-import { PlayerSessionSummary, PlayerStats } from '@/types/analytics';
+import type { PlayerSessionSummary, PlayerStats } from '@/types/analytics';
 import { colorRank } from '@/utils/helper';
 
 const PlayerRank = (player: PlayerStats, index: number) => {

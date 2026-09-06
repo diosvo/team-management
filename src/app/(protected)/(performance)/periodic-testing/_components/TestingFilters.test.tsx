@@ -1,8 +1,10 @@
-import * as nuqs from 'nuqs';
-import { Mock } from 'vitest';
-
 import { MOCK_TEST_RESULT_DATE } from '@/test/mocks/periodic-testing';
-import { renderWithUI, screen } from '@/test/utilities';
+import {
+  mockUseQueryStates,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+} from '@/test/utilities';
 
 import TestingFilters from './TestingFilters';
 
@@ -33,17 +35,15 @@ describe('TestingFilters', () => {
     dates?: Array<string>;
     params?: Record<string, unknown>;
   } = {}) => {
-    (nuqs.useQueryStates as unknown as Mock).mockReturnValue([
+    mockUseQueryStates(
       { page: 1, q: '', date: '', type: [], ...params },
       mockSetSearchParams,
-    ]);
+    );
 
     return renderWithUI(<TestingFilters dates={dates} />);
   };
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  setupTestLifecycle();
 
   test('renders the date select placeholder', () => {
     setup();

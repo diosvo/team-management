@@ -12,7 +12,7 @@ import { Card } from '@/components/ui/card';
 import { toaster } from '@/components/ui/toaster';
 
 import { createTestResult } from '@/actions/test-result';
-import { InsertTestResult } from '@/drizzle/schema';
+import type { InsertTestResult } from '@/drizzle/schema';
 
 import type { TestConfigurationSelection } from '@/types/periodic-testing';
 import { DEFAULT_DATE_FORMAT } from '@/utils/constants';

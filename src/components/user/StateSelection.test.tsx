@@ -1,7 +1,11 @@
-import { axe } from 'jest-axe';
 import { useForm } from 'react-hook-form';
 
-import { renderWithUI, screen, waitFor } from '@/test/utilities';
+import {
+  expectNoA11yViolations,
+  renderWithUI,
+  screen,
+  waitFor,
+} from '@/test/utilities';
 
 import { UserState } from '@/utils/enum';
 import { ControlledStateSelection, StateSelection } from './StateSelection';
@@ -114,8 +118,7 @@ describe('ControlledStateSelection', () => {
   test('should be accessible', async () => {
     const { container } = setup();
 
-    const result = await axe(container);
-    expect(result).toHaveNoViolations();
+    await expectNoA11yViolations(container);
   });
 
   test('renders State field label', () => {

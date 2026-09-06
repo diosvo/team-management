@@ -1,12 +1,14 @@
-import { axe } from 'jest-axe';
+import {
+  expectNoA11yViolations,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+  waitFor,
+  withFreshSWR,
+} from '@/test/utilities';
 import { useForm } from 'react-hook-form';
-import { SWRConfig } from 'swr';
 
-import { renderWithUI, screen, waitFor } from '@/test/utilities';
-
-import SearchableSelect, {
-  SearchableSelectField,
-} from './SearchableSelect';
+import SearchableSelect, { SearchableSelectField } from './SearchableSelect';
 
 type MockItem = {
   id: string;
@@ -31,15 +33,8 @@ const baseProps = {
   itemToValue,
 };
 
-// Wraps the given UI in an isolated SWR cache to prevent test cross-contamination
-const withFreshSWR = (ui: React.ReactElement) => (
-  <SWRConfig value={{ provider: () => new Map() }}>{ui}</SWRConfig>
-);
-
 describe('SearchableSelect', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  setupTestLifecycle();
 
   describe('SearchableSelect (uncontrolled)', () => {
     describe('multiple', () => {
@@ -61,8 +56,7 @@ describe('SearchableSelect', () => {
         const { container } = setup();
         await waitFor(() => expect(mockAction).toHaveBeenCalled());
 
-        const result = await axe(container);
-        expect(result).toHaveNoViolations();
+        await expectNoA11yViolations(container);
       });
 
       test('renders with label', async () => {
@@ -166,8 +160,7 @@ describe('SearchableSelect', () => {
         const { container } = setup();
         await waitFor(() => expect(mockAction).toHaveBeenCalled());
 
-        const result = await axe(container);
-        expect(result).toHaveNoViolations();
+        await expectNoA11yViolations(container);
       });
 
       test('renders with label', async () => {

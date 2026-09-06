@@ -9,7 +9,7 @@ import {
   updateAsset,
 } from '@/db/asset';
 import { getDbErrorMessage } from '@/db/pg-error';
-import { UpsertAssetSchemaValues } from '@/schemas/asset';
+import type { UpsertAssetSchemaValues } from '@/schemas/asset';
 
 import { withAuth, withResource } from './auth';
 import { revalidate } from './cache';

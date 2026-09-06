@@ -11,7 +11,7 @@ import { getLeagueById } from '@/db/league';
 import { getDbErrorMessage } from '@/db/pg-error';
 
 import { revalidate } from '@/actions/cache';
-import { UpsertAchievementSchemaValues } from '@/schemas/achievement';
+import type { UpsertAchievementSchemaValues } from '@/schemas/achievement';
 
 import {
   mockWithAuth,

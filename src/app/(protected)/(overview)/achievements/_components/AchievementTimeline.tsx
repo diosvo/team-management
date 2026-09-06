@@ -19,7 +19,7 @@ import { FOUNDING_STYLE } from '@/utils/constants/achievement';
 import { ESTABLISHED_DATE, FOUNDING_YEAR } from '@/utils/constants/app';
 import { formatDate } from '@/utils/formatter';
 
-import { AchievementWithRelations } from '@/db/achievement';
+import type { AchievementWithRelations } from '@/db/achievement';
 
 import AchievementCard from './AchievementCard';
 

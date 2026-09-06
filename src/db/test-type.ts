@@ -1,9 +1,9 @@
 import { asc, eq } from 'drizzle-orm';
 
 import db from '@/drizzle';
-import { InsertTestType, TestTypeTable } from '@/drizzle/schema';
+import { type InsertTestType, TestTypeTable } from '@/drizzle/schema';
 
-import { UpsertTestTypeSchemaValues } from '@/schemas/periodic-testing';
+import type { UpsertTestTypeSchemaValues } from '@/schemas/periodic-testing';
 
 export async function getTestTypes() {
   try {

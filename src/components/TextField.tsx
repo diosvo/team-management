@@ -1,5 +1,5 @@
 import { HStack, Text, VStack } from '@chakra-ui/react';
-import { PropsWithChildren } from 'react';
+import type { PropsWithChildren } from 'react';
 
 type InfoFieldProps = {
   label: string;

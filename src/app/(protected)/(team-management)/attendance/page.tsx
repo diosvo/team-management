@@ -1,4 +1,4 @@
-import { Metadata } from 'next';
+import type { Metadata } from 'next';
 
 import { getAttendanceByDate } from '@/actions/attendance';
 import { loadAttendanceFilters } from '@/lib/nuqs';

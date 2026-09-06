@@ -1,10 +1,10 @@
 import { and, desc, eq, gte, isNotNull, isNull, lte } from 'drizzle-orm';
 
 import db from '@/drizzle';
-import { InsertMatch, MatchTable } from '@/drizzle/schema';
+import { type InsertMatch, MatchTable } from '@/drizzle/schema';
 
-import { MatchSearchParams } from '@/lib/nuqs';
-import { UpsertMatchSchemaValues } from '@/schemas/match';
+import type { MatchSearchParams } from '@/lib/nuqs';
+import type { UpsertMatchSchemaValues } from '@/schemas/match';
 import { Interval, MatchStatus, MatchType } from '@/utils/enum';
 import { TIME_DURATION } from '@/utils/formatter';
 

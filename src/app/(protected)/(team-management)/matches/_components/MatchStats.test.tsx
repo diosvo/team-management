@@ -1,9 +1,7 @@
-import { axe } from 'jest-axe';
-
 import { MOCK_MATCH_RESPONSE } from '@/test/mocks/match';
-import { renderWithUI, screen } from '@/test/utilities';
+import { expectNoA11yViolations, renderWithUI, screen } from '@/test/utilities';
 
-import { MatchStats as StatsType } from '@/types/match';
+import type { MatchStats as StatsType } from '@/types/match';
 
 import MatchStats from './MatchStats';
 
@@ -16,8 +14,7 @@ describe('MatchStats', () => {
   test('should be accessible', async () => {
     const { container } = setup();
 
-    const result = await axe(container);
-    expect(result).toHaveNoViolations();
+    await expectNoA11yViolations(container);
   });
 
   test('renders all stat cards with their labels', () => {

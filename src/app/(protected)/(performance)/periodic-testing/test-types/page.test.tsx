@@ -1,11 +1,13 @@
-import { axe } from 'jest-axe';
-import { Mock } from 'vitest';
-
 import {
   MOCK_TEST_TYPE,
   MOCK_TEST_TYPE_2,
 } from '@/test/mocks/periodic-testing';
-import { renderWithUI, screen } from '@/test/utilities';
+import {
+  expectNoA11yViolations,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+} from '@/test/utilities';
 
 import { getTestTypes } from '@/actions/test-type';
 
@@ -35,7 +37,7 @@ vi.mock('./_components/TestTypesTable', () => ({
 }));
 
 describe('TestTypesPage', () => {
-  const mockGetTestTypes = getTestTypes as unknown as Mock;
+  const mockGetTestTypes = vi.mocked(getTestTypes);
 
   const setup = async (data = [MOCK_TEST_TYPE, MOCK_TEST_TYPE_2]) => {
     mockGetTestTypes.mockResolvedValue(data);
@@ -43,9 +45,7 @@ describe('TestTypesPage', () => {
     return renderWithUI(await TestTypesPage());
   };
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  setupTestLifecycle();
 
   test('exposes page metadata', () => {
     expect(metadata.title).toBe('Test Types');
@@ -57,8 +57,7 @@ describe('TestTypesPage', () => {
   test('should be accessible', async () => {
     const { container } = await setup();
 
-    const result = await axe(container);
-    expect(result).toHaveNoViolations();
+    await expectNoA11yViolations(container);
   });
 
   test('renders every section', async () => {

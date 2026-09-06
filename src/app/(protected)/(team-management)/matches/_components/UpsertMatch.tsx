@@ -33,7 +33,10 @@ import { formatDatetime } from '@/utils/formatter';
 import { getColor } from '@/utils/helper';
 
 import { getDefaults } from '@/lib/zod';
-import { UpsertMatchSchema, UpsertMatchSchemaValues } from '@/schemas/match';
+import {
+  UpsertMatchSchema,
+  type UpsertMatchSchemaValues,
+} from '@/schemas/match';
 
 import { getLeagues } from '@/actions/league';
 import { upsertMatch } from '@/actions/match';
@@ -205,7 +208,7 @@ export const UpsertMatch = createOverlay(({ action, item, ...rest }) => {
                     />
                   </Field>
                   <Field
-                    label="Thier Score"
+                    label="Their Score"
                     invalid={!!errors.away_team_score}
                     errorText={errors.away_team_score?.message}
                   >

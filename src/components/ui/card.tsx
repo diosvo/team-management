@@ -19,21 +19,27 @@ export function Card({
   children,
   ...rest
 }: CardProps) {
+  // A card without a title (e.g. the avatar card) would otherwise render an
+  // empty `<h3>`, which axe flags as `empty-heading`.
+  const heading = title ? <ChakraCard.Title>{title}</ChakraCard.Title> : null;
+
   return (
     <ChakraCard.Root {...rest} size="sm">
-      <ChakraCard.Header>
-        {action ? (
-          <HStack justifyContent="space-between" alignItems="start">
-            <ChakraCard.Title>{title}</ChakraCard.Title>
-            {action}
-          </HStack>
-        ) : (
-          <ChakraCard.Title>{title}</ChakraCard.Title>
-        )}
-        {description && (
-          <ChakraCard.Description>{description}</ChakraCard.Description>
-        )}
-      </ChakraCard.Header>
+      {(heading || description || action) && (
+        <ChakraCard.Header>
+          {action ? (
+            <HStack justifyContent="space-between" alignItems="start">
+              {heading}
+              {action}
+            </HStack>
+          ) : (
+            heading
+          )}
+          {description && (
+            <ChakraCard.Description>{description}</ChakraCard.Description>
+          )}
+        </ChakraCard.Header>
+      )}
       <ChakraCard.Body>{children}</ChakraCard.Body>
       {footer && <ChakraCard.Footer>{footer}</ChakraCard.Footer>}
     </ChakraCard.Root>

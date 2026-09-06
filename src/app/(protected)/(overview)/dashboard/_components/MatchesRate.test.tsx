@@ -1,6 +1,6 @@
 import { renderWithUI, screen } from '@/test/utilities';
 
-import { MatchesRateRecord } from '@/types/analytics';
+import type { MatchesRateRecord } from '@/types/analytics';
 import MatchesRate from './MatchesRate';
 
 describe('MatchesRate', () => {

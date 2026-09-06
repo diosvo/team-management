@@ -1,20 +1,20 @@
-import { axe } from 'jest-axe';
-import { SWRConfig } from 'swr';
-
 import { MOCK_PLAYER, MOCK_USER_WITH_PLAYER } from '@/test/mocks/user';
-import { renderWithUI, screen, waitFor } from '@/test/utilities';
+import {
+  expectNoA11yViolations,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+  waitFor,
+  withFreshSWR,
+} from '@/test/utilities';
 
 import { getActivePlayers } from '@/actions/user';
-import { User } from '@/drizzle/schema/user';
+import type { User } from '@/drizzle/schema/user';
 import { PlayerSelection, SelectedPlayers } from './PlayerSelection';
 
 vi.mock('@/actions/user', () => ({
   getActivePlayers: vi.fn(),
 }));
-
-const withFreshSWR = (ui: React.ReactElement) => (
-  <SWRConfig value={{ provider: () => new Map() }}>{ui}</SWRConfig>
-);
 
 describe('PlayerSelection', () => {
   const onSelectionChange = vi.fn();
@@ -44,8 +44,7 @@ describe('PlayerSelection', () => {
   test('should be accessible', async () => {
     const { container } = await setup();
 
-    const result = await axe(container);
-    expect(result).toHaveNoViolations();
+    await expectNoA11yViolations(container);
   });
 
   test('renders with label', async () => {
@@ -95,11 +94,9 @@ describe('PlayerSelection', () => {
 });
 
 describe('SelectedPlayers', () => {
-  const onSelectionChange = vi.fn();
+  setupTestLifecycle();
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  const onSelectionChange = vi.fn();
 
   const setup = (
     selection: Array<User> = [MOCK_USER_WITH_PLAYER],
@@ -116,8 +113,7 @@ describe('SelectedPlayers', () => {
   test('should be accessible', async () => {
     const { container } = setup();
 
-    const result = await axe(container);
-    expect(result).toHaveNoViolations();
+    await expectNoA11yViolations(container);
   });
 
   test('shows empty state when no players are selected', () => {

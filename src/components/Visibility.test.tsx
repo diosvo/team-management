@@ -1,9 +1,5 @@
-import { axe, toHaveNoViolations } from 'jest-axe';
-
-import { render } from '@/test/utilities';
+import { expectNoA11yViolations, render } from '@/test/utilities';
 import Visibility from './Visibility';
-
-expect.extend(toHaveNoViolations);
 
 describe('Visibility', () => {
   const setup = (isVisible: boolean) => {
@@ -22,8 +18,7 @@ describe('Visibility', () => {
   test('should be accessible', async () => {
     const { container } = setup(true);
 
-    const result = await axe(container);
-    expect(result).toHaveNoViolations();
+    await expectNoA11yViolations(container);
   });
 
   test('renders children when isVisible is true', () => {

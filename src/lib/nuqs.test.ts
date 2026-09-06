@@ -1,6 +1,6 @@
 import { renderHook } from '@testing-library/react';
 import * as nuqs from 'nuqs';
-import { Mock } from 'vitest';
+import type { Mock } from 'vitest';
 
 import { MOCK_ATTENDANCE_DATE } from '@/test/mocks/attendance';
 

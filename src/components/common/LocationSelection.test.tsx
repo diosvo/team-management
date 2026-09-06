@@ -1,9 +1,12 @@
-import { axe } from 'jest-axe';
-import { useForm } from 'react-hook-form';
-import { SWRConfig } from 'swr';
-
 import { MOCK_LOCATION, MOCK_LOCATION_2 } from '@/test/mocks/location';
-import { renderWithUI, screen, waitFor } from '@/test/utilities';
+import {
+  expectNoA11yViolations,
+  renderWithUI,
+  screen,
+  waitFor,
+  withFreshSWR,
+} from '@/test/utilities';
+import { useForm } from 'react-hook-form';
 
 import { getLocations } from '@/actions/location';
 import LocationSelection from './LocationSelection';
@@ -11,10 +14,6 @@ import LocationSelection from './LocationSelection';
 vi.mock('@/actions/location', () => ({
   getLocations: vi.fn(),
 }));
-
-const withFreshSWR = (ui: React.ReactElement) => (
-  <SWRConfig value={{ provider: () => new Map() }}>{ui}</SWRConfig>
-);
 
 type FormValues = { location_id: Nullable<string> };
 
@@ -45,8 +44,7 @@ describe('LocationSelection', () => {
   test('should be accessible', async () => {
     const { container } = await setup();
 
-    const result = await axe(container);
-    expect(result).toHaveNoViolations();
+    await expectNoA11yViolations(container);
   });
 
   test('renders with label', async () => {

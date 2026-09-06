@@ -1,7 +1,12 @@
 import type { User } from '@/drizzle/schema';
 
 import { MOCK_USER } from '@/test/mocks/user';
-import { renderWithUI, screen } from '@/test/utilities';
+import {
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+  waitFor,
+} from '@/test/utilities';
 
 import ProfileLayout from './ProfileLayout';
 
@@ -25,39 +30,51 @@ vi.mock('./TeamInfo', () => ({
 }));
 
 describe('ProfileLayout', () => {
+  setupTestLifecycle();
+
   const setup = (viewOnly = false) =>
     renderWithUI(<ProfileLayout user={MOCK_USER} viewOnly={viewOnly} />);
 
-  test('renders a tab for each profile section', () => {
+  test('renders a tab for each profile section', async () => {
     setup();
 
-    expect(screen.getByRole('tab', { name: 'Overview' })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: 'Personal' })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: 'Team' })).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByRole('tab', { name: 'Overview' })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: 'Personal' })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: 'Team' })).toBeInTheDocument();
+    });
   });
 
-  test('selects the Overview tab by default', () => {
+  test('selects the Overview tab by default', async () => {
     setup();
 
-    expect(screen.getByRole('tab', { name: 'Overview' })).toHaveAttribute(
-      'aria-selected',
-      'true',
-    );
+    await waitFor(() => {
+      expect(screen.getByRole('tab', { name: 'Overview' })).toHaveAttribute(
+        'aria-selected',
+        'true',
+      );
+    });
   });
 
-  test('forwards the user to the avatar card', () => {
+  test('forwards the user to the avatar card', async () => {
     setup();
 
-    expect(screen.getByTestId('avatar-card')).toHaveTextContent(MOCK_USER.name);
+    await waitFor(() => {
+      expect(screen.getByTestId('avatar-card')).toHaveTextContent(
+        MOCK_USER.name,
+      );
+    });
   });
 
-  test('forwards the viewOnly flag to the personal and team sections', () => {
+  test('forwards the viewOnly flag to the personal and team sections', async () => {
     setup(true);
 
-    expect(screen.getByTestId('personal-info')).toHaveTextContent(
-      'personal:true',
-    );
-    expect(screen.getByTestId('team-info')).toHaveTextContent('team:true');
+    await waitFor(() => {
+      expect(screen.getByTestId('personal-info')).toHaveTextContent(
+        'personal:true',
+      );
+      expect(screen.getByTestId('team-info')).toHaveTextContent('team:true');
+    });
   });
 
   test('activates a section when its tab is clicked', async () => {

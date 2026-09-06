@@ -1,6 +1,11 @@
-import { Mock } from 'vitest';
-
-import { renderWithUI, screen, waitFor } from '@/test/utilities';
+import {
+  authCallbacks,
+  expectNoA11yViolations,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+  waitFor,
+} from '@/test/utilities';
 
 import authClient from '@/lib/auth-client';
 import { LOGIN_PATH } from '@/routes';
@@ -14,11 +19,14 @@ vi.mock('@/lib/auth-client', () => ({
 }));
 
 describe('ForgotPasswordPage', () => {
-  const mockRequestPasswordReset =
-    authClient.requestPasswordReset as unknown as Mock;
+  const mockRequestPasswordReset = vi.mocked(authClient.requestPasswordReset);
 
-  beforeEach(() => {
-    vi.clearAllMocks();
+  setupTestLifecycle();
+
+  test('should be accessible', async () => {
+    const { container } = renderWithUI(<ForgotPasswordPage />);
+
+    await expectNoA11yViolations(container);
   });
 
   test('renders the forgot password form', () => {
@@ -47,7 +55,9 @@ describe('ForgotPasswordPage', () => {
   });
 
   test('submits form with valid email', async () => {
-    mockRequestPasswordReset.mockImplementation((data, { onSuccess }) => {
+    mockRequestPasswordReset.mockImplementation((_data, options) => {
+      const { onSuccess } = authCallbacks(options);
+
       onSuccess?.();
     });
 
@@ -72,12 +82,12 @@ describe('ForgotPasswordPage', () => {
   });
 
   test('displays success message on successful submission', async () => {
-    mockRequestPasswordReset.mockImplementation(
-      (data, { onSuccess, onResponse }) => {
-        onSuccess?.();
-        onResponse?.();
-      },
-    );
+    mockRequestPasswordReset.mockImplementation((_data, options) => {
+      const { onSuccess, onResponse } = authCallbacks(options);
+
+      onSuccess?.();
+      onResponse?.();
+    });
 
     const { user } = renderWithUI(<ForgotPasswordPage />);
 
@@ -99,12 +109,12 @@ describe('ForgotPasswordPage', () => {
 
   test('displays error message on failed submission', async () => {
     const errorMessage = 'User not found';
-    mockRequestPasswordReset.mockImplementation(
-      (data, { onError, onResponse }) => {
-        onError?.({ error: { message: errorMessage } });
-        onResponse?.();
-      },
-    );
+    mockRequestPasswordReset.mockImplementation((_data, options) => {
+      const { onError, onResponse } = authCallbacks(options);
+
+      onError?.({ error: { message: errorMessage } });
+      onResponse?.();
+    });
 
     const { user } = renderWithUI(<ForgotPasswordPage />);
 
@@ -121,7 +131,9 @@ describe('ForgotPasswordPage', () => {
   });
 
   test('disables button during submission', async () => {
-    mockRequestPasswordReset.mockImplementation((data, { onRequest }) => {
+    mockRequestPasswordReset.mockImplementation((_data, options) => {
+      const { onRequest } = authCallbacks(options);
+
       onRequest?.();
     });
 
@@ -143,12 +155,12 @@ describe('ForgotPasswordPage', () => {
   });
 
   test('resets form after successful submission', async () => {
-    mockRequestPasswordReset.mockImplementation(
-      (data, { onSuccess, onResponse }) => {
-        onSuccess?.();
-        onResponse?.();
-      },
-    );
+    mockRequestPasswordReset.mockImplementation((_data, options) => {
+      const { onSuccess, onResponse } = authCallbacks(options);
+
+      onSuccess?.();
+      onResponse?.();
+    });
 
     const { user } = renderWithUI(<ForgotPasswordPage />);
 

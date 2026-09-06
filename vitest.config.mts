@@ -13,6 +13,11 @@ export default defineConfig({
     css: true, // CSS processing during tests
     exclude: [...configDefaults.exclude, 'e2e/**'],
     coverage: {
+      // Count files no test imports as 0%
+      include: ['src/**/*.{ts,tsx}'],
+      // `json-summary` writes coverage/coverage-summary.json, which CI reads
+      // to post the percentage on the PR.
+      reporter: ['text', 'html', 'json-summary'],
       exclude: [
         'coverage/**',
         'test/**',

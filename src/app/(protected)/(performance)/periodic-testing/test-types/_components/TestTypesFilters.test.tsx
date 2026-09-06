@@ -1,7 +1,8 @@
-import * as nuqs from 'nuqs';
-import { Mock } from 'vitest';
-
-import { renderWithUI } from '@/test/utilities';
+import {
+  mockUseQueryStates,
+  renderWithUI,
+  setupTestLifecycle,
+} from '@/test/utilities';
 
 import { TestTypeUnit } from '@/utils/enum';
 
@@ -27,19 +28,17 @@ describe('TestTypesFilters', () => {
   const mockSetSearchParams = vi.fn();
 
   const setup = (values: Record<string, unknown> = {}) => {
-    (nuqs.useQueryStates as unknown as Mock).mockReturnValue([
+    mockUseQueryStates(
       { page: 1, q: '', unit: [], ...values },
       mockSetSearchParams,
-    ]);
+    );
 
     return renderWithUI(<TestTypesFilters />);
   };
 
   const filterKeys = () => propsSpy.filters.map(({ key }) => key);
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  setupTestLifecycle();
 
   test('provides the unit filter', () => {
     setup();

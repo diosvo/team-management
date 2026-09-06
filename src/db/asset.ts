@@ -1,7 +1,7 @@
 import { asc, desc, eq } from 'drizzle-orm';
 
 import db from '@/drizzle';
-import { AssetTable, InsertAsset } from '@/drizzle/schema/asset';
+import { AssetTable, type InsertAsset } from '@/drizzle/schema/asset';
 
 import { AssetCondition } from '@/utils/enum';
 

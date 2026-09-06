@@ -38,7 +38,10 @@ import {
 import { AssetCondition } from '@/utils/enum';
 
 import { upsertAsset } from '@/actions/asset';
-import { UpsertAssetSchema, UpsertAssetSchemaValues } from '@/schemas/asset';
+import {
+  UpsertAssetSchema,
+  type UpsertAssetSchemaValues,
+} from '@/schemas/asset';
 
 export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
   const [isPending, startTransition] = useTransition();

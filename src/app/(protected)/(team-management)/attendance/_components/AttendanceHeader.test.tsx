@@ -1,7 +1,10 @@
-import { axe } from 'jest-axe';
-
 import usePermissions from '@/hooks/use-permissions';
-import { renderWithUI, screen } from '@/test/utilities';
+import {
+  expectNoA11yViolations,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+} from '@/test/utilities';
 
 import AttendanceHeader from './AttendanceHeader';
 
@@ -30,15 +33,12 @@ describe('AttendanceHeader', () => {
     return renderWithUI(<AttendanceHeader />);
   };
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  setupTestLifecycle();
 
   test('should be accessible', async () => {
     const { container } = setup({ isAdmin: true, isPlayer: false });
 
-    const result = await axe(container);
-    expect(result).toHaveNoViolations();
+    await expectNoA11yViolations(container);
   });
 
   test('always renders the page title', () => {

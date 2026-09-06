@@ -9,7 +9,7 @@ import TimePicker from '@/components/filters/TimePicker';
 import { toaster } from '@/components/ui/toaster';
 
 import { triggerDownload } from '@/lib/download';
-import { MatchSearchParamsKeys, useDashboardFilters } from '@/lib/nuqs';
+import { type MatchSearchParamsKeys, useDashboardFilters } from '@/lib/nuqs';
 import { formatDuration } from '@/utils/formatter';
 
 const EmailReport = dynamic(() => import('./EmailReport'), { ssr: false });

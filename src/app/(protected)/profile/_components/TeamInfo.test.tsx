@@ -1,7 +1,14 @@
-import { Mock } from 'vitest';
-
 import { MOCK_PLAYER, MOCK_USER_WITH_PLAYER } from '@/test/mocks/user';
-import { fireEvent, renderWithUI, screen, waitFor } from '@/test/utilities';
+import {
+  createPermissionsMock,
+  createToasterMock,
+  expectNoA11yViolations,
+  fireEvent,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+  waitFor,
+} from '@/test/utilities';
 
 import { updateTeamInfo } from '@/actions/user';
 import usePermissions from '@/hooks/use-permissions';
@@ -28,16 +35,13 @@ vi.mock('swr', async (importOriginal) => {
   };
 });
 
-vi.mock('@/components/ui/toaster', () => ({
-  toaster: {
-    create: vi.fn(() => 'toast-id'),
-    update: vi.fn(),
-  },
-}));
+vi.mock('@/components/ui/toaster', () => createToasterMock());
 
 describe('TeamInfo', () => {
-  const mockUpdateTeamInfo = updateTeamInfo as unknown as Mock;
-  const mockUsePermissions = usePermissions as unknown as Mock;
+  setupTestLifecycle();
+
+  const mockUpdateTeamInfo = vi.mocked(updateTeamInfo);
+  const mockUsePermissions = vi.mocked(usePermissions);
 
   const setup = ({
     viewOnly = false,
@@ -45,7 +49,9 @@ describe('TeamInfo', () => {
     isPlayer = true,
     isCoach = false,
   } = {}) => {
-    mockUsePermissions.mockReturnValue({ isAdmin, isPlayer, isCoach });
+    mockUsePermissions.mockReturnValue(
+      createPermissionsMock({ isAdmin, isPlayer, isCoach }),
+    );
 
     return renderWithUI(
       <TeamInfo user={MOCK_USER_WITH_PLAYER} viewOnly={viewOnly} />,
@@ -57,30 +63,38 @@ describe('TeamInfo', () => {
     return screen.findByDisplayValue(MOCK_USER_WITH_PLAYER.join_date!);
   };
 
-  beforeEach(() => {
-    vi.clearAllMocks();
+  test('should be accessible', async () => {
+    const { container } = setup();
+
+    await expectNoA11yViolations(container);
   });
 
-  test('renders the stored team details for a player', () => {
+  test('renders the stored team details for a player', async () => {
     setup();
 
-    expect(screen.getByText(MOCK_USER_WITH_PLAYER.role)).toBeInTheDocument();
-    expect(screen.getByText(String(MOCK_PLAYER.position))).toBeInTheDocument();
-    expect(screen.getByText(MOCK_USER_WITH_PLAYER.state)).toBeInTheDocument();
-    expect(
-      screen.getByText(String(MOCK_PLAYER.jersey_number)),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(formatDate(MOCK_USER_WITH_PLAYER.join_date), {
-        exact: false,
-      }),
-    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(MOCK_USER_WITH_PLAYER.role)).toBeInTheDocument();
+      expect(
+        screen.getByText(String(MOCK_PLAYER.position)),
+      ).toBeInTheDocument();
+      expect(screen.getByText(MOCK_USER_WITH_PLAYER.state)).toBeInTheDocument();
+      expect(
+        screen.getByText(String(MOCK_PLAYER.jersey_number)),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(formatDate(MOCK_USER_WITH_PLAYER.join_date), {
+          exact: false,
+        }),
+      ).toBeInTheDocument();
+    });
   });
 
-  test('disables editing when viewOnly is set', () => {
+  test('disables editing when viewOnly is set', async () => {
     setup({ viewOnly: true });
 
-    expect(screen.getByRole('button')).toBeDisabled();
+    await waitFor(() => {
+      expect(screen.getByRole('button')).toBeDisabled();
+    });
   });
 
   test('reveals the editable fields when editing', async () => {

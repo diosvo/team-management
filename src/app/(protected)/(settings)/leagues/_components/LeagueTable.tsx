@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useMemo, useTransition } from 'react';
 
-import { Badge, IconButton } from '@chakra-ui/react';
+import { Badge, IconButton, VisuallyHidden } from '@chakra-ui/react';
 import { isPast } from 'date-fns';
 import { capitalize } from 'es-toolkit/string';
 import { CircuitBoard } from 'lucide-react';
@@ -25,7 +25,7 @@ import usePermissions from '@/hooks/use-permissions';
 import useTableState from '@/hooks/use-table-state';
 
 import { removeLeague } from '@/actions/league';
-import { League } from '@/drizzle/schema';
+import type { League } from '@/drizzle/schema';
 
 import { UpsertLeague } from './UpsertLeague';
 
@@ -80,7 +80,8 @@ export default function LeagueTable({
 
   const columns: Array<Column<LeagueWithPlayerCount>> = [
     {
-      header: '',
+      // Named for screen readers only: the column shows an icon, not a label.
+      header: <VisuallyHidden>Achievement</VisuallyHidden>,
       headerProps: { width: '1px' },
       align: 'center',
       cell: (item) => {

@@ -1,6 +1,3 @@
-import * as nuqs from 'nuqs';
-import { Mock } from 'vitest';
-
 import {
   MOCK_TEST_CONFIGURATION,
   MOCK_TEST_PLAYER_2,
@@ -8,9 +5,15 @@ import {
   MOCK_TEST_TYPE_2,
 } from '@/test/mocks/periodic-testing';
 import { MOCK_USER } from '@/test/mocks/user';
-import { renderWithUI, screen } from '@/test/utilities';
+import {
+  expectNoA11yViolations,
+  mockUseQueryStates,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+} from '@/test/utilities';
 
-import { TestConfigurationSelection } from '@/types/periodic-testing';
+import type { TestConfigurationSelection } from '@/types/periodic-testing';
 
 import TestResultTable from './TestResultTable';
 
@@ -25,10 +28,7 @@ describe('TestResultTable', () => {
     const setSelection = vi.fn();
     const setResults = vi.fn();
 
-    (nuqs.useQueryStates as unknown as Mock).mockReturnValue([
-      { page: 1 },
-      vi.fn(),
-    ]);
+    mockUseQueryStates({ page: 1 });
 
     const view = renderWithUI(
       <TestResultTable
@@ -42,8 +42,12 @@ describe('TestResultTable', () => {
     return { ...view, setSelection, setResults };
   };
 
-  beforeEach(() => {
-    vi.clearAllMocks();
+  setupTestLifecycle();
+
+  test('should be accessible', async () => {
+    const { container } = setup({});
+
+    await expectNoA11yViolations(container);
   });
 
   test('renders a column header with its unit for each type', () => {

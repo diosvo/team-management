@@ -1,4 +1,4 @@
-import { Team } from '@/drizzle/schema';
+import type { Team } from '@/drizzle/schema';
 
 export const MOCK_TEAM: Team = {
   team_id: 'sgr',

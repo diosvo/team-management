@@ -1,6 +1,4 @@
-import { axe } from 'jest-axe';
-
-import { renderWithUI, screen } from '@/test/utilities';
+import { expectNoA11yViolations, renderWithUI, screen } from '@/test/utilities';
 import PageTitle from './PageTitle';
 
 describe('PageTitle', () => {
@@ -17,8 +15,7 @@ describe('PageTitle', () => {
   test('should be accessible', async () => {
     const { container } = setup('Access');
 
-    const result = await axe(container);
-    expect(result).toHaveNoViolations();
+    await expectNoA11yViolations(container);
   });
 
   test('renders the title correctly', () => {

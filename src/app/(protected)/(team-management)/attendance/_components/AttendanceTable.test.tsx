@@ -1,12 +1,15 @@
-import { axe } from 'jest-axe';
-import * as nuqs from 'nuqs';
-import { Mock } from 'vitest';
-
 import { MOCK_ATTENDANCE_BY_DATE } from '@/test/mocks/attendance';
-import { renderWithUI, screen, waitFor } from '@/test/utilities';
+import {
+  createToasterMock,
+  expectNoA11yViolations,
+  mockUseQueryStates,
+  renderWithUI,
+  screen,
+  waitFor,
+} from '@/test/utilities';
 
 import usePermissions from '@/hooks/use-permissions';
-import { AttendanceWithPlayer } from '@/types/attendance';
+import type { AttendanceWithPlayer } from '@/types/attendance';
 import { AttendanceStatus } from '@/utils/enum';
 
 import { removeAttendance, updateStatus } from '@/actions/attendance';
@@ -20,9 +23,7 @@ vi.mock('@/actions/attendance', () => ({
   updateStatus: vi.fn(),
 }));
 
-vi.mock('@/components/ui/toaster', () => ({
-  toaster: { create: vi.fn(), update: vi.fn(), remove: vi.fn() },
-}));
+vi.mock('@/components/ui/toaster', () => createToasterMock());
 
 describe('AttendanceTable', () => {
   const setSearchParams = vi.fn();
@@ -46,10 +47,7 @@ describe('AttendanceTable', () => {
     mockUsePermissions.mockReturnValue({ isAdmin } as ReturnType<
       typeof usePermissions
     >);
-    (nuqs.useQueryStates as unknown as Mock).mockReturnValue([
-      { q, status, page },
-      setSearchParams,
-    ]);
+    mockUseQueryStates({ q, status, page }, setSearchParams);
 
     return renderWithUI(<AttendanceTable attendances={attendances} />);
   };
@@ -63,8 +61,7 @@ describe('AttendanceTable', () => {
   test('should be accessible', async () => {
     const { container } = setup();
 
-    const result = await axe(container);
-    expect(result).toHaveNoViolations();
+    await expectNoA11yViolations(container);
   });
 
   test('renders the column headers', () => {

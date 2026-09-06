@@ -1,6 +1,5 @@
-import { Mock } from 'vitest';
 
-import { renderWithUI, screen } from '@/test/utilities';
+import { renderWithUI, screen, setupTestLifecycle } from '@/test/utilities';
 
 import { canCreateTestResult } from '@/actions/test-result';
 
@@ -16,13 +15,11 @@ vi.mock('./_components/AddTestResultPageClient', () => ({
 }));
 
 describe('AddTestResultPage', () => {
-  const mockCanCreate = canCreateTestResult as unknown as Mock;
+  const mockCanCreate = vi.mocked(canCreateTestResult);
 
   const setup = async () => renderWithUI(await AddTestResultPage());
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  setupTestLifecycle();
 
   test('exposes page metadata', () => {
     expect(metadata.title).toBe('Add Test Result');

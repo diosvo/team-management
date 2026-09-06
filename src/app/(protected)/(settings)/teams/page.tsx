@@ -1,4 +1,4 @@
-import { Metadata } from 'next';
+import type { Metadata } from 'next';
 
 import { getTeams } from '@/actions/team';
 import SearchInput from '@/components/SearchInput';

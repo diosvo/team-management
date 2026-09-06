@@ -1,4 +1,10 @@
-import { renderWithUI, screen } from '@/test/utilities';
+import {
+  expectNoA11yViolations,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+  waitFor,
+} from '@/test/utilities';
 
 import DataTable, { type Column } from './DataTable';
 
@@ -36,13 +42,25 @@ const withSelection = (overrides = {}) => ({
 });
 
 describe('DataTable', () => {
-  test('renders a header and a cell per row', () => {
+  setupTestLifecycle();
+
+  test('should be accessible', async () => {
+    const { container } = renderWithUI(
+      <DataTable {...baseProps} selection={withSelection()} />,
+    );
+
+    await expectNoA11yViolations(container);
+  });
+
+  test('renders a header and a cell per row', async () => {
     renderWithUI(<DataTable {...baseProps} />);
 
-    expect(screen.getByText('Name')).toBeInTheDocument();
-    ['Alice', 'Bob', 'Carol'].forEach((name) =>
-      expect(screen.getByText(name)).toBeInTheDocument(),
-    );
+    await waitFor(() => {
+      expect(screen.getByText('Name')).toBeInTheDocument();
+      ['Alice', 'Bob', 'Carol'].forEach((name) =>
+        expect(screen.getByText(name)).toBeInTheDocument(),
+      );
+    });
   });
 
   test('applies column alignment and header/cell props', () => {
@@ -210,7 +228,7 @@ describe('DataTable', () => {
       expect(setSelection).toHaveBeenCalledWith([]);
     });
 
-    test('is indeterminate when only some selectable rows are selected', () => {
+    test('is indeterminate when only some selectable rows are selected', async () => {
       const { container } = renderWithUI(
         <DataTable
           {...baseProps}
@@ -218,9 +236,11 @@ describe('DataTable', () => {
         />,
       );
 
-      expect(
-        container.querySelector('[aria-label="Select all rows"]'),
-      ).toHaveAttribute('data-state', 'indeterminate');
+      await waitFor(() => {
+        expect(
+          container.querySelector('[aria-label="Select all rows"]'),
+        ).toHaveAttribute('data-state', 'indeterminate');
+      });
     });
 
     test('is disabled when no row is selectable', () => {
@@ -277,7 +297,7 @@ describe('DataTable', () => {
       );
     });
 
-    test('reflects the checked state and marks the selected row', () => {
+    test('reflects the checked state and marks the selected row', async () => {
       const { container } = renderWithUI(
         <DataTable
           {...baseProps}
@@ -285,10 +305,12 @@ describe('DataTable', () => {
         />,
       );
 
-      expect(
-        screen.getAllByRole('checkbox', { name: 'Select row' })[0],
-      ).toBeChecked();
-      expect(container.querySelectorAll('tr[data-selected]')).toHaveLength(1);
+      await waitFor(() => {
+        expect(
+          screen.getAllByRole('checkbox', { name: 'Select row' })[0],
+        ).toBeChecked();
+        expect(container.querySelectorAll('tr[data-selected]')).toHaveLength(1);
+      });
     });
 
     test('adds the row id when checking an unselected row', async () => {
@@ -327,7 +349,7 @@ describe('DataTable', () => {
   });
 
   describe('selection action bar', () => {
-    test('opens with custom actions and a delete button once rows are selected', () => {
+    test('opens with custom actions and a delete button once rows are selected', async () => {
       renderWithUI(
         <DataTable
           {...baseProps}
@@ -338,9 +360,11 @@ describe('DataTable', () => {
         />,
       );
 
-      expect(screen.getByText('Archive')).toBeInTheDocument();
-      expect(screen.getByText('Delete')).toBeInTheDocument();
-      expect(screen.getByText('1 selected')).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByText('Archive')).toBeInTheDocument();
+        expect(screen.getByText('Delete')).toBeInTheDocument();
+        expect(screen.getByText('1 selected')).toBeInTheDocument();
+      });
     });
   });
 

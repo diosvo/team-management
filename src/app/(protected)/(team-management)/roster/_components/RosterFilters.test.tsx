@@ -1,7 +1,9 @@
-import * as nuqs from 'nuqs';
-import { Mock } from 'vitest';
-
-import { renderWithUI } from '@/test/utilities';
+import {
+  createPermissionsMock,
+  mockUseQueryStates,
+  renderWithUI,
+  setupTestLifecycle,
+} from '@/test/utilities';
 
 import usePermissions from '@/hooks/use-permissions';
 import { UserState } from '@/utils/enum';
@@ -29,31 +31,29 @@ vi.mock('@/components/filters/Filters', () => ({
 }));
 
 describe('RosterFilters', () => {
-  const mockUsePermissions = usePermissions as unknown as Mock;
+  const mockUsePermissions = vi.mocked(usePermissions);
   const mockSetSearchParams = vi.fn();
 
   const setup = (
     perms: Record<string, boolean> = {},
     values: Record<string, unknown> = {},
   ) => {
-    mockUsePermissions.mockReturnValue({
+    mockUsePermissions.mockReturnValue(createPermissionsMock({
       isAdmin: false,
       isCaptain: false,
       ...perms,
-    });
-    (nuqs.useQueryStates as unknown as Mock).mockReturnValue([
+    }));
+    mockUseQueryStates(
       { page: 1, q: '', role: [], state: [], ...values },
       mockSetSearchParams,
-    ]);
+    );
 
     return renderWithUI(<RosterFilters />);
   };
 
   const filterKeys = () => propsSpy.filters.map(({ key }) => key);
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  setupTestLifecycle();
 
   test('always provides the state filter', () => {
     setup();

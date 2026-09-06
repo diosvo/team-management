@@ -5,7 +5,7 @@ import { Button, CheckboxGroup, Fieldset, Span } from '@chakra-ui/react';
 import { Checkbox } from '@/components/ui/checkbox';
 
 import { getColor } from '@/utils/helper';
-import { Selection } from '@/utils/type';
+import type { Selection } from '@/utils/type';
 
 type CheckboxGroupFilterProps = {
   label: string;

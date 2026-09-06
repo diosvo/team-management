@@ -1,6 +1,11 @@
-import { Mock } from 'vitest';
-
-import { renderWithUI, screen, waitFor } from '@/test/utilities';
+import {
+  createToasterMock,
+  expectNoA11yViolations,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+  waitFor,
+} from '@/test/utilities';
 
 import { addUser } from '@/actions/user';
 
@@ -10,12 +15,7 @@ vi.mock('@/actions/user', () => ({
   addUser: vi.fn(),
 }));
 
-vi.mock('@/components/ui/toaster', () => ({
-  toaster: {
-    create: vi.fn(() => 'toast-id'),
-    update: vi.fn(),
-  },
-}));
+vi.mock('@/components/ui/toaster', () => createToasterMock());
 
 // The role/state selectors have their own tests; render markers here so the
 // dialog body mounts without their internal wiring.
@@ -27,7 +27,7 @@ vi.mock('@/components/user/StateSelection', () => ({
 }));
 
 describe('AddUser', () => {
-  const mockAddUser = addUser as unknown as Mock;
+  const mockAddUser = vi.mocked(addUser);
 
   const setup = () => renderWithUI(<AddUser />);
 
@@ -37,8 +37,12 @@ describe('AddUser', () => {
     return view;
   };
 
-  beforeEach(() => {
-    vi.clearAllMocks();
+  setupTestLifecycle();
+
+  test('should be accessible', async () => {
+    await openDialog();
+
+    await expectNoA11yViolations();
   });
 
   test('renders the trigger button', () => {

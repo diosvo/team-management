@@ -1,6 +1,4 @@
-import { axe } from 'jest-axe';
-
-import { renderWithUI, screen } from '@/test/utilities';
+import { expectNoA11yViolations, renderWithUI, screen } from '@/test/utilities';
 import StepIndicator from './StepIndicator';
 
 describe('StepIndicator', () => {
@@ -12,8 +10,7 @@ describe('StepIndicator', () => {
   test('should be accessible', async () => {
     const { container } = setup(1);
 
-    const result = await axe(container);
-    expect(result).toHaveNoViolations();
+    await expectNoA11yViolations(container);
   });
 
   test('renders step number correctly', () => {

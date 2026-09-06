@@ -9,7 +9,7 @@ import {
 import { deleteFile, uploadFile } from '@/lib/blob';
 
 import { revalidate } from '@/actions/cache';
-import { UpsertTeamSchemaValues } from '@/schemas/team';
+import type { UpsertTeamSchemaValues } from '@/schemas/team';
 
 import {
   mockWithAuth,

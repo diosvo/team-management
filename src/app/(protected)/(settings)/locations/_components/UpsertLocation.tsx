@@ -25,7 +25,7 @@ import { CACHE_KEY } from '@/utils/constants';
 import { upsertLocation } from '@/actions/location';
 import {
   UpsertLocationSchema,
-  UpsertLocationSchemaValues,
+  type UpsertLocationSchemaValues,
 } from '@/schemas/location';
 
 export const UpsertLocation = createOverlay(({ action, item, ...rest }) => {
