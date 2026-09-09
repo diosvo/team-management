@@ -48,3 +48,6 @@ next-env.d.ts
 
 # fumadocs-mdx generated files
 /.source/
+
+# dependency audit report (scripts/audit.ts)
+/pnpm-audit.json
