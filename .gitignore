@@ -51,3 +51,4 @@ next-env.d.ts
 
 # dependency audit report (scripts/audit.ts)
 /pnpm-audit.json
+/audit-summary.md
