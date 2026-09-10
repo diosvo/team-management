@@ -29,15 +29,20 @@ on:
         type: string
         default: "--prebuilt --yes"
       summary-artifact:
-        description: Artifact name used for the unit-test summary.
+        description: Artifact name the unit-test and audit summaries share.
         required: false
         type: string
         default: unit-test-summary
-      summary-file:
-        description: Local file path to capture CI summary output.
+      test-summary-file:
+        description: Local file path for the unit-test markdown summary.
         required: false
         type: string
         default: unit-test-summary.md
+      audit-summary-file:
+        description: Local file path for the dependency-audit markdown fragment.
+        required: false
+        type: string
+        default: audit-summary.md
     secrets:
       VERCEL_ORG_ID:
         required: true
@@ -50,11 +55,14 @@ on:
         description: Deployment URL returned by Vercel.
         value: ${{ jobs.deploy.outputs.preview_url }}
       summary_artifact:
-        description: Artifact name the unit-test summary was uploaded under.
+        description: Artifact name the summaries were uploaded under.
         value: ${{ inputs.summary-artifact }}
-      summary_file:
+      test_summary_file:
         description: File name of the unit-test summary inside that artifact.
-        value: ${{ inputs.summary-file }}
+        value: ${{ inputs.test-summary-file }}
+      audit_summary_file:
+        description: File name of the audit summary inside that artifact.
+        value: ${{ inputs.audit-summary-file }}
 
 jobs:
   unit-test:
@@ -75,8 +83,8 @@ jobs:
             coverage/coverage-summary.json >> "$GITHUB_STEP_SUMMARY" ||
             echo "::warning::No coverage summary to capture"
 
-          cp "$GITHUB_STEP_SUMMARY" "${{ inputs.summary-file }}" ||
-            echo "::warning::No step summary to capture for ${{ inputs.summary-file }}"
+          cp "$GITHUB_STEP_SUMMARY" "${{ inputs.test-summary-file }}" ||
+            echo "::warning::No step summary to capture for ${{ inputs.test-summary-file }}"
           exit $status
 
       # `next build` only type-checks files its routes reach, so type errors in
@@ -86,12 +94,31 @@ jobs:
       - name: 🔎 Type Check
         run: pnpm typecheck
 
-      - name: 📤 Upload test report
+      # Report-only: Runs even when the steps above failed,
+      # so the comment always carries an audit section — and never fails the
+      # job, so an audit that cannot run does not hold back the deploy.
+      - name: 🔍 Dependency Audit
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        env:
+          AUDIT_SUMMARY: ${{ inputs.audit-summary-file }}
+        run: |
+          pnpm audit:report
+
+          {
+            echo "### 🔍 Dependency Audit"
+            cat "$AUDIT_SUMMARY"
+          } >> "$GITHUB_STEP_SUMMARY" ||
+            echo "::warning::No audit summary to capture"
+
+      - name: 📤 Upload reports
         if: ${{ !cancelled() }}
         uses: ./.github/actions/upload-artifact
         with:
           name: ${{ inputs.summary-artifact }}
-          path: ${{ inputs.summary-file }}
+          path: |
+            ${{ inputs.test-summary-file }}
+            ${{ inputs.audit-summary-file }}
 
   deploy:
     needs: unit-test

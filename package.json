@@ -77,6 +77,8 @@
   },
   "scripts": {
     "analyze": "next experimental-analyze",
+    "audit:ci": "tsx scripts/audit.ts --gate",
+    "audit:report": "tsx scripts/audit.ts",
     "build": "next build",
     "db:drop": "drizzle-kit drop",
     "db:generate": "drizzle-kit generate",
