@@ -92,6 +92,13 @@
       "when": 1787639763970,
       "tag": "0012_enforce_roster_integrity",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1788111282637,
+      "tag": "0013_report_schedule_table",
+      "breakpoints": true
     }
   ]
 }

@@ -3,6 +3,7 @@
   "pages": [
     "index",
     "dashboard",
+    "reports",
     "achievements",
     "team-rule",
     "team-management",

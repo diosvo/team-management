@@ -2,6 +2,7 @@ import type { ColorPalette } from '@chakra-ui/react';
 import { formatDistanceToNow } from 'date-fns';
 import {
   BadgeCheck,
+  ChartColumn,
   Dumbbell,
   FileText,
   Film,
@@ -46,6 +47,7 @@ export const SIDEBAR_GROUP: Array<SidebarGroup> = [
     items: [
       { icon: LayoutDashboard, resource: 'dashboard' },
       { icon: Medal, resource: 'achievements' },
+      { icon: ChartColumn, resource: 'reports' },
       { icon: ShieldCheck, resource: 'team-rule' },
     ],
   },

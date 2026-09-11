@@ -12,9 +12,20 @@ export async function getFile(pathname: string): Promise<Nullable<string>> {
   return `data:${contentType};base64,${fromUint8Array(bytes)}`;
 }
 
+/** Raw bytes of a stored blob — no data-URL transcoding (large downloads). */
+export async function getFileBytes(
+  pathname: string,
+): Promise<Nullable<Uint8Array<ArrayBuffer>>> {
+  const result = await get(pathname, { access: 'private' });
+
+  if (!result?.stream) return null;
+
+  return new Uint8Array(await new Response(result.stream).arrayBuffer());
+}
+
 export async function uploadFile(
   pathname: string,
-  file: File,
+  file: Parameters<typeof put>[1],
   options: Omit<PutCommandOptions, 'access' | 'addRandomSuffix'> = {},
 ) {
   return await put(pathname, file, {
