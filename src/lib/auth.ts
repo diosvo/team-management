@@ -1,4 +1,5 @@
 import { dash } from '@better-auth/infra';
+import type { BetterAuthPlugin } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { betterAuth } from 'better-auth/minimal';
 import { nextCookies } from 'better-auth/next-js';
@@ -18,6 +19,19 @@ import { sendEmail } from '@/lib/resend';
 
 import ResetPassword from '@/app/(auth)/_components/ResetPassword';
 
+const rateLimit = () => {
+  return {
+    id: 'rate-limit',
+    rateLimit: [
+      {
+        pathMatcher: (path) => path.startsWith('/sign-in/'),
+        max: 3,
+        window: 60,
+      },
+    ],
+  } satisfies BetterAuthPlugin;
+};
+
 export default betterAuth({
   appName: 'Saigon Rovers Basketball Club Portal',
   database: drizzleAdapter(db, {
@@ -30,6 +44,10 @@ export default betterAuth({
     },
   }),
   trustedOrigins: [env.DEV_URL, env.PRODUCTION_URL],
+  // https://better-auth.com/docs/concepts/rate-limit
+  rateLimit: {
+    enabled: true,
+  },
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false,
@@ -80,6 +98,7 @@ export default betterAuth({
   },
   plugins: [
     dash(),
+    rateLimit(),
     nextCookies(), // Ensure that it is the last plugin in the array
   ],
 });

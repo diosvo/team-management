@@ -68,6 +68,8 @@ export const getUserProfile = withAuth(async (user, target_id: string) => {
 export const addUser = roster(
   ['create'],
   async function add({ team_id }, values: AddUserValues) {
+    // TODO: check rate limiting first
+
     try {
       const user = {
         ...values,
