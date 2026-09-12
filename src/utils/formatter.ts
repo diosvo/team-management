@@ -13,7 +13,8 @@ import {
   DEFAULT_DAY_FORMAT,
   LOCALE_DATE_FORMAT,
   LOCALE_DATETIME_FORMAT,
-} from './constants';
+  LOCALE_TIME_FORMAT,
+} from './constants/app';
 import { Interval } from './enum';
 
 export function formatDay(
@@ -27,6 +28,14 @@ export function formatDay(
 export function formatDate(date: Nullish<Date | string>): string {
   if (!date) return '-';
   return format(date, LOCALE_DATE_FORMAT);
+}
+
+export function formatTime(
+  date: Nullish<Date | string>,
+  timeFormat = LOCALE_TIME_FORMAT,
+): string {
+  if (!date) return '-';
+  return format(date, timeFormat);
 }
 
 export function formatDatetime(

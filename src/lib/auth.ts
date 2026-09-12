@@ -18,6 +18,15 @@ import { sendEmail } from '@/lib/resend';
 
 import ResetPassword from '@/app/(auth)/_components/ResetPassword';
 
+/**
+ * Credential routes: 3 requests/min per IP + path.
+ * Others use the global limit.
+ */
+const STRICT_RATE_LIMIT = {
+  window: 60,
+  max: 3,
+};
+
 export default betterAuth({
   appName: 'Saigon Rovers Basketball Club Portal',
   database: drizzleAdapter(db, {
@@ -30,6 +39,18 @@ export default betterAuth({
     },
   }),
   trustedOrigins: [env.DEV_URL, env.PRODUCTION_URL],
+  // https://better-auth.com/docs/concepts/rate-limit
+  rateLimit: {
+    enabled: true,
+    // Keep the global limit loose to avoid 429s from frequent /get-session hits.
+    window: 10,
+    max: 100,
+    customRules: {
+      '/sign-in/*': STRICT_RATE_LIMIT, // authClient.signIn.email
+      '/request-password-reset': STRICT_RATE_LIMIT, // authClient.requestPasswordReset
+      '/reset-password': STRICT_RATE_LIMIT, // authClient.resetPassword
+    },
+  },
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false,

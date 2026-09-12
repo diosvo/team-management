@@ -18,35 +18,60 @@ import { Field } from '@/components/ui/field';
 import { PasswordInput } from '@/components/ui/password-input';
 
 import authClient from '@/lib/auth-client';
+import { authErrorMessage } from '@/utils/rate-limit';
+import { ERROR_TYPE_BY_STATUS } from '@/utils/response';
 
 import { DEFAULT_LOGIN_REDIRECT } from '@/routes';
 import { LoginSchema, type LoginValues } from '@/schemas/auth';
 
 export default function LoginPage() {
-  const [error, setError] = useState<string>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    setError,
+    clearErrors,
+    formState: { isDirty, isValid, errors },
   } = useForm({
     resolver: zodResolver(LoginSchema),
   });
 
+  const { root } = errors;
+  // Credentials were rejected: the user has to adjust email or password first.
+  const isUnauthorized = root?.type === 'unauthorized';
+
+  // Let a new attempt through as soon as either credential is edited.
+  const resetUnauthorized = () => {
+    if (isUnauthorized) clearErrors('root');
+  };
+
   async function onSubmit(values: LoginValues) {
-    setError(undefined);
-    await authClient.signIn.email(
-      {
+    clearErrors('root');
+    try {
+      await authClient.signIn.email({
         ...values,
         callbackURL: DEFAULT_LOGIN_REDIRECT,
-      },
-      {
-        onRequest: () => setIsLoading(true),
-        onError: ({ error }) => setError(error.message || error.statusText),
-        onResponse: () => setIsLoading(false),
-      },
-    );
+        fetchOptions: {
+          onRequest: () => setIsLoading(true),
+          onError: (context) => {
+            setError('root', {
+              type: ERROR_TYPE_BY_STATUS[context.response.status] ?? 'server',
+              message: authErrorMessage(context),
+            });
+          },
+          onResponse: () => setIsLoading(false),
+        },
+      });
+    } catch {
+      // The request never reached a response (offline, DNS, aborted), so
+      // neither `onError` nor `onResponse` runs: clear the loading state here.
+      setIsLoading(false);
+      setError('root', {
+        type: 'server',
+        message: 'Unable to reach the server. Please try again.',
+      });
+    }
   }
 
   return (
@@ -63,7 +88,11 @@ export default function LoginPage() {
           invalid={!!errors.email}
           errorText={errors.email?.message}
         >
-          <Input autoFocus autoComplete="email" {...register('email')} />
+          <Input
+            autoFocus
+            autoComplete="email"
+            {...register('email', { onChange: resetUnauthorized })}
+          />
         </Field>
         <Field
           required
@@ -74,7 +103,7 @@ export default function LoginPage() {
         >
           <PasswordInput
             autoComplete="current-password"
-            {...register('password')}
+            {...register('password', { onChange: resetUnauthorized })}
           />
         </Field>
 
@@ -87,14 +116,14 @@ export default function LoginPage() {
           <NextLink href="/forgot-password">Forgot your password?</NextLink>
         </ChakraLink>
 
-        {error && <Alert status="error" title={error} />}
+        {root?.message && <Alert status="error" title={root.message} />}
 
         <Button
           type="submit"
           borderRadius="full"
           loadingText="Directing..."
           loading={isLoading}
-          disabled={isLoading}
+          disabled={!isDirty || !isValid || isLoading || isUnauthorized}
         >
           Sign In
         </Button>

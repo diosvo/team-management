@@ -26,7 +26,7 @@ export const USER_SCHEMA_VALIDATION = {
     .trim()
     .default(''),
   dob: z.iso.date().nullable().default(DEFAULT_DOB),
-  email: z.email({ error: 'Please enter a valid email.' }).default(''),
+  email: z.email({ error: 'Please enter a valid email.' }),
   phone_number: z.union([
     z
       .string()

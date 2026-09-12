@@ -3,6 +3,7 @@ import { NextRequest } from 'next/server';
 import { verifySession } from '@/actions/auth';
 import { getBrowser } from '@/lib/puppeteer';
 import { Interval } from '@/utils/enum';
+import { Status } from '@/utils/response';
 
 import { POST } from './route';
 
@@ -81,7 +82,7 @@ describe('POST /api/reports/dashboard', () => {
 
     const response = await POST(createRequest());
 
-    expect(response.status).toBe(401);
+    expect(response.status).toBe(Status.UNAUTHORIZED);
     await expect(response.json()).resolves.toEqual({
       error: 'User not authenticated',
     });
@@ -94,7 +95,7 @@ describe('POST /api/reports/dashboard', () => {
 
     const response = await POST(createRequest());
 
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(Status.OK);
 
     // Renders the referer URL with forwarded cookies scoped to the host.
     expect(browser.setCookie).toHaveBeenCalledWith({
@@ -124,7 +125,7 @@ describe('POST /api/reports/dashboard', () => {
 
     const response = await POST(createRequest());
 
-    expect(response.status).toBe(500);
+    expect(response.status).toBe(Status.INTERNAL_SERVER_ERROR);
     await expect(response.json()).resolves.toEqual({
       error: 'chromium missing',
     });
@@ -133,7 +134,7 @@ describe('POST /api/reports/dashboard', () => {
   test('returns 500 when the request body cannot be parsed', async () => {
     const response = await POST(createRequest(undefined, { rejectJson: true }));
 
-    expect(response.status).toBe(500);
+    expect(response.status).toBe(Status.INTERNAL_SERVER_ERROR);
     expect(getBrowser).not.toHaveBeenCalled();
   });
 
@@ -144,7 +145,7 @@ describe('POST /api/reports/dashboard', () => {
 
     const response = await POST(createRequest());
 
-    expect(response.status).toBe(500);
+    expect(response.status).toBe(Status.INTERNAL_SERVER_ERROR);
     expect(browser.close).toHaveBeenCalled();
   });
 });

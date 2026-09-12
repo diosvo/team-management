@@ -19,6 +19,8 @@ import { PasswordInput } from '@/components/ui/password-input';
 import { toaster } from '@/components/ui/toaster';
 
 import authClient from '@/lib/auth-client';
+import { authErrorMessage } from '@/utils/rate-limit';
+
 import { LOGIN_PATH } from '@/routes';
 
 const PASSWORD_RULES = [
@@ -59,7 +61,7 @@ export default function NewPasswordPage() {
       },
       {
         onRequest: () => setIsLoading(true),
-        onError: ({ error }) => setError(error.message),
+        onError: (context) => setError(authErrorMessage(context)),
         onSuccess: () => {
           toaster.success({
             title: 'Create new password successful.',
