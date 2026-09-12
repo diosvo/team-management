@@ -1,4 +1,3 @@
-
 import {
   createPermissionsMock,
   expectNoA11yViolations,
@@ -27,12 +26,30 @@ vi.mock('next/link', () => ({
   useLinkStatus: mockUseLinkStatus,
 }));
 
-vi.mock('next/navigation', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('next/navigation')>();
-  return { ...actual, usePathname: mockUsePathname };
-});
+vi.mock('next/navigation', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('next/navigation')>()),
+  usePathname: mockUsePathname,
+}));
 
 vi.mock('@/hooks/use-permissions', () => ({ default: vi.fn() }));
+
+const FEEDBACK_URL_PART = 'github.com/diosvo/team-management/issues/new';
+
+/** Allow only the given resources through `can()` */
+const only =
+  (...resources: string[]) =>
+  (resource: string) =>
+    resources.includes(resource);
+
+const getLink = (name: RegExp | string) => screen.getByRole('link', { name });
+const queryLink = (name: RegExp | string) =>
+  screen.queryByRole('link', { name });
+
+const fireScrollOnAll = (container: HTMLElement) => {
+  for (const el of container.querySelectorAll<HTMLElement>('*')) {
+    el.dispatchEvent(new Event('scroll', { bubbles: true }));
+  }
+};
 
 describe('Sidebar', () => {
   const mockUsePermissions = vi.mocked(usePermissions);
@@ -57,90 +74,122 @@ describe('Sidebar', () => {
     );
   };
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-    setIsExpanded.mockReset();
-  });
+  setupTestLifecycle();
 
   test('should be accessible', async () => {
-    const { container } = setup({});
+    const { container } = setup();
 
     await expectNoA11yViolations(container);
   });
 
   describe('permission filtering', () => {
-    test('renders nav items for resources the user can view', () => {
-      setup({ can: (resource) => resource === 'dashboard' });
+    test('renders only nav items the user can view', () => {
+      setup({ can: only('dashboard') });
 
-      expect(
-        screen.getByRole('link', { name: /dashboard/i }),
-      ).toBeInTheDocument();
-      expect(
-        screen.queryByRole('link', { name: /roster/i }),
-      ).not.toBeInTheDocument();
+      expect(getLink(/dashboard/i)).toBeInTheDocument();
+      expect(queryLink(/roster/i)).not.toBeInTheDocument();
     });
 
-    test('renders only nav items with permissions and no footer nav links when user has no nav permissions', () => {
+    test('renders no nav links when user has no nav permissions', () => {
       setup({ can: () => false });
 
-      const navLinks = screen
-        .queryAllByRole('link', { hidden: false })
-        .filter((link) => {
-          const href = link.getAttribute('href') || '';
-          return !href.startsWith('http') && href !== '/docs';
-        });
+      const navLinks = screen.getAllByRole('link').filter((link) => {
+        const href = link.getAttribute('href') ?? '';
+        return !href.startsWith('http') && href !== '/docs';
+      });
 
       expect(navLinks).toHaveLength(0);
     });
 
-    test('renders all permitted items when the user has full access', () => {
+    test('renders all items when the user has full access', () => {
       setup();
 
-      expect(
-        screen.getByRole('link', { name: /dashboard/i }),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByRole('link', { name: /team rule/i }),
-      ).toBeInTheDocument();
-    });
-  });
-
-  describe('resource name formatting', () => {
-    test('converts hyphenated resources to title case', () => {
-      setup({ can: (r) => r === 'team-rule' });
-
-      expect(
-        screen.getByRole('link', { name: /team rule/i }),
-      ).toBeInTheDocument();
+      expect(getLink(/dashboard/i)).toBeInTheDocument();
+      expect(getLink(/team rule/i)).toBeInTheDocument();
     });
 
-    test('converts multi-word resources to title case', () => {
-      setup({ can: (r) => r === 'periodic-testing' });
-
-      expect(
-        screen.getByRole('link', { name: /periodic testing/i }),
-      ).toBeInTheDocument();
-    });
-  });
-
-  describe('group titles', () => {
-    test('shows group titles when expanded', () => {
-      setup({ can: (r) => r === 'dashboard', isExpanded: true });
+    test('only shows groups with visible items', () => {
+      setup({ can: only('dashboard', 'periodic-testing') });
 
       expect(screen.getByText('OVERVIEW')).toBeInTheDocument();
+      expect(screen.getByText('PERFORMANCE')).toBeInTheDocument();
+      expect(screen.queryByText('TEAM MANAGEMENT')).not.toBeInTheDocument();
     });
 
-    test('hides group titles when collapsed', () => {
-      setup({ can: (r) => r === 'dashboard', isExpanded: false });
+    test('renders items under their respective groups', () => {
+      setup({ can: only('dashboard', 'roster', 'emails') });
+
+      expect(screen.getByText('OVERVIEW')).toBeInTheDocument();
+      expect(getLink(/dashboard/i)).toBeInTheDocument();
+      expect(screen.getByText('TEAM MANAGEMENT')).toBeInTheDocument();
+      expect(getLink(/roster/i)).toBeInTheDocument();
+      expect(screen.getByText('RESOURCES')).toBeInTheDocument();
+      expect(getLink(/emails/i)).toBeInTheDocument();
+    });
+  });
+
+  describe('nav items', () => {
+    test.each([
+      ['team-rule', /team rule/i],
+      ['periodic-testing', /periodic testing/i],
+    ])('formats "%s" as a title-case label', (resource, label) => {
+      setup({ can: only(resource) });
+
+      expect(getLink(label)).toBeInTheDocument();
+    });
+
+    test('links point to the resource route', () => {
+      setup({ can: only('dashboard', 'roster') });
+
+      expect(getLink(/dashboard/i)).toHaveAttribute('href', '/dashboard');
+      expect(getLink(/roster/i)).toHaveAttribute('href', '/roster');
+    });
+
+    test.each(['/dashboard', '/roster'])(
+      'renders the link regardless of active pathname (%s)',
+      (pathname) => {
+        setup({ can: only('dashboard'), pathname });
+
+        expect(getLink(/dashboard/i)).toBeInTheDocument();
+      },
+    );
+
+    test('keeps the link when pathname changes', () => {
+      const { rerender } = setup({
+        can: only('dashboard'),
+        pathname: '/dashboard',
+      });
+      expect(getLink(/dashboard/i)).toBeInTheDocument();
+
+      mockUsePathname.mockReturnValue('/roster');
+      rerender(<Sidebar isExpanded setIsExpanded={setIsExpanded} />);
+
+      expect(getLink(/dashboard/i)).toBeInTheDocument();
+    });
+  });
+
+  describe('expanded / collapsed', () => {
+    test('shows group titles and labels when expanded', () => {
+      setup({ can: only('dashboard'), isExpanded: true });
+
+      expect(screen.getByText('OVERVIEW')).toBeInTheDocument();
+      expect(getLink(/dashboard/i)).toHaveTextContent('Dashboard');
+    });
+
+    test('hides group titles and labels but keeps links when collapsed', () => {
+      setup({ can: only('dashboard'), isExpanded: false });
 
       expect(screen.queryByText('OVERVIEW')).not.toBeInTheDocument();
+
+      const dashboardLink = screen
+        .getAllByRole('link')
+        .find((link) => link.getAttribute('href') === '/dashboard');
+      expect(dashboardLink).toBeInTheDocument();
+      expect(dashboardLink).not.toHaveTextContent('Dashboard');
     });
 
-    test('shows all group titles when multiple groups have visible items', () => {
-      setup({
-        can: (r) => ['dashboard', 'roster'].includes(r),
-        isExpanded: true,
-      });
+    test('shows every group title when multiple groups are visible', () => {
+      setup({ can: only('dashboard', 'roster') });
 
       expect(screen.getByText('OVERVIEW')).toBeInTheDocument();
       expect(screen.getByText('TEAM MANAGEMENT')).toBeInTheDocument();
@@ -148,66 +197,51 @@ describe('Sidebar', () => {
   });
 
   describe('disabled items', () => {
-    test('renders disabled items as a button not a link', () => {
-      setup({ can: (r) => r === 'documents', isExpanded: true });
+    test('renders as a disabled button instead of a link', () => {
+      setup({ can: only('documents') });
 
-      expect(
-        screen.queryByRole('link', { name: /documents/i }),
-      ).not.toBeInTheDocument();
+      expect(queryLink(/documents/i)).not.toBeInTheDocument();
       expect(
         screen.getByRole('button', { name: /documents/i, hidden: true }),
-      ).toBeInTheDocument();
+      ).toBeDisabled();
     });
 
-    test('disabled button is not clickable', () => {
-      setup({ can: (r) => r === 'documents', isExpanded: true });
-
-      const disabledButton = screen.getByRole('button', {
-        name: /documents/i,
-        hidden: true,
+    test('still renders when the sidebar is collapsed', () => {
+      const { container } = setup({
+        can: only('documents'),
+        isExpanded: false,
       });
-      expect(disabledButton).toBeDisabled();
-    });
 
-    test('renders disabled items even when sidebar is collapsed', () => {
-      const { container } = setup({ can: (r) => r === 'documents', isExpanded: false });
-
-      const disabledButton = container.querySelector('button:disabled');
-      expect(disabledButton).toBeInTheDocument();
+      expect(container.querySelector('button:disabled')).toBeInTheDocument();
     });
   });
 
-  describe('expand / collapse', () => {
-    test('labels the toggle "Collapse menu" when expanded', () => {
-      setup({ isExpanded: true });
+  describe('toggle button', () => {
+    test.each([
+      [true, 'Collapse menu', 'Expand menu'],
+      [false, 'Expand menu', 'Collapse menu'],
+    ])(
+      'isExpanded=%s labels the toggle "%s"',
+      (isExpanded, label, otherLabel) => {
+        setup({ isExpanded });
 
-      expect(
-        screen.getByRole('button', { name: 'Collapse menu' }),
-      ).toBeInTheDocument();
-    });
+        expect(screen.getByRole('button', { name: label })).toBeInTheDocument();
+        expect(
+          screen.queryByRole('button', { name: otherLabel }),
+        ).not.toBeInTheDocument();
+      },
+    );
 
-    test('labels the toggle "Expand menu" when collapsed', () => {
-      setup({ isExpanded: false });
-
-      expect(
-        screen.getByRole('button', { name: 'Expand menu' }),
-      ).toBeInTheDocument();
-      expect(
-        screen.queryByRole('button', { name: 'Collapse menu' }),
-      ).not.toBeInTheDocument();
-    });
-
-    test('calls setIsExpanded when the toggle button is clicked', async () => {
+    test('calls setIsExpanded when clicked', async () => {
       const { user } = setup({ isExpanded: true });
 
       await user.click(screen.getByRole('button', { name: 'Collapse menu' }));
 
-      expect(setIsExpanded).toHaveBeenCalled();
+      expect(setIsExpanded).toHaveBeenCalledTimes(1);
     });
 
-    test('toggle button changes label after expansion state changes', () => {
+    test('updates its label when the expansion prop changes', () => {
       const { rerender } = setup({ isExpanded: true });
-
       expect(
         screen.getByRole('button', { name: 'Collapse menu' }),
       ).toBeInTheDocument();
@@ -220,227 +254,80 @@ describe('Sidebar', () => {
     });
   });
 
-  describe('active state', () => {
-    test('renders link for active pathname', () => {
-      setup({ can: (r) => r === 'dashboard', pathname: '/dashboard' });
-
-      expect(
-        screen.getByRole('link', { name: /dashboard/i }),
-      ).toBeInTheDocument();
-    });
-
-    test('renders link for inactive pathname', () => {
-      setup({ can: (r) => r === 'dashboard', pathname: '/roster' });
-
-      expect(
-        screen.getByRole('link', { name: /dashboard/i }),
-      ).toBeInTheDocument();
-    });
-
-    test('link exists when pathname changes', () => {
-      mockUsePathname.mockReturnValue('/dashboard');
-      const { rerender } = setup({ can: (r) => r === 'dashboard' });
-
-      expect(
-        screen.getByRole('link', { name: /dashboard/i }),
-      ).toBeInTheDocument();
-
-      mockUsePathname.mockReturnValue('/roster');
-      rerender(
-        <Sidebar isExpanded={true} setIsExpanded={setIsExpanded} />,
-      );
-
-      expect(
-        screen.getByRole('link', { name: /dashboard/i }),
-      ).toBeInTheDocument();
-    });
-  });
-
   describe('loading indicator', () => {
-    test('renders without error when link is not pending', () => {
-      const { container } = setup({ can: (r) => r === 'dashboard', pending: false });
-      expect(container).toBeInTheDocument();
-    });
+    test.each([
+      { isExpanded: true, pending: false },
+      { isExpanded: true, pending: true },
+      { isExpanded: false, pending: true },
+    ])('renders without error (%o)', (props) => {
+      const { container } = setup({ can: only('dashboard'), ...props });
 
-    test('renders without error when link is pending and expanded', () => {
-      const { container } = setup({ can: (r) => r === 'dashboard', isExpanded: true, pending: true });
-      expect(container).toBeInTheDocument();
-    });
-
-    test('renders without error when sidebar is collapsed even with pending', () => {
-      const { container } = setup({ can: (r) => r === 'dashboard', isExpanded: false, pending: true });
       expect(container).toBeInTheDocument();
     });
   });
 
   describe('footer links', () => {
-    test('renders documentation link with correct attributes', () => {
+    test.each([
+      ['Documentation', 'href="/docs"'],
+      ['Suggestions + feedback + ideas', `href*="${FEEDBACK_URL_PART}"`],
+    ])('%s opens in a new tab securely', (name, selector) => {
       setup();
 
-      const docsLink = document.querySelector('a[href="/docs"]');
-      expect(docsLink).toBeInTheDocument();
-      expect(docsLink).toHaveAttribute('target', '_blank');
-      expect(docsLink).toHaveAttribute('rel', 'noreferrer');
+      const link = getLink(name);
+      expect(link).toBe(document.querySelector(`a[${selector}]`));
+      expect(link).toHaveAttribute('target', '_blank');
+      expect(link).toHaveAttribute('rel', 'noopener noreferrer');
     });
 
-    test('renders social links menu trigger button', () => {
+    test('feedback link includes the GitHub issue query parameters', () => {
       setup();
 
-      expect(
-        screen.getByRole('button', { name: 'Social Links' }),
-      ).toBeInTheDocument();
-    });
-
-    test('renders feedback button with correct GitHub URL', () => {
-      setup();
-
-      const feedbackLink = document.querySelector(
-        'a[href*="github.com/diosvo/team-management/issues/new"]',
+      const href = getLink('Suggestions + feedback + ideas').getAttribute(
+        'href',
       );
-      expect(feedbackLink).toBeInTheDocument();
-      expect(feedbackLink).toHaveAttribute('target', '_blank');
-      expect(feedbackLink).toHaveAttribute('rel', 'noopener noreferrer');
-    });
-
-    test('feedback link includes feedback query parameters', () => {
-      setup();
-
-      const feedbackLink = document.querySelector(
-        'a[href*="github.com/diosvo/team-management/issues/new"]',
-      );
-      const href = feedbackLink?.getAttribute('href') || '';
       expect(href).toContain('title=Feedback');
       expect(href).toContain('labels=maintenance');
       expect(href).toContain('assignees=diosvo');
     });
-  });
 
-  describe('collapsed state behavior', () => {
-    test('hides nav labels when collapsed', () => {
-      setup({ can: (r) => r === 'dashboard', isExpanded: false });
+    // The menu uses trigger `id` and `data-scope`; the tooltip must not overwrite them.
+    test('social links trigger keeps the menu scope, not the tooltip one', () => {
+      setup();
 
-      const links = screen.getAllByRole('link', { hidden: false });
-      const dashboardLink = links.find((link) => link.getAttribute('href') === '/dashboard');
-      expect(dashboardLink).toBeInTheDocument();
-    });
-
-    test('shows nav labels when expanded', () => {
-      setup({ can: (r) => r === 'dashboard', isExpanded: true });
-
-      const dashboardLink = screen.getByRole('link', { name: /dashboard/i });
-      expect(dashboardLink.textContent).toContain('Dashboard');
-    });
-
-    test('maintains icon visibility when collapsed', () => {
-      setup({ can: (r) => r === 'dashboard', isExpanded: false });
-
-      const links = screen.getAllByRole('link', { hidden: false });
-      const dashboardLink = links.find((link) => link.getAttribute('href') === '/dashboard');
-      expect(dashboardLink).toBeInTheDocument();
+      const trigger = screen.getByRole('button', { name: 'Social Links' });
+      expect(trigger).toHaveAttribute('data-scope', 'menu');
+      expect(trigger.id).toMatch(/^menu:.*:trigger$/);
     });
   });
 
   describe('scroll handling', () => {
-    test('component mounts and unmounts without errors', () => {
+    beforeEach(() => vi.useFakeTimers());
+    afterEach(() => vi.useRealTimers());
+
+    test('mounts and unmounts without errors', () => {
       const { unmount } = setup();
 
       expect(() => unmount()).not.toThrow();
     });
 
-    test('handles scroll events without errors', async () => {
-      vi.useFakeTimers();
+    test('handles a scroll event and its idle timeout', () => {
       const { container } = setup();
 
-      // Trigger scroll on any element that might handle it
-      const allElements = container.querySelectorAll('*');
-      allElements.forEach((element) => {
-        if (element instanceof HTMLElement) {
-          element.dispatchEvent(new Event('scroll', { bubbles: true }));
-        }
-      });
-
-      // Fast-forward time to trigger the timeout callback
+      fireScrollOnAll(container);
       vi.advanceTimersByTime(900);
 
-      // Component should remain intact after scroll events and timeout
       expect(container).toBeInTheDocument();
-
-      vi.useRealTimers();
     });
 
-    test('clears previous scroll timeout on consecutive scroll events', async () => {
-      vi.useFakeTimers();
+    test('resets the idle timeout on consecutive scroll events', () => {
       const { container } = setup();
 
-      // First scroll event
-      const allElements = container.querySelectorAll('*');
-      allElements.forEach((element) => {
-        if (element instanceof HTMLElement) {
-          element.dispatchEvent(new Event('scroll', { bubbles: true }));
-        }
-      });
-
-      // Advance time by 400ms (halfway through the 800ms timeout)
+      fireScrollOnAll(container);
       vi.advanceTimersByTime(400);
-
-      // Second scroll event - should clear the previous timeout and set a new one
-      allElements.forEach((element) => {
-        if (element instanceof HTMLElement) {
-          element.dispatchEvent(new Event('scroll', { bubbles: true }));
-        }
-      });
-
-      // Advance remaining time
+      fireScrollOnAll(container);
       vi.advanceTimersByTime(500);
 
-      // Component should remain intact
       expect(container).toBeInTheDocument();
-
-      vi.useRealTimers();
-    });
-  });
-
-  describe('multiple items from different groups', () => {
-    test('filters items by group and shows correct structure', () => {
-      setup({
-        can: (r) => ['dashboard', 'roster', 'emails'].includes(r),
-        isExpanded: true,
-      });
-
-      expect(screen.getByText('OVERVIEW')).toBeInTheDocument();
-      expect(
-        screen.getByRole('link', { name: /dashboard/i }),
-      ).toBeInTheDocument();
-
-      expect(screen.getByText('TEAM MANAGEMENT')).toBeInTheDocument();
-      expect(screen.getByRole('link', { name: /roster/i })).toBeInTheDocument();
-
-      expect(screen.getByText('RESOURCES')).toBeInTheDocument();
-      expect(screen.getByRole('link', { name: /emails/i })).toBeInTheDocument();
-    });
-
-    test('only shows groups with visible items', () => {
-      setup({
-        can: (r) => ['dashboard', 'periodic-testing'].includes(r),
-        isExpanded: true,
-      });
-
-      expect(screen.getByText('OVERVIEW')).toBeInTheDocument();
-      expect(screen.getByText('PERFORMANCE')).toBeInTheDocument();
-
-      expect(screen.queryByText('TEAM MANAGEMENT')).not.toBeInTheDocument();
-    });
-  });
-
-  describe('navigation href structure', () => {
-    test('nav links point to correct routes', () => {
-      setup({ can: (r) => ['dashboard', 'roster'].includes(r) });
-
-      const dashboardLink = screen.getByRole('link', { name: /dashboard/i });
-      expect(dashboardLink).toHaveAttribute('href', '/dashboard');
-
-      const rosterLink = screen.getByRole('link', { name: /roster/i });
-      expect(rosterLink).toHaveAttribute('href', '/roster');
     });
   });
 });
