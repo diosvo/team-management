@@ -1,6 +1,7 @@
 import {
   authCallbacks,
   expectNoA11yViolations,
+  mockAuthResponse,
   renderWithUI,
   screen,
   setupTestLifecycle,
@@ -8,6 +9,7 @@ import {
 } from '@/test/utilities';
 
 import authClient from '@/lib/auth-client';
+import { Status, type HttpStatus } from '@/utils/response';
 import { LOGIN_PATH } from '@/routes';
 
 import ForgotPasswordPage from './page';
@@ -39,11 +41,18 @@ describe('ForgotPasswordPage', () => {
       authCallbacks(options).onRequest?.();
     });
 
-  const mockFailure = (message: string) =>
+  const mockFailure = (
+    message: string,
+    status: HttpStatus = Status.BAD_REQUEST,
+    headers?: Record<string, string>,
+  ) =>
     mockRequestPasswordReset.mockImplementation((_data, options) => {
       const { onError, onResponse } = authCallbacks(options);
 
-      onError?.({ error: { message } });
+      onError?.({
+        error: { message },
+        response: mockAuthResponse(status, headers),
+      });
       onResponse?.();
     });
 
@@ -129,6 +138,23 @@ describe('ForgotPasswordPage', () => {
     await submit('nonexistent@example.com');
 
     expect(await screen.findByText('User not found')).toBeInTheDocument();
+  });
+
+  test('shows the retry time when rate limited', async () => {
+    mockFailure('Too many requests', Status.TOO_MANY_REQUESTS, {
+      'X-Retry-After': '60',
+    });
+
+    const { submit } = setup();
+
+    await submit();
+
+    expect(
+      // `HH:mm:ss`, computed from the `X-Retry-After` header.
+      await screen.findByText(
+        /rate limit exceeded\. retry at \d{2}:\d{2}:\d{2}/i,
+      ),
+    ).toBeInTheDocument();
   });
 
   test('disables button during submission', async () => {

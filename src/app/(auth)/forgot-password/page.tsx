@@ -17,6 +17,7 @@ import { Alert } from '@/components/ui/alert';
 import { Field } from '@/components/ui/field';
 
 import { getDefaults } from '@/lib/zod';
+import { authErrorMessage } from '@/utils/rate-limit';
 import type { Response } from '@/utils/response';
 
 import authClient from '@/lib/auth-client';
@@ -54,10 +55,10 @@ export default function ForgotPasswordPage() {
       },
       {
         onRequest: () => setIsLoading(true),
-        onError({ error }) {
+        onError(context) {
           setResponse({
             success: false,
-            message: error.message || error.statusText,
+            message: authErrorMessage(context),
           });
         },
         onSuccess: () => {

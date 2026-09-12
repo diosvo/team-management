@@ -4,6 +4,7 @@ import env from '@env';
 
 import { verifySession } from '@/actions/auth';
 import { getBrowser } from '@/lib/puppeteer';
+import { Status } from '@/utils/response';
 
 export const maxDuration = 30; // in seconds
 const devEnv = env.NODE_ENV === 'development';
@@ -16,7 +17,7 @@ export async function POST(req: NextRequest) {
   if (!session) {
     return NextResponse.json(
       { error: 'User not authenticated' },
-      { status: 401 },
+      { status: Status.UNAUTHORIZED },
     );
   }
 
@@ -33,7 +34,7 @@ export async function POST(req: NextRequest) {
     if (!host) {
       return NextResponse.json(
         { error: 'Missing request headers required for report generation' },
-        { status: 400 },
+        { status: Status.BAD_REQUEST },
       );
     }
 
@@ -142,7 +143,7 @@ export async function POST(req: NextRequest) {
           ? (error as Error).message
           : 'Unable to generate the report. Please try again later',
       },
-      { status: 500 },
+      { status: Status.INTERNAL_SERVER_ERROR },
     );
   } finally {
     await browser?.close();

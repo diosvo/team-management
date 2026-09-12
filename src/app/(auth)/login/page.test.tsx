@@ -1,6 +1,7 @@
 import {
   authCallbacks,
   expectNoA11yViolations,
+  mockAuthResponse,
   renderWithUI,
   screen,
   setupTestLifecycle,
@@ -8,6 +9,7 @@ import {
 } from '@/test/utilities';
 
 import authClient from '@/lib/auth-client';
+import { Status, type HttpStatus } from '@/utils/response';
 import { DEFAULT_LOGIN_REDIRECT } from '@/routes';
 
 import type { LoginValues } from '@/schemas/auth';
@@ -27,14 +29,6 @@ const VALID_PASSWORD = 'password123';
 describe('LoginPage', () => {
   const mockSignIn = vi.mocked(authClient.signIn.email);
 
-  const mockResponse = (
-    status: number,
-    headers: Record<string, string> = {},
-  ) => ({
-    status,
-    headers: { get: (name: string) => headers[name] },
-  });
-
   /** Resolves the request without an error. */
   const mockSuccess = () =>
     mockSignIn.mockImplementation((data) => {
@@ -49,7 +43,7 @@ describe('LoginPage', () => {
 
   const mockFailure = (
     message: string,
-    status = 401,
+    status: HttpStatus = Status.UNAUTHORIZED,
     headers?: Record<string, string>,
   ) =>
     mockSignIn.mockImplementation((data) => {
@@ -57,7 +51,7 @@ describe('LoginPage', () => {
 
       onError?.({
         error: { message },
-        response: mockResponse(status, headers),
+        response: mockAuthResponse(status, headers),
       });
       onResponse?.();
     });
@@ -160,7 +154,9 @@ describe('LoginPage', () => {
   });
 
   test('shows the retry time when rate limited', async () => {
-    mockFailure('Too many requests', 429, { 'X-Retry-After': '60' });
+    mockFailure('Too many requests', Status.TOO_MANY_REQUESTS, {
+      'X-Retry-After': '60',
+    });
 
     const { submit } = setup();
 
@@ -172,6 +168,64 @@ describe('LoginPage', () => {
         /rate limit exceeded\. retry at \d{2}:\d{2}:\d{2}/i,
       ),
     ).toBeInTheDocument();
+  });
+
+  test.each([
+    ['the header is missing', undefined],
+    ['the header is not a number', { 'X-Retry-After': 'later' }],
+    ['the window has already elapsed', { 'X-Retry-After': '0' }],
+  ])(
+    'falls back to a generic rate limit message when %s',
+    async (_, headers) => {
+      mockFailure('Too many requests', Status.TOO_MANY_REQUESTS, headers);
+
+      const { submit } = setup();
+
+      await submit();
+
+      expect(
+        await screen.findByText(
+          /rate limit exceeded\. please try again later\./i,
+        ),
+      ).toBeInTheDocument();
+    },
+  );
+
+  test('reads the standard Retry-After header as a fallback', async () => {
+    mockFailure('Too many requests', Status.TOO_MANY_REQUESTS, {
+      'Retry-After': '60',
+    });
+
+    const { submit } = setup();
+
+    await submit();
+
+    expect(
+      await screen.findByText(
+        /rate limit exceeded\. retry at \d{2}:\d{2}:\d{2}/i,
+      ),
+    ).toBeInTheDocument();
+  });
+
+  test('recovers when the request never reaches the server', async () => {
+    mockSignIn.mockImplementation((data) => {
+      authCallbacks(data).onRequest?.();
+      return Promise.reject(new TypeError('Failed to fetch'));
+    });
+
+    const { email, password, submit } = setup();
+
+    await submit();
+
+    expect(
+      await screen.findByText(/unable to reach the server/i),
+    ).toBeInTheDocument();
+    // `onResponse` never fires here, so the form would otherwise stay locked
+    // in its submitting state.
+    await waitFor(() => {
+      expect(email).toBeEnabled();
+      expect(password).toBeEnabled();
+    });
   });
 
   test('disables form inputs during submission', async () => {

@@ -156,7 +156,10 @@ export const createSessionMock = (
  * ```ts
  * mockSignIn.mockImplementation((_data, options) => {
  *   const { onError, onResponse } = authCallbacks(options);
- *   onError?.({ error: { message: 'Invalid credentials' } });
+ *   onError?.({
+ *     error: { message: 'Invalid credentials' },
+ *     response: mockAuthResponse(401),
+ *   });
  *   onResponse?.();
  * });
  * ```
@@ -167,8 +170,13 @@ export type AuthCallbacks = {
   onSuccess?: () => void;
   onError?: (context: {
     error: { message?: string; statusText?: string };
-    response?: { status: number; headers: { get: (name: string) => string } };
+    response: AuthErrorResponse;
   }) => void;
+};
+
+type AuthErrorResponse = {
+  status: number;
+  headers: { get: (name: string) => Nullable<string> };
 };
 
 export const authCallbacks = (options: unknown): AuthCallbacks => {
@@ -178,6 +186,18 @@ export const authCallbacks = (options: unknown): AuthCallbacks => {
 
   return candidate.fetchOptions ?? candidate;
 };
+
+/**
+ * @description Minimal stand-in for the `Response` on an `ErrorContext`. Our
+ * pages only read `status` and `headers.get`, so the rest is left out.
+ */
+export const mockAuthResponse = (
+  status: number,
+  headers: Record<string, string> = {},
+): AuthErrorResponse => ({
+  status,
+  headers: { get: (name) => headers[name] ?? null },
+});
 
 /**
  * @description Create a mock SWR response. Only `data` and the loading flags

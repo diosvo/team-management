@@ -11,7 +11,6 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { addSeconds } from 'date-fns';
 import { useForm } from 'react-hook-form';
 
 import { Alert } from '@/components/ui/alert';
@@ -19,7 +18,8 @@ import { Field } from '@/components/ui/field';
 import { PasswordInput } from '@/components/ui/password-input';
 
 import authClient from '@/lib/auth-client';
-import { formatTime } from '@/utils/formatter';
+import { authErrorMessage } from '@/utils/rate-limit';
+import { ERROR_TYPE_BY_STATUS } from '@/utils/response';
 
 import { DEFAULT_LOGIN_REDIRECT } from '@/routes';
 import { LoginSchema, type LoginValues } from '@/schemas/auth';
@@ -48,32 +48,30 @@ export default function LoginPage() {
 
   async function onSubmit(values: LoginValues) {
     clearErrors('root');
-    await authClient.signIn.email({
-      ...values,
-      callbackURL: DEFAULT_LOGIN_REDIRECT,
-      fetchOptions: {
-        onRequest: () => setIsLoading(true),
-        onError: async (context) => {
-          const { error, response } = context;
-          if (response.status === 429) {
-            const retryAfter = response.headers.get('X-Retry-After');
-            const retryAt = addSeconds(new Date(), Number(retryAfter));
-
+    try {
+      await authClient.signIn.email({
+        ...values,
+        callbackURL: DEFAULT_LOGIN_REDIRECT,
+        fetchOptions: {
+          onRequest: () => setIsLoading(true),
+          onError: (context) => {
             setError('root', {
-              type: 'rate_limit',
-              message: `Rate limit exceeded. Retry at ${formatTime(retryAt)}`,
+              type: ERROR_TYPE_BY_STATUS[context.response.status] ?? 'server',
+              message: authErrorMessage(context),
             });
-            return;
-          }
-
-          setError('root', {
-            type: response.status === 401 ? 'unauthorized' : 'server',
-            message: error.message || error.statusText,
-          });
+          },
+          onResponse: () => setIsLoading(false),
         },
-        onResponse: () => setIsLoading(false),
-      },
-    });
+      });
+    } catch {
+      // The request never reached a response (offline, DNS, aborted), so
+      // neither `onError` nor `onResponse` runs: clear the loading state here.
+      setIsLoading(false);
+      setError('root', {
+        type: 'server',
+        message: 'Unable to reach the server. Please try again.',
+      });
+    }
   }
 
   return (

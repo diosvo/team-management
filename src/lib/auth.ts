@@ -1,5 +1,4 @@
 import { dash } from '@better-auth/infra';
-import type { BetterAuthPlugin } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { betterAuth } from 'better-auth/minimal';
 import { nextCookies } from 'better-auth/next-js';
@@ -19,17 +18,13 @@ import { sendEmail } from '@/lib/resend';
 
 import ResetPassword from '@/app/(auth)/_components/ResetPassword';
 
-const rateLimit = () => {
-  return {
-    id: 'rate-limit',
-    rateLimit: [
-      {
-        pathMatcher: (path) => path.startsWith('/sign-in/'),
-        max: 3,
-        window: 60,
-      },
-    ],
-  } satisfies BetterAuthPlugin;
+/**
+ * Credential routes: 3 requests/min per IP + path.
+ * Others use the global limit.
+ */
+const STRICT_RATE_LIMIT = {
+  window: 60,
+  max: 3,
 };
 
 export default betterAuth({
@@ -47,6 +42,14 @@ export default betterAuth({
   // https://better-auth.com/docs/concepts/rate-limit
   rateLimit: {
     enabled: true,
+    // Keep the global limit loose to avoid 429s from frequent /get-session hits.
+    window: 10,
+    max: 100,
+    customRules: {
+      '/sign-in/*': STRICT_RATE_LIMIT, // authClient.signIn.email
+      '/request-password-reset': STRICT_RATE_LIMIT, // authClient.requestPasswordReset
+      '/reset-password': STRICT_RATE_LIMIT, // authClient.resetPassword
+    },
   },
   emailAndPassword: {
     enabled: true,
@@ -98,7 +101,6 @@ export default betterAuth({
   },
   plugins: [
     dash(),
-    rateLimit(),
     nextCookies(), // Ensure that it is the last plugin in the array
   ],
 });

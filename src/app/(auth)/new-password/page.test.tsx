@@ -2,6 +2,7 @@ import {
   authCallbacks,
   createToasterMock,
   expectNoA11yViolations,
+  mockAuthResponse,
   renderWithUI,
   screen,
   setupTestLifecycle,
@@ -9,6 +10,7 @@ import {
 } from '@/test/utilities';
 
 import authClient from '@/lib/auth-client';
+import { Status } from '@/utils/response';
 import { LOGIN_PATH } from '@/routes';
 
 import NewPasswordPage from './page';
@@ -136,7 +138,10 @@ describe('NewPasswordPage', () => {
     mockResetPassword.mockImplementation((_data, options) => {
       const { onError, onResponse } = authCallbacks(options);
 
-      onError?.({ error: { message: errorMessage } });
+      onError?.({
+        error: { message: errorMessage },
+        response: mockAuthResponse(Status.BAD_REQUEST),
+      });
       onResponse?.();
     });
 
@@ -148,6 +153,32 @@ describe('NewPasswordPage', () => {
     await waitFor(() => {
       expect(screen.getByText(errorMessage)).toBeInTheDocument();
     });
+  });
+
+  test('shows the retry time when rate limited', async () => {
+    mockResetPassword.mockImplementation((_data, options) => {
+      const { onError, onResponse } = authCallbacks(options);
+
+      onError?.({
+        error: { message: 'Too many requests' },
+        response: mockAuthResponse(Status.TOO_MANY_REQUESTS, {
+          'X-Retry-After': '60',
+        }),
+      });
+      onResponse?.();
+    });
+
+    const { user } = renderWithUI(<NewPasswordPage />);
+
+    await user.type(screen.getAllByLabelText(/password/i)[0], 'ValidPass123!');
+    await user.click(screen.getByRole('button', { name: /submit/i }));
+
+    expect(
+      // `HH:mm:ss`, computed from the `X-Retry-After` header.
+      await screen.findByText(
+        /rate limit exceeded\. retry at \d{2}:\d{2}:\d{2}/i,
+      ),
+    ).toBeInTheDocument();
   });
 
   test('redirects to login page on successful password reset', async () => {

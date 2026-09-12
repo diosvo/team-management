@@ -1,3 +1,5 @@
+import { Status } from '@/utils/response';
+
 import { getLLMText, getPageMarkdownUrl, source } from '@/app/docs/_lib/source';
 
 export const dynamic = 'force-static';
@@ -14,12 +16,12 @@ export async function GET(
 ) {
   const { slug } = await params;
   if (slug.at(-1) !== 'content.md') {
-    return new Response('not found', { status: 404 });
+    return new Response('not found', { status: Status.NOT_FOUND });
   }
   const page = source.getPage(slug.slice(0, -1));
 
   if (!page) {
-    return new Response('not found', { status: 404 });
+    return new Response('not found', { status: Status.NOT_FOUND });
   }
 
   return new Response(await getLLMText(page), {
