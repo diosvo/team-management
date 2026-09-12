@@ -148,6 +148,10 @@ export const createSessionMock = (
  * its callbacks rich context objects (`SuccessContext`, `ErrorContext`, ...)
  * that our pages never read. Reconstructing those in every spec would assert
  * nothing, so the cast lives here once instead of at each call site.
+ *
+ * Callbacks are picked up whether a page passes them inline (a method's own
+ * `fetchOptions` argument) or nested under `fetchOptions` on the payload, so a
+ * spec can hand over whichever argument its page uses.
  * @example
  * ```ts
  * mockSignIn.mockImplementation((_data, options) => {
@@ -163,11 +167,17 @@ export type AuthCallbacks = {
   onSuccess?: () => void;
   onError?: (context: {
     error: { message?: string; statusText?: string };
+    response?: { status: number; headers: { get: (name: string) => string } };
   }) => void;
 };
 
-export const authCallbacks = (options: unknown): AuthCallbacks =>
-  (options ?? {}) as AuthCallbacks;
+export const authCallbacks = (options: unknown): AuthCallbacks => {
+  const candidate = (options ?? {}) as AuthCallbacks & {
+    fetchOptions?: AuthCallbacks;
+  };
+
+  return candidate.fetchOptions ?? candidate;
+};
 
 /**
  * @description Create a mock SWR response. Only `data` and the loading flags

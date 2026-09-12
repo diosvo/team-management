@@ -21,7 +21,10 @@ import type { Response } from '@/utils/response';
 
 import authClient from '@/lib/auth-client';
 import { LOGIN_PATH } from '@/routes';
-import { LoginSchema, type LoginValues } from '@/schemas/auth';
+import {
+  ForgotPasswordSchema,
+  type ForgotPasswordValues,
+} from '@/schemas/auth';
 
 export default function ForgotPasswordPage() {
   const [response, setResponse] = useState<Response>();
@@ -33,8 +36,8 @@ export default function ForgotPasswordPage() {
     handleSubmit,
     formState: { isValid, errors },
   } = useForm({
-    resolver: zodResolver(LoginSchema),
-    defaultValues: getDefaults(LoginSchema),
+    resolver: zodResolver(ForgotPasswordSchema),
+    defaultValues: getDefaults(ForgotPasswordSchema),
   });
 
   useEffect(() => {
@@ -43,7 +46,7 @@ export default function ForgotPasswordPage() {
     setResponse(undefined);
   }, []);
 
-  async function onSubmit(values: LoginValues) {
+  async function onSubmit(values: ForgotPasswordValues) {
     await authClient.requestPasswordReset(
       {
         email: values.email,
@@ -66,7 +69,7 @@ export default function ForgotPasswordPage() {
           });
         },
         onResponse: () => setIsLoading(false),
-      }
+      },
     );
   }
 

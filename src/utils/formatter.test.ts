@@ -1,10 +1,16 @@
 import { format } from 'date-fns';
 
-import { DEFAULT_DAY_FORMAT, LOCALE_DATE_FORMAT } from './constants';
+import {
+  DEFAULT_DAY_FORMAT,
+  DEFAULT_TIME_FORMAT,
+  LOCALE_DATE_FORMAT,
+  LOCALE_TIME_FORMAT,
+} from './constants/app';
 import {
   formatDate,
   formatDatetime,
   formatDay,
+  formatTime,
   formatValueUnit,
 } from './formatter';
 
@@ -61,6 +67,47 @@ describe('formatDate', () => {
 
     expect(formatDate(dateString)).toBe('12/12/1999');
     expect(format).toHaveBeenCalledWith(dateString, LOCALE_DATE_FORMAT);
+  });
+});
+
+describe('formatTime', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  test('returns "-" when date is null or undefined', () => {
+    expect(formatTime(null)).toBe('-');
+    expect(formatTime(undefined)).toBe('-');
+    expect(format).not.toHaveBeenCalled();
+  });
+
+  test('returns "-" for an empty string', () => {
+    expect(formatTime('')).toBe('-');
+    expect(format).not.toHaveBeenCalled();
+  });
+
+  test('formats date object with the default time format', () => {
+    const date = new Date('1999-12-12T14:30:00');
+    vi.mocked(format).mockReturnValue('14:30:00');
+
+    expect(formatTime(date)).toBe('14:30:00');
+    expect(format).toHaveBeenCalledWith(date, LOCALE_TIME_FORMAT);
+  });
+
+  test('formats date string with the default time format', () => {
+    const dateString = '1999-12-12T14:30:00';
+    vi.mocked(format).mockReturnValue('14:30:00');
+
+    expect(formatTime(dateString)).toBe('14:30:00');
+    expect(format).toHaveBeenCalledWith(dateString, LOCALE_TIME_FORMAT);
+  });
+
+  test('forwards a custom time format to date-fns', () => {
+    const date = new Date('1999-12-12T14:30:00');
+    vi.mocked(format).mockReturnValue('2:30 PM');
+
+    expect(formatTime(date, DEFAULT_TIME_FORMAT)).toBe('2:30 PM');
+    expect(format).toHaveBeenCalledWith(date, DEFAULT_TIME_FORMAT);
   });
 });
 

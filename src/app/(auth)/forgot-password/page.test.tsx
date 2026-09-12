@@ -18,165 +18,142 @@ vi.mock('@/lib/auth-client', () => ({
   },
 }));
 
+const VALID_EMAIL = 'test@example.com';
+const SUBMIT_LABEL = /send request password instruction/i;
+
 describe('ForgotPasswordPage', () => {
   const mockRequestPasswordReset = vi.mocked(authClient.requestPasswordReset);
+
+  /** Resolves the request successfully. */
+  const mockSuccess = () =>
+    mockRequestPasswordReset.mockImplementation((_data, options) => {
+      const { onSuccess, onResponse } = authCallbacks(options);
+
+      onSuccess?.();
+      onResponse?.();
+    });
+
+  /** Leaves the request in flight so the submitting state can be asserted. */
+  const mockPending = () =>
+    mockRequestPasswordReset.mockImplementation((_data, options) => {
+      authCallbacks(options).onRequest?.();
+    });
+
+  const mockFailure = (message: string) =>
+    mockRequestPasswordReset.mockImplementation((_data, options) => {
+      const { onError, onResponse } = authCallbacks(options);
+
+      onError?.({ error: { message } });
+      onResponse?.();
+    });
+
+  const setup = () => {
+    const { container, user } = renderWithUI(<ForgotPasswordPage />);
+
+    const email = screen.getByLabelText(/email/i) as HTMLInputElement;
+    const submitButton = screen.getByRole('button', { name: SUBMIT_LABEL });
+
+    const submit = async (value = VALID_EMAIL) => {
+      await user.clear(email);
+      if (value) await user.type(email, value);
+      await user.click(submitButton);
+    };
+
+    return { container, user, email, submitButton, submit };
+  };
 
   setupTestLifecycle();
 
   test('should be accessible', async () => {
-    const { container } = renderWithUI(<ForgotPasswordPage />);
+    const { container } = setup();
 
     await expectNoA11yViolations(container);
   });
 
   test('renders the forgot password form', () => {
-    renderWithUI(<ForgotPasswordPage />);
+    // `setup` throws if the email field or submit button is missing.
+    const { email, submitButton } = setup();
 
     expect(
       screen.getByRole('heading', { name: /forgot your password/i }),
     ).toBeInTheDocument();
-    expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-    expect(
-      screen.getByRole('button', {
-        name: /send request password instruction/i,
-      }),
-    ).toBeInTheDocument();
+    expect(email).toBeInTheDocument();
+    expect(submitButton).toBeInTheDocument();
   });
 
   test('renders back to sign in link', () => {
-    renderWithUI(<ForgotPasswordPage />);
+    setup();
 
-    const backLink = screen.getByRole('link', {
-      name: /go back to sign in/i,
-    });
-
-    expect(backLink).toBeInTheDocument();
-    expect(backLink).toHaveAttribute('href', LOGIN_PATH);
+    expect(
+      screen.getByRole('link', { name: /go back to sign in/i }),
+    ).toHaveAttribute('href', LOGIN_PATH);
   });
 
   test('submits form with valid email', async () => {
-    mockRequestPasswordReset.mockImplementation((_data, options) => {
-      const { onSuccess } = authCallbacks(options);
+    mockSuccess();
 
-      onSuccess?.();
-    });
+    const { submit } = setup();
 
-    const { user } = renderWithUI(<ForgotPasswordPage />);
+    await submit();
 
-    await user.type(screen.getByLabelText(/email/i), 'test@example.com');
-    await user.click(
-      screen.getByRole('button', {
-        name: /send request password instruction/i,
-      }),
-    );
-
-    await waitFor(() => {
+    await waitFor(() =>
       expect(mockRequestPasswordReset).toHaveBeenCalledWith(
         expect.objectContaining({
-          email: 'test@example.com',
+          email: VALID_EMAIL,
           redirectTo: '/new-password',
         }),
         expect.any(Object),
-      );
-    });
+      ),
+    );
   });
 
   test('displays success message on successful submission', async () => {
-    mockRequestPasswordReset.mockImplementation((_data, options) => {
-      const { onSuccess, onResponse } = authCallbacks(options);
+    mockSuccess();
 
-      onSuccess?.();
-      onResponse?.();
-    });
+    const { submit } = setup();
 
-    const { user } = renderWithUI(<ForgotPasswordPage />);
+    await submit();
 
-    await user.type(screen.getByLabelText(/email/i), 'test@example.com');
-    await user.click(
-      screen.getByRole('button', {
-        name: /send request password instruction/i,
-      }),
-    );
-
-    await waitFor(() => {
-      expect(
-        screen.getByText(
-          /password reset instructions have been sent to your email/i,
-        ),
-      ).toBeInTheDocument();
-    });
+    expect(
+      await screen.findByText(
+        /password reset instructions have been sent to your email/i,
+      ),
+    ).toBeInTheDocument();
   });
 
   test('displays error message on failed submission', async () => {
-    const errorMessage = 'User not found';
-    mockRequestPasswordReset.mockImplementation((_data, options) => {
-      const { onError, onResponse } = authCallbacks(options);
+    mockFailure('User not found');
 
-      onError?.({ error: { message: errorMessage } });
-      onResponse?.();
-    });
+    const { submit } = setup();
 
-    const { user } = renderWithUI(<ForgotPasswordPage />);
+    await submit('nonexistent@example.com');
 
-    await user.type(screen.getByLabelText(/email/i), 'nonexistent@example.com');
-    await user.click(
-      screen.getByRole('button', {
-        name: /send request password instruction/i,
-      }),
-    );
-
-    await waitFor(() => {
-      expect(screen.getByText(errorMessage)).toBeInTheDocument();
-    });
+    expect(await screen.findByText('User not found')).toBeInTheDocument();
   });
 
   test('disables button during submission', async () => {
-    mockRequestPasswordReset.mockImplementation((_data, options) => {
-      const { onRequest } = authCallbacks(options);
+    mockPending();
 
-      onRequest?.();
-    });
+    const { submitButton, submit } = setup();
 
-    const { user } = renderWithUI(<ForgotPasswordPage />);
+    await submit();
 
-    await user.type(screen.getByLabelText(/email/i), 'test@example.com');
-    await user.click(
-      screen.getByRole('button', {
-        name: /send request password instruction/i,
-      }),
+    // The same button, relabelled while the request is in flight.
+    expect(await screen.findByRole('button', { name: /sending/i })).toBe(
+      submitButton,
     );
-
-    await waitFor(() => {
-      const button = screen.getByRole('button', {
-        name: /sending/i,
-      });
-      expect(button).toBeDisabled();
-    });
+    expect(submitButton).toBeDisabled();
   });
 
   test('resets form after successful submission', async () => {
-    mockRequestPasswordReset.mockImplementation((_data, options) => {
-      const { onSuccess, onResponse } = authCallbacks(options);
+    mockSuccess();
 
-      onSuccess?.();
-      onResponse?.();
-    });
+    const { email, submit } = setup();
 
-    const { user } = renderWithUI(<ForgotPasswordPage />);
+    await submit();
 
-    const emailInput = screen.getByLabelText(/email/i) as HTMLInputElement;
+    expect(mockRequestPasswordReset).toHaveBeenCalled();
 
-    await user.type(emailInput, 'test@example.com');
-    expect(emailInput.value).toBe('test@example.com');
-
-    await user.click(
-      screen.getByRole('button', {
-        name: /send request password instruction/i,
-      }),
-    );
-
-    await waitFor(() => {
-      expect(emailInput.value).toBe('');
-    });
+    await waitFor(() => expect(email).toHaveValue(''));
   });
 });
