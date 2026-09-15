@@ -8,6 +8,7 @@ import {
   useMemo,
   useRef,
   type Dispatch,
+  type ReactNode,
   type SetStateAction,
 } from 'react';
 
@@ -20,9 +21,11 @@ import {
   Menu,
   Portal,
   Separator,
+  Span,
   Spinner,
   Text,
   VStack,
+  type ColorPalette,
 } from '@chakra-ui/react';
 import {
   BookMarked,
@@ -45,6 +48,9 @@ import {
   segmentToLabel,
 } from '../_helpers/utils';
 
+const FEEDBACK_URL =
+  'https://github.com/diosvo/team-management/issues/new?title=Feedback%20for%20%E2%80%9CTeam%20Rule%E2%80%9D&labels=maintenance&project=team-management&assignees=diosvo';
+
 function LoadingIndicator() {
   const { pending } = useLinkStatus();
   if (!pending) return null;
@@ -63,16 +69,27 @@ type NavButtonProps = {
   isDisabled?: boolean;
 };
 
-// When only `pathname` changes, just the two affected buttons
-// (old active + new active) re-render instead of the whole list.
+// Memoized so a `pathname` change only re-renders the old and new active
+// buttons instead of the whole list.
 const NavButton = memo(function NavButton({
   href,
   label,
   icon,
   isActive,
   isExpanded,
-  isDisabled,
+  isDisabled = false,
 }: NavButtonProps) {
+  const content = (
+    <>
+      <Icon
+        as={icon}
+        size="sm"
+        color={isDisabled ? undefined : isActive ? 'black' : 'gray.500'}
+      />
+      {isExpanded && label}
+    </>
+  );
+
   return (
     <Tooltip
       showArrow
@@ -91,14 +108,10 @@ const NavButton = memo(function NavButton({
         css={SIDEBAR_CSS}
       >
         {isDisabled ? (
-          <>
-            <Icon as={icon} size="sm" />
-            {isExpanded && label}
-          </>
+          content
         ) : (
           <Link href={href}>
-            <Icon as={icon} size="sm" color={isActive ? 'black' : 'gray.500'} />
-            {isExpanded && label}
+            {content}
             {isExpanded && <LoadingIndicator />}
           </Link>
         )}
@@ -107,13 +120,94 @@ const NavButton = memo(function NavButton({
   );
 });
 
+function FooterLink({
+  label,
+  href,
+  colorPalette,
+  children,
+}: {
+  label: string;
+  href: string;
+  colorPalette: ColorPalette;
+  children: ReactNode;
+}) {
+  return (
+    <Tooltip content={label}>
+      <IconButton
+        size="2xs"
+        variant="ghost"
+        colorPalette={colorPalette}
+        asChild
+      >
+        <ChakraLink
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={label}
+        >
+          {children}
+        </ChakraLink>
+      </IconButton>
+    </Tooltip>
+  );
+}
+
+function SocialMenu() {
+  return (
+    <Menu.Root>
+      <Tooltip content="Social Links">
+        <Span display="inline-flex">
+          <Menu.Trigger asChild>
+            <IconButton
+              size="2xs"
+              variant="ghost"
+              colorPalette="blue"
+              aria-label="Social Links"
+            >
+              <Globe />
+            </IconButton>
+          </Menu.Trigger>
+        </Span>
+      </Tooltip>
+      <Portal>
+        <Menu.Positioner>
+          <Menu.Content>
+            {SOCIAL_LINKS.map(({ label, href, color }) => (
+              <Menu.Item
+                key={label}
+                value={label}
+                _highlighted={{
+                  color: `${color}.700`,
+                  backgroundColor: `${color}.100`,
+                }}
+                _hover={{ cursor: 'pointer' }}
+                asChild
+              >
+                <ChakraLink
+                  href={`https://${href}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {label}
+                </ChakraLink>
+              </Menu.Item>
+            ))}
+          </Menu.Content>
+        </Menu.Positioner>
+      </Portal>
+    </Menu.Root>
+  );
+}
+
+type SidebarProps = {
+  isExpanded: boolean;
+  setIsExpanded: Dispatch<SetStateAction<boolean>>;
+};
+
 export default function Sidebar({
   isExpanded = true,
   setIsExpanded,
-}: {
-  isExpanded: boolean;
-  setIsExpanded: Dispatch<SetStateAction<boolean>>;
-}) {
+}: SidebarProps) {
   const pathname = usePathname();
   const { can } = usePermissions();
 
@@ -121,7 +215,7 @@ export default function Sidebar({
     () =>
       SIDEBAR_GROUP.flatMap(({ title, items }) => {
         const visible = items.filter(({ resource }) => can(resource, 'view'));
-        return visible.length > 0 ? [{ title, items: visible }] : [];
+        return visible.length ? [{ title, items: visible }] : [];
       }),
     [can],
   );
@@ -139,11 +233,14 @@ export default function Sidebar({
     );
   };
 
-  useEffect(() => {
-    return () => {
+  useEffect(
+    () => () => {
       if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
-    };
-  }, []);
+    },
+    [],
+  );
+
+  const toggleLabel = isExpanded ? 'Collapse menu' : 'Expand menu';
 
   return (
     <VStack
@@ -157,7 +254,7 @@ export default function Sidebar({
     >
       <Tooltip
         showArrow
-        content={isExpanded ? 'Collapse menu' : 'Expand menu'}
+        content={toggleLabel}
         positioning={{ placement: 'right' }}
       >
         <IconButton
@@ -171,7 +268,7 @@ export default function Sidebar({
           transform="translateX(50%)"
           css={TOGGLE_CSS}
           _hover={{ backgroundColor: 'gray.50' }}
-          aria-label={isExpanded ? 'Collapse menu' : 'Expand menu'}
+          aria-label={toggleLabel}
           onClick={() => setIsExpanded((prev) => !prev)}
         >
           <Icon as={isExpanded ? ChevronLeft : ChevronRight} />
@@ -189,11 +286,7 @@ export default function Sidebar({
         onScroll={handleScroll}
       >
         {visibleGroups.map(({ title, items }, index) => (
-          <VStack
-            key={title}
-            alignItems="stretch"
-            marginTop={index > 0 ? 4 : 0}
-          >
+          <VStack key={title} alignItems="stretch" marginTop={index && 4}>
             {isExpanded ? (
               <Text
                 fontSize={9}
@@ -206,17 +299,20 @@ export default function Sidebar({
             ) : (
               <Separator />
             )}
-            {items.map(({ resource, icon, disabled }) => (
-              <NavButton
-                key={resource}
-                icon={icon}
-                href={`/${resource}`}
-                label={segmentToLabel(resource)}
-                isActive={pathname === `/${resource}`}
-                isExpanded={isExpanded}
-                isDisabled={disabled}
-              />
-            ))}
+            {items.map(({ resource, icon, disabled }) => {
+              const href = `/${resource}`;
+              return (
+                <NavButton
+                  key={resource}
+                  icon={icon}
+                  href={href}
+                  label={segmentToLabel(resource)}
+                  isActive={pathname === href}
+                  isExpanded={isExpanded}
+                  isDisabled={disabled}
+                />
+              );
+            })}
           </VStack>
         ))}
       </VStack>
@@ -224,71 +320,17 @@ export default function Sidebar({
       <Separator />
 
       <HStack justifyContent="center" flexWrap="wrap">
-        <Tooltip content="Documentation">
-          <IconButton size="2xs" variant="ghost" colorPalette="pink" asChild>
-            <ChakraLink
-              href="/docs"
-              target="_blank"
-              rel="noreferrer"
-              aria-label="Documentation"
-            >
-              <BookMarked />
-            </ChakraLink>
-          </IconButton>
-        </Tooltip>
-
-        <Menu.Root>
-          <Menu.Trigger asChild>
-            <Tooltip content="Social Links">
-              <IconButton
-                size="2xs"
-                variant="ghost"
-                colorPalette="blue"
-                aria-label="Social Links"
-              >
-                <Globe />
-              </IconButton>
-            </Tooltip>
-          </Menu.Trigger>
-          <Portal>
-            <Menu.Positioner>
-              <Menu.Content>
-                {SOCIAL_LINKS.map(({ label, href, color }) => (
-                  <Menu.Item
-                    value={label}
-                    key={label}
-                    _highlighted={{
-                      color: `${color}.700`,
-                      backgroundColor: `${color}.100`,
-                    }}
-                    _hover={{ cursor: 'pointer' }}
-                    asChild
-                  >
-                    <ChakraLink
-                      href={'https://' + href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {label}
-                    </ChakraLink>
-                  </Menu.Item>
-                ))}
-              </Menu.Content>
-            </Menu.Positioner>
-          </Portal>
-        </Menu.Root>
-        <Tooltip content="Suggestions + feedback + ideas">
-          <IconButton size="2xs" variant="ghost" colorPalette="green" asChild>
-            <ChakraLink
-              href="https://github.com/diosvo/team-management/issues/new?title=Feedback%20for%20%E2%80%9CTeam%20Rule%E2%80%9D&labels=maintenance&project=team-management&assignees=diosvo"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Suggestions + feedback + ideas"
-            >
-              <Flag />
-            </ChakraLink>
-          </IconButton>
-        </Tooltip>
+        <FooterLink label="Documentation" href="/docs" colorPalette="pink">
+          <BookMarked />
+        </FooterLink>
+        <SocialMenu />
+        <FooterLink
+          label="Suggestions + feedback + ideas"
+          href={FEEDBACK_URL}
+          colorPalette="green"
+        >
+          <Flag />
+        </FooterLink>
       </HStack>
     </VStack>
   );
