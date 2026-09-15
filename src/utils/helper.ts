@@ -1,5 +1,6 @@
 import { type ColorPalette } from '@chakra-ui/react';
 import { isFuture, isPast } from 'date-fns';
+import { unescape } from 'es-toolkit/string';
 
 import { ALL } from './constants';
 import {
@@ -83,17 +84,7 @@ export function deriveDateStatus(
   return LeagueStatus.ONGOING;
 }
 
-/*
- * lazy compute a value when accessed
- * auto-caches the result by overwriting the getter
- * typesafe
- */
-export function lazy<T>(getter: () => T): { value: T } {
-  return {
-    get value() {
-      const value = getter();
-      Object.defineProperty(this, 'value', { value });
-      return value;
-    },
-  };
+export function plainTextLength(html: string): number {
+  return unescape(html.replace(/<[^>]*>/g, '').replaceAll('&nbsp;', ' '))
+    .length;
 }

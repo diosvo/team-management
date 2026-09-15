@@ -6,6 +6,10 @@ import {
   SELECTABLE_ASSET_CONDITIONS,
 } from '@/utils/constants';
 import { AssetCategory, AssetCondition } from '@/utils/enum';
+import { plainTextLength } from '@/utils/helper';
+
+/** Note length is counted in visible characters, not HTML. */
+export const NOTE_LIMIT = 128;
 
 export const UpsertAssetSchema = z.object({
   name: z
@@ -29,7 +33,10 @@ export const UpsertAssetSchema = z.object({
   acquired_date: z.iso.date().nullish().default(CURRENT_DATE),
   note: z
     .string()
-    .max(128, { error: 'Be at most 128 characters long.' })
+    .max(NOTE_LIMIT * 32, { error: 'Note is too large.' })
+    .refine((html) => plainTextLength(html) <= NOTE_LIMIT, {
+      error: `Be at most ${NOTE_LIMIT} characters long.`,
+    })
     .nullable(),
 });
 

@@ -1,0 +1,1 @@
+ALTER TABLE "asset" ALTER COLUMN "note" SET DATA TYPE text;

@@ -56,7 +56,7 @@ describe('TextEditor', () => {
   };
 
   const saveChangesPrompt = () =>
-    screen.queryByRole('button', { name: 'Save changes?' });
+    screen.queryByRole('group', { name: 'Save changes?' });
 
   setupTestLifecycle();
 
@@ -173,7 +173,7 @@ describe('TextEditor', () => {
       const { user } = setup();
       await previewDraft(user);
 
-      await clickButton(user, 'Save changes?');
+      await clickButton(user, /^save$/i);
 
       expect(onSave).toHaveBeenCalledWith('<p>Draft</p>');
       expect(screen.queryByLabelText('Bold')).not.toBeInTheDocument();
@@ -181,6 +181,20 @@ describe('TextEditor', () => {
       finish(true);
 
       await waitFor(() => expect(saveChangesPrompt()).not.toBeInTheDocument());
+    });
+
+    test('drops the draft when the prompt is declined', async () => {
+      const { user } = setup();
+      await previewDraft(user);
+
+      await clickButton(user, /cancel/i);
+
+      expect(onSave).not.toHaveBeenCalled();
+      expect(editor.commands.setContent).toHaveBeenCalledWith(
+        defaultProps.content,
+        { emitUpdate: false },
+      );
+      expect(saveChangesPrompt()).not.toBeInTheDocument();
     });
 
     test('clears once the draft is saved from the editor', async () => {
