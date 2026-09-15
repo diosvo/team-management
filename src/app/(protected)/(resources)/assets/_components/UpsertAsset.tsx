@@ -1,5 +1,6 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useTransition } from 'react';
 
 import {
@@ -10,7 +11,7 @@ import {
   Input,
   Portal,
   SimpleGrid,
-  Textarea,
+  Skeleton,
   createOverlay,
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -43,6 +44,14 @@ import {
   type UpsertAssetSchemaValues,
 } from '@/schemas/asset';
 
+const RichTextInput = dynamic(
+  () => import('@/components/editor/RichTextInput'),
+  {
+    ssr: false,
+    loading: () => <Skeleton height={200} />,
+  },
+);
+
 export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
   const [isPending, startTransition] = useTransition();
 
@@ -51,7 +60,7 @@ export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
     reset,
     register,
     handleSubmit,
-    formState: { isValid, isDirty, errors },
+    formState: { isDirty, errors },
   } = useForm({
     resolver: zodResolver(UpsertAssetSchema),
     defaultValues: getDefaults(UpsertAssetSchema, item),
@@ -207,14 +216,23 @@ export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
               </Fieldset.Root>
               <Field
                 label="Note"
-                helperText="Max 128 characters."
+                invalid={!!errors.note}
+                errorText={errors.note?.message}
                 marginTop={4}
               >
-                <Textarea
-                  autoresize
-                  maxLength={128}
-                  placeholder="Comment..."
-                  {...register('note')}
+                <Controller
+                  name="note"
+                  control={control}
+                  render={({ field }) => (
+                    <RichTextInput
+                      width="full"
+                      toolbar="inline"
+                      disabled={field.disabled || isPending}
+                      value={field.value ?? ''}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                    />
+                  )}
                 />
               </Field>
             </Dialog.Body>
@@ -223,7 +241,7 @@ export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
                 type="submit"
                 loadingText="Saving..."
                 loading={isPending}
-                disabled={!isValid || !isDirty || isPending}
+                disabled={!isDirty || isPending}
               >
                 <Save /> {action}
               </Button>

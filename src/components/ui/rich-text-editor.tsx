@@ -148,6 +148,18 @@ const proseMirrorBaseCss = defineStyle({
   },
 });
 
+/** Drops the content inset for read-only rendering, where padding reads as stray space. */
+export const flushContentCss = defineStyle({
+  '--content-padding-x': '0',
+  '--content-padding-y': '0',
+
+  // Hide StarterKit's trailing empty paragraph in read-only mode.
+  '& .ProseMirror[contenteditable="false"] > p:last-child:has(> br.ProseMirror-trailingBreak:only-child)':
+    {
+      display: 'none',
+    },
+});
+
 export interface RichTextEditorProps extends BoxProps {
   editor: Editor | null;
   disabled?: boolean;

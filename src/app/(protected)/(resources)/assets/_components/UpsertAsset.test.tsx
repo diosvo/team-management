@@ -3,6 +3,7 @@ import {
   act,
   createToasterMock,
   expectNoA11yViolations,
+  fireEvent,
   mockToaster,
   renderWithUI,
   screen,
@@ -26,6 +27,24 @@ vi.mock('@/components/ui/toaster', () => createToasterMock());
 vi.mock('@/components/user/PlayerSelection', () => ({
   OnePlayerSelection: ({ label }: { label: string }) => (
     <div data-testid="one-player-selection">{label}</div>
+  ),
+}));
+
+// The note editor is TipTap with its own tests; stand in with a plain
+// textarea that speaks the same `value`/`onChange` contract.
+vi.mock('@/components/editor/RichTextInput', () => ({
+  default: ({
+    value,
+    onChange,
+  }: {
+    value: string;
+    onChange: (html: string) => void;
+  }) => (
+    <textarea
+      aria-label="Note editor"
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+    />
   ),
 }));
 
@@ -137,6 +156,39 @@ describe('UpsertAsset', () => {
         }),
       );
     });
+  });
+
+  test('submits the note written in the rich text editor', async () => {
+    mockUpsertAsset.mockResolvedValue({ success: true, message: 'Saved' });
+
+    const { user } = await open('Update', EXISTING_ASSET);
+
+    // The editor is a client-only dynamic chunk; wait for it to resolve.
+    const note = await screen.findByLabelText('Note editor');
+    await user.type(note, 'Bring spares');
+
+    const submit = await screen.findByRole('button', { name: /update/i });
+    await waitFor(() => expect(submit).toBeEnabled());
+    await user.click(submit);
+
+    await waitFor(() => {
+      expect(mockUpsertAsset).toHaveBeenCalledWith(
+        MOCK_ASSET.asset_id,
+        expect.objectContaining({ note: 'Bring spares' }),
+      );
+    });
+  });
+
+  test('explains why an over-long note blocks saving', async () => {
+    await open('Update', EXISTING_ASSET);
+
+    const note = await screen.findByLabelText('Note editor');
+    fireEvent.change(note, { target: { value: 'x'.repeat(129) } });
+
+    expect(
+      await screen.findByText('Be at most 128 characters long.'),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /update/i })).toBeDisabled();
   });
 
   test('reports a failed save through the toaster', async () => {
