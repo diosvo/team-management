@@ -9,9 +9,10 @@ import { toaster } from '@/components/ui/toaster';
 import { useSessionContext } from '@/providers/session';
 import { LOGIN_PATH } from '@/routes';
 
+import { REDUCED_MOTION_CSS, SIDEBAR_TRANSITION } from '../_helpers/utils';
 import Header from './AppHeader';
 import Breadcrumbs from './Breadcrumbs';
-import Sidebar from './Sidebar';
+import Sidebar, { SidebarToggle } from './Sidebar';
 
 export default function AppShell({ children }: PropsWithChildren) {
   const router = useRouter();
@@ -38,7 +39,8 @@ export default function AppShell({ children }: PropsWithChildren) {
       height="100dvh"
       templateRows="auto 1fr"
       templateColumns={{ base: '1fr', lg: `${sidebarWidth} 1fr` }}
-      transition="grid-template-columns 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+      transition={`grid-template-columns ${SIDEBAR_TRANSITION}`}
+      css={REDUCED_MOTION_CSS}
     >
       <GridItem colSpan={{ base: 1, lg: 2 }}>
         <Header />
@@ -51,7 +53,12 @@ export default function AppShell({ children }: PropsWithChildren) {
         borderRightWidth="1px"
         borderRightColor="gray.200"
       >
-        <Sidebar isExpanded={isExpanded} setIsExpanded={setIsExpanded} />
+        <Sidebar isExpanded={isExpanded}>
+          <SidebarToggle
+            isExpanded={isExpanded}
+            onToggle={() => setIsExpanded((prev) => !prev)}
+          />
+        </Sidebar>
       </GridItem>
 
       <GridItem position="relative" overflow="auto">
