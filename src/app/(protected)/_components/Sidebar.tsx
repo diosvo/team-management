@@ -301,17 +301,14 @@ export default function Sidebar({ isExpanded, children }: SidebarProps) {
     >
       {children}
 
-      {/* Symmetric bleed keeps buttons centred on the rail with the scrollbar
-          flush against the border. */}
+      {/* Full bleed keeps the scrollbar flush with the border; symmetric gutters provide the inset and center the buttons. */}
       <VStack
         flex="1"
         minHeight={0}
         overflowY="auto"
         alignItems="stretch"
-        // gap={4}
-        marginRight={isExpanded ? -2 : -4}
-        marginLeft={-2}
-        paddingInline={2}
+        gap={4}
+        marginInline={-2}
         css={SCROLL_AREA_CSS}
         onScroll={handleScroll}
       >

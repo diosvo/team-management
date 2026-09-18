@@ -117,6 +117,11 @@ export const FADE_CSS = {
 export const SCROLL_AREA_CSS = {
   scrollbarWidth: 'thin',
   scrollbarColor: 'transparent transparent',
+  // Reserved scrollbar space on the inline-end shifts buttons left on short
+  // viewports. Matching gutters keep them centred, and `stable` reserves space
+  // whether or not the list overflows. */
+  scrollbarGutter: 'stable both-edges',
+  '@supports not (scrollbar-gutter: stable)': { paddingInline: '8px' },
   '&::-webkit-scrollbar': { width: '6px' },
   '&::-webkit-scrollbar-thumb': {
     borderRadius: '3px',
