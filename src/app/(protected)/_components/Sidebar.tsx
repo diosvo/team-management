@@ -2,19 +2,12 @@
 
 import Link, { useLinkStatus } from 'next/link';
 import { usePathname } from 'next/navigation';
-import {
-  memo,
-  useEffect,
-  useMemo,
-  useRef,
-  type Dispatch,
-  type ReactNode,
-  type SetStateAction,
-} from 'react';
+import { memo, useEffect, useMemo, useRef, type ReactNode } from 'react';
 
 import {
   Button,
   Link as ChakraLink,
+  Flex,
   HStack,
   Icon,
   IconButton,
@@ -40,8 +33,9 @@ import { Tooltip } from '@/components/ui/tooltip';
 import usePermissions from '@/hooks/use-permissions';
 import {
   BUTTON_CONFIG,
+  FADE_CSS,
+  NAV_INSET,
   SCROLL_AREA_CSS,
-  SIDEBAR_CSS,
   SIDEBAR_GROUP,
   SOCIAL_LINKS,
   TOGGLE_CSS,
@@ -56,7 +50,13 @@ function LoadingIndicator() {
   if (!pending) return null;
 
   return (
-    <Spinner size="xs" colorPalette="gray" marginLeft="auto" borderWidth={1} />
+    <Spinner
+      size="xs"
+      colorPalette="gray"
+      marginLeft="auto"
+      marginInlineEnd={2}
+      borderWidth={1}
+    />
   );
 }
 
@@ -69,8 +69,7 @@ type NavButtonProps = {
   isDisabled?: boolean;
 };
 
-// Memoized so a `pathname` change only re-renders the old and new active
-// buttons instead of the whole list.
+// Memoized: a route change re-renders only the old and new active buttons.
 const NavButton = memo(function NavButton({
   href,
   label,
@@ -81,12 +80,43 @@ const NavButton = memo(function NavButton({
 }: NavButtonProps) {
   const content = (
     <>
-      <Icon
-        as={icon}
-        size="sm"
-        color={isDisabled ? undefined : isActive ? 'black' : 'gray.500'}
-      />
-      {isExpanded && label}
+      {/* NAV_INSET padding pins the icon to the title's left edge; minWidth 0
+          lets the slot shrink and re-centre on the collapsed rail. */}
+      <Span
+        display="flex"
+        justifyContent="center"
+        paddingInline={NAV_INSET}
+        minWidth={0}
+      >
+        <Icon
+          as={icon}
+          size="sm"
+          transition="color 0.2s"
+          color={isDisabled ? undefined : isActive ? 'black' : 'gray.500'}
+        />
+      </Span>
+      {/* Zero-basis so it collapses to nothing without stealing icon width. */}
+      <Span
+        display="flex"
+        alignItems="center"
+        flex="1 1 0"
+        minWidth={0}
+        overflow="hidden"
+        opacity={isExpanded ? 1 : 0}
+        aria-hidden={!isExpanded}
+        css={FADE_CSS}
+      >
+        <Span
+          flex="1"
+          minWidth={0}
+          paddingInlineEnd={4}
+          textAlign="start"
+          truncate
+        >
+          {label}
+        </Span>
+        {!isDisabled && <LoadingIndicator />}
+      </Span>
     </>
   );
 
@@ -99,22 +129,17 @@ const NavButton = memo(function NavButton({
     >
       <Button
         {...BUTTON_CONFIG}
-        fontWeight={isActive ? 500 : 400}
-        justifyContent={isExpanded ? 'flex-start' : 'center'}
         variant={isActive ? 'surface' : 'ghost'}
-        paddingInline={isExpanded ? undefined : 2}
+        fontWeight={isActive ? 500 : 400}
+        // Spacing lives on the slots so the icon can centre itself when collapsed.
+        gap={0}
+        paddingInline={0}
+        overflow="hidden"
         disabled={isDisabled}
+        aria-label={label}
         asChild={!isDisabled}
-        css={SIDEBAR_CSS}
       >
-        {isDisabled ? (
-          content
-        ) : (
-          <Link href={href}>
-            {content}
-            {isExpanded && <LoadingIndicator />}
-          </Link>
-        )}
+        {isDisabled ? content : <Link href={href}>{content}</Link>}
       </Button>
     </Tooltip>
   );
@@ -176,11 +201,11 @@ function SocialMenu() {
               <Menu.Item
                 key={label}
                 value={label}
+                cursor="pointer"
                 _highlighted={{
                   color: `${color}.700`,
                   backgroundColor: `${color}.100`,
                 }}
-                _hover={{ cursor: 'pointer' }}
                 asChild
               >
                 <ChakraLink
@@ -199,15 +224,45 @@ function SocialMenu() {
   );
 }
 
-type SidebarProps = {
+type SidebarToggleProps = {
   isExpanded: boolean;
-  setIsExpanded: Dispatch<SetStateAction<boolean>>;
+  onToggle: () => void;
 };
 
-export default function Sidebar({
-  isExpanded = true,
-  setIsExpanded,
-}: SidebarProps) {
+/** Compose inside `<Sidebar>` on the desktop rail. */
+export function SidebarToggle({ isExpanded, onToggle }: SidebarToggleProps) {
+  const label = isExpanded ? 'Collapse menu' : 'Expand menu';
+
+  return (
+    <Tooltip showArrow content={label} positioning={{ placement: 'right' }}>
+      <IconButton
+        size="2xs"
+        position="absolute"
+        // Centred on the first group header row (root padding + half row).
+        top={3}
+        right={0}
+        zIndex={1}
+        transform="translateX(50%)"
+        variant="outline"
+        backgroundColor="white"
+        _hover={{ backgroundColor: 'gray.50' }}
+        css={TOGGLE_CSS}
+        aria-label={label}
+        onClick={onToggle}
+      >
+        <Icon as={isExpanded ? ChevronLeft : ChevronRight} />
+      </IconButton>
+    </Tooltip>
+  );
+}
+
+type SidebarProps = {
+  isExpanded: boolean;
+  /** Slot for `<SidebarToggle />`; the mobile drawer leaves it empty. */
+  children?: ReactNode;
+};
+
+export default function Sidebar({ isExpanded, children }: SidebarProps) {
   const pathname = usePathname();
   const { can } = usePermissions();
 
@@ -220,27 +275,20 @@ export default function Sidebar({
     [can],
   );
 
+  // Scrollbar shows only while scrolling, via `data-scrolling` on the root.
   const rootRef = useRef<HTMLDivElement>(null);
-  const scrollTimeout = useRef<ReturnType<typeof setTimeout>>(null);
+  const scrollTimeout = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const handleScroll = () => {
     rootRef.current?.setAttribute('data-scrolling', '');
-    if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
-
+    clearTimeout(scrollTimeout.current);
     scrollTimeout.current = setTimeout(
       () => rootRef.current?.removeAttribute('data-scrolling'),
       800,
     );
   };
 
-  useEffect(
-    () => () => {
-      if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
-    },
-    [],
-  );
-
-  const toggleLabel = isExpanded ? 'Collapse menu' : 'Expand menu';
+  useEffect(() => () => clearTimeout(scrollTimeout.current), []);
 
   return (
     <VStack
@@ -250,55 +298,44 @@ export default function Sidebar({
       alignItems="stretch"
       paddingBlock={4}
       paddingInline={2}
-      css={SIDEBAR_CSS}
     >
-      <Tooltip
-        showArrow
-        content={toggleLabel}
-        positioning={{ placement: 'right' }}
-      >
-        <IconButton
-          size="2xs"
-          position="absolute"
-          variant="outline"
-          backgroundColor="white"
-          top={isExpanded ? 2 : 1}
-          right={0}
-          zIndex={1}
-          transform="translateX(50%)"
-          css={TOGGLE_CSS}
-          _hover={{ backgroundColor: 'gray.50' }}
-          aria-label={toggleLabel}
-          onClick={() => setIsExpanded((prev) => !prev)}
-        >
-          <Icon as={isExpanded ? ChevronLeft : ChevronRight} />
-        </IconButton>
-      </Tooltip>
+      {children}
 
+      {/* Full bleed keeps the scrollbar flush with the border; symmetric gutters provide the inset and center the buttons. */}
       <VStack
         flex="1"
         minHeight={0}
         overflowY="auto"
         alignItems="stretch"
-        marginInlineEnd={-2} // re-inset the content with padding.
-        paddingInlineEnd={2}
+        gap={4}
+        marginInline={-2}
         css={SCROLL_AREA_CSS}
         onScroll={handleScroll}
       >
-        {visibleGroups.map(({ title, items }, index) => (
-          <VStack key={title} alignItems="stretch" marginTop={index && 4}>
-            {isExpanded ? (
+        {visibleGroups.map(({ title, items }) => (
+          <VStack key={title} alignItems="stretch">
+            {/* Fixed height; title and separator cross-fade in place. */}
+            <Flex position="relative" height={4} alignItems="center">
               <Text
                 fontSize={9}
                 color="gray.700"
                 letterSpacing="wider"
-                marginLeft={{ base: 3, md: 4 }}
+                marginLeft={NAV_INSET}
+                truncate
+                opacity={isExpanded ? 1 : 0}
+                aria-hidden={!isExpanded}
+                css={FADE_CSS}
               >
                 {title.toUpperCase()}
               </Text>
-            ) : (
-              <Separator />
-            )}
+              <Separator
+                position="absolute"
+                insetInline={0}
+                opacity={isExpanded ? 0 : 1}
+                aria-hidden={isExpanded}
+                css={FADE_CSS}
+              />
+            </Flex>
             {items.map(({ resource, icon, disabled }) => {
               const href = `/${resource}`;
               return (

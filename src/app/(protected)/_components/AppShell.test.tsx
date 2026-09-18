@@ -30,6 +30,7 @@ vi.mock('./AppHeader', () => ({
 
 vi.mock('./Sidebar', () => ({
   default: () => <nav data-testid="sidebar" />,
+  SidebarToggle: () => null,
 }));
 
 vi.mock('./Breadcrumbs', () => ({

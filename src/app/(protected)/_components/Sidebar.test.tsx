@@ -8,21 +8,18 @@ import {
 
 import usePermissions from '@/hooks/use-permissions';
 
-import Sidebar from './Sidebar';
+import Sidebar, { SidebarToggle } from './Sidebar';
 
 const { mockUseLinkStatus, mockUsePathname } = vi.hoisted(() => ({
   mockUseLinkStatus: vi.fn(() => ({ pending: false })),
   mockUsePathname: vi.fn(() => '/'),
 }));
 
+// Spreads the rest so `asChild` props (aria-label, class) reach the anchor.
 vi.mock('next/link', () => ({
-  default: ({
-    href,
-    children,
-  }: {
-    href: string;
-    children: React.ReactNode;
-  }) => <a href={href}>{children}</a>,
+  default: ({ children, ...props }: React.ComponentProps<'a'>) => (
+    <a {...props}>{children}</a>
+  ),
   useLinkStatus: mockUseLinkStatus,
 }));
 
@@ -51,27 +48,40 @@ const fireScrollOnAll = (container: HTMLElement) => {
   }
 };
 
+const onToggle = vi.fn();
+
+/** `toggle` decides whether the collapse button is composed in, as the desktop rail does. */
+const buildSidebar = ({
+  isExpanded = true,
+  toggle = true,
+}: Partial<{ isExpanded: boolean; toggle: boolean }> = {}) => (
+  <Sidebar isExpanded={isExpanded}>
+    {toggle ? (
+      <SidebarToggle isExpanded={isExpanded} onToggle={onToggle} />
+    ) : null}
+  </Sidebar>
+);
+
 describe('Sidebar', () => {
   const mockUsePermissions = vi.mocked(usePermissions);
-  const setIsExpanded = vi.fn();
 
   const setup = ({
     can = () => true,
     isExpanded = true,
+    toggle = true,
     pathname = '/',
     pending = false,
   }: Partial<{
     can: (resource: string) => boolean;
     isExpanded: boolean;
+    toggle: boolean;
     pathname: string;
     pending: boolean;
   }> = {}) => {
     mockUsePermissions.mockReturnValue(createPermissionsMock({ can }));
     mockUsePathname.mockReturnValue(pathname);
     mockUseLinkStatus.mockReturnValue({ pending });
-    return renderWithUI(
-      <Sidebar isExpanded={isExpanded} setIsExpanded={setIsExpanded} />,
-    );
+    return renderWithUI(buildSidebar({ isExpanded, toggle }));
   };
 
   setupTestLifecycle();
@@ -162,7 +172,7 @@ describe('Sidebar', () => {
       expect(getLink(/dashboard/i)).toBeInTheDocument();
 
       mockUsePathname.mockReturnValue('/roster');
-      rerender(<Sidebar isExpanded setIsExpanded={setIsExpanded} />);
+      rerender(buildSidebar());
 
       expect(getLink(/dashboard/i)).toBeInTheDocument();
     });
@@ -176,16 +186,22 @@ describe('Sidebar', () => {
       expect(getLink(/dashboard/i)).toHaveTextContent('Dashboard');
     });
 
-    test('hides group titles and labels but keeps links when collapsed', () => {
+    // `Visibility` keeps the label subtree mounted so collapsing does not remount it.
+    test('keeps group titles and labels mounted but hidden when collapsed', () => {
       setup({ can: only('dashboard'), isExpanded: false });
 
-      expect(screen.queryByText('OVERVIEW')).not.toBeInTheDocument();
+      expect(screen.getByText('OVERVIEW')).not.toBeVisible();
+      expect(screen.getByText('Dashboard')).not.toBeVisible();
+    });
 
-      const dashboardLink = screen
-        .getAllByRole('link')
-        .find((link) => link.getAttribute('href') === '/dashboard');
-      expect(dashboardLink).toBeInTheDocument();
-      expect(dashboardLink).not.toHaveTextContent('Dashboard');
+    test('keeps the link reachable by name when collapsed', async () => {
+      const { container } = setup({
+        can: only('dashboard'),
+        isExpanded: false,
+      });
+
+      expect(getLink(/dashboard/i)).toHaveAttribute('href', '/dashboard');
+      await expectNoA11yViolations(container);
     });
 
     test('shows every group title when multiple groups are visible', () => {
@@ -232,25 +248,36 @@ describe('Sidebar', () => {
       },
     );
 
-    test('calls setIsExpanded when clicked', async () => {
+    test('calls onToggle when clicked', async () => {
       const { user } = setup({ isExpanded: true });
 
       await user.click(screen.getByRole('button', { name: 'Collapse menu' }));
 
-      expect(setIsExpanded).toHaveBeenCalledTimes(1);
+      expect(onToggle).toHaveBeenCalledTimes(1);
     });
 
-    test('updates its label when the expansion prop changes', () => {
+    test('updates its label when isExpanded changes', () => {
       const { rerender } = setup({ isExpanded: true });
       expect(
         screen.getByRole('button', { name: 'Collapse menu' }),
       ).toBeInTheDocument();
 
-      rerender(<Sidebar isExpanded={false} setIsExpanded={setIsExpanded} />);
+      rerender(buildSidebar({ isExpanded: false }));
 
       expect(
         screen.getByRole('button', { name: 'Expand menu' }),
       ).toBeInTheDocument();
+    });
+
+    test('is absent when not composed in, as in the mobile drawer', () => {
+      setup({ toggle: false });
+
+      expect(
+        screen.queryByRole('button', { name: 'Collapse menu' }),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: 'Expand menu' }),
+      ).not.toBeInTheDocument();
     });
   });
 
