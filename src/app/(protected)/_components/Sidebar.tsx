@@ -335,6 +335,7 @@ export default function Sidebar({ isExpanded, children }: SidebarProps) {
                 position="absolute"
                 insetInline={0}
                 opacity={isExpanded ? 0 : 1}
+                aria-hidden={isExpanded}
                 css={FADE_CSS}
               />
             </Flex>
