@@ -1,5 +1,10 @@
-import { useEditor, type Editor } from '@tiptap/react';
-
+import {
+  asEditor,
+  createMockEditor,
+  editorOptions,
+  useEditorMock,
+  type MockEditor,
+} from '@/test/mocks/tiptap';
 import {
   expectNoA11yViolations,
   renderWithUI,
@@ -8,32 +13,25 @@ import {
 
 import RichTextViewer from './RichTextViewer';
 
-vi.mock('@tiptap/react', () => ({
-  EditorContent: () => <div className="tiptap" />,
-  useEditor: vi.fn(),
-  useEditorState: vi.fn(({ editor, selector }) => selector({ editor })),
-}));
-
-vi.mock('@tiptap/starter-kit', () => ({
-  default: { configure: vi.fn(() => ({})) },
-}));
+vi.mock('@tiptap/react', async () =>
+  (await import('@/test/mocks/tiptap')).tiptapReact(),
+);
+vi.mock('@tiptap/starter-kit', async () =>
+  (await import('@/test/mocks/tiptap')).tiptapStarterKit(),
+);
 
 describe('RichTextViewer', () => {
-  const mockEditor = {
-    isEditable: false,
-    setEditable: vi.fn(),
-    commands: { setContent: vi.fn() },
-  };
+  let editor: MockEditor;
 
   const setup = (content = '<p>Needs replacing</p>') =>
     renderWithUI(<RichTextViewer content={content} />);
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-    vi.mocked(useEditor).mockReturnValue(mockEditor as unknown as Editor);
-  });
-
   setupTestLifecycle();
+
+  beforeEach(() => {
+    editor = createMockEditor();
+    useEditorMock.mockReturnValue(asEditor(editor));
+  });
 
   test('should be accessible', async () => {
     const { container } = setup();
@@ -45,7 +43,7 @@ describe('RichTextViewer', () => {
 
     expect(container.querySelector('.tiptap')).toBeInTheDocument();
     expect(container.querySelector('[aria-label="Bold"]')).toBeNull();
-    expect(vi.mocked(useEditor).mock.calls[0][0]).toMatchObject({
+    expect(editorOptions()).toMatchObject({
       content: '<p>Needs replacing</p>',
       editable: false,
     });
@@ -56,11 +54,10 @@ describe('RichTextViewer', () => {
 
     rerender(<RichTextViewer content="<p>Replaced</p>" />);
 
-    expect(vi.mocked(useEditor).mock.calls[0]).toHaveLength(1);
-    expect(mockEditor.commands.setContent).toHaveBeenCalledWith(
-      '<p>Replaced</p>',
-      { emitUpdate: false },
-    );
+    expect(useEditorMock.mock.calls[0]).toHaveLength(1);
+    expect(editor.commands.setContent).toHaveBeenCalledWith('<p>Replaced</p>', {
+      emitUpdate: false,
+    });
   });
 
   test('does not reload content that has not changed', () => {
@@ -68,6 +65,6 @@ describe('RichTextViewer', () => {
 
     rerender(<RichTextViewer content="<p>Needs replacing</p>" />);
 
-    expect(mockEditor.commands.setContent).not.toHaveBeenCalled();
+    expect(editor.commands.setContent).not.toHaveBeenCalled();
   });
 });
