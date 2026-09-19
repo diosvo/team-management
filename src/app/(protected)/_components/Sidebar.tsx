@@ -80,8 +80,7 @@ const NavButton = memo(function NavButton({
 }: NavButtonProps) {
   const content = (
     <>
-      {/* NAV_INSET padding pins the icon to the title's left edge; minWidth 0
-          lets the slot shrink and re-centre on the collapsed rail. */}
+      {/* Icon container with centered icon and flexible collapse behavior */}
       <Span
         display="flex"
         justifyContent="center"
@@ -107,7 +106,7 @@ const NavButton = memo(function NavButton({
         css={FADE_CSS}
       >
         <Span
-          flex="1"
+          flex={1}
           minWidth={0}
           paddingInlineEnd={4}
           textAlign="start"
@@ -131,6 +130,7 @@ const NavButton = memo(function NavButton({
         {...BUTTON_CONFIG}
         variant={isActive ? 'surface' : 'ghost'}
         fontWeight={isActive ? 500 : 400}
+        color={isActive ? 'black' : 'gray.500'}
         // Spacing lives on the slots so the icon can centre itself when collapsed.
         gap={0}
         paddingInline={0}
@@ -301,14 +301,15 @@ export default function Sidebar({ isExpanded, children }: SidebarProps) {
     >
       {children}
 
-      {/* Full bleed keeps the scrollbar flush with the border; symmetric gutters provide the inset and center the buttons. */}
+      {/* Full-bleed scrollbar with inset gutters. */}
       <VStack
-        flex="1"
+        flex={1}
         minHeight={0}
         overflowY="auto"
         alignItems="stretch"
         gap={4}
         marginInline={-2}
+        paddingInline={2}
         css={SCROLL_AREA_CSS}
         onScroll={handleScroll}
       >
