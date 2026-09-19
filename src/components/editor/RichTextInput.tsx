@@ -18,7 +18,7 @@ import {
   type RichTextEditorToolbarProps,
 } from '@/components/ui/rich-text-editor';
 import { useRichTextEditorContext } from '@/components/ui/rich-text-editor-context';
-import { Span, Text } from '@chakra-ui/react';
+import { Box, Span, Text, useFieldContext } from '@chakra-ui/react';
 
 /** Ceiling for editors that are not given a field-specific `limit`. */
 export const DEFAULT_CHARACTER_LIMIT = 100000;
@@ -30,7 +30,7 @@ const createExtensions = (limit: number) => [
 
 type UseRichTextEditorOptions = Pick<
   Partial<EditorOptions>,
-  'content' | 'editable' | 'onCreate' | 'onUpdate'
+  'content' | 'editable' | 'editorProps' | 'onCreate' | 'onUpdate'
 > & {
   /** Most characters the document may hold; input past it is refused. */
   limit?: number;
@@ -153,6 +153,37 @@ export function EditorToolbar({
 /** Field value: HTML, or `''` for an empty document. */
 const toValue = (editor: Editor) => (editor.isEmpty ? '' : editor.getHTML());
 
+/**
+ * A contenteditable element is not a form control, so a surrounding `Field`
+ * cannot label or describe it on its own. Mirror the field's wiring onto the
+ * editable element; `undefined` outside a field leaves the element untouched.
+ */
+function useFieldAttributes() {
+  const field = useFieldContext();
+  const controlId = field?.ids.control;
+  const labelId = field?.ids.label;
+  const describedBy = field?.ariaDescribedby;
+  const invalid = field?.invalid;
+  const required = field?.required;
+
+  // Keyed on the values, not the context object, which is new on every render.
+  return useMemo(
+    () =>
+      controlId && labelId
+        ? {
+            id: controlId,
+            role: 'textbox',
+            'aria-multiline': 'true',
+            'aria-labelledby': labelId,
+            ...(describedBy && { 'aria-describedby': describedBy }),
+            ...(invalid && { 'aria-invalid': 'true' }),
+            ...(required && { 'aria-required': 'true' }),
+          }
+        : undefined,
+    [controlId, labelId, describedBy, invalid, required],
+  );
+}
+
 type RichTextInputProps = Omit<RichTextEditorProps, 'editor' | 'onChange'> &
   Partial<{
     /** Document as HTML; `''` when empty. */
@@ -172,10 +203,14 @@ export default function RichTextInput({
   onChange,
   ...rootProps
 }: RichTextInputProps) {
+  const attributes = useFieldAttributes();
+  const editorProps = useMemo(() => attributes && { attributes }, [attributes]);
+
   const editor = useRichTextEditor({
     content: value,
     editable: !disabled,
     limit,
+    editorProps,
     onUpdate: ({ editor }) => onChange?.(toValue(editor)),
   });
 
@@ -186,7 +221,8 @@ export default function RichTextInput({
     }
   }, [editor, value]);
 
-  if (!editor) return null;
+  // Hold the field's id until the editor mounts, so its label keeps a target.
+  if (!editor) return <Box id={attributes?.id} />;
 
   return (
     <RichTextEditor.Root

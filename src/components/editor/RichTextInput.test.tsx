@@ -1,9 +1,14 @@
-import { useEditor, type Editor } from '@tiptap/react';
-
 import { Field } from '@/components/ui/field';
 
 import {
-  act,
+  asEditor,
+  createMockEditor,
+  editorOptions,
+  emitUpdate,
+  useEditorMock,
+  type MockEditor,
+} from '@/test/mocks/tiptap';
+import {
   expectNoA11yViolations,
   renderWithUI,
   screen,
@@ -12,39 +17,43 @@ import {
 
 import RichTextInput, { DEFAULT_CHARACTER_LIMIT } from './RichTextInput';
 
-vi.mock('@tiptap/react', () => ({
-  EditorContent: () => <div className="tiptap" />,
-  useEditor: vi.fn(),
-  // Run the selector synchronously against the mocked editor.
-  useEditorState: vi.fn(({ editor, selector }) => selector({ editor })),
-}));
+vi.mock('@tiptap/react', async () =>
+  (await import('@/test/mocks/tiptap')).tiptapReact(),
+);
+vi.mock('@tiptap/starter-kit', async () =>
+  (await import('@/test/mocks/tiptap')).tiptapStarterKit(),
+);
 
-vi.mock('@tiptap/starter-kit', () => ({
-  default: { configure: vi.fn(() => ({})) },
-}));
+/** Every control of the `full` preset, in the order the toolbar lays them out. */
+const FULL_CONTROLS = [
+  'Bold',
+  'Italic',
+  'Underline',
+  'Strikethrough',
+  'H1',
+  'H2',
+  'H3',
+  'H4',
+  'Bullet List',
+  'Ordered List',
+  'Blockquote',
+  'Link',
+  'Unlink',
+  'Undo',
+  'Redo',
+];
+const INLINE_CONTROLS = [
+  'Bold',
+  'Italic',
+  'Underline',
+  'Strikethrough',
+  'Link',
+  'Unlink',
+];
 
 describe('RichTextInput', () => {
   const onChange = vi.fn<(html: string) => void>();
-
-  const mockEditor = {
-    isEditable: true,
-    isEmpty: false,
-    setEditable: vi.fn((editable: boolean) => {
-      mockEditor.isEditable = editable;
-    }),
-    getHTML: vi.fn(() => '<p>Note</p>'),
-    chain: vi.fn(() => mockEditor),
-    focus: vi.fn(() => mockEditor),
-    run: vi.fn(() => mockEditor),
-    toggleBold: vi.fn(() => mockEditor),
-    isActive: vi.fn(() => false),
-    can: vi.fn(() => ({ undo: () => true, redo: () => true })),
-    commands: { setContent: vi.fn() },
-    storage: { characterCount: { characters: vi.fn(() => 5) } },
-  };
-
-  /** The options the component handed to `useEditor` on its latest render. */
-  const editorOptions = () => vi.mocked(useEditor).mock.calls.at(-1)?.[0];
+  let editor: MockEditor;
 
   const setup = (
     overrides: Partial<React.ComponentProps<typeof RichTextInput>> = {},
@@ -53,37 +62,105 @@ describe('RichTextInput', () => {
       <RichTextInput value="<p>Note</p>" onChange={onChange} {...overrides} />,
     );
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-    mockEditor.isEditable = true;
-    mockEditor.isEmpty = false;
-    mockEditor.getHTML.mockReturnValue('<p>Note</p>');
-    mockEditor.storage.characterCount.characters.mockReturnValue(5);
-    vi.mocked(useEditor).mockReturnValue(mockEditor as unknown as Editor);
-  });
-
   setupTestLifecycle();
+
+  beforeEach(() => {
+    editor = createMockEditor({ editable: true });
+    editor.getHTML.mockReturnValue('<p>Note</p>');
+    editor.storage.characterCount.characters.mockReturnValue(5);
+    useEditorMock.mockReturnValue(asEditor(editor));
+  });
 
   test('should be accessible', async () => {
     const { container } = setup();
     await expectNoA11yViolations(container);
   });
 
-  test('renders the toolbar with the content', () => {
+  test('renders the content', () => {
     const { container } = setup();
 
     expect(container.querySelector('.tiptap')).toBeInTheDocument();
-    expect(screen.getByLabelText('Bold')).toBeInTheDocument();
-    expect(screen.getByLabelText('Redo')).toBeInTheDocument();
   });
 
-  test('limits the inline toolbar to marks and links', () => {
-    setup({ toolbar: 'inline' });
+  test('keeps a single editor instance across value changes', () => {
+    const { rerender } = setup();
 
-    expect(screen.getByLabelText('Bold')).toBeInTheDocument();
-    expect(screen.getByLabelText('Link')).toBeInTheDocument();
-    expect(screen.queryByLabelText('H1')).not.toBeInTheDocument();
-    expect(screen.queryByLabelText('Bullet List')).not.toBeInTheDocument();
+    rerender(<RichTextInput value="<p>Changed</p>" onChange={onChange} />);
+
+    // A `deps` argument would let tiptap tear the instance down and recreate it.
+    expect(useEditorMock.mock.calls[0]).toHaveLength(1);
+  });
+
+  describe('toolbar', () => {
+    afterEach(() => vi.restoreAllMocks());
+
+    test.each([
+      ['full', FULL_CONTROLS],
+      ['inline', INLINE_CONTROLS],
+    ] as const)(
+      'the %s preset renders exactly its controls',
+      (toolbar, labels) => {
+        setup({ toolbar });
+
+        expect(
+          screen.getAllByRole('button').map((control) => control.ariaLabel),
+        ).toEqual(labels);
+      },
+    );
+
+    test.each([
+      ['Bold', 'toggleBold'],
+      ['Italic', 'toggleItalic'],
+      ['Underline', 'toggleUnderline'],
+      ['Strikethrough', 'toggleStrike'],
+      ['Bullet List', 'toggleBulletList'],
+      ['Ordered List', 'toggleOrderedList'],
+      ['Blockquote', 'toggleBlockquote'],
+      ['Unlink', 'unsetLink'],
+      ['Undo', 'undo'],
+      ['Redo', 'redo'],
+    ] as const)('%s runs %s on the editor', async (label, command) => {
+      const { user } = setup();
+
+      await user.click(screen.getByLabelText(label));
+
+      expect(editor.chain).toHaveBeenCalled();
+      expect(editor[command]).toHaveBeenCalled();
+    });
+
+    test.each([
+      ['H1', 1],
+      ['H2', 2],
+      ['H3', 3],
+      ['H4', 4],
+    ] as const)('%s toggles a level %i heading', async (label, level) => {
+      const { user } = setup();
+
+      await user.click(screen.getByLabelText(label));
+
+      expect(editor.toggleHeading).toHaveBeenCalledWith({ level });
+    });
+
+    test('Link applies the URL the user is prompted for', async () => {
+      vi.spyOn(window, 'prompt').mockReturnValue('https://example.com');
+      const { user } = setup();
+
+      await user.click(screen.getByLabelText('Link'));
+
+      expect(editor.extendMarkRange).toHaveBeenCalledWith('link');
+      expect(editor.setLink).toHaveBeenCalledWith({
+        href: 'https://example.com',
+      });
+    });
+
+    test('Link leaves the document alone when the prompt is dismissed', async () => {
+      vi.spyOn(window, 'prompt').mockReturnValue(null);
+      const { user } = setup();
+
+      await user.click(screen.getByLabelText('Link'));
+
+      expect(editor.setLink).not.toHaveBeenCalled();
+    });
   });
 
   describe('character limit', () => {
@@ -110,7 +187,7 @@ describe('RichTextInput', () => {
     });
 
     test('flags the count once it reaches the limit', () => {
-      mockEditor.storage.characterCount.characters.mockReturnValue(128);
+      editor.storage.characterCount.characters.mockReturnValue(128);
 
       setup({ limit: 128 });
 
@@ -126,67 +203,55 @@ describe('RichTextInput', () => {
     });
   });
 
-  test('keeps a single editor instance across value changes', () => {
-    const { rerender } = setup();
+  describe('value', () => {
+    test('reports the editor HTML on every update', () => {
+      setup();
+      editor.getHTML.mockReturnValue('<p>Typed</p>');
 
-    rerender(<RichTextInput value="<p>Changed</p>" onChange={onChange} />);
+      emitUpdate(editor);
 
-    expect(vi.mocked(useEditor).mock.calls[0]).toHaveLength(1);
-  });
+      expect(onChange).toHaveBeenCalledWith('<p>Typed</p>');
+    });
 
-  test('reports the editor HTML on every update', () => {
-    setup();
-    mockEditor.getHTML.mockReturnValue('<p>Typed</p>');
+    test('reports an empty string once the document is cleared', () => {
+      setup();
+      editor.isEmpty = true;
 
-    act(() => editorOptions()?.onUpdate?.({ editor: mockEditor } as never));
+      emitUpdate(editor);
 
-    expect(onChange).toHaveBeenCalledWith('<p>Typed</p>');
-  });
+      expect(onChange).toHaveBeenCalledWith('');
+    });
 
-  test('reports an empty string once the document is cleared', () => {
-    setup();
-    mockEditor.isEmpty = true;
-    mockEditor.getHTML.mockReturnValue('<p></p>');
+    test('loads an outside value silently when it differs from the document', () => {
+      const { rerender } = setup();
 
-    act(() => editorOptions()?.onUpdate?.({ editor: mockEditor } as never));
+      rerender(<RichTextInput value="<p>Reset</p>" onChange={onChange} />);
 
-    expect(onChange).toHaveBeenCalledWith('');
-  });
-
-  test('treats an empty value and an empty document as matching', () => {
-    mockEditor.isEmpty = true;
-    mockEditor.getHTML.mockReturnValue('<p></p>');
-
-    setup({ value: '' });
-
-    expect(mockEditor.commands.setContent).not.toHaveBeenCalled();
-  });
-
-  test('loads an outside value silently when it differs from the document', () => {
-    const { rerender } = setup();
-    mockEditor.commands.setContent.mockClear();
-
-    rerender(<RichTextInput value="<p>Reset</p>" onChange={onChange} />);
-
-    expect(mockEditor.commands.setContent).toHaveBeenCalledWith(
-      '<p>Reset</p>',
-      {
+      expect(editor.commands.setContent).toHaveBeenCalledWith('<p>Reset</p>', {
         emitUpdate: false,
-      },
-    );
-    expect(onChange).not.toHaveBeenCalled();
-  });
+      });
+      expect(onChange).not.toHaveBeenCalled();
+    });
 
-  test('leaves the document alone when the value already matches', () => {
-    setup();
+    test('leaves the document alone when the value already matches', () => {
+      setup();
 
-    expect(mockEditor.commands.setContent).not.toHaveBeenCalled();
+      expect(editor.commands.setContent).not.toHaveBeenCalled();
+    });
+
+    test('treats an empty value and an empty document as matching', () => {
+      editor.isEmpty = true;
+
+      setup({ value: '' });
+
+      expect(editor.commands.setContent).not.toHaveBeenCalled();
+    });
   });
 
   test('locks the editor while disabled', () => {
     setup({ disabled: true });
 
-    expect(mockEditor.setEditable).toHaveBeenCalledWith(false);
+    expect(editor.setEditable).toHaveBeenCalledWith(false);
   });
 
   describe('field association', () => {
@@ -195,18 +260,30 @@ describe('RichTextInput', () => {
       editorOptions()?.editorProps?.attributes as
         Record<string, string> | undefined;
 
-    test('carries the id and name of the surrounding field', () => {
+    const labelOf = (text: string) => screen.getByText(text).closest('label');
+
+    test('carries the id and state of the surrounding field', () => {
       renderWithUI(
-        <Field required invalid label="Note" errorText="Note is required.">
+        <Field
+          required
+          invalid
+          label="Note"
+          helperText="Keep it short."
+          errorText="Note is required."
+        >
           <RichTextInput value="<p>Note</p>" onChange={onChange} />
         </Field>,
       );
 
-      const label = screen.getByText('Note').closest('label');
+      const label = labelOf('Note');
 
       expect(attributes()).toMatchObject({
         id: label?.htmlFor,
         'aria-labelledby': label?.id,
+        'aria-describedby': [
+          screen.getByText('Note is required.').id,
+          screen.getByText('Keep it short.').id,
+        ].join(' '),
         role: 'textbox',
         'aria-multiline': 'true',
         'aria-invalid': 'true',
@@ -221,7 +298,7 @@ describe('RichTextInput', () => {
     });
 
     test('holds the id in the placeholder until the editor exists', () => {
-      vi.mocked(useEditor).mockReturnValue(null as unknown as Editor);
+      useEditorMock.mockReturnValue(null);
 
       renderWithUI(
         <Field label="Note">
@@ -229,17 +306,9 @@ describe('RichTextInput', () => {
         </Field>,
       );
 
-      const label = screen.getByText('Note').closest('label');
-
-      expect(document.getElementById(label!.htmlFor)).toBeInTheDocument();
+      expect(
+        document.getElementById(labelOf('Note')!.htmlFor),
+      ).toBeInTheDocument();
     });
-  });
-
-  test('runs toolbar commands against the editor', async () => {
-    const { user } = setup();
-
-    await user.click(screen.getByLabelText('Bold'));
-
-    expect(mockEditor.toggleBold).toHaveBeenCalled();
   });
 });

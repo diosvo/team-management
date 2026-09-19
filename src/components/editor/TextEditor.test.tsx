@@ -1,5 +1,10 @@
-import { useEditor, type Editor } from '@tiptap/react';
-
+import {
+  asEditor,
+  createMockEditor,
+  emitUpdate,
+  useEditorMock,
+  type MockEditor,
+} from '@/test/mocks/tiptap';
 import {
   act,
   expectNoA11yViolations,
@@ -13,97 +18,52 @@ import { editorToPlainText } from '@/components/editor/plain-text';
 
 import TextEditor from './TextEditor';
 
-vi.mock('@tiptap/react', () => ({
-  EditorContent: () => <div className="tiptap" />,
-  useEditor: vi.fn(),
-  // Run the selector synchronously against the mocked editor.
-  useEditorState: vi.fn(({ editor, selector }) => selector({ editor })),
-}));
-
-vi.mock('@tiptap/starter-kit', () => ({
-  default: { configure: vi.fn(() => ({})) },
-}));
+vi.mock('@tiptap/react', async () =>
+  (await import('@/test/mocks/tiptap')).tiptapReact(),
+);
+vi.mock('@tiptap/starter-kit', async () =>
+  (await import('@/test/mocks/tiptap')).tiptapStarterKit(),
+);
 
 // The document walker has its own tests against a real schema.
 vi.mock('@/components/editor/plain-text', () => ({
   editorToPlainText: vi.fn(() => 'Rules\n• Be on time.'),
 }));
 
+const PLAIN_TEXT = 'Rules\n• Be on time.';
+
 describe('TextEditor', () => {
   const onSave = vi.fn<(content: string) => Promise<boolean>>();
+  let editor: MockEditor;
 
-  const mockEditor = {
-    isEditable: false,
-    setEditable: vi.fn((editable: boolean) => {
-      mockEditor.isEditable = editable;
-    }),
-    getHTML: vi.fn(() => '<p>Test content</p>'),
-    getText: vi.fn(() => 'Rules\nBe on time.'),
-    chain: vi.fn(function () {
-      return mockEditor;
-    }),
-    focus: vi.fn(function () {
-      return mockEditor;
-    }),
-    run: vi.fn(function () {
-      return mockEditor;
-    }),
-    toggleBold: vi.fn(() => mockEditor),
-    toggleItalic: vi.fn(() => mockEditor),
-    toggleUnderline: vi.fn(() => mockEditor),
-    toggleStrike: vi.fn(() => mockEditor),
-    toggleBulletList: vi.fn(() => mockEditor),
-    toggleOrderedList: vi.fn(() => mockEditor),
-    extendMarkRange: vi.fn(() => mockEditor),
-    setLink: vi.fn(() => mockEditor),
-    unsetLink: vi.fn(() => mockEditor),
-    undo: vi.fn(() => mockEditor),
-    redo: vi.fn(() => mockEditor),
-    isActive: vi.fn(() => false),
-    getAttributes: vi.fn(() => ({ href: '' })),
-    can: vi.fn(() => ({ undo: vi.fn(() => true), redo: vi.fn(() => true) })),
-    commands: {
-      setContent: vi.fn(),
-    },
-    storage: { characterCount: { characters: vi.fn(() => 0) } },
-    state: {
-      doc: { type: { name: 'doc' } },
-      selection: {
-        empty: false,
-      },
-    },
-  };
-
-  const defaultProps = {
-    content: '<p>Test content</p>',
-    onSave,
-  };
+  const defaultProps = { content: '<p>Test content</p>', onSave };
 
   const setup = (
     overrides: Partial<React.ComponentProps<typeof TextEditor>> = {},
   ) => renderWithUI(<TextEditor {...defaultProps} {...overrides} />);
 
-  const enterEditMode = (user: ReturnType<typeof setup>['user']) =>
-    user.click(screen.getByRole('button', { name: 'Edit' }));
+  type User = ReturnType<typeof setup>['user'];
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-    mockEditor.isEditable = false;
-    mockEditor.getHTML.mockReturnValue('<p>Test content</p>');
-    mockEditor.isActive.mockReturnValue(false);
-    mockEditor.chain.mockReturnValue(mockEditor);
-    mockEditor.focus.mockReturnValue(mockEditor);
-    mockEditor.run.mockReturnValue(mockEditor);
-    mockEditor.can.mockReturnValue({
-      undo: vi.fn(() => true),
-      redo: vi.fn(() => true),
-    });
-    // `mockEditor` implements only the surface the component touches, not the
-    // whole tiptap `Editor` class, so the assertion lives here once.
-    vi.mocked(useEditor).mockReturnValue(mockEditor as unknown as Editor);
-  });
+  const clickButton = (user: User, name: string | RegExp) =>
+    user.click(screen.getByRole('button', { name }));
+
+  /** Type into the editor, then step back to preview so the draft is pending. */
+  const previewDraft = async (user: User) => {
+    await clickButton(user, 'Edit');
+    editor.getHTML.mockReturnValue('<p>Draft</p>');
+    emitUpdate(editor);
+    await clickButton(user, 'Preview');
+  };
+
+  const saveChangesPrompt = () =>
+    screen.queryByRole('button', { name: 'Save changes?' });
 
   setupTestLifecycle();
+
+  beforeEach(() => {
+    editor = createMockEditor();
+    useEditorMock.mockReturnValue(asEditor(editor));
+  });
 
   test('should be accessible', async () => {
     const { container } = setup();
@@ -120,6 +80,7 @@ describe('TextEditor', () => {
   describe('preview mode', () => {
     test('renders the content read-only without a toolbar', () => {
       const { container } = setup();
+
       expect(container.querySelector('.tiptap')).toBeInTheDocument();
       expect(screen.queryByLabelText('Bold')).not.toBeInTheDocument();
       expect(
@@ -134,6 +95,7 @@ describe('TextEditor', () => {
 
     test('hides the edit toggle when the user cannot edit', () => {
       setup({ canEdit: false });
+
       expect(screen.queryByRole('button', { name: 'Edit' })).toBeNull();
       expect(screen.getByRole('button', { name: /copy/i })).toBeInTheDocument();
     });
@@ -155,55 +117,36 @@ describe('TextEditor', () => {
 
       // Recreating the editor on `content` destroys the instance the copy
       // button is still reading from ("Cannot read properties of null").
-      expect(vi.mocked(useEditor).mock.calls[0]).toHaveLength(1);
+      expect(useEditorMock.mock.calls[0]).toHaveLength(1);
     });
 
     test('loads new saved content into the editor while previewing', () => {
       const { rerender } = setup();
-      mockEditor.commands.setContent.mockClear();
 
       rerender(<TextEditor {...defaultProps} content="<p>Updated</p>" />);
 
-      expect(mockEditor.commands.setContent).toHaveBeenCalledWith(
+      expect(editor.commands.setContent).toHaveBeenCalledWith(
         '<p>Updated</p>',
+        {
+          emitUpdate: false,
+        },
       );
     });
 
     test('does not clobber a draft when content changes while writing', async () => {
       const { user, rerender } = setup();
-      await enterEditMode(user);
-      mockEditor.commands.setContent.mockClear();
+      await clickButton(user, 'Edit');
 
       rerender(<TextEditor {...defaultProps} content="<p>Updated</p>" />);
 
-      expect(mockEditor.commands.setContent).not.toHaveBeenCalled();
+      expect(editor.commands.setContent).not.toHaveBeenCalled();
     });
   });
 
   describe('save changes prompt', () => {
-    const saveChanges = () =>
-      screen.queryByRole('button', { name: 'Save changes?' });
-
-    /** Fire the `update` handler the component registered with useEditor. */
-    const emitUpdate = () =>
-      act(() => {
-        vi.mocked(useEditor)
-          .mock.calls.at(-1)?.[0]
-          ?.onUpdate?.({
-            editor: mockEditor,
-          } as never);
-      });
-
-    const previewDraft = async (user: ReturnType<typeof setup>['user']) => {
-      await enterEditMode(user);
-      mockEditor.getHTML.mockReturnValue('<p>Draft</p>');
-      emitUpdate();
-      await user.click(screen.getByRole('button', { name: 'Preview' }));
-    };
-
     test('is not offered on first render', () => {
       setup();
-      expect(saveChanges()).not.toBeInTheDocument();
+      expect(saveChangesPrompt()).not.toBeInTheDocument();
     });
 
     test('is offered when previewing a draft', async () => {
@@ -211,16 +154,17 @@ describe('TextEditor', () => {
 
       await previewDraft(user);
 
-      expect(saveChanges()).toBeInTheDocument();
+      expect(saveChangesPrompt()).toBeInTheDocument();
     });
 
     test('is not offered while editing', async () => {
       const { user } = setup();
-      await enterEditMode(user);
-      mockEditor.getHTML.mockReturnValue('<p>Draft</p>');
-      emitUpdate();
+      await clickButton(user, 'Edit');
+      editor.getHTML.mockReturnValue('<p>Draft</p>');
 
-      expect(saveChanges()).not.toBeInTheDocument();
+      emitUpdate(editor);
+
+      expect(saveChangesPrompt()).not.toBeInTheDocument();
     });
 
     test('saves the draft from preview without opening the editor', async () => {
@@ -229,54 +173,55 @@ describe('TextEditor', () => {
       const { user } = setup();
       await previewDraft(user);
 
-      await user.click(screen.getByRole('button', { name: 'Save changes?' }));
+      await clickButton(user, 'Save changes?');
 
       expect(onSave).toHaveBeenCalledWith('<p>Draft</p>');
       expect(screen.queryByLabelText('Bold')).not.toBeInTheDocument();
 
       finish(true);
 
-      await waitFor(() => expect(saveChanges()).not.toBeInTheDocument());
+      await waitFor(() => expect(saveChangesPrompt()).not.toBeInTheDocument());
     });
 
     test('clears once the draft is saved from the editor', async () => {
       onSave.mockResolvedValue(true);
       const { user } = setup();
       await previewDraft(user);
-      await user.click(screen.getByRole('button', { name: 'Edit' }));
+      await clickButton(user, 'Edit');
 
-      await user.click(screen.getByRole('button', { name: /^save$/i }));
+      await clickButton(user, /^save$/i);
 
       await waitFor(() =>
         expect(screen.getByRole('button', { name: 'Edit' })).toBeEnabled(),
       );
-      expect(saveChanges()).not.toBeInTheDocument();
+      expect(saveChangesPrompt()).not.toBeInTheDocument();
     });
 
     test('clears when the draft is cancelled', async () => {
       const { user } = setup();
       await previewDraft(user);
-      await user.click(screen.getByRole('button', { name: 'Edit' }));
+      await clickButton(user, 'Edit');
 
-      await user.click(screen.getByRole('button', { name: /cancel/i }));
+      await clickButton(user, /cancel/i);
 
-      expect(saveChanges()).not.toBeInTheDocument();
+      expect(saveChangesPrompt()).not.toBeInTheDocument();
     });
   });
 
   describe('copy', () => {
-    afterEach(() => vi.unstubAllGlobals());
+    afterEach(() => {
+      vi.unstubAllGlobals();
+      vi.restoreAllMocks();
+    });
 
     test('falls back to structured plain text where ClipboardItem is unavailable', async () => {
       const { user } = setup();
 
-      await user.click(screen.getByRole('button', { name: 'Copy' }));
+      await clickButton(user, 'Copy');
 
-      expect(editorToPlainText).toHaveBeenCalledWith(mockEditor.state.doc);
+      expect(editorToPlainText).toHaveBeenCalledWith(editor.state.doc);
       await waitFor(async () =>
-        expect(await navigator.clipboard.readText()).toBe(
-          'Rules\n• Be on time.',
-        ),
+        expect(await navigator.clipboard.readText()).toBe(PLAIN_TEXT),
       );
     });
 
@@ -290,9 +235,9 @@ describe('TextEditor', () => {
         .spyOn(navigator.clipboard, 'writeText')
         .mockResolvedValue(undefined);
 
-      await user.click(screen.getByRole('button', { name: 'Copy' }));
+      await clickButton(user, 'Copy');
 
-      expect(writeText).toHaveBeenCalledWith('Rules\n• Be on time.');
+      expect(writeText).toHaveBeenCalledWith(PLAIN_TEXT);
       expect(
         await screen.findByRole('button', { name: 'Copied' }),
       ).toBeInTheDocument();
@@ -308,20 +253,33 @@ describe('TextEditor', () => {
         .spyOn(navigator.clipboard, 'write')
         .mockResolvedValue(undefined);
 
-      await user.click(screen.getByRole('button', { name: 'Copy' }));
+      await clickButton(user, 'Copy');
 
       expect(write).toHaveBeenCalledOnce();
       const [item] = write.mock.calls[0][0] as unknown as FakeClipboardItem[];
       expect(Object.keys(item.items)).toEqual(['text/html', 'text/plain']);
       expect(item.items['text/html'].type).toBe('text/html');
-      expect(mockEditor.getHTML).toHaveBeenCalled();
+      expect(editor.getHTML).toHaveBeenCalled();
+    });
+
+    test('appends the last updated line to both flavours', async () => {
+      vi.stubGlobal('ClipboardItem', undefined);
+      const { user } = setup({ lastUpdated: new Date('2024-01-01') });
+
+      await clickButton(user, 'Copy');
+
+      await waitFor(async () =>
+        expect(await navigator.clipboard.readText()).toMatch(
+          new RegExp(`^${PLAIN_TEXT}\n\nLast updated on `),
+        ),
+      );
     });
 
     test('confirms the copy, then offers to copy again', async () => {
       vi.useFakeTimers({ shouldAdvanceTime: true });
       const { user } = setup();
 
-      await user.click(screen.getByRole('button', { name: 'Copy' }));
+      await clickButton(user, 'Copy');
 
       expect(
         await screen.findByRole('button', { name: 'Copied' }),
@@ -335,12 +293,13 @@ describe('TextEditor', () => {
   });
 
   describe('edit mode', () => {
-    test('makes the editor editable and offers to preview', async () => {
+    test('makes the editor editable and offers the toolbar', async () => {
       const { user } = setup();
 
-      await enterEditMode(user);
+      await clickButton(user, 'Edit');
 
-      expect(mockEditor.setEditable).toHaveBeenCalledWith(true);
+      expect(editor.setEditable).toHaveBeenCalledWith(true);
+      expect(screen.getByLabelText('Bold')).toBeInTheDocument();
       expect(
         screen.getByRole('button', { name: 'Preview' }),
       ).toBeInTheDocument();
@@ -349,62 +308,22 @@ describe('TextEditor', () => {
     test('returns to preview when the toggle is clicked again', async () => {
       const { user } = setup();
 
-      await enterEditMode(user);
-      await user.click(screen.getByRole('button', { name: 'Preview' }));
+      await clickButton(user, 'Edit');
+      await clickButton(user, 'Preview');
 
       expect(screen.queryByLabelText('Bold')).not.toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Edit' })).toBeInTheDocument();
     });
 
-    test('renders all toolbar buttons', async () => {
-      const { user } = setup();
-      await enterEditMode(user);
-
-      for (const label of [
-        'Bold',
-        'Italic',
-        'Underline',
-        'Strikethrough',
-        'H1',
-        'H2',
-        'H3',
-        'H4',
-        'Bullet List',
-        'Ordered List',
-        'Link',
-        'Unlink',
-        'Undo',
-        'Redo',
-      ]) {
-        expect(screen.getByLabelText(label)).toBeInTheDocument();
-      }
-    });
-
-    test.each([
-      ['Bold', 'toggleBold'],
-      ['Italic', 'toggleItalic'],
-      ['Underline', 'toggleUnderline'],
-      ['Strikethrough', 'toggleStrike'],
-      ['Bullet List', 'toggleBulletList'],
-      ['Ordered List', 'toggleOrderedList'],
-    ] as const)('%s runs %s', async (label, command) => {
-      const { user } = setup();
-      await enterEditMode(user);
-
-      await user.click(screen.getByLabelText(label));
-
-      expect(mockEditor.chain).toHaveBeenCalled();
-      expect(mockEditor[command]).toHaveBeenCalled();
-    });
-
     test('cancel returns to preview and resets the editor', async () => {
       const { user } = setup();
-      await enterEditMode(user);
+      await clickButton(user, 'Edit');
 
-      await user.click(screen.getByRole('button', { name: /cancel/i }));
+      await clickButton(user, /cancel/i);
 
-      expect(mockEditor.commands.setContent).toHaveBeenCalledWith(
+      expect(editor.commands.setContent).toHaveBeenCalledWith(
         '<p>Test content</p>',
+        { emitUpdate: false },
       );
       expect(screen.getByRole('button', { name: 'Edit' })).toBeInTheDocument();
       expect(onSave).not.toHaveBeenCalled();
@@ -412,26 +331,14 @@ describe('TextEditor', () => {
   });
 
   describe('saving', () => {
-    const save = (user: ReturnType<typeof setup>['user']) =>
-      user.click(screen.getByRole('button', { name: /save/i }));
-
-    test('passes the editor HTML to onSave', async () => {
+    test('passes the editor HTML to onSave and leaves edit mode', async () => {
       onSave.mockResolvedValue(true);
       const { user } = setup();
-      await enterEditMode(user);
+      await clickButton(user, 'Edit');
 
-      await save(user);
+      await clickButton(user, /save/i);
 
       expect(onSave).toHaveBeenCalledWith('<p>Test content</p>');
-    });
-
-    test('leaves edit mode when onSave resolves true', async () => {
-      onSave.mockResolvedValue(true);
-      const { user } = setup();
-      await enterEditMode(user);
-
-      await save(user);
-
       await waitFor(() =>
         expect(
           screen.getByRole('button', { name: 'Edit' }),
@@ -442,9 +349,9 @@ describe('TextEditor', () => {
     test('stays in edit mode when onSave resolves false', async () => {
       onSave.mockResolvedValue(false);
       const { user } = setup();
-      await enterEditMode(user);
+      await clickButton(user, 'Edit');
 
-      await save(user);
+      await clickButton(user, /save/i);
 
       await waitFor(() => expect(onSave).toHaveBeenCalled());
       expect(
@@ -456,17 +363,17 @@ describe('TextEditor', () => {
       let finish!: (saved: boolean) => void;
       onSave.mockReturnValue(new Promise((resolve) => (finish = resolve)));
       const { user } = setup();
-      await enterEditMode(user);
-      mockEditor.setEditable.mockClear();
+      await clickButton(user, 'Edit');
+      editor.setEditable.mockClear();
 
-      await save(user);
+      await clickButton(user, /save/i);
 
       await waitFor(() =>
         expect(screen.getByRole('button', { name: /saving/i })).toBeDisabled(),
       );
       expect(screen.getByRole('button', { name: /cancel/i })).toBeDisabled();
       expect(screen.getByRole('button', { name: 'Preview' })).toBeDisabled();
-      expect(mockEditor.setEditable).toHaveBeenCalledWith(false);
+      expect(editor.setEditable).toHaveBeenCalledWith(false);
 
       finish(true);
 

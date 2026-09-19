@@ -192,15 +192,20 @@ describe('UpsertAsset', () => {
   });
 
   test('explains why an over-long note blocks saving', async () => {
-    await open('Update', EXISTING_ASSET);
+    const { user } = await open('Update', EXISTING_ASSET);
 
     const note = await screen.findByLabelText('Note editor');
     fireEvent.change(note, { target: { value: 'x'.repeat(129) } });
 
+    // The form validates on submit, so the message lands after the attempt.
+    const submit = await screen.findByRole('button', { name: /update/i });
+    await waitFor(() => expect(submit).toBeEnabled());
+    await user.click(submit);
+
     expect(
       await screen.findByText('Be at most 128 characters long.'),
     ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /update/i })).toBeDisabled();
+    expect(mockUpsertAsset).not.toHaveBeenCalled();
   });
 
   test('reports a failed save through the toaster', async () => {
