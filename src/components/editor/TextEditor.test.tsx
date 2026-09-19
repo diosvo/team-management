@@ -65,6 +65,7 @@ describe('TextEditor', () => {
     commands: {
       setContent: vi.fn(),
     },
+    storage: { characterCount: { characters: vi.fn(() => 0) } },
     state: {
       doc: { type: { name: 'doc' } },
       selection: {

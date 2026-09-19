@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, type ComponentType } from 'react';
+import { useEffect, useMemo, useRef, type ComponentType } from 'react';
 
 import { CharacterCount } from '@tiptap/extensions';
 import {
@@ -20,27 +20,34 @@ import {
 import { useRichTextEditorContext } from '@/components/ui/rich-text-editor-context';
 import { Span, Text } from '@chakra-ui/react';
 
-const EXTENSIONS = [
+/** Ceiling for editors that are not given a field-specific `limit`. */
+export const DEFAULT_CHARACTER_LIMIT = 100000;
+
+const createExtensions = (limit: number) => [
   StarterKit.configure({ link: { openOnClick: false } }),
-  CharacterCount.configure({
-    limit: 100000,
-  }),
+  CharacterCount.configure({ limit }),
 ];
 
 type UseRichTextEditorOptions = Pick<
   Partial<EditorOptions>,
   'content' | 'editable' | 'onCreate' | 'onUpdate'
->;
+> & {
+  /** Most characters the document may hold; input past it is refused. */
+  limit?: number;
+};
 
 /** One editor instance per component; `editable` stays in sync. */
 export function useRichTextEditor({
   editable = true,
+  limit = DEFAULT_CHARACTER_LIMIT,
   ...options
 }: UseRichTextEditorOptions) {
+  // Extensions are fixed at creation; changing `limit` needs a new editor.
+  const extensions = useMemo(() => createExtensions(limit), [limit]);
   const editor = useEditor({
     ...options,
     editable,
-    extensions: EXTENSIONS,
+    extensions,
     immediatelyRender: false,
   });
 
@@ -51,15 +58,15 @@ export function useRichTextEditor({
   return editor;
 }
 
-type UseEditorContentOptions = {
+type UseEditorContentOptions = Partial<{
   /** Skip loading while a draft is in progress. */
-  paused?: boolean;
-  onLoad?: (editor: Editor) => void;
-};
+  paused: boolean;
+  onLoad: (editor: Editor) => void;
+}>;
 
 /** Load `content` into the editor when it changes, without emitting `update`. */
 export function useEditorContent(
-  editor: Editor | null,
+  editor: Nullable<Editor>,
   content: string,
   { paused = false, onLoad }: UseEditorContentOptions = {},
 ) {
@@ -95,13 +102,16 @@ export const TOOLBARS = {
 
 export type ToolbarPreset = keyof typeof TOOLBARS;
 
-type EditorToolbarProps = RichTextEditorToolbarProps & {
-  preset?: ToolbarPreset;
-};
+type EditorToolbarProps = RichTextEditorToolbarProps &
+  Partial<{
+    preset: ToolbarPreset;
+    limit: number;
+  }>;
 
 /** Formatting toolbar for `RichTextEditor.Root`. */
 export function EditorToolbar({
   preset = 'full',
+  limit = DEFAULT_CHARACTER_LIMIT,
   ...props
 }: EditorToolbarProps) {
   const { editor } = useRichTextEditorContext();
@@ -113,7 +123,6 @@ export function EditorToolbar({
 
   if (!editor) return null;
 
-  const limit = 100;
   const charsCount = editor.storage.characterCount.characters();
   const isOverLimit = charsCount >= limit;
 
@@ -144,24 +153,29 @@ export function EditorToolbar({
 /** Field value: HTML, or `''` for an empty document. */
 const toValue = (editor: Editor) => (editor.isEmpty ? '' : editor.getHTML());
 
-type RichTextInputProps = Omit<RichTextEditorProps, 'editor' | 'onChange'> & {
-  /** Document as HTML; `''` when empty. */
-  value?: string;
-  onChange?: (html: string) => void;
-  toolbar?: ToolbarPreset;
-};
+type RichTextInputProps = Omit<RichTextEditorProps, 'editor' | 'onChange'> &
+  Partial<{
+    /** Document as HTML; `''` when empty. */
+    value: string;
+    /** e.g. the field's schema `.max()`; defaults to {@link DEFAULT_CHARACTER_LIMIT}. */
+    limit: number;
+    toolbar: ToolbarPreset;
+    onChange: (html: string) => void;
+  }>;
 
 /** Controlled rich-text field that emits HTML. */
 export default function RichTextInput({
   value = '',
-  onChange,
+  limit,
   toolbar = 'full',
   disabled,
+  onChange,
   ...rootProps
 }: RichTextInputProps) {
   const editor = useRichTextEditor({
     content: value,
     editable: !disabled,
+    limit,
     onUpdate: ({ editor }) => onChange?.(toValue(editor)),
   });
 
@@ -181,7 +195,7 @@ export default function RichTextInput({
       rounded="md"
       {...rootProps}
     >
-      <EditorToolbar preset={toolbar} />
+      <EditorToolbar preset={toolbar} limit={limit} />
       <RichTextEditor.Content />
     </RichTextEditor.Root>
   );

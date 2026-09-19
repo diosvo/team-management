@@ -29,7 +29,7 @@ import { toaster } from '@/components/ui/toaster';
 import { Tooltip } from '@/components/ui/tooltip';
 import { OnePlayerSelection } from '@/components/user/PlayerSelection';
 
-import { getDefaults, onError } from '@/lib/zod';
+import { getDefaults, getMaxLength, onError } from '@/lib/zod';
 import {
   ASSET_CATEGORY_SELECTION,
   ASSET_CONDITION_SELECTION,
@@ -51,6 +51,9 @@ const RichTextInput = dynamic(
     loading: () => <Skeleton height={200} />,
   },
 );
+
+/** Keep the editor's limit in step with the schema's `.max()`. */
+const NOTE_LIMIT = getMaxLength(UpsertAssetSchema.shape.note);
 
 export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
   const [isPending, startTransition] = useTransition();
@@ -227,6 +230,7 @@ export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
                     <RichTextInput
                       width="full"
                       toolbar="inline"
+                      limit={NOTE_LIMIT}
                       disabled={field.disabled || isPending}
                       value={field.value ?? ''}
                       onChange={field.onChange}

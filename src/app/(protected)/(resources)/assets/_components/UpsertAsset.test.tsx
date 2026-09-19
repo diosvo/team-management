@@ -36,12 +36,15 @@ vi.mock('@/components/editor/RichTextInput', () => ({
   default: ({
     value,
     onChange,
+    limit,
   }: {
     value: string;
     onChange: (html: string) => void;
+    limit?: number;
   }) => (
     <textarea
       aria-label="Note editor"
+      data-limit={limit}
       value={value}
       onChange={(event) => onChange(event.target.value)}
     />
@@ -177,6 +180,15 @@ describe('UpsertAsset', () => {
         expect.objectContaining({ note: 'Bring spares' }),
       );
     });
+  });
+
+  test("caps the note editor at the schema's max length", async () => {
+    await open('Update', EXISTING_ASSET);
+
+    expect(await screen.findByLabelText('Note editor')).toHaveAttribute(
+      'data-limit',
+      '128',
+    );
   });
 
   test('explains why an over-long note blocks saving', async () => {

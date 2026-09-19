@@ -3,8 +3,7 @@ import StarterKit from '@tiptap/starter-kit';
 
 import { editorToPlainText } from './plain-text';
 
-// Real schema and parser, so the walker is exercised against the node shapes
-// Tiptap actually produces rather than hand-written fixtures.
+// Use the real Tiptap schema/parser so the walker sees actual node shapes.
 const extensions = [StarterKit];
 const schema = getSchema(extensions);
 
