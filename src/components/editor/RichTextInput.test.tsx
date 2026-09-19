@@ -10,7 +10,7 @@ import {
   setupTestLifecycle,
 } from '@/test/utilities';
 
-import RichTextInput from './RichTextInput';
+import RichTextInput, { DEFAULT_CHARACTER_LIMIT } from './RichTextInput';
 
 vi.mock('@tiptap/react', () => ({
   EditorContent: () => <div className="tiptap" />,
@@ -40,6 +40,7 @@ describe('RichTextInput', () => {
     isActive: vi.fn(() => false),
     can: vi.fn(() => ({ undo: () => true, redo: () => true })),
     commands: { setContent: vi.fn() },
+    storage: { characterCount: { characters: vi.fn(() => 5) } },
   };
 
   /** The options the component handed to `useEditor` on its latest render. */
@@ -57,6 +58,7 @@ describe('RichTextInput', () => {
     mockEditor.isEditable = true;
     mockEditor.isEmpty = false;
     mockEditor.getHTML.mockReturnValue('<p>Note</p>');
+    mockEditor.storage.characterCount.characters.mockReturnValue(5);
     vi.mocked(useEditor).mockReturnValue(mockEditor as unknown as Editor);
   });
 
@@ -82,6 +84,46 @@ describe('RichTextInput', () => {
     expect(screen.getByLabelText('Link')).toBeInTheDocument();
     expect(screen.queryByLabelText('H1')).not.toBeInTheDocument();
     expect(screen.queryByLabelText('Bullet List')).not.toBeInTheDocument();
+  });
+
+  describe('character limit', () => {
+    /** The `limit` the character-count extension was configured with. */
+    const configuredLimit = () =>
+      editorOptions()
+        ?.extensions?.map((extension) => extension.options?.limit)
+        .find((limit) => limit !== undefined);
+
+    test('counts against the given limit', () => {
+      setup({ limit: 128 });
+
+      expect(screen.getByText('/ 128 characters')).toBeInTheDocument();
+      expect(configuredLimit()).toBe(128);
+    });
+
+    test('falls back to the default limit', () => {
+      setup();
+
+      expect(
+        screen.getByText(`/ ${DEFAULT_CHARACTER_LIMIT} characters`),
+      ).toBeInTheDocument();
+      expect(configuredLimit()).toBe(DEFAULT_CHARACTER_LIMIT);
+    });
+
+    test('flags the count once it reaches the limit', () => {
+      mockEditor.storage.characterCount.characters.mockReturnValue(128);
+
+      setup({ limit: 128 });
+
+      expect(screen.getByText('128')).toHaveStyle({ color: 'rgb(255, 0, 0)' });
+    });
+
+    test('leaves the count unflagged below the limit', () => {
+      setup({ limit: 128 });
+
+      expect(screen.getByText('5')).not.toHaveStyle({
+        color: 'rgb(255, 0, 0)',
+      });
+    });
   });
 
   test('keeps a single editor instance across value changes', () => {
