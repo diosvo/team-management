@@ -82,3 +82,18 @@ export function deriveDateStatus(
   if (isPast(end_date)) return LeagueStatus.ENDED;
   return LeagueStatus.ONGOING;
 }
+
+/*
+ * lazy compute a value when accessed
+ * auto-caches the result by overwriting the getter
+ * typesafe
+ */
+export function lazy<T>(getter: () => T): { value: T } {
+  return {
+    get value() {
+      const value = getter();
+      Object.defineProperty(this, 'value', { value });
+      return value;
+    },
+  };
+}
