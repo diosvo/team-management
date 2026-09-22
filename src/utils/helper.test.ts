@@ -8,7 +8,7 @@ import {
   UserState,
 } from './enum';
 
-import { colorRank, deriveDateStatus, getColor } from './helper';
+import { colorRank, deriveDateStatus, getColor, lazy } from './helper';
 
 describe('getColor', () => {
   const cases = [
@@ -107,4 +107,62 @@ describe('deriveDateStatus', () => {
       expect(deriveDateStatus(start_date, end_date)).toBe(expected);
     },
   );
+});
+
+describe('lazy', () => {
+  test('does not call the getter until the value is accessed', () => {
+    const getter = vi.fn(() => 'computed');
+    const holder = lazy(getter);
+
+    expect(getter).not.toHaveBeenCalled();
+    expect(holder.value).toBe('computed');
+    expect(getter).toHaveBeenCalledTimes(1);
+  });
+
+  test('caches the result so the getter runs only once', () => {
+    const getter = vi.fn(() => ({ id: 1 }));
+    const holder = lazy(getter);
+
+    const first = holder.value;
+    const second = holder.value;
+    const third = holder.value;
+
+    expect(getter).toHaveBeenCalledTimes(1);
+    expect(second).toBe(first);
+    expect(third).toBe(first);
+  });
+
+  test('keeps separate caches per instance', () => {
+    let count = 0;
+    const getter = vi.fn(() => ++count);
+
+    expect(lazy(getter).value).toBe(1);
+    expect(lazy(getter).value).toBe(2);
+    expect(getter).toHaveBeenCalledTimes(2);
+  });
+
+  test.each([
+    { description: 'null', expected: null },
+    { description: 'undefined', expected: undefined },
+    { description: 'false', expected: false },
+    { description: 'zero', expected: 0 },
+  ])('caches $description without recomputing', ({ expected }) => {
+    const getter = vi.fn(() => expected);
+    const holder = lazy(getter);
+
+    expect(holder.value).toBe(expected);
+    expect(holder.value).toBe(expected);
+    expect(getter).toHaveBeenCalledTimes(1);
+  });
+
+  test('propagates a throwing getter and retries on the next access', () => {
+    const getter = vi.fn(() => {
+      throw new Error('boom');
+    });
+    const holder = lazy(getter);
+
+    expect(() => holder.value).toThrow('boom');
+    expect(() => holder.value).toThrow('boom');
+    expect(getter).toHaveBeenCalledTimes(2);
+  });
 });
