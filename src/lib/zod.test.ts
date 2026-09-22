@@ -1,6 +1,28 @@
 import { z } from 'zod';
 
-import { getDefaults } from './zod';
+import { getDefaults, getMaxLength } from './zod';
+
+describe('getMaxLength', () => {
+  test('reads the max of a plain string', () => {
+    expect(getMaxLength(z.string().max(64))).toBe(64);
+  });
+
+  test('looks through nullable, optional and default wrappers', () => {
+    expect(getMaxLength(z.string().max(128).nullable())).toBe(128);
+    expect(getMaxLength(z.string().max(32).optional())).toBe(32);
+    expect(getMaxLength(z.string().max(16).nullish().default(''))).toBe(16);
+  });
+
+  test('returns undefined when no max is set', () => {
+    expect(getMaxLength(z.string())).toBeUndefined();
+    expect(getMaxLength(z.string().min(3).nullable())).toBeUndefined();
+  });
+
+  test('returns undefined for non-string schemas', () => {
+    expect(getMaxLength(z.number().max(10))).toBeUndefined();
+    expect(getMaxLength(z.array(z.string()).max(3))).toBeUndefined();
+  });
+});
 
 describe('getDefaults', () => {
   test('returns defaults from schema with default values', () => {

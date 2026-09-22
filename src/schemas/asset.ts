@@ -27,7 +27,10 @@ export const UpsertAssetSchema = z.object({
     .default(AssetCategory.EQUIPMENT),
   assigned_to: z.string().max(64).nullish(),
   acquired_date: z.iso.date().nullish().default(CURRENT_DATE),
-  note: z.string().max(128).nullable(),
+  note: z
+    .string()
+    .max(128, { error: 'Be at most 128 characters long.' })
+    .nullable(),
 });
 
 export type UpsertAssetSchemaValues = z.infer<typeof UpsertAssetSchema>;
