@@ -227,7 +227,8 @@ describe('RosterTable', () => {
         expect(ids).toEqual(expect.arrayContaining(['alice', 'bob']));
       });
 
-      expect(mockToaster.create).toHaveBeenCalledWith(
+      expect(mockToaster.update).toHaveBeenCalledWith(
+        'toast-id',
         expect.objectContaining({ type: 'success' }),
       );
     });
@@ -245,7 +246,8 @@ describe('RosterTable', () => {
       await user.click(screen.getByRole('button', { name: /Delete/ }));
 
       await waitFor(() => {
-        expect(mockToaster.create).toHaveBeenCalledWith(
+        expect(mockToaster.update).toHaveBeenCalledWith(
+          'toast-id',
           expect.objectContaining({ type: 'warning' }),
         );
       });

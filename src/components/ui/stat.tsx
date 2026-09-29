@@ -1,4 +1,10 @@
-import { Stat as ChakraStat, type ColorPalette, Span } from '@chakra-ui/react';
+import {
+  Stat as ChakraStat,
+  type ColorPalette,
+  SimpleGrid,
+  type SimpleGridProps,
+  Span,
+} from '@chakra-ui/react';
 
 import { formatValueUnit } from '@/utils/formatter';
 
@@ -63,5 +69,16 @@ export function Stat({
         )}
       </ChakraStat.ValueText>
     </ChakraStat.Root>
+  );
+}
+
+/** Responsive row of `Stat` cards, shared by every page that shows them. */
+export function StatGroup(props: SimpleGridProps) {
+  return (
+    <SimpleGrid
+      columns={{ base: 2, md: 4, xl: 6 }}
+      gap={{ base: 3, lg: 4 }}
+      {...props}
+    />
   );
 }

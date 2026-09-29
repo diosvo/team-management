@@ -1,4 +1,4 @@
-import { formatValueUnit } from './formatter';
+import { formatValueUnit, pluralize } from './formatter';
 
 describe('formatValueUnit', () => {
   test('returns null when count is 0', () => {
@@ -23,5 +23,26 @@ describe('formatValueUnit', () => {
     expect(formatValueUnit(0, '%')).toBe('%');
     expect(formatValueUnit(50, '%')).toBe('%');
     expect(formatValueUnit(3, 'days remaining')).toBe('days remaining');
+  });
+});
+
+describe('pluralize', () => {
+  test('keeps the singular for one', () => {
+    expect(pluralize(1, 'asset')).toBe('1 asset');
+  });
+
+  test('adds "s" for zero and many', () => {
+    expect(pluralize(0, 'asset')).toBe('0 assets');
+    expect(pluralize(3, 'league')).toBe('3 leagues');
+  });
+
+  test('adds "es" after sibilant endings', () => {
+    expect(pluralize(2, 'match')).toBe('2 matches');
+    expect(pluralize(2, 'box')).toBe('2 boxes');
+  });
+
+  test('pluralizes the last word of a phrase', () => {
+    expect(pluralize(2, 'attendance record')).toBe('2 attendance records');
+    expect(pluralize(4, 'test type')).toBe('4 test types');
   });
 });

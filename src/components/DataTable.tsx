@@ -12,6 +12,8 @@ import SelectionActionBar from '@/components/SelectionActionBar';
 import { Checkbox } from '@/components/ui/checkbox';
 import { EmptyState } from '@/components/ui/empty-state';
 
+import { toggleSelection } from '@/hooks/use-table-state';
+
 export type Column<T> = Required<{
   header: React.ReactNode;
   cell: (item: T, index: number) => React.ReactNode;
@@ -138,10 +140,8 @@ export default function DataTable<T>({
                           }
                           checked={activeSelection.selection.includes(id)}
                           onCheckedChange={(changes) =>
-                            activeSelection.setSelection((prev) =>
-                              changes.checked
-                                ? [...prev, id]
-                                : prev.filter((x) => x !== id),
+                            activeSelection.setSelection(
+                              toggleSelection(id, changes.checked === true),
                             )
                           }
                         />

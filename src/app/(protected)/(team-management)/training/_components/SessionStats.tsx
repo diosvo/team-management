@@ -1,8 +1,6 @@
 'use client';
 
-import { SimpleGrid } from '@chakra-ui/react';
-
-import { Stat } from '@/components/ui/stat';
+import { Stat, StatGroup } from '@/components/ui/stat';
 
 import { useTrainingFilters } from '@/lib/nuqs';
 import { SessionStatus } from '@/utils/enum';
@@ -20,7 +18,7 @@ export default function SessionStats({
   const totalHours = Number(stats.total_hours.toFixed(1));
 
   return (
-    <SimpleGrid columns={{ base: 2, md: 4, xl: 6 }} gap={{ base: 3, lg: 4 }}>
+    <StatGroup>
       <Stat
         label="Completed Sessions"
         value={stats.completed_sessions}
@@ -35,6 +33,6 @@ export default function SessionStats({
       />
       <Stat label="Average Attendance" value={avgAttendance} unit="player" />
       <Stat label="Total Hours" value={totalHours} unit="hr" />
-    </SimpleGrid>
+    </StatGroup>
   );
 }

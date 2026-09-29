@@ -1,22 +1,14 @@
 'use client';
 
-import {
-  Button,
-  createOverlay,
-  Dialog,
-  Fieldset,
-  Input,
-  Portal,
-  SimpleGrid,
-} from '@chakra-ui/react';
+import { Button, createOverlay, Dialog, Input, Portal } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Save } from 'lucide-react';
 import { useTransition } from 'react';
-import { Controller, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 
+import RadioGroupField from '@/components/RadioGroupField';
 import { CloseButton } from '@/components/ui/close-button';
 import { Field } from '@/components/ui/field';
-import { Radio, RadioGroup } from '@/components/ui/radio';
 import { toaster } from '@/components/ui/toaster';
 
 import { getDefaults } from '@/lib/zod';
@@ -86,35 +78,15 @@ export const UpsertTestType = createOverlay(({ action, item, ...rest }) => {
               >
                 <Input {...register('name')} disabled={isPending} />
               </Field>
-              <Fieldset.Root marginTop={3}>
-                <Fieldset.Legend color="GrayText">Unit</Fieldset.Legend>
-                <Controller
-                  name="unit"
-                  control={control}
-                  render={({ field }) => (
-                    <RadioGroup
-                      size="sm"
-                      colorPalette="red"
-                      marginTop={2}
-                      name={field.name}
-                      value={field.value}
-                      onValueChange={({ value }) => field.onChange(value)}
-                    >
-                      <SimpleGrid columns={{ base: 1, md: 3 }} gap={2}>
-                        {TEST_TYPE_UNIT_SELECTION.map((item) => (
-                          <Radio
-                            key={item.value}
-                            value={item.value}
-                            onBlur={field.onBlur}
-                          >
-                            {item.label}
-                          </Radio>
-                        ))}
-                      </SimpleGrid>
-                    </RadioGroup>
-                  )}
-                />
-              </Fieldset.Root>
+              <RadioGroupField
+                control={control}
+                name="unit"
+                legend="Unit"
+                options={TEST_TYPE_UNIT_SELECTION}
+                colorPalette="red"
+                columns={{ base: 1, md: 3 }}
+                marginTop={3}
+              />
             </Dialog.Body>
             <Dialog.Footer>
               <Button

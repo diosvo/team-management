@@ -72,22 +72,9 @@ export default function AttendanceTable({
     setSelection,
     selectionCount,
     totalCount,
+    isPending,
+    removeSelected,
   } = useTableState(attendances, predicate, page);
-
-  const removeItems = async () => {
-    const results = await Promise.all(selection.map(removeAttendance));
-    const successCount = results.filter(({ success }) => success).length;
-    const hasErrors = successCount < selectionCount;
-
-    toaster.create({
-      type: hasErrors ? 'warning' : 'success',
-      title: hasErrors
-        ? `Failed to delete ${selectionCount - successCount} attendance record(s)`
-        : `Deleted ${successCount} attendance record(s) successfully`,
-    });
-
-    if (!hasErrors) setSelection([]);
-  };
 
   const updateItems = async (newStatus: AttendanceStatus) => {
     const results = await Promise.all(
@@ -149,7 +136,8 @@ export default function AttendanceTable({
         items,
         selection,
         setSelection,
-        onDelete: removeItems,
+        disabled: isPending,
+        onDelete: () => removeSelected(removeAttendance, 'attendance record'),
         actions: ACTIONS.map(({ label, value, icon: Icon, color }) => (
           <Visibility key={value} isVisible={!status.includes(value)}>
             <Button

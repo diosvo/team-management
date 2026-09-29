@@ -8,7 +8,6 @@ import { capitalize } from 'es-toolkit/string';
 
 import DataTable, { type Column } from '@/components/DataTable';
 import HighlightText from '@/components/HighlightText';
-import { toaster } from '@/components/ui/toaster';
 
 import usePermissions from '@/hooks/use-permissions';
 import useTableState from '@/hooks/use-table-state';
@@ -42,23 +41,15 @@ export default function AssetTable({ data }: { data: Array<Asset> }) {
       }),
     [q, category, condition, from, to],
   );
-  const { items, currentData, selection, setSelection, totalCount } =
-    useTableState(data, predicate, page);
-
-  const removeItems = async () => {
-    const results = await Promise.all(selection.map(removeAsset));
-    const hasErrors = results.some(({ success }) => !success);
-    const successCount = results.filter(({ success }) => success).length;
-
-    toaster.create({
-      type: hasErrors ? 'warning' : 'success',
-      title: hasErrors
-        ? `Deleted ${successCount} asset(s), but some operations failed.`
-        : `Successfully deleted ${successCount} asset(s).`,
-    });
-
-    setSelection([]);
-  };
+  const {
+    items,
+    currentData,
+    selection,
+    setSelection,
+    totalCount,
+    isPending,
+    removeSelected,
+  } = useTableState(data, predicate, page);
 
   const columns: Array<Column<Asset>> = [
     {
@@ -112,7 +103,8 @@ export default function AssetTable({ data }: { data: Array<Asset> }) {
           items,
           selection,
           setSelection,
-          onDelete: removeItems,
+          disabled: isPending,
+          onDelete: () => removeSelected(removeAsset, 'asset'),
         }}
       />
       <UpsertAsset.Viewport />

@@ -7,7 +7,6 @@ import { MapPinXInside } from 'lucide-react';
 import { LocationLink } from '@/components/common/LocationSelection';
 import DataTable, { type Column } from '@/components/DataTable';
 import HighlightText from '@/components/HighlightText';
-import { toaster } from '@/components/ui/toaster';
 
 import usePermissions from '@/hooks/use-permissions';
 import useTableState from '@/hooks/use-table-state';
@@ -35,23 +34,15 @@ export default function LocationTable({
       }),
     [q],
   );
-  const { items, currentData, selection, setSelection, totalCount } =
-    useTableState(locations, predicate, page);
-
-  const removeItems = async () => {
-    const results = await Promise.all(selection.map(removeLocation));
-    const hasErrors = results.some(({ success }) => !success);
-    const successCount = results.filter(({ success }) => success).length;
-
-    toaster.create({
-      type: hasErrors ? 'warning' : 'success',
-      title: hasErrors
-        ? `Deleted ${successCount} locations(s), but some operations failed.`
-        : `Successfully deleted ${successCount} locations(s).`,
-    });
-
-    setSelection([]);
-  };
+  const {
+    items,
+    currentData,
+    selection,
+    setSelection,
+    totalCount,
+    isPending,
+    removeSelected,
+  } = useTableState(locations, predicate, page);
 
   const columns: Array<Column<Location>> = [
     {
@@ -96,7 +87,8 @@ export default function LocationTable({
           items,
           selection,
           setSelection,
-          onDelete: removeItems,
+          disabled: isPending,
+          onDelete: () => removeSelected(removeLocation, 'location'),
         }}
       />
       <UpsertLocation.Viewport />

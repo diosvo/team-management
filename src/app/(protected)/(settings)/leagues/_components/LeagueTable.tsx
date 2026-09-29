@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useTransition } from 'react';
+import { useMemo } from 'react';
 
 import { Badge, IconButton, VisuallyHidden } from '@chakra-ui/react';
 import { isPast } from 'date-fns';
@@ -11,7 +11,6 @@ import { CircuitBoard } from 'lucide-react';
 import Authorized from '@/components/Authorized';
 import DataTable, { type Column } from '@/components/DataTable';
 import HighlightText from '@/components/HighlightText';
-import { toaster } from '@/components/ui/toaster';
 import { Tooltip } from '@/components/ui/tooltip';
 
 import { useLeagueFilters } from '@/lib/nuqs';
@@ -40,7 +39,6 @@ export default function LeagueTable({
   leagues: Array<LeagueWithPlayerCount>;
 }) {
   const { can, isGuest } = usePermissions();
-  const [isPending, startTransition] = useTransition();
   const [{ q, page, status }, setSearchParams] = useLeagueFilters();
 
   const predicate = useMemo(
@@ -51,32 +49,15 @@ export default function LeagueTable({
       }),
     [q, status],
   );
-  const { items, currentData, selection, setSelection, totalCount } =
-    useTableState(leagues, predicate, page);
-
-  const removeItems = async () => {
-    const id = toaster.create({
-      type: 'loading',
-      title: 'Deleting leagues...',
-    });
-
-    startTransition(async () => {
-      const results = await Promise.all(
-        selection.map((league_id) => removeLeague(league_id)),
-      );
-      const hasErrors = results.some(({ success }) => !success);
-      const successCount = results.filter(({ success }) => success).length;
-
-      toaster.update(id, {
-        type: hasErrors ? 'warning' : 'success',
-        title: hasErrors
-          ? `Deleted ${successCount} league(s), but some operations failed.`
-          : `Successfully deleted ${successCount} league(s).`,
-      });
-
-      setSelection([]);
-    });
-  };
+  const {
+    items,
+    currentData,
+    selection,
+    setSelection,
+    totalCount,
+    isPending,
+    removeSelected,
+  } = useTableState(leagues, predicate, page);
 
   const columns: Array<Column<LeagueWithPlayerCount>> = [
     {
@@ -156,7 +137,7 @@ export default function LeagueTable({
           // Only Upcoming leagues can be selected
           isSelectable: (item) => item.status === LeagueStatus.UPCOMING,
           disabled: isPending,
-          onDelete: removeItems,
+          onDelete: () => removeSelected(removeLeague, 'league'),
         }}
       />
       <UpsertLeague.Viewport />

@@ -15,7 +15,6 @@ import { CirclePile } from 'lucide-react';
 import { LocationLink } from '@/components/common/LocationSelection';
 import DataTable, { type Column } from '@/components/DataTable';
 import HighlightText from '@/components/HighlightText';
-import { toaster } from '@/components/ui/toaster';
 import { Tooltip } from '@/components/ui/tooltip';
 
 import usePermissions from '@/hooks/use-permissions';
@@ -43,23 +42,15 @@ export default function SessionTable({
       (item.location?.name ?? '').toLowerCase().includes(q.toLowerCase()),
     [q],
   );
-  const { items, currentData, selection, setSelection, totalCount } =
-    useTableState(sessions, predicate, page);
-
-  const removeItems = async () => {
-    const results = await Promise.all(selection.map(removeSession));
-    const hasErrors = results.some(({ success }) => !success);
-    const successCount = results.filter(({ success }) => success).length;
-
-    toaster.create({
-      type: hasErrors ? 'warning' : 'success',
-      title: hasErrors
-        ? `Deleted ${successCount} session(s), but some operations failed.`
-        : `Successfully deleted ${successCount} session(s).`,
-    });
-
-    setSelection([]);
-  };
+  const {
+    items,
+    currentData,
+    selection,
+    setSelection,
+    totalCount,
+    isPending,
+    removeSelected,
+  } = useTableState(sessions, predicate, page);
 
   const columns: Array<Column<TrainingSessionWithDetails>> = [
     {
@@ -151,7 +142,8 @@ export default function SessionTable({
           items,
           selection,
           setSelection,
-          onDelete: removeItems,
+          disabled: isPending,
+          onDelete: () => removeSelected(removeSession, 'session'),
         }}
       />
       <UpsertSession.Viewport />

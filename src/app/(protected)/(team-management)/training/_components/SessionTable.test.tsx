@@ -81,7 +81,9 @@ describe('SessionTable', () => {
   test('renders a row for each session', () => {
     setup();
 
-    expect(screen.getByText(COMPLETED_SESSION.location!.name)).toBeInTheDocument();
+    expect(
+      screen.getByText(COMPLETED_SESSION.location!.name),
+    ).toBeInTheDocument();
     expect(screen.getByText(OTHER_SESSION.location!.name)).toBeInTheDocument();
   });
 
@@ -96,9 +98,7 @@ describe('SessionTable', () => {
   test('renders the times, status and present rate of a session', () => {
     setup({ sessions: [COMPLETED_SESSION] });
 
-    expect(
-      screen.getByText(COMPLETED_SESSION.start_time),
-    ).toBeInTheDocument();
+    expect(screen.getByText(COMPLETED_SESSION.start_time)).toBeInTheDocument();
     expect(screen.getByText(COMPLETED_SESSION.end_time)).toBeInTheDocument();
     expect(screen.getByText(COMPLETED_SESSION.status)).toBeInTheDocument();
     expect(
@@ -172,7 +172,10 @@ describe('SessionTable', () => {
       action === 'delete';
 
     test('deletes the selected sessions and reports success', async () => {
-      mockRemoveSession.mockResolvedValue({ success: true, message: 'Removed' });
+      mockRemoveSession.mockResolvedValue({
+        success: true,
+        message: 'Removed',
+      });
 
       const { user } = setup({ can: canDelete });
 
@@ -191,7 +194,8 @@ describe('SessionTable', () => {
         );
       });
 
-      expect(mockToaster.create).toHaveBeenCalledWith(
+      expect(mockToaster.update).toHaveBeenCalledWith(
+        'toast-id',
         expect.objectContaining({ type: 'success' }),
       );
     });
@@ -209,7 +213,8 @@ describe('SessionTable', () => {
       await user.click(screen.getByRole('button', { name: /delete/i }));
 
       await waitFor(() => {
-        expect(mockToaster.create).toHaveBeenCalledWith(
+        expect(mockToaster.update).toHaveBeenCalledWith(
+          'toast-id',
           expect.objectContaining({ type: 'warning' }),
         );
       });

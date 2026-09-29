@@ -8,7 +8,6 @@ import { UsersRound } from 'lucide-react';
 
 import DataTable, { type Column } from '@/components/DataTable';
 import HighlightText from '@/components/HighlightText';
-import { toaster } from '@/components/ui/toaster';
 
 import usePermissions from '@/hooks/use-permissions';
 import useTableState from '@/hooks/use-table-state';
@@ -35,30 +34,15 @@ export default function TeamTable({ teams }: { teams: Array<Team> }) {
       }),
     [q],
   );
-  const { items, currentData, selection, setSelection, totalCount } =
-    useTableState(teams, predicate, page);
-
-  const removeItems = async () => {
-    const results = await Promise.all(selection.map(removeTeam));
-    const hasErrors = results.some(({ success }) => !success);
-    const successCount = results.filter(({ success }) => success).length;
-    const errorMessages = results
-      .filter(({ success }) => !success)
-      .map(({ message }) => message)
-      .join('\n ');
-
-    toaster.create({
-      type: hasErrors ? 'warning' : 'success',
-      title: hasErrors
-        ? `${successCount} deleted, some operations failed: ${errorMessages}`
-        : `Successfully deleted ${successCount} team(s).`,
-    });
-
-    if (successCount > 0) {
-      setSelection([]);
-      mutate(CACHE_KEY.OPPONENTS, undefined, { revalidate: true });
-    }
-  };
+  const {
+    items,
+    currentData,
+    selection,
+    setSelection,
+    totalCount,
+    isPending,
+    removeSelected,
+  } = useTableState(teams, predicate, page);
 
   const columns: Array<Column<Team>> = [
     {
@@ -102,7 +86,11 @@ export default function TeamTable({ teams }: { teams: Array<Team> }) {
           items,
           selection,
           setSelection,
-          onDelete: removeItems,
+          disabled: isPending,
+          onDelete: () =>
+            removeSelected(removeTeam, 'team', () =>
+              mutate(CACHE_KEY.OPPONENTS, undefined, { revalidate: true }),
+            ),
         }}
       />
       <UpsertTeam.Viewport />

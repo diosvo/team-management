@@ -1,8 +1,6 @@
 'use client';
 
-import { SimpleGrid } from '@chakra-ui/react';
-
-import { Stat } from '@/components/ui/stat';
+import { Stat, StatGroup } from '@/components/ui/stat';
 
 import { useAssetFilters } from '@/lib/nuqs';
 import { AssetCondition } from '@/utils/enum';
@@ -27,7 +25,7 @@ export default function AssetStats({ stats }: AssetStatsProps) {
   };
 
   return (
-    <SimpleGrid columns={{ base: 2, md: 4, xl: 6 }} gap={{ base: 3, lg: 4 }}>
+    <StatGroup>
       <Stat
         label="Total Quantity"
         value={stats.total_items}
@@ -48,6 +46,6 @@ export default function AssetStats({ stats }: AssetStatsProps) {
         color="gray"
         onClick={() => handleClick(AssetCondition.OBSOLETE)}
       />
-    </SimpleGrid>
+    </StatGroup>
   );
 }
