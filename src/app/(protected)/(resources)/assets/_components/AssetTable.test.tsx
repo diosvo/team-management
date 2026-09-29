@@ -36,6 +36,10 @@ vi.mock('./UpsertAsset', () => ({
   UpsertAsset: { open: vi.fn(), Viewport: () => null },
 }));
 
+vi.mock('@/components/editor/RichTextViewer', () => ({
+  default: ({ content }: { content: string }) => <p>{content}</p>,
+}));
+
 describe('AssetTable', () => {
   const mockUsePermissions = vi.mocked(usePermissions);
   const mockRemoveAsset = vi.mocked(removeAsset);
@@ -106,12 +110,13 @@ describe('AssetTable', () => {
     });
   });
 
-  test('renders the owner, quantity and note of an asset', () => {
+  test('renders the owner, quantity and note of an asset', async () => {
     setup({ data: [SECOND_ASSET] });
 
     expect(screen.getByText(SECOND_ASSET.user!.name)).toBeInTheDocument();
     expect(screen.getByText(String(SECOND_ASSET.quantity))).toBeInTheDocument();
-    expect(screen.getByText(SECOND_ASSET.note!)).toBeInTheDocument();
+    // The note viewer is a client-only dynamic chunk; wait for it to resolve.
+    expect(await screen.findByText(SECOND_ASSET.note!)).toBeInTheDocument();
   });
 
   test('shows the empty state when there are no assets', () => {

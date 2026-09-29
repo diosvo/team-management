@@ -1,5 +1,6 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useMemo } from 'react';
 
 import { Badge } from '@chakra-ui/react';
@@ -21,6 +22,11 @@ import { removeAsset } from '@/actions/asset';
 import type { Asset } from '@/drizzle/schema/asset';
 
 import { UpsertAsset } from './UpsertAsset';
+
+const RichTextViewer = dynamic(
+  () => import('@/components/editor/RichTextViewer'),
+  { ssr: false },
+);
 
 export default function AssetTable({ data }: { data: Array<Asset> }) {
   const { can, isGuest } = usePermissions();
@@ -81,7 +87,10 @@ export default function AssetTable({ data }: { data: Array<Asset> }) {
     { header: 'Assigned To', cell: (item) => item.user?.name },
     { header: 'Acquired Date', cell: (item) => formatDate(item.acquired_date) },
     { header: 'Last Updated', cell: (item) => formatDatetime(item.updated_at) },
-    { header: 'Note', cell: (item) => item.note },
+    {
+      header: 'Note',
+      cell: (item) => item.note && <RichTextViewer content={item.note} />,
+    },
   ];
 
   return (
