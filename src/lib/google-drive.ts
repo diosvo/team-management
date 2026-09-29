@@ -223,31 +223,12 @@ async function sheetIdsOf(token: string, spreadsheetId: string) {
   );
 }
 
-/** Applies one request per range that exists in the spreadsheet. */
-async function updateRanges(
+/** Sends one `batchUpdate`; the error carries Google's reason. */
+async function batchUpdate(
   token: string,
   spreadsheetId: string,
-  ranges: Array<CheckboxRange>,
-  request: (range: GridRange) => Record<string, unknown>,
-): Promise<void> {
-  const sheetIds = await sheetIdsOf(token, spreadsheetId);
-
-  const requests = ranges.flatMap(({ sheet, column, fromRow, toRow }) => {
-    const sheetId = sheetIds.get(sheet);
-    if (sheetId === undefined) return [];
-    const col = columnIndex(column);
-    return [
-      request({
-        sheetId,
-        startRowIndex: fromRow - 1,
-        endRowIndex: toRow,
-        startColumnIndex: col,
-        endColumnIndex: col + 1,
-      }),
-    ];
-  });
-  if (requests.length === 0) return;
-
+  requests: Array<Record<string, unknown>>,
+): Promise<{ replies?: Array<Record<string, unknown>> }> {
   const update = await fetch(`${SHEETS_API}/${spreadsheetId}:batchUpdate`, {
     method: 'POST',
     headers: {
@@ -256,7 +237,37 @@ async function updateRanges(
     },
     body: JSON.stringify({ requests }),
   });
-  if (!update.ok) throw new Error(`Sheets update failed (${update.status})`);
+  if (!update.ok) {
+    const reason = await update.text();
+    throw new Error(
+      `Sheets update failed (${update.status})${reason ? `: ${reason}` : ''}`,
+    );
+  }
+  return update.json();
+}
+
+/** The grid ranges that exist in the spreadsheet (unknown sheets are skipped). */
+async function gridRanges(
+  token: string,
+  spreadsheetId: string,
+  ranges: Array<CheckboxRange>,
+): Promise<Array<GridRange>> {
+  const sheetIds = await sheetIdsOf(token, spreadsheetId);
+
+  return ranges.flatMap(({ sheet, column, fromRow, toRow }) => {
+    const sheetId = sheetIds.get(sheet);
+    if (sheetId === undefined) return [];
+    const col = columnIndex(column);
+    return [
+      {
+        sheetId,
+        startRowIndex: fromRow - 1,
+        endRowIndex: toRow,
+        startColumnIndex: col,
+        endColumnIndex: col + 1,
+      },
+    ];
+  });
 }
 
 type GridRange = {
@@ -272,38 +283,96 @@ type GridRange = {
  * express. Needs the Google Sheets API enabled; `drive.file` covers the call
  * because the app created the file.
  */
-export function addCheckboxes(
+export async function addCheckboxes(
   token: string,
   spreadsheetId: string,
   ranges: Array<CheckboxRange>,
 ): Promise<void> {
-  return updateRanges(token, spreadsheetId, ranges, (range) => ({
-    setDataValidation: { range, rule: { condition: { type: 'BOOLEAN' } } },
-  }));
+  const grid = await gridRanges(token, spreadsheetId, ranges);
+  if (grid.length === 0) return;
+
+  await batchUpdate(
+    token,
+    spreadsheetId,
+    grid.map((range) => ({
+      setDataValidation: { range, rule: { condition: { type: 'BOOLEAN' } } },
+    })),
+  );
 }
 
 /**
  * Locks ranges so only `editors` (Google account emails) can change them; the
  * owner always can. Everyone else with the link sees them read-only.
+ *
+ * Google rejects the whole request when any editor isn't a Google account, so
+ * on failure the ranges are locked to the owner first and each editor is then
+ * added on its own; the ones Google refuses are returned.
  */
-export function protectRanges(
+export async function protectRanges(
   token: string,
   spreadsheetId: string,
   ranges: Array<CheckboxRange>,
   editors: Array<string>,
   description: string,
-): Promise<void> {
-  return updateRanges(token, spreadsheetId, ranges, (range) => ({
-    addProtectedRange: {
-      protectedRange: {
-        range,
-        description,
-        warningOnly: false,
-        editors: { users: editors },
-      },
-    },
-  }));
+): Promise<Array<string>> {
+  const grid = await gridRanges(token, spreadsheetId, ranges);
+  if (grid.length === 0) return [];
+
+  const protect = (users: Array<string>) =>
+    batchUpdate(
+      token,
+      spreadsheetId,
+      grid.map((range) => ({
+        addProtectedRange: {
+          protectedRange: {
+            range,
+            description,
+            warningOnly: false,
+            editors: { users },
+          },
+        },
+      })),
+    );
+
+  try {
+    await protect(editors);
+    return [];
+  } catch (error) {
+    if (editors.length === 0) throw error;
+  }
+
+  const { replies = [] } = await protect([]);
+  const ids = replies.map(
+    (reply) =>
+      (reply as { addProtectedRange: { protectedRange: ProtectedRange } })
+        .addProtectedRange.protectedRange.protectedRangeId,
+  );
+
+  const accepted: Array<string> = [];
+  const rejected: Array<string> = [];
+  // One at a time: each attempt sends the full list kept so far.
+  for (const editor of editors) {
+    const users = [...accepted, editor];
+    try {
+      await batchUpdate(
+        token,
+        spreadsheetId,
+        ids.map((protectedRangeId) => ({
+          updateProtectedRange: {
+            protectedRange: { protectedRangeId, editors: { users } },
+            fields: 'editors',
+          },
+        })),
+      );
+      accepted.push(editor);
+    } catch {
+      rejected.push(editor);
+    }
+  }
+  return rejected;
 }
+
+type ProtectedRange = { protectedRangeId: number };
 
 /** Test hook: forget the cached token. */
 export function resetGoogleDrive() {

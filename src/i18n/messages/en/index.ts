@@ -6,6 +6,7 @@ import auth from './auth.json';
 import common from './common.json';
 import components from './components.json';
 import dashboard from './dashboard.json';
+import documents from './documents.json';
 import emails from './emails.json';
 import enums from './enums.json';
 import leagues from './leagues.json';
@@ -48,6 +49,7 @@ const messages = {
   leagues,
   locations,
   teams,
+  documents,
 };
 
 export default messages;

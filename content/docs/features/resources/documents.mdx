@@ -1,0 +1,157 @@
+---
+title: 'Documents'
+---
+
+> Route: `/documents` · Nav group: **Resources** · Status: **Draft**
+
+## 1. Summary
+
+- **Documents** page lists the team's photo albums, videos, tactics and files as cards that link to **public Google Drive** items.
+- Nothing is uploaded or stored on our side. Each document is a metadata row (title, link, type, date) pointing at a Drive folder or file shared as "Anyone with the link".
+- PLAYER, COACH and SUPER_ADMIN can view; COACH and SUPER_ADMIN can add and edit; only SUPER_ADMIN can delete.
+
+## 2. Goals / metrics
+
+### Goals
+
+- Give players one place to find match photos, videos and tactic breakdowns without asking in the group chat.
+- Keep media on Google Drive (free, already in use) instead of paying for blob storage.
+- Let staff add a link in seconds, with the link shape validated up front.
+
+### Metrics
+
+- Total number of documents.
+- Number of albums (Drive folders).
+- Number of videos (Drive video files).
+- Number of tactics (video breakdowns of plays or game plans).
+- Number of files (photos, PDFs, Docs/Sheets/Slides).
+
+## 3. Users and permissions
+
+| Role             | View documents + metrics | Filter | Add | Edit | Bulk delete |
+| ---------------- | ------------------------ | ------ | --- | ---- | ----------- |
+| GUEST            | No                       | No     | No  | No   | No          |
+| PLAYER           | Yes                      | Yes    | No  | No   | No          |
+| COACH            | Yes                      | Yes    | Yes | Yes  | No          |
+| SUPER_ADMIN      | Yes                      | Yes    | Yes | Yes  | Yes         |
+| PLAYER (Captain) | Yes                      | Yes    | No  | No   | No          |
+
+> Captain permissions add nothing on the `documents` resource.
+
+## 4. UX / flows
+
+### Entry point
+
+- Sidebar → **Documents**
+
+### View and filter
+
+- The Metrics section shows Total, Albums, Videos, Tactics and Files. Clicking a metric card filters the grid by that type (Total clears all filters).
+- Documents render as a **card grid** (1 column on mobile, up to 4 on wide screens), ordered by event date (most recent first, undated on top), then by title.
+- Each card shows a thumbnail (Drive files) or a type icon (folders), a type badge, the title, the event date, an optional note, and an **Open in Drive** link that opens a new tab.
+- Every card can be previewed in the app. **Videos** and **Tactics** show **Play** and start playing on open in a native `<video>` player (with sound when the browser allows it, muted otherwise). **Albums** show **Preview** and open the folder's photos and videos as a grid; picking one shows the photo or plays the video in the same dialog. **Files** (photos, PDFs, Docs) show **Preview** and open Drive's viewer. Nothing is proxied: the media streams from Drive.
+- Filters: title/note text search, event date range (same date range picker as other pages; empty means all time), type (multi-select).
+- Filter state is stored in URL query params.
+
+### Create
+
+- Authorized users see **+ Add**.
+- The dialog asks for Title, Google Drive link, Type, Event date and Note. The helper text under the link reminds the user to share the item as "Anyone with the link".
+- The type is pre-selected from the link shape (folder → Album, Drive file → Video, Google Docs/Sheets/Slides → File) and can be changed.
+- On success the dialog stays open with the fields cleared, so several links can be entered in a row.
+
+### Edit
+
+- Authorized users see a pencil icon on each card. It opens the same dialog pre-filled. On success the dialog closes.
+
+### Delete
+
+- SUPER_ADMIN sees a checkbox on each card. Selecting one or more cards shows the action bar with **Delete**.
+
+## 5. Functional requirements
+
+### Viewing
+
+- **FR-1:** PLAYER, COACH and SUPER_ADMIN can view the documents grid; GUEST is redirected to `/forbidden`.
+- **FR-2:** The same roles can view the metrics section.
+- **FR-3:** The grid only ever contains the signed-in user's team, ordered by event date descending (undated first, per Postgres `DESC NULLS FIRST`), then title ascending.
+- **FR-4:** Previewing a document never proxies the file. Videos, tactics and album videos play in a native `<video>` streamed through `/api/drive/[id]`: a signed-in-only route that fetches the file from the Drive API (`alt=media`) with the server-side key and forwards `Range` so seeking works. If the stream fails (no key, private file, codec the browser can't decode) the player falls back to Drive's `/file/d/{id}/preview` iframe. Other files embed that iframe directly. Albums are listed server-side through the Drive API (`GOOGLE_API_KEY`, Drive API enabled) and rendered as our own grid: photos open at viewing size, videos in the Drive player. Without the key, or if Drive refuses the folder, albums fall back to Drive's `embeddedfolderview?id={id}#grid`. **Open in Drive** opens the stored URL in a new tab. No OAuth client is involved: the item only has to be shared as "Anyone with the link · Viewer" (set on the folder in Drive, and files inside inherit it).
+- **FR-5:** Thumbnails come from Drive's public thumbnail endpoint. If Drive returns no image (private or deleted file), the card falls back to the type icon.
+
+### Filtering + query params
+
+- **FR-6:** Filter by text (title, note), event date range and type.
+- **FR-7:** URL reflects filters (query params).
+- **FR-8:** Back/forward restores filters from the URL.
+
+### Create/edit
+
+- **FR-9:** COACH and SUPER_ADMIN can create and edit documents.
+- **FR-10:** Document dialog fields:
+  - Required: Title (3–96 chars), Google Drive link
+  - Optional: Type (default `album`), Event date (default today), Note (max 128)
+- **FR-11:** The link must be a recognised Google Drive share URL (folder, file, Google Docs/Sheets/Slides/Forms, or `open?id=` / `uc?id=`). Anything else is rejected client-side and again in the server action.
+- **FR-12:** The Drive item id is parsed from the link and stored. A Drive item can be linked at most once per team (`team_document_drive_id` unique index on `(team_id, drive_id)`); a duplicate is rejected with an error toast.
+- **FR-13:** The app does not verify that the link is actually public. The dialog explains the sharing requirement instead, and a missing thumbnail is the visible signal.
+- **FR-14:** After a successful create or edit, the grid and metrics update without a full page refresh.
+- **FR-15:** On a successful **Add** the dialog stays open and the form resets; on a successful **Update** the dialog closes. A failed submit leaves the dialog open with the entered values intact.
+
+### Delete
+
+- **FR-16:** Only SUPER_ADMIN can bulk delete documents.
+- **FR-17:** Deletion shows a success/error toast.
+- **FR-18:** After a successful deletion, the grid and metrics update without a full page refresh. Deleting a document never touches the Drive item.
+
+## 6. Acceptance criteria (Given/When/Then)
+
+- **AC-1:** Given I am a PLAYER, when I open Documents, then I see the grid and metrics but no "+ Add" button, no pencil icons and no checkboxes.
+- **AC-2:** Given I am a COACH, when I add a document with a Title and a Drive folder link, then it is created, its type defaults to Album, and it appears in the grid.
+- **AC-3:** Given I paste `https://example.com/photos` as the link, then the form stays invalid and cannot be submitted.
+- **AC-4:** Given my team already links folder `X`, when I add another document with a different share URL for the same folder `X`, then it is rejected with an error toast.
+- **AC-5:** Given I filter by text "final", type "Video" and event dates in 2025, then the URL includes `q=final`, `type=video`, `from=2025-01-01` and `to=2025-12-31`.
+- **AC-6:** Given a video or tactic card, when I click Play, then a dialog opens with Drive's embedded player for that file. Given an album card, when I click Preview, then the dialog shows the folder's photos as a grid.
+- **AC-7:** Given I am a COACH, when I attempt to delete documents (UI or API), then the request is rejected.
+- **AC-8:** Given I am a GUEST, when I navigate to `/documents`, then I am redirected to `/forbidden`.
+
+## 7. Technical appendix
+
+### Data model (logical)
+
+Document (`src/drizzle/schema/document.ts`):
+
+- `title`: varchar(96), required
+- `url`: text, required; the share link as pasted
+- `drive_id`: varchar(128), required; parsed from `url`, unique per team (`team_document_drive_id` index on `(team_id, drive_id)`)
+- `type`: enum [`album`, `video`, `tactic`, `file`] (default `album`)
+- `event_date`: date (optional; drives the default order and the date range filter)
+- `note`: varchar(128) (optional)
+- `team_id`: FK → team, cascade delete
+
+No file bytes, sizes or MIME types are stored. Drive stays the source of truth.
+
+### Drive link handling
+
+`src/utils/drive.ts` owns everything Drive-specific:
+
+- `parseDriveUrl(url)` → `{ id, kind: 'folder' | 'file' }` or `null`
+- `detectDocumentType(url)` → default type for the form
+- `driveThumbnailUrl(id)` → `https://drive.google.com/thumbnail?id={id}&sz=w400`
+- `listDriveFolder(id)` (`src/lib/drive.ts`, server only) → the folder's photos and videos, or `null` without `GOOGLE_API_KEY`
+- `streamDriveFile(id, range)` (`src/lib/drive.ts`, server only) → the file's bytes for `/api/drive/[id]`, or `null`
+- `driveStreamUrl(id)` → `/api/drive/{id}`
+- `drivePreviewUrl({ id, kind })` → `https://drive.google.com/embeddedfolderview?id={id}#grid` for folders, `https://drive.google.com/file/d/{id}/preview` for files
+
+### Query params contract
+
+- `q` (string): title/note search
+- `type` (string list): document type values
+- `from` / `to` (ISO date): event date window; empty means all time
+- `page` (number): current page (8 cards per page)
+
+Example:
+
+- `?q=final&type=video&from=2025-01-01&to=2025-12-31&page=1`
+
+### Later
+
+- Optional `match_id` so videos can surface on match pages. Left out of v1 on purpose.

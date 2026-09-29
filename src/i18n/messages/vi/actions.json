@@ -20,6 +20,14 @@
     "leaveSubmitted": "Đã gửi đơn xin nghỉ",
     "statusUpdated": "Đã cập nhật trạng thái điểm danh"
   },
+  "document": {
+    "added": "Đã thêm tài liệu",
+    "deleted": "Đã xóa tài liệu",
+    "deleteFailed": "Không thể xóa tài liệu",
+    "duplicate": "Link Drive này đã có trong danh sách.",
+    "invalid": "Phải là link thư mục hoặc tệp Google Drive.",
+    "updated": "Đã cập nhật tài liệu"
+  },
   "feedback": {
     "failed": "Hiện không thể gửi góp ý. Vui lòng thử lại sau.",
     "submitted": "Cảm ơn bạn! Góp ý của bạn đã được ghi nhận với mã #{number}."

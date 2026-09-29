@@ -20,6 +20,14 @@
     "leaveSubmitted": "Leave request submitted successfully",
     "statusUpdated": "Updated attendance status successfully"
   },
+  "document": {
+    "added": "Added document successfully",
+    "deleted": "Document deleted successfully",
+    "deleteFailed": "Failed to delete document",
+    "duplicate": "This Drive link is already in the list.",
+    "invalid": "Must be a Google Drive folder or file link.",
+    "updated": "Updated document successfully"
+  },
   "feedback": {
     "failed": "Unable to send your feedback right now. Please try again later.",
     "submitted": "Thanks! Your feedback was filed as #{number}."

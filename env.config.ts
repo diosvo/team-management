@@ -45,6 +45,12 @@ const envSchema = z.object({
     .describe(
       'OAuth web client ID from Google Cloud with the Drive and Sheets APIs enabled and <origin>/google-callback as an authorized redirect URI. Enables opening the jersey form in Google Sheets.',
     ),
+  GOOGLE_API_KEY: z
+    .string()
+    .default('')
+    .describe(
+      "Google Cloud API key with the Drive API enabled. Lists public Drive folders so albums play inside the app; without it albums fall back to Drive's embedded folder view.",
+    ),
   PW_USERNAME: z.string().default(''),
   PW_PASSWORD: z.string().default(''),
 });

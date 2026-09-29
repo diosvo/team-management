@@ -217,7 +217,11 @@ function JerseyOrderDialog({
               </Stack>
             </Dialog.Body>
             <Dialog.Footer>
-              <HStack>
+              <HStack
+                width="full"
+                flexWrap="wrap"
+                css={{ '& > *': { flex: '1 0 auto' } }}
+              >
                 <Button
                   variant={googleClientId || sheet ? 'outline' : 'solid'}
                   loading={isDownloading}

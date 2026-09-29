@@ -84,6 +84,15 @@ export const AssetCondition = createEnum([
 ] as const);
 export type AssetCondition = enumUnion<typeof AssetCondition>;
 
+// What a linked Google Drive item is: a photo folder, a video file, or any other file.
+export const DocumentType = createEnum([
+  'album',
+  'video',
+  'tactic',
+  'file',
+] as const);
+export type DocumentType = enumUnion<typeof DocumentType>;
+
 export const TestTypeUnit = createEnum([
   'meters',
   'percent',
