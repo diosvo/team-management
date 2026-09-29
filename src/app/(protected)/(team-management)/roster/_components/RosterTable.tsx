@@ -4,10 +4,16 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useMemo } from 'react';
 
-import { Badge, Icon } from '@chakra-ui/react';
-import { ShieldAlert, ShieldCheck, SwatchBook } from 'lucide-react';
+import { Badge, HStack, Icon } from '@chakra-ui/react';
+import {
+  ChartSpline,
+  ShieldAlert,
+  ShieldCheck,
+  SwatchBook,
+  UserRound,
+} from 'lucide-react';
 
-import DataTable, { type Column } from '@/components/DataTable';
+import DataTable, { RowAction, type Column } from '@/components/DataTable';
 import HighlightText from '@/components/HighlightText';
 
 import usePermissions from '@/hooks/use-permissions';
@@ -130,6 +136,31 @@ export default function RosterTable({ users }: { users: Array<RosterUser> }) {
         );
       },
     },
+    // Admins jump to a member's profile or, for players, their performance.
+    ...(isAdmin
+      ? [
+          {
+            header: t('actions'),
+            align: 'center',
+            cell: (user: RosterUser) => (
+              <HStack gap={1} justifyContent="center">
+                <RowAction
+                  label={t('viewProfile')}
+                  icon={UserRound}
+                  href={`/profile/${user.id}`}
+                />
+                {user.role === UserRole.PLAYER && (
+                  <RowAction
+                    label={t('viewPerformance')}
+                    icon={ChartSpline}
+                    href={`/performance/${user.id}`}
+                  />
+                )}
+              </HStack>
+            ),
+          } satisfies Column<RosterUser>,
+        ]
+      : []),
   ];
 
   return (

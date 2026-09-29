@@ -59,3 +59,19 @@ export const MATCH_STATUS_SELECTION: Selection<string> = [
   },
 ];
 export const MATCH_STATUS_VALUES = [ALL.value, ...SELECTABLE_MATCH_STATUS];
+
+/**
+ * Box-score columns recorded per player per match, in display order.
+ * `label`/`short` are the English fallback; UI text comes from
+ * `matches.boxScore.stats.<key>.{label,short}`.
+ */
+export const MATCH_STAT_FIELDS = [
+  { key: 'points_scored', label: 'Points', short: 'PTS', max: 200 },
+  { key: 'rebounds', label: 'Rebounds', short: 'REB', max: 100 },
+  { key: 'assists', label: 'Assists', short: 'AST', max: 100 },
+  { key: 'steals', label: 'Steals', short: 'STL', max: 50 },
+  { key: 'blocks', label: 'Blocks', short: 'BLK', max: 50 },
+  { key: 'turnovers', label: 'Turnovers', short: 'TOV', max: 50 },
+  { key: 'fouls', label: 'Personal fouls', short: 'PF', max: 10 },
+] as const;
+export type MatchStatField = (typeof MATCH_STAT_FIELDS)[number]['key'];

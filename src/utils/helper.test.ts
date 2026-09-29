@@ -6,6 +6,7 @@ import {
   MatchResult,
   MatchStatus,
   SessionStatus,
+  TestTypeUnit,
   UserState,
 } from './enum';
 
@@ -13,6 +14,7 @@ import {
   colorRank,
   deriveDateStatus,
   getColor,
+  isLowerBetter,
   plainTextLength,
 } from './helper';
 
@@ -69,6 +71,13 @@ describe('colorRank', () => {
 
   test.each(cases)('returns $expected for $value', ({ value, expected }) => {
     expect(colorRank(value as number)).toBe(expected);
+  });
+});
+
+describe('isLowerBetter', () => {
+  test('only timed tests improve downwards', () => {
+    expect(isLowerBetter(TestTypeUnit.SECONDS)).toBe(true);
+    expect(isLowerBetter(TestTypeUnit.METERS)).toBe(false);
   });
 });
 

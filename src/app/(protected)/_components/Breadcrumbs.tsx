@@ -13,9 +13,9 @@ import { navLabel } from '../_helpers/utils';
  * Segments that have no index route of their own, so they should be rendered
  * as plain text instead of a link
  *
- * @example `/profile` only exists as `/profile/[id]`
+ * @example `/profile` only exists as `/profile/[id]`, `/performance` as `/performance/[id]`
  */
-const NON_NAVIGABLE_SEGMENTS = new Set<string>(['profile']);
+const NON_NAVIGABLE_SEGMENTS = new Set<string>(['performance', 'profile']);
 
 export default function Breadcrumbs() {
   const pathname = usePathname();

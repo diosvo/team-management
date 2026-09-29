@@ -23,6 +23,11 @@ export const revalidate = {
   attendances: () => revalidatePath('/attendance'),
   matches: () => revalidatePath('/matches'),
   reports: () => revalidatePath('/reports'),
+  matchStats: () => {
+    revalidatePath('/matches');
+    revalidatePath('/matches/stats');
+    revalidatePath('/performance/[id]', 'page');
+  },
   roster: () => revalidatePath('/roster'),
   sessions: () => revalidatePath('/training'),
   teams: () => revalidatePath('/teams'),

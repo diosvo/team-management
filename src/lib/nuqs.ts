@@ -13,6 +13,7 @@ import {
 
 import type { DateRange } from '@/types/common';
 import {
+  PERFORMANCE_TABS,
   SELECTABLE_ASSET_CATEGORIES,
   SELECTABLE_ASSET_CONDITIONS,
   SELECTABLE_ATTENDANCE_STATUS,
@@ -27,6 +28,7 @@ import {
   SELECTABLE_USER_STATES,
 } from '@/utils/constants';
 import { thisDay, thisYear } from '@/utils/datetime';
+import { ActivityKind, enumValues } from '@/utils/enum';
 
 export const commonParams = {
   page: parseAsInteger.withDefault(1),
@@ -140,6 +142,21 @@ const dashboardSearchParams = {
 };
 const dashboardFilters = { params: dashboardSearchParams, window: thisYear };
 
+const performanceSearchParams = {
+  ...commonParams,
+  ...dateRangeParams,
+  tab: parseAsStringEnum([...PERFORMANCE_TABS]).withDefault('attendance'),
+  // Test type name whose progress is charted (empty = first available).
+  test: parseAsString.withDefault(''),
+  kind: parseAsArrayOf(parseAsStringEnum(enumValues(ActivityKind))).withDefault(
+    [],
+  ),
+};
+const performanceFilters = {
+  params: performanceSearchParams,
+  window: thisYear,
+};
+
 const emailSearchParams = {
   ...commonParams,
   status: parseAsArrayOf(
@@ -223,6 +240,9 @@ export const useDashboardFilters = createRangeFilters(dashboardFilters, {
   shallow: false,
 });
 export const useEmailFilters = createFilters(emailSearchParams);
+// Client-only by default: tab, chart selection and activity filter never hit
+// the server. Only the date range opts into `{ shallow: false }` at the call site.
+export const usePerformanceFilters = createRangeFilters(performanceFilters);
 
 /* ================== 🌩️ Server-Side Loaders 🌩️ ================== */
 
@@ -233,6 +253,7 @@ export const loadMatchFilters = createRangeLoader(matchFilters);
 export const loadAttendanceFilters = createRangeLoader(attendanceFilters);
 export const loadDashboardFilters = createRangeLoader(dashboardFilters);
 export const loadTrainingFilters = createRangeLoader(trainingFilters);
+export const loadPerformanceFilters = createRangeLoader(performanceFilters);
 
 /* ================== 🧮 Types & Enums 🧮 ================== */
 
@@ -244,6 +265,9 @@ export type TrainingSearchParams = Awaited<
 export type TrainingSearchParamsKeys = keyof typeof trainingSearchParams;
 export type AttendanceSearchParams = Awaited<
   ReturnType<typeof loadAttendanceFilters>
+>;
+export type PerformanceSearchParams = Awaited<
+  ReturnType<typeof loadPerformanceFilters>
 >;
 
 export function getDefaults<T extends UseQueryStatesKeysMap>(

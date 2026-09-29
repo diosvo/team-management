@@ -15,6 +15,7 @@ import { useUserAvatar } from '@/hooks/use-image';
 import authClient from '@/lib/auth-client';
 import { useSessionContext, type SessionUser } from '@/providers/session';
 import { LOGIN_PATH } from '@/routes';
+import { UserRole } from '@/utils/enum';
 
 import AccountMenu, { SOCIAL_LINKS } from './AccountMenu';
 
@@ -123,6 +124,19 @@ describe('AccountMenu', () => {
       'href',
       `/performance/${MOCK_SESSION_USER.id}`,
     );
+  });
+
+  test('hides the Performance link from non-players', async () => {
+    const { user } = setup({ ...MOCK_SESSION_USER, role: UserRole.COACH });
+
+    await openMenu(user);
+
+    expect(
+      await screen.findByRole('menuitem', { name: /^profile$/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('menuitem', { name: /^performance$/i }),
+    ).not.toBeInTheDocument();
   });
 
   test('shows a Log Out option when the menu is open', async () => {

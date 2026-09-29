@@ -12,6 +12,11 @@ import { buildRegistrationPdf, generateDefaultRosterPdf } from './pdf';
 
 const FONTS_DIR = path.join(process.cwd(), 'public', 'fonts');
 
+// Every test embeds two ~2MB fonts (unsubset), saves and re-parses the PDF.
+// That is ~300ms alone but CPU-bound, so it can blow the 5s default when the
+// full suite saturates every worker.
+vi.setConfig({ testTimeout: 30_000 });
+
 const player = (overrides: Partial<User> = {}): User =>
   ({
     ...MOCK_USER,
@@ -74,7 +79,8 @@ describe('generateDefaultRosterPdf', () => {
   });
 
   test('paginates once a page is full', async () => {
-    const players = Array.from({ length: 40 }, (_, i) =>
+    // The first page fits 5 rows of 2 cards; one more row forces a new page.
+    const players = Array.from({ length: 12 }, (_, i) =>
       player({ id: `user-${i}`, name: `Player ${i}` } as never),
     );
 

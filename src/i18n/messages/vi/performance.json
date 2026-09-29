@@ -1,0 +1,132 @@
+{
+  "activity": {
+    "columns": {
+      "date": "Ngày",
+      "details": "Chi tiết",
+      "outcome": "Kết quả",
+      "type": "Loại"
+    },
+    "description": "Mọi buổi tập, bài kiểm tra và trận đấu trong khoảng thời gian này",
+    "emptyDescription": "Thử chọn khoảng thời gian hoặc loại hoạt động khác nhé.",
+    "emptyTitle": "Chưa có hoạt động nào trong khoảng này",
+    "filters": {
+      "match": "Trận đấu",
+      "test": "Kiểm tra",
+      "training": "Buổi tập"
+    },
+    "hours": "{hours} giờ",
+    "kinds": {
+      "match": "Trận đấu",
+      "test": "Kiểm tra",
+      "training": "Buổi tập"
+    },
+    "matchLine": "{points} PTS · {rebounds} REB · {assists} AST",
+    "notRecorded": "Chưa điểm danh",
+    "testCount": "{count, plural, other {# bài kiểm tra}}",
+    "title": "Nhật ký hoạt động",
+    "versus": "gặp {opponent}"
+  },
+  "attendance": {
+    "againstTeam": "So với cả đội",
+    "breakdownDescription": "Các buổi tập trong khoảng thời gian đã chọn",
+    "breakdownTitle": "Chi tiết",
+    "comparison": "{subject} {rate}% · Đội {teamRate}%",
+    "emptyDescription": "Chưa có buổi tập nào được điểm danh trong khoảng này.",
+    "emptyTitle": "Chưa có dữ liệu điểm danh",
+    "lastWeeks": "{weeks} tuần gần đây",
+    "notEnough": "Chưa đủ buổi tập trong {weeks} tuần qua để so sánh.",
+    "pointsDiff": "{diff} điểm %",
+    "reasonsTitle": "Lý do vắng và đi trễ",
+    "target": "Mục tiêu {rate}%",
+    "team": "Đội",
+    "trendCompare": "{recent}% so với {previous}% trước đó",
+    "trendDescription": "Tỷ lệ điểm danh theo tháng so với cả đội",
+    "trendTitle": "Xu hướng điểm danh",
+    "unknownReason": "Không rõ"
+  },
+  "header": {
+    "captain": "Đội trưởng",
+    "playerName": "Tên cầu thủ"
+  },
+  "matches": {
+    "average": "TB {stat}",
+    "boxScoresDescription": "Mỗi dòng là một trận đã ghi thống kê",
+    "boxScoresTitle": "Thống kê trận",
+    "chartDescription": "Điểm, bắt bóng và kiến tạo mỗi trận trong khoảng thời gian đã chọn",
+    "chartTitle": "Thống kê các trận gần đây",
+    "columns": {
+      "date": "Ngày",
+      "opponent": "Đối thủ",
+      "score": "Tỉ số"
+    },
+    "emptyDescription": "Điểm, bắt bóng và kiến tạo sẽ hiện ở đây khi HLV ghi thống kê cho trận cầu thủ đã ra sân.",
+    "emptyTitle": "Chưa có thống kê trận",
+    "noBoxScores": "Chưa có thống kê trận",
+    "title": "Thống kê trận đấu"
+  },
+  "metadata": {
+    "title": "Phong độ",
+    "description": "Điểm danh, kết quả kiểm tra và thống kê trận đấu của cầu thủ"
+  },
+  "notFound": {
+    "description": "Cầu thủ bạn đang tìm không tồn tại hoặc đã bị xoá.",
+    "title": "Không tìm thấy cầu thủ"
+  },
+  "page": {
+    "notPlayer": {
+      "description": "Điểm danh, kết quả kiểm tra và thống kê trận chỉ được ghi cho cầu thủ.",
+      "own": "Tài khoản này chưa có dữ liệu phong độ",
+      "other": "{name} không phải là cầu thủ",
+      "title": "Chỉ dành cho cầu thủ"
+    },
+    "ownTitle": "Phong độ của tôi",
+    "title": "Phong độ",
+    "you": "Bạn"
+  },
+  "skeleton": {
+    "average": "Trung bình",
+    "description": "Đang tải mô tả",
+    "helpText": "Ghi chú",
+    "statLabel": "Nhãn"
+  },
+  "stats": {
+    "allTime": "Từ trước đến nay",
+    "attendanceRate": "Tỷ lệ điểm danh",
+    "attended": "{attended}/{total, plural, other {# buổi}}",
+    "bestRun": "Chuỗi dài nhất: {count}",
+    "currentStreak": "Chuỗi hiện tại",
+    "honorUnit": "danh hiệu",
+    "honors": "Danh hiệu cá nhân",
+    "honorsHint": "MVP, vua ghi điểm, ...",
+    "lastTested": "Kiểm tra gần nhất {date}",
+    "noSessions": "Chưa có buổi tập nào",
+    "sessionUnit": "buổi",
+    "testUnit": "lần",
+    "testsTaken": "Số lần kiểm tra"
+  },
+  "tabs": {
+    "activity": "Hoạt động",
+    "attendance": "Điểm danh",
+    "matches": "Trận đấu",
+    "testing": "Kiểm tra"
+  },
+  "testing": {
+    "betterThan": "Hơn {percentile}% đồng đội",
+    "emptyDescription": "Kết quả sẽ hiện ở đây khi HLV ghi một buổi kiểm tra định kỳ.",
+    "emptyTitle": "Chưa có kết quả kiểm tra",
+    "firstResult": "Lần đầu",
+    "latestDescription": "Kiểm tra gần nhất {date} · chọn một bài để xem biểu đồ",
+    "latestTitle": "Kết quả gần nhất",
+    "noComparisonDescription": "Không có đồng đội nào kiểm tra cùng ngày gần nhất.",
+    "noComparisonTitle": "Chưa có dữ liệu so sánh",
+    "noTeammates": "Không có đồng đội kiểm tra cùng",
+    "percentile": "Phân vị",
+    "progressDescription": "{name} ({unit}) · {direction, select, lower {càng thấp càng tốt} other {càng cao càng tốt}} · đường nét đứt là trung bình của đội cùng ngày",
+    "progressTitle": "Tiến bộ theo thời gian",
+    "standingDescription": "Tỷ lệ đồng đội bạn vượt qua ở lần kiểm tra gần nhất, theo từng bài",
+    "standingTitle": "Vị trí trong đội",
+    "teamAverage": "Trung bình đội",
+    "teamAvg": "TB đội {value}",
+    "title": "Bài kiểm tra thể lực"
+  }
+}

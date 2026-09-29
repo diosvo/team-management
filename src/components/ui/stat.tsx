@@ -16,6 +16,8 @@ export type StatProps = Omit<ChakraStat.RootProps, 'title' | 'onClick'> & {
     unit: string;
     /** Color applied to the value text. */
     color: ColorPalette;
+    /** Secondary line under the value (e.g. "22/24 sessions"). */
+    helpText: React.ReactNode;
     onClick: () => void;
   }>;
 
@@ -24,6 +26,7 @@ export function Stat({
   value,
   unit,
   color,
+  helpText,
   onClick,
   ...rest
 }: StatProps) {
@@ -73,6 +76,9 @@ export function Stat({
           <ChakraStat.ValueUnit>{formattedUnit}</ChakraStat.ValueUnit>
         )}
       </ChakraStat.ValueText>
+      {helpText != null && (
+        <ChakraStat.HelpText>{helpText}</ChakraStat.HelpText>
+      )}
     </ChakraStat.Root>
   );
 }

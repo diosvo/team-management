@@ -26,7 +26,7 @@ import type { TrainingSessionWithDetails } from '@/types/training-session';
 import { enumLabel } from '@/i18n/enums';
 
 import { useTrainingFilters } from '@/lib/nuqs';
-import { formatDate, formatDay } from '@/utils/datetime';
+import { formatDate, formatDayPadded } from '@/utils/datetime';
 import { getColor } from '@/utils/helper';
 
 import { removeSession } from '@/actions/training-session';
@@ -72,7 +72,9 @@ export default function SessionTable({
             onClick={(e) => e.stopPropagation()}
           >
             <HStack>
-              <Span>{formatDay(item.date, undefined, locale)}</Span>
+              <Span whiteSpace="pre">
+                {formatDayPadded(item.date, locale)}
+              </Span>
               <Span color="gray.400">&bull;</Span>
               <Span>{formatDate(item.date)}</Span>
             </HStack>

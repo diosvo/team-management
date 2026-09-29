@@ -3,11 +3,12 @@
 import { useCallback } from 'react';
 
 import { Badge, HStack, Span } from '@chakra-ui/react';
+import { ClipboardList } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { LeagueLink } from '@/components/common/LeagueSelection';
 import { LocationLink } from '@/components/common/LocationSelection';
-import DataTable, { type Column } from '@/components/DataTable';
+import DataTable, { RowAction, type Column } from '@/components/DataTable';
 import HighlightText from '@/components/HighlightText';
 
 import usePermissions from '@/hooks/use-permissions';
@@ -16,7 +17,7 @@ import useTableState from '@/hooks/use-table-state';
 import { enumLabel } from '@/i18n/enums';
 import { useMatchFilters } from '@/lib/nuqs';
 import type { MatchWithTeams } from '@/types/match';
-import { formatDate, formatDay } from '@/utils/datetime';
+import { formatDate, formatDayPadded } from '@/utils/datetime';
 import { MatchStatus } from '@/utils/enum';
 import { getColor } from '@/utils/helper';
 
@@ -103,7 +104,9 @@ export default function MatchTable({
       header: tc('date'),
       cell: (item) => (
         <HStack gap={1}>
-          <Span fontSize="sm">{formatDay(item.date, undefined, locale)}</Span>
+          <Span fontSize="sm" whiteSpace="pre">
+            {formatDayPadded(item.date, locale)}
+          </Span>
           <Span color="gray.400">&bull;</Span>
           <Span fontSize="sm">{formatDate(item.date)}</Span>
           <Span color="gray.400">&bull;</Span>
@@ -111,6 +114,26 @@ export default function MatchTable({
         </HStack>
       ),
     },
+    // Editors get a quick box-score link for completed matches.
+    ...(can('matches', 'edit')
+      ? [
+          {
+            header: t('boxScore'),
+            align: 'center',
+            cell: (item) =>
+              item.status === MatchStatus.COMPLETED && (
+                <RowAction
+                  label={t('recordBoxScore')}
+                  icon={ClipboardList}
+                  href={{
+                    pathname: '/matches/stats',
+                    query: { match: item.match_id },
+                  }}
+                />
+              ),
+          } satisfies Column<MatchWithTeams>,
+        ]
+      : []),
   ];
 
   return (

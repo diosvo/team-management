@@ -7,6 +7,7 @@ import {
   isNotNull,
   isNull,
   or,
+  sql,
 } from 'drizzle-orm';
 
 import db from '@/drizzle';
@@ -34,7 +35,11 @@ import {
   countTeamMatches,
   deleteMatch,
   getMatches,
+  getMatchOwnership,
+  getMatchPlayerStats,
+  getPlayedMatches,
   insertMatch,
+  saveMatchPlayerStats,
   updateMatch,
 } from './match';
 import { withinRange } from './utils';
@@ -58,6 +63,7 @@ vi.mock('@/drizzle', () => ({
     delete: vi.fn(() => ({
       where: vi.fn(),
     })),
+    transaction: vi.fn(),
   },
 }));
 
@@ -71,6 +77,11 @@ vi.mock('@/drizzle/schema', () => ({
     date: 'date',
     status: 'status',
     updated_at: 'updated_at',
+  },
+  MatchPlayerStatsTable: {
+    match_id: 'match_id',
+    player_id: 'player_id',
+    team_id: 'team_id',
   },
 }));
 
@@ -468,5 +479,175 @@ describe('countTeamMatches', () => {
     await expect(countTeamMatches(MOCK_TEAM.team_id)).rejects.toThrow(
       'Count failed',
     );
+  });
+});
+
+describe('getPlayedMatches', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  test("lists the team's completed matches newest first", async () => {
+    const rows = [
+      {
+        match_id: MOCK_MATCH.match_id,
+        date: MOCK_MATCH.date,
+        home_team_score: 40,
+        away_team_score: 35,
+        opponent: MOCK_AWAY_TEAM.name,
+        recorded: 5,
+      },
+    ];
+    const { mockInnerJoin, mockWhereWithGroupBy, mockOrderBy } =
+      mockSelectSuccess(rows);
+
+    await expect(getPlayedMatches(MOCK_TEAM.team_id)).resolves.toEqual(rows);
+
+    expect(mockInnerJoin).toHaveBeenCalled();
+    expect(mockWhereWithGroupBy).toHaveBeenCalledWith(
+      and(
+        eq(MatchTable.home_team, MOCK_TEAM.team_id),
+        eq(MatchTable.status, MatchStatus.COMPLETED),
+      ),
+    );
+    expect(mockOrderBy).toHaveBeenCalled();
+  });
+
+  test('returns an empty list on a database error', async () => {
+    mockSelectFailure('Select failed');
+
+    await expect(getPlayedMatches(MOCK_TEAM.team_id)).resolves.toEqual([]);
+  });
+});
+
+describe('getMatchOwnership', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const mockOwnership = (rows: Array<unknown>) => {
+    const mockLimit = vi.fn().mockResolvedValue(rows);
+    const mockWhere = vi.fn(() => ({ limit: mockLimit }));
+    vi.mocked(db.select).mockReturnValueOnce({
+      from: vi.fn(() => ({ where: mockWhere })),
+    } as unknown as ReturnType<typeof db.select>);
+    return { mockWhere, mockLimit };
+  };
+
+  test('returns the owning team and status', async () => {
+    const owner = {
+      home_team: MOCK_TEAM.team_id,
+      status: MatchStatus.COMPLETED,
+    };
+    const { mockWhere, mockLimit } = mockOwnership([owner]);
+
+    await expect(getMatchOwnership(MOCK_MATCH.match_id)).resolves.toEqual(
+      owner,
+    );
+    expect(mockWhere).toHaveBeenCalledWith(
+      eq(MatchTable.match_id, MOCK_MATCH.match_id),
+    );
+    expect(mockLimit).toHaveBeenCalledWith(1);
+  });
+
+  test('returns null for an unknown match', async () => {
+    mockOwnership([]);
+
+    await expect(getMatchOwnership('missing')).resolves.toBeNull();
+  });
+});
+
+describe('getMatchPlayerStats', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  test("reads the team's box score for a match", async () => {
+    const rows = [
+      { player_id: 'player-1', player_name: 'A', points_scored: 9 },
+    ];
+    const { mockWhereWithGroupBy } = mockSelectSuccess(rows);
+
+    await expect(
+      getMatchPlayerStats(MOCK_MATCH.match_id, MOCK_TEAM.team_id),
+    ).resolves.toEqual(rows);
+    expect(mockWhereWithGroupBy).toHaveBeenCalled();
+  });
+
+  test('returns an empty list on a database error', async () => {
+    mockSelectFailure('Select failed');
+
+    await expect(
+      getMatchPlayerStats(MOCK_MATCH.match_id, MOCK_TEAM.team_id),
+    ).resolves.toEqual([]);
+  });
+});
+
+describe('saveMatchPlayerStats', () => {
+  const mockOnConflict = vi.fn();
+  const mockValues = vi.fn(() => ({ onConflictDoUpdate: mockOnConflict }));
+  const mockDeleteWhere = vi.fn();
+  const tx = {
+    insert: vi.fn(() => ({ values: mockValues })),
+    delete: vi.fn(() => ({ where: mockDeleteWhere })),
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(db.transaction).mockImplementation(((
+      callback: (t: typeof tx) => Promise<unknown>,
+    ) => callback(tx)) as never);
+  });
+
+  // The global drizzle-orm mock has no `sql.raw`.
+  beforeAll(() => {
+    Object.assign(sql, {
+      raw: vi.fn((query: string) => ({ queryChunks: [query] })),
+    });
+  });
+
+  const row = {
+    player_id: 'player-1',
+    points_scored: 10,
+    rebounds: 2,
+    assists: 1,
+    steals: 0,
+    blocks: 0,
+    turnovers: 0,
+    fouls: 1,
+    minutes_played: 20,
+  };
+
+  test('upserts rows and deletes removed players in one transaction', async () => {
+    await saveMatchPlayerStats(
+      MOCK_MATCH.match_id,
+      MOCK_TEAM.team_id,
+      [row],
+      ['player-2'],
+    );
+
+    expect(db.transaction).toHaveBeenCalledTimes(1);
+    expect(tx.delete).toHaveBeenCalled();
+    expect(mockDeleteWhere).toHaveBeenCalled();
+    expect(mockValues).toHaveBeenCalledWith([
+      { ...row, match_id: MOCK_MATCH.match_id, team_id: MOCK_TEAM.team_id },
+    ]);
+    expect(mockOnConflict).toHaveBeenCalledWith(
+      expect.objectContaining({
+        target: ['match_id', 'player_id'],
+        set: expect.objectContaining({
+          team_id: MOCK_TEAM.team_id,
+          points_scored: { queryChunks: ['excluded.points_scored'] },
+          updated_at: expect.any(Date),
+        }),
+      }),
+    );
+  });
+
+  test('skips both writes when nothing changed', async () => {
+    await saveMatchPlayerStats(MOCK_MATCH.match_id, MOCK_TEAM.team_id, [], []);
+
+    expect(tx.delete).not.toHaveBeenCalled();
+    expect(tx.insert).not.toHaveBeenCalled();
   });
 });

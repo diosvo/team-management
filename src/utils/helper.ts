@@ -11,6 +11,7 @@ import {
   MatchResult,
   ReportStatus,
   SessionStatus,
+  TestTypeUnit,
   UserState,
 } from './enum';
 
@@ -72,6 +73,14 @@ export function getColor(value: Nullish<string>): ColorPalette {
   if (value === ALL.value) return 'blue';
   if (value == null) return 'gray';
   return COLOR_LOOKUP.get(value) ?? 'black';
+}
+
+/**
+ * Whether a lower score is better, based on the unit.
+ * Timed tests (seconds) improve downward.
+ */
+export function isLowerBetter(unit: string): boolean {
+  return unit === TestTypeUnit.SECONDS;
 }
 
 export function colorRank(rate: number): ColorPalette {

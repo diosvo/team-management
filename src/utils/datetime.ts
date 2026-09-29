@@ -47,6 +47,34 @@ export function formatDay(
   return format(date, dFormat, { locale: dateLocale(locale) });
 }
 
+// Longest weekday name per locale, lazily measured so mocked date-fns specs load.
+const longestDay = new Map<string, number>();
+
+function longestDayLength(locale?: Locale): number {
+  const key = locale ?? 'en';
+  if (!longestDay.has(key)) {
+    // 1-7 Jan 2024 runs Monday to Sunday: every weekday once.
+    const lengths = Array.from(
+      { length: 7 },
+      (_, i) =>
+        formatDay(new Date(2024, 0, 1 + i), DEFAULT_DAY_FORMAT, locale).length,
+    );
+    longestDay.set(key, Math.max(...lengths));
+  }
+  return longestDay.get(key)!;
+}
+
+/**
+ * Pad weekday to the locale's longest name so day columns align.
+ */
+export function formatDayPadded(
+  date: Nullish<Date | string>,
+  locale?: Locale,
+): string {
+  const day = formatDay(date, DEFAULT_DAY_FORMAT, locale);
+  return day === '-' ? day : day.padEnd(longestDayLength(locale), ' ');
+}
+
 export function formatDate(date: Nullish<Date | string>): string {
   if (!date) return '-';
   return format(date, LOCALE_DATE_FORMAT);

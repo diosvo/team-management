@@ -6,7 +6,20 @@ import {
   waitFor,
 } from '@/test/utilities';
 
-import DataTable, { type Column } from './DataTable';
+import { Eye } from 'lucide-react';
+
+import DataTable, { RowAction, type Column } from './DataTable';
+
+const { mockUseLinkStatus } = vi.hoisted(() => ({
+  mockUseLinkStatus: vi.fn(() => ({ pending: false })),
+}));
+
+vi.mock('next/link', () => ({
+  default: ({ children, ...props }: React.ComponentProps<'a'>) => (
+    <a {...props}>{children}</a>
+  ),
+  useLinkStatus: mockUseLinkStatus,
+}));
 
 type Row = { id: string; name: string; selectable: boolean };
 
@@ -174,6 +187,41 @@ describe('DataTable', () => {
       await user.click(screen.getByText('Carol'));
 
       expect(onRowClick).toHaveBeenCalledWith(ROWS[2]);
+    });
+
+    test('a row action link never triggers the row click', async () => {
+      const onRowClick = vi.fn();
+      const { user } = renderWithUI(
+        <DataTable
+          {...baseProps}
+          columns={[
+            ...COLUMNS,
+            {
+              header: 'Open',
+              cell: (row) => (
+                <RowAction label="Open" icon={Eye} href={`/rows/${row.id}`} />
+              ),
+            },
+          ]}
+          onRowClick={onRowClick}
+        />,
+      );
+
+      const [link] = screen.getAllByRole('link', { name: 'Open' });
+      expect(link).toHaveAttribute('href', '/rows/a');
+
+      await user.click(link);
+
+      expect(onRowClick).not.toHaveBeenCalled();
+    });
+
+    test('a row action shows a spinner while its route loads', () => {
+      mockUseLinkStatus.mockReturnValue({ pending: true });
+      const { container } = renderWithUI(
+        <RowAction label="Open" icon={Eye} href="/rows/a" />,
+      );
+
+      expect(container.querySelector('[data-pending]')).toBeInTheDocument();
     });
 
     test('stops propagation so toggling a checkbox never triggers the row click', async () => {
