@@ -1,0 +1,64 @@
+{
+  "card": {
+    "edit": "Sửa tài liệu",
+    "editLabel": "Sửa {title}",
+    "openInDrive": "Mở trong Drive",
+    "openInDriveLabel": "Mở {title} trong Google Drive",
+    "play": "Phát",
+    "playLabel": "Phát {title}",
+    "preview": "Xem",
+    "previewLabel": "Xem {title}",
+    "selectDocument": "Chọn tài liệu"
+  },
+  "filters": {
+    "eventDate": "Ngày sự kiện",
+    "type": "Loại"
+  },
+  "grid": {
+    "empty": "Không tìm thấy tài liệu nào",
+    "emptyHint": "Thêm link thư mục hoặc tệp Google Drive công khai để bắt đầu."
+  },
+  "metadata": {
+    "description": "Album ảnh, video, chiến thuật và tệp chia sẻ từ Google Drive.",
+    "title": "Tài liệu"
+  },
+  "preview": {
+    "allItems": "Tất cả",
+    "emptyFolder": "Thư mục này không có ảnh hoặc video",
+    "playItem": "Phát {name}",
+    "unsupported": "Trình duyệt của bạn không phát được video này.",
+    "viewItem": "Xem {name}"
+  },
+  "stats": {
+    "total": "Tổng",
+    "type": {
+      "album": "Album",
+      "video": "Video",
+      "tactic": "Chiến thuật",
+      "file": "Tệp"
+    },
+    "unit": {
+      "album": "album",
+      "video": "video",
+      "tactic": "chiến thuật",
+      "document": "tài liệu",
+      "file": "tệp"
+    }
+  },
+  "title": "Tài liệu",
+  "upsert": {
+    "addTitle": "Thêm tài liệu",
+    "eventDate": "Ngày sự kiện",
+    "link": "Link Google Drive",
+    "linkHelper": "Hãy chia sẻ thư mục hoặc tệp ở chế độ \"Bất kỳ ai có đường liên kết\" trước. Ứng dụng không tải tệp lên.",
+    "note": "Ghi chú",
+    "noteHelper": "Tối đa {max} ký tự.",
+    "notePlaceholder": "Bình luận...",
+    "saving": "Đang lưu...",
+    "savingToast": "Đang lưu tài liệu...",
+    "title": "Tiêu đề",
+    "titlePlaceholder": "Ảnh trận khai mạc mùa giải",
+    "type": "Loại",
+    "updateTitle": "Cập nhật tài liệu"
+  }
+}

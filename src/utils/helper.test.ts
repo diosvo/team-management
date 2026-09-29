@@ -2,6 +2,7 @@ import { ALL } from './constants';
 import {
   AssetCondition,
   AttendanceStatus,
+  DocumentType,
   LeagueStatus,
   MatchResult,
   MatchStatus,
@@ -55,6 +56,11 @@ describe('getColor', () => {
     { value: SessionStatus.ACTIVE, expected: 'green' },
     { value: SessionStatus.COMPLETED, expected: 'gray' },
     { value: SessionStatus.CANCELLED, expected: 'red' },
+    // DocumentType
+    { value: DocumentType.ALBUM, expected: 'blue' },
+    { value: DocumentType.VIDEO, expected: 'purple' },
+    { value: DocumentType.TACTIC, expected: 'orange' },
+    { value: DocumentType.FILE, expected: 'gray' },
   ];
 
   test.each(cases)('returns $expected for $value', ({ value, expected }) => {

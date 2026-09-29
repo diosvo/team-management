@@ -90,7 +90,7 @@ export const SIDEBAR_GROUP: Array<SidebarGroup> = [
     title: 'resources',
     items: [
       { icon: Package, resource: 'assets', searchable: true },
-      { icon: Film, resource: 'documents', disabled: true },
+      { icon: Film, resource: 'documents', searchable: true },
       { icon: MailSearch, resource: 'emails', searchable: true },
     ],
   },

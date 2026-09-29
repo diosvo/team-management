@@ -123,6 +123,7 @@
     "entities": {
       "asset": "{count, plural, one {# asset} other {# assets}}",
       "attendanceRecord": "{count, plural, one {# attendance record} other {# attendance records}}",
+      "document": "{count, plural, one {# document} other {# documents}}",
       "league": "{count, plural, one {# league} other {# leagues}}",
       "location": "{count, plural, one {# location} other {# locations}}",
       "match": "{count, plural, one {# match} other {# matches}}",

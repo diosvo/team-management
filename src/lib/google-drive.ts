@@ -1,12 +1,9 @@
 /**
- * Browser-only Google Drive upload. The user grants the `drive.file` scope
- * (only files this app creates), and the upload converts the file to a native
- * Google Sheet.
- *
- * Everything happens in one tab opened straight from the click: it signs in
- * with Google (a full-page redirect, so no popup can be blocked), lands on
- * `GOOGLE_CALLBACK_PATH`, and finally navigates to the new sheet. The two tabs
- * talk over a `BroadcastChannel`, because Google's pages cut the opener link.
+ * - Browser-only Google Drive upload
+ * - Converts files to native Google Sheets
+ * - Uses the `drive.file` scope
+ * - Signs in via full-page redirect (no popup blocker issue)
+ * - Uses `BroadcastChannel` to communicate across tabs
  */
 
 const AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
@@ -61,10 +58,7 @@ export type SheetTab = {
   fail: (reason?: string) => void;
 };
 
-/**
- * Opens the tab that ends on the sheet. Call it synchronously from the click
- * handler; returns `null` when the browser still blocks the tab.
- */
+/** Opens the sheet tab synchronously; returns `null` if blocked. */
 export function openSheetTab(clientId: string): Nullable<SheetTab> {
   const state = crypto.randomUUID();
   const cached = liveToken();
@@ -168,11 +162,7 @@ export async function uploadAsGoogleSheet(
   };
 }
 
-/**
- * Lets anyone with the link edit the file, so players can fill in their own
- * rows without being invited one by one. `drive.file` covers it because the
- * app created the file.
- */
+/** Lets anyone with the link edit the file. */
 export async function shareWithAnyone(
   token: string,
   fileId: string,
@@ -223,31 +213,12 @@ async function sheetIdsOf(token: string, spreadsheetId: string) {
   );
 }
 
-/** Applies one request per range that exists in the spreadsheet. */
-async function updateRanges(
+/** Sends one `batchUpdate`; the error carries Google's reason. */
+async function batchUpdate(
   token: string,
   spreadsheetId: string,
-  ranges: Array<CheckboxRange>,
-  request: (range: GridRange) => Record<string, unknown>,
-): Promise<void> {
-  const sheetIds = await sheetIdsOf(token, spreadsheetId);
-
-  const requests = ranges.flatMap(({ sheet, column, fromRow, toRow }) => {
-    const sheetId = sheetIds.get(sheet);
-    if (sheetId === undefined) return [];
-    const col = columnIndex(column);
-    return [
-      request({
-        sheetId,
-        startRowIndex: fromRow - 1,
-        endRowIndex: toRow,
-        startColumnIndex: col,
-        endColumnIndex: col + 1,
-      }),
-    ];
-  });
-  if (requests.length === 0) return;
-
+  requests: Array<Record<string, unknown>>,
+): Promise<{ replies?: Array<Record<string, unknown>> }> {
   const update = await fetch(`${SHEETS_API}/${spreadsheetId}:batchUpdate`, {
     method: 'POST',
     headers: {
@@ -256,7 +227,37 @@ async function updateRanges(
     },
     body: JSON.stringify({ requests }),
   });
-  if (!update.ok) throw new Error(`Sheets update failed (${update.status})`);
+  if (!update.ok) {
+    const reason = await update.text();
+    throw new Error(
+      `Sheets update failed (${update.status})${reason ? `: ${reason}` : ''}`,
+    );
+  }
+  return update.json();
+}
+
+/** Existing grid ranges; unknown sheets are skipped. */
+async function gridRanges(
+  token: string,
+  spreadsheetId: string,
+  ranges: Array<CheckboxRange>,
+): Promise<Array<GridRange>> {
+  const sheetIds = await sheetIdsOf(token, spreadsheetId);
+
+  return ranges.flatMap(({ sheet, column, fromRow, toRow }) => {
+    const sheetId = sheetIds.get(sheet);
+    if (sheetId === undefined) return [];
+    const col = columnIndex(column);
+    return [
+      {
+        sheetId,
+        startRowIndex: fromRow - 1,
+        endRowIndex: toRow,
+        startColumnIndex: col,
+        endColumnIndex: col + 1,
+      },
+    ];
+  });
 }
 
 type GridRange = {
@@ -268,42 +269,100 @@ type GridRange = {
 };
 
 /**
- * Turns ranges of a converted sheet into checkboxes, which `.xlsx` can't
- * express. Needs the Google Sheets API enabled; `drive.file` covers the call
- * because the app created the file.
+ * Adds checkboxes to converted-sheet ranges.
+ *
+ * - `.xlsx` cannot store checkboxes.
+ * - Requires the Google Sheets API.
+ * - Uses `drive.file`, since the app created the file.
  */
-export function addCheckboxes(
+export async function addCheckboxes(
   token: string,
   spreadsheetId: string,
   ranges: Array<CheckboxRange>,
 ): Promise<void> {
-  return updateRanges(token, spreadsheetId, ranges, (range) => ({
-    setDataValidation: { range, rule: { condition: { type: 'BOOLEAN' } } },
-  }));
+  const grid = await gridRanges(token, spreadsheetId, ranges);
+  if (grid.length === 0) return;
+
+  await batchUpdate(
+    token,
+    spreadsheetId,
+    grid.map((range) => ({
+      setDataValidation: { range, rule: { condition: { type: 'BOOLEAN' } } },
+    })),
+  );
 }
 
 /**
- * Locks ranges so only `editors` (Google account emails) can change them; the
- * owner always can. Everyone else with the link sees them read-only.
+ * Protects ranges:
+ * - Only listed Google account editors can change them; the owner always can.
+ * - Others with the link remain read-only.
+ * - Invalid editors are skipped; ranges are locked to the owner first.
  */
-export function protectRanges(
+export async function protectRanges(
   token: string,
   spreadsheetId: string,
   ranges: Array<CheckboxRange>,
   editors: Array<string>,
   description: string,
-): Promise<void> {
-  return updateRanges(token, spreadsheetId, ranges, (range) => ({
-    addProtectedRange: {
-      protectedRange: {
-        range,
-        description,
-        warningOnly: false,
-        editors: { users: editors },
-      },
-    },
-  }));
+): Promise<Array<string>> {
+  const grid = await gridRanges(token, spreadsheetId, ranges);
+  if (grid.length === 0) return [];
+
+  const protect = (users: Array<string>) =>
+    batchUpdate(
+      token,
+      spreadsheetId,
+      grid.map((range) => ({
+        addProtectedRange: {
+          protectedRange: {
+            range,
+            description,
+            warningOnly: false,
+            editors: { users },
+          },
+        },
+      })),
+    );
+
+  try {
+    await protect(editors);
+    return [];
+  } catch (error) {
+    if (editors.length === 0) throw error;
+  }
+
+  const { replies = [] } = await protect([]);
+  const ids = replies.map(
+    (reply) =>
+      (reply as { addProtectedRange: { protectedRange: ProtectedRange } })
+        .addProtectedRange.protectedRange.protectedRangeId,
+  );
+
+  const accepted: Array<string> = [];
+  const rejected: Array<string> = [];
+  // One at a time: each attempt sends the full list kept so far.
+  for (const editor of editors) {
+    const users = [...accepted, editor];
+    try {
+      await batchUpdate(
+        token,
+        spreadsheetId,
+        ids.map((protectedRangeId) => ({
+          updateProtectedRange: {
+            protectedRange: { protectedRangeId, editors: { users } },
+            fields: 'editors',
+          },
+        })),
+      );
+      accepted.push(editor);
+    } catch {
+      rejected.push(editor);
+    }
+  }
+  return rejected;
 }
+
+type ProtectedRange = { protectedRangeId: number };
 
 /** Test hook: forget the cached token. */
 export function resetGoogleDrive() {

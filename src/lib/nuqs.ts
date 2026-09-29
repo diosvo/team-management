@@ -16,6 +16,7 @@ import {
   SELECTABLE_ASSET_CATEGORIES,
   SELECTABLE_ASSET_CONDITIONS,
   SELECTABLE_ATTENDANCE_STATUS,
+  SELECTABLE_DOCUMENT_TYPES,
   SELECTABLE_EMAIL_STATUS,
   SELECTABLE_GAME_TYPES,
   SELECTABLE_LEAGUE_STATUS,
@@ -57,6 +58,16 @@ export const assetSearchParams = {
     parseAsStringEnum([...SELECTABLE_ASSET_CONDITIONS]),
   ).withDefault([]),
   // Optional acquired-date window. Empty means all time.
+  from: parseAsString.withDefault(''),
+  to: parseAsString.withDefault(''),
+};
+
+export const documentSearchParams = {
+  ...commonParams,
+  type: parseAsArrayOf(
+    parseAsStringEnum([...SELECTABLE_DOCUMENT_TYPES]),
+  ).withDefault([]),
+  // Optional event-date window. Empty means all time.
   from: parseAsString.withDefault(''),
   to: parseAsString.withDefault(''),
 };
@@ -236,6 +247,7 @@ export const useCommonParams = (options: Options = {}) =>
 
 export const useRosterFilters = createFilters(rosterSearchParams);
 export const useAssetFilters = createFilters(assetSearchParams);
+export const useDocumentFilters = createFilters(documentSearchParams);
 export const useTestTypeFilters = createFilters(testTypeSearchParams);
 // Client-only by default (search/pagination/column filters never hit the
 // server). Only the date change opts into `{ shallow: false }` at the call

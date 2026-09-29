@@ -2,6 +2,7 @@ export * from './achievement';
 export * from './app';
 export * from './asset';
 export * from './attendance';
+export * from './document';
 export * from './email';
 export * from './feedback';
 export * from './interval';

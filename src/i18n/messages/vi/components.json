@@ -123,6 +123,7 @@
     "entities": {
       "asset": "{count} tài sản",
       "attendanceRecord": "{count} bản ghi điểm danh",
+      "document": "{count} tài liệu",
       "league": "{count} giải đấu",
       "location": "{count} địa điểm",
       "match": "{count} trận đấu",

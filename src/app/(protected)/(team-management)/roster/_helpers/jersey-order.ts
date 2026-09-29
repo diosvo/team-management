@@ -540,9 +540,14 @@ export async function openJerseyOrderInSheets(
   const paid = paidCheckboxRanges(options.players.length);
   const [checkboxes, locked, shared] = await Promise.all([
     addCheckboxes(await token, id, paid).then(...succeeded('checkboxes')),
-    protectRanges(await token, id, paid, paymentEditors, 'Đã thu tiền').then(
-      ...succeeded('protection'),
-    ),
+    protectRanges(await token, id, paid, paymentEditors, 'Đã thu tiền')
+      .then((rejected) => {
+        // Not Google accounts: the range stays locked, just not for them.
+        if (rejected.length > 0) {
+          console.warn('[jersey-order] not Google accounts:', rejected);
+        }
+      })
+      .then(...succeeded('protection')),
     shareWithAnyone(await token, id).then(...succeeded('sharing')),
   ]);
 

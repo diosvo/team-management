@@ -21,6 +21,7 @@ export const revalidate = {
   achievements: () => revalidatePath('/achievements'),
   assets: () => revalidatePath('/assets'),
   attendances: () => revalidatePath('/attendance'),
+  documents: () => revalidatePath('/documents'),
   matches: () => revalidatePath('/matches'),
   reports: () => revalidatePath('/reports'),
   matchStats: () => {
