@@ -6,14 +6,14 @@ import { executeSchedule } from '@/lib/report-schedule';
 import { isAuthorizedCron, requestOrigin } from '@/lib/request';
 import { ReportTrigger } from '@/utils/enum';
 
-export const maxDuration = 300; // in seconds
+export const maxDuration = 60; // in seconds (Vercel Hobby plan ceiling)
 
 /**
- * Wall-clock budget for one tick, with headroom under `maxDuration` so the
- * final run always finishes writing. Anything left over is still overdue on
- * the next daily tick.
+ * Wall-clock budget for one tick, with headroom under `maxDuration` so a run
+ * started just inside the budget still finishes writing before the function
+ * is killed. Anything left over is still overdue on the next daily tick.
  */
-const TICK_BUDGET_MS = 240_000;
+const TICK_BUDGET_MS = 40_000;
 
 /** Upper bound of schedules claimed per tick (at most two per team). */
 const CLAIM_SIZE = 20;
