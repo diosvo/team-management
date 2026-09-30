@@ -29,7 +29,7 @@ import { toaster } from '@/components/ui/toaster';
 import { Tooltip } from '@/components/ui/tooltip';
 import { OnePlayerSelection } from '@/components/user/PlayerSelection';
 
-import { getDefaults, getMaxLength, onError } from '@/lib/zod';
+import { getDefaults, onError } from '@/lib/zod';
 import {
   ASSET_CATEGORY_SELECTION,
   ASSET_CONDITION_SELECTION,
