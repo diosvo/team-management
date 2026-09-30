@@ -15,6 +15,7 @@ export const ROLE_CONFIG: Record<UserRole, RoleConfig> = {
   [UserRole.COACH]: {
     achievements: ['view', 'create', 'edit'],
     dashboard: ['view'],
+    reports: ['view'],
     'team-rule': ['view'],
     roster: ['view'],
     training: ['view', 'create', 'edit'],
@@ -31,6 +32,7 @@ export const ROLE_CONFIG: Record<UserRole, RoleConfig> = {
   [UserRole.PLAYER]: {
     achievements: ['view'],
     dashboard: ['view'],
+    reports: ['view'],
     'team-rule': ['view'],
     roster: ['view'],
     training: ['view'],
@@ -55,6 +57,8 @@ const CAPTAIN_PERMISSIONS: RoleConfig = {
   matches: ['create', 'edit'],
   registration: ['create', 'edit'],
   'periodic-testing': [...ALL_ACTIONS],
+  // Captains manage report schedules (create/edit/disable) alongside admins.
+  reports: [...ALL_ACTIONS],
 };
 
 export type Ability = {

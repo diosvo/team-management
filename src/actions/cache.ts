@@ -22,6 +22,7 @@ export const revalidate = {
   assets: () => revalidatePath('/assets'),
   attendances: () => revalidatePath('/attendance'),
   matches: () => revalidatePath('/matches'),
+  reports: () => revalidatePath('/reports'),
   roster: () => revalidatePath('/roster'),
   sessions: () => revalidatePath('/training'),
   teams: () => revalidatePath('/teams'),
