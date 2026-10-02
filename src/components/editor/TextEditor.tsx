@@ -3,15 +3,16 @@
 import {
   useCallback,
   useEffect,
+  useId,
   useRef,
   useState,
   useTransition,
   type ReactNode,
 } from 'react';
 
-import { Button, HStack, Text, type ButtonProps } from '@chakra-ui/react';
+import { Button, ButtonGroup, HStack, Text } from '@chakra-ui/react';
 import type { Editor } from '@tiptap/react';
-import { Check, Copy, Eye, Pencil, Save } from 'lucide-react';
+import { Check, Copy, Eye, Pencil, X } from 'lucide-react';
 
 import {
   EditorToolbar,
@@ -108,7 +109,8 @@ async function copyEditorContent(editor: Editor, lastUpdated?: Date) {
         'text/plain': new Blob([text], { type: 'text/plain' }),
       }),
     ]);
-  } catch {
+  } catch (error) {
+    if (!navigator.clipboard?.writeText) throw error;
     await navigator.clipboard.writeText(text);
   }
 }
@@ -131,8 +133,12 @@ function CopyButton({
   }, [copied]);
 
   const copy = async () => {
-    await copyEditorContent(editor, lastUpdated);
-    setCopied(true);
+    try {
+      await copyEditorContent(editor, lastUpdated);
+      setCopied(true);
+    } catch {
+      // Clipboard unavailable or permission denied; leave the button unchanged.
+    }
   };
 
   return (
@@ -143,12 +149,43 @@ function CopyButton({
   );
 }
 
-function SaveButton({ children, ...props }: ButtonProps) {
+/** Keep or drop a pending draft. Shared by the editor footer and preview. */
+function DraftActions({
+  label,
+  isSaving,
+  onSave,
+  onCancel,
+}: {
+  label?: string;
+  isSaving: boolean;
+  onSave: () => void;
+  onCancel: () => void;
+}) {
+  const labelId = useId();
+
   return (
-    <Button loadingText="Saving" {...props}>
-      <Save />
-      {children}
-    </Button>
+    <HStack role={label && 'group'} aria-labelledby={label && labelId}>
+      {label && (
+        <Text id={labelId} fontSize="sm" fontWeight="medium" color="orange.fg">
+          {label}
+        </Text>
+      )}
+      <ButtonGroup size="sm" variant="outline" attached>
+        <Button colorPalette="red" disabled={isSaving} onClick={onCancel}>
+          <X />
+          Cancel
+        </Button>
+        <Button
+          colorPalette="green"
+          loading={isSaving}
+          loadingText="Saving"
+          onClick={onSave}
+        >
+          <Check />
+          Save
+        </Button>
+      </ButtonGroup>
+    </HStack>
   );
 }
 
@@ -170,15 +207,12 @@ export default function TextEditor({
         {header}
         <HStack>
           {!isWriting && isDirty && (
-            <SaveButton
-              size="sm"
-              variant="surface"
-              colorPalette="orange"
-              loading={isSaving}
-              onClick={save}
-            >
-              Save changes?
-            </SaveButton>
+            <DraftActions
+              label="Save changes?"
+              isSaving={isSaving}
+              onSave={save}
+              onCancel={cancel}
+            />
           )}
 
           <CopyButton editor={editor} lastUpdated={lastUpdated} />
@@ -204,25 +238,8 @@ export default function TextEditor({
         <RichTextEditor.Content />
 
         {isWriting && (
-          <RichTextEditor.Footer justifyContent="flex-end" gap={2}>
-            <Button
-              size="xs"
-              variant="outline"
-              colorPalette="red"
-              disabled={isSaving}
-              onClick={cancel}
-            >
-              Cancel
-            </Button>
-            <SaveButton
-              size="xs"
-              variant="outline"
-              colorPalette="green"
-              loading={isSaving}
-              onClick={save}
-            >
-              Save
-            </SaveButton>
+          <RichTextEditor.Footer justifyContent="flex-end">
+            <DraftActions isSaving={isSaving} onSave={save} onCancel={cancel} />
           </RichTextEditor.Footer>
         )}
       </RichTextEditor.Root>

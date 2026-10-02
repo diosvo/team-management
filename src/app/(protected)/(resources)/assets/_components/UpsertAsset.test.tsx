@@ -191,6 +191,25 @@ describe('UpsertAsset', () => {
     );
   });
 
+  test('saves a note whose markup, but not its text, exceeds the limit', async () => {
+    const { user } = await open('Update', EXISTING_ASSET);
+
+    const note = await screen.findByLabelText('Note editor');
+    const html = `<p><strong>${'x'.repeat(128)}</strong></p>`;
+    fireEvent.change(note, { target: { value: html } });
+
+    const submit = await screen.findByRole('button', { name: /update/i });
+    await waitFor(() => expect(submit).toBeEnabled());
+    await user.click(submit);
+
+    await waitFor(() =>
+      expect(mockUpsertAsset).toHaveBeenCalledWith(
+        MOCK_ASSET.asset_id,
+        expect.objectContaining({ note: html }),
+      ),
+    );
+  });
+
   test('explains why an over-long note blocks saving', async () => {
     const { user } = await open('Update', EXISTING_ASSET);
 

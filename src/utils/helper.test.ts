@@ -8,7 +8,12 @@ import {
   UserState,
 } from './enum';
 
-import { colorRank, deriveDateStatus, getColor, lazy } from './helper';
+import {
+  colorRank,
+  deriveDateStatus,
+  getColor,
+  plainTextLength,
+} from './helper';
 
 describe('getColor', () => {
   const cases = [
@@ -109,60 +114,27 @@ describe('deriveDateStatus', () => {
   );
 });
 
-describe('lazy', () => {
-  test('does not call the getter until the value is accessed', () => {
-    const getter = vi.fn(() => 'computed');
-    const holder = lazy(getter);
-
-    expect(getter).not.toHaveBeenCalled();
-    expect(holder.value).toBe('computed');
-    expect(getter).toHaveBeenCalledTimes(1);
+describe('plainTextLength', () => {
+  test('counts the text of an empty document as nothing', () => {
+    expect(plainTextLength('')).toBe(0);
+    expect(plainTextLength('<p></p>')).toBe(0);
   });
 
-  test('caches the result so the getter runs only once', () => {
-    const getter = vi.fn(() => ({ id: 1 }));
-    const holder = lazy(getter);
-
-    const first = holder.value;
-    const second = holder.value;
-    const third = holder.value;
-
-    expect(getter).toHaveBeenCalledTimes(1);
-    expect(second).toBe(first);
-    expect(third).toBe(first);
+  test('ignores tags and their attributes', () => {
+    expect(plainTextLength('<p><strong>Bring spares</strong></p>')).toBe(12);
+    expect(
+      plainTextLength(
+        '<p><a href="https://example.com/a/long/url">link</a></p>',
+      ),
+    ).toBe(4);
   });
 
-  test('keeps separate caches per instance', () => {
-    let count = 0;
-    const getter = vi.fn(() => ++count);
-
-    expect(lazy(getter).value).toBe(1);
-    expect(lazy(getter).value).toBe(2);
-    expect(getter).toHaveBeenCalledTimes(2);
+  test('joins paragraphs without inventing separators, as TipTap counts them', () => {
+    expect(plainTextLength('<p>ab</p><p>cd</p>')).toBe(4);
   });
 
-  test.each([
-    { description: 'null', expected: null },
-    { description: 'undefined', expected: undefined },
-    { description: 'false', expected: false },
-    { description: 'zero', expected: 0 },
-  ])('caches $description without recomputing', ({ expected }) => {
-    const getter = vi.fn(() => expected);
-    const holder = lazy(getter);
-
-    expect(holder.value).toBe(expected);
-    expect(holder.value).toBe(expected);
-    expect(getter).toHaveBeenCalledTimes(1);
-  });
-
-  test('propagates a throwing getter and retries on the next access', () => {
-    const getter = vi.fn(() => {
-      throw new Error('boom');
-    });
-    const holder = lazy(getter);
-
-    expect(() => holder.value).toThrow('boom');
-    expect(() => holder.value).toThrow('boom');
-    expect(getter).toHaveBeenCalledTimes(2);
+  test('counts an escaped entity as the single character it renders', () => {
+    expect(plainTextLength('<p>a &amp; b</p>')).toBe(5);
+    expect(plainTextLength('<p>&lt;tag&gt;</p>')).toBe(5);
   });
 });

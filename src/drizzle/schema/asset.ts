@@ -41,7 +41,8 @@ export const AssetTable = pgTable(
     category: assetCategoryEnum().default(AssetCategory.EQUIPMENT).notNull(),
     quantity: integer().notNull().default(1),
     condition: assetConditionEnum().default(AssetCondition.GOOD).notNull(),
-    note: varchar({ length: 128 }),
+    // Rich text: the HTML is longer than the note's visible character limit.
+    note: text(),
     created_at,
     updated_at,
   },
