@@ -579,6 +579,7 @@ Each feature is a Server Component page under `src/app/(protected)/…` whose in
 | Resend                            | Transactional email                   | `src/lib/resend.ts`                         | `RESEND_API_KEY`                                               |
 | Chromium pack                     | Serverless headless browser for PDF   | `src/lib/puppeteer.ts`                      | `CHROMIUM_PACK_URL` (production)                               |
 | Vercel Analytics + Speed Insights | Web analytics (production only)       | `src/app/layout.tsx`                        | —                                                              |
+| GitHub Issues                     | In-app feedback opens a prefilled issue form | `.github/ISSUE_TEMPLATE/*.yml`, `src/utils/feedback.ts` | —                                                    |
 
 Notes: `BLOB_STORE_ID`, `BETTER_AUTH_*`, and `CRON_SECRET` appear in `.env` but are **not** part of the validated `env.config.ts` schema, because Better Auth reads its own vars directly from `process.env`. Resend's sender is currently `Acme <onboarding@resend.dev>` (`src/lib/resend.ts:7`) with every subject prefixed `SGR - `. `next.config.ts` allowlists remote images from `https://blob.vercel-storage.com/**`.
 

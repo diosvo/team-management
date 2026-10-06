@@ -24,13 +24,14 @@ import {
   BookMarked,
   ChevronLeft,
   ChevronRight,
-  Flag,
   Globe,
   type LucideIcon,
 } from 'lucide-react';
 
 import { Tooltip } from '@/components/ui/tooltip';
 import usePermissions from '@/hooks/use-permissions';
+
+import FeedbackDialog from '@/app/(protected)/_components/FeedbackDialog';
 import {
   BUTTON_CONFIG,
   FADE_CSS,
@@ -41,9 +42,6 @@ import {
   TOGGLE_CSS,
   segmentToLabel,
 } from '../_helpers/utils';
-
-const FEEDBACK_URL =
-  'https://github.com/diosvo/team-management/issues/new?title=Feedback%20for%20%E2%80%9CTeam%20Rule%E2%80%9D&labels=maintenance&project=team-management&assignees=diosvo';
 
 function LoadingIndicator() {
   const { pending } = useLinkStatus();
@@ -362,13 +360,7 @@ export default function Sidebar({ isExpanded, children }: SidebarProps) {
           <BookMarked />
         </FooterLink>
         <SocialMenu />
-        <FooterLink
-          label="Suggestions + feedback + ideas"
-          href={FEEDBACK_URL}
-          colorPalette="green"
-        >
-          <Flag />
-        </FooterLink>
+        <FeedbackDialog />
       </HStack>
     </VStack>
   );
