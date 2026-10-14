@@ -123,7 +123,7 @@ describe('EmailReport', () => {
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith('/api/reports/dashboard', {
         method: 'POST',
-        body: JSON.stringify({ period: formattedPeriod, filename }),
+        body: JSON.stringify({ interval, filename }),
       });
     });
 

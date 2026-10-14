@@ -7,6 +7,7 @@ export * from './schema/location';
 export * from './schema/match';
 export * from './schema/periodic-testing';
 export * from './schema/player';
+export * from './schema/report';
 export * from './schema/rule';
 export * from './schema/team';
 export * from './schema/training';
