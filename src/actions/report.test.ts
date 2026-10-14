@@ -1,39 +1,62 @@
-import { fetchReportRecipients } from '@/db/report';
+import {
+  deleteReportSchedules,
+  fetchReportRecipients,
+  insertReportSchedule,
+  updateReportSchedule,
+} from '@/db/report';
 import { sendEmail, type EmailProps } from '@/lib/resend';
 
-import { mockWithAuth } from '@/test/mocks/auth';
+import { mockWithAuth, mockWithResource } from '@/test/mocks/auth';
+import {
+  MOCK_REPORT_RECIPIENTS,
+  MOCK_REPORT_SCHEDULE,
+} from '@/test/mocks/report';
 import { MOCK_TEAM } from '@/test/mocks/team';
 
-import { UserRole } from '@/utils/enum';
+import type { UpsertReportScheduleValues } from '@/schemas/report';
+import { Interval } from '@/utils/enum';
 
-import { getReportRecipients, sendReportEmail } from './report';
+import {
+  getReportRecipients,
+  removeReportSchedules,
+  sendReportEmail,
+  toggleReportSchedule,
+  upsertReportSchedule,
+} from './report';
 
 vi.mock('./auth', () => ({
   withAuth: mockWithAuth,
+  withResource: mockWithResource,
 }));
 
 vi.mock('@/db/report', () => ({
   fetchReportRecipients: vi.fn(),
+  fetchReportSchedules: vi.fn(),
+  fetchReportHistory: vi.fn(),
+  getReportSchedule: vi.fn(),
+  insertReportSchedule: vi.fn(),
+  updateReportSchedule: vi.fn(),
+  deleteReportSchedules: vi.fn(),
+}));
+
+vi.mock('@/db/pg-error', () => ({
+  getDbErrorMessage: vi.fn(() => ({ message: 'db error' })),
+}));
+
+vi.mock('@/lib/report-schedule', () => ({
+  computeNextRun: vi.fn(() => new Date('2026-08-01T01:00:00Z')),
+  executeSchedule: vi.fn(),
+}));
+
+vi.mock('@/actions/cache', () => ({
+  revalidate: { reports: vi.fn() },
 }));
 
 vi.mock('@/lib/resend', () => ({
   sendEmail: vi.fn(),
 }));
 
-const MOCK_RECIPIENTS = [
-  {
-    id: 'user-123',
-    name: 'Dios Vo',
-    email: 'vtmn1212@gmail.com',
-    role: UserRole.COACH,
-  },
-  {
-    id: 'user-456',
-    name: 'Jane Doe',
-    email: 'jane@example.com',
-    role: UserRole.PLAYER,
-  },
-];
+const { schedule_id, recipients } = MOCK_REPORT_SCHEDULE;
 
 describe('Report Actions', () => {
   beforeEach(() => {
@@ -42,12 +65,14 @@ describe('Report Actions', () => {
 
   describe('getReportRecipients', () => {
     test('calls fetchReportRecipients with team_id', async () => {
-      vi.mocked(fetchReportRecipients).mockResolvedValue(MOCK_RECIPIENTS);
+      vi.mocked(fetchReportRecipients).mockResolvedValue(
+        MOCK_REPORT_RECIPIENTS,
+      );
 
       const result = await getReportRecipients();
 
       expect(fetchReportRecipients).toHaveBeenCalledWith(MOCK_TEAM.team_id);
-      expect(result).toEqual(MOCK_RECIPIENTS);
+      expect(result).toEqual(MOCK_REPORT_RECIPIENTS);
     });
 
     test('returns empty array when no recipients exist', async () => {
@@ -68,7 +93,7 @@ describe('Report Actions', () => {
 
   describe('sendReportEmail', () => {
     const PAYLOAD: EmailProps = {
-      to: ['coach@example.com'],
+      to: recipients,
       subject: 'Weekly Report',
       html: '<p>Report</p>',
       attachments: [{ content: 'base64', filename: 'report.pdf' }],
@@ -91,6 +116,72 @@ describe('Report Actions', () => {
       vi.mocked(sendEmail).mockRejectedValue(new Error(message));
 
       await expect(sendReportEmail(PAYLOAD)).rejects.toThrow(message);
+    });
+  });
+
+  describe('upsertReportSchedule', () => {
+    const INPUT: UpsertReportScheduleValues = {
+      interval: Interval.LAST_MONTH,
+      recipients,
+    };
+
+    test('inserts a new schedule with a precomputed next run', async () => {
+      const result = await upsertReportSchedule('', INPUT);
+
+      expect(insertReportSchedule).toHaveBeenCalledWith(
+        expect.objectContaining({
+          ...INPUT,
+          team_id: MOCK_TEAM.team_id,
+          next_run_at: expect.any(Date),
+        }),
+      );
+      expect(updateReportSchedule).not.toHaveBeenCalled();
+      expect(result.success).toBe(true);
+    });
+
+    test('updates an existing schedule when an id is given', async () => {
+      const result = await upsertReportSchedule(schedule_id, INPUT);
+
+      expect(updateReportSchedule).toHaveBeenCalledWith(
+        MOCK_TEAM.team_id,
+        schedule_id,
+        expect.objectContaining({ interval: INPUT.interval }),
+      );
+      expect(insertReportSchedule).not.toHaveBeenCalled();
+      expect(result.success).toBe(true);
+    });
+
+    test('returns an error response when the db throws', async () => {
+      vi.mocked(insertReportSchedule).mockRejectedValueOnce(new Error('boom'));
+
+      const result = await upsertReportSchedule('', INPUT);
+
+      expect(result.success).toBe(false);
+      expect(result.message).toBe('db error');
+    });
+  });
+
+  describe('toggleReportSchedule', () => {
+    test('updates the enabled flag', async () => {
+      const result = await toggleReportSchedule(schedule_id, false);
+
+      expect(updateReportSchedule).toHaveBeenCalledWith(
+        MOCK_TEAM.team_id,
+        schedule_id,
+        { enabled: false, next_run_at: undefined },
+      );
+      expect(result.success).toBe(true);
+    });
+  });
+
+  describe('removeReportSchedules', () => {
+    test('deletes the schedules', async () => {
+      const result = await removeReportSchedules([schedule_id]);
+
+      expect(deleteReportSchedules).toHaveBeenCalledWith(MOCK_TEAM.team_id, [
+        schedule_id,
+      ]);
+      expect(result.success).toBe(true);
     });
   });
 });
