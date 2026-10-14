@@ -2,8 +2,8 @@
 
 import { useMemo, useState, useTransition } from 'react';
 
-import { Box, Button, HStack } from '@chakra-ui/react';
-import { CalendarClock, Play, Plus } from 'lucide-react';
+import { Box, Button, HStack, VisuallyHidden } from '@chakra-ui/react';
+import { CalendarClock, CalendarSync, Play } from 'lucide-react';
 
 import Authorized from '@/components/Authorized';
 import DataTable, { type Column } from '@/components/DataTable';
@@ -109,18 +109,20 @@ export default function ReportSchedules({
       header: 'Status',
       align: 'center',
       cell: (item) => (
-        <Box onClick={(event) => event.stopPropagation()} width="fit-content">
+        <Box onClick={(event) => event.stopPropagation()}>
           <Switch
             size="sm"
             checked={item.enabled}
             disabled={isPending || !can('reports', 'edit')}
             onCheckedChange={({ checked }) => toggle(item.schedule_id, checked)}
-          />
+          >
+            <VisuallyHidden>Enable schedule</VisuallyHidden>
+          </Switch>
         </Box>
       ),
     },
     {
-      header: '',
+      header: <VisuallyHidden>Actions</VisuallyHidden>,
       align: 'right',
       cell: (item) => (
         <Authorized resource="reports" action={['create', 'edit']} mode="any">
@@ -159,7 +161,7 @@ export default function ReportSchedules({
               })
             }
           >
-            <Plus />
+            <CalendarSync />
             New Schedule
           </Button>
         </Authorized>

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { claimDueSchedules } from '@/db/report';
-import { getServiceCookies } from '@/lib/report';
+import { getServiceSession } from '@/lib/report';
 import { executeSchedule } from '@/lib/report-schedule';
 import { isAuthorizedCron, requestOrigin } from '@/lib/request';
 import { ReportTrigger } from '@/utils/enum';
@@ -40,9 +40,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ processed: 0, message: 'No schedules due' });
   }
 
-  let cookies: Array<{ name: string; value: string }>;
+  let session: Awaited<ReturnType<typeof getServiceSession>>;
   try {
-    cookies = await getServiceCookies();
+    session = await getServiceSession();
   } catch (error) {
     return NextResponse.json(
       { error: (error as Error).message },
@@ -64,7 +64,10 @@ export async function GET(req: NextRequest) {
         scheduled_for: schedule.next_run_at,
         trigger: ReportTrigger.SCHEDULED,
         ...request,
-        cookies,
+        cookies: session.cookies,
+        // The dashboard renders under the service account's team; schedules of
+        // any other team fail instead of receiving this team's data.
+        session_team_id: session.team_id,
       }),
     );
   }

@@ -152,6 +152,7 @@ export const runReportNow = reports(
       trigger: ReportTrigger.MANUAL,
       ...request,
       cookies: cookieStore.getAll().map(({ name, value }) => ({ name, value })),
+      session_team_id: user.team_id,
     });
 
     revalidate.reports();

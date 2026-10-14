@@ -19,29 +19,44 @@ those reports and the **history** of what was generated.
 
 - Both go out around **08:00 ICT**. There is no per-schedule time or day picker.
 - A daily cron renders due reports with the same engine as the Dashboard
-  download, stores each PDF, and emails recipients a download link.
+  download, stores each PDF, and emails the schedule's recipients a download
+  link.
 
 ## 2. Permissions
 
 Access is governed by the `reports` resource.
 
-| Action            | Capability                                 |
-| ----------------- | ------------------------------------------ |
-| `view`            | See schedules and generation history       |
-| `create` / `edit` | Add, update, toggle, or run a schedule now |
-| `delete`          | Remove a schedule                          |
+| Action            | Capability                                   |
+| ----------------- | -------------------------------------------- |
+| `view`            | See schedules and generation history         |
+| `create`          | Add a schedule                               |
+| `edit`            | Update a schedule or enable/disable it       |
+| `create` / `edit` | Run a schedule now (either action is enough) |
+| `delete`          | Remove schedules                             |
+
+Super admins and team captains have every action; coaches and players can
+only `view`. Guests have no access.
 
 > The cron endpoint is not user-facing: it is authorized by a `CRON_SECRET`
-> Bearer token, and reports render under a service-account session.
+> Bearer token, and reports render under a service-account session. That
+> session only sees its own team's analytics, so a schedule belonging to any
+> other team fails instead of being rendered with the wrong team's data.
 
 ## 3. UX
 
 - **Schedules** — one row per report with recipient count, next run, last run,
-  and an enable/disable toggle. Rows open an editor (report + recipients).
+  and an enable/disable toggle. A paused schedule shows no next run. Rows open
+  an editor (report + recipients); when adding, only reports that are not
+  scheduled yet are offered, and **New Schedule** is disabled once both are.
+- **Recipients** — any member of the team, at least one per schedule. Only the
+  selected recipients receive the report.
 - **Run now** — generates the report immediately under the current user's
-  session. It is also the recovery path after a failed scheduled run.
-- **History** — every generated report with status, period, trigger, delivery
-  status, and an auth-guarded download link.
+  session (disabled while the schedule is paused). It is also the recovery path
+  after a failed scheduled run.
+- **History** — every generated report, 10 per page, with period, interval,
+  status (with the attempt count, and the error on hover for a failed run),
+  delivery status, and trigger. **Download** is available only for a successful
+  run whose PDF is still stored.
 
 ## 4. Scheduled report flow
 
@@ -51,11 +66,13 @@ flowchart TD
     cron([Vercel Cron · daily 08:00 ICT]) -->|Bearer CRON_SECRET| claim[Claim schedules where<br/>next_run_at ≤ now]
     claim -->|none| idle[Done · nothing due]
     claim -->|due| run[Insert history row · pending<br/>unique schedule + occurrence]
-    run -->|duplicate| skip[Skip · already ran]
+    run -->|duplicate, still running| skip[Skip · already ran]
+    run -->|duplicate, pending over 10 min| reclaim[Take over the stale run]
+    reclaim --> pdf
     run --> pdf[Render dashboard to PDF<br/>store in Blob]
     pdf --> mail[Email recipients<br/>a download link]
     mail --> ok[Mark success<br/>advance next_run_at]
-    pdf -. 3 failed attempts .-> fail[Mark failed<br/>advance next_run_at<br/>notify coaches/admins]
+    pdf -. 3 failed attempts .-> fail[Mark failed<br/>advance next_run_at<br/>notify coaches, admins, captain]
     mail -. 3 failed attempts .-> fail
 `}
 />
@@ -68,10 +85,18 @@ How it stays correct:
 - **One run per occurrence.** The history row is inserted first under a
   unique `(schedule_id, scheduled_for)` key, so overlapping or replayed cron
   hits can never double-send. "Run now" uses `now()` as its occurrence.
+- **A crashed run cannot block its schedule.** If a run is still `pending`
+  10 minutes after it started, its function was killed (timeout, out of
+  memory), so the next tick takes it over, reusing the stored PDF if one
+  exists.
 - **Retries happen in-process** (3 attempts). The PDF is kept between
   attempts, so an email failure does not re-render it.
-- **A final failure still advances `next_run_at`** — the next tick is a month
-  away, so a human recovers with "Run now" after the failure email.
+- **A final failure still advances `next_run_at`** — the next occurrence is a
+  month or a year away, so a human recovers with "Run now". For scheduled runs,
+  the team's coaches, super admins, and captain get a failure email; a failed
+  "Run now" reports the error in the UI instead.
+- **Every stored PDF expires** after `RETENTION_DAYS` (90 days), including the
+  PDF of a run that failed after rendering.
 
 ## 5. Technical appendix
 
@@ -79,7 +104,7 @@ How it stays correct:
 | ---------------------------- | -------------------------------------------------------------------------------------- |
 | `GET /api/reports/schedule`  | Cron tick (`0 1 * * *` UTC). Claims due rows with `FOR UPDATE SKIP LOCKED`, runs each. |
 | `GET /api/reports/retention` | Cron (`0 2 * * *` UTC). Deletes Blobs past `RETENTION_DAYS` and marks rows `expired`.  |
-| `GET /api/reports/download`  | Streams a stored PDF to a signed-in member of the report's team.                       |
+| `GET /api/reports/download`  | Streams a stored PDF to a signed-in member of the report's team (or a super admin).    |
 | `POST /api/webhooks/resend`  | Svix-verified delivery events; stamps `delivered` / `bounced` / … onto the run.        |
 
 ### Data model

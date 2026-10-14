@@ -9,6 +9,7 @@ import {
   completeReportRun,
   fetchDefaultRecipientEmails,
   insertReportHistory,
+  reclaimStaleReportRun,
   updateReportHistory,
 } from '@/db/report';
 import { ReportSchedule } from '@/drizzle/schema';
@@ -35,6 +36,9 @@ const MAX_ATTEMPTS = 3;
 /** In-process backoff between attempts — with a daily tick, a "retry on the
  * next tick" would mean tomorrow, so transient failures are absorbed here. */
 const RETRY_DELAYS_MS = [5_000, 20_000];
+/** A run still `pending` this long after it started outlived any function
+ * invocation (`maxDuration`), so its process died and it is safe to take over. */
+const STALE_RUN_MS = 10 * 60_000;
 
 /**
  * Next send time after `after`, based on the reporting window. Monthly reports
@@ -73,6 +77,11 @@ export interface ExecuteScheduleOptions {
   host: string;
   /** Session cookies forwarded to the headless browser. */
   cookies: Array<{ name: string; value: string }>;
+  /**
+   * Team of the session in `cookies`. The dashboard is scoped to the session's
+   * team, so rendering for any other team would leak that team's data.
+   */
+  session_team_id: string;
 }
 
 export interface ExecuteScheduleResult {
@@ -94,14 +103,18 @@ export async function executeSchedule({
   origin,
   host,
   cookies,
+  session_team_id,
 }: ExecuteScheduleOptions): Promise<ExecuteScheduleResult> {
   const { schedule_id, team_id, interval, recipients } = schedule;
   const period = formatDuration(interval);
 
   // 1. Idempotency gate — insert the run row FIRST. A unique violation means
   //    this occurrence was already executed (overlapping tick, manual re-fire,
-  //    or a hostile hit on the cron URL): skip silently.
+  //    or a hostile hit on the cron URL): skip silently — unless that run
+  //    was abandoned mid-flight, in which case it is taken over.
   let report_id: string;
+  // Step memoization across retries: a Resend failure must not re-render.
+  let pathname: string | null = null;
   try {
     [{ report_id }] = await insertReportHistory({
       team_id,
@@ -115,17 +128,31 @@ export async function executeSchedule({
       started_at: new Date(),
     });
   } catch (error) {
-    if (isUniqueViolation(error, 'unique_report_run_occurrence')) {
-      return { schedule_id, outcome: 'skipped_duplicate' };
+    if (!isUniqueViolation(error, 'unique_report_run_occurrence')) {
+      return {
+        schedule_id,
+        outcome: 'failed',
+        error: (error as Error).message,
+      };
     }
-    return { schedule_id, outcome: 'failed', error: (error as Error).message };
+
+    const stale = await reclaimStaleReportRun(
+      schedule_id,
+      scheduled_for,
+      new Date(Date.now() - STALE_RUN_MS),
+    ).catch(() => undefined);
+    if (!stale) return { schedule_id, outcome: 'skipped_duplicate' };
+
+    ({ report_id, pathname } = stale);
   }
 
-  // Step memoization across retries: a Resend failure must not re-render.
-  let pathname: string | null = null;
-  let lastError: unknown;
+  // Never render one team's dashboard into another team's report.
+  const foreignSession = session_team_id !== team_id;
+  let lastError: unknown = foreignSession
+    ? new Error('Report session does not belong to the schedule team')
+    : undefined;
 
-  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+  for (let attempt = 1; !foreignSession && attempt <= MAX_ATTEMPTS; attempt++) {
     try {
       if (attempt > 1) {
         await updateReportHistory(report_id, { attempts: attempt });
@@ -192,6 +219,8 @@ export async function executeSchedule({
         status: ReportStatus.FAILED,
         error: message,
         completed_at: new Date(),
+        // A stored blob must still age out through the retention job.
+        expires_at: pathname ? reportExpiresAt() : null,
       },
       schedule_id,
       { next_run_at: computeNextRun(interval, scheduled_for) },

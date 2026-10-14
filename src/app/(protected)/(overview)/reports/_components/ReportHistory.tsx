@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import { Badge, Button, HStack } from '@chakra-ui/react';
+import { Badge, Button, HStack, VisuallyHidden } from '@chakra-ui/react';
 import { capitalize } from 'es-toolkit/string';
 import { Download, FileClock } from 'lucide-react';
 
@@ -20,77 +20,76 @@ const PAGE_SIZE = 10;
 
 // Cells derive everything from the row, so the columns are a module constant.
 const COLUMNS: Array<Column<ReportHistoryRow>> = [
-    { header: 'Period', cell: (item) => item.period },
-    {
-      header: 'Time Duration',
-      cell: (item) => INTERVAL_LABEL.get(item.interval) ?? item.interval,
-    },
-    {
-      header: 'Status',
-      cell: (item) => (
-        // A failed run keeps its error on the row — surface it on hover.
+  { header: 'Period', cell: (item) => item.period },
+  {
+    header: 'Time Duration',
+    cell: (item) => INTERVAL_LABEL.get(item.interval) ?? item.interval,
+  },
+  {
+    header: 'Status',
+    cell: (item) => (
+      // A failed run keeps its error on the row — surface it on hover.
+      <Badge
+        variant="surface"
+        borderRadius="full"
+        colorPalette={getColor(item.status)}
+        title={item.error ?? undefined}
+      >
+        {capitalize(item.status)}
+        {item.attempts > 1 ? ` (${item.attempts} attempts)` : ''}
+      </Badge>
+    ),
+  },
+  {
+    header: 'Delivery',
+    cell: (item) =>
+      item.delivery_status ? (
         <Badge
           variant="surface"
           borderRadius="full"
-          colorPalette={getColor(item.status)}
-          title={item.error ?? undefined}
+          colorPalette={getColor(item.delivery_status)}
         >
-          {capitalize(item.status)}
-          {item.attempts > 1 ? ` (${item.attempts} attempts)` : ''}
+          {capitalize(item.delivery_status)}
         </Badge>
+      ) : (
+        '-'
       ),
-    },
-    {
-      header: 'Delivery',
-      cell: (item) =>
-        item.delivery_status ? (
-          <Badge
-            variant="surface"
-            borderRadius="full"
-            colorPalette={getColor(item.delivery_status)}
-          >
-            {capitalize(item.delivery_status)}
-          </Badge>
-        ) : (
-          '-'
-        ),
-    },
-    {
-      header: 'Trigger',
-      cell: (item) => (
-        <Badge variant="outline" borderRadius="full">
-          {capitalize(item.trigger)}
-        </Badge>
-      ),
-    },
-    { header: 'Generated At', cell: (item) => formatDatetime(item.created_at) },
-    {
-      header: '',
-      align: 'right',
-      cell: (item) => {
-        const available =
-          item.status === ReportStatus.SUCCESS && !!item.pathname;
+  },
+  {
+    header: 'Trigger',
+    cell: (item) => (
+      <Badge variant="outline" borderRadius="full">
+        {capitalize(item.trigger)}
+      </Badge>
+    ),
+  },
+  { header: 'Generated At', cell: (item) => formatDatetime(item.created_at) },
+  {
+    header: <VisuallyHidden>Download</VisuallyHidden>,
+    align: 'right',
+    cell: (item) => {
+      const available = item.status === ReportStatus.SUCCESS && !!item.pathname;
 
-        return (
-          <Button
-            size="xs"
-            variant="outline"
-            disabled={!available}
-            asChild={available}
-          >
-            {available ? (
-              <a href={reportDownloadUrl(item.report_id)}>
-                <Download /> Download
-              </a>
-            ) : (
-              <HStack>
-                <Download /> Download
-              </HStack>
-            )}
-          </Button>
-        );
-      },
+      return (
+        <Button
+          size="xs"
+          variant="outline"
+          disabled={!available}
+          asChild={available}
+        >
+          {available ? (
+            <a href={reportDownloadUrl(item.report_id)}>
+              <Download /> Download
+            </a>
+          ) : (
+            <HStack>
+              <Download /> Download
+            </HStack>
+          )}
+        </Button>
+      );
     },
+  },
 ];
 
 export default function ReportHistory({

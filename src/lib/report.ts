@@ -59,6 +59,16 @@ export async function renderReportPdf({
     await page.goto(`${origin}${path ?? ''}`, { waitUntil: 'networkidle0' });
     await page.waitForSelector('#reports-dashboard', { timeout: 3000 });
 
+    // The charts stream in behind Suspense as client-only chunks, so wait for
+    // their skeletons to clear (best effort — an empty dashboard shows empty
+    // states, not skeletons).
+    await page
+      .waitForFunction(
+        () => !document.querySelector('#reports-dashboard .chakra-skeleton'),
+        { timeout: 5000 },
+      )
+      .catch(() => {});
+
     const durationLabel = `Duration: ${period}`;
     const generatedOn = `Generated on ${new Date().toLocaleString('en-US', {
       dateStyle: 'long',
@@ -134,11 +144,13 @@ export async function storeReportPdf(pathname: string, buffer: Buffer) {
 
 /**
  * Sign in with the service account so the cron can render protected pages
- * headlessly. Returns the session cookies to forward to the browser.
+ * headlessly. Returns the session cookies to forward to the browser, plus the
+ * account's team — the only team whose dashboard that session can render.
  */
-export async function getServiceCookies(): Promise<
-  Array<{ name: string; value: string }>
-> {
+export async function getServiceSession(): Promise<{
+  team_id: string;
+  cookies: Array<{ name: string; value: string }>;
+}> {
   if (!env.PW_USERNAME || !env.PW_PASSWORD) {
     throw new Error('Missing service account credentials for scheduled report');
   }
@@ -153,13 +165,17 @@ export async function getServiceCookies(): Promise<
     throw new Error('Service account sign-in returned no session cookie');
   }
 
-  return setCookies.map((cookie) => {
-    const [pair] = cookie.split(';');
-    const separator = pair.indexOf('=');
-    return {
-      name: pair.slice(0, separator).trim(),
-      value: pair.slice(separator + 1).trim(),
-    };
-  });
-}
+  const { user } = (await response.json()) as { user: { team_id: string } };
 
+  return {
+    team_id: user.team_id,
+    cookies: setCookies.map((cookie) => {
+      const [pair] = cookie.split(';');
+      const separator = pair.indexOf('=');
+      return {
+        name: pair.slice(0, separator).trim(),
+        value: pair.slice(separator + 1).trim(),
+      };
+    }),
+  };
+}

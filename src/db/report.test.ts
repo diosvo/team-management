@@ -1,12 +1,12 @@
-import { and, eq, inArray, ne, or } from 'drizzle-orm';
+import { and, eq, inArray, or } from 'drizzle-orm';
 
 import db from '@/drizzle';
 import { PlayerTable, UserTable } from '@/drizzle/schema';
 
 import { UserRole } from '@/utils/enum';
 
+import { MOCK_REPORT_RECIPIENTS } from '@/test/mocks/report';
 import { MOCK_TEAM } from '@/test/mocks/team';
-import { MOCK_USER } from '@/test/mocks/user';
 
 import { fetchDefaultRecipientEmails, fetchReportRecipients } from './report';
 
@@ -36,21 +36,6 @@ vi.mock('@/drizzle/schema', () => ({
 }));
 
 const DEFAULT_REPORT_ROLES = [UserRole.COACH, UserRole.SUPER_ADMIN];
-
-const MOCK_RECIPIENTS = [
-  {
-    ...MOCK_USER,
-    id: 'user-1',
-    email: 'coach@example.com',
-    role: UserRole.COACH,
-  },
-  {
-    ...MOCK_USER,
-    id: 'user-2',
-    email: 'player@example.com',
-    role: UserRole.PLAYER,
-  },
-];
 
 /** Builds the selectDistinct().from().leftJoin().where() chain used in report.ts */
 function mockSelectDistinctSuccess(rows: Array<{ email: string }>) {
@@ -83,17 +68,16 @@ describe('fetchReportRecipients', () => {
   });
 
   test('returns recipients when database query succeeds', async () => {
-    vi.mocked(db.query.UserTable.findMany).mockResolvedValue(MOCK_RECIPIENTS);
+    vi.mocked(db.query.UserTable.findMany).mockResolvedValue(
+      MOCK_REPORT_RECIPIENTS as never,
+    );
 
     const result = await fetchReportRecipients(MOCK_TEAM.team_id);
 
-    expect(result).toEqual(MOCK_RECIPIENTS);
+    expect(result).toEqual(MOCK_REPORT_RECIPIENTS);
     // Verify query construction
     expect(db.query.UserTable.findMany).toHaveBeenCalledWith({
-      where: and(
-        eq(UserTable.team_id, MOCK_TEAM.team_id),
-        ne(UserTable.role, UserRole.SUPER_ADMIN),
-      ),
+      where: and(eq(UserTable.team_id, MOCK_TEAM.team_id)),
       columns: {
         id: true,
         name: true,
@@ -120,16 +104,14 @@ describe('fetchDefaultRecipientEmails', () => {
   });
 
   test('returns distinct emails when database query succeeds', async () => {
-    const rows = [
-      { email: 'coach@example.com' },
-      { email: 'captain@example.com' },
-    ];
+    const emails = MOCK_REPORT_RECIPIENTS.map(({ email }) => email);
+    const rows = emails.map((email) => ({ email }));
     const { mockFrom, mockLeftJoin, mockWhere } =
       mockSelectDistinctSuccess(rows);
 
     const result = await fetchDefaultRecipientEmails(MOCK_TEAM.team_id);
 
-    expect(result).toEqual(['coach@example.com', 'captain@example.com']);
+    expect(result).toEqual(emails);
     // Verify query construction
     expect(db.selectDistinct).toHaveBeenCalledWith({ email: UserTable.email });
     expect(mockFrom).toHaveBeenCalledWith(UserTable);

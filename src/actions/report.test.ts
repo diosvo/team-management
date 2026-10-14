@@ -7,9 +7,14 @@ import {
 import { sendEmail, type EmailProps } from '@/lib/resend';
 
 import { mockWithAuth, mockWithResource } from '@/test/mocks/auth';
+import {
+  MOCK_REPORT_RECIPIENTS,
+  MOCK_REPORT_SCHEDULE,
+} from '@/test/mocks/report';
 import { MOCK_TEAM } from '@/test/mocks/team';
 
-import { Interval, UserRole } from '@/utils/enum';
+import type { UpsertReportScheduleValues } from '@/schemas/report';
+import { Interval } from '@/utils/enum';
 
 import {
   getReportRecipients,
@@ -51,20 +56,7 @@ vi.mock('@/lib/resend', () => ({
   sendEmail: vi.fn(),
 }));
 
-const MOCK_RECIPIENTS = [
-  {
-    id: 'user-123',
-    name: 'Dios Vo',
-    email: 'vtmn1212@gmail.com',
-    role: UserRole.COACH,
-  },
-  {
-    id: 'user-456',
-    name: 'Jane Doe',
-    email: 'jane@example.com',
-    role: UserRole.PLAYER,
-  },
-];
+const { schedule_id, recipients } = MOCK_REPORT_SCHEDULE;
 
 describe('Report Actions', () => {
   beforeEach(() => {
@@ -73,12 +65,14 @@ describe('Report Actions', () => {
 
   describe('getReportRecipients', () => {
     test('calls fetchReportRecipients with team_id', async () => {
-      vi.mocked(fetchReportRecipients).mockResolvedValue(MOCK_RECIPIENTS);
+      vi.mocked(fetchReportRecipients).mockResolvedValue(
+        MOCK_REPORT_RECIPIENTS,
+      );
 
       const result = await getReportRecipients();
 
       expect(fetchReportRecipients).toHaveBeenCalledWith(MOCK_TEAM.team_id);
-      expect(result).toEqual(MOCK_RECIPIENTS);
+      expect(result).toEqual(MOCK_REPORT_RECIPIENTS);
     });
 
     test('returns empty array when no recipients exist', async () => {
@@ -99,7 +93,7 @@ describe('Report Actions', () => {
 
   describe('sendReportEmail', () => {
     const PAYLOAD: EmailProps = {
-      to: ['coach@example.com'],
+      to: recipients,
       subject: 'Weekly Report',
       html: '<p>Report</p>',
       attachments: [{ content: 'base64', filename: 'report.pdf' }],
@@ -126,9 +120,9 @@ describe('Report Actions', () => {
   });
 
   describe('upsertReportSchedule', () => {
-    const INPUT = {
+    const INPUT: UpsertReportScheduleValues = {
       interval: Interval.LAST_MONTH,
-      recipients: ['coach@example.com'],
+      recipients,
     };
 
     test('inserts a new schedule with a precomputed next run', async () => {
@@ -146,11 +140,11 @@ describe('Report Actions', () => {
     });
 
     test('updates an existing schedule when an id is given', async () => {
-      const result = await upsertReportSchedule('schedule-1', INPUT);
+      const result = await upsertReportSchedule(schedule_id, INPUT);
 
       expect(updateReportSchedule).toHaveBeenCalledWith(
         MOCK_TEAM.team_id,
-        'schedule-1',
+        schedule_id,
         expect.objectContaining({ interval: INPUT.interval }),
       );
       expect(insertReportSchedule).not.toHaveBeenCalled();
@@ -169,11 +163,11 @@ describe('Report Actions', () => {
 
   describe('toggleReportSchedule', () => {
     test('updates the enabled flag', async () => {
-      const result = await toggleReportSchedule('schedule-1', false);
+      const result = await toggleReportSchedule(schedule_id, false);
 
       expect(updateReportSchedule).toHaveBeenCalledWith(
         MOCK_TEAM.team_id,
-        'schedule-1',
+        schedule_id,
         { enabled: false, next_run_at: undefined },
       );
       expect(result.success).toBe(true);
@@ -182,10 +176,10 @@ describe('Report Actions', () => {
 
   describe('removeReportSchedules', () => {
     test('deletes the schedules', async () => {
-      const result = await removeReportSchedules(['schedule-1']);
+      const result = await removeReportSchedules([schedule_id]);
 
       expect(deleteReportSchedules).toHaveBeenCalledWith(MOCK_TEAM.team_id, [
-        'schedule-1',
+        schedule_id,
       ]);
       expect(result.success).toBe(true);
     });

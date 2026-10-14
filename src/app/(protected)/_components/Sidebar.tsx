@@ -295,7 +295,6 @@ export default function Sidebar({ isExpanded, children }: SidebarProps) {
       height="full"
       alignItems="stretch"
       paddingBlock={4}
-      paddingInline={2}
     >
       {children}
 

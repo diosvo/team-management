@@ -17,14 +17,24 @@ import {
   Interval,
   ReportStatus,
   ReportTrigger,
+  enumValues,
 } from '@/utils/enum';
 
 import { created_at, updated_at } from '../helpers';
 import { TeamTable } from './team';
 
-export const reportIntervalEnum = pgEnum('report_interval', Interval);
-export const reportStatusEnum = pgEnum('report_status', ReportStatus);
-export const reportTriggerEnum = pgEnum('report_trigger', ReportTrigger);
+export const reportIntervalEnum = pgEnum(
+  'report_interval',
+  enumValues(Interval),
+);
+export const reportStatusEnum = pgEnum(
+  'report_status',
+  enumValues(ReportStatus),
+);
+export const reportTriggerEnum = pgEnum(
+  'report_trigger',
+  enumValues(ReportTrigger),
+);
 
 /** Recurring team report config; `interval` defines the data window and send cadence. `next_run_at` is precomputed and polled by the daily cron. */
 export const ReportScheduleTable = pgTable(

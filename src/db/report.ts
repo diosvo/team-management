@@ -1,4 +1,15 @@
-import { and, asc, desc, eq, isNotNull, lt, lte, ne, or, inArray } from 'drizzle-orm';
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  inArray,
+  isNotNull,
+  lt,
+  lte,
+  ne,
+  or,
+} from 'drizzle-orm';
 
 import db from '@/drizzle';
 import {
@@ -21,10 +32,7 @@ const DEFAULT_REPORT_ROLES = [UserRole.COACH, UserRole.SUPER_ADMIN];
 export async function fetchReportRecipients(team_id: string) {
   try {
     return await db.query.UserTable.findMany({
-      where: and(
-        eq(UserTable.team_id, team_id),
-        ne(UserTable.role, UserRole.SUPER_ADMIN),
-      ),
+      where: and(eq(UserTable.team_id, team_id)),
       columns: {
         id: true,
         name: true,
@@ -197,6 +205,36 @@ export async function updateReportHistory(
     .update(ReportHistoryTable)
     .set(report)
     .where(eq(ReportHistoryTable.report_id, report_id));
+}
+
+/**
+ * @description Take over a run of the same occurrence that was left `pending`
+ * since before `stale_before` — its invocation died (timeout, OOM) before it
+ * could close the run, which would otherwise wedge the schedule forever. The
+ * conditional update makes the takeover atomic, so overlapping ticks can never
+ * both reclaim it. Returns nothing when the run is live or already closed.
+ */
+export async function reclaimStaleReportRun(
+  schedule_id: string,
+  scheduled_for: Date,
+  stale_before: Date,
+) {
+  const [run] = await db
+    .update(ReportHistoryTable)
+    .set({ attempts: 1, started_at: new Date(), error: null })
+    .where(
+      and(
+        eq(ReportHistoryTable.schedule_id, schedule_id),
+        eq(ReportHistoryTable.scheduled_for, scheduled_for),
+        eq(ReportHistoryTable.status, ReportStatus.PENDING),
+        lt(ReportHistoryTable.started_at, stale_before),
+      ),
+    )
+    .returning({
+      report_id: ReportHistoryTable.report_id,
+      pathname: ReportHistoryTable.pathname,
+    });
+  return run as typeof run | undefined;
 }
 
 /**

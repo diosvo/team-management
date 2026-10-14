@@ -1,7 +1,5 @@
 import { Metadata } from 'next';
 
-import { Stack } from '@chakra-ui/react';
-
 import { getReportHistory, getReportSchedules } from '@/actions/report';
 
 import ReportHistory from './_components/ReportHistory';
@@ -19,9 +17,9 @@ export default async function ReportsPage() {
   ]);
 
   return (
-    <Stack gap={10}>
+    <>
       <ReportSchedules schedules={schedules} />
       <ReportHistory history={history} />
-    </Stack>
+    </>
   );
 }
