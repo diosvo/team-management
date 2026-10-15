@@ -50,14 +50,3 @@ export async function getTeamPlayerIds(
 export async function insertPlayer(player: InsertPlayer) {
   return await db.insert(PlayerTable).values(player);
 }
-
-export async function upsertPlayer(player: InsertPlayer) {
-  return await db
-    .insert(PlayerTable)
-    .values(player)
-    .onConflictDoUpdate({ target: PlayerTable.id, set: player });
-}
-
-export async function deletePlayer(player_id: string) {
-  return await db.delete(PlayerTable).where(eq(PlayerTable.id, player_id));
-}

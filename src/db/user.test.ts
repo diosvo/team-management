@@ -1,7 +1,12 @@
 import { and, eq, ne } from 'drizzle-orm';
 
 import db from '@/drizzle';
-import { CoachTable, type User, UserTable } from '@/drizzle/schema';
+import {
+  CoachTable,
+  PlayerTable,
+  type User,
+  UserTable,
+} from '@/drizzle/schema';
 
 import { UserRole, UserState } from '@/utils/enum';
 
@@ -15,6 +20,7 @@ import {
 } from '@/test/db-operations';
 import { MOCK_TEAM } from '@/test/mocks/team';
 import {
+  MOCK_COACH,
   MOCK_PLAYER,
   MOCK_USER,
   MOCK_USER_WITH_COACH,
@@ -28,6 +34,7 @@ import {
   getUserById,
   getUsers,
   updateUser,
+  updateUserTeamInfo,
 } from './user';
 
 vi.mock('@/drizzle', () => ({
@@ -47,6 +54,7 @@ vi.mock('@/drizzle', () => ({
     delete: vi.fn(() => ({
       where: vi.fn(),
     })),
+    transaction: vi.fn(),
   },
 }));
 
@@ -60,6 +68,9 @@ vi.mock('@/drizzle/schema', () => ({
   },
   CoachTable: {
     id: 'coach_id',
+  },
+  PlayerTable: {
+    id: 'player_id',
   },
 }));
 
@@ -249,6 +260,94 @@ describe('updateUser', () => {
     await expect(updateUser(MOCK_PLAYER.id, mockUpdateData)).rejects.toThrow(
       message,
     );
+  });
+});
+
+describe('updateUserTeamInfo', () => {
+  // Every write goes through `tx`, so the transaction rolls them back together
+  function mockTransaction() {
+    const onConflictDoUpdate = vi.fn().mockResolvedValue(undefined);
+    const values = vi.fn().mockReturnValue({ onConflictDoUpdate });
+    const updateWhere = vi.fn().mockResolvedValue(undefined);
+    const set = vi.fn().mockReturnValue({ where: updateWhere });
+    const deleteWhere = vi.fn().mockResolvedValue(undefined);
+    const tx = {
+      insert: vi.fn().mockReturnValue({ values }),
+      update: vi.fn().mockReturnValue({ set }),
+      delete: vi.fn().mockReturnValue({ where: deleteWhere }),
+    };
+
+    vi.mocked(db.transaction).mockImplementation(
+      async (callback) => await callback(tx as never),
+    );
+
+    return { tx, values, onConflictDoUpdate, set, deleteWhere };
+  }
+
+  const user: Partial<User> = { role: UserRole.COACH };
+  const coach = { position: MOCK_COACH.position };
+  const player = { jersey_number: MOCK_PLAYER.jersey_number };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  test('upserts the new role, updates the user and removes the previous role', async () => {
+    const { tx, values, onConflictDoUpdate, set, deleteWhere } =
+      mockTransaction();
+
+    await updateUserTeamInfo(MOCK_USER.id, {
+      user,
+      coach,
+      remove: { player: true, coach: false },
+    });
+
+    expect(db.transaction).toHaveBeenCalledTimes(1);
+    expect(tx.insert).toHaveBeenCalledWith(CoachTable);
+    expect(values).toHaveBeenCalledWith({ id: MOCK_USER.id, ...coach });
+    expect(onConflictDoUpdate).toHaveBeenCalledWith({
+      target: CoachTable.id,
+      set: { id: MOCK_USER.id, ...coach },
+    });
+    expect(tx.update).toHaveBeenCalledWith(UserTable);
+    expect(set).toHaveBeenCalledWith(user);
+    expect(tx.delete).toHaveBeenCalledTimes(1);
+    expect(tx.delete).toHaveBeenCalledWith(PlayerTable);
+    expect(deleteWhere).toHaveBeenCalledWith({
+      field: PlayerTable.id,
+      value: MOCK_USER.id,
+      type: 'eq',
+    });
+    // Nothing escapes the transaction
+    expect(db.update).not.toHaveBeenCalled();
+    expect(db.delete).not.toHaveBeenCalled();
+  });
+
+  test('only upserts and updates when the role is unchanged', async () => {
+    const { tx } = mockTransaction();
+
+    await updateUserTeamInfo(MOCK_USER.id, {
+      user: { role: UserRole.PLAYER },
+      player,
+      remove: { player: false, coach: false },
+    });
+
+    expect(tx.insert).toHaveBeenCalledWith(PlayerTable);
+    expect(tx.update).toHaveBeenCalledWith(UserTable);
+    expect(tx.delete).not.toHaveBeenCalled();
+  });
+
+  test('rejects so every write rolls back when a step fails', async () => {
+    const { deleteWhere } = mockTransaction();
+    deleteWhere.mockRejectedValue(new Error('Delete failed'));
+
+    await expect(
+      updateUserTeamInfo(MOCK_USER.id, {
+        user,
+        coach,
+        remove: { player: true, coach: false },
+      }),
+    ).rejects.toThrow('Delete failed');
   });
 });
 

@@ -3,7 +3,10 @@ import { and, eq, ne } from 'drizzle-orm';
 import db from '@/drizzle';
 import {
   CoachTable,
+  type InsertCoach,
+  type InsertPlayer,
   type Player,
+  PlayerTable,
   type User,
   UserTable,
 } from '@/drizzle/schema';
@@ -121,6 +124,50 @@ export async function getUserById(id: string): Promise<Nullish<User>> {
 
 export async function updateUser(user_id: string, user: Partial<User>) {
   return await db.update(UserTable).set(user).where(eq(UserTable.id, user_id));
+}
+
+/**
+ * Update a user and role rows in one transaction; new rows are upserted and
+ * old ones removed so role data stays in sync.
+ */
+export async function updateUserTeamInfo(
+  user_id: string,
+  values: {
+    user: Partial<User>;
+    player?: Omit<InsertPlayer, 'id'>;
+    coach?: Omit<InsertCoach, 'id'>;
+    remove: { player: boolean; coach: boolean };
+  },
+) {
+  const { user, player, coach, remove } = values;
+
+  return await db.transaction(async (tx) => {
+    if (player) {
+      const row = { id: user_id, ...player };
+      await tx
+        .insert(PlayerTable)
+        .values(row)
+        .onConflictDoUpdate({ target: PlayerTable.id, set: row });
+    }
+
+    if (coach) {
+      const row = { id: user_id, ...coach };
+      await tx
+        .insert(CoachTable)
+        .values(row)
+        .onConflictDoUpdate({ target: CoachTable.id, set: row });
+    }
+
+    await tx.update(UserTable).set(user).where(eq(UserTable.id, user_id));
+
+    if (remove.player) {
+      await tx.delete(PlayerTable).where(eq(PlayerTable.id, user_id));
+    }
+
+    if (remove.coach) {
+      await tx.delete(CoachTable).where(eq(CoachTable.id, user_id));
+    }
+  });
 }
 
 export async function deleteUser(user_id: string) {

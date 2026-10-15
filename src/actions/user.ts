@@ -5,14 +5,9 @@ import { forbidden, notFound } from 'next/navigation';
 import type { CoachPosition, PlayerPosition } from '@/utils/enum';
 import { ResponseFactory } from '@/utils/response';
 
-import { deleteCoach, insertCoach, upsertCoach } from '@/db/coach';
+import { insertCoach } from '@/db/coach';
 import { getDbErrorMessage } from '@/db/pg-error';
-import {
-  deletePlayer,
-  insertPlayer,
-  isJerseyNumberTaken,
-  upsertPlayer,
-} from '@/db/player';
+import { insertPlayer, isJerseyNumberTaken } from '@/db/player';
 import {
   deleteUser,
   fetchActivePlayers,
@@ -20,6 +15,7 @@ import {
   getRosterUsers,
   getUserById,
   updateUser,
+  updateUserTeamInfo,
 } from '@/db/user';
 import type {
   AddUserValues,
@@ -232,32 +228,19 @@ export const updateTeamInfo = profile(
         }
       }
 
-      // Create or update the row for the new role first, so a failure never
-      // leaves the user without one
-      if (isPlayer) {
-        await upsertPlayer({
-          id: user_id,
-          ...playerData,
-        });
-      }
+      // Switching role removes the previous role's row
+      const previous = hasPermissions(target.role);
+      const switching = target.role !== userData.role;
 
-      if (isCoach) {
-        await upsertCoach({
-          id: user_id,
-          ...coachData,
-        });
-      }
-
-      // Update user
-      await updateUser(user_id, userData);
-
-      // Remove the row of the previous role when switching role
-      if (target.role !== userData.role) {
-        const previous = hasPermissions(target.role);
-
-        if (previous.isPlayer) await deletePlayer(user_id);
-        if (previous.isCoach) await deleteCoach(user_id);
-      }
+      await updateUserTeamInfo(user_id, {
+        user: userData,
+        player: isPlayer ? playerData : undefined,
+        coach: isCoach ? coachData : undefined,
+        remove: {
+          player: switching && previous.isPlayer,
+          coach: switching && previous.isCoach,
+        },
+      });
 
       revalidate.user(user_id);
 
