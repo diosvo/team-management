@@ -5,9 +5,14 @@ import { forbidden, notFound } from 'next/navigation';
 import type { CoachPosition, PlayerPosition } from '@/utils/enum';
 import { ResponseFactory } from '@/utils/response';
 
-import { insertCoach, updateCoach } from '@/db/coach';
+import { deleteCoach, insertCoach, upsertCoach } from '@/db/coach';
 import { getDbErrorMessage } from '@/db/pg-error';
-import { insertPlayer, isJerseyNumberTaken, updatePlayer } from '@/db/player';
+import {
+  deletePlayer,
+  insertPlayer,
+  isJerseyNumberTaken,
+  upsertPlayer,
+} from '@/db/player';
 import {
   deleteUser,
   fetchActivePlayers,
@@ -202,6 +207,10 @@ export const updateTeamInfo = profile(
       forbidden();
     }
 
+    // The current role tells which row to remove when switching role
+    const target = await getUserById(user_id);
+    if (!target) notFound();
+
     try {
       const { user: userData, player: playerData, coach: coachData } = values;
 
@@ -223,24 +232,31 @@ export const updateTeamInfo = profile(
         }
       }
 
-      // Update user
-      await updateUser(user_id, userData);
-
-      // TODO: Create new player or coach if they don't exist
-      // Remove the old one when switching role
-
+      // Create or update the row for the new role first, so a failure never
+      // leaves the user without one
       if (isPlayer) {
-        await updatePlayer({
+        await upsertPlayer({
           id: user_id,
           ...playerData,
         });
       }
 
       if (isCoach) {
-        await updateCoach({
+        await upsertCoach({
           id: user_id,
           ...coachData,
         });
+      }
+
+      // Update user
+      await updateUser(user_id, userData);
+
+      // Remove the row of the previous role when switching role
+      if (target.role !== userData.role) {
+        const previous = hasPermissions(target.role);
+
+        if (previous.isPlayer) await deletePlayer(user_id);
+        if (previous.isCoach) await deleteCoach(user_id);
       }
 
       revalidate.user(user_id);

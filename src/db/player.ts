@@ -41,10 +41,7 @@ export async function getTeamPlayerIds(
     .from(PlayerTable)
     .innerJoin(UserTable, eq(UserTable.id, PlayerTable.id))
     .where(
-      and(
-        eq(UserTable.team_id, team_id),
-        inArray(PlayerTable.id, player_ids),
-      ),
+      and(eq(UserTable.team_id, team_id), inArray(PlayerTable.id, player_ids)),
     );
 
   return players.map(({ id }) => id);
@@ -54,9 +51,13 @@ export async function insertPlayer(player: InsertPlayer) {
   return await db.insert(PlayerTable).values(player);
 }
 
-export async function updatePlayer(player: InsertPlayer) {
+export async function upsertPlayer(player: InsertPlayer) {
   return await db
-    .update(PlayerTable)
-    .set(player)
-    .where(eq(PlayerTable.id, player.id));
+    .insert(PlayerTable)
+    .values(player)
+    .onConflictDoUpdate({ target: PlayerTable.id, set: player });
+}
+
+export async function deletePlayer(player_id: string) {
+  return await db.delete(PlayerTable).where(eq(PlayerTable.id, player_id));
 }

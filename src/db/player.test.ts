@@ -5,20 +5,23 @@ import { type InsertPlayer, PlayerTable } from '@/drizzle/schema/player';
 import { UserTable } from '@/drizzle/schema/user';
 
 import {
+  mockDeleteFailure,
+  mockDeleteSuccess,
   mockInsertFailure,
   mockInsertSuccess,
   mockSelectSuccess,
-  mockUpdateFailure,
-  mockUpdateSuccess,
+  mockUpsertFailure,
+  mockUpsertSuccess,
 } from '@/test/db-operations';
 import { MOCK_TEAM } from '@/test/mocks/team';
 import { MOCK_PLAYER } from '@/test/mocks/user';
 
 import {
+  deletePlayer,
   getTeamPlayerIds,
   insertPlayer,
   isJerseyNumberTaken,
-  updatePlayer,
+  upsertPlayer,
 } from './player';
 
 vi.mock('@/drizzle', () => ({
@@ -26,10 +29,8 @@ vi.mock('@/drizzle', () => ({
     insert: vi.fn(() => ({
       values: vi.fn(),
     })),
-    update: vi.fn(() => ({
-      set: vi.fn(() => ({
-        where: vi.fn(),
-      })),
+    delete: vi.fn(() => ({
+      where: vi.fn(),
     })),
     select: vi.fn(),
   },
@@ -76,37 +77,64 @@ describe('insertPlayer', () => {
   });
 });
 
-describe('updatePlayer', () => {
+describe('upsertPlayer', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  test('updates player successfully', async () => {
+  test('inserts the player, updating the existing row on conflict', async () => {
     const updatedPlayer: InsertPlayer = {
       ...MOCK_PLAYER,
       jersey_number: 99,
     };
-    const { mockWhere, mockSet } = mockUpdateSuccess({ id });
+    const { mockValues, mockOnConflictDoUpdate } = mockUpsertSuccess({ id });
 
-    const result = await updatePlayer(updatedPlayer);
+    const result = await upsertPlayer(updatedPlayer);
 
     expect(result).toEqual({ id });
     // Verify query construction
-    expect(db.update).toHaveBeenCalledWith(PlayerTable);
-    expect(mockSet).toHaveBeenCalledWith(updatedPlayer);
-    expect(eq).toHaveBeenCalledWith(PlayerTable.id, updatedPlayer.id);
+    expect(db.insert).toHaveBeenCalledWith(PlayerTable);
+    expect(mockValues).toHaveBeenCalledWith(updatedPlayer);
+    expect(mockOnConflictDoUpdate).toHaveBeenCalledWith({
+      target: PlayerTable.id,
+      set: updatedPlayer,
+    });
+  });
+
+  test('throws error when upsert fails', async () => {
+    const message = 'Upsert failed';
+    mockUpsertFailure(message);
+
+    await expect(upsertPlayer(MOCK_PLAYER)).rejects.toThrow(message);
+  });
+});
+
+describe('deletePlayer', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  test('deletes player successfully', async () => {
+    const mockWhere = mockDeleteSuccess({ rowCount: 1 });
+
+    const result = await deletePlayer(id);
+
+    expect(result).toEqual({ rowCount: 1 });
+    // Verify query construction
+    expect(db.delete).toHaveBeenCalledWith(PlayerTable);
+    expect(eq).toHaveBeenCalledWith(PlayerTable.id, id);
     expect(mockWhere).toHaveBeenCalledWith({
       field: PlayerTable.id,
-      value: updatedPlayer.id,
+      value: id,
       type: 'eq',
     });
   });
 
-  test('throws error when update fails', async () => {
-    const message = 'Update failed';
-    mockUpdateFailure(message);
+  test('throws error when delete fails', async () => {
+    const message = 'Delete failed';
+    mockDeleteFailure(message);
 
-    await expect(updatePlayer(MOCK_PLAYER)).rejects.toThrow(message);
+    await expect(deletePlayer(id)).rejects.toThrow(message);
   });
 });
 

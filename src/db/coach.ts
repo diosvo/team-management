@@ -7,9 +7,17 @@ export async function insertCoach(coach: InsertCoach) {
   return await db.insert(CoachTable).values(coach);
 }
 
-export async function updateCoach(coach: InsertCoach) {
+/**
+ * Creates the coach row, or updates it when one already exists — a user
+ * switching to the coach role may not have a row yet.
+ */
+export async function upsertCoach(coach: InsertCoach) {
   return await db
-    .update(CoachTable)
-    .set(coach)
-    .where(eq(CoachTable.id, coach.id));
+    .insert(CoachTable)
+    .values(coach)
+    .onConflictDoUpdate({ target: CoachTable.id, set: coach });
+}
+
+export async function deleteCoach(coach_id: string) {
+  return await db.delete(CoachTable).where(eq(CoachTable.id, coach_id));
 }

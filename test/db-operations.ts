@@ -238,6 +238,33 @@ export function mockInsertReturningFailure(errorMessage: string) {
   return { mockValues, mockReturning };
 }
 
+export function mockUpsertSuccess(returnValue: unknown) {
+  const mockOnConflictDoUpdate = vi.fn().mockResolvedValue(returnValue);
+  const mockValues = vi
+    .fn()
+    .mockReturnValue({ onConflictDoUpdate: mockOnConflictDoUpdate });
+
+  vi.mocked(db.insert).mockReturnValue({
+    values: mockValues,
+  } as unknown as ReturnType<typeof db.insert>);
+
+  return { mockValues, mockOnConflictDoUpdate };
+}
+
+export function mockUpsertFailure(errorMessage: string) {
+  const error = new Error(errorMessage);
+  const mockOnConflictDoUpdate = vi.fn().mockRejectedValue(error);
+  const mockValues = vi
+    .fn()
+    .mockReturnValue({ onConflictDoUpdate: mockOnConflictDoUpdate });
+
+  vi.mocked(db.insert).mockReturnValue({
+    values: mockValues,
+  } as unknown as ReturnType<typeof db.insert>);
+
+  return { mockValues, mockOnConflictDoUpdate };
+}
+
 export function mockUpdateSuccess(returnValue: unknown) {
   const mockWhere = vi.fn().mockResolvedValue(returnValue);
   const mockSet = vi.fn().mockReturnValue({ where: mockWhere });
