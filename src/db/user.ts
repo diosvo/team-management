@@ -2,14 +2,16 @@ import { and, eq, ne } from 'drizzle-orm';
 
 import db from '@/drizzle';
 import {
+  type Coach,
   CoachTable,
   type InsertCoach,
+} from '@/drizzle/schema/coach';
+import {
   type InsertPlayer,
   type Player,
   PlayerTable,
-  type User,
-  UserTable,
-} from '@/drizzle/schema';
+} from '@/drizzle/schema/player';
+import { type User, UserTable } from '@/drizzle/schema/user';
 
 import { UserRole, UserState } from '@/utils/enum';
 
@@ -20,9 +22,11 @@ import { UserRole, UserState } from '@/utils/enum';
 export type RosterUser = Pick<
   User,
   'id' | 'name' | 'email' | 'state' | 'role' | 'emailVerified'
-> & {
-  player?: Nullish<Pick<Player, 'jersey_number' | 'position'>>;
-};
+> &
+  Partial<{
+    player: Nullish<Pick<Player, 'jersey_number' | 'position'>>;
+    coach: Nullish<Pick<Coach, 'position'>>;
+  }>;
 
 export async function getRosterUsers(
   team_id: string,
@@ -45,6 +49,11 @@ export async function getRosterUsers(
         player: {
           columns: {
             jersey_number: true,
+            position: true,
+          },
+        },
+        coach: {
+          columns: {
             position: true,
           },
         },

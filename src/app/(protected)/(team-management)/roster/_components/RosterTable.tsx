@@ -14,6 +14,7 @@ import usePermissions from '@/hooks/use-permissions';
 import useTableState from '@/hooks/use-table-state';
 
 import { useRosterFilters } from '@/lib/nuqs';
+import { UserRole } from '@/utils/enum';
 import { buildPredicate } from '@/utils/filters';
 import { getColor } from '@/utils/helper';
 
@@ -114,14 +115,22 @@ export default function RosterTable({
     },
     {
       header: 'Position',
-      cell: (user) =>
-        user.player?.position ? (
+      cell: (user) => {
+        const position =
+          user.role === UserRole.COACH
+            ? user.coach?.position
+            : user.role === UserRole.PLAYER
+              ? user.player?.position
+              : undefined;
+
+        return position ? (
           <Badge variant="outline" borderRadius="full">
-            {user.player.position}
+            {position}
           </Badge>
         ) : (
           '-'
-        ),
+        );
+      },
     },
   ];
 

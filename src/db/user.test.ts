@@ -1,12 +1,9 @@
 import { and, eq, ne } from 'drizzle-orm';
 
 import db from '@/drizzle';
-import {
-  CoachTable,
-  PlayerTable,
-  type User,
-  UserTable,
-} from '@/drizzle/schema';
+import { CoachTable } from '@/drizzle/schema/coach';
+import { PlayerTable } from '@/drizzle/schema/player';
+import { type User, UserTable } from '@/drizzle/schema/user';
 
 import { UserRole, UserState } from '@/utils/enum';
 
@@ -30,6 +27,7 @@ import {
 import {
   deleteUser,
   fetchActivePlayers,
+  getRosterUsers,
   getTeamHeadCoach,
   getUserById,
   getUsers,
@@ -58,7 +56,7 @@ vi.mock('@/drizzle', () => ({
   },
 }));
 
-vi.mock('@/drizzle/schema', () => ({
+vi.mock('@/drizzle/schema/user', () => ({
   UserTable: {
     team_id: 'team_id',
     id: 'id',
@@ -66,9 +64,15 @@ vi.mock('@/drizzle/schema', () => ({
     role: 'role',
     state: 'state',
   },
+}));
+
+vi.mock('@/drizzle/schema/coach', () => ({
   CoachTable: {
     id: 'coach_id',
   },
+}));
+
+vi.mock('@/drizzle/schema/player', () => ({
   PlayerTable: {
     id: 'player_id',
   },
@@ -152,6 +156,58 @@ describe('getUsers', () => {
     vi.mocked(db.query.UserTable.findMany).mockRejectedValue(error);
 
     const result = await getUsers(MOCK_TEAM.team_id);
+
+    expect(result).toEqual([]);
+  });
+});
+
+describe('getRosterUsers', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  test('returns roster users when database query succeeds', async () => {
+    const mockUsers = [MOCK_USER_WITH_PLAYER, MOCK_USER_WITH_COACH];
+    vi.mocked(db.query.UserTable.findMany).mockResolvedValue(mockUsers);
+
+    const result = await getRosterUsers(MOCK_TEAM.team_id);
+
+    expect(result).toEqual(mockUsers);
+    // Verify query construction
+    expect(db.query.UserTable.findMany).toHaveBeenCalledWith({
+      columns: {
+        id: true,
+        name: true,
+        email: true,
+        state: true,
+        role: true,
+        emailVerified: true,
+      },
+      where: and(
+        eq(UserTable.team_id, MOCK_TEAM.team_id),
+        ne(UserTable.role, UserRole.SUPER_ADMIN),
+      ),
+      with: {
+        player: {
+          columns: {
+            jersey_number: true,
+            position: true,
+          },
+        },
+        coach: {
+          columns: {
+            position: true,
+          },
+        },
+      },
+    });
+  });
+
+  test('returns empty array when database query fails', async () => {
+    const error = new Error('Database error');
+    vi.mocked(db.query.UserTable.findMany).mockRejectedValue(error);
+
+    const result = await getRosterUsers(MOCK_TEAM.team_id);
 
     expect(result).toEqual([]);
   });
