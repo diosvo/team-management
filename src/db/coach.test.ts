@@ -1,28 +1,15 @@
-import { eq } from 'drizzle-orm';
-
 import db from '@/drizzle';
-import { CoachTable, type InsertCoach } from '@/drizzle/schema/coach';
+import { CoachTable } from '@/drizzle/schema/coach';
 
-import {
-  mockInsertFailure,
-  mockInsertSuccess,
-  mockUpdateFailure,
-  mockUpdateSuccess,
-} from '@/test/db-operations';
+import { mockInsertFailure, mockInsertSuccess } from '@/test/db-operations';
 import { MOCK_COACH } from '@/test/mocks/user';
 
-import { CoachPosition } from '@/utils/enum';
-import { insertCoach, updateCoach } from './coach';
+import { insertCoach } from './coach';
 
 vi.mock('@/drizzle', () => ({
   default: {
     insert: vi.fn(() => ({
       values: vi.fn(),
-    })),
-    update: vi.fn(() => ({
-      set: vi.fn(() => ({
-        where: vi.fn(),
-      })),
     })),
   },
 }));
@@ -54,39 +41,5 @@ describe('insertCoach', () => {
     mockInsertFailure(message);
 
     await expect(insertCoach(MOCK_COACH)).rejects.toThrow(message);
-  });
-});
-
-describe('updateCoach', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  test('updates coach successfully', async () => {
-    const updatedCoach: InsertCoach = {
-      ...MOCK_COACH,
-      position: CoachPosition.ASSISTANT_COACH,
-    };
-    const { mockWhere, mockSet } = mockUpdateSuccess({ id: MOCK_COACH.id });
-
-    const result = await updateCoach(updatedCoach);
-
-    expect(result).toEqual({ id: MOCK_COACH.id });
-    // Verify query construction
-    expect(db.update).toHaveBeenCalledWith(CoachTable);
-    expect(mockSet).toHaveBeenCalledWith(updatedCoach);
-    expect(eq).toHaveBeenCalledWith(CoachTable.id, updatedCoach.id);
-    expect(mockWhere).toHaveBeenCalledWith({
-      field: CoachTable.id,
-      value: updatedCoach.id,
-      type: 'eq',
-    });
-  });
-
-  test('throws error when update fails', async () => {
-    const message = 'Update failed';
-    mockUpdateFailure(message);
-
-    await expect(updateCoach(MOCK_COACH)).rejects.toThrow(message);
   });
 });

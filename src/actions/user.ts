@@ -5,9 +5,9 @@ import { forbidden, notFound } from 'next/navigation';
 import type { CoachPosition, PlayerPosition } from '@/utils/enum';
 import { ResponseFactory } from '@/utils/response';
 
-import { insertCoach, updateCoach } from '@/db/coach';
+import { insertCoach } from '@/db/coach';
 import { getDbErrorMessage } from '@/db/pg-error';
-import { insertPlayer, isJerseyNumberTaken, updatePlayer } from '@/db/player';
+import { insertPlayer, isJerseyNumberTaken } from '@/db/player';
 import {
   deleteUser,
   fetchActivePlayers,
@@ -15,6 +15,7 @@ import {
   getRosterUsers,
   getUserById,
   updateUser,
+  updateUserTeamInfo,
 } from '@/db/user';
 import type {
   AddUserValues,
@@ -202,6 +203,10 @@ export const updateTeamInfo = profile(
       forbidden();
     }
 
+    // The current role tells which row to remove when switching role
+    const target = await getUserById(user_id);
+    if (!target) notFound();
+
     try {
       const { user: userData, player: playerData, coach: coachData } = values;
 
@@ -223,25 +228,19 @@ export const updateTeamInfo = profile(
         }
       }
 
-      // Update user
-      await updateUser(user_id, userData);
+      // Switching role removes the previous role's row
+      const previous = hasPermissions(target.role);
+      const switching = target.role !== userData.role;
 
-      // TODO: Create new player or coach if they don't exist
-      // Remove the old one when switching role
-
-      if (isPlayer) {
-        await updatePlayer({
-          id: user_id,
-          ...playerData,
-        });
-      }
-
-      if (isCoach) {
-        await updateCoach({
-          id: user_id,
-          ...coachData,
-        });
-      }
+      await updateUserTeamInfo(user_id, {
+        user: userData,
+        player: isPlayer ? playerData : undefined,
+        coach: isCoach ? coachData : undefined,
+        remove: {
+          player: switching && previous.isPlayer,
+          coach: switching && previous.isCoach,
+        },
+      });
 
       revalidate.user(user_id);
 

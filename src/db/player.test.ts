@@ -1,35 +1,23 @@
 import { eq, inArray, ne } from 'drizzle-orm';
 
 import db from '@/drizzle';
-import { type InsertPlayer, PlayerTable } from '@/drizzle/schema/player';
+import { PlayerTable } from '@/drizzle/schema/player';
 import { UserTable } from '@/drizzle/schema/user';
 
 import {
   mockInsertFailure,
   mockInsertSuccess,
   mockSelectSuccess,
-  mockUpdateFailure,
-  mockUpdateSuccess,
 } from '@/test/db-operations';
 import { MOCK_TEAM } from '@/test/mocks/team';
 import { MOCK_PLAYER } from '@/test/mocks/user';
 
-import {
-  getTeamPlayerIds,
-  insertPlayer,
-  isJerseyNumberTaken,
-  updatePlayer,
-} from './player';
+import { getTeamPlayerIds, insertPlayer, isJerseyNumberTaken } from './player';
 
 vi.mock('@/drizzle', () => ({
   default: {
     insert: vi.fn(() => ({
       values: vi.fn(),
-    })),
-    update: vi.fn(() => ({
-      set: vi.fn(() => ({
-        where: vi.fn(),
-      })),
     })),
     select: vi.fn(),
   },
@@ -73,40 +61,6 @@ describe('insertPlayer', () => {
     mockInsertFailure(message);
 
     await expect(insertPlayer(MOCK_PLAYER)).rejects.toThrow(message);
-  });
-});
-
-describe('updatePlayer', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  test('updates player successfully', async () => {
-    const updatedPlayer: InsertPlayer = {
-      ...MOCK_PLAYER,
-      jersey_number: 99,
-    };
-    const { mockWhere, mockSet } = mockUpdateSuccess({ id });
-
-    const result = await updatePlayer(updatedPlayer);
-
-    expect(result).toEqual({ id });
-    // Verify query construction
-    expect(db.update).toHaveBeenCalledWith(PlayerTable);
-    expect(mockSet).toHaveBeenCalledWith(updatedPlayer);
-    expect(eq).toHaveBeenCalledWith(PlayerTable.id, updatedPlayer.id);
-    expect(mockWhere).toHaveBeenCalledWith({
-      field: PlayerTable.id,
-      value: updatedPlayer.id,
-      type: 'eq',
-    });
-  });
-
-  test('throws error when update fails', async () => {
-    const message = 'Update failed';
-    mockUpdateFailure(message);
-
-    await expect(updatePlayer(MOCK_PLAYER)).rejects.toThrow(message);
   });
 });
 

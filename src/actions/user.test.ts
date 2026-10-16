@@ -24,9 +24,9 @@ import {
   MOCK_USER_WITH_PLAYER,
 } from '@/test/mocks/user';
 
-import { insertCoach, updateCoach } from '@/db/coach';
+import { insertCoach } from '@/db/coach';
 import { getDbErrorMessage } from '@/db/pg-error';
-import { insertPlayer, isJerseyNumberTaken, updatePlayer } from '@/db/player';
+import { insertPlayer, isJerseyNumberTaken } from '@/db/player';
 import {
   deleteUser as deleteDbUser,
   fetchActivePlayers,
@@ -34,6 +34,7 @@ import {
   getUsers as getDbUsers,
   getUserById,
   updateUser as updateDbUser,
+  updateUserTeamInfo,
 } from '@/db/user';
 import { deleteFile, getFile, uploadFile } from '@/lib/blob';
 
@@ -61,18 +62,17 @@ vi.mock('@/db/user', () => ({
   getUsers: vi.fn(),
   getUserById: vi.fn(),
   updateUser: vi.fn(),
+  updateUserTeamInfo: vi.fn(),
   deleteUser: vi.fn(),
 }));
 
 vi.mock('@/db/coach', () => ({
   insertCoach: vi.fn(),
-  updateCoach: vi.fn(),
 }));
 
 vi.mock('@/db/player', () => ({
   insertPlayer: vi.fn(),
   isJerseyNumberTaken: vi.fn(),
-  updatePlayer: vi.fn(),
 }));
 
 vi.mock('@/lib/blob', () => ({
@@ -465,6 +465,8 @@ describe('User Actions', () => {
 
     beforeEach(() => {
       vi.mocked(isJerseyNumberTaken).mockResolvedValue(false);
+      // The edited user currently holds the role being submitted
+      vi.mocked(getUserById).mockResolvedValue(MOCK_USER_WITH_PLAYER);
     });
 
     afterEach(() => {
@@ -476,7 +478,7 @@ describe('User Actions', () => {
         updateTeamInfo('someone-else', teamInfoData),
       ).rejects.toThrow();
 
-      expect(updateDbUser).not.toHaveBeenCalled();
+      expect(updateUserTeamInfo).not.toHaveBeenCalled();
     });
 
     test('forbids a non-admin from changing their own role', async () => {
@@ -487,29 +489,20 @@ describe('User Actions', () => {
 
       await expect(updateTeamInfo(MOCK_USER.id, escalation)).rejects.toThrow();
 
-      expect(updateDbUser).not.toHaveBeenCalled();
+      expect(updateUserTeamInfo).not.toHaveBeenCalled();
     });
 
     test('updates team info for player successfully', async () => {
       asAdmin();
-      vi.mocked(updateDbUser).mockResolvedValue({
-        ...mockResult,
-        command: 'UPDATE',
-      });
-      vi.mocked(updatePlayer).mockResolvedValue({
-        ...mockResult,
-        command: 'UPDATE',
-      });
 
       const result = await updateTeamInfo(MOCK_PLAYER.id, teamInfoData);
 
-      expect(updateDbUser).toHaveBeenCalledWith(
-        MOCK_PLAYER.id,
-        teamInfoData.user,
-      );
-      expect(updatePlayer).toHaveBeenCalledWith({
-        id: MOCK_PLAYER.id,
-        ...teamInfoData.player,
+      // Role unchanged, so nothing is removed
+      expect(updateUserTeamInfo).toHaveBeenCalledWith(MOCK_PLAYER.id, {
+        user: teamInfoData.user,
+        player: teamInfoData.player,
+        coach: undefined,
+        remove: { player: false, coach: false },
       });
       expect(revalidate.user).toHaveBeenCalledWith(MOCK_PLAYER.id);
       expect(result).toEqual({
@@ -527,30 +520,90 @@ describe('User Actions', () => {
           role: UserRole.COACH,
         },
       };
-      vi.mocked(updateDbUser).mockResolvedValue({
-        ...mockResult,
-        command: 'UPDATE',
-      });
-      vi.mocked(updatePlayer).mockResolvedValue({
-        ...mockResult,
-        command: 'UPDATE',
+      vi.mocked(getUserById).mockResolvedValue({
+        ...MOCK_USER_WITH_COACH,
+        role: UserRole.COACH,
       });
 
       const result = await updateTeamInfo(MOCK_COACH.id, coachInfoData);
 
-      expect(updateDbUser).toHaveBeenCalledWith(
-        MOCK_COACH.id,
-        coachInfoData.user,
-      );
-      expect(updateCoach).toHaveBeenCalledWith({
-        id: MOCK_COACH.id,
-        ...coachInfoData.coach,
+      expect(updateUserTeamInfo).toHaveBeenCalledWith(MOCK_COACH.id, {
+        user: coachInfoData.user,
+        player: undefined,
+        coach: coachInfoData.coach,
+        remove: { player: false, coach: false },
       });
       expect(revalidate.user).toHaveBeenCalledWith(MOCK_COACH.id);
       expect(result).toEqual({
         success: true,
         message: 'Updated team information successfully',
       });
+    });
+
+    test('switches a player to coach, creating the coach and removing the player', async () => {
+      asAdmin();
+      const user = { ...teamInfoData.user, role: UserRole.COACH };
+
+      const result = await updateTeamInfo(MOCK_PLAYER.id, {
+        ...teamInfoData,
+        user,
+      });
+
+      expect(getUserById).toHaveBeenCalledWith(MOCK_PLAYER.id);
+      expect(updateUserTeamInfo).toHaveBeenCalledWith(MOCK_PLAYER.id, {
+        user,
+        player: undefined,
+        coach: teamInfoData.coach,
+        remove: { player: true, coach: false },
+      });
+      expect(result.success).toBe(true);
+    });
+
+    test('switches a coach to player, creating the player and removing the coach', async () => {
+      asAdmin();
+      vi.mocked(getUserById).mockResolvedValue({
+        ...MOCK_USER_WITH_COACH,
+        role: UserRole.COACH,
+      });
+
+      const result = await updateTeamInfo(MOCK_COACH.id, teamInfoData);
+
+      expect(updateUserTeamInfo).toHaveBeenCalledWith(MOCK_COACH.id, {
+        user: teamInfoData.user,
+        player: teamInfoData.player,
+        coach: undefined,
+        remove: { player: false, coach: true },
+      });
+      expect(result.success).toBe(true);
+    });
+
+    test('removes the previous row when switching to a role without one', async () => {
+      asAdmin();
+      const user = { ...teamInfoData.user, role: UserRole.GUEST };
+
+      const result = await updateTeamInfo(MOCK_PLAYER.id, {
+        ...teamInfoData,
+        user,
+      });
+
+      expect(updateUserTeamInfo).toHaveBeenCalledWith(MOCK_PLAYER.id, {
+        user,
+        player: undefined,
+        coach: undefined,
+        remove: { player: true, coach: false },
+      });
+      expect(result.success).toBe(true);
+    });
+
+    test('throws not found when the user does not exist', async () => {
+      asAdmin();
+      vi.mocked(getUserById).mockResolvedValue(null);
+
+      await expect(
+        updateTeamInfo(MOCK_PLAYER.id, teamInfoData),
+      ).rejects.toThrow();
+
+      expect(updateUserTeamInfo).not.toHaveBeenCalled();
     });
 
     test('rejects a jersey number already worn on the same team', async () => {
@@ -565,8 +618,7 @@ describe('User Actions', () => {
         MOCK_USER.id,
       );
       // Nothing is written when the number clashes
-      expect(updateDbUser).not.toHaveBeenCalled();
-      expect(updatePlayer).not.toHaveBeenCalled();
+      expect(updateUserTeamInfo).not.toHaveBeenCalled();
       expect(result).toEqual({
         success: false,
         message: "Jersey number '9' is already taken",
@@ -575,14 +627,6 @@ describe('User Actions', () => {
 
     test('skips the jersey check when the player has no number', async () => {
       asAdmin();
-      vi.mocked(updateDbUser).mockResolvedValue({
-        ...mockResult,
-        command: 'UPDATE',
-      });
-      vi.mocked(updatePlayer).mockResolvedValue({
-        ...mockResult,
-        command: 'UPDATE',
-      });
 
       const result = await updateTeamInfo(MOCK_PLAYER.id, {
         ...teamInfoData,
@@ -593,9 +637,11 @@ describe('User Actions', () => {
       expect(result.success).toBe(true);
     });
 
-    test('returns error response when update fails', async () => {
+    test('returns error response when the transaction fails', async () => {
       const errorMessage = 'Update failed';
-      vi.mocked(updateDbUser).mockRejectedValue(new Error(errorMessage));
+      vi.mocked(updateUserTeamInfo).mockRejectedValueOnce(
+        new Error(errorMessage),
+      );
       vi.mocked(getDbErrorMessage).mockReturnValue({
         message: errorMessage,
         constraint: null,

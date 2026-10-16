@@ -1,4 +1,10 @@
-import { MOCK_USER } from '@/test/mocks/user';
+import {
+  MOCK_COACH,
+  MOCK_PLAYER,
+  MOCK_USER,
+  MOCK_USER_WITH_COACH,
+  MOCK_USER_WITH_PLAYER,
+} from '@/test/mocks/user';
 import {
   createPermissionsMock,
   createToasterMock,
@@ -9,13 +15,14 @@ import {
   screen,
   setupTestLifecycle,
   waitFor,
+  within,
 } from '@/test/utilities';
 
 import usePermissions from '@/hooks/use-permissions';
 import { UserRole, UserState } from '@/utils/enum';
 
 import { removeUser } from '@/actions/user';
-import type { User } from '@/drizzle/schema/user';
+import type { RosterUser } from '@/db/user';
 
 import RosterTable from './RosterTable';
 
@@ -39,8 +46,8 @@ vi.mock('@/actions/user', () => ({
 
 vi.mock('@/components/ui/toaster', () => createToasterMock());
 
-const ALICE: User = {
-  ...MOCK_USER,
+const ALICE: RosterUser = {
+  ...MOCK_USER_WITH_PLAYER,
   id: 'alice',
   name: 'Alice',
   email: 'alice@team.com',
@@ -48,13 +55,22 @@ const ALICE: User = {
   state: UserState.ACTIVE,
 };
 
-const BOB: User = {
-  ...MOCK_USER,
+const BOB: RosterUser = {
+  ...MOCK_USER_WITH_COACH,
   id: 'bob',
   name: 'Bob',
   email: 'bob@team.com',
   role: UserRole.COACH,
   state: UserState.INACTIVE,
+};
+
+const CAROL: RosterUser = {
+  ...MOCK_USER,
+  id: 'carol',
+  name: 'Carol',
+  email: 'carol@team.com',
+  role: UserRole.GUEST,
+  state: UserState.ACTIVE,
 };
 
 describe('RosterTable', () => {
@@ -66,16 +82,18 @@ describe('RosterTable', () => {
     perms = {},
     params = {},
   }: {
-    users?: Array<User>;
+    users?: Array<RosterUser>;
     perms?: Record<string, boolean>;
     params?: Record<string, unknown>;
   } = {}) => {
-    mockUsePermissions.mockReturnValue(createPermissionsMock({
-      isAdmin: false,
-      isCaptain: false,
-      isGuest: false,
-      ...perms,
-    }));
+    mockUsePermissions.mockReturnValue(
+      createPermissionsMock({
+        isAdmin: false,
+        isCaptain: false,
+        isGuest: false,
+        ...perms,
+      }),
+    );
     mockUseQueryStates({ page: 1, q: '', role: [], state: [], ...params });
 
     return renderWithUI(<RosterTable users={users} />);
@@ -102,6 +120,40 @@ describe('RosterTable', () => {
 
     ['No.', 'Name', 'Email', 'State', 'Roles', 'Position'].forEach((header) => {
       expect(screen.getByText(header)).toBeInTheDocument();
+    });
+  });
+
+  describe('position', () => {
+    test("shows a player's player position", () => {
+      setup({ users: [ALICE] });
+
+      expect(
+        screen.getByText(String(MOCK_PLAYER.position)),
+      ).toBeInTheDocument();
+    });
+
+    test("shows a coach's coach position", () => {
+      setup({ users: [BOB] });
+
+      expect(screen.getByText(MOCK_COACH.position)).toBeInTheDocument();
+    });
+
+    test('picks the position matching the role, not whichever record exists', () => {
+      // A user switched from player to coach may still carry a player record.
+      setup({ users: [{ ...BOB, player: MOCK_PLAYER }] });
+
+      expect(screen.getByText(MOCK_COACH.position)).toBeInTheDocument();
+      expect(
+        screen.queryByText(String(MOCK_PLAYER.position)),
+      ).not.toBeInTheDocument();
+    });
+
+    test('shows a dash for roles without a position', () => {
+      setup({ users: [CAROL] });
+
+      const [, row] = screen.getAllByRole('row');
+      const cells = within(row).getAllByRole('cell');
+      expect(cells.at(-1)).toHaveTextContent('-');
     });
   });
 
