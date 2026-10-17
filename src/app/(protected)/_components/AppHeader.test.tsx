@@ -2,6 +2,10 @@ import { expectNoA11yViolations, renderWithUI, screen } from '@/test/utilities';
 
 import AppHeader from './AppHeader';
 
+vi.mock('./GlobalSearch', () => ({
+  default: () => <div data-testid="global-search" />,
+}));
+
 vi.mock('./AccountMenu', () => ({
   default: () => <div data-testid="account-menu" />,
 }));
@@ -36,6 +40,14 @@ describe('AppHeader', () => {
     setup();
 
     expect(screen.getByTestId('account-menu')).toBeInTheDocument();
+  });
+
+  test('renders the GlobalSearch before the AccountMenu', () => {
+    setup();
+
+    const search = screen.getByTestId('global-search');
+
+    expect(search.nextElementSibling).toBe(screen.getByTestId('account-menu'));
   });
 
   test('renders the MobileSidebar', () => {

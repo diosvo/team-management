@@ -26,10 +26,16 @@ import { ESTABLISHED_DATE } from '@/utils/constants';
 import { toLabel } from '@/utils/formatter';
 import type { Resource } from '@/utils/permissions';
 
-type SidebarGroup = {
+export type SidebarGroup = {
   /** Key under `shell.sidebar.groups` */
   title: keyof Messages['shell']['sidebar']['groups'];
-  items: Array<{ icon: LucideIcon; resource: Resource; disabled?: boolean }>;
+  items: Array<{
+    icon: LucideIcon;
+    resource: Resource;
+    disabled?: boolean;
+    /** Global search can deep-link into the page list via `?q=`. */
+    searchable?: boolean;
+  }>;
 };
 
 export const getYearsActive = (locale: Locale) =>
@@ -66,31 +72,33 @@ export const SIDEBAR_GROUP: Array<SidebarGroup> = [
   {
     title: 'team-management',
     items: [
-      { icon: UsersRound, resource: 'roster' },
-      { icon: Dumbbell, resource: 'training' },
-      { icon: BadgeCheck, resource: 'attendance' },
-      { icon: FileText, resource: 'registration' },
-      { icon: GamepadDirectional, resource: 'matches' },
+      { icon: UsersRound, resource: 'roster', searchable: true },
+      { icon: Dumbbell, resource: 'training', searchable: true },
+      { icon: BadgeCheck, resource: 'attendance', searchable: true },
+      { icon: FileText, resource: 'registration', searchable: true },
+      { icon: GamepadDirectional, resource: 'matches', searchable: true },
     ],
   },
   {
     title: 'performance',
-    items: [{ icon: PersonStanding, resource: 'periodic-testing' }],
+    items: [
+      { icon: PersonStanding, resource: 'periodic-testing', searchable: true },
+    ],
   },
   {
     title: 'resources',
     items: [
-      { icon: Package, resource: 'assets' },
+      { icon: Package, resource: 'assets', searchable: true },
       { icon: Film, resource: 'documents', disabled: true },
-      { icon: MailSearch, resource: 'emails' },
+      { icon: MailSearch, resource: 'emails', searchable: true },
     ],
   },
   {
     title: 'settings',
     items: [
-      { icon: Swords, resource: 'teams' },
-      { icon: Trophy, resource: 'leagues' },
-      { icon: MapPinHouse, resource: 'locations' },
+      { icon: Swords, resource: 'teams', searchable: true },
+      { icon: Trophy, resource: 'leagues', searchable: true },
+      { icon: MapPinHouse, resource: 'locations', searchable: true },
     ],
   },
 ];

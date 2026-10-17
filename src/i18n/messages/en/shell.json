@@ -58,6 +58,21 @@
     "test-types": "Test Types",
     "training": "Training"
   },
+  "search": {
+    "account": "My Account",
+    "close": "to close",
+    "empty": "No pages match “{query}”",
+    "exampleTerm": "dios",
+    "hint": "Type a page name to jump there, or start with a page name to search inside it:",
+    "label": "Search pages",
+    "navigate": "to navigate",
+    "open": "to open",
+    "pages": "Pages",
+    "placeholder": "Search pages, or type a name to search within one",
+    "recent": "Recent",
+    "searchIn": "Search “{term}” within…",
+    "trigger": "Search..."
+  },
   "sidebar": {
     "collapseMenu": "Collapse menu",
     "expandMenu": "Expand menu",

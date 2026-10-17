@@ -9,6 +9,7 @@ import HeaderLogo from '@/assets/images/header-logo.webp';
 
 import AccountMenu from './AccountMenu';
 import Breadcrumbs from './Breadcrumbs';
+import GlobalSearch from './GlobalSearch';
 import MobileSidebar from './MobileSidebar';
 
 export default function Header() {
@@ -35,7 +36,8 @@ export default function Header() {
         <Breadcrumbs />
       </Stack>
 
-      <HStack marginLeft="auto">
+      <HStack marginLeft="auto" gap={{ base: 1, md: 3 }}>
+        <GlobalSearch />
         <AccountMenu />
         <MobileSidebar />
       </HStack>
