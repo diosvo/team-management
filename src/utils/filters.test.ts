@@ -1,5 +1,3 @@
-import { Interval } from './enum';
-
 import { buildPredicate, countActiveFilters, paginateData } from './filters';
 
 /* ================== Utility Functions ================== */
@@ -124,6 +122,28 @@ describe('buildPredicate', () => {
     expect(result.map((r) => r.name)).toEqual(['Carol']);
   });
 
+  test('within keeps items whose date falls in the inclusive window', () => {
+    type Dated = { name: string; date: string | null };
+    const dated: Array<Dated> = [
+      { name: 'before', date: '2026-01-31' },
+      { name: 'first', date: '2026-02-01' },
+      { name: 'last', date: '2026-02-28' },
+      { name: 'after', date: '2026-03-01' },
+      { name: 'undated', date: null },
+    ];
+    const names = (range: { from: string; to: string }) =>
+      dated
+        .filter(buildPredicate<Dated>({ within: { field: 'date', range } }))
+        .map((d) => d.name);
+
+    expect(names({ from: '2026-02-01', to: '2026-02-28' })).toEqual([
+      'first',
+      'last',
+    ]);
+    // An unset window filters nothing, undated items included.
+    expect(names({ from: '', to: '' })).toEqual(dated.map((d) => d.name));
+  });
+
   test('match keys map to item properties and AND together', () => {
     const result = rows.filter(
       buildPredicate<Row>({ match: { state: ['active'], role: ['guest'] } }),
@@ -162,8 +182,8 @@ describe('countActiveFilters', () => {
   test('counts scalar and array filters that differ from defaults', () => {
     expect(
       countActiveFilters(
-        { interval: Interval.LAST_YEAR, status: ['a'] },
-        { interval: Interval.THIS_YEAR, status: [] },
+        { from: '2025-01-01', status: ['a'] },
+        { from: '2026-01-01', status: [] },
       ),
     ).toBe(2);
   });

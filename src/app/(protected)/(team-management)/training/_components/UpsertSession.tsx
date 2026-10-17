@@ -17,12 +17,13 @@ import { Save } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 
 import LocationSelection from '@/components/common/LocationSelection';
+import { DatePickerField } from '@/components/date-picker/DatePicker';
 import { Field } from '@/components/ui/field';
 import { toaster } from '@/components/ui/toaster';
 
 import { getDefaults } from '@/lib/zod';
 import { ESTABLISHED_DATE } from '@/utils/constants';
-import { formatDatetime, formatDay } from '@/utils/formatter';
+import { formatDatetime, formatDay } from '@/utils/datetime';
 
 import { upsertSession } from '@/actions/training-session';
 import {
@@ -84,10 +85,10 @@ export const UpsertSession = createOverlay(({ action, item, ...rest }) => {
                   invalid={!!errors.date}
                   errorText={errors.date?.message}
                 >
-                  <Input
-                    type="date"
+                  <DatePickerField
+                    control={control}
+                    name="date"
                     min={ESTABLISHED_DATE}
-                    {...register('date')}
                   />
                 </Field>
                 <Field disabled readOnly label="Day">

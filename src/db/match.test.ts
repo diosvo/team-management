@@ -1,12 +1,11 @@
-import { and, desc, eq, gte, isNotNull, isNull, lte } from 'drizzle-orm';
+import { and, desc, eq, isNotNull, isNull } from 'drizzle-orm';
 
 import db from '@/drizzle';
 import { type InsertMatch, MatchTable } from '@/drizzle/schema';
 
 import type { MatchSearchParams } from '@/lib/nuqs';
 import type { UpsertMatchSchemaValues } from '@/schemas/match';
-import { Interval, MatchStatus, MatchType } from '@/utils/enum';
-import { TIME_DURATION } from '@/utils/formatter';
+import { MatchStatus, MatchType } from '@/utils/enum';
 
 import {
   mockDeleteFailure,
@@ -16,10 +15,12 @@ import {
   mockUpdateFailure,
   mockUpdateSuccess,
 } from '@/test/db-operations';
+import { MOCK_DATE_RANGE } from '@/test/mocks/analytics';
 import { MOCK_MATCH, MOCK_MATCH_INPUT } from '@/test/mocks/match';
 import { MOCK_AWAY_TEAM, MOCK_TEAM } from '@/test/mocks/team';
 
 import { deleteMatch, getMatches, insertMatch, updateMatch } from './match';
+import { withinRange } from './utils';
 
 vi.mock('@/drizzle', () => ({
   default: {
@@ -61,7 +62,7 @@ describe('getMatches', () => {
   const mockParams: MatchSearchParams & { team_id: string } = {
     team_id: MOCK_TEAM.team_id,
     game_type: ['true'],
-    interval: Interval.THIS_MONTH,
+    ...MOCK_DATE_RANGE,
     match_type: [],
     page: 1,
     q: '',
@@ -88,8 +89,6 @@ describe('getMatches', () => {
 
     const result = await getMatches(mockParams);
 
-    const { start, end } = TIME_DURATION[mockParams.interval];
-
     expect(result).toEqual({
       stats: {
         total_matches: 2,
@@ -113,8 +112,7 @@ describe('getMatches', () => {
       where: and(
         eq(MatchTable.home_team, MOCK_TEAM.team_id),
         eq(MatchTable.is_5x5, true),
-        gte(MatchTable.date, start.toISOString()),
-        lte(MatchTable.date, end.toISOString()),
+        withinRange(MatchTable.date, MOCK_DATE_RANGE),
       ),
       orderBy: desc(MatchTable.date),
     });
@@ -125,15 +123,12 @@ describe('getMatches', () => {
 
     await getMatches({ ...mockParams, match_type: [MatchType.LEAGUE] });
 
-    const { start, end } = TIME_DURATION[mockParams.interval];
-
     expect(db.query.MatchTable.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: and(
           eq(MatchTable.home_team, MOCK_TEAM.team_id),
           eq(MatchTable.is_5x5, true),
-          gte(MatchTable.date, start.toISOString()),
-          lte(MatchTable.date, end.toISOString()),
+          withinRange(MatchTable.date, MOCK_DATE_RANGE),
           isNotNull(MatchTable.league_id),
         ),
       }),
@@ -145,15 +140,12 @@ describe('getMatches', () => {
 
     await getMatches({ ...mockParams, match_type: [MatchType.FRIENDLY] });
 
-    const { start, end } = TIME_DURATION[mockParams.interval];
-
     expect(db.query.MatchTable.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: and(
           eq(MatchTable.home_team, MOCK_TEAM.team_id),
           eq(MatchTable.is_5x5, true),
-          gte(MatchTable.date, start.toISOString()),
-          lte(MatchTable.date, end.toISOString()),
+          withinRange(MatchTable.date, MOCK_DATE_RANGE),
           isNull(MatchTable.league_id),
         ),
       }),
@@ -165,14 +157,11 @@ describe('getMatches', () => {
 
     await getMatches({ ...mockParams, game_type: [] });
 
-    const { start, end } = TIME_DURATION[mockParams.interval];
-
     expect(db.query.MatchTable.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: and(
           eq(MatchTable.home_team, MOCK_TEAM.team_id),
-          gte(MatchTable.date, start.toISOString()),
-          lte(MatchTable.date, end.toISOString()),
+          withinRange(MatchTable.date, MOCK_DATE_RANGE),
         ),
       }),
     );
@@ -183,14 +172,11 @@ describe('getMatches', () => {
 
     await getMatches({ ...mockParams, game_type: ['true', 'false'] });
 
-    const { start, end } = TIME_DURATION[mockParams.interval];
-
     expect(db.query.MatchTable.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: and(
           eq(MatchTable.home_team, MOCK_TEAM.team_id),
-          gte(MatchTable.date, start.toISOString()),
-          lte(MatchTable.date, end.toISOString()),
+          withinRange(MatchTable.date, MOCK_DATE_RANGE),
         ),
       }),
     );
@@ -204,15 +190,12 @@ describe('getMatches', () => {
       match_type: [MatchType.LEAGUE, MatchType.FRIENDLY],
     });
 
-    const { start, end } = TIME_DURATION[mockParams.interval];
-
     expect(db.query.MatchTable.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: and(
           eq(MatchTable.home_team, MOCK_TEAM.team_id),
           eq(MatchTable.is_5x5, true),
-          gte(MatchTable.date, start.toISOString()),
-          lte(MatchTable.date, end.toISOString()),
+          withinRange(MatchTable.date, MOCK_DATE_RANGE),
         ),
       }),
     );

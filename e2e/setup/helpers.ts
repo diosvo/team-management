@@ -292,6 +292,20 @@ export async function testEnterToSubmit(
 }
 
 /**
+ * Type an ISO day (`yyyy-MM-dd`) into a date picker.
+ *
+ * Specs keep using ISO days - what the URL and the database hold - while the
+ * input itself renders `LOCALE_DATE_FORMAT`. The picker only commits a typed
+ * value on blur, so filling alone leaves the form state untouched.
+ */
+export async function fillDate(page: Page, label: string, value: string) {
+  const [year, month, day] = value.split('-');
+  const input = page.getByLabel(label);
+  await input.fill(`${day}/${month}/${year}`);
+  await input.blur();
+}
+
+/**
  * Test checkbox-based filter with query params
  */
 export async function testCheckboxFilter(

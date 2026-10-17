@@ -20,6 +20,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { SaveAll } from 'lucide-react';
 import { useFieldArray, useForm } from 'react-hook-form';
 
+import { DatePickerField } from '@/components/date-picker/DatePicker';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Field } from '@/components/ui/field';
 import { toaster } from '@/components/ui/toaster';
@@ -153,7 +154,13 @@ export default function BulkAttendanceManager({
 
       if (!hasErrors) {
         setOpen(false);
-        setSearchParams({ date: parsed.date, status: [], page: 1 });
+        // Land on the day just marked, whatever window was open before.
+        setSearchParams({
+          from: parsed.date,
+          to: parsed.date,
+          status: [],
+          page: 1,
+        });
       }
     });
   };
@@ -180,10 +187,10 @@ export default function BulkAttendanceManager({
               <VStack alignItems="stretch" gap={4}>
                 <HStack>
                   <Field required label="Date">
-                    <Input
-                      type="date"
+                    <DatePickerField
+                      control={control}
+                      name="date"
                       min={ESTABLISHED_DATE}
-                      {...register('date')}
                     />
                   </Field>
                   <PlayerSelection

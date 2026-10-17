@@ -2,23 +2,32 @@ import {
   getMostCommonAbsenceReasons,
   getPlayersAttendanceSummary,
   getTeamAttendanceHistory,
+  getUpcomingMatches,
 } from '@/db/analytics';
+import { getMatches } from '@/db/match';
 
 import {
   MOCK_ABSENCE_REASONS,
   MOCK_ATTENDANCE_HISTORY,
+  MOCK_DATE_RANGE,
   MOCK_PLAYERS_ATTENDANCE_SUMMARY,
 } from '@/test/mocks/analytics';
 import { mockWithAuth, mockWithResource } from '@/test/mocks/auth';
+import { MOCK_MATCH } from '@/test/mocks/match';
 import { MOCK_TEAM } from '@/test/mocks/team';
+import { thisYear } from '@/utils/datetime';
+import { MatchStatus } from '@/utils/enum';
 
-import { Interval } from '@/utils/enum';
+import { getAchievements } from './achievement';
 
 import {
   getAttendanceHistory,
   getAttendanceSummary,
+  getMatchesRate,
   getMostAbsenceReasons,
+  getOverviewStats,
 } from './analytics';
+import { getActivePlayers } from './user';
 
 vi.mock('./auth', () => ({
   withAuth: mockWithAuth,
@@ -29,7 +38,35 @@ vi.mock('@/db/analytics', () => ({
   getTeamAttendanceHistory: vi.fn(),
   getPlayersAttendanceSummary: vi.fn(),
   getMostCommonAbsenceReasons: vi.fn(),
+  getUpcomingMatches: vi.fn(),
+  getUpcomingSessions: vi.fn(),
 }));
+
+vi.mock('@/db/match', () => ({ getMatches: vi.fn() }));
+vi.mock('./achievement', () => ({ getAchievements: vi.fn() }));
+vi.mock('./user', () => ({ getActivePlayers: vi.fn() }));
+
+/** The query both the overview stats and the matches-rate chart run. */
+const gameMatchesQuery = ({ from, to }: { from: string; to: string }) => ({
+  team_id: MOCK_TEAM.team_id,
+  game_type: ['true'],
+  from,
+  to,
+  match_type: [],
+  page: 1,
+  q: '',
+});
+
+type GameMatch = Awaited<ReturnType<typeof getMatches>>['data'][number];
+
+const matchesResponse = (
+  data: Array<Partial<GameMatch>>,
+  avg_win_rate = 0,
+) =>
+  ({
+    data: data.map((match) => ({ ...MOCK_MATCH, ...match })),
+    stats: { avg_win_rate },
+  }) as unknown as Awaited<ReturnType<typeof getMatches>>;
 
 describe('Analytics Actions', () => {
   beforeEach(() => {
@@ -37,16 +74,16 @@ describe('Analytics Actions', () => {
   });
 
   describe('getAttendanceHistory', () => {
-    test('calls getTeamAttendanceHistory with team_id and date interval', async () => {
+    test('calls getTeamAttendanceHistory with team_id and the date range', async () => {
       vi.mocked(getTeamAttendanceHistory).mockResolvedValue(
         MOCK_ATTENDANCE_HISTORY,
       );
 
-      const result = await getAttendanceHistory(Interval.THIS_MONTH);
+      const result = await getAttendanceHistory(MOCK_DATE_RANGE);
 
       expect(getTeamAttendanceHistory).toHaveBeenCalledWith(
         MOCK_TEAM.team_id,
-        Interval.THIS_MONTH,
+        MOCK_DATE_RANGE,
       );
       expect(result).toEqual(MOCK_ATTENDANCE_HISTORY);
     });
@@ -54,7 +91,7 @@ describe('Analytics Actions', () => {
     test('returns empty array when no attendance history exists', async () => {
       vi.mocked(getTeamAttendanceHistory).mockResolvedValue([]);
 
-      const result = await getAttendanceHistory(Interval.THIS_MONTH);
+      const result = await getAttendanceHistory(MOCK_DATE_RANGE);
 
       expect(result).toEqual([]);
     });
@@ -64,23 +101,23 @@ describe('Analytics Actions', () => {
       const error = new Error(message);
       vi.mocked(getTeamAttendanceHistory).mockRejectedValue(error);
 
-      await expect(getAttendanceHistory(Interval.THIS_MONTH)).rejects.toThrow(
+      await expect(getAttendanceHistory(MOCK_DATE_RANGE)).rejects.toThrow(
         message,
       );
     });
   });
 
   describe('getAttendanceSummary', () => {
-    test('calls getPlayersAttendanceSummary with team_id and date interval', async () => {
+    test('calls getPlayersAttendanceSummary with team_id and the date range', async () => {
       vi.mocked(getPlayersAttendanceSummary).mockResolvedValue(
         MOCK_PLAYERS_ATTENDANCE_SUMMARY,
       );
 
-      const result = await getAttendanceSummary(Interval.THIS_MONTH);
+      const result = await getAttendanceSummary(MOCK_DATE_RANGE);
 
       expect(getPlayersAttendanceSummary).toHaveBeenCalledWith(
         MOCK_TEAM.team_id,
-        Interval.THIS_MONTH,
+        MOCK_DATE_RANGE,
       );
       expect(result).toEqual(MOCK_PLAYERS_ATTENDANCE_SUMMARY);
     });
@@ -90,7 +127,7 @@ describe('Analytics Actions', () => {
         MOCK_PLAYERS_ATTENDANCE_SUMMARY,
       );
 
-      const result = await getAttendanceSummary(Interval.THIS_MONTH);
+      const result = await getAttendanceSummary(MOCK_DATE_RANGE);
 
       expect(result).toEqual(MOCK_PLAYERS_ATTENDANCE_SUMMARY);
       expect(result.top_performers).toHaveLength(3);
@@ -104,7 +141,7 @@ describe('Analytics Actions', () => {
       };
       vi.mocked(getPlayersAttendanceSummary).mockResolvedValue(emptyResponse);
 
-      const result = await getAttendanceSummary(Interval.THIS_MONTH);
+      const result = await getAttendanceSummary(MOCK_DATE_RANGE);
 
       expect(result).toEqual(emptyResponse);
       expect(result.top_performers).toEqual([]);
@@ -116,23 +153,23 @@ describe('Analytics Actions', () => {
       const error = new Error(message);
       vi.mocked(getPlayersAttendanceSummary).mockRejectedValue(error);
 
-      await expect(getAttendanceSummary(Interval.THIS_MONTH)).rejects.toThrow(
+      await expect(getAttendanceSummary(MOCK_DATE_RANGE)).rejects.toThrow(
         message,
       );
     });
   });
 
   describe('getMostAbsenceReasons', () => {
-    test('calls getMostCommonAbsenceReasons with team_id and date interval', async () => {
+    test('calls getMostCommonAbsenceReasons with team_id and the date range', async () => {
       vi.mocked(getMostCommonAbsenceReasons).mockResolvedValue(
         MOCK_ABSENCE_REASONS,
       );
 
-      const result = await getMostAbsenceReasons(Interval.THIS_MONTH);
+      const result = await getMostAbsenceReasons(MOCK_DATE_RANGE);
 
       expect(getMostCommonAbsenceReasons).toHaveBeenCalledWith(
         MOCK_TEAM.team_id,
-        Interval.THIS_MONTH,
+        MOCK_DATE_RANGE,
       );
       expect(result).toEqual(MOCK_ABSENCE_REASONS);
     });
@@ -140,7 +177,7 @@ describe('Analytics Actions', () => {
     test('returns empty array when no absence reasons exist', async () => {
       vi.mocked(getMostCommonAbsenceReasons).mockResolvedValue([]);
 
-      const result = await getMostAbsenceReasons(Interval.THIS_MONTH);
+      const result = await getMostAbsenceReasons(MOCK_DATE_RANGE);
 
       expect(result).toEqual([]);
     });
@@ -150,9 +187,56 @@ describe('Analytics Actions', () => {
       const error = new Error(message);
       vi.mocked(getMostCommonAbsenceReasons).mockRejectedValue(error);
 
-      await expect(getMostAbsenceReasons(Interval.THIS_MONTH)).rejects.toThrow(
+      await expect(getMostAbsenceReasons(MOCK_DATE_RANGE)).rejects.toThrow(
         message,
       );
+    });
+  });
+
+  describe('getMatchesRate', () => {
+    test('queries 5x5 matches in the selected window', async () => {
+      vi.mocked(getMatches).mockResolvedValue(matchesResponse([]));
+
+      await getMatchesRate(MOCK_DATE_RANGE);
+
+      expect(getMatches).toHaveBeenCalledWith(
+        gameMatchesQuery(MOCK_DATE_RANGE),
+      );
+    });
+
+    test('tallies each outcome by league and friendly', async () => {
+      vi.mocked(getMatches).mockResolvedValue(
+        matchesResponse([
+          { result: MatchStatus.WIN, league_id: 'league-1' },
+          { result: MatchStatus.WIN, league_id: null },
+          { result: MatchStatus.WIN, league_id: null },
+          { result: MatchStatus.DRAW, league_id: 'league-1' },
+          { result: MatchStatus.LOSS, league_id: null },
+        ]),
+      );
+
+      await expect(getMatchesRate(MOCK_DATE_RANGE)).resolves.toEqual([
+        { outcome: 'win', league: 1, friendly: 2 },
+        { outcome: 'draw', league: 1, friendly: 0 },
+        { outcome: 'lose', league: 0, friendly: 1 },
+      ]);
+    });
+  });
+
+  describe('getOverviewStats', () => {
+    test('reads the win rate year-to-date, whatever the filter', async () => {
+      vi.mocked(getActivePlayers).mockResolvedValue([{}, {}, {}] as never);
+      vi.mocked(getUpcomingMatches).mockResolvedValue([]);
+      vi.mocked(getAchievements).mockResolvedValue([{}] as never);
+      vi.mocked(getMatches).mockResolvedValue(matchesResponse([], 75));
+
+      await expect(getOverviewStats()).resolves.toEqual({
+        active_players: 3,
+        next_game: null,
+        win_rate: 75,
+        achievements: 1,
+      });
+      expect(getMatches).toHaveBeenCalledWith(gameMatchesQuery(thisYear()));
     });
   });
 });

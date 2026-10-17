@@ -7,7 +7,6 @@ import {
   screen,
   waitFor,
 } from '@/test/utilities';
-import { Interval } from '@/utils/enum';
 
 import { sendReportEmail } from '@/actions/report';
 
@@ -46,16 +45,14 @@ describe('EmailReport', () => {
   const mockFetch = vi.fn();
   const mockOnOpenChange = vi.fn();
 
-  const interval = Interval.THIS_YEAR;
-  const formattedPeriod = '01/01/2026 - 31/12/2026';
+  const range = { from: '2026-01-01', to: '2026-12-31' };
   const filename = 'sgr-report-01-01-2026-31-12-2026.pdf';
 
   const setup = (props = {}) =>
     renderWithUI(
       <EmailReport
         open
-        interval={interval}
-        formattedPeriod={formattedPeriod}
+        range={range}
         filename={filename}
         onOpenChange={mockOnOpenChange}
         {...props}
@@ -123,7 +120,7 @@ describe('EmailReport', () => {
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith('/api/reports/dashboard', {
         method: 'POST',
-        body: JSON.stringify({ interval, filename }),
+        body: JSON.stringify({ ...range, filename }),
       });
     });
 

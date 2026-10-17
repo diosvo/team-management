@@ -19,9 +19,9 @@ import usePermissions from '@/hooks/use-permissions';
 import useTableState from '@/hooks/use-table-state';
 
 import { useAttendanceFilters } from '@/lib/nuqs';
+import { formatDate, formatDatetime } from '@/utils/datetime';
 import { AttendanceStatus } from '@/utils/enum';
 import { buildPredicate } from '@/utils/filters';
-import { formatDatetime } from '@/utils/formatter';
 import { getColor } from '@/utils/helper';
 
 import { removeAttendance, updateStatus } from '@/actions/attendance';
@@ -110,6 +110,8 @@ export default function AttendanceTable({
   };
 
   const columns: Array<Column<AttendanceWithPlayer>> = [
+    // The window can span several days, so each row names its own.
+    { header: 'Date', cell: (item) => formatDate(item.date) },
     {
       header: 'Name',
       cell: (item) => (

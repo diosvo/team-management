@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 import { testNoErrors, testNoLoadingState } from '../setup/helpers';
 
@@ -318,50 +318,33 @@ test.describe('Dashboard - Matches Rate', () => {
 });
 
 test.describe('Dashboard - Filters', () => {
-  test('displays interval filter', async ({ page }) => {
-    const intervalFilter = page
-      .locator('[data-testid="interval-filter"]')
-      .or(page.locator('text=/interval|period|range/i'));
+  // The trigger is labelled "Time: <from> - <to>", so match on the prefix.
+  const rangeTrigger = (page: Page) =>
+    page.getByRole('button', { name: /^Time:/ });
 
-    if (await intervalFilter.first().isVisible()) {
-      await expect(intervalFilter.first()).toBeVisible();
-    }
+  test('displays the date range filter', async ({ page }) => {
+    await expect(rangeTrigger(page)).toBeVisible();
   });
 
-  test('changes data when interval is selected', async ({ page }) => {
-    const intervalSelect = page
-      .locator('select, button[role="combobox"]')
-      .first();
+  test('writes the picked window to the query params', async ({ page }) => {
+    await rangeTrigger(page).click();
+    await page.getByRole('button', { name: 'Last month' }).click();
 
-    if (await intervalSelect.isVisible()) {
-      await intervalSelect.click();
-      await page.waitForTimeout(300);
-
-      const option = page.getByRole('option').first();
-      if (await option.isVisible()) {
-        await option.click();
-
-        // URL should update with interval parameter
-        await page.waitForTimeout(500);
-        const currentUrl = page.url();
-        expect(currentUrl).toContain('interval');
-      }
-    }
+    await expect(page).toHaveURL(/from=\d{4}-\d{2}-\d{2}/);
+    await expect(page).toHaveURL(/to=\d{4}-\d{2}-\d{2}/);
   });
 
-  test('filters update query params', async ({ page }) => {
-    const filterButton = page
-      .locator('button')
-      .filter({ hasText: /week|month|year/i })
-      .first();
+  test('keeps the picked window on the trigger after reload', async ({
+    page,
+  }) => {
+    await rangeTrigger(page).click();
+    await page.getByRole('button', { name: 'Last year' }).click();
 
-    if (await filterButton.isVisible()) {
-      await filterButton.click();
+    const label = await rangeTrigger(page).textContent();
 
-      // Should update URL
-      await page.waitForTimeout(500);
-      await expect(page).toHaveURL(/interval=|dashboard/);
-    }
+    await page.reload();
+
+    await expect(rangeTrigger(page)).toHaveText(label!);
   });
 });
 

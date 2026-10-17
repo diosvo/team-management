@@ -4,8 +4,9 @@ import env from '@env';
 
 import { verifySession } from '@/actions/auth';
 import { getBrowser } from '@/lib/puppeteer';
+import { dashboardPath } from '@/lib/report';
 import { Status } from '@/utils/response';
-import { formatDuration } from '@/utils/formatter';
+import { formatDateRange } from '@/utils/datetime';
 
 export const maxDuration = 30; // in seconds
 const devEnv = env.NODE_ENV === 'development';
@@ -23,11 +24,11 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { interval, filename } = await req.json();
+    const { filename, ...range } = await req.json();
 
     // The label is derived here rather than trusted from the client, so it can
-    // never disagree with the interval the dashboard is rendered for.
-    const durationLabel = `Duration: ${formatDuration(interval)}`;
+    // never disagree with the window the dashboard is rendered for.
+    const durationLabel = `Duration: ${formatDateRange(range)}`;
     const generatedOn = `Generated on ${new Date().toLocaleString('en-US', {
       dateStyle: 'long',
       timeStyle: 'short',
@@ -57,9 +58,9 @@ export async function POST(req: NextRequest) {
     // A4 at 96dpi is ~794px; use 1200px so Chakra's md breakpoint (768px) is active
     await page.setViewport({ width: 1200, height: 900 });
 
-    // Navigate to the dashboard for the requested interval — the origin alone
+    // Navigate to the dashboard for the requested window — the origin alone
     // renders whatever the root serves, with a default window.
-    await page.goto(`${url}/dashboard?interval=${interval}`, {
+    await page.goto(`${url}${dashboardPath(range)}`, {
       waitUntil: 'networkidle0',
     });
 

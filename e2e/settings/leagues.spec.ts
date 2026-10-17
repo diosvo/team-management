@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import {
+  fillDate,
   uniqueName as makeUniqueName,
   testCheckboxFilter,
   testCheckboxFilterReset,
@@ -128,8 +129,8 @@ test.describe('Add League', () => {
     await page.getByRole('button', { name: 'Add' }).click();
 
     await page.getByLabel('Name').fill(uniqueName());
-    await page.getByLabel('Start Date').fill('2026-08-01');
-    await page.getByLabel('End Date').fill('2026-12-31');
+    await fillDate(page, 'Start Date', '2026-08-01');
+    await fillDate(page, 'End Date', '2026-12-31');
 
     const submitButton = page
       .getByRole('dialog')
@@ -146,8 +147,8 @@ test.describe('Add League', () => {
     await page.getByRole('button', { name: 'Add' }).click();
 
     await page.getByLabel('Name').fill(uniqueName());
-    await page.getByLabel('Start Date').fill('2026-08-01');
-    await page.getByLabel('End Date').fill('2026-12-31');
+    await fillDate(page, 'Start Date', '2026-08-01');
+    await fillDate(page, 'End Date', '2026-12-31');
 
     // Look for player selection component
     const playerSection = page.getByText('Players');
@@ -170,8 +171,8 @@ test.describe('Add League', () => {
     await page.getByRole('button', { name: 'Add' }).click();
 
     await page.getByLabel('Name').fill(uniqueName());
-    await page.getByLabel('Start Date').fill('2026-12-31');
-    await page.getByLabel('End Date').fill('2026-08-01');
+    await fillDate(page, 'Start Date', '2026-12-31');
+    await fillDate(page, 'End Date', '2026-08-01');
 
     const submitButton = page
       .getByRole('dialog')

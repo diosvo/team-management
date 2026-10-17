@@ -2,7 +2,6 @@ import { NextRequest } from 'next/server';
 
 import { verifySession } from '@/actions/auth';
 import { getBrowser } from '@/lib/puppeteer';
-import { Interval } from '@/utils/enum';
 import { Status } from '@/utils/response';
 
 import { POST } from './route';
@@ -46,7 +45,11 @@ function createBrowser(page = createPage()) {
 }
 
 function createRequest(
-  body: unknown = { interval: Interval.THIS_MONTH },
+  body: unknown = {
+    from: '2026-02-01',
+    to: '2026-02-28',
+    filename: 'report.pdf',
+  },
   { rejectJson = false }: { rejectJson?: boolean } = {},
 ): NextRequest {
   return {
@@ -89,7 +92,7 @@ describe('POST /api/reports/dashboard', () => {
     expect(getBrowser).not.toHaveBeenCalled();
   });
 
-  test('generates a PDF for a valid interval', async () => {
+  test('generates a PDF for a valid period', async () => {
     const browser = createBrowser();
     vi.mocked(getBrowser).mockResolvedValue(browser as never);
 
@@ -104,7 +107,7 @@ describe('POST /api/reports/dashboard', () => {
       domain: 'localhost:3000',
     });
     expect(browser.page.goto).toHaveBeenCalledWith(
-      `http://localhost:3000/dashboard?interval=${Interval.THIS_MONTH}`,
+      'http://localhost:3000/dashboard?from=2026-02-01&to=2026-02-28',
       { waitUntil: 'networkidle0' },
     );
     expect(browser.page.waitForSelector).toHaveBeenCalledWith(

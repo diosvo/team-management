@@ -10,7 +10,7 @@ import {
 } from '@/test/utilities';
 
 import { updatePersonalInfo } from '@/actions/user';
-import { formatDate } from '@/utils/formatter';
+import { formatDate } from '@/utils/datetime';
 
 import PersonalInfo from './PersonalInfo';
 

@@ -4,8 +4,9 @@ import { differenceInDays } from 'date-fns';
 import { cache } from 'react';
 
 import type { MatchesRateRecord } from '@/types/analytics';
-import type { IntervalValues } from '@/types/common';
-import { Interval, MatchStatus, MatchType } from '@/utils/enum';
+import type { DateRange } from '@/types/common';
+import { thisYear } from '@/utils/datetime';
+import { MatchStatus, MatchType } from '@/utils/enum';
 
 import {
   getUpcomingMatches as fetchUpcomingMatches,
@@ -24,35 +25,43 @@ import { getActivePlayers } from './user';
  * @description Factory function that creates analytics actions with interval parameter
  */
 function createAnalyticsAction<T>(
-  fetcher: (team_id: string, interval: IntervalValues) => Promise<T>,
+  fetcher: (team_id: string, range: DateRange) => Promise<T>,
 ) {
-  return withAuth(async ({ team_id }, interval: IntervalValues) =>
-    fetcher(team_id, interval),
+  return withAuth(async ({ team_id }, range: DateRange) =>
+    fetcher(team_id, range),
   );
 }
 
 /**
- * Request-scoped, primitive-keyed wrapper so the overview stats and the
- * matches-rate chart share one query when they ask for the same interval.
+ * Request-scoped wrapper so the overview stats and the matches-rate chart share
+ * one query when they ask for the same window.
+ *
+ * The window is passed as two strings rather than a `DateRange`: `cache` keys on
+ * argument identity, and a fresh object would miss on every call.
  */
-const fetchGameMatches = cache((team_id: string, interval: IntervalValues) =>
-  fetchMatches({
-    team_id,
-    game_type: ['true'],
-    interval,
-    match_type: [],
-    // TODO: it could be optional in the API, but the current implementation requires it
-    page: 1,
-    q: '',
-  }),
+const fetchGameMatches = cache(
+  (team_id: string, from: string, to: string) =>
+    fetchMatches({
+      team_id,
+      game_type: ['true'],
+      from,
+      to,
+      match_type: [],
+      // TODO: it could be optional in the API, but the current implementation requires it
+      page: 1,
+      q: '',
+    }),
 );
 
 export const getOverviewStats = withAuth(async ({ team_id }) => {
+  // The headline win rate is always year-to-date, independent of the filter.
+  const { from, to } = thisYear();
+
   const [active_players, upcoming_matches, matches, achievements] =
     await Promise.all([
       getActivePlayers(),
       getUpcomingMatches(),
-      fetchGameMatches(team_id, Interval.THIS_YEAR),
+      fetchGameMatches(team_id, from, to),
       getAchievements(),
     ]);
 
@@ -71,11 +80,8 @@ export const getOverviewStats = withAuth(async ({ team_id }) => {
 });
 
 export const getMatchesRate = createAnalyticsAction(
-  async (
-    team_id,
-    interval: IntervalValues,
-  ): Promise<Array<MatchesRateRecord>> => {
-    const matchesData = await fetchGameMatches(team_id, interval);
+  async (team_id, { from, to }: DateRange): Promise<Array<MatchesRateRecord>> => {
+    const matchesData = await fetchGameMatches(team_id, from, to);
 
     return Object.entries(
       matchesData.data.reduce(

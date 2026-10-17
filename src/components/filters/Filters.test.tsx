@@ -10,7 +10,7 @@ import {
 } from '@/test/utilities';
 
 import type { FilterDef } from '@/types/filters.d';
-import { Interval } from '@/utils/enum';
+import { formatDate, formatDateRange, thisDay } from '@/utils/datetime';
 
 import Filters from './Filters';
 
@@ -33,21 +33,24 @@ const CHECKBOX_FILTER: FilterDef = {
   control: { type: 'checkbox-group', options: STATUS_OPTIONS },
 };
 
-const DATE_FILTER: FilterDef = {
+const RANGE_FILTER: FilterDef = {
+  key: 'range',
+  label: 'Time',
+  control: { type: 'date-range' },
+};
+
+const DAY_FILTER: FilterDef = {
   key: 'date',
   label: 'Date',
-  control: { type: 'date' },
+  control: { type: 'date-range', selection: 'single' },
 };
 
-const INTERVAL_FILTER: FilterDef = {
-  key: 'interval',
-  label: 'Time',
-  control: { type: 'interval' },
-};
+type Values = { status: Array<string>; from?: string; to?: string };
 
-type Values = { status: Array<string>; date: string };
+const defaults: Values = { status: [] };
 
-const defaults: Values = { status: [], date: '' };
+const RANGE = { from: '2026-02-01', to: '2026-02-28' };
+const rangeValues: Values = { status: [], ...RANGE };
 
 const checkbox = (name: string) => screen.getByRole('checkbox', { name });
 const button = (name: RegExp) => screen.getByRole('button', { name });
@@ -64,7 +67,7 @@ describe('Filters', () => {
     renderWithUI(
       <Filters
         filters={[CHECKBOX_FILTER]}
-        values={{ status: [], date: '' }}
+        values={{ status: [] }}
         defaults={defaults}
         onApply={onApply}
         {...overrides}
@@ -93,55 +96,124 @@ describe('Filters', () => {
     });
   });
 
-  describe('inline interval filter', () => {
-    const intervalValues = {
-      status: [],
-      date: '',
-      interval: Interval.THIS_MONTH,
-    } as unknown as Values;
+  describe('inline date-range filter', () => {
+    const trigger = () =>
+      screen.getByRole('button', { name: `Time: ${formatDateRange(RANGE)}` });
 
-    test('renders a combobox (TimePicker) for an interval filter', () => {
+    test('renders the committed window on the trigger', () => {
       setup({
-        filters: [INTERVAL_FILTER],
-        values: intervalValues,
-        defaults: intervalValues,
+        filters: [RANGE_FILTER],
+        values: rangeValues,
+        defaults: rangeValues,
       });
 
-      expect(screen.getByRole('combobox')).toBeInTheDocument();
+      expect(trigger()).toBeInTheDocument();
     });
 
-    test('calls onApply with the selected interval value', async () => {
+    test('calls onApply with the from/to pair of the chosen preset', async () => {
       const { user } = setup({
-        filters: [INTERVAL_FILTER],
-        values: intervalValues,
-        defaults: intervalValues,
+        filters: [RANGE_FILTER],
+        values: rangeValues,
+        defaults: rangeValues,
       });
 
-      await user.click(screen.getByRole('combobox'));
+      await user.click(trigger());
       await user.click(
-        await screen.findByRole('option', { name: 'Last year' }),
+        await screen.findByRole('button', { name: 'Last year' }),
       );
 
-      expect(onApply).toHaveBeenCalledWith({ interval: Interval.LAST_YEAR });
+      await waitFor(() =>
+        expect(onApply).toHaveBeenCalledWith({
+          from: '2025-01-01',
+          to: '2025-12-31',
+        }),
+      );
+    });
+  });
+
+  describe('optional date range', () => {
+    // No default window (e.g. an asset's acquired date): the range is optional.
+    const optionalDefaults: Values = { status: [], from: '', to: '' };
+    const clear = () => screen.queryByRole('button', { name: 'Clear Time' });
+
+    test('offers a clear button that applies an empty window', async () => {
+      const { user } = setup({
+        filters: [RANGE_FILTER],
+        values: rangeValues,
+        defaults: optionalDefaults,
+      });
+
+      await user.click(clear()!);
+
+      expect(onApply).toHaveBeenCalledWith({ from: '', to: '' });
+    });
+
+    test('shows "All time" and no clear button while empty', () => {
+      setup({
+        filters: [RANGE_FILTER],
+        values: optionalDefaults,
+        defaults: optionalDefaults,
+      });
+
+      expect(
+        screen.getByRole('button', { name: 'Time: All time' }),
+      ).toBeInTheDocument();
+      expect(clear()).toBeNull();
+    });
+
+    test('offers no clear button when the range has a default window', () => {
+      setup({
+        filters: [RANGE_FILTER],
+        values: rangeValues,
+        defaults: rangeValues,
+      });
+
+      expect(clear()).toBeNull();
+    });
+
+    test('passes a custom icon through to the trigger', () => {
+      setup({
+        filters: [
+          {
+            ...RANGE_FILTER,
+            control: { type: 'date-range', icon: 'Acquired Date:' },
+          },
+        ],
+        values: rangeValues,
+        defaults: rangeValues,
+      });
+
+      expect(
+        screen.getByRole('button', { name: `Time: ${formatDateRange(RANGE)}` }),
+      ).toHaveTextContent(`Acquired Date:${formatDateRange(RANGE)}`);
     });
   });
 
   describe('inline date filter', () => {
-    test('renders a date input', () => {
-      setup({ filters: [DATE_FILTER], values: { status: [], date: '' } });
+    const DAY = '2026-02-01';
+    const dayValues: Values = { status: [], from: DAY, to: DAY };
 
-      expect(screen.getByLabelText('Date')).toBeInTheDocument();
+    test('renders the committed day on the trigger', () => {
+      setup({ filters: [DAY_FILTER], values: dayValues, defaults: dayValues });
+
+      expect(
+        screen.getByRole('button', { name: `Date: ${formatDate(DAY)}` }),
+      ).toBeInTheDocument();
     });
 
-    test('calls onApply when the date changes', async () => {
+    test('calls onApply with a one-day from/to pair', async () => {
       const { user } = setup({
-        filters: [DATE_FILTER],
-        values: { status: [], date: '' },
+        filters: [DAY_FILTER],
+        values: dayValues,
+        defaults: dayValues,
       });
 
-      await user.type(screen.getByLabelText('Date'), '2025-06-01');
+      await user.click(
+        screen.getByRole('button', { name: `Date: ${formatDate(DAY)}` }),
+      );
+      await user.click(await screen.findByRole('button', { name: 'Today' }));
 
-      expect(onApply).toHaveBeenCalled();
+      await waitFor(() => expect(onApply).toHaveBeenCalledWith(thisDay()));
     });
   });
 
@@ -153,7 +225,7 @@ describe('Filters', () => {
     });
 
     test('is absent when there are no categorical filters', () => {
-      setup({ filters: [DATE_FILTER] });
+      setup({ filters: [RANGE_FILTER], values: rangeValues });
 
       expect(
         screen.queryByRole('button', { name: /^filters$/i }),
@@ -161,7 +233,7 @@ describe('Filters', () => {
     });
 
     test('shows an active-count badge when values differ from defaults', () => {
-      setup({ values: { status: ['active'], date: '' } });
+      setup({ values: { status: ['active'] } });
 
       expect(screen.getByText('1')).toBeInTheDocument();
     });
@@ -199,7 +271,7 @@ describe('Filters', () => {
     });
 
     test('reflects committed values as pre-checked on open', async () => {
-      const { user } = setup({ values: { status: ['active'], date: '' } });
+      const { user } = setup({ values: { status: ['active'] } });
 
       await openDrawer(user);
 
@@ -218,7 +290,7 @@ describe('Filters', () => {
     });
 
     test('Reset all resets draft to defaults and calls onApply with empty arrays', async () => {
-      const { user } = setup({ values: { status: ['active'], date: '' } });
+      const { user } = setup({ values: { status: ['active'] } });
 
       await openDrawer(user);
       await user.click(button(/reset all/i));
@@ -280,7 +352,7 @@ describe('Filters', () => {
         rerender(
           <Filters
             filters={[CHECKBOX_FILTER]}
-            values={{ status: ['active'], date: '' }}
+            values={{ status: ['active'] }}
             defaults={defaults}
             onApply={onApply}
           />,

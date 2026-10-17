@@ -8,12 +8,13 @@ import {
 import { UserTable } from '@/drizzle/schema/user';
 
 import type { AttendanceStats, AttendanceWithPlayer } from '@/types/attendance';
-import type { DataWithStats } from '@/types/common';
+import type { DataWithStats, DateRange } from '@/types/common';
 import { AttendanceStatus } from '@/utils/enum';
+import { withinRange } from './utils';
 
-export async function getAttendanceByDate(
+export async function getAttendances(
   team_id: string,
-  date: string,
+  { from, to }: DateRange,
 ): Promise<DataWithStats<AttendanceWithPlayer, AttendanceStats>> {
   try {
     // Attendance is scoped to a team through its player, so the join both
@@ -26,9 +27,12 @@ export async function getAttendanceByDate(
       .from(AttendanceTable)
       .innerJoin(UserTable, eq(UserTable.id, AttendanceTable.player_id))
       .where(
-        and(eq(UserTable.team_id, team_id), eq(AttendanceTable.date, date)),
+        and(
+          eq(UserTable.team_id, team_id),
+          withinRange(AttendanceTable.date, { from, to }),
+        ),
       )
-      .orderBy(desc(AttendanceTable.status));
+      .orderBy(desc(AttendanceTable.date), desc(AttendanceTable.status));
 
     const records: Array<AttendanceWithPlayer> = rows.map(
       ({ attendance, name }) => ({

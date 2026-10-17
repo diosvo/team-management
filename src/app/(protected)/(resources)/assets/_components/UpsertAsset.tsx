@@ -18,6 +18,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Save } from 'lucide-react';
 import { Controller, useForm } from 'react-hook-form';
 
+import { DatePickerField } from '@/components/date-picker/DatePicker';
 import { CloseButton } from '@/components/ui/close-button';
 import { Field } from '@/components/ui/field';
 import {
@@ -140,11 +141,11 @@ export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
                   />
                 </Field>
                 <Field label="Acquired date">
-                  <Input
-                    type="date"
+                  <DatePickerField
+                    control={control}
+                    name="acquired_date"
                     min={ESTABLISHED_DATE}
                     max={CURRENT_DATE}
-                    {...register('acquired_date')}
                   />
                 </Field>
                 <OnePlayerSelection

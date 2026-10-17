@@ -6,7 +6,6 @@ import {
   Button,
   CloseButton,
   Dialog,
-  Input,
   Portal,
   Textarea,
   VStack,
@@ -15,6 +14,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Send } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 
+import { DatePickerField } from '@/components/date-picker/DatePicker';
 import { Field } from '@/components/ui/field';
 import { toaster } from '@/components/ui/toaster';
 
@@ -36,11 +36,13 @@ export default function SubmitLeaveRequest({
 
   const {
     reset,
+    control,
     register,
     handleSubmit,
     formState: { isValid, errors },
   } = useForm({
     resolver: zodResolver(UpsertAttendanceSchema),
+    defaultValues: { date: CURRENT_DATE },
   });
   const [isPending, startTransition] = useTransition();
 
@@ -87,11 +89,10 @@ export default function SubmitLeaveRequest({
                   invalid={!!errors.date}
                   errorText={errors.date?.message}
                 >
-                  <Input
-                    type="date"
+                  <DatePickerField
+                    control={control}
+                    name="date"
                     min={ESTABLISHED_DATE}
-                    defaultValue={CURRENT_DATE}
-                    {...register('date')}
                   />
                 </Field>
                 <Field

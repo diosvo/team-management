@@ -1,3 +1,5 @@
+import type { DateRange } from '@/types/common';
+
 const sameValue = (a: unknown, b: unknown): boolean => {
   if (Array.isArray(a) && Array.isArray(b)) {
     if (a.length !== b.length) return false;
@@ -39,6 +41,11 @@ interface PredicateConfig<T> {
    * ignored, otherwise `item[key]` must be one of the selected values.
    */
   match?: Partial<Record<keyof T, ReadonlyArray<unknown>>>;
+  /**
+   * Inclusive ISO-day window on a date field. Ignored until both ends are set;
+   * then items without a date are excluded.
+   */
+  within?: { field: FieldAccessor<T>; range: DateRange };
 }
 
 /**
@@ -46,7 +53,11 @@ interface PredicateConfig<T> {
  *
  * Behavior is inferred from the config shape: `search` does case-insensitive OR matching, while `match` does AND-ed `includes` checks keyed by item property.
  */
-export function buildPredicate<T>({ search, match }: PredicateConfig<T>) {
+export function buildPredicate<T>({
+  search,
+  match,
+  within,
+}: PredicateConfig<T>) {
   const query = search?.query.trim().toLowerCase() ?? '';
   const matchEntries = Object.entries(match ?? {}) as Array<
     [keyof T, ReadonlyArray<unknown>]
@@ -59,6 +70,16 @@ export function buildPredicate<T>({ search, match }: PredicateConfig<T>) {
         return typeof value === 'string' && value.toLowerCase().includes(query);
       });
       if (!matched) return false;
+    }
+
+    if (within?.range.from && within.range.to) {
+      const value = read(item, within.field);
+      if (
+        typeof value !== 'string' ||
+        value < within.range.from ||
+        value > within.range.to
+      )
+        return false;
     }
 
     return matchEntries.every(

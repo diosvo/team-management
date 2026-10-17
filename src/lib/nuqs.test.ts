@@ -4,18 +4,9 @@ import type { Mock } from 'vitest';
 
 import { MOCK_ATTENDANCE_DATE } from '@/test/mocks/attendance';
 
-import {
-  ALL,
-  CURRENT_DATE,
-  INTERVAL_VALUES,
-  SESSION_STATUS_VALUES,
-} from '@/utils/constants';
-import {
-  AttendanceStatus,
-  Interval,
-  MatchType,
-  SessionStatus,
-} from '@/utils/enum';
+import { ALL, SESSION_STATUS_VALUES } from '@/utils/constants';
+import { thisDay, thisMonth, thisYear } from '@/utils/datetime';
+import { AttendanceStatus, MatchType, SessionStatus } from '@/utils/enum';
 
 import {
   getDefaults,
@@ -134,6 +125,8 @@ describe('Client-Side Filter Hooks', () => {
         q: '',
         category: [],
         condition: [],
+        from: '',
+        to: '',
       });
     });
   });
@@ -168,7 +161,7 @@ describe('Client-Side Filter Hooks', () => {
   describe('useMatchFilters', () => {
     test('calls useQueryStates with match params', () => {
       const mockReturn = [
-        { page: 1, q: '', game_type: [], interval: Interval.THIS_YEAR },
+        { page: 1, q: '', game_type: [], ...thisYear() },
         vi.fn(),
       ];
       (nuqs.useQueryStates as unknown as Mock).mockReturnValue(mockReturn);
@@ -180,11 +173,12 @@ describe('Client-Side Filter Hooks', () => {
           page: expect.anything(),
           q: expect.anything(),
           game_type: expect.anything(),
-          interval: expect.anything(),
+          from: expect.anything(),
+          to: expect.anything(),
         }),
         {},
       );
-      expect(result.current).toBe(mockReturn);
+      expect(result.current).toEqual(mockReturn);
     });
 
     test('exposes correct defaults', () => {
@@ -192,7 +186,7 @@ describe('Client-Side Filter Hooks', () => {
         page: 1,
         q: '',
         game_type: [],
-        interval: Interval.THIS_YEAR,
+        ...thisYear(),
         match_type: [],
       });
     });
@@ -201,7 +195,7 @@ describe('Client-Side Filter Hooks', () => {
   describe('useAttendanceFilters', () => {
     test('calls useQueryStates with attendance params and shallow: false', () => {
       const mockReturn = [
-        { page: 1, q: '', date: '', status: ALL.value },
+        { page: 1, q: '', ...thisDay(), status: ALL.value },
         vi.fn(),
       ];
       (nuqs.useQueryStates as unknown as Mock).mockReturnValue(mockReturn);
@@ -212,28 +206,45 @@ describe('Client-Side Filter Hooks', () => {
         expect.objectContaining({
           page: expect.anything(),
           q: expect.anything(),
-          date: expect.anything(),
+          from: expect.anything(),
+          to: expect.anything(),
           status: expect.anything(),
         }),
         { shallow: false },
       );
-      expect(result.current).toBe(mockReturn);
+      expect(result.current).toEqual(mockReturn);
     });
 
     test('exposes correct defaults', () => {
       expect(useAttendanceFilters.defaults).toEqual({
         page: 1,
         q: '',
-        date: CURRENT_DATE,
+        ...thisDay(),
         status: [],
       });
+    });
+
+    test('resolves the default window when read, not at module load', async () => {
+      vi.useFakeTimers();
+      try {
+        vi.setSystemTime(new Date('2030-03-15T12:00:00'));
+        expect(useAttendanceFilters.defaults).toMatchObject({
+          from: '2030-03-15',
+          to: '2030-03-15',
+        });
+        await expect(
+          loadAttendanceFilters(new URLSearchParams()),
+        ).resolves.toMatchObject({ from: '2030-03-15', to: '2030-03-15' });
+      } finally {
+        vi.useRealTimers();
+      }
     });
   });
 
   describe('useTrainingFilters', () => {
     test('calls useQueryStates with training params and shallow: false', () => {
       const mockReturn = [
-        { page: 1, q: '', interval: Interval.THIS_MONTH, status: ALL.value },
+        { page: 1, q: '', ...thisYear(), status: ALL.value },
         vi.fn(),
       ];
       (nuqs.useQueryStates as unknown as Mock).mockReturnValue(mockReturn);
@@ -244,19 +255,20 @@ describe('Client-Side Filter Hooks', () => {
         expect.objectContaining({
           page: expect.anything(),
           q: expect.anything(),
-          interval: expect.anything(),
+          from: expect.anything(),
+          to: expect.anything(),
           status: expect.anything(),
         }),
         { shallow: false },
       );
-      expect(result.current).toBe(mockReturn);
+      expect(result.current).toEqual(mockReturn);
     });
 
     test('exposes correct defaults', () => {
       expect(useTrainingFilters.defaults).toEqual({
         page: 1,
         q: '',
-        interval: Interval.THIS_MONTH,
+        ...thisYear(),
         status: [],
       });
     });
@@ -264,10 +276,7 @@ describe('Client-Side Filter Hooks', () => {
 
   describe('useDashboardFilters', () => {
     test('calls useQueryStates with analytics params and shallow: false', () => {
-      const mockReturn = [
-        { page: 1, q: '', interval: Interval.THIS_MONTH },
-        vi.fn(),
-      ];
+      const mockReturn = [{ page: 1, q: '', ...thisMonth() }, vi.fn()];
       (nuqs.useQueryStates as unknown as Mock).mockReturnValue(mockReturn);
 
       const { result } = renderHook(() => useDashboardFilters());
@@ -276,18 +285,19 @@ describe('Client-Side Filter Hooks', () => {
         expect.objectContaining({
           page: expect.anything(),
           q: expect.anything(),
-          interval: expect.anything(),
+          from: expect.anything(),
+          to: expect.anything(),
         }),
         { shallow: false },
       );
-      expect(result.current).toBe(mockReturn);
+      expect(result.current).toEqual(mockReturn);
     });
 
     test('exposes correct defaults', () => {
       expect(useDashboardFilters.defaults).toEqual({
         page: 1,
         q: '',
-        interval: Interval.THIS_YEAR,
+        ...thisYear(),
       });
     });
   });
@@ -342,6 +352,23 @@ describe('Client-Side Filter Hooks', () => {
   });
 });
 
+describe('Range filter windows', () => {
+  // The hook and the loader must default to the same window, or the server
+  // renders one window while the picker shows another (and won't re-emit it).
+  test.each([
+    ['match', useMatchFilters, loadMatchFilters],
+    ['attendance', useAttendanceFilters, loadAttendanceFilters],
+    ['training', useTrainingFilters, loadTrainingFilters],
+    ['dashboard', useDashboardFilters, loadDashboardFilters],
+  ] as const)(
+    '%s hook and loader share a default window',
+    async (_, hook, load) => {
+      const { from, to } = await load(new URLSearchParams());
+      expect(hook.defaults).toMatchObject({ from, to });
+    },
+  );
+});
+
 /* ================== Server-Side Loaders ================== */
 
 describe('Server-Side Filter Loaders', () => {
@@ -353,7 +380,7 @@ describe('Server-Side Filter Loaders', () => {
         expect.objectContaining({
           page: 1,
           q: '',
-          date: expect.any(String),
+          ...thisDay(),
           status: [],
         }),
       );
@@ -363,7 +390,8 @@ describe('Server-Side Filter Loaders', () => {
       const params = new URLSearchParams({
         page: '4',
         q: 'dios',
-        date: MOCK_ATTENDANCE_DATE,
+        from: MOCK_ATTENDANCE_DATE,
+        to: MOCK_ATTENDANCE_DATE,
         status: AttendanceStatus.ABSENT,
       });
       const result = await loadAttendanceFilters(params);
@@ -372,7 +400,8 @@ describe('Server-Side Filter Loaders', () => {
         expect.objectContaining({
           page: 4,
           q: 'dios',
-          date: MOCK_ATTENDANCE_DATE,
+          from: MOCK_ATTENDANCE_DATE,
+          to: MOCK_ATTENDANCE_DATE,
           status: [AttendanceStatus.ABSENT],
         }),
       );
@@ -409,7 +438,7 @@ describe('Server-Side Filter Loaders', () => {
         expect.objectContaining({
           page: 1,
           q: '',
-          interval: Interval.THIS_YEAR,
+          ...thisYear(),
         }),
       );
     });
@@ -418,7 +447,7 @@ describe('Server-Side Filter Loaders', () => {
       const params = new URLSearchParams({
         page: '3',
         q: 'dios',
-        interval: Interval.THIS_YEAR,
+        ...thisYear(),
       });
       const result = await loadDashboardFilters(params);
 
@@ -426,28 +455,25 @@ describe('Server-Side Filter Loaders', () => {
         expect.objectContaining({
           page: 3,
           q: 'dios',
-          interval: Interval.THIS_YEAR,
+          ...thisYear(),
         }),
       );
     });
 
-    test('handles all interval values correctly', async () => {
-      for (const interval of INTERVAL_VALUES) {
-        const result = await loadDashboardFilters(
-          new URLSearchParams({ interval }),
-        );
-        expect(result).toEqual(expect.objectContaining({ interval }));
-      }
-    });
-
-    test('uses default interval when invalid value provided', async () => {
+    test('carries an arbitrary window, not just a named period', async () => {
       const result = await loadDashboardFilters(
-        new URLSearchParams({ interval: 'invalid_interval' }),
+        new URLSearchParams({ from: '2026-03-04', to: '2026-03-18' }),
       );
 
       expect(result).toEqual(
-        expect.objectContaining({ interval: Interval.THIS_YEAR }),
+        expect.objectContaining({ from: '2026-03-04', to: '2026-03-18' }),
       );
+    });
+
+    test('falls back to this year when the window is absent', async () => {
+      const result = await loadDashboardFilters(new URLSearchParams());
+
+      expect(result).toEqual(expect.objectContaining(thisYear()));
     });
   });
 
@@ -491,7 +517,7 @@ describe('Server-Side Filter Loaders', () => {
           page: 1,
           q: '',
           game_type: [],
-          interval: Interval.THIS_YEAR,
+          ...thisYear(),
           match_type: [],
         }),
       );
@@ -502,7 +528,8 @@ describe('Server-Side Filter Loaders', () => {
         page: '2',
         q: 'finals',
         game_type: 'false',
-        interval: Interval.LAST_YEAR,
+        from: '2025-01-01',
+        to: '2025-12-31',
       });
       const result = await loadMatchFilters(params);
 
@@ -511,7 +538,8 @@ describe('Server-Side Filter Loaders', () => {
           page: 2,
           q: 'finals',
           game_type: ['false'],
-          interval: Interval.LAST_YEAR,
+          from: '2025-01-01',
+          to: '2025-12-31',
         }),
       );
     });
@@ -531,14 +559,10 @@ describe('Server-Side Filter Loaders', () => {
       );
     });
 
-    test('uses default interval when invalid value provided', async () => {
-      const result = await loadMatchFilters(
-        new URLSearchParams({ interval: 'invalid_interval' }),
-      );
+    test('falls back to this year when the window is absent', async () => {
+      const result = await loadMatchFilters(new URLSearchParams());
 
-      expect(result).toEqual(
-        expect.objectContaining({ interval: Interval.THIS_YEAR }),
-      );
+      expect(result).toEqual(expect.objectContaining(thisYear()));
     });
   });
 
@@ -550,7 +574,7 @@ describe('Server-Side Filter Loaders', () => {
         expect.objectContaining({
           page: 1,
           q: '',
-          interval: Interval.THIS_MONTH,
+          ...thisYear(),
           status: [],
         }),
       );
@@ -560,7 +584,8 @@ describe('Server-Side Filter Loaders', () => {
       const params = new URLSearchParams({
         page: '5',
         q: 'cardio',
-        interval: Interval.LAST_MONTH,
+        from: '2026-01-01',
+        to: '2026-01-31',
         status: SessionStatus.COMPLETED,
       });
       const result = await loadTrainingFilters(params);
@@ -569,7 +594,8 @@ describe('Server-Side Filter Loaders', () => {
         expect.objectContaining({
           page: 5,
           q: 'cardio',
-          interval: Interval.LAST_MONTH,
+          from: '2026-01-01',
+          to: '2026-01-31',
           status: [SessionStatus.COMPLETED],
         }),
       );
@@ -594,14 +620,10 @@ describe('Server-Side Filter Loaders', () => {
       expect(result).toEqual(expect.objectContaining({ status: [] }));
     });
 
-    test('uses default interval when invalid value provided', async () => {
-      const result = await loadTrainingFilters(
-        new URLSearchParams({ interval: 'invalid_interval' }),
-      );
+    test('falls back to this year when the window is absent', async () => {
+      const result = await loadTrainingFilters(new URLSearchParams());
 
-      expect(result).toEqual(
-        expect.objectContaining({ interval: Interval.THIS_MONTH }),
-      );
+      expect(result).toEqual(expect.objectContaining(thisYear()));
     });
   });
 });

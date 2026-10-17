@@ -16,9 +16,9 @@ import { Tooltip } from '@/components/ui/tooltip';
 
 import { useLeagueFilters } from '@/lib/nuqs';
 import { ACHIEVEMENT_STYLE } from '@/utils/constants/achievement';
+import { formatDate } from '@/utils/datetime';
 import { AchievementType, LeagueStatus } from '@/utils/enum';
 import { buildPredicate } from '@/utils/filters';
-import { formatDate } from '@/utils/formatter';
 import { getColor } from '@/utils/helper';
 
 import usePermissions from '@/hooks/use-permissions';

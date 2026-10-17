@@ -1,7 +1,7 @@
-import { format } from 'date-fns';
-import { Column, gte, SQL, sql } from 'drizzle-orm';
+import { between, Column, gte, SQL, sql } from 'drizzle-orm';
 
-import { DEFAULT_DATE_FORMAT } from '@/utils/constants';
+import type { DateRange } from '@/types/common';
+import { toIsoDay } from '@/utils/datetime';
 
 export function calculatePercentage(value: SQL<number>, total: SQL<number>) {
   return sql<number>`ROUND((${value} * 100.0 / NULLIF(${total}, 0))::numeric, 1)`.mapWith(
@@ -16,5 +16,10 @@ export function countWhen(condition: SQL) {
 }
 
 export function fromNow(column: Column) {
-  return gte(column, format(new Date(), DEFAULT_DATE_FORMAT));
+  return gte(column, toIsoDay(new Date()));
+}
+
+/** Inclusive ISO-day window on a `date` column. */
+export function withinRange(column: Column, { from, to }: DateRange) {
+  return between(column, from, to);
 }

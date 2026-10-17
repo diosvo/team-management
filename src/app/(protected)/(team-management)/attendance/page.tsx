@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 
-import { getAttendanceByDate } from '@/actions/attendance';
+import { getAttendances } from '@/actions/attendance';
 import { loadAttendanceFilters } from '@/lib/nuqs';
 
 import AttendanceFilters from './_components/AttendanceFilters';
@@ -14,8 +14,8 @@ export const metadata: Metadata = {
 };
 
 export default async function AttendancePage(props: PageProps<'/attendance'>) {
-  const params = await loadAttendanceFilters(props.searchParams);
-  const { data, stats } = await getAttendanceByDate(params.date);
+  const { from, to } = await loadAttendanceFilters(props.searchParams);
+  const { data, stats } = await getAttendances({ from, to });
 
   return (
     <>

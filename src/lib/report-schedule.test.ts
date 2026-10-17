@@ -40,6 +40,7 @@ vi.mock('@/db/pg-error', () => ({
 }));
 
 vi.mock('./report', () => ({
+  dashboardPath: vi.fn(),
   renderReportPdf: vi.fn(),
   reportExpiresAt: vi.fn(),
   reportFilename: vi.fn(),

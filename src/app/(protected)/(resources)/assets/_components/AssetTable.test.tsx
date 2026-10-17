@@ -86,6 +86,37 @@ describe('AssetTable', () => {
     await expectNoA11yViolations(container);
   });
 
+  describe('acquired date filter', () => {
+    const OLDER_ASSET: Asset = {
+      ...SECOND_ASSET,
+      acquired_date: '2025-06-15',
+    };
+    const UNDATED_ASSET: Asset = {
+      ...SECOND_ASSET,
+      asset_id: 'asset-789',
+      name: 'Old Whistle',
+      acquired_date: null,
+    };
+    const data = [MOCK_ASSET, OLDER_ASSET, UNDATED_ASSET];
+
+    test('shows every asset, undated included, while no window is set', () => {
+      setup({ data, params: { from: '', to: '' } });
+
+      expect(screen.getByText(MOCK_ASSET.name)).toBeInTheDocument();
+      expect(screen.getByText(OLDER_ASSET.name)).toBeInTheDocument();
+      expect(screen.getByText(UNDATED_ASSET.name)).toBeInTheDocument();
+    });
+
+    test('keeps only assets acquired inside the window', () => {
+      // MOCK_ASSET was acquired on 2026-01-01.
+      setup({ data, params: { from: '2026-01-01', to: '2026-12-31' } });
+
+      expect(screen.getByText(MOCK_ASSET.name)).toBeInTheDocument();
+      expect(screen.queryByText(OLDER_ASSET.name)).not.toBeInTheDocument();
+      expect(screen.queryByText(UNDATED_ASSET.name)).not.toBeInTheDocument();
+    });
+  });
+
   test('renders a row for each asset', () => {
     setup();
 

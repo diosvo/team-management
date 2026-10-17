@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Edit, Save } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 
+import { DatePickerField } from '@/components/date-picker/DatePicker';
 import TextField from '@/components/TextField';
 import { Card } from '@/components/ui/card';
 import { CloseButton } from '@/components/ui/close-button';
@@ -16,7 +17,7 @@ import { Tooltip } from '@/components/ui/tooltip';
 
 import type { User } from '@/drizzle/schema/user';
 import { getDefaults } from '@/lib/zod';
-import { formatDate } from '@/utils/formatter';
+import { formatDate } from '@/utils/datetime';
 
 import { updatePersonalInfo } from '@/actions/user';
 import {
@@ -36,6 +37,7 @@ export default function PersonalInfo({
 
   const {
     reset,
+    control,
     register,
     handleSubmit,
     formState: { isValid, isDirty, errors },
@@ -136,11 +138,12 @@ export default function PersonalInfo({
               invalid={!!errors.dob}
               errorText={errors.dob?.message}
             >
-              <Input
-                type="date"
+              <DatePickerField
+                control={control}
+                name="dob"
                 min="1997-01-01"
+                presets={false}
                 disabled={isPending}
-                {...register('dob')}
               />
             </Field>
             <Field

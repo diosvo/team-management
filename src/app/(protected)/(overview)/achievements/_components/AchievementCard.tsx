@@ -9,7 +9,7 @@ import Authorized from '@/components/Authorized';
 import { toaster } from '@/components/ui/toaster';
 
 import { ACHIEVEMENT_STYLE } from '@/utils/constants/achievement';
-import { formatDate } from '@/utils/formatter';
+import { formatDate } from '@/utils/datetime';
 
 import { removeAchievement } from '@/actions/achievement';
 import type { AchievementWithRelations } from '@/db/achievement';

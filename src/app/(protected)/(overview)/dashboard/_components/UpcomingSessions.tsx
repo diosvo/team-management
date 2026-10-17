@@ -7,7 +7,7 @@ import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 
 import { getUpcomingSessions } from '@/actions/analytics';
-import { formatDate, formatDay } from '@/utils/formatter';
+import { formatDate, formatDay } from '@/utils/datetime';
 
 export default async function UpcomingSessions() {
   const sessions = await getUpcomingSessions();

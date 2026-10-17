@@ -5,35 +5,32 @@ import { ChevronDown, FileDown, Send } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
 
-import TimePicker from '@/components/filters/TimePicker';
+import { DateRangePicker } from '@/components/date-picker/DateRangePicker';
 import { toaster } from '@/components/ui/toaster';
 
 import { triggerDownload } from '@/lib/download';
-import { type MatchSearchParamsKeys, useDashboardFilters } from '@/lib/nuqs';
-import { formatDuration } from '@/utils/formatter';
+import { useDashboardFilters } from '@/lib/nuqs';
+import { ESTABLISHED_DATE } from '@/utils/constants';
+import { formatDateRange } from '@/utils/datetime';
 
 const EmailReport = dynamic(() => import('./EmailReport'), { ssr: false });
 
 export default function DashboardFilters() {
-  const [{ interval }, setSearchParams] = useDashboardFilters();
+  const [{ from, to }, setSearchParams] = useDashboardFilters();
   const [downloading, setDownloading] = useState(false);
   const [open, setOpen] = useState(false);
 
-  const formattedPeriod = formatDuration(interval);
+  const formattedPeriod = formatDateRange({ from, to });
   // Collapse non-digit runs (the "/" in dates and the " - " separator) into a
   // single dash so the OS doesn't rewrite illegal "/" characters to "_".
   const filename = `sgr-report-${formattedPeriod.replace(/\D+/g, '-')}.pdf`;
-
-  const handleSearchParams = (key: MatchSearchParamsKeys, value: string) => {
-    setSearchParams({ [key]: value, page: 1 }, { shallow: false });
-  };
 
   const handleDownload = async () => {
     setDownloading(true);
     try {
       const response = await fetch('/api/reports/dashboard', {
         method: 'POST',
-        body: JSON.stringify({ interval, filename }),
+        body: JSON.stringify({ from, to, filename }),
       });
 
       if (!response.ok) {
@@ -88,18 +85,21 @@ export default function DashboardFilters() {
           </Portal>
         </Menu.Root>
 
-        <TimePicker
-          value={interval}
-          onChange={(value) => handleSearchParams('interval', value)}
+        <DateRangePicker
+          label="Time"
+          min={ESTABLISHED_DATE}
+          value={{ from, to }}
+          onChange={(range) =>
+            setSearchParams({ ...range, page: 1 }, { shallow: false })
+          }
         />
       </HStack>
 
       {open && (
         <EmailReport
           open={open}
-          interval={interval}
+          range={{ from, to }}
           filename={filename}
-          formattedPeriod={formattedPeriod}
           onOpenChange={setOpen}
         />
       )}

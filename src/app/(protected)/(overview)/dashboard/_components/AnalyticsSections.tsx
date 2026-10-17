@@ -1,4 +1,4 @@
-import type { IntervalValues } from '@/types/common';
+import type { DateRange } from '@/types/common';
 
 import {
   getAttendanceHistory,
@@ -20,28 +20,28 @@ import PlayerAttendanceRanking from './PlayerAttendanceRanking';
  * page waiting on the slowest query.
  */
 
-type SectionProps = { interval: IntervalValues };
+type SectionProps = { range: DateRange };
 
-export async function MatchesRateSection({ interval }: SectionProps) {
-  const records = await getMatchesRate(interval);
+export async function MatchesRateSection({ range }: SectionProps) {
+  const records = await getMatchesRate(range);
   return <MatchesRate records={records} />;
 }
 
-export async function AttendanceTrendSection({ interval }: SectionProps) {
-  const records = await getAttendanceHistory(interval);
+export async function AttendanceTrendSection({ range }: SectionProps) {
+  const records = await getAttendanceHistory(range);
   return <AttendanceTrend records={records} />;
 }
 
 export async function PlayerAttendanceRankingSection({
-  interval,
+  range,
 }: SectionProps) {
-  const records = await getAttendanceSummary(interval);
+  const records = await getAttendanceSummary(range);
   return <PlayerAttendanceRanking records={records} />;
 }
 
 export async function AbsenceReasonsBreakdownSection({
-  interval,
+  range,
 }: SectionProps) {
-  const reasons = await getMostAbsenceReasons(interval);
+  const reasons = await getMostAbsenceReasons(range);
   return <AbsenceReasonsBreakdown reasons={reasons} />;
 }

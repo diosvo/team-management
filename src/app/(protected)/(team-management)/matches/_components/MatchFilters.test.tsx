@@ -4,7 +4,8 @@ import {
   setupTestLifecycle,
 } from '@/test/utilities';
 
-import { Interval, MatchType } from '@/utils/enum';
+import { thisYear } from '@/utils/datetime';
+import { MatchType } from '@/utils/enum';
 
 import MatchFilters from './MatchFilters';
 
@@ -34,7 +35,7 @@ describe('MatchFilters', () => {
         q: '',
         game_type: [],
         match_type: [],
-        interval: Interval.THIS_YEAR,
+        ...thisYear(),
         ...values,
       },
       mockSetSearchParams,
@@ -45,11 +46,11 @@ describe('MatchFilters', () => {
 
   setupTestLifecycle();
 
-  test('provides the interval, game type and match type filters', () => {
+  test('provides the range, game type and match type filters', () => {
     setup();
 
     expect(propsSpy.filters).toMatchObject([
-      { key: 'interval', label: 'Time' },
+      { key: 'range', label: 'Time' },
       { key: 'game_type', label: 'Game Type' },
       { key: 'match_type', label: 'Match Type' },
     ]);
@@ -62,17 +63,17 @@ describe('MatchFilters', () => {
     expect(propsSpy.defaults).toMatchObject({
       game_type: [],
       match_type: [],
-      interval: Interval.THIS_YEAR,
+      ...thisYear(),
     });
   });
 
   test('resets to the first page and refetches on the server when applied', () => {
     setup();
 
-    propsSpy.onApply({ interval: Interval.THIS_MONTH });
+    propsSpy.onApply({ from: '2026-02-01', to: '2026-02-28' });
 
     expect(mockSetSearchParams).toHaveBeenCalledWith(
-      { interval: Interval.THIS_MONTH, page: 1 },
+      { from: '2026-02-01', to: '2026-02-28', page: 1 },
       { shallow: false },
     );
   });

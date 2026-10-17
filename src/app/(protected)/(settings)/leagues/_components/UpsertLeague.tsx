@@ -20,6 +20,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Save } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 
+import { DatePickerField } from '@/components/date-picker/DatePicker';
 import { CloseButton } from '@/components/ui/close-button';
 import { Field } from '@/components/ui/field';
 import { toaster } from '@/components/ui/toaster';
@@ -60,6 +61,7 @@ export const UpsertLeague = createOverlay(({ action, item, ...rest }) => {
 
   const {
     reset,
+    control,
     register,
     handleSubmit,
     formState: { isValid, errors },
@@ -160,11 +162,11 @@ export const UpsertLeague = createOverlay(({ action, item, ...rest }) => {
                     invalid={!!errors.start_date}
                     errorText={errors.start_date?.message}
                   >
-                    <Input
-                      type="date"
+                    <DatePickerField
+                      control={control}
+                      name="start_date"
                       min={ESTABLISHED_DATE}
                       disabled={disabledField}
-                      {...register('start_date')}
                     />
                   </Field>
                   <Field
@@ -174,11 +176,11 @@ export const UpsertLeague = createOverlay(({ action, item, ...rest }) => {
                     invalid={!!errors.end_date}
                     errorText={errors.end_date?.message}
                   >
-                    <Input
-                      type="date"
+                    <DatePickerField
+                      control={control}
+                      name="end_date"
                       min={ESTABLISHED_DATE}
                       disabled={disabledField}
-                      {...register('end_date')}
                     />
                   </Field>
                 </HStack>

@@ -13,11 +13,11 @@ import {
   mockWithResource,
   mockWithResourceAction,
 } from '@/test/mocks/auth';
+import { MOCK_DATE_RANGE } from '@/test/mocks/analytics';
 import { MOCK_MATCH, MOCK_MATCH_RESPONSE } from '@/test/mocks/match';
 import { MOCK_USER } from '@/test/mocks/user';
 
 import type { MatchSearchParams } from '@/lib/nuqs';
-import { Interval } from '@/utils/enum';
 
 import { getMatches, removeMatch, upsertMatch } from './match';
 
@@ -76,7 +76,7 @@ describe('Match Actions', () => {
   describe('getMatches', () => {
     const mockParams: MatchSearchParams = {
       game_type: ['true'],
-      interval: Interval.THIS_MONTH,
+      ...MOCK_DATE_RANGE,
       match_type: [],
       page: 1,
       q: '',

@@ -4,6 +4,13 @@ import type {
   PlayerSessionSummary,
   PlayerStats,
 } from '@/types/analytics';
+import type { DateRange } from '@/types/common';
+
+/** Stands in for whatever `?from=&to=` the page was loaded with. */
+export const MOCK_DATE_RANGE: DateRange = {
+  from: '2026-02-01',
+  to: '2026-02-28',
+};
 
 export const MOCK_ATTENDANCE_HISTORY: Array<AttendanceHistoryRecord> = [
   {
