@@ -4,41 +4,29 @@ import { memo, useEffect, useMemo, useRef, type ReactNode } from 'react';
 
 import {
   Button,
-  Link as ChakraLink,
   Flex,
   Icon,
   IconButton,
-  Menu,
-  Portal,
   Separator,
   Span,
   Spinner,
-  Stack,
   Text,
   VStack,
-  type ColorPalette,
 } from '@chakra-ui/react';
-import {
-  BookMarked,
-  ChevronLeft,
-  ChevronRight,
-  Globe,
-  type LucideIcon,
-} from 'lucide-react';
+import { ChevronLeft, ChevronRight, type LucideIcon } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { Tooltip } from '@/components/ui/tooltip';
 import usePermissions from '@/hooks/use-permissions';
-import { toLabel } from '@/utils/formatter';
 
-import FeedbackDialog from '@/app/(protected)/_components/FeedbackDialog';
 import {
   BUTTON_CONFIG,
   FADE_CSS,
   NAV_INSET,
   SCROLL_AREA_CSS,
   SIDEBAR_GROUP,
-  SOCIAL_LINKS,
   TOGGLE_CSS,
+  navLabel,
 } from '../_helpers/utils';
 
 function LoadingIndicator() {
@@ -147,85 +135,6 @@ const NavButton = memo(function NavButton({
   );
 });
 
-function FooterLink({
-  label,
-  href,
-  colorPalette,
-  children,
-}: {
-  label: string;
-  href: string;
-  colorPalette: ColorPalette;
-  children: ReactNode;
-}) {
-  return (
-    <Tooltip content={label}>
-      <IconButton
-        size="2xs"
-        variant="ghost"
-        colorPalette={colorPalette}
-        asChild
-      >
-        <ChakraLink
-          href={href}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label={label}
-        >
-          {children}
-        </ChakraLink>
-      </IconButton>
-    </Tooltip>
-  );
-}
-
-function SocialMenu() {
-  return (
-    <Menu.Root>
-      <Tooltip content="Social Links">
-        <Span display="inline-flex">
-          <Menu.Trigger asChild>
-            <IconButton
-              size="2xs"
-              variant="ghost"
-              colorPalette="blue"
-              aria-label="Social Links"
-            >
-              <Globe />
-            </IconButton>
-          </Menu.Trigger>
-        </Span>
-      </Tooltip>
-      <Portal>
-        <Menu.Positioner>
-          <Menu.Content>
-            {SOCIAL_LINKS.map(({ label, href, color }) => (
-              <Menu.Item
-                key={label}
-                value={label}
-                cursor="pointer"
-                _highlighted={{
-                  color: `${color}.700`,
-                  backgroundColor: `${color}.100`,
-                }}
-                asChild
-              >
-                <ChakraLink
-                  href={`https://${href}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {label}
-                </ChakraLink>
-              </Menu.Item>
-            ))}
-          </Menu.Content>
-        </Menu.Positioner>
-      </Portal>
-    </Menu.Root>
-  );
-}
-
 type SidebarToggleProps = {
   isExpanded: boolean;
   onToggle: () => void;
@@ -233,7 +142,8 @@ type SidebarToggleProps = {
 
 /** Compose inside `<Sidebar>` on the desktop rail. */
 export function SidebarToggle({ isExpanded, onToggle }: SidebarToggleProps) {
-  const label = isExpanded ? 'Collapse menu' : 'Expand menu';
+  const t = useTranslations('shell.sidebar');
+  const label = isExpanded ? t('collapseMenu') : t('expandMenu');
 
   return (
     <Tooltip showArrow content={label} positioning={{ placement: 'right' }}>
@@ -267,6 +177,8 @@ type SidebarProps = {
 export default function Sidebar({ isExpanded, children }: SidebarProps) {
   const pathname = usePathname();
   const { can } = usePermissions();
+  const t = useTranslations('shell.sidebar');
+  const tNav = useTranslations('shell.nav');
 
   const visibleGroups = useMemo(
     () =>
@@ -305,7 +217,7 @@ export default function Sidebar({ isExpanded, children }: SidebarProps) {
       {/* Explicit inset: scrollbar gutters are 0px with overlay scrollbars. */}
       <VStack
         as="nav"
-        aria-label="Main"
+        aria-label={t('mainNav')}
         flex={1}
         minHeight={0}
         overflowY="auto"
@@ -328,7 +240,7 @@ export default function Sidebar({ isExpanded, children }: SidebarProps) {
                 aria-hidden={!isExpanded}
                 css={FADE_CSS}
               >
-                {title}
+                {t(`groups.${title}`)}
               </Text>
               <Separator
                 position="absolute"
@@ -345,7 +257,7 @@ export default function Sidebar({ isExpanded, children }: SidebarProps) {
                   key={resource}
                   icon={icon}
                   href={href}
-                  label={toLabel(resource)}
+                  label={navLabel(tNav, resource)}
                   isActive={pathname === href}
                   isExpanded={isExpanded}
                   isDisabled={disabled}
@@ -355,20 +267,6 @@ export default function Sidebar({ isExpanded, children }: SidebarProps) {
           </VStack>
         ))}
       </VStack>
-
-      <Separator />
-
-      <Stack
-        direction={isExpanded ? 'row' : 'column'}
-        justifyContent="center"
-        alignItems="center"
-      >
-        <FooterLink label="Documentation" href="/docs" colorPalette="pink">
-          <BookMarked />
-        </FooterLink>
-        <SocialMenu />
-        <FeedbackDialog />
-      </Stack>
     </VStack>
   );
 }

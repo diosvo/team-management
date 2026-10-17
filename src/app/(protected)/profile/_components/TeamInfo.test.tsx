@@ -8,13 +8,13 @@ import {
   screen,
   setupTestLifecycle,
   waitFor,
+  enumText,
 } from '@/test/utilities';
 
 import { updateTeamInfo } from '@/actions/user';
 import usePermissions from '@/hooks/use-permissions';
 import { formatDate } from '@/utils/datetime';
 import { UserState } from '@/utils/enum';
-import { toLabel } from '@/utils/formatter';
 
 import TeamInfo from './TeamInfo';
 
@@ -78,13 +78,13 @@ describe('TeamInfo', () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText(toLabel(MOCK_USER_WITH_PLAYER.role)),
+        screen.getByText(enumText('userRole', MOCK_USER_WITH_PLAYER.role)),
       ).toBeInTheDocument();
       expect(
-        screen.getByText(toLabel(String(MOCK_PLAYER.position))),
+        screen.getByText(enumText('playerPosition', MOCK_PLAYER.position)),
       ).toBeInTheDocument();
       expect(
-        screen.getByText(toLabel(MOCK_USER_WITH_PLAYER.state)),
+        screen.getByText(enumText('userState', MOCK_USER_WITH_PLAYER.state)),
       ).toBeInTheDocument();
       expect(
         screen.getByText(String(MOCK_PLAYER.jersey_number)),
@@ -113,7 +113,7 @@ describe('TeamInfo', () => {
     expect(joinDate).toBeInTheDocument();
     // Non-admins cannot change the role, so it stays read-only.
     expect(
-      screen.getByText(toLabel(MOCK_USER_WITH_PLAYER.role)),
+      screen.getByText(enumText('userRole', MOCK_USER_WITH_PLAYER.role)),
     ).toBeInTheDocument();
   });
 

@@ -4,6 +4,8 @@ import { useMemo } from 'react';
 
 import { VisuallyHidden } from '@chakra-ui/react';
 import { formatDistanceToNow } from 'date-fns';
+import { vi } from 'date-fns/locale';
+import { useLocale, useTranslations } from 'next-intl';
 
 import DataTable, { type Column } from '@/components/DataTable';
 import HighlightText from '@/components/HighlightText';
@@ -11,6 +13,7 @@ import HighlightText from '@/components/HighlightText';
 import usePermissions from '@/hooks/use-permissions';
 import useTableState from '@/hooks/use-table-state';
 
+import { enumLabel } from '@/i18n/enums';
 import { useTestTypeFilters } from '@/lib/nuqs';
 import { formatDatetime } from '@/utils/datetime';
 import { buildPredicate } from '@/utils/filters';
@@ -21,6 +24,10 @@ import type { TestType } from '@/drizzle/schema';
 import { UpsertTestType } from './UpsertTestType';
 
 export default function TestTypesTable({ data }: { data: Array<TestType> }) {
+  const t = useTranslations('periodicTesting.testTypes');
+  const tCommon = useTranslations('common');
+  const tEnums = useTranslations('enums');
+  const locale = useLocale();
   const { can, isGuest } = usePermissions();
   const [{ q, page, unit }, setSearchParams] = useTestTypeFilters();
 
@@ -44,16 +51,26 @@ export default function TestTypesTable({ data }: { data: Array<TestType> }) {
 
   const columns: Array<Column<TestType>> = [
     {
-      header: 'Name',
+      header: tCommon('name'),
       cell: (item) => <HighlightText query={q}>{item.name}</HighlightText>,
     },
-    { header: 'Unit', cell: (item) => item.unit },
-    { header: 'Last Updated', cell: (item) => formatDatetime(item.updated_at) },
+    {
+      header: t('unit'),
+      cell: (item) => enumLabel(tEnums, 'testTypeUnit', item.unit),
+    },
+    {
+      header: t('lastUpdated'),
+      cell: (item) => formatDatetime(item.updated_at),
+    },
     {
       // Named for screen readers only: the column repeats "Last Updated" as a
       // relative time, so a visible header would be redundant.
-      header: <VisuallyHidden>Relative time</VisuallyHidden>,
-      cell: (item) => formatDistanceToNow(item.updated_at, { addSuffix: true }),
+      header: <VisuallyHidden>{t('relativeTime')}</VisuallyHidden>,
+      cell: (item) =>
+        formatDistanceToNow(item.updated_at, {
+          addSuffix: true,
+          locale: locale === 'vi' ? vi : undefined,
+        }),
       cellProps: { color: 'GrayText' },
     },
   ];
@@ -67,7 +84,7 @@ export default function TestTypesTable({ data }: { data: Array<TestType> }) {
         totalCount={totalCount}
         page={page}
         onPageChange={setSearchParams}
-        empty={{ title: 'No matching names found' }}
+        empty={{ title: t('empty') }}
         onRowClick={
           isGuest
             ? undefined

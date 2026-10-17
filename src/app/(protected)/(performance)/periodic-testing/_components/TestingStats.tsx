@@ -1,3 +1,5 @@
+import { useTranslations } from 'next-intl';
+
 import { Stat, StatGroup } from '@/components/ui/stat';
 
 export default function TestingStats({
@@ -8,13 +10,19 @@ export default function TestingStats({
     completed_tests: number;
   };
 }) {
+  const t = useTranslations('periodicTesting.stats');
+
   return (
     <StatGroup>
-      <Stat label="Players Joined" value={stats.total_players} unit="player" />
       <Stat
-        label="Completed Tests"
+        label={t('playersJoined')}
+        value={stats.total_players}
+        unit={t('playerUnit')}
+      />
+      <Stat
+        label={t('completedTests')}
         value={stats.completed_tests}
-        unit="test"
+        unit={t('testUnit')}
         color={stats.completed_tests > 0 ? 'green' : 'black'}
       />
     </StatGroup>

@@ -14,6 +14,7 @@ import {
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Save } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
 
 import LocationSelection from '@/components/common/LocationSelection';
@@ -32,6 +33,9 @@ import {
 } from '@/schemas/training';
 
 export const UpsertSession = createOverlay(({ action, item, ...rest }) => {
+  const t = useTranslations('training.upsertSession');
+  const tc = useTranslations('common');
+  const locale = useLocale();
   const [isPending, startTransition] = useTransition();
 
   const {
@@ -49,7 +53,7 @@ export const UpsertSession = createOverlay(({ action, item, ...rest }) => {
   const onSubmit = (data: UpsertSessionSchemaValues) => {
     const id = toaster.create({
       type: 'loading',
-      title: 'Creating training session...',
+      title: t('creating'),
     });
 
     startTransition(async () => {
@@ -75,13 +79,15 @@ export const UpsertSession = createOverlay(({ action, item, ...rest }) => {
               <CloseButton />
             </Dialog.CloseTrigger>
             <Dialog.Header>
-              <Dialog.Title>{action} Session</Dialog.Title>
+              <Dialog.Title>
+                {action === 'Update' ? t('updateTitle') : t('createTitle')}
+              </Dialog.Title>
             </Dialog.Header>
             <Dialog.Body>
               <SimpleGrid columns={{ base: 1, sm: 2 }} gap={3} mb={4}>
                 <Field
                   required
-                  label="Date"
+                  label={tc('date')}
                   invalid={!!errors.date}
                   errorText={errors.date?.message}
                 >
@@ -91,12 +97,15 @@ export const UpsertSession = createOverlay(({ action, item, ...rest }) => {
                     min={ESTABLISHED_DATE}
                   />
                 </Field>
-                <Field disabled readOnly label="Day">
-                  <Input variant="flushed" value={formatDay(watch('date'))} />
+                <Field disabled readOnly label={t('day')}>
+                  <Input
+                    variant="flushed"
+                    value={formatDay(watch('date'), undefined, locale)}
+                  />
                 </Field>
                 <Field
                   required
-                  label="Start Time"
+                  label={t('startTime')}
                   invalid={!!errors.start_time}
                   errorText={errors.start_time?.message}
                 >
@@ -104,7 +113,7 @@ export const UpsertSession = createOverlay(({ action, item, ...rest }) => {
                 </Field>
                 <Field
                   required
-                  label="End Time"
+                  label={t('endTime')}
                   invalid={!!errors.end_time}
                   errorText={errors.end_time?.message}
                 >
@@ -120,15 +129,15 @@ export const UpsertSession = createOverlay(({ action, item, ...rest }) => {
             >
               <Text textStyle="caption" color="GrayText">
                 {item.updated_at &&
-                  `Last updated on ${formatDatetime(item.updated_at)}`}
+                  t('lastUpdated', { date: formatDatetime(item.updated_at) })}
               </Text>
               <Button
                 type="submit"
-                loadingText="Saving..."
+                loadingText={t('savingButton')}
                 loading={isPending}
                 disabled={!isValid}
               >
-                <Save /> {action}
+                <Save /> {action === 'Update' ? tc('update') : tc('create')}
               </Button>
             </Dialog.Footer>
           </Dialog.Content>

@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useMemo } from 'react';
 
@@ -12,10 +13,10 @@ import HighlightText from '@/components/HighlightText';
 import usePermissions from '@/hooks/use-permissions';
 import useTableState from '@/hooks/use-table-state';
 
+import { enumLabel } from '@/i18n/enums';
 import { useRosterFilters } from '@/lib/nuqs';
 import { UserRole } from '@/utils/enum';
 import { buildPredicate } from '@/utils/filters';
-import { toLabel } from '@/utils/formatter';
 import { getColor } from '@/utils/helper';
 
 import { removeUser } from '@/actions/user';
@@ -26,6 +27,8 @@ const mask = (cc: string, num = 4) =>
 
 export default function RosterTable({ users }: { users: Array<RosterUser> }) {
   const router = useRouter();
+  const t = useTranslations('roster.table');
+  const tEnums = useTranslations('enums');
   const { isAdmin, isCaptain, isGuest } = usePermissions();
   const [{ q, page, state, role }, setSearchParams] = useRosterFilters();
 
@@ -53,7 +56,7 @@ export default function RosterTable({ users }: { users: Array<RosterUser> }) {
     ...(canManage
       ? [
           {
-            header: 'Verified',
+            header: t('verified'),
             align: 'center',
             cell: (user: RosterUser) =>
               user.emailVerified ? (
@@ -64,9 +67,12 @@ export default function RosterTable({ users }: { users: Array<RosterUser> }) {
           } satisfies Column<RosterUser>,
         ]
       : []),
-    { header: 'No.', cell: (user) => user.player?.jersey_number ?? '-' },
     {
-      header: 'Name',
+      header: t('jerseyNumber'),
+      cell: (user) => user.player?.jersey_number ?? '-',
+    },
+    {
+      header: t('name'),
       cell: (user) => (
         <HighlightText query={q}>
           {isGuest ? mask(user.name, -4) : user.name}
@@ -74,7 +80,7 @@ export default function RosterTable({ users }: { users: Array<RosterUser> }) {
       ),
     },
     {
-      header: 'Email',
+      header: t('email'),
       cell: (user) => (
         <HighlightText query={q}>
           {isGuest ? mask(user.email, -4) : user.email}
@@ -82,27 +88,27 @@ export default function RosterTable({ users }: { users: Array<RosterUser> }) {
       ),
     },
     {
-      header: 'State',
+      header: t('state'),
       cell: (user) => (
         <Badge
           variant="surface"
           borderRadius="full"
           colorPalette={getColor(user.state)}
         >
-          {toLabel(user.state)}
+          {enumLabel(tEnums, 'userState', user.state)}
         </Badge>
       ),
     },
     {
-      header: 'Roles',
+      header: t('roles'),
       cell: (user) => (
         <Badge variant="outline" borderRadius="full">
-          {toLabel(user.role)}
+          {enumLabel(tEnums, 'userRole', user.role)}
         </Badge>
       ),
     },
     {
-      header: 'Position',
+      header: t('position'),
       cell: (user) => {
         const position =
           user.role === UserRole.COACH
@@ -113,7 +119,11 @@ export default function RosterTable({ users }: { users: Array<RosterUser> }) {
 
         return position ? (
           <Badge variant="outline" borderRadius="full">
-            {toLabel(position)}
+            {enumLabel(
+              tEnums,
+              user.role === UserRole.COACH ? 'coachPosition' : 'playerPosition',
+              position,
+            )}
           </Badge>
         ) : (
           '-'
@@ -130,7 +140,7 @@ export default function RosterTable({ users }: { users: Array<RosterUser> }) {
       totalCount={totalCount}
       page={page}
       onPageChange={setSearchParams}
-      empty={{ title: 'No users found', icon: <SwatchBook /> }}
+      empty={{ title: t('empty'), icon: <SwatchBook /> }}
       stickyHeader
       onRowClick={
         isGuest ? undefined : (user) => router.replace('/profile/' + user.id)

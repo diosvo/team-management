@@ -21,7 +21,7 @@ export const UpsertMatchSchema = z
       status === MatchStatus.COMPLETED ||
       (home_team_score === 0 && away_team_score === 0),
     {
-      message: 'Only a completed match can carry a score',
+      message: 'scoreRequiresCompleted',
       path: ['status'],
     },
   );

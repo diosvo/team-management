@@ -12,7 +12,7 @@ import {
 import { getTestDates, getTestResult } from '@/actions/test-result';
 import { loadPeriodicTestingFilters } from '@/lib/nuqs';
 
-import PeriodicTestingPage, { metadata } from './page';
+import PeriodicTestingPage, { generateMetadata } from './page';
 
 vi.mock('@/actions/test-result', () => ({
   getTestResult: vi.fn(),
@@ -85,7 +85,8 @@ describe('PeriodicTestingPage', () => {
     mockGetDates.mockResolvedValue([MOCK_DATE]);
   });
 
-  test('exposes page metadata', () => {
+  test('exposes page metadata', async () => {
+    const metadata = await generateMetadata();
     expect(metadata.title).toBe('Periodic Testing');
     expect(metadata.description).toBe(
       'Performance testing and analytics for team players',

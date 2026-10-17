@@ -1,0 +1,63 @@
+{
+  "metadata": {
+    "title": "Kiểm tra định kỳ",
+    "description": "Kiểm tra và phân tích phong độ của cầu thủ"
+  },
+  "header": {
+    "title": "Kiểm tra định kỳ",
+    "manageTypes": "Quản lý bài kiểm tra",
+    "addResult": "Thêm kết quả"
+  },
+  "stats": {
+    "playersJoined": "Cầu thủ tham gia",
+    "playerUnit": "cầu thủ",
+    "completedTests": "Bài đã kiểm tra",
+    "testUnit": "bài"
+  },
+  "matrix": {
+    "player": "Cầu thủ",
+    "deletingScore": "Đang xóa kết quả...",
+    "savingScore": "Đang lưu kết quả...",
+    "empty": "Không có kết quả kiểm tra"
+  },
+  "testTypes": {
+    "metadata": {
+      "title": "Bài kiểm tra",
+      "description": "Quản lý và thiết lập các bài kiểm tra định kỳ"
+    },
+    "title": "Bài kiểm tra",
+    "unit": "Đơn vị",
+    "lastUpdated": "Cập nhật lần cuối",
+    "relativeTime": "Thời gian tương đối",
+    "empty": "Không tìm thấy tên phù hợp",
+    "deletePartial": "Đã xóa {count}, một số thao tác thất bại: {errors}",
+    "deleteSuccess": "Đã xóa {count} bài kiểm tra."
+  },
+  "upsertTestType": {
+    "addTitle": "Thêm bài kiểm tra",
+    "updateTitle": "Sửa bài kiểm tra",
+    "unit": "Đơn vị",
+    "saving": "Đang lưu..."
+  },
+  "addResult": {
+    "metadata": {
+      "title": "Thêm kết quả kiểm tra",
+      "description": "Thêm kết quả kiểm tra định kỳ mới."
+    },
+    "title": "Thêm kết quả kiểm tra",
+    "saving": "Đang lưu...",
+    "saved": "Đã lưu kết quả",
+    "saveError": "Lỗi khi lưu kết quả",
+    "configuration": "Thiết lập bài kiểm tra",
+    "activeOnly": "Chỉ cầu thủ đang hoạt động mới được tham gia kiểm tra.",
+    "activeQuery": "đang hoạt động",
+    "result": "Kết quả kiểm tra",
+    "selectTypes": "Chọn bài kiểm tra",
+    "testDate": "Ngày kiểm tra",
+    "playerName": "Tên cầu thủ",
+    "remove": "Bỏ \"{name}\"?",
+    "cellLabel": "{type} của {name}",
+    "emptyTitle": "Chưa có thiết lập.",
+    "emptyDescription": "Vui lòng chọn đủ các trường bắt buộc để nhập kết quả cho cầu thủ."
+  }
+}

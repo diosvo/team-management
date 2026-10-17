@@ -8,6 +8,7 @@ import {
   Span,
   Stack,
 } from '@chakra-ui/react';
+import { useTranslations } from 'next-intl';
 import type { Control, FieldPath, FieldValues } from 'react-hook-form';
 
 import { SearchableSelectField } from '../SearchableSelect';
@@ -26,7 +27,8 @@ export function LocationLink({
   children,
   ...props
 }: { name: Nullish<string> } & LinkProps) {
-  if (!name) return 'Unknown';
+  const t = useTranslations('components.locationLink');
+  if (!name) return t('unknown');
   const href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name)}`;
 
   return (

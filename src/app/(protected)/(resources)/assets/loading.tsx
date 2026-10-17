@@ -1,12 +1,18 @@
+import { getTranslations } from 'next-intl/server';
+
 import ListPageSkeleton from '@/components/PageSkeleton';
 
-export default function Loading() {
+export default async function Loading() {
+  const t = await getTranslations('assets');
+  const tCommon = await getTranslations('common');
+  const tDatePicker = await getTranslations('components.datePicker');
+
   return (
     <ListPageSkeleton
-      title="Assets"
-      actions={['Add']}
+      title={t('title')}
+      actions={[tCommon('add')]}
       stats={3}
-      toolbar={{ date: 'All time', filters: true }}
+      toolbar={{ date: tDatePicker('allTime'), filters: true }}
       columns={9}
     />
   );

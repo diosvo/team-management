@@ -1,10 +1,15 @@
+import { getTranslations } from 'next-intl/server';
+
 import ListPageSkeleton from '@/components/PageSkeleton';
 
-export default function TestTypesLoading() {
+export default async function TestTypesLoading() {
+  const t = await getTranslations('periodicTesting.testTypes');
+  const tCommon = await getTranslations('common');
+
   return (
     <ListPageSkeleton
-      title="Test Types"
-      actions={['Add']}
+      title={t('title')}
+      actions={[tCommon('add')]}
       toolbar={{ filters: true }}
       columns={5}
     />

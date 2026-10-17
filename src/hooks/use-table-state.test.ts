@@ -1,5 +1,13 @@
-import { act, renderHook, waitFor } from '@testing-library/react';
+import {
+  act,
+  renderHook as renderHookBase,
+  waitFor,
+} from '@testing-library/react';
+import { NextIntlClientProvider } from 'next-intl';
+import { createElement, type PropsWithChildren } from 'react';
 import type { Mock } from 'vitest';
+
+import messages from '@/i18n/messages/en';
 
 import { createToasterMock, mockToaster } from '@/test/helpers';
 
@@ -11,6 +19,12 @@ vi.mock('./use-permissions', () => ({
 }));
 
 vi.mock('@/components/ui/toaster', () => createToasterMock());
+
+const wrapper = ({ children }: PropsWithChildren) =>
+  createElement(NextIntlClientProvider, { locale: 'en', messages, children });
+
+const renderHook = <R>(callback: () => R) =>
+  renderHookBase(callback, { wrapper });
 
 type Item = { id: string; name: string };
 

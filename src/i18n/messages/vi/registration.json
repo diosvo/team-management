@@ -1,0 +1,85 @@
+{
+  "metadata": {
+    "title": "Đăng ký giải đấu",
+    "description": "Đăng ký cầu thủ tham gia giải đấu"
+  },
+  "title": "Đăng ký",
+  "subtitle": "Đăng ký cầu thủ cho giải đấu. Bạn có thể đính kèm file PDF đăng ký, sau đó xuất ra CSV hoặc PDF.",
+  "optional": "(không bắt buộc)",
+  "steps": {
+    "choosePlayers": "Chọn cầu thủ",
+    "pickLeague": "Chọn giải đấu",
+    "attachPdf": "Đính kèm PDF",
+    "review": "Xem lại & xuất"
+  },
+  "players": {
+    "title": "Chọn cầu thủ",
+    "selected": "Đã chọn {count}",
+    "description": "Chỉ hiển thị cầu thủ <active>đang hoạt động</active>."
+  },
+  "league": {
+    "title": "Chọn giải đấu",
+    "description": "Chọn giải đấu cho lượt đăng ký này."
+  },
+  "attach": {
+    "title": "Đính kèm PDF",
+    "description": "Tải lên mẫu PDF có thể điền hoặc tự động tạo danh sách cho giải đấu hiện tại.",
+    "fieldNames": "Tên trường",
+    "fieldNamesHint": "Tải lên file PDF có các ô nhập được đặt tên như bên dưới — chúng sẽ được điền tự động.",
+    "noFillableFields": "Không có ô nhập nào? Hệ thống sẽ tự tạo danh sách mới.",
+    "upload": "Nhấn để tải PDF lên",
+    "maxSize": "Tối đa 10 MB",
+    "notes": "Ghi chú",
+    "notesPlaceholder": "Ghi chú nội bộ cho lượt đăng ký này…"
+  },
+  "save": {
+    "success": "Đã lưu đăng ký",
+    "successDescription": "{count} cầu thủ cho {name}.",
+    "error": "Không thể lưu đăng ký"
+  },
+  "preview": {
+    "title": "Xem trước",
+    "save": "Lưu",
+    "usingTemplate": "Đang dùng mẫu đã tải lên: {name}",
+    "noTemplate": "Chưa tải PDF lên - hiển thị đăng ký dưới dạng bảng.",
+    "emptyTitle": "Chưa có gì để xem trước",
+    "emptyDescription": "Chọn ít nhất một cầu thủ và một giải đấu để xem trước.",
+    "noPlayers": "Không có cầu thủ để xem trước",
+    "rendering": "Đang tạo bản xem trước…",
+    "failed": "Không thể tạo bản xem trước.",
+    "iframeTitle": "Xem trước đăng ký",
+    "fileReady": "File của bạn đã sẵn sàng.",
+    "pleaseWait": "Vui lòng chờ.",
+    "csvLoading": "Đang chuẩn bị CSV...",
+    "csvLoadingDescription": "Đang tạo file.",
+    "csvSuccess": "Đã tải CSV",
+    "csvError": "Không thể tải CSV",
+    "pdfLoading": "Đang tạo PDF...",
+    "pdfSuccess": "Đã tải PDF",
+    "pdfError": "Không thể tạo PDF",
+    "noFieldsMatched": "Không có trường nào khớp",
+    "noFieldsMatchedDescription": "Tìm thấy {count} trường nhưng không trường nào khớp với dữ liệu cầu thủ."
+  },
+  "saved": {
+    "title": "Đăng ký đã lưu",
+    "description": "Các lượt đăng ký giải đấu bạn đã lưu gần đây.",
+    "searchPlaceholder": "Lọc theo tên...",
+    "name": "Tên",
+    "players": "Cầu thủ",
+    "dateSaved": "Ngày lưu",
+    "emptyTitle": "Chưa có đăng ký nào được lưu",
+    "emptyDescription": "Nhấn Lưu ở phần xem trước để lưu đăng ký tại đây.",
+    "downloadLoading": "Đang chuẩn bị tải xuống...",
+    "downloadSuccess": "Đã tải PDF",
+    "downloadError": "Không thể tải xuống",
+    "downloadErrorDescription": "Đăng ký này được lưu trước khi hỗ trợ tải xuống. Hãy lưu lại để có thể tải.",
+    "removeLoading": "Đang xóa...",
+    "removeSuccess": "Đã xóa đăng ký",
+    "removeSuccessDescription": "Đã xóa {name}.",
+    "removeError": "Không thể xóa",
+    "download": "Tải xuống",
+    "remove": "Xóa",
+    "pleaseWait": "Vui lòng chờ.",
+    "fileReady": "File của bạn đã sẵn sàng."
+  }
+}

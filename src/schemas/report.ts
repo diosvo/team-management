@@ -11,9 +11,7 @@ export type EmailReportSchemaValues = z.infer<typeof EmailReportSchema>;
 export const UpsertReportScheduleSchema = z.object({
   // The cadence is implied by the window (see SCHEDULED_INTERVAL_SELECTION).
   interval: z.enum(SCHEDULED_INTERVALS),
-  recipients: z
-    .array(z.email())
-    .min(1, { message: 'Add at least one recipient.' }),
+  recipients: z.array(z.email()).min(1, { message: 'recipientsRequired' }),
 });
 
 export type UpsertReportScheduleValues = z.infer<

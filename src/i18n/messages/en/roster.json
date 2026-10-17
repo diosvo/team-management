@@ -1,0 +1,33 @@
+{
+  "metadata": {
+    "title": "Roster",
+    "description": "View the team roster"
+  },
+  "title": "Team Roster",
+  "filters": {
+    "state": "State",
+    "role": "Role"
+  },
+  "table": {
+    "verified": "Verified",
+    "jerseyNumber": "No.",
+    "name": "Name",
+    "email": "Email",
+    "state": "State",
+    "roles": "Roles",
+    "position": "Position",
+    "empty": "No users found",
+    "deletePartial": "Deleted {count, plural, one {# user} other {# users}}, but some operations failed.",
+    "deleteSuccess": "Successfully deleted {count, plural, one {# user} other {# users}}."
+  },
+  "addUser": {
+    "trigger": "Add",
+    "title": "Add to Roster",
+    "fullname": "Fullname",
+    "email": "Email",
+    "dob": "DOB",
+    "adding": "Adding user to database...",
+    "submitting": "Adding...",
+    "submit": "Add"
+  }
+}

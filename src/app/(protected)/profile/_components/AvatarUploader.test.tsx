@@ -8,6 +8,7 @@ import {
   screen,
   setupTestLifecycle,
   waitFor,
+  enumText,
 } from '@/test/utilities';
 
 import { uploadAvatar } from '@/actions/user';
@@ -81,7 +82,9 @@ describe('AvatarUploader', () => {
     await waitFor(() => {
       // The name appears twice: the avatar fallback and the profile label.
       expect(screen.getAllByText(MOCK_USER.name).length).toBeGreaterThan(0);
-      expect(screen.getByText(MOCK_USER.role)).toBeInTheDocument();
+      expect(
+        screen.getByText(enumText('userRole', MOCK_USER.role)),
+      ).toBeInTheDocument();
     });
   });
 

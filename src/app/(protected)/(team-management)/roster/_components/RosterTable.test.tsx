@@ -16,11 +16,11 @@ import {
   setupTestLifecycle,
   waitFor,
   within,
+  enumText,
 } from '@/test/utilities';
 
 import usePermissions from '@/hooks/use-permissions';
 import { UserRole, UserState } from '@/utils/enum';
-import { toLabel } from '@/utils/formatter';
 
 import { removeUser } from '@/actions/user';
 import type { RosterUser } from '@/db/user';
@@ -129,7 +129,7 @@ describe('RosterTable', () => {
       setup({ users: [ALICE] });
 
       expect(
-        screen.getByText(toLabel(String(MOCK_PLAYER.position))),
+        screen.getByText(enumText('playerPosition', MOCK_PLAYER.position)),
       ).toBeInTheDocument();
     });
 
@@ -137,7 +137,7 @@ describe('RosterTable', () => {
       setup({ users: [BOB] });
 
       expect(
-        screen.getByText(toLabel(MOCK_COACH.position)),
+        screen.getByText(enumText('coachPosition', MOCK_COACH.position)),
       ).toBeInTheDocument();
     });
 
@@ -146,10 +146,10 @@ describe('RosterTable', () => {
       setup({ users: [{ ...BOB, player: MOCK_PLAYER }] });
 
       expect(
-        screen.getByText(toLabel(MOCK_COACH.position)),
+        screen.getByText(enumText('coachPosition', MOCK_COACH.position)),
       ).toBeInTheDocument();
       expect(
-        screen.queryByText(toLabel(String(MOCK_PLAYER.position))),
+        screen.queryByText(enumText('playerPosition', MOCK_PLAYER.position)),
       ).not.toBeInTheDocument();
     });
 

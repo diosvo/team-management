@@ -1,0 +1,73 @@
+{
+  "metadata": {
+    "description": "Saigon Rovers Basketball Club"
+  },
+  "accountMenu": {
+    "profile": "Profile",
+    "performance": "Performance",
+    "logout": "Log Out",
+    "trigger": "Account menu",
+    "vietnamese": "Vietnamese",
+    "documentation": "Documentation",
+    "socialLinks": "Social Links",
+    "feedback": "Feedback"
+  },
+  "header": {
+    "logoAlt": "Text Logo",
+    "openNavigation": "Open navigation",
+    "skipToContent": "Skip to content"
+  },
+  "nav": {
+    "achievements": "Achievements",
+    "add-result": "Add Result",
+    "assets": "Assets",
+    "attendance": "Attendance",
+    "dashboard": "Dashboard",
+    "documents": "Documents",
+    "emails": "Emails",
+    "leagues": "Leagues",
+    "locations": "Locations",
+    "matches": "Matches",
+    "performance": "Performance",
+    "periodic-testing": "Periodic Testing",
+    "profile": "Profile",
+    "registration": "Registration",
+    "reports": "Reports",
+    "roster": "Roster",
+    "team-rule": "Team Rule",
+    "teams": "Teams",
+    "test-types": "Test Types",
+    "training": "Training"
+  },
+  "sidebar": {
+    "groups": {
+      "overview": "Overview",
+      "team-management": "Team Management",
+      "performance": "Performance",
+      "resources": "Resources",
+      "settings": "Settings"
+    },
+    "collapseMenu": "Collapse menu",
+    "expandMenu": "Expand menu",
+    "mainNav": "Main"
+  },
+  "feedback": {
+    "label": "Suggestions + feedback + ideas",
+    "title": "Share Feedback",
+    "sending": "Sending...",
+    "type": "Type",
+    "titleLabel": "Title",
+    "titlePlaceholder": "Attendance export is missing last week",
+    "description": "Description",
+    "descriptionHelper": "Markdown is supported.",
+    "descriptionPlaceholder": "What happened, and what did you expect?",
+    "includePage": "Include the page I am on ({pathname})",
+    "filedForYou": "Your report is filed for you, with your name attached.",
+    "send": "Send"
+  },
+  "forbidden": {
+    "title": "Access Denied",
+    "description": "You are not authorized to access this resource.",
+    "returnDashboard": "Return Dashboard"
+  }
+}

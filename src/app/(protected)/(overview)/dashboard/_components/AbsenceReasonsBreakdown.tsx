@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 
 import { Chart, useChart } from '@chakra-ui/charts';
 import { ChartPie } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Pie, PieChart, type PieSectorShapeProps, Sector } from 'recharts';
 
 import { Card } from '@/components/ui/card';
@@ -19,6 +20,7 @@ export default function AbsenceReasonsBreakdown({
 }: {
   reasons: Array<AbsenceReason>;
 }) {
+  const t = useTranslations('dashboard.absenceReasons');
   const enrichedReasons = useMemo(
     () =>
       reasons.map((reason, index) => ({
@@ -37,10 +39,7 @@ export default function AbsenceReasonsBreakdown({
   });
 
   return (
-    <Card
-      title="Most Common Absence Reasons"
-      description="Top 5 reasons why players miss training"
-    >
+    <Card title={t('title')} description={t('description')}>
       {enrichedReasons.length ? (
         <Chart.Root chart={chart} maxHeight="sm">
           <PieChart responsive>
@@ -49,7 +48,9 @@ export default function AbsenceReasonsBreakdown({
               labelLine
               isAnimationActive={false}
               dataKey={chart.key('count')}
-              label={({ name, value }) => `${name}: ${value}`}
+              label={({ name, value }) =>
+                `${name === 'Unknown' ? t('unknown') : name}: ${value}`
+              }
               shape={(props: PieSectorShapeProps) => (
                 <Sector {...props} fill={props.payload.color} />
               )}
@@ -57,7 +58,7 @@ export default function AbsenceReasonsBreakdown({
           </PieChart>
         </Chart.Root>
       ) : (
-        <EmptyState icon={<ChartPie />} title="No absence reasons records" />
+        <EmptyState icon={<ChartPie />} title={t('empty')} />
       )}
     </Card>
   );

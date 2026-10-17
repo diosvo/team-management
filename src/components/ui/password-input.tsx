@@ -19,6 +19,7 @@ import {
   useControllableState,
 } from '@chakra-ui/react';
 import { Eye, EyeOff } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 export interface PasswordVisibilityProps {
   /**
@@ -40,8 +41,7 @@ export interface PasswordVisibilityProps {
 }
 
 export interface PasswordInputProps
-  extends InputProps,
-    PasswordVisibilityProps {
+  extends InputProps, PasswordVisibilityProps {
   rootProps?: GroupProps;
 }
 
@@ -95,6 +95,7 @@ export const PasswordInput = React.forwardRef<
 
 const VisibilityTrigger = React.forwardRef<HTMLButtonElement, ButtonProps>(
   function VisibilityTrigger(props, ref) {
+    const t = useTranslations('components.passwordInput');
     return (
       <IconButton
         tabIndex={-1}
@@ -104,11 +105,11 @@ const VisibilityTrigger = React.forwardRef<HTMLButtonElement, ButtonProps>(
         size="sm"
         variant="ghost"
         height="calc(100% - {spacing.2})"
-        aria-label="Toggle password visibility"
+        aria-label={t('toggleVisibility')}
         {...props}
       />
     );
-  }
+  },
 );
 
 interface PasswordStrengthMeterProps extends StackProps {
@@ -120,6 +121,7 @@ export const PasswordStrengthMeter = React.forwardRef<
   HTMLDivElement,
   PasswordStrengthMeterProps
 >(function PasswordStrengthMeter(props, ref) {
+  const t = useTranslations('components.passwordInput');
   const { max = 4, value, ...rest } = props;
 
   const percent = (value / max) * 100;
@@ -144,7 +146,7 @@ export const PasswordStrengthMeter = React.forwardRef<
           />
         ))}
       </HStack>
-      {label && <HStack textStyle="xs">{label}</HStack>}
+      {label && <HStack textStyle="xs">{t(label)}</HStack>}
     </Stack>
   );
 });
@@ -152,10 +154,10 @@ export const PasswordStrengthMeter = React.forwardRef<
 function getColorPalette(percent: number) {
   switch (true) {
     case percent < 33:
-      return { label: 'Low', colorPalette: 'red' };
+      return { label: 'low' as const, colorPalette: 'red' };
     case percent < 66:
-      return { label: 'Medium', colorPalette: 'orange' };
+      return { label: 'medium' as const, colorPalette: 'orange' };
     default:
-      return { label: 'High', colorPalette: 'green' };
+      return { label: 'high' as const, colorPalette: 'green' };
   }
 }

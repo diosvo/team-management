@@ -2,6 +2,7 @@
 
 import { Button, HStack, Menu, Portal } from '@chakra-ui/react';
 import { ChevronDown, FileDown, Send } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
 
@@ -16,6 +17,8 @@ import { formatDateRange } from '@/utils/datetime';
 const EmailReport = dynamic(() => import('./EmailReport'), { ssr: false });
 
 export default function DashboardFilters() {
+  const t = useTranslations('dashboard.filters');
+  const tCommon = useTranslations('common');
   const [{ from, to }, setSearchParams] = useDashboardFilters();
   const [downloading, setDownloading] = useState(false);
   const [open, setOpen] = useState(false);
@@ -36,7 +39,7 @@ export default function DashboardFilters() {
       if (!response.ok) {
         const { error } = await response.json();
         toaster.error({
-          title: 'Download failed',
+          title: t('downloadFailed'),
           description: error,
         });
         return;
@@ -58,9 +61,9 @@ export default function DashboardFilters() {
               variant="outline"
               colorPalette="blue"
               loading={downloading}
-              loadingText="Generating..."
+              loadingText={t('generating')}
             >
-              Export Report <ChevronDown />
+              {t('exportReport')} <ChevronDown />
             </Button>
           </Menu.Trigger>
           <Portal>
@@ -71,14 +74,14 @@ export default function DashboardFilters() {
                   _hover={{ cursor: 'pointer' }}
                   onClick={handleDownload}
                 >
-                  <FileDown size={14} /> Download
+                  <FileDown size={14} /> {t('download')}
                 </Menu.Item>
                 <Menu.Item
                   value="email"
                   _hover={{ cursor: 'pointer' }}
                   onClick={() => setOpen(true)}
                 >
-                  <Send size={14} /> Send To...
+                  <Send size={14} /> {t('sendTo')}
                 </Menu.Item>
               </Menu.Content>
             </Menu.Positioner>
@@ -86,7 +89,7 @@ export default function DashboardFilters() {
         </Menu.Root>
 
         <DateRangePicker
-          label="Time"
+          label={tCommon('time')}
           min={ESTABLISHED_DATE}
           value={{ from, to }}
           onChange={(range) =>

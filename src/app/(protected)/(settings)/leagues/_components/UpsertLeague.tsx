@@ -18,6 +18,7 @@ import {
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Save } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
 
 import { DatePickerField } from '@/components/date-picker/DatePicker';
@@ -43,6 +44,8 @@ import {
 import { getPlayersInLeague, upsertLeague } from '@/actions/league';
 
 export const UpsertLeague = createOverlay(({ action, item, ...rest }) => {
+  const t = useTranslations('leagues.upsert');
+  const tCommon = useTranslations('common');
   const { mutate } = useSWRConfig();
   const [isPending, startTransition] = useTransition();
 
@@ -78,7 +81,7 @@ export const UpsertLeague = createOverlay(({ action, item, ...rest }) => {
   const onSubmit = (data: UpsertLeagueSchemaValues) => {
     const id = toaster.create({
       type: 'loading',
-      title: 'Saving league information...',
+      title: t('savingToast'),
     });
 
     startTransition(async () => {
@@ -91,7 +94,7 @@ export const UpsertLeague = createOverlay(({ action, item, ...rest }) => {
       toaster.update(id, {
         type: success ? 'success' : 'error',
         title: success ? (
-          'League information saved successfully.'
+          t('saved')
         ) : (
           <>
             {message.split('\n').map((msg, index) => (
@@ -126,14 +129,14 @@ export const UpsertLeague = createOverlay(({ action, item, ...rest }) => {
             <Dialog.Header>
               <Dialog.Title asChild>
                 <Flex alignItems="center" gap={2}>
-                  {action} League
+                  {action === 'Add' ? t('addTitle') : t('updateTitle')}
                   {isReadonly && (
                     <Badge
                       variant="surface"
                       borderRadius="full"
                       colorPalette="red"
                     >
-                      Readonly
+                      {t('readonly')}
                     </Badge>
                   )}
                 </Flex>
@@ -143,13 +146,13 @@ export const UpsertLeague = createOverlay(({ action, item, ...rest }) => {
               <VStack alignItems="stretch" gap={4}>
                 <Field
                   required
-                  label="Name"
+                  label={t('name')}
                   disabled={isReadonly}
                   invalid={!!errors.name}
                   errorText={errors.name?.message}
                 >
                   <Input
-                    placeholder="Basketball League"
+                    placeholder={t('namePlaceholder')}
                     disabled={isPending || isReadonly}
                     {...register('name')}
                   />
@@ -161,7 +164,7 @@ export const UpsertLeague = createOverlay(({ action, item, ...rest }) => {
                 >
                   <Field
                     required
-                    label="Start Date"
+                    label={t('startDate')}
                     disabled={isReadonly}
                     invalid={!!errors.start_date}
                     errorText={errors.start_date?.message}
@@ -175,7 +178,7 @@ export const UpsertLeague = createOverlay(({ action, item, ...rest }) => {
                   </Field>
                   <Field
                     required
-                    label="End Date"
+                    label={t('endDate')}
                     disabled={isReadonly}
                     invalid={!!errors.end_date}
                     errorText={errors.end_date?.message}
@@ -188,11 +191,11 @@ export const UpsertLeague = createOverlay(({ action, item, ...rest }) => {
                     />
                   </Field>
                 </Stack>
-                <Field label="Description" disabled={isReadonly}>
+                <Field label={t('description')} disabled={isReadonly}>
                   <Textarea
                     autoresize
                     maxLength={128}
-                    placeholder="Comment..."
+                    placeholder={t('descriptionPlaceholder')}
                     disabled={disabledField}
                     {...register('description')}
                   />
@@ -217,11 +220,12 @@ export const UpsertLeague = createOverlay(({ action, item, ...rest }) => {
               <Dialog.Footer>
                 <Button
                   type="submit"
-                  loadingText="Saving..."
+                  loadingText={t('saving')}
                   loading={isPending}
                   disabled={!isValid}
                 >
-                  <Save /> {action}
+                  <Save />{' '}
+                  {action === 'Add' ? tCommon('add') : tCommon('update')}
                 </Button>
               </Dialog.Footer>
             )}

@@ -52,7 +52,7 @@ describe('UpsertMatchSchema', () => {
       expect(result.error?.issues).toEqual([
         expect.objectContaining({
           path: ['status'],
-          message: 'Only a completed match can carry a score',
+          message: 'scoreRequiresCompleted',
         }),
       ]);
     },

@@ -1,0 +1,9 @@
+{
+  "metadata": {
+    "title": "Rule",
+    "description": "Rule applies to all team members."
+  },
+  "title": "Team Rule",
+  "updating": "Updating rules...",
+  "placeholder": "Please wait for admin to set up the rule."
+}

@@ -1,5 +1,6 @@
 'use server';
 
+import { getTranslations } from 'next-intl/server';
 import { getDbErrorMessage } from '@/db/pg-error';
 import { ResponseFactory } from '@/utils/response';
 
@@ -29,6 +30,7 @@ export const upsertMatch = matches(
     match_id: string,
     match: UpsertMatchSchemaValues,
   ) {
+    const t = await getTranslations('actions.match');
     const extended = { ...match, home_team: user.team_id };
 
     try {
@@ -40,9 +42,7 @@ export const upsertMatch = matches(
 
       revalidate.matches();
 
-      return ResponseFactory.success(
-        `${match_id ? 'Updated' : 'Added'} match successfully`,
-      );
+      return ResponseFactory.success(t(match_id ? 'updated' : 'added'));
     } catch (error) {
       const { message } = getDbErrorMessage(error);
       return ResponseFactory.error(message);
@@ -53,14 +53,15 @@ export const upsertMatch = matches(
 export const removeMatch = matches(
   ['delete'],
   async function remove(_, match_id: string) {
+    const t = await getTranslations('actions.match');
     try {
       await deleteMatch(match_id);
 
       revalidate.matches();
 
-      return ResponseFactory.success('Deleted match successfully');
+      return ResponseFactory.success(t('deleted'));
     } catch {
-      return ResponseFactory.error('Failed to delete match');
+      return ResponseFactory.error(t('deleteFailed'));
     }
   },
 );

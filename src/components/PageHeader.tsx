@@ -1,5 +1,6 @@
 import { Button, type ButtonProps, HStack } from '@chakra-ui/react';
 import { Plus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import Authorized from '@/components/Authorized';
 import PageTitle from '@/components/PageTitle';
@@ -32,21 +33,19 @@ type AddButtonProps = Required<{
 }> &
   Omit<ButtonProps, 'children'> &
   Partial<{
-    /** Button label; defaults to "Add". */
+    /** Button label; defaults to `common.add` ("Add"). */
     children: React.ReactNode;
   }>;
 
 /** "+ Add" button, shown only if the user can create `resource`. */
-export function AddButton({
-  resource,
-  children = 'Add',
-  ...rest
-}: AddButtonProps) {
+export function AddButton({ resource, children, ...rest }: AddButtonProps) {
+  const tCommon = useTranslations('common');
+
   return (
     <Authorized resource={resource} action="create">
       <Button {...rest}>
         <Plus />
-        {children}
+        {children ?? tCommon('add')}
       </Button>
     </Authorized>
   );

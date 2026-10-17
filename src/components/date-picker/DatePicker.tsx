@@ -6,6 +6,7 @@ import {
   type DatePickerRootProps,
 } from '@chakra-ui/react';
 import { CalendarDays, X } from 'lucide-react';
+import { useLocale } from 'next-intl';
 import {
   Controller,
   type Control,
@@ -13,7 +14,7 @@ import {
   type FieldValues,
 } from 'react-hook-form';
 
-import { LOCALE } from '@/utils/constants';
+import { INTL_LOCALE } from '@/i18n/config';
 import { formatCalendarDay } from '@/utils/datetime';
 
 import { Calendar, parseDisplayString, parseIsoDay } from './Calendar';
@@ -63,6 +64,7 @@ export default function DatePicker({
   const field = useFieldContext() as
     ReturnType<typeof useFieldContext> | undefined;
 
+  const locale = useLocale();
   const day = parseIsoDay(value);
 
   return (
@@ -72,7 +74,7 @@ export default function DatePicker({
       unmountOnExit
       width={width}
       flexShrink={0}
-      locale={LOCALE}
+      locale={INTL_LOCALE[locale]}
       size={{ base: 'sm', md: 'md' }}
       name={name}
       // The picker does not read the field context; point the label at us.

@@ -1,0 +1,40 @@
+{
+  "metadata": {
+    "title": "Hồ sơ",
+    "description": "Xem và chỉnh sửa thông tin hồ sơ của bạn."
+  },
+  "title": "Chi tiết hồ sơ",
+  "lastUpdated": "Cập nhật lần cuối: {date}",
+  "viewOnly": "Chỉ xem",
+  "notFound": {
+    "title": "Không tìm thấy người dùng",
+    "description": "Hồ sơ bạn tìm không tồn tại hoặc đã bị xóa."
+  },
+  "tabs": {
+    "overview": "Tổng quan",
+    "personal": "Cá nhân",
+    "team": "Đội"
+  },
+  "avatar": {
+    "setting": "Đang cập nhật ảnh đại diện..."
+  },
+  "personal": {
+    "title": "Thông tin cá nhân",
+    "updating": "Đang cập nhật thông tin cá nhân...",
+    "fullname": "Họ và tên",
+    "namePlaceholder": "Ẩn danh",
+    "dob": "Ngày sinh",
+    "phoneNumber": "Số điện thoại",
+    "citizenId": "Số CCCD"
+  },
+  "team": {
+    "title": "Thông tin đội",
+    "updating": "Đang cập nhật thông tin đội...",
+    "role": "Vai trò",
+    "position": "Vị trí",
+    "state": "Trạng thái",
+    "jerseyNumber": "Số áo",
+    "joinDate": "Ngày gia nhập",
+    "joinedDate": "Ngày gia nhập"
+  }
+}

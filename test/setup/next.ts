@@ -4,6 +4,27 @@ vi.mock('next/headers', () => ({
   headers: vi.fn(),
 }));
 
+// Server components and actions read English messages, as served by default.
+vi.mock('next-intl/server', async () => {
+  const { createTranslator } =
+    await vi.importActual<typeof import('next-intl')>('next-intl');
+  const { default: messages } = await import('@/i18n/messages/en');
+
+  return {
+    getLocale: vi.fn(async () => 'en'),
+    getMessages: vi.fn(async () => messages),
+    getTranslations: vi.fn(async (options?: string | { namespace?: string }) =>
+      createTranslator({
+        locale: 'en',
+        messages,
+        namespace: (typeof options === 'string'
+          ? options
+          : options?.namespace) as never,
+      }),
+    ),
+  };
+});
+
 vi.mock('next/navigation', async () => {
   const actual = await vi.importActual('next/navigation');
 

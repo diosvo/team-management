@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+import { getTranslations } from 'next-intl/server';
+
 import env from '@env';
 
 import { verifySession } from '@/actions/auth';
@@ -14,11 +16,12 @@ const devEnv = env.NODE_ENV === 'development';
 export async function POST(req: NextRequest) {
   let browser;
 
+  const t = await getTranslations('actions.report');
   const session = await verifySession();
 
   if (!session) {
     return NextResponse.json(
-      { error: 'User not authenticated' },
+      { error: t('notAuthenticated') },
       { status: Status.UNAUTHORIZED },
     );
   }
@@ -37,7 +40,7 @@ export async function POST(req: NextRequest) {
     const host = req.headers.get('host');
     if (!host) {
       return NextResponse.json(
-        { error: 'Missing request headers required for report generation' },
+        { error: t('missingHeaders') },
         { status: Status.BAD_REQUEST },
       );
     }
@@ -146,9 +149,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     return NextResponse.json(
       {
-        error: devEnv
-          ? (error as Error).message
-          : 'Unable to generate the report. Please try again later',
+        error: devEnv ? (error as Error).message : t('unavailable'),
       },
       { status: Status.INTERNAL_SERVER_ERROR },
     );

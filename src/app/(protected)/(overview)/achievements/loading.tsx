@@ -9,6 +9,7 @@ import {
   Stack,
   VStack,
 } from '@chakra-ui/react';
+import { useTranslations } from 'next-intl';
 
 import { ButtonSkeleton } from '@/components/PageSkeleton';
 
@@ -22,10 +23,12 @@ const ANCHOR = '1.25rem';
 const GROUPS = [2, 1, 1];
 
 export default function AchievementsLoading() {
+  const t = useTranslations('achievements.header');
+
   return (
     <>
       {/* AchievementHeader: the Record button waits on permissions. */}
-      <ButtonSkeleton label="Record" />
+      <ButtonSkeleton label={t('record')} />
 
       {/* Hero and footer are static: rendered for real. */}
       <AchievementHero />

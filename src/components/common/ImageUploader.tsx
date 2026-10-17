@@ -7,12 +7,23 @@ import {
   Skeleton,
 } from '@chakra-ui/react';
 import { ImageUp } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { toaster } from '@/components/ui/toaster';
 
 const MAX_FILE_SIZE = 100_000; // 100 KB
 
-export function notifyRejection(files: Array<{ errors: Array<string> }>) {
+type RejectionMessages = Record<'tooLarge' | 'invalidType', string>;
+
+const DEFAULT_REJECTION_MESSAGES: RejectionMessages = {
+  tooLarge: 'Image must be smaller than 100 KB',
+  invalidType: 'Only PNG or JPEG images are allowed',
+};
+
+export function notifyRejection(
+  files: Array<{ errors: Array<string> }>,
+  messages: RejectionMessages = DEFAULT_REJECTION_MESSAGES,
+) {
   if (!files.length) return;
 
   const tooLarge = files.some(({ errors }) =>
@@ -21,9 +32,7 @@ export function notifyRejection(files: Array<{ errors: Array<string> }>) {
 
   toaster.create({
     type: 'error',
-    title: tooLarge
-      ? 'Image must be smaller than 100 KB'
-      : 'Only PNG or JPEG images are allowed',
+    title: tooLarge ? messages.tooLarge : messages.invalidType,
   });
 }
 
@@ -42,6 +51,7 @@ export default function ImageUploader({
   state = 'editable',
   onChange,
 }: ImageUploaderProps) {
+  const t = useTranslations('components.imageUploader');
   const isPending = state === 'pending';
   const isDisabled = state === 'disabled';
   const isHidden = isDisabled || isPending;
@@ -52,11 +62,16 @@ export default function ImageUploader({
       maxFileSize={MAX_FILE_SIZE}
       accept={['image/png', 'image/jpeg']}
       onFileAccept={({ files }) => onChange(files[0])}
-      onFileReject={({ files }) => notifyRejection(files)}
+      onFileReject={({ files }) =>
+        notifyRejection(files, {
+          tooLarge: t('tooLarge'),
+          invalidType: t('invalidType'),
+        })
+      }
       alignItems="center"
     >
       <FileUpload.HiddenInput />
-      <FileUpload.Trigger asChild disabled={isHidden} aria-label="Upload image">
+      <FileUpload.Trigger asChild disabled={isHidden} aria-label={t('upload')}>
         <Box
           position="relative"
           cursor={isHidden ? 'default' : 'pointer'}

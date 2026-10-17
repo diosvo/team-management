@@ -3,6 +3,7 @@
 import { useCallback } from 'react';
 
 import { Badge, HStack, Span } from '@chakra-ui/react';
+import { useLocale, useTranslations } from 'next-intl';
 
 import { LeagueLink } from '@/components/common/LeagueSelection';
 import { LocationLink } from '@/components/common/LocationSelection';
@@ -12,11 +13,11 @@ import HighlightText from '@/components/HighlightText';
 import usePermissions from '@/hooks/use-permissions';
 import useTableState from '@/hooks/use-table-state';
 
+import { enumLabel } from '@/i18n/enums';
 import { useMatchFilters } from '@/lib/nuqs';
 import type { MatchWithTeams } from '@/types/match';
 import { formatDate, formatDay } from '@/utils/datetime';
 import { MatchStatus } from '@/utils/enum';
-import { toLabel } from '@/utils/formatter';
 import { getColor } from '@/utils/helper';
 
 import { removeMatch } from '@/actions/match';
@@ -27,6 +28,10 @@ export default function MatchTable({
 }: {
   matches: Array<MatchWithTeams>;
 }) {
+  const t = useTranslations('matches.table');
+  const tc = useTranslations('common');
+  const te = useTranslations('enums');
+  const locale = useLocale();
   const { can } = usePermissions();
   const [{ q, page }, setSearchParams] = useMatchFilters();
 
@@ -47,36 +52,36 @@ export default function MatchTable({
 
   const columns: Array<Column<MatchWithTeams>> = [
     {
-      header: 'Opponent',
+      header: t('opponent'),
       cell: (item) => (
         <HighlightText query={q}>{item.away_team.name}</HighlightText>
       ),
     },
     {
-      header: 'League',
+      header: t('league'),
       cell: (item) => <LeagueLink name={item.league?.name} />,
     },
     {
-      header: 'Status',
+      header: tc('status'),
       cell: (item) => (
         <Badge
           variant="surface"
           borderRadius="full"
           colorPalette={getColor(item.status)}
         >
-          {toLabel(item.status)}
+          {enumLabel(te, 'matchStatus', item.status)}
         </Badge>
       ),
     },
     {
-      header: 'Score',
+      header: t('score'),
       cell: (item) =>
         item.status === MatchStatus.COMPLETED
           ? `${item.home_team_score} - ${item.away_team_score}`
           : '-',
     },
     {
-      header: 'Result',
+      header: t('result'),
       cell: (item) =>
         item.result ? (
           <Badge
@@ -84,21 +89,21 @@ export default function MatchTable({
             borderRadius="full"
             colorPalette={getColor(item.result)}
           >
-            {toLabel(item.result)}
+            {enumLabel(te, 'matchResult', item.result)}
           </Badge>
         ) : (
           '-'
         ),
     },
     {
-      header: 'Location',
+      header: t('location'),
       cell: (item) => <LocationLink name={item.location?.name} />,
     },
     {
-      header: 'Date',
+      header: tc('date'),
       cell: (item) => (
         <HStack gap={1}>
-          <Span fontSize="sm">{formatDay(item.date)}</Span>
+          <Span fontSize="sm">{formatDay(item.date, undefined, locale)}</Span>
           <Span color="gray.400">&bull;</Span>
           <Span fontSize="sm">{formatDate(item.date)}</Span>
           <Span color="gray.400">&bull;</Span>
@@ -117,7 +122,7 @@ export default function MatchTable({
         totalCount={totalCount}
         page={page}
         onPageChange={setSearchParams}
-        empty={{ title: 'No matches found' }}
+        empty={{ title: t('empty') }}
         onRowClick={(item) =>
           UpsertMatch.open('update-match', {
             action: 'Update',

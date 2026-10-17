@@ -1,0 +1,56 @@
+{
+  "metadata": {
+    "title": "Attendance",
+    "description": "Manage and view team attendance information."
+  },
+  "title": "Training Attendance",
+  "markAttendance": "Mark Attendance",
+  "submitLeaveRequest": "Submit Leave Request",
+  "filters": {
+    "date": "Date",
+    "status": "Status"
+  },
+  "stats": {
+    "onTime": "On Time",
+    "late": "Late Entry",
+    "absent": "Absent",
+    "presentRate": "Present Rate"
+  },
+  "table": {
+    "date": "Date",
+    "name": "Name",
+    "status": "Status",
+    "reason": "Reason",
+    "lastUpdated": "Last Updated",
+    "empty": "No players found",
+    "deleteFailed": "Failed to delete {count, plural, one {# attendance record} other {# attendance records}}",
+    "deleteSuccess": "Deleted {count, plural, one {# attendance record} other {# attendance records}} successfully",
+    "updateFailed": "Failed to update {count, plural, one {# attendance record} other {# attendance records}}",
+    "updateSuccess": "Updated {count, plural, one {# attendance record} other {# attendance records}} successfully"
+  },
+  "bulk": {
+    "title": "Mark Bulk Attendance",
+    "date": "Date",
+    "name": "Name",
+    "absent": "Absent",
+    "late": "Late",
+    "reason": "Reason",
+    "absentHint": "Check for absent, uncheck for late.",
+    "loading": "Submitting leave requests...",
+    "failed": "Failed to submit leave requests for {count, plural, one {# player} other {# players}}.",
+    "success": "Submitted leave requests for {count, plural, one {# player} other {# players}}.",
+    "remainingOnTime": "<u>{remaining, select, true {The remaining} other {All}}</u> players will be marked as <onTime>on time</onTime>.",
+    "submitting": "Submitting...",
+    "submit": "Submit"
+  },
+  "leave": {
+    "title": "Submit Leave Request",
+    "date": "Date",
+    "reason": "Reason",
+    "reasonHelper": "Max 128 characters.",
+    "reasonPlaceholder": "Reason for leave...",
+    "loading": "Submitting your leave request...",
+    "submitting": "Submitting...",
+    "submit": "Submit"
+  }
+}

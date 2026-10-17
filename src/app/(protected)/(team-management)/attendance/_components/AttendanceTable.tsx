@@ -9,6 +9,7 @@ import {
   PanelLeftClose,
   UsersRound,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import DataTable, { type Column } from '@/components/DataTable';
 import HighlightText from '@/components/HighlightText';
@@ -18,11 +19,11 @@ import Visibility from '@/components/Visibility';
 import usePermissions from '@/hooks/use-permissions';
 import useTableState from '@/hooks/use-table-state';
 
+import { enumLabel } from '@/i18n/enums';
 import { useAttendanceFilters } from '@/lib/nuqs';
 import { formatDate, formatDatetime } from '@/utils/datetime';
 import { AttendanceStatus } from '@/utils/enum';
 import { buildPredicate } from '@/utils/filters';
-import { toLabel } from '@/utils/formatter';
 import { getColor } from '@/utils/helper';
 
 import { removeAttendance, updateStatus } from '@/actions/attendance';
@@ -30,19 +31,16 @@ import type { AttendanceWithPlayer } from '@/types/attendance';
 
 const ACTIONS = [
   {
-    label: 'On Time',
     value: AttendanceStatus.ON_TIME,
     icon: ClockCheck,
     color: 'green',
   },
   {
-    label: 'Late',
     value: AttendanceStatus.LATE,
     icon: ClockAlert,
     color: 'yellow',
   },
   {
-    label: 'Absent',
     value: AttendanceStatus.ABSENT,
     icon: PanelLeftClose,
     color: 'orange',
@@ -54,6 +52,8 @@ export default function AttendanceTable({
 }: {
   attendances: Array<AttendanceWithPlayer>;
 }) {
+  const t = useTranslations('attendance.table');
+  const tEnums = useTranslations('enums');
   const { isAdmin } = usePermissions();
   const [{ q, page, status }, setSearchParams] = useAttendanceFilters();
 
@@ -86,8 +86,8 @@ export default function AttendanceTable({
     toaster.create({
       type: hasErrors ? 'warning' : 'success',
       title: hasErrors
-        ? `Failed to update ${selection.length - successCount} attendance record(s)`
-        : `Updated ${successCount} attendance record(s) successfully`,
+        ? t('updateFailed', { count: selection.length - successCount })
+        : t('updateSuccess', { count: successCount }),
     });
 
     if (!hasErrors) {
@@ -98,15 +98,15 @@ export default function AttendanceTable({
 
   const columns: Array<Column<AttendanceWithPlayer>> = [
     // The window can span several days, so each row names its own.
-    { header: 'Date', cell: (item) => formatDate(item.date) },
+    { header: t('date'), cell: (item) => formatDate(item.date) },
     {
-      header: 'Name',
+      header: t('name'),
       cell: (item) => (
         <HighlightText query={q}>{item.player.user.name}</HighlightText>
       ),
     },
     {
-      header: 'Status',
+      header: t('status'),
       cell: (item) => (
         <Badge
           size="sm"
@@ -114,12 +114,15 @@ export default function AttendanceTable({
           borderRadius="full"
           colorPalette={getColor(item.status)}
         >
-          {toLabel(item.status)}
+          {enumLabel(tEnums, 'attendanceStatus', item.status)}
         </Badge>
       ),
     },
-    { header: 'Reason', cell: (item) => item.reason },
-    { header: 'Last Updated', cell: (item) => formatDatetime(item.updated_at) },
+    { header: t('reason'), cell: (item) => item.reason },
+    {
+      header: t('lastUpdated'),
+      cell: (item) => formatDatetime(item.updated_at),
+    },
   ];
 
   return (
@@ -130,7 +133,7 @@ export default function AttendanceTable({
       totalCount={totalCount}
       page={page}
       onPageChange={setSearchParams}
-      empty={{ title: 'No players found', icon: <UsersRound /> }}
+      empty={{ title: t('empty'), icon: <UsersRound /> }}
       selection={{
         canSelect: isAdmin,
         items,
@@ -138,7 +141,7 @@ export default function AttendanceTable({
         setSelection,
         disabled: isPending,
         onDelete: () => removeSelected(removeAttendance, 'attendance record'),
-        actions: ACTIONS.map(({ label, value, icon: Icon, color }) => (
+        actions: ACTIONS.map(({ value, icon: Icon, color }) => (
           <Visibility key={value} isVisible={!status.includes(value)}>
             <Button
               size="sm"
@@ -147,7 +150,7 @@ export default function AttendanceTable({
               onClick={() => updateItems(value)}
             >
               <Icon />
-              {label}
+              {enumLabel(tEnums, 'attendanceStatus', value)}
             </Button>
           </Visibility>
         )),

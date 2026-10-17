@@ -19,12 +19,14 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { Save, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import SearchableSelect from '@/components/SearchableSelect';
 import { CloseButton } from '@/components/ui/close-button';
 import { Field } from '@/components/ui/field';
 import { toaster } from '@/components/ui/toaster';
 
+import { translateSelection } from '@/i18n/enums';
 import { UpsertReportScheduleSchema } from '@/schemas/report';
 import {
   SCHEDULED_INTERVAL_SELECTION,
@@ -102,6 +104,9 @@ function SelectField<T extends string>({
 
 export const UpsertReportSchedule = createOverlay<UpsertProps>(
   ({ action, item, usedIntervals, ...rest }) => {
+    const t = useTranslations('reports.upsert');
+    const tCommon = useTranslations('common');
+    const tEnums = useTranslations('enums');
     const [isPending, startTransition] = useTransition();
 
     // Same key as the SearchableSelect below, so the list is fetched once.
@@ -113,12 +118,16 @@ export const UpsertReportSchedule = createOverlay<UpsertProps>(
     const intervalCollection = useMemo(
       () =>
         createListCollection({
-          items: SCHEDULED_INTERVAL_SELECTION.filter(
+          items: translateSelection(
+            tEnums,
+            SCHEDULED_INTERVAL_SELECTION,
+            'scheduledInterval',
+          ).filter(
             ({ value }) =>
               value === item.interval || !usedIntervals.includes(value),
           ),
         }),
-      [item.interval, usedIntervals],
+      [item.interval, usedIntervals, tEnums],
     );
 
     const [interval, setInterval] = useState<ScheduledInterval | undefined>(
@@ -148,7 +157,7 @@ export const UpsertReportSchedule = createOverlay<UpsertProps>(
 
       const id = toaster.create({
         type: 'loading',
-        title: 'Saving report schedule...',
+        title: t('saving'),
       });
 
       startTransition(async () => {
@@ -178,33 +187,34 @@ export const UpsertReportSchedule = createOverlay<UpsertProps>(
                 <CloseButton />
               </Dialog.CloseTrigger>
               <Dialog.Header>
-                <Dialog.Title>{action} Report Schedule</Dialog.Title>
+                <Dialog.Title>
+                  {action === 'Update' ? t('updateTitle') : t('addTitle')}
+                </Dialog.Title>
               </Dialog.Header>
               <Dialog.Body>
                 <VStack alignItems="stretch" gap={4}>
                   <SelectField
-                    label="Report"
+                    label={t('report')}
                     collection={intervalCollection}
                     value={interval}
-                    placeholder="Select a report"
+                    placeholder={t('reportPlaceholder')}
                     disabled={isPending}
                     onChange={setInterval}
                   />
 
                   <Text textStyle="caption" color="fg.muted">
-                    Reports are emailed once the period has closed, in the
-                    morning (around 8:00 AM).
+                    {t('timing')}
                   </Text>
 
                   <Field
                     required
-                    label={members.length === 0 ? 'Recipients' : ''}
+                    label={members.length === 0 ? t('recipients') : ''}
                     invalid={!parsed.success && recipients.length === 0}
-                    errorText="Add at least one recipient."
+                    errorText="recipientsRequired"
                   >
                     {members.length === 0 ? (
                       <Text textStyle="caption" color="fg.muted">
-                        No team members available to select.
+                        {t('noMembers')}
                       </Text>
                     ) : (
                       <VStack alignItems="stretch" gap={3} width="full">
@@ -256,7 +266,9 @@ export const UpsertReportSchedule = createOverlay<UpsertProps>(
                                   size="2xs"
                                   variant="ghost"
                                   colorPalette="red"
-                                  aria-label={`Remove ${member.name}`}
+                                  aria-label={t('remove', {
+                                    name: member.name,
+                                  })}
                                   disabled={isPending}
                                   onClick={() => removeRecipient(member.email)}
                                 >
@@ -273,12 +285,13 @@ export const UpsertReportSchedule = createOverlay<UpsertProps>(
               </Dialog.Body>
               <Dialog.Footer>
                 <Button
-                  loadingText="Saving..."
+                  loadingText={t('savingButton')}
                   loading={isPending}
                   disabled={!parsed.success}
                   onClick={onSubmit}
                 >
-                  <Save /> {action}
+                  <Save />{' '}
+                  {action === 'Update' ? tCommon('update') : tCommon('add')}
                 </Button>
               </Dialog.Footer>
             </Dialog.Content>

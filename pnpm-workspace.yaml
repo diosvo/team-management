@@ -1,6 +1,9 @@
 packages:
   - "."
 allowBuilds:
+  # next-intl's optional message extractor; ships prebuilt binaries.
+  '@parcel/watcher': false
+  '@swc/core': false
   esbuild: false
   sharp: false
   unrs-resolver: false

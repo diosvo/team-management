@@ -1,0 +1,45 @@
+{
+  "metadata": {
+    "title": "Trận đấu",
+    "description": "Quản lý và xem thông tin các trận đấu của đội."
+  },
+  "header": {
+    "title": "Trận đấu"
+  },
+  "stats": {
+    "totalMatches": "Tổng số trận",
+    "played": "Đã đấu",
+    "winStreak": "Chuỗi thắng",
+    "avgWinRate": "Tỉ lệ thắng TB",
+    "avgPointsPerGame": "Điểm TB/trận",
+    "gameUnit": "trận",
+    "pointsUnit": "điểm"
+  },
+  "filters": {
+    "time": "Thời gian",
+    "gameType": "Thể thức",
+    "matchType": "Loại trận",
+    "status": "Trạng thái"
+  },
+  "table": {
+    "opponent": "Đối thủ",
+    "league": "Giải đấu",
+    "score": "Tỉ số",
+    "result": "Kết quả",
+    "location": "Địa điểm",
+    "empty": "Không tìm thấy trận đấu nào",
+    "deleting": "Đang xóa trận đấu...",
+    "deleteSuccess": "Đã xóa {count} trận đấu.",
+    "deletePartial": "Đã xóa {count} trận đấu, nhưng một số thao tác thất bại."
+  },
+  "upsertMatch": {
+    "addTitle": "Thêm trận đấu",
+    "updateTitle": "Cập nhật trận đấu",
+    "leagueMatch": "Trận đấu giải",
+    "ourScore": "Điểm của đội",
+    "theirScore": "Điểm đối thủ",
+    "saving": "Đang lưu thông tin trận đấu...",
+    "savingButton": "Đang lưu...",
+    "lastUpdated": "Cập nhật lần cuối: {date}"
+  }
+}

@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import { axe } from 'jest-axe';
 
 import {
@@ -25,7 +27,11 @@ vi.mock('@/actions/feedback', () => ({ submitFeedback: vi.fn() }));
 
 vi.mock('@/components/ui/toaster', () => createToasterMock());
 
-const TRIGGER = 'Suggestions + feedback + ideas';
+/** Owns the open state, as `AccountMenu` does. */
+function Harness() {
+  const [open, setOpen] = useState(true);
+  return <FeedbackDialog open={open} onOpenChange={setOpen} />;
+}
 
 describe('FeedbackDialog', () => {
   beforeEach(() => {
@@ -38,9 +44,8 @@ describe('FeedbackDialog', () => {
   });
 
   const open = async () => {
-    const utils = renderWithUI(<FeedbackDialog />);
+    const utils = renderWithUI(<Harness />);
 
-    await utils.user.click(screen.getByRole('button', { name: TRIGGER }));
     await screen.findByRole('dialog');
 
     return utils;

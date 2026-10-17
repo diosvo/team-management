@@ -2,12 +2,15 @@
 
 import { Button } from '@chakra-ui/react';
 import { Plus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import Authorized from '@/components/Authorized';
 
 import { UpsertAchievement } from './UpsertAchievement';
 
 export default function AchievementHeader() {
+  const t = useTranslations('achievements.header');
+
   return (
     <>
       <Authorized resource="achievements" action="create">
@@ -21,7 +24,7 @@ export default function AchievementHeader() {
           }
         >
           <Plus />
-          Record
+          {t('record')}
         </Button>
       </Authorized>
       <UpsertAchievement.Viewport />

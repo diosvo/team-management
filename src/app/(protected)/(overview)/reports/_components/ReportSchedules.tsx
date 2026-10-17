@@ -4,6 +4,7 @@ import { useMemo, useState, useTransition } from 'react';
 
 import { Box, Button, HStack, VisuallyHidden } from '@chakra-ui/react';
 import { CalendarClock, CalendarSync, Play } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import Authorized from '@/components/Authorized';
 import DataTable, { type Column } from '@/components/DataTable';
@@ -12,10 +13,8 @@ import { Switch } from '@/components/ui/switch';
 import { toaster } from '@/components/ui/toaster';
 
 import usePermissions from '@/hooks/use-permissions';
-import {
-  SCHEDULED_INTERVAL_LABEL,
-  SCHEDULED_INTERVALS,
-} from '@/utils/constants';
+import { enumLabel } from '@/i18n/enums';
+import { SCHEDULED_INTERVALS } from '@/utils/constants';
 import { formatDatetime } from '@/utils/datetime';
 
 import {
@@ -35,6 +34,9 @@ export default function ReportSchedules({
 }: {
   schedules: Array<ReportSchedule>;
 }) {
+  const t = useTranslations('reports.schedules');
+  const tCommon = useTranslations('common');
+  const tEnums = useTranslations('enums');
   const { can } = usePermissions();
   const [isPending, startTransition] = useTransition();
   const [selection, setSelection] = useState<Array<string>>([]);
@@ -60,7 +62,7 @@ export default function ReportSchedules({
   const generateNow = (schedule_id: string) => {
     const id = toaster.create({
       type: 'loading',
-      title: 'Generating report...',
+      title: t('generating'),
     });
     startTransition(async () => {
       const { success, message } = await runReportNow(schedule_id);
@@ -74,7 +76,7 @@ export default function ReportSchedules({
   const removeItems = () => {
     const id = toaster.create({
       type: 'loading',
-      title: 'Deleting schedules...',
+      title: t('deleting'),
     });
     startTransition(async () => {
       const { success, message } = await removeReportSchedules(selection);
@@ -89,24 +91,23 @@ export default function ReportSchedules({
 
   const columns: Array<Column<ReportSchedule>> = [
     {
-      header: 'Report',
-      cell: (item) =>
-        SCHEDULED_INTERVAL_LABEL.get(item.interval) ?? item.interval,
+      header: t('report'),
+      cell: (item) => enumLabel(tEnums, 'scheduledInterval', item.interval),
     },
     {
-      header: 'Recipients',
-      cell: (item) => `${item.recipients.length} recipient(s)`,
+      header: t('recipients'),
+      cell: (item) => t('recipientCount', { count: item.recipients.length }),
     },
     {
-      header: 'Next Run',
+      header: t('nextRun'),
       cell: (item) => (item.enabled ? formatDatetime(item.next_run_at) : '-'),
     },
     {
-      header: 'Last Run',
+      header: t('lastRun'),
       cell: (item) => formatDatetime(item.last_run_at),
     },
     {
-      header: 'Status',
+      header: tCommon('status'),
       align: 'center',
       cell: (item) => (
         <Box onClick={(event) => event.stopPropagation()}>
@@ -116,13 +117,13 @@ export default function ReportSchedules({
             disabled={isPending || !can('reports', 'edit')}
             onCheckedChange={({ checked }) => toggle(item.schedule_id, checked)}
           >
-            <VisuallyHidden>Enable schedule</VisuallyHidden>
+            <VisuallyHidden>{t('enable')}</VisuallyHidden>
           </Switch>
         </Box>
       ),
     },
     {
-      header: <VisuallyHidden>Actions</VisuallyHidden>,
+      header: <VisuallyHidden>{tCommon('actions')}</VisuallyHidden>,
       align: 'right',
       cell: (item) => (
         <Authorized resource="reports" action={['create', 'edit']} mode="any">
@@ -135,7 +136,7 @@ export default function ReportSchedules({
               generateNow(item.schedule_id);
             }}
           >
-            <Play /> Run now
+            <Play /> {t('runNow')}
           </Button>
         </Authorized>
       ),
@@ -145,13 +146,11 @@ export default function ReportSchedules({
   return (
     <>
       <HStack justifyContent="space-between" flexWrap="wrap">
-        <PageTitle title="Report Schedules" />
+        <PageTitle title={t('title')} />
         <Authorized resource="reports" action="create">
           <Button
             disabled={allScheduled}
-            title={
-              allScheduled ? 'Every report is already scheduled' : undefined
-            }
+            title={allScheduled ? t('allScheduled') : undefined}
             onClick={() =>
               UpsertReportSchedule.open(UPSERT_SCHEDULE_ID, {
                 action: 'Add',
@@ -161,7 +160,7 @@ export default function ReportSchedules({
             }
           >
             <CalendarSync />
-            New Schedule
+            {t('newSchedule')}
           </Button>
         </Authorized>
       </HStack>
@@ -174,9 +173,8 @@ export default function ReportSchedules({
         page={1}
         onPageChange={() => {}}
         empty={{
-          title: 'No report schedules yet',
-          description:
-            'Create a schedule to email analytics reports automatically.',
+          title: t('emptyTitle'),
+          description: t('emptyDescription'),
           icon: <CalendarClock />,
         }}
         onRowClick={

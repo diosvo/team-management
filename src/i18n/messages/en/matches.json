@@ -1,0 +1,45 @@
+{
+  "metadata": {
+    "title": "Matches",
+    "description": "Manage and view team matches information."
+  },
+  "header": {
+    "title": "Matches"
+  },
+  "stats": {
+    "totalMatches": "Total Matches",
+    "played": "Played",
+    "winStreak": "Win Streak",
+    "avgWinRate": "Avg Win Rate",
+    "avgPointsPerGame": "Avg Points/Game",
+    "gameUnit": "game",
+    "pointsUnit": "pts"
+  },
+  "filters": {
+    "time": "Time",
+    "gameType": "Game Type",
+    "matchType": "Match Type",
+    "status": "Status"
+  },
+  "table": {
+    "opponent": "Opponent",
+    "league": "League",
+    "score": "Score",
+    "result": "Result",
+    "location": "Location",
+    "empty": "No matches found",
+    "deleting": "Deleting matches...",
+    "deleteSuccess": "Successfully deleted {count} match(es).",
+    "deletePartial": "Deleted {count} match(es), but some operations failed."
+  },
+  "upsertMatch": {
+    "addTitle": "Add match",
+    "updateTitle": "Update match",
+    "leagueMatch": "League Match",
+    "ourScore": "Our Score",
+    "theirScore": "Their Score",
+    "saving": "Saving match information...",
+    "savingButton": "Saving...",
+    "lastUpdated": "Last updated on {date}"
+  }
+}

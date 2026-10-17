@@ -1,0 +1,169 @@
+{
+  "all": "Tất cả",
+  "userRole": {
+    "player": "Cầu thủ",
+    "coach": "Huấn luyện viên",
+    "guest": "Khách",
+    "super_admin": "Quản trị viên"
+  },
+  "userState": {
+    "active": "Đang hoạt động",
+    "inactive": "Ngừng hoạt động",
+    "temporarily_absent": "Tạm vắng",
+    "unknown": "Chưa rõ"
+  },
+  "userStateHint": {
+    "temporarily_absent": "Tạm thời vắng mặt"
+  },
+  "coachPosition": {
+    "head_coach": "Trưởng",
+    "assistant_coach": "Trợ lý",
+    "unknown": "Chưa rõ"
+  },
+  "coachPositionHint": {
+    "head_coach": "Huấn luyện viên trưởng",
+    "assistant_coach": "Trợ lý huấn luyện viên"
+  },
+  "playerPosition": {
+    "point_guard": "PG",
+    "shooting_guard": "SG",
+    "small_forward": "SF",
+    "power_forward": "PF",
+    "center": "C",
+    "unknown": "Chưa rõ"
+  },
+  "playerPositionHint": {
+    "point_guard": "Hậu vệ dẫn bóng",
+    "shooting_guard": "Hậu vệ ghi điểm",
+    "small_forward": "Tiền phong phụ",
+    "power_forward": "Tiền phong chính",
+    "center": "Trung phong"
+  },
+  "achievementType": {
+    "champion": "Vô địch",
+    "runner_up": "Á quân",
+    "third_place": "Hạng 3",
+    "mvp": "MVP",
+    "top_scorer": "Vua ghi điểm",
+    "custom": "Khác",
+    "founded": "Thành lập đội"
+  },
+  "achievementTypeHint": {
+    "third_place": "Hạng ba",
+    "mvp": "Cầu thủ xuất sắc nhất",
+    "custom": "Danh hiệu khác"
+  },
+  "assetCategory": {
+    "equipment": "Thiết bị",
+    "training": "Dụng cụ tập luyện",
+    "others": "Khác"
+  },
+  "assetCategoryHint": {
+    "equipment": "Bóng, bảng rổ, v.v.",
+    "training": "Nấm, rào, dây nhảy, v.v.",
+    "others": "Đồng phục, áo đấu, v.v."
+  },
+  "assetCondition": {
+    "poor": "Kém",
+    "fair": "Khá",
+    "good": "Tốt",
+    "obsolete": "Không dùng nữa"
+  },
+  "assetConditionHint": {
+    "poor": "Hỏng, hư hại",
+    "fair": "Dùng được, hơi cũ",
+    "good": "Mới, tình trạng rất tốt",
+    "obsolete": "Không còn sử dụng"
+  },
+  "attendanceStatus": {
+    "on_time": "Đúng giờ",
+    "late": "Đi muộn",
+    "absent": "Vắng"
+  },
+  "interval": {
+    "this_month": "Tháng này",
+    "last_month": "Tháng trước",
+    "this_year": "Năm nay",
+    "last_year": "Năm trước"
+  },
+  "scheduledInterval": {
+    "last_month": "Hằng tháng · tháng trước, vào ngày 1",
+    "last_year": "Hằng năm · năm trước, vào ngày 1 tháng 1"
+  },
+  "leagueStatus": {
+    "upcoming": "Sắp diễn ra",
+    "ongoing": "Đang diễn ra",
+    "ended": "Đã kết thúc"
+  },
+  "gameType": {
+    "false": "3x3",
+    "true": "5x5"
+  },
+  "matchType": {
+    "league": "Giải đấu",
+    "friendly": "Giao hữu"
+  },
+  "matchResult": {
+    "win": "Thắng",
+    "loss": "Thua",
+    "draw": "Hòa"
+  },
+  "matchStatus": {
+    "scheduled": "Đã lên lịch",
+    "completed": "Đã đấu",
+    "cancelled": "Đã hủy"
+  },
+  "matchStatusHint": {
+    "scheduled": "Trận đã có lịch, chưa thi đấu",
+    "completed": "Đã thi đấu, có tỉ số chung cuộc",
+    "cancelled": "Đã hủy và không thi đấu"
+  },
+  "testTypeUnit": {
+    "meters": "Mét",
+    "percent": "Phần trăm",
+    "points": "Điểm",
+    "reps": "Lần lặp",
+    "seconds": "Giây",
+    "times": "Lần"
+  },
+  "sessionStatus": {
+    "scheduled": "Đã lên lịch",
+    "active": "Đang diễn ra",
+    "completed": "Đã hoàn thành",
+    "cancelled": "Đã hủy"
+  },
+  "reportStatus": {
+    "pending": "Đang xử lý",
+    "success": "Thành công",
+    "failed": "Thất bại",
+    "expired": "Hết hạn"
+  },
+  "reportTrigger": {
+    "manual": "Thủ công",
+    "scheduled": "Theo lịch"
+  },
+  "feedbackType": {
+    "bug": "Lỗi",
+    "feature": "Tính năng",
+    "other": "Khác"
+  },
+  "feedbackTypeHint": {
+    "bug": "Có chức năng bị hỏng hoặc hoạt động không như mong đợi.",
+    "feature": "Một tính năng mới hoặc cải tiến tính năng hiện có.",
+    "other": "Câu hỏi, lỗi chính tả hoặc bất kỳ điều gì khác."
+  },
+  "emailStatus": {
+    "bounced": "Bị trả lại",
+    "canceled": "Đã hủy",
+    "clicked": "Đã nhấp",
+    "complained": "Bị báo spam",
+    "delivered": "Đã gửi đến",
+    "delivery_delayed": "Gửi chậm",
+    "failed": "Thất bại",
+    "opened": "Đã mở",
+    "queued": "Đang chờ gửi",
+    "scheduled": "Đã lên lịch",
+    "sent": "Đã gửi",
+    "suppressed": "Bị chặn"
+  }
+}

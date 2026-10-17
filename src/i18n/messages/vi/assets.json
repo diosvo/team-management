@@ -1,0 +1,41 @@
+{
+  "metadata": {
+    "title": "Tài sản",
+    "description": "Danh sách tài sản của đội."
+  },
+  "title": "Tài sản",
+  "category": "Danh mục",
+  "condition": "Tình trạng",
+  "stats": {
+    "totalQuantity": "Tổng số lượng",
+    "needReplacement": "Cần thay mới",
+    "outdated": "Ngưng sử dụng",
+    "unit": "món"
+  },
+  "table": {
+    "name": "Tên",
+    "category": "Danh mục",
+    "quantity": "Số lượng",
+    "condition": "Tình trạng",
+    "assignedTo": "Người giữ",
+    "acquiredDate": "Ngày nhận",
+    "lastUpdated": "Cập nhật lần cuối",
+    "note": "Ghi chú",
+    "empty": "Không tìm thấy tài sản nào",
+    "deleted": "Đã xóa {count} tài sản.",
+    "deletedPartially": "Đã xóa {count} tài sản, nhưng một số thao tác bị lỗi."
+  },
+  "upsert": {
+    "addTitle": "Thêm tài sản",
+    "updateTitle": "Cập nhật tài sản",
+    "name": "Tên",
+    "namePlaceholder": "Bóng số #",
+    "quantity": "Số lượng",
+    "acquiredDate": "Ngày nhận",
+    "category": "Danh mục",
+    "condition": "Tình trạng",
+    "note": "Ghi chú",
+    "saving": "Đang lưu...",
+    "savingToast": "Đang lưu tài sản vào kho..."
+  }
+}

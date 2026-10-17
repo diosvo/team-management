@@ -4,6 +4,7 @@ import { memo, useCallback } from 'react';
 
 import { Table, Text } from '@chakra-ui/react';
 import { BookUser } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 
 import Pagination from '@/components/Pagination';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -13,6 +14,7 @@ import {
 } from '@/components/ui/number-input';
 import { Tooltip } from '@/components/ui/tooltip';
 
+import { enumLabel } from '@/i18n/enums';
 import { useCommonParams } from '@/lib/nuqs';
 import { paginateData } from '@/utils/filters';
 
@@ -71,6 +73,9 @@ export default function TestResultTable({
   results: Record<string, string>;
   setResults: React.Dispatch<React.SetStateAction<Record<string, string>>>;
 }) {
+  const t = useTranslations('periodicTesting.addResult');
+  const tEnums = useTranslations('enums');
+  const locale = useLocale();
   const [{ page }, setSearchParams] = useCommonParams();
 
   const hasData = players.length > 0 && types.length > 0;
@@ -89,12 +94,12 @@ export default function TestResultTable({
           {hasData && (
             <Table.Header>
               <Table.Row>
-                <Table.ColumnHeader>Player Name</Table.ColumnHeader>
+                <Table.ColumnHeader>{t('playerName')}</Table.ColumnHeader>
                 {types.map(({ type_id, name, unit }) => (
                   <Tooltip
                     key={type_id}
                     showArrow
-                    content={`Remove "${name}" ?`}
+                    content={t('remove', { name })}
                     positioning={{ placement: 'top-start' }}
                   >
                     <Table.ColumnHeader
@@ -115,7 +120,13 @@ export default function TestResultTable({
                         color="GrayText"
                         marginLeft={1}
                       >
-                        ({unit})
+                        (
+                        {enumLabel(
+                          tEnums,
+                          'testTypeUnit',
+                          unit,
+                        ).toLocaleLowerCase(locale)}
+                        )
                       </Text>
                     </Table.ColumnHeader>
                   </Tooltip>
@@ -129,7 +140,7 @@ export default function TestResultTable({
                 <Table.Row key={id}>
                   <Tooltip
                     showArrow
-                    content={`Remove "${name}" ?`}
+                    content={t('remove', { name })}
                     positioning={{ placement: 'top-start' }}
                   >
                     <Table.Cell
@@ -152,7 +163,7 @@ export default function TestResultTable({
                       <ResultCell
                         key={type_id}
                         cellKey={key}
-                        label={`${type} for ${name}`}
+                        label={t('cellLabel', { type, name })}
                         value={results[key] || '0'}
                         onChange={handleChange}
                       />
@@ -165,8 +176,8 @@ export default function TestResultTable({
                 <Table.Cell colSpan={types.length + 1}>
                   <EmptyState
                     icon={<BookUser />}
-                    title="No configuration set."
-                    description="Please select all required fields to create players' result."
+                    title={t('emptyTitle')}
+                    description={t('emptyDescription')}
                   />
                 </Table.Cell>
               </Table.Row>

@@ -1,9 +1,8 @@
-
 import { renderWithUI, screen, setupTestLifecycle } from '@/test/utilities';
 
 import { canCreateTestResult } from '@/actions/test-result';
 
-import AddTestResultPage, { metadata } from './page';
+import AddTestResultPage, { generateMetadata } from './page';
 
 vi.mock('@/actions/test-result', () => ({
   canCreateTestResult: vi.fn(),
@@ -21,7 +20,8 @@ describe('AddTestResultPage', () => {
 
   setupTestLifecycle();
 
-  test('exposes page metadata', () => {
+  test('exposes page metadata', async () => {
+    const metadata = await generateMetadata();
     expect(metadata.title).toBe('Add Test Result');
     expect(metadata.description).toBe(
       'Add a new test result for periodic testing.',

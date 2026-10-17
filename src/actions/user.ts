@@ -1,5 +1,6 @@
 'use server';
 
+import { getTranslations } from 'next-intl/server';
 import { forbidden, notFound } from 'next/navigation';
 
 import { ESTABLISHED_DATE } from '@/utils/constants';
@@ -72,6 +73,7 @@ export const addUser = roster(
   ['create'],
   async function add({ team_id }, values: AddUserValues) {
     // TODO: check rate limiting first
+    const t = await getTranslations('actions.user');
 
     try {
       // `join_date` opens the membership stint rather than sitting on the user
@@ -118,7 +120,7 @@ export const addUser = roster(
 
       revalidate.roster();
 
-      return ResponseFactory.success('Sent an email with instructions');
+      return ResponseFactory.success(t('invited'));
     } catch (error) {
       const { message } = getDbErrorMessage(error);
       return ResponseFactory.error(message);
@@ -148,6 +150,8 @@ export const uploadAvatar = profile(
     // Avatars are self-service only
     if (user.id !== user_id) forbidden();
 
+    const t = await getTranslations('actions.user');
+
     // The blob we are about to delete must be the one this user currently owns.
     // A `users/<user_id>` prefix check is not enough: blob keys carry a random
     // suffix (`users/1-abc`), so `users/1` would also match `users/12-abc`.
@@ -169,7 +173,7 @@ export const uploadAvatar = profile(
 
       revalidate.user(user_id);
 
-      return ResponseFactory.success('Uploaded avatar successfully', {
+      return ResponseFactory.success(t('avatarUploaded'), {
         image: pathname,
       });
     } catch (error) {
@@ -189,14 +193,14 @@ export const updatePersonalInfo = profile(
     const { isAdmin } = hasPermissions(user.role);
     if (!isAdmin && user.id !== user_id) forbidden();
 
+    const t = await getTranslations('actions.user');
+
     try {
       await updateUser(user_id, values);
 
       revalidate.user(user_id);
 
-      return ResponseFactory.success(
-        'Updated personal information successfully',
-      );
+      return ResponseFactory.success(t('personalInfoUpdated'));
     } catch (error) {
       const { message } = getDbErrorMessage(error);
       return ResponseFactory.error(message);
@@ -217,6 +221,8 @@ export const updateTeamInfo = profile(
     const target = await getUserById(user_id);
     if (!target) notFound();
 
+    const t = await getTranslations('actions.user');
+
     try {
       const { user: userData, player: playerData, coach: coachData } = values;
 
@@ -233,7 +239,7 @@ export const updateTeamInfo = profile(
 
         if (taken) {
           return ResponseFactory.error(
-            `Jersey number '${playerData.jersey_number}' is already taken`,
+            t('jerseyTaken', { number: playerData.jersey_number }),
           );
         }
       }
@@ -259,7 +265,7 @@ export const updateTeamInfo = profile(
 
       revalidate.user(user_id);
 
-      return ResponseFactory.success('Updated team information successfully');
+      return ResponseFactory.success(t('teamInfoUpdated'));
     } catch (error) {
       const { message } = getDbErrorMessage(error);
       return ResponseFactory.error(message);
@@ -270,14 +276,15 @@ export const updateTeamInfo = profile(
 export const removeUser = roster(
   ['delete'],
   async function remove(_, user_id: string) {
+    const t = await getTranslations('actions.user');
     try {
       await deleteUser(user_id);
 
       revalidate.roster();
 
-      return ResponseFactory.success('User deleted successfully');
+      return ResponseFactory.success(t('deleted'));
     } catch {
-      return ResponseFactory.error('Failed to delete user');
+      return ResponseFactory.error(t('deleteFailed'));
     }
   },
 );

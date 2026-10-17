@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
+
 import { Stat, StatGroup } from '@/components/ui/stat';
 
 import { useTrainingFilters } from '@/lib/nuqs';
@@ -12,6 +14,7 @@ export default function SessionStats({
 }: {
   stats: TrainingSessionStats;
 }) {
+  const t = useTranslations('training.stats');
   const [, setSearchParams] = useTrainingFilters();
 
   const avgAttendance = Number(stats.avg_attendance.toFixed(1));
@@ -20,9 +23,9 @@ export default function SessionStats({
   return (
     <StatGroup>
       <Stat
-        label="Completed Sessions"
+        label={t('completedSessions')}
         value={stats.completed_sessions}
-        unit="session"
+        unit={t('sessionUnit')}
         color={stats.completed_sessions > 0 ? 'green' : 'black'}
         onClick={() =>
           setSearchParams(
@@ -31,8 +34,12 @@ export default function SessionStats({
           )
         }
       />
-      <Stat label="Average Attendance" value={avgAttendance} unit="player" />
-      <Stat label="Total Hours" value={totalHours} unit="hr" />
+      <Stat
+        label={t('averageAttendance')}
+        value={avgAttendance}
+        unit={t('playerUnit')}
+      />
+      <Stat label={t('totalHours')} value={totalHours} unit={t('hourUnit')} />
     </StatGroup>
   );
 }

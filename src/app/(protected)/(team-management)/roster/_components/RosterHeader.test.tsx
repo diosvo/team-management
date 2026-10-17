@@ -1,4 +1,3 @@
-
 import {
   createPermissionsMock,
   renderWithUI,
@@ -23,9 +22,11 @@ describe('RosterHeader', () => {
   const mockUsePermissions = vi.mocked(usePermissions);
 
   const setup = (canCreate = false) => {
-    mockUsePermissions.mockReturnValue(createPermissionsMock({
-      can: vi.fn(() => canCreate),
-    }));
+    mockUsePermissions.mockReturnValue(
+      createPermissionsMock({
+        can: vi.fn(() => canCreate),
+      }),
+    );
 
     return renderWithUI(<RosterHeader />);
   };

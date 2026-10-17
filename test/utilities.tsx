@@ -5,6 +5,14 @@ import userEvent from '@testing-library/user-event';
 import { configureAxe } from 'jest-axe';
 export * from '@testing-library/react';
 
+import { toMerged } from 'es-toolkit';
+import { createTranslator, NextIntlClientProvider } from 'next-intl';
+
+import type { Locale } from '@/i18n/config';
+import { enumLabel, type EnumGroup } from '@/i18n/enums';
+import messages from '@/i18n/messages/en';
+import viMessages from '@/i18n/messages/vi';
+import ZodErrorMap from '@/i18n/ZodErrorMap';
 import UiProvider from '@/providers/chakra';
 
 // Export test helpers
@@ -108,13 +116,52 @@ export const render = (ui: React.ReactElement, options?: RenderOptions) => {
   };
 };
 
-/**
- * @description Utility function to render components with UiProvider (Chakra UI)
- */
-export const renderWithUI: typeof render = (Component, options) => {
-  const Wrapper = ({ children }: PropsWithChildren) => (
-    <UiProvider>{children}</UiProvider>
-  );
-
-  return render(Component, { ...options, wrapper: Wrapper });
+/** Messages per locale, as `src/i18n/request.ts` serves them (vi over en). */
+export const MESSAGES: Record<Locale, typeof messages> = {
+  en: messages,
+  vi: toMerged(messages, viMessages),
 };
+
+/**
+ * @description Providers every client component expects: next-intl (English
+ * messages by default, as served without a cookie) and Chakra UI.
+ */
+export const Providers = ({
+  children,
+  locale = 'en',
+}: PropsWithChildren<{ locale?: Locale }>) => (
+  <NextIntlClientProvider
+    locale={locale}
+    messages={MESSAGES[locale]}
+    timeZone="Asia/Ho_Chi_Minh"
+  >
+    <ZodErrorMap />
+    <UiProvider locale={locale}>{children}</UiProvider>
+  </NextIntlClientProvider>
+);
+
+/**
+ * @description Utility function to render components with next-intl and
+ * UiProvider (Chakra UI). Pass `locale: 'vi'` to render in Vietnamese.
+ */
+export const renderWithUI = (
+  Component: React.ReactElement,
+  { locale, ...options }: RenderOptions & { locale?: Locale } = {},
+) =>
+  render(Component, {
+    ...options,
+    wrapper: ({ children }: PropsWithChildren) => (
+      <Providers locale={locale}>{children}</Providers>
+    ),
+  });
+
+/**
+ * @description English label the UI shows for an enum value,
+ * _e.g.,_ `enumText('userRole', 'player')` → "Player"
+ */
+export const enumText = (group: EnumGroup, value: Nullish<string>) =>
+  enumLabel(
+    createTranslator({ locale: 'en', messages, namespace: 'enums' }),
+    group,
+    value,
+  );

@@ -1,0 +1,86 @@
+{
+  "metadata": {
+    "title": "Tổng quan",
+    "description": "Tổng quan"
+  },
+  "analytics": "Phân tích",
+  "overview": {
+    "title": "Tổng quan",
+    "description": "{duration} cùng nhau chơi bóng",
+    "nextGame": "Trận tiếp theo",
+    "daysRemaining": "ngày nữa",
+    "activePlayers": "Cầu thủ đang hoạt động",
+    "winRate": "Tỉ lệ thắng",
+    "achievements": "Thành tích",
+    "achievementsUnit": "vô địch, MVP, ..."
+  },
+  "quickActions": {
+    "title": "Thao tác nhanh",
+    "description": "Lối tắt cho các việc thường làm",
+    "viewSchedule": "Xem lịch",
+    "matchResults": "Kết quả trận đấu",
+    "myStats": "Thống kê của tôi",
+    "submitLeave": "Xin nghỉ",
+    "markAttendance": "Điểm danh"
+  },
+  "upcomingSessions": {
+    "title": "Buổi tập sắp tới",
+    "description": "3 buổi tập tiếp theo",
+    "today": "Hôm nay",
+    "emptyTitle": "Chưa có gì",
+    "emptyDescription": "Các buổi tập sắp tới sẽ sớm được cập nhật."
+  },
+  "upcomingMatches": {
+    "title": "Trận sắp tới",
+    "description": "3 trận đấu tiếp theo",
+    "today": "Hôm nay",
+    "emptyTitle": "Chưa có gì",
+    "emptyDescription": "Tập trung tập luyện và sẵn sàng cho trận đấu tiếp theo!"
+  },
+  "filters": {
+    "exportReport": "Xuất báo cáo",
+    "generating": "Đang tạo...",
+    "download": "Tải xuống",
+    "sendTo": "Gửi tới...",
+    "downloadFailed": "Tải xuống thất bại"
+  },
+  "emailReport": {
+    "title": "Gửi báo cáo phân tích qua email",
+    "noRecipients": "Chưa chọn người nhận. Vui lòng chọn ít nhất một người.",
+    "helper": "Báo cáo {period} sẽ được gửi tới {count} người nhận.",
+    "submit": "Tạo và gửi email",
+    "sending": "Đang gửi...",
+    "downloadFailed": "Tải xuống thất bại",
+    "sent": "Đã gửi email",
+    "sentDescription": "Đã gửi báo cáo tới {count} người nhận.",
+    "failed": "Gửi email thất bại",
+    "unknownError": "Đã xảy ra lỗi không xác định."
+  },
+  "matchesRate": {
+    "title": "Thành tích trận đấu",
+    "description": "Phong độ ở trận giải đấu và trận giao hữu",
+    "viewMatches": "Xem trận đấu",
+    "empty": "Chưa có dữ liệu trận đấu"
+  },
+  "attendanceTrend": {
+    "title": "Xu hướng tỉ lệ điểm danh",
+    "description": "Tỉ lệ tham gia chung của đội",
+    "empty": "Chưa có dữ liệu điểm danh",
+    "attended": "{attended}/{total} có mặt",
+    "target": "Mục tiêu ({rate}%)"
+  },
+  "attendanceRanking": {
+    "title": "Xếp hạng điểm danh cầu thủ",
+    "description": "Những ngôi sao chuyên cần và đồng đội cần cố gắng hơn",
+    "empty": "Chưa có dữ liệu điểm danh cầu thủ",
+    "stars": "Ngôi sao chuyên cần",
+    "needBoost": "Cần cố gắng hơn",
+    "sessions": "{count} buổi"
+  },
+  "absenceReasons": {
+    "title": "Lý do vắng mặt phổ biến",
+    "description": "5 lý do hàng đầu khiến cầu thủ nghỉ tập",
+    "empty": "Chưa có dữ liệu lý do vắng mặt",
+    "unknown": "Không rõ"
+  }
+}

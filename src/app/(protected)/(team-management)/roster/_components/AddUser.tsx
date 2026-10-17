@@ -4,6 +4,7 @@ import { useRef, useTransition } from 'react';
 
 import { Button, Dialog, Input, Portal, SimpleGrid } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslations } from 'next-intl';
 import { Plus, UserRoundPlus } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 
@@ -19,6 +20,7 @@ import { getDefaults } from '@/lib/zod';
 import { AddUserSchema, type AddUserValues } from '@/schemas/user';
 
 export default function AddUser() {
+  const t = useTranslations('roster.addUser');
   const contentRef = useRef<HTMLDivElement>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -38,7 +40,7 @@ export default function AddUser() {
   const onSubmit = (data: AddUserValues) => {
     const id = toaster.create({
       type: 'loading',
-      title: 'Adding user to database...',
+      title: t('adding'),
     });
 
     startTransition(async () => {
@@ -58,7 +60,7 @@ export default function AddUser() {
       <Dialog.Trigger asChild>
         <Button>
           <UserRoundPlus />
-          Add
+          {t('trigger')}
         </Button>
       </Dialog.Trigger>
       <Portal>
@@ -69,13 +71,13 @@ export default function AddUser() {
               <CloseButton />
             </Dialog.CloseTrigger>
             <Dialog.Header>
-              <Dialog.Title>Add to Roster</Dialog.Title>
+              <Dialog.Title>{t('title')}</Dialog.Title>
             </Dialog.Header>
             <Dialog.Body>
               <SimpleGrid columns={{ base: 1, md: 3 }} gap={4}>
                 <Field
                   required
-                  label="Fullname"
+                  label={t('fullname')}
                   invalid={!!errors.name}
                   errorText={errors.name?.message}
                 >
@@ -87,7 +89,7 @@ export default function AddUser() {
                 </Field>
                 <Field
                   required
-                  label="Email"
+                  label={t('email')}
                   invalid={!!errors.email}
                   errorText={errors.email?.message}
                 >
@@ -99,7 +101,7 @@ export default function AddUser() {
                     {...register('email')}
                   />
                 </Field>
-                <Field label="DOB">
+                <Field label={t('dob')}>
                   <DatePickerField
                     control={control}
                     name="dob"
@@ -134,11 +136,11 @@ export default function AddUser() {
             <Dialog.Footer>
               <Button
                 type="submit"
-                loadingText="Adding..."
+                loadingText={t('submitting')}
                 loading={isPending}
                 disabled={!isValid || isPending}
               >
-                <Plus /> Add
+                <Plus /> {t('submit')}
               </Button>
             </Dialog.Footer>
           </Dialog.Content>

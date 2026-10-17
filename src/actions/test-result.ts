@@ -1,5 +1,6 @@
 'use server';
 
+import { getTranslations } from 'next-intl/server';
 import type { InsertTestResult } from '@/drizzle/schema';
 
 import { getDbErrorMessage } from '@/db/pg-error';
@@ -41,6 +42,7 @@ export const getTestResult = withAuth(async (_: unknown, date: string) => {
 export const createTestResult = periodicTesting(
   ['create'],
   async function create(_, results: Array<InsertTestResult>) {
+    const t = await getTranslations('actions.testResult');
     const toCreate: Array<InsertTestResult> = [];
     const toUpdate: Array<InsertTestResult> = [];
 
@@ -64,7 +66,7 @@ export const createTestResult = periodicTesting(
       revalidate.testResults();
 
       return ResponseFactory.success(
-        `${toCreate.length} created, ${toUpdate.length} updated`,
+        t('saved', { created: toCreate.length, updated: toUpdate.length }),
       );
     } catch (error) {
       const { message } = getDbErrorMessage(error);
@@ -76,12 +78,13 @@ export const createTestResult = periodicTesting(
 export const updateTestResultById = periodicTesting(
   ['edit'],
   async function updateById(_, result: Partial<InsertTestResult>) {
+    const t = await getTranslations('actions.testResult');
     try {
       await updateAction(result);
 
       revalidate.testResults();
 
-      return ResponseFactory.success('Test result updated successfully');
+      return ResponseFactory.success(t('updated'));
     } catch (error) {
       const { message } = getDbErrorMessage(error);
       return ResponseFactory.error(message);
@@ -92,12 +95,13 @@ export const updateTestResultById = periodicTesting(
 export const deleteTestResultById = periodicTesting(
   ['delete'],
   async function deleteById(_, result_id: string) {
+    const t = await getTranslations('actions.testResult');
     try {
       await deleteAction(result_id);
 
       revalidate.testResults();
 
-      return ResponseFactory.success('Test result deleted successfully');
+      return ResponseFactory.success(t('deleted'));
     } catch (error) {
       const { message } = getDbErrorMessage(error);
       return ResponseFactory.error(message);

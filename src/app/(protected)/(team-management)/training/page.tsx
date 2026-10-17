@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 
 import { getSessions } from '@/actions/training-session';
 import { loadTrainingFilters } from '@/lib/nuqs';
@@ -8,10 +9,10 @@ import SessionHeader from './_components/SessionHeader';
 import SessionStats from './_components/SessionStats';
 import SessionTable from './_components/SessionTable';
 
-export const metadata: Metadata = {
-  title: 'Training Sessions',
-  description: 'Manage and schedule training sessions',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('training.metadata');
+  return { title: t('title'), description: t('description') };
+}
 
 export default async function TrainingSessionsPage(
   props: PageProps<'/training'>,

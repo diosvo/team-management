@@ -14,7 +14,9 @@ import {
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { formatDistanceToNow } from 'date-fns';
+import { vi } from 'date-fns/locale';
 import { Activity, Edit, LucideClock9, Save, Shirt } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import { Controller, useForm } from 'react-hook-form';
 
 import { DatePickerField } from '@/components/date-picker/DatePicker';
@@ -32,6 +34,7 @@ import { RolePositionSelection } from '@/components/user/RolePositionSelection';
 import { ControlledStateSelection } from '@/components/user/StateSelection';
 import Visibility from '@/components/Visibility';
 
+import { enumLabel } from '@/i18n/enums';
 import { CACHE_KEY, ESTABLISHED_DATE } from '@/utils/constants';
 import { formatDate } from '@/utils/datetime';
 import {
@@ -40,7 +43,6 @@ import {
   UserRole,
   UserState,
 } from '@/utils/enum';
-import { toLabel } from '@/utils/formatter';
 import { getColor } from '@/utils/helper';
 
 import { updateTeamInfo } from '@/actions/user';
@@ -55,6 +57,10 @@ export default function TeamInfo({
   user: User;
   viewOnly: boolean;
 }) {
+  const t = useTranslations('profile');
+  const tCommon = useTranslations('common');
+  const tEnums = useTranslations('enums');
+  const locale = useLocale();
   const { isAdmin, isPlayer, isCoach } = usePermissions();
 
   const [isPending, startTransition] = useTransition();
@@ -92,7 +98,7 @@ export default function TeamInfo({
     startTransition(async () => {
       const id = toaster.create({
         type: 'loading',
-        title: 'Updating team information...',
+        title: t('team.updating'),
       });
 
       const { success, message: title } = await updateTeamInfo(user.id, data);
@@ -120,16 +126,16 @@ export default function TeamInfo({
       as="form"
       size="sm"
       onSubmit={handleSubmit(onSubmit)}
-      title="Team Information"
+      title={t('team.title')}
       action={
         isEditing ? (
           <HStack>
             <CloseButton size="sm" variant="outline" onClick={onCancel} />
-            <Tooltip content="Save" disabled={isPending}>
+            <Tooltip content={tCommon('save')} disabled={isPending}>
               <IconButton
                 size="sm"
                 type="submit"
-                aria-label="Save"
+                aria-label={tCommon('save')}
                 disabled={!isDirty || !isValid || isPending}
               >
                 <Save />
@@ -137,12 +143,12 @@ export default function TeamInfo({
             </Tooltip>
           </HStack>
         ) : (
-          <Tooltip content={viewOnly ? 'View Only' : 'Edit'}>
+          <Tooltip content={viewOnly ? t('viewOnly') : tCommon('edit')}>
             <IconButton
               size="sm"
               variant="subtle"
               disabled={viewOnly}
-              aria-label={viewOnly ? 'View Only' : 'Edit'}
+              aria-label={viewOnly ? t('viewOnly') : tCommon('edit')}
               onClick={() => setIsEditing(true)}
             >
               <Edit />
@@ -166,18 +172,26 @@ export default function TeamInfo({
           />
         ) : (
           <SimpleGrid columns={{ base: 1, md: 2 }}>
-            <TextField label="Role">
+            <TextField label={t('team.role')}>
               <Badge variant="outline" borderRadius="full">
-                {toLabel(user.role)}
+                {enumLabel(tEnums, 'userRole', user.role)}
               </Badge>
             </TextField>
             <Visibility isVisible={isPlayer || isCoach}>
-              <TextField label="Position">
+              <TextField label={t('team.position')}>
                 <Badge variant="outline" borderRadius="full">
                   {isPlayer &&
-                    toLabel(user.player?.position || PlayerPosition.UNKNOWN)}
+                    enumLabel(
+                      tEnums,
+                      'playerPosition',
+                      user.player?.position || PlayerPosition.UNKNOWN,
+                    )}
                   {isCoach &&
-                    toLabel(user.coach?.position || CoachPosition.UNKNOWN)}
+                    enumLabel(
+                      tEnums,
+                      'coachPosition',
+                      user.coach?.position || CoachPosition.UNKNOWN,
+                    )}
                 </Badge>
               </TextField>
             </Visibility>
@@ -193,7 +207,7 @@ export default function TeamInfo({
             />
             <Visibility isVisible={isAdmin || isPlayer}>
               <Field
-                label="Jersey Number"
+                label={t('team.jerseyNumber')}
                 invalid={!!errors.player?.jersey_number}
                 errorText={errors.player?.jersey_number?.message}
               >
@@ -216,7 +230,7 @@ export default function TeamInfo({
                 />
               </Field>
             </Visibility>
-            <Field label="Join Date">
+            <Field label={t('team.joinDate')}>
               <DatePickerField
                 control={control}
                 name="user.join_date"
@@ -228,18 +242,22 @@ export default function TeamInfo({
         ) : (
           <>
             <SimpleGrid columns={{ base: 1, md: 2 }}>
-              <TextField label="State" direction="horizontal" icon={Activity}>
+              <TextField
+                label={t('team.state')}
+                direction="horizontal"
+                icon={Activity}
+              >
                 <Badge
                   variant="surface"
                   borderRadius="full"
                   colorPalette={getColor(user.state)}
                 >
-                  {toLabel(user.state)}
+                  {enumLabel(tEnums, 'userState', user.state)}
                 </Badge>
               </TextField>
               <Visibility isVisible={isPlayer}>
                 <TextField
-                  label="Jersey Number"
+                  label={t('team.jerseyNumber')}
                   direction="horizontal"
                   icon={Shirt}
                 >
@@ -249,7 +267,7 @@ export default function TeamInfo({
             </SimpleGrid>
             {user.join_date && (
               <TextField
-                label="Joined Date"
+                label={t('team.joinedDate')}
                 direction="horizontal"
                 icon={LucideClock9}
               >
@@ -259,6 +277,7 @@ export default function TeamInfo({
                     (
                     {formatDistanceToNow(user.join_date, {
                       addSuffix: true,
+                      locale: locale === 'vi' ? vi : undefined,
                     })}
                     )
                   </Text>

@@ -5,8 +5,9 @@ import { usePathname } from 'next/navigation';
 import { Fragment } from 'react';
 
 import { Breadcrumb } from '@chakra-ui/react';
+import { useTranslations } from 'next-intl';
 
-import { toLabel } from '@/utils/formatter';
+import { navLabel } from '../_helpers/utils';
 
 /**
  * Segments that have no index route of their own, so they should be rendered
@@ -18,13 +19,14 @@ const NON_NAVIGABLE_SEGMENTS = new Set<string>(['profile']);
 
 export default function Breadcrumbs() {
   const pathname = usePathname();
+  const t = useTranslations('shell.nav');
 
   const segments = pathname.split('/').filter(Boolean);
   if (segments.length === 0) return null;
 
   const crumbs = segments.map((segment, index) => ({
     segment,
-    label: toLabel(segment),
+    label: navLabel(t, segment),
     href: `/${segments.slice(0, index + 1).join('/')}`,
     isLast: index === segments.length - 1,
   }));

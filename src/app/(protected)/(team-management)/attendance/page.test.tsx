@@ -14,7 +14,7 @@ import { getAttendances } from '@/actions/attendance';
 import { loadAttendanceFilters } from '@/lib/nuqs';
 
 import { AttendanceStatus } from '@/utils/enum';
-import AttendancePage, { metadata } from './page';
+import AttendancePage, { generateMetadata } from './page';
 
 vi.mock('@/actions/attendance', () => ({
   getAttendances: vi.fn(),
@@ -70,7 +70,8 @@ describe('AttendancePage', () => {
     mockGetAttendance.mockResolvedValue(MOCK_ATTENDANCE_RESPONSE);
   });
 
-  test('exposes page metadata', () => {
+  test('exposes page metadata', async () => {
+    const metadata = await generateMetadata();
     expect(metadata.title).toBe('Attendance');
     expect(metadata.description).toBe(
       'Manage and view team attendance information.',

@@ -21,7 +21,7 @@ export const UpsertSessionSchema = z
       return true;
     },
     {
-      message: 'End time must be after start time',
+      message: 'endTimeAfterStartTime',
       path: ['end_time'],
     },
   );

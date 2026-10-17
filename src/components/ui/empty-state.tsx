@@ -2,6 +2,7 @@ import * as React from 'react';
 
 import { EmptyState as ChakraEmptyState, VStack } from '@chakra-ui/react';
 import { Box } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 export interface EmptyStateProps extends ChakraEmptyState.RootProps {
   title: string;
@@ -11,9 +12,10 @@ export interface EmptyStateProps extends ChakraEmptyState.RootProps {
 
 export const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
   function EmptyState(props, ref) {
+    const t = useTranslations('components.emptyState');
     const {
       title,
-      description = 'Try adjusting your filters',
+      description = t('description'),
       icon = <Box />,
       children,
       ...rest
@@ -38,5 +40,5 @@ export const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
         </ChakraEmptyState.Content>
       </ChakraEmptyState.Root>
     );
-  }
+  },
 );

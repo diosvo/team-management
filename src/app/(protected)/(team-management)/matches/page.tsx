@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 
 import { getMatches } from '@/actions/match';
 import { loadMatchFilters } from '@/lib/nuqs';
@@ -8,10 +9,10 @@ import MatchHeader from './_components/MatchHeader';
 import MatchStats from './_components/MatchStats';
 import MatchTable from './_components/MatchTable';
 
-export const metadata: Metadata = {
-  title: 'Matches',
-  description: 'Manage and view team matches information.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('matches.metadata');
+  return { title: t('title'), description: t('description') };
+}
 
 export default async function MatchesPage(props: PageProps<'/matches'>) {
   const params = await loadMatchFilters(props.searchParams);

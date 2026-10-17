@@ -3,6 +3,7 @@
 import NextImage from 'next/image';
 
 import { HStack, Image, Stack } from '@chakra-ui/react';
+import { useTranslations } from 'next-intl';
 
 import HeaderLogo from '@/assets/images/header-logo.webp';
 
@@ -11,6 +12,8 @@ import Breadcrumbs from './Breadcrumbs';
 import MobileSidebar from './MobileSidebar';
 
 export default function Header() {
+  const t = useTranslations('shell.header');
+
   return (
     <HStack
       paddingBlock={2}
@@ -18,13 +21,13 @@ export default function Header() {
       borderBottom="1px solid"
       borderBottomColor="gray.200"
     >
-      <Image width={{ base: 132, sm: 144, md: 192 }} alt="Text Logo" asChild>
+      <Image width={{ base: 132, sm: 144, md: 192 }} alt={t('logoAlt')} asChild>
         <NextImage
           priority
           quality={100}
           placeholder="blur"
           src={HeaderLogo}
-          alt="Text Logo"
+          alt={t('logoAlt')}
         />
       </Image>
 

@@ -12,31 +12,19 @@ export const UpsertAchievementSchema = z
     type: z
       .enum(SELECTABLE_ACHIEVEMENT_TYPES)
       .default(AchievementType.CHAMPION),
-    title: z
-      .string()
-      .min(3, {
-        error: 'Be at least 3 characters long.',
-      })
-      .max(128, {
-        error: 'Be at most 128 characters long.',
-      }),
+    title: z.string().min(3).max(128),
     year: z
       .int()
       .min(new Date(ESTABLISHED_DATE).getFullYear(), {
-        error: 'Be after the club was founded.',
+        error: 'afterClubFounded',
       })
       .max(new Date().getFullYear(), {
-        error: 'Not be in the future.',
+        error: 'notInFuture',
       })
       .default(new Date().getFullYear()),
     league_id: z.uuid().nullish(),
     player_id: z.string().nullish(),
-    description: z
-      .string()
-      .max(256, {
-        error: 'Be at most 256 characters long.',
-      })
-      .nullish(),
+    description: z.string().max(256).nullish(),
   })
   .refine(
     (data) =>
@@ -44,7 +32,7 @@ export const UpsertAchievementSchema = z
         data.type as (typeof INDIVIDUAL_ACHIEVEMENT_TYPES)[number],
       ) || !!data.player_id,
     {
-      message: 'Select the awarded player for an individual honor.',
+      message: 'awardedPlayerRequired',
       path: ['player_id'],
     },
   );

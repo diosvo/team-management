@@ -3,6 +3,7 @@
 import { Button, createOverlay, Dialog, Input, Portal } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Save } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 
@@ -11,6 +12,7 @@ import { CloseButton } from '@/components/ui/close-button';
 import { Field } from '@/components/ui/field';
 import { toaster } from '@/components/ui/toaster';
 
+import { useSelection } from '@/i18n/enums';
 import { getDefaults } from '@/lib/zod';
 import { TEST_TYPE_UNIT_SELECTION } from '@/utils/constants';
 
@@ -21,6 +23,10 @@ import {
 } from '@/schemas/periodic-testing';
 
 export const UpsertTestType = createOverlay(({ action, item, ...rest }) => {
+  const t = useTranslations('periodicTesting.upsertTestType');
+  const tCommon = useTranslations('common');
+  const unitOptions = useSelection(TEST_TYPE_UNIT_SELECTION, 'testTypeUnit');
+  const isUpdate = action === 'Update';
   const [isPending, startTransition] = useTransition();
 
   const {
@@ -38,7 +44,7 @@ export const UpsertTestType = createOverlay(({ action, item, ...rest }) => {
   const onSubmit = (data: UpsertTestTypeSchemaValues) => {
     const id = toaster.create({
       type: 'loading',
-      title: 'Saving...',
+      title: t('saving'),
     });
 
     startTransition(async () => {
@@ -53,7 +59,7 @@ export const UpsertTestType = createOverlay(({ action, item, ...rest }) => {
       });
 
       if (success) reset();
-      if (action === 'Update') UpsertTestType.close('update-test-type');
+      if (isUpdate) UpsertTestType.close('update-test-type');
     });
   };
 
@@ -67,12 +73,14 @@ export const UpsertTestType = createOverlay(({ action, item, ...rest }) => {
               <CloseButton />
             </Dialog.CloseTrigger>
             <Dialog.Header>
-              <Dialog.Title>{action} Test Type</Dialog.Title>
+              <Dialog.Title>
+                {isUpdate ? t('updateTitle') : t('addTitle')}
+              </Dialog.Title>
             </Dialog.Header>
             <Dialog.Body paddingTop={0}>
               <Field
                 required
-                label="Name"
+                label={tCommon('name')}
                 invalid={!!errors.name}
                 errorText={errors.name?.message}
               >
@@ -81,8 +89,8 @@ export const UpsertTestType = createOverlay(({ action, item, ...rest }) => {
               <RadioGroupField
                 control={control}
                 name="unit"
-                legend="Unit"
-                options={TEST_TYPE_UNIT_SELECTION}
+                legend={t('unit')}
+                options={unitOptions}
                 colorPalette="red"
                 columns={{ base: 1, md: 3 }}
                 marginTop={3}
@@ -91,11 +99,11 @@ export const UpsertTestType = createOverlay(({ action, item, ...rest }) => {
             <Dialog.Footer>
               <Button
                 type="submit"
-                loadingText="Saving..."
+                loadingText={t('saving')}
                 loading={isPending}
                 disabled={!isValid || isPending}
               >
-                <Save /> {action}
+                <Save /> {isUpdate ? tCommon('update') : tCommon('add')}
               </Button>
             </Dialog.Footer>
           </Dialog.Content>

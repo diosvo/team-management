@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 
 import { getLocations } from '@/actions/location';
 import SearchInput from '@/components/SearchInput';
@@ -6,10 +7,10 @@ import SearchInput from '@/components/SearchInput';
 import LocationHeader from './_components/LocationHeader';
 import LocationTable from './_components/LocationTable';
 
-export const metadata: Metadata = {
-  title: 'Locations',
-  description: 'Manage your location settings.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('locations.metadata');
+  return { title: t('title'), description: t('description') };
+}
 
 export default async function LocationsPage() {
   const locations = await getLocations();

@@ -5,6 +5,7 @@ import { useState, useTransition } from 'react';
 import { HStack, IconButton, Input, SimpleGrid } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Edit, Save } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
 
 import { DatePickerField } from '@/components/date-picker/DatePicker';
@@ -32,6 +33,8 @@ export default function PersonalInfo({
   user: User;
   viewOnly: boolean;
 }) {
+  const t = useTranslations('profile');
+  const tCommon = useTranslations('common');
   const [isPending, startTransition] = useTransition();
   const [isEditing, setIsEditing] = useState<boolean>(false);
 
@@ -51,7 +54,7 @@ export default function PersonalInfo({
     startTransition(async () => {
       const id = toaster.create({
         type: 'loading',
-        title: 'Updating personal information...',
+        title: t('personal.updating'),
       });
 
       const { success, message: title } = await updatePersonalInfo(
@@ -77,16 +80,16 @@ export default function PersonalInfo({
     <Card
       as="form"
       onSubmit={handleSubmit(onSubmit)}
-      title="Personal Information"
+      title={t('personal.title')}
       action={
         isEditing ? (
           <HStack>
             <CloseButton size="sm" variant="outline" onClick={onCancel} />
-            <Tooltip content="Save" disabled={isPending}>
+            <Tooltip content={tCommon('save')} disabled={isPending}>
               <IconButton
                 size="sm"
                 type="submit"
-                aria-label="Save"
+                aria-label={tCommon('save')}
                 disabled={!isDirty || !isValid || isPending}
               >
                 <Save />
@@ -94,12 +97,12 @@ export default function PersonalInfo({
             </Tooltip>
           </HStack>
         ) : (
-          <Tooltip content={viewOnly ? 'View Only' : 'Edit'}>
+          <Tooltip content={viewOnly ? t('viewOnly') : tCommon('edit')}>
             <IconButton
               size="sm"
               variant="subtle"
               disabled={viewOnly}
-              aria-label={viewOnly ? 'View Only' : 'Edit'}
+              aria-label={viewOnly ? t('viewOnly') : tCommon('edit')}
               onClick={() => setIsEditing(true)}
             >
               <Edit />
@@ -111,23 +114,23 @@ export default function PersonalInfo({
       <SimpleGrid minChildWidth="12rem" gap={4}>
         {isEditing ? (
           <>
-            <Field label="Email">
+            <Field label={tCommon('email')}>
               <Input variant="flushed" value={user.email} disabled />
             </Field>
             <Field
               required
-              label="Fullname"
+              label={t('personal.fullname')}
               invalid={!!errors.name}
               errorText={errors.name?.message}
             >
               <Input
-                placeholder="Anonymous"
+                placeholder={t('personal.namePlaceholder')}
                 disabled={isPending}
                 {...register('name')}
               />
             </Field>
             <Field
-              label="DOB"
+              label={t('personal.dob')}
               invalid={!!errors.dob}
               errorText={errors.dob?.message}
             >
@@ -140,14 +143,14 @@ export default function PersonalInfo({
               />
             </Field>
             <Field
-              label="Phone Number"
+              label={t('personal.phoneNumber')}
               invalid={!!errors.phone_number}
               errorText={errors.phone_number?.message}
             >
               <Input disabled={isPending} {...register('phone_number')} />
             </Field>
             <Field
-              label="Citizen ID"
+              label={t('personal.citizenId')}
               invalid={!!errors.citizen_identification}
               errorText={errors.citizen_identification?.message}
             >
@@ -159,13 +162,17 @@ export default function PersonalInfo({
           </>
         ) : (
           <>
-            <TextField label="Email">{user.email}</TextField>
-            <TextField label="Fullname">{user.name || '-'}</TextField>
-            <TextField label="DOB">{formatDate(user.dob) || '-'}</TextField>
-            <TextField label="Phone Number">
+            <TextField label={tCommon('email')}>{user.email}</TextField>
+            <TextField label={t('personal.fullname')}>
+              {user.name || '-'}
+            </TextField>
+            <TextField label={t('personal.dob')}>
+              {formatDate(user.dob) || '-'}
+            </TextField>
+            <TextField label={t('personal.phoneNumber')}>
               {user.phone_number || '-'}
             </TextField>
-            <TextField label="Citizen ID">
+            <TextField label={t('personal.citizenId')}>
               {user.citizen_identification || '-'}
             </TextField>
           </>

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 
 import { getAttendances } from '@/actions/attendance';
 import { loadAttendanceFilters } from '@/lib/nuqs';
@@ -8,10 +9,10 @@ import AttendanceHeader from './_components/AttendanceHeader';
 import AttendanceStats from './_components/AttendanceStats';
 import AttendanceTable from './_components/AttendanceTable';
 
-export const metadata: Metadata = {
-  title: 'Attendance',
-  description: 'Manage and view team attendance information.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('attendance.metadata');
+  return { title: t('title'), description: t('description') };
+}
 
 export default async function AttendancePage(props: PageProps<'/attendance'>) {
   const { from, to } = await loadAttendanceFilters(props.searchParams);

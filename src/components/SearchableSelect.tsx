@@ -12,6 +12,7 @@ import {
   createListCollection,
   useFilter,
 } from '@chakra-ui/react';
+import { useTranslations } from 'next-intl';
 import {
   type Control,
   Controller,
@@ -220,6 +221,11 @@ function ComboboxBase<T>({
   fieldProps,
   renderItem,
 }: ComboboxBaseProps<T>) {
+  const t = useTranslations('components.searchableSelect');
+  const tCommon = useTranslations('common');
+  // `label` doubles as the SWR key; known keys get a translated noun.
+  const entityKey = `entities.${label}` as never;
+  const entity = t.has(entityKey) ? t(entityKey) : label;
   const { contains } = useFilter({ sensitivity: 'base' });
   const [filterInput, setFilterInput] = useState('');
 
@@ -253,7 +259,7 @@ function ComboboxBase<T>({
   const handleValueChange = ({ items }: Combobox.ValueChangeDetails<T>) => {
     if (maxItems && items.length > maxItems) {
       toaster.warning({
-        title: `You can only select up to ${maxItems} items.`,
+        title: t('maxItems', { max: maxItems }),
       });
       return;
     }
@@ -262,7 +268,7 @@ function ComboboxBase<T>({
   };
 
   return (
-    <Field label={'Select ' + label} {...fieldProps}>
+    <Field label={t('label', { entity })} {...fieldProps}>
       <Combobox.Root
         openOnClick
         multiple={multiple}
@@ -276,7 +282,7 @@ function ComboboxBase<T>({
         {...rootProps}
       >
         <Combobox.Control>
-          <Combobox.Input placeholder="Type to search" />
+          <Combobox.Input placeholder={t('placeholder')} />
           <Combobox.IndicatorGroup>
             <Combobox.ClearTrigger />
             <Combobox.Trigger />
@@ -289,7 +295,7 @@ function ComboboxBase<T>({
               {isLoading || isValidating ? (
                 <HStack padding={2}>
                   <Spinner size="xs" borderWidth={1} />
-                  <Span>Loading...</Span>
+                  <Span>{tCommon('loading')}</Span>
                 </HStack>
               ) : error ? (
                 <Span padding={2} color="fg.error">
@@ -297,7 +303,7 @@ function ComboboxBase<T>({
                 </Span>
               ) : (
                 <>
-                  <Combobox.Empty>No {label} found.</Combobox.Empty>
+                  <Combobox.Empty>{t('empty', { entity })}</Combobox.Empty>
                   {collection.items.map((item) => (
                     <Combobox.Item item={item} key={itemToValue(item)}>
                       <Combobox.ItemText truncate>

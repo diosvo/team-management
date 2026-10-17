@@ -1,12 +1,17 @@
+import { getTranslations } from 'next-intl/server';
+
 import ListPageSkeleton from '@/components/PageSkeleton';
 
-export default function TrainingSessionsLoading() {
+export default async function TrainingSessionsLoading() {
+  const t = await getTranslations('training.header');
+  const tPresets = await getTranslations('components.datePicker.presets');
+
   return (
     <ListPageSkeleton
-      title="Training Sessions"
-      actions={['New Session']}
+      title={t('title')}
+      actions={[t('newSession')]}
       stats={3}
-      toolbar={{ date: 'This year', filters: true }}
+      toolbar={{ date: tPresets('this_year'), filters: true }}
       columns={6}
     />
   );

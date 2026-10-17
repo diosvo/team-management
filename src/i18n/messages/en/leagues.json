@@ -1,0 +1,35 @@
+{
+  "metadata": {
+    "title": "Leagues",
+    "description": "Manage and view leagues information."
+  },
+  "title": "Leagues",
+  "status": "Status",
+  "table": {
+    "achievement": "Achievement",
+    "recordAchievement": "Record achievement",
+    "name": "Name",
+    "playerCount": "No. Players",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "status": "Status",
+    "empty": "No leagues found",
+    "deleting": "Deleting leagues...",
+    "deleted": "Successfully deleted {count} league(s).",
+    "deletedPartially": "Deleted {count} league(s), but some operations failed."
+  },
+  "upsert": {
+    "addTitle": "Add League",
+    "updateTitle": "Update League",
+    "readonly": "Readonly",
+    "name": "Name",
+    "namePlaceholder": "Basketball League",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "description": "Description",
+    "descriptionPlaceholder": "Comment...",
+    "saving": "Saving...",
+    "savingToast": "Saving league information...",
+    "saved": "League information saved successfully."
+  }
+}

@@ -11,11 +11,13 @@ import {
   useBreakpointValue,
 } from '@chakra-ui/react';
 import { PanelRightOpen } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { useSessionContext } from '@/providers/session';
 import Sidebar from './Sidebar';
 
 export default function MobileSidebar() {
+  const t = useTranslations('shell.header');
   const { isAuthenticated } = useSessionContext();
   const [open, setOpen] = useState<boolean>(false);
 
@@ -42,7 +44,7 @@ export default function MobileSidebar() {
           size="sm"
           variant="outline"
           borderRadius="full"
-          aria-label="Open navigation"
+          aria-label={t('openNavigation')}
         >
           <PanelRightOpen />
         </IconButton>

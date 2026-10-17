@@ -1,5 +1,6 @@
 'use server';
 
+import { getTranslations } from 'next-intl/server';
 import { ResponseFactory } from '@/utils/response';
 
 import type { TrainingSearchParams } from '@/lib/nuqs';
@@ -35,11 +36,12 @@ export const upsertSession = training(
     session_id: string,
     values: UpsertSessionSchemaValues,
   ) {
+    const t = await getTranslations('actions.training');
     try {
       const coach = await getTeamHeadCoach(team_id);
 
       if (!coach) {
-        return ResponseFactory.error('No coach assigned to the team');
+        return ResponseFactory.error(t('noCoach'));
       }
 
       if (session_id) {
@@ -54,9 +56,7 @@ export const upsertSession = training(
 
       revalidate.sessions();
 
-      return ResponseFactory.success(
-        `${session_id ? 'Updated' : 'Created'} training session successfully`,
-      );
+      return ResponseFactory.success(t(session_id ? 'updated' : 'created'));
     } catch (error) {
       const { message } = getDbErrorMessage(error);
       return ResponseFactory.error(message);
@@ -67,12 +67,13 @@ export const upsertSession = training(
 export const removeSession = training(
   ['delete'],
   async function remove(_, session_id: string) {
+    const t = await getTranslations('actions.training');
     try {
       await deleteSession(session_id);
 
       revalidate.sessions();
 
-      return ResponseFactory.success('Training session deleted successfully');
+      return ResponseFactory.success(t('deleted'));
     } catch (error) {
       const shortId = session_id.slice(0, 8);
       const { message } = getDbErrorMessage(error);

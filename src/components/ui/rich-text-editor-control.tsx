@@ -34,9 +34,32 @@ import {
   TypeIcon,
   UnderlineIcon,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import * as React from 'react';
 import { useRichTextEditorContext } from './rich-text-editor-context';
 import { Tooltip } from './tooltip';
+
+type Translate = (label: string) => string;
+
+/** "Bullet List" → "bulletList", "Enter URL" → "enterUrl" */
+const toMessageKey = (label: string) =>
+  label
+    .split(/\s+/)
+    .map((word, index) =>
+      index === 0
+        ? word.toLowerCase()
+        : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
+    )
+    .join('');
+
+/** Translates an English control label; unknown labels render verbatim. */
+function useControlLabel(): Translate {
+  const t = useTranslations('components.richTextEditor');
+  return (label) => {
+    const key = toMessageKey(label) as never;
+    return t.has(key) ? t(key) : label;
+  };
+}
 
 export interface BaseControlConfig {
   label: string;
@@ -57,7 +80,8 @@ export const ButtonControl = React.forwardRef<
   HTMLButtonElement,
   ButtonControlProps
 >(function ButtonControl(props, ref) {
-  const { icon, label, ...rest } = props;
+  const { icon, label: labelProp, ...rest } = props;
+  const label = useControlLabel()(labelProp);
   return (
     <Tooltip content={label}>
       <IconButton ref={ref} size="2xs" aria-label={label} {...rest}>
@@ -71,7 +95,7 @@ export const ButtonControl = React.forwardRef<
 
 export interface BooleanControlConfig extends BaseControlConfig {
   icon: React.ElementType;
-  command: (editor: Editor) => void;
+  command: (editor: Editor, translate: Translate) => void;
   getVariant?: (editor: Editor) => IconButtonProps['variant'];
 }
 
@@ -88,6 +112,7 @@ export function createBooleanControl(config: BooleanControlConfig) {
   const BooleanControl = React.forwardRef<HTMLButtonElement, IconButtonProps>(
     function BooleanControl(props, ref) {
       const { editor } = useRichTextEditorContext();
+      const translate = useControlLabel();
       if (!editor) return null;
       const disabled = isDisabled ? isDisabled(editor) : false;
       const dynamicProps = getProps ? getProps(editor) : {};
@@ -100,7 +125,7 @@ export function createBooleanControl(config: BooleanControlConfig) {
           label={label}
           icon={<Icon />}
           variant={variant}
-          onClick={() => command(editor)}
+          onClick={() => command(editor, translate)}
           disabled={disabled}
           {...props}
         />
@@ -148,19 +173,21 @@ export function createSelectControl(config: SelectControlConfig) {
   >(function SelectControl(props, ref) {
     const { editor } = useRichTextEditorContext();
     const controlId = React.useId();
+    const translate = useControlLabel();
 
     if (!editor) return null;
 
     const currentValue = getValue(editor);
     const disabled = isDisabled ? isDisabled(editor) : false;
 
-    const currentOption = options.find((o) => o.value === currentValue);
+    const items = options.map((o) => ({ ...o, label: translate(o.label) }));
+    const currentOption = items.find((o) => o.value === currentValue);
     const displayValue =
       renderValue && currentOption
         ? renderValue(currentValue, currentOption)
-        : currentOption?.label || placeholder;
+        : currentOption?.label || translate(placeholder);
 
-    const collection = createListCollection({ items: options });
+    const collection = createListCollection({ items });
     const dynamicProps = getProps ? getProps(editor) : {};
 
     return (
@@ -181,7 +208,7 @@ export function createSelectControl(config: SelectControlConfig) {
         }}
         {...dynamicProps}
       >
-        <Tooltip content={label} ids={{ trigger: controlId }}>
+        <Tooltip content={translate(label)} ids={{ trigger: controlId }}>
           <Select.Trigger ref={ref}>
             <Select.ValueText>{displayValue}</Select.ValueText>
             <Select.Indicator />
@@ -190,7 +217,7 @@ export function createSelectControl(config: SelectControlConfig) {
         <Portal>
           <Select.Positioner>
             <Select.Content minW="20">
-              {options.map((opt) => (
+              {items.map((opt) => (
                 <Select.Item key={opt.value} item={opt.value}>
                   {opt.icon && (
                     <span style={{ marginInlineEnd: '0.5rem' }}>
@@ -244,6 +271,7 @@ export function createSwatchControl(config: SwatchControlConfig) {
       const { editor } = useRichTextEditorContext();
       const [open, setOpen] = React.useState(false);
       const triggerId = React.useId();
+      const translate = useControlLabel();
 
       if (!editor) return null;
       const currentValue = getValue(editor);
@@ -257,12 +285,12 @@ export function createSwatchControl(config: SwatchControlConfig) {
           ids={{ trigger: triggerId }}
           size="sm"
         >
-          <Tooltip content={label} ids={{ trigger: triggerId }}>
+          <Tooltip content={translate(label)} ids={{ trigger: triggerId }}>
             <Popover.Trigger asChild>
               <IconButton
                 ref={ref}
                 size="2xs"
-                aria-label={label}
+                aria-label={translate(label)}
                 disabled={disabled}
                 {...dynamicProps}
                 {...props}
@@ -428,8 +456,8 @@ export const Hr = createBooleanControl({
 export const Link = createBooleanControl({
   label: 'Link',
   icon: LinkIcon,
-  command: (editor) => {
-    const url = window.prompt('Enter URL');
+  command: (editor, translate) => {
+    const url = window.prompt(translate('Enter URL'));
     if (url)
       editor
         .chain()

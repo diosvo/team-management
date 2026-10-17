@@ -4,12 +4,14 @@ import { useEffect, useRef } from 'react';
 
 import { Input, InputGroup, type InputProps } from '@chakra-ui/react';
 import { Search } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { CloseButton } from '@/components/ui/close-button';
 import useSyncedState from '@/hooks/use-synced-state';
 import { useCommonParams } from '@/lib/nuqs';
 
 export default function SearchInput(props: InputProps) {
+  const t = useTranslations('components.searchInput');
   const [{ q }, setSearchParams] = useCommonParams();
   // Local input state mirrors `q`, resyncing when the URL changes externally
   // (e.g. a stat card click that resets `q`) so stale text can't clobber it.
@@ -46,7 +48,7 @@ export default function SearchInput(props: InputProps) {
         value={search}
         ref={inputRef}
         name="search-input"
-        placeholder="Search..."
+        placeholder={t('placeholder')}
         borderWidth={1}
         size={{ base: 'sm', md: 'md' }}
         css={{ '--focus-color': 'colors.red.300' }}

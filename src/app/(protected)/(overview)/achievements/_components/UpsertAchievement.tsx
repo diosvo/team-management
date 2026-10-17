@@ -19,6 +19,7 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod';
 import { getYear, isPast } from 'date-fns';
 import { Save } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Controller, useForm } from 'react-hook-form';
 
 import { SearchableSelectField } from '@/components/SearchableSelect';
@@ -27,6 +28,7 @@ import { Field } from '@/components/ui/field';
 import { toaster } from '@/components/ui/toaster';
 import Visibility from '@/components/Visibility';
 
+import { useSelection } from '@/i18n/enums';
 import { getDefaults } from '@/lib/zod';
 import {
   ACHIEVEMENT_TYPE_SELECTION,
@@ -54,7 +56,6 @@ const ENDED_LEAGUES_KEY = 'ended_leagues';
 const getEndedLeagues = async () =>
   (await getLeagues()).filter(({ end_date }) => isPast(end_date));
 
-const types = createListCollection({ items: ACHIEVEMENT_TYPE_SELECTION });
 const years = createListCollection({
   items: YEARS_SELECTION,
 });
@@ -65,6 +66,13 @@ const isIndividualType = (type: AchievementType) =>
   );
 
 export const UpsertAchievement = createOverlay(({ action, item, ...rest }) => {
+  const t = useTranslations('achievements.upsert');
+  const tCommon = useTranslations('common');
+  const typeSelection = useSelection(
+    ACHIEVEMENT_TYPE_SELECTION,
+    'achievementType',
+  );
+  const types = createListCollection({ items: typeSelection });
   const [isPending, startTransition] = useTransition();
 
   const {
@@ -79,7 +87,7 @@ export const UpsertAchievement = createOverlay(({ action, item, ...rest }) => {
     resolver: zodResolver(UpsertAchievementSchema),
     // Title starts from the default type's label until the user edits it.
     defaultValues: getDefaults(UpsertAchievementSchema, {
-      title: ACHIEVEMENT_TYPE_SELECTION[0].label,
+      title: typeSelection[0].label,
       ...item,
     }),
   });
@@ -107,7 +115,7 @@ export const UpsertAchievement = createOverlay(({ action, item, ...rest }) => {
   const onSubmit = (data: UpsertAchievementSchemaValues) => {
     const id = toaster.create({
       type: 'loading',
-      title: 'Saving achievement...',
+      title: t('saving'),
     });
 
     startTransition(async () => {
@@ -141,7 +149,9 @@ export const UpsertAchievement = createOverlay(({ action, item, ...rest }) => {
               <CloseButton />
             </Dialog.CloseTrigger>
             <Dialog.Header>
-              <Dialog.Title>{action} Achievement</Dialog.Title>
+              <Dialog.Title>
+                {action === 'Update' ? t('updateTitle') : t('addTitle')}
+              </Dialog.Title>
             </Dialog.Header>
             <Dialog.Body>
               <VStack alignItems="stretch" gap={4}>
@@ -151,7 +161,7 @@ export const UpsertAchievement = createOverlay(({ action, item, ...rest }) => {
                   render={({ field }) => (
                     <Field
                       required
-                      label="Type"
+                      label={t('type')}
                       invalid={!!errors.type}
                       errorText={errors.type?.message}
                     >
@@ -164,7 +174,7 @@ export const UpsertAchievement = createOverlay(({ action, item, ...rest }) => {
                           field.onChange(value[0]);
                           // The type drives the default title until edited.
                           if (!dirtyFields.title) {
-                            const selected = ACHIEVEMENT_TYPE_SELECTION.find(
+                            const selected = typeSelection.find(
                               (option) => option.value === value[0],
                             );
                             if (selected) setValue('title', selected.label);
@@ -174,7 +184,7 @@ export const UpsertAchievement = createOverlay(({ action, item, ...rest }) => {
                         <Select.HiddenSelect />
                         <Select.Control>
                           <Select.Trigger>
-                            <Select.ValueText placeholder="Type" />
+                            <Select.ValueText placeholder={t('type')} />
                           </Select.Trigger>
                           <Select.IndicatorGroup>
                             <Select.Indicator />
@@ -198,12 +208,12 @@ export const UpsertAchievement = createOverlay(({ action, item, ...rest }) => {
                 />
                 <Field
                   required
-                  label="Title"
+                  label={t('title')}
                   invalid={!!errors.title}
                   errorText={errors.title?.message}
                 >
                   <Input
-                    placeholder="Champion"
+                    placeholder={t('titlePlaceholder')}
                     disabled={isPending}
                     {...register('title')}
                   />
@@ -216,7 +226,7 @@ export const UpsertAchievement = createOverlay(({ action, item, ...rest }) => {
                   action={getEndedLeagues}
                   fieldProps={{
                     disabled: isPending,
-                    helperText: 'Leave empty for a standalone honor.',
+                    helperText: t('leagueHelper'),
                   }}
                   itemToString={({ name }) => name}
                   itemToValue={({ league_id }) => league_id}
@@ -227,12 +237,10 @@ export const UpsertAchievement = createOverlay(({ action, item, ...rest }) => {
                   render={({ field }) => (
                     <Field
                       required
-                      label="Year"
+                      label={t('year')}
                       invalid={!!errors.year}
                       errorText={errors.year?.message}
-                      helperText={
-                        league_id ? 'Derived from the selected league.' : ''
-                      }
+                      helperText={league_id ? t('yearHelper') : ''}
                     >
                       <Select.Root
                         collection={years}
@@ -246,7 +254,7 @@ export const UpsertAchievement = createOverlay(({ action, item, ...rest }) => {
                         <Select.HiddenSelect />
                         <Select.Control>
                           <Select.Trigger>
-                            <Select.ValueText placeholder="Year" />
+                            <Select.ValueText placeholder={t('year')} />
                           </Select.Trigger>
                           <Select.IndicatorGroup>
                             <Select.Indicator />
@@ -285,7 +293,7 @@ export const UpsertAchievement = createOverlay(({ action, item, ...rest }) => {
                   {suggestions.length > 0 && (
                     <Wrap gap={2} marginTop={2}>
                       <Span fontSize="xs" color="gray.500" alignSelf="center">
-                        Suggested:
+                        {t('suggested')}
                       </Span>
                       {suggestions.map((suggestion) => (
                         <Button
@@ -301,17 +309,17 @@ export const UpsertAchievement = createOverlay(({ action, item, ...rest }) => {
                           }
                         >
                           {suggestion.player_name} &mdash;{' '}
-                          {suggestion.avg_points} ppg
+                          {t('ppg', { points: suggestion.avg_points })}
                         </Button>
                       ))}
                     </Wrap>
                   )}
                 </Visibility>
-                <Field label="Description">
+                <Field label={t('description')}>
                   <Textarea
                     autoresize
                     maxLength={256}
-                    placeholder="Comment..."
+                    placeholder={t('descriptionPlaceholder')}
                     disabled={isPending}
                     {...register('description')}
                   />
@@ -321,11 +329,12 @@ export const UpsertAchievement = createOverlay(({ action, item, ...rest }) => {
             <Dialog.Footer>
               <Button
                 type="submit"
-                loadingText="Saving..."
+                loadingText={t('savingButton')}
                 loading={isPending}
                 disabled={!isValid}
               >
-                <Save /> {action}
+                <Save />{' '}
+                {action === 'Update' ? tCommon('update') : tCommon('add')}
               </Button>
             </Dialog.Footer>
           </Dialog.Content>

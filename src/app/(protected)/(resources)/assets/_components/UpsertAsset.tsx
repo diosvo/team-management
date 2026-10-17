@@ -14,6 +14,7 @@ import {
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Save } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Controller, useForm } from 'react-hook-form';
 
 import { DatePickerField } from '@/components/date-picker/DatePicker';
@@ -27,6 +28,7 @@ import {
 import { toaster } from '@/components/ui/toaster';
 import { OnePlayerSelection } from '@/components/user/PlayerSelection';
 
+import { useSelection } from '@/i18n/enums';
 import { getDefaults, onError } from '@/lib/zod';
 import {
   ASSET_CATEGORY_SELECTION,
@@ -52,6 +54,16 @@ const RichTextInput = dynamic(
 );
 
 export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
+  const t = useTranslations('assets.upsert');
+  const tCommon = useTranslations('common');
+  const categoryOptions = useSelection(
+    ASSET_CATEGORY_SELECTION,
+    'assetCategory',
+  );
+  const conditionOptions = useSelection(
+    ASSET_CONDITION_SELECTION,
+    'assetCondition',
+  );
   const [isPending, startTransition] = useTransition();
 
   const {
@@ -68,7 +80,7 @@ export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
   const onSubmit = (data: UpsertAssetSchemaValues) => {
     const id = toaster.create({
       type: 'loading',
-      title: 'Saving item to the asset inventory...',
+      title: t('savingToast'),
     });
 
     startTransition(async () => {
@@ -99,25 +111,27 @@ export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
               <CloseButton />
             </Dialog.CloseTrigger>
             <Dialog.Header>
-              <Dialog.Title>{action} Item</Dialog.Title>
+              <Dialog.Title>
+                {action === 'Add' ? t('addTitle') : t('updateTitle')}
+              </Dialog.Title>
             </Dialog.Header>
             <Dialog.Body>
               <SimpleGrid columns={{ base: 1, sm: 2 }} gap={4}>
                 <Field
                   required
-                  label="Name"
+                  label={t('name')}
                   invalid={!!errors.name}
                   errorText={errors.name?.message}
                 >
                   <Input
-                    placeholder="Ball #"
+                    placeholder={t('namePlaceholder')}
                     disabled={isPending}
                     {...register('name')}
                   />
                 </Field>
                 <Field
                   required
-                  label="Quantity"
+                  label={t('quantity')}
                   invalid={!!errors.quantity}
                   errorText={errors.quantity?.message}
                 >
@@ -137,7 +151,7 @@ export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
                     )}
                   />
                 </Field>
-                <Field label="Acquired date">
+                <Field label={t('acquiredDate')}>
                   <DatePickerField
                     control={control}
                     name="acquired_date"
@@ -154,23 +168,23 @@ export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
               <RadioGroupField
                 control={control}
                 name="category"
-                legend="Category"
-                options={ASSET_CATEGORY_SELECTION}
+                legend={t('category')}
+                options={categoryOptions}
                 colorPalette="red"
                 marginBlock={4}
               />
               <RadioGroupField
                 control={control}
                 name="condition"
-                legend="Condition"
-                options={ASSET_CONDITION_SELECTION}
+                legend={t('condition')}
+                options={conditionOptions}
                 colorPalette="green"
                 isHidden={({ value }) =>
                   action === 'Add' && value === AssetCondition.OBSOLETE
                 }
               />
               <Field
-                label="Note"
+                label={t('note')}
                 invalid={!!errors.note}
                 errorText={errors.note?.message}
                 marginTop={4}
@@ -195,11 +209,11 @@ export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
             <Dialog.Footer>
               <Button
                 type="submit"
-                loadingText="Saving..."
+                loadingText={t('saving')}
                 loading={isPending}
                 disabled={!isDirty || isPending}
               >
-                <Save /> {action}
+                <Save /> {action === 'Add' ? tCommon('add') : tCommon('update')}
               </Button>
             </Dialog.Footer>
           </Dialog.Content>

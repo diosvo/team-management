@@ -1,0 +1,56 @@
+{
+  "metadata": {
+    "title": "Điểm danh",
+    "description": "Quản lý và xem thông tin điểm danh của đội."
+  },
+  "title": "Điểm danh tập luyện",
+  "markAttendance": "Điểm danh",
+  "submitLeaveRequest": "Gửi đơn xin nghỉ",
+  "filters": {
+    "date": "Ngày",
+    "status": "Trạng thái"
+  },
+  "stats": {
+    "onTime": "Đúng giờ",
+    "late": "Đi muộn",
+    "absent": "Vắng",
+    "presentRate": "Tỉ lệ có mặt"
+  },
+  "table": {
+    "date": "Ngày",
+    "name": "Họ tên",
+    "status": "Trạng thái",
+    "reason": "Lý do",
+    "lastUpdated": "Cập nhật lần cuối",
+    "empty": "Không tìm thấy cầu thủ",
+    "deleteFailed": "Không thể xóa {count} lượt điểm danh",
+    "deleteSuccess": "Đã xóa {count} lượt điểm danh",
+    "updateFailed": "Không thể cập nhật {count} lượt điểm danh",
+    "updateSuccess": "Đã cập nhật {count} lượt điểm danh"
+  },
+  "bulk": {
+    "title": "Điểm danh hàng loạt",
+    "date": "Ngày",
+    "name": "Họ tên",
+    "absent": "Vắng",
+    "late": "Đi muộn",
+    "reason": "Lý do",
+    "absentHint": "Đánh dấu nếu vắng, bỏ đánh dấu nếu đi muộn.",
+    "loading": "Đang gửi đơn xin nghỉ...",
+    "failed": "Không thể gửi đơn xin nghỉ cho {count} cầu thủ.",
+    "success": "Đã gửi đơn xin nghỉ cho {count} cầu thủ.",
+    "remainingOnTime": "<u>{remaining, select, true {Các cầu thủ còn lại} other {Tất cả cầu thủ}}</u> sẽ được đánh dấu <onTime>đúng giờ</onTime>.",
+    "submitting": "Đang gửi...",
+    "submit": "Gửi"
+  },
+  "leave": {
+    "title": "Gửi đơn xin nghỉ",
+    "date": "Ngày",
+    "reason": "Lý do",
+    "reasonHelper": "Tối đa 128 ký tự.",
+    "reasonPlaceholder": "Lý do xin nghỉ...",
+    "loading": "Đang gửi đơn xin nghỉ...",
+    "submitting": "Đang gửi...",
+    "submit": "Gửi"
+  }
+}

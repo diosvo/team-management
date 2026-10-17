@@ -1,14 +1,18 @@
 import { HStack, Span, Text, VStack } from '@chakra-ui/react';
 import { BetweenVerticalEnd, TrendingDown, TrendingUp } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 
 import type { PlayerSessionSummary, PlayerStats } from '@/types/analytics';
-import { formatValueUnit } from '@/utils/formatter';
 import { colorRank } from '@/utils/helper';
 
-const PlayerRank = (player: PlayerStats, index: number) => {
+const PlayerRank = (
+  player: PlayerStats,
+  index: number,
+  sessions: (count: number) => string,
+) => {
   return (
     <HStack key={index}>
       <Text textStyle="secondary" color="GrayText">
@@ -24,8 +28,7 @@ const PlayerRank = (player: PlayerStats, index: number) => {
         marginRight={4}
         flexShrink={0}
       >
-        {player.attended}{' '}
-        {formatValueUnit(player.attended, 'session') ?? 'sessions'}
+        {sessions(player.attended)}
       </Text>
       <Text
         textStyle="secondary"
@@ -43,15 +46,18 @@ export default function PlayerAttendanceRanking({
 }: {
   records: PlayerSessionSummary;
 }) {
+  const t = useTranslations('dashboard.attendanceRanking');
+  const sessions = (count: number) => t('sessions', { count });
+
   const section = [
     {
-      title: 'Attendance Stars',
+      title: t('stars'),
       color: 'green.600',
       icon: TrendingUp,
       data: records.top_performers,
     },
     {
-      title: 'Need a Boost',
+      title: t('needBoost'),
       color: 'red.600',
       icon: TrendingDown,
       data: records.need_attention,
@@ -59,16 +65,9 @@ export default function PlayerAttendanceRanking({
   ];
 
   return (
-    <Card
-      height="full"
-      title="Player Attendance Rankings"
-      description="Stars of attendance and teammates who need a boost"
-    >
+    <Card height="full" title={t('title')} description={t('description')}>
       {!records.top_performers.length && !records.need_attention.length ? (
-        <EmptyState
-          icon={<BetweenVerticalEnd />}
-          title="No player attendance records"
-        />
+        <EmptyState icon={<BetweenVerticalEnd />} title={t('empty')} />
       ) : (
         section.map(
           ({ title, color, icon: Icon, data }, index) =>
@@ -81,7 +80,9 @@ export default function PlayerAttendanceRanking({
                   </Span>
                 </HStack>
 
-                {data.map(PlayerRank)}
+                {data.map((player, index) =>
+                  PlayerRank(player, index, sessions),
+                )}
               </VStack>
             ),
         )

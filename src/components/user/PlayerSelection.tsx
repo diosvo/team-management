@@ -12,6 +12,7 @@ import {
   Span,
 } from '@chakra-ui/react';
 import { UserRoundX } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import type { Control, FieldPath, FieldValues } from 'react-hook-form';
 
 import type { User } from '@/drizzle/schema/user';
@@ -51,6 +52,7 @@ export function PlayerSelectionWithActions({
   selection,
   onSelectionChange,
 }: UserSelector) {
+  const t = useTranslations('components.playerSelection');
   // Shares the SWR cache the player SearchableSelect already populates.
   const { data: activePlayers = [] } = useSWRImmutable(
     CACHE_KEY.PLAYERS,
@@ -75,7 +77,7 @@ export function PlayerSelectionWithActions({
         disabled={disabled || activePlayers.length === 0 || allSelected}
         onClick={() => onSelectionChange(activePlayers)}
       >
-        Select all
+        {t('selectAll')}
       </Button>
       <Button
         variant="ghost"
@@ -83,7 +85,7 @@ export function PlayerSelectionWithActions({
         disabled={disabled || selection.length === 0}
         onClick={() => onSelectionChange([])}
       >
-        Clear
+        {t('clear')}
       </Button>
     </HStack>
   );
@@ -120,6 +122,7 @@ export function SelectedPlayers({
   onSelectionChange,
   ...props
 }: UserSelector & BoxProps) {
+  const t = useTranslations('components.playerSelection');
   const handleRemovePlayer = useCallback(
     (id: string) => {
       if (disabled) return;
@@ -160,8 +163,8 @@ export function SelectedPlayers({
       ) : (
         <EmptyState
           size="sm"
-          title="No players selected"
-          description={disabled ? '' : 'Select players from the list above.'}
+          title={t('noPlayersSelected')}
+          description={disabled ? '' : t('selectFromList')}
           icon={<UserRoundX />}
         />
       )}

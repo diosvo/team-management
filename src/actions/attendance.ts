@@ -1,5 +1,6 @@
 'use server';
 
+import { getTranslations } from 'next-intl/server';
 import { forbidden } from 'next/navigation';
 
 import { AttendanceStatus } from '@/utils/enum';
@@ -33,16 +34,18 @@ export const submitLeave = attendance(
     const { isPlayer } = hasPermissions(user.role);
     if (isPlayer && values.player_id !== user.id) forbidden();
 
+    const t = await getTranslations('actions.attendance');
+
     try {
       await insertAttendance(values);
 
       revalidate.attendances();
 
-      return ResponseFactory.success('Leave request submitted successfully');
+      return ResponseFactory.success(t('leaveSubmitted'));
     } catch (error) {
       const { message, constraint } = getDbErrorMessage(error);
       if (constraint === 'attendance_player_id_player_id_fk') {
-        return ResponseFactory.error('Invalid or missing player ID');
+        return ResponseFactory.error(t('invalidPlayer'));
       }
 
       // Session-less records collide per date, session-linked ones per session.
@@ -51,7 +54,7 @@ export const submitLeave = attendance(
         constraint === 'unique_player_per_session'
       ) {
         const shortId = values.player_id.slice(0, 8);
-        return ResponseFactory.error(`${shortId}: Already submitted`);
+        return ResponseFactory.error(t('alreadySubmitted', { id: shortId }));
       }
 
       return ResponseFactory.error(message);
@@ -62,6 +65,7 @@ export const submitLeave = attendance(
 export const updateStatus = attendance(
   ['edit'],
   async function update(_, attendance_id: string, status: AttendanceStatus) {
+    const t = await getTranslations('actions.attendance');
     try {
       await updateAttendance(attendance_id, {
         status,
@@ -69,7 +73,7 @@ export const updateStatus = attendance(
 
       revalidate.attendances();
 
-      return ResponseFactory.success('Updated attendance status successfully');
+      return ResponseFactory.success(t('statusUpdated'));
     } catch (error) {
       const shortId = attendance_id.slice(0, 8);
       const { message } = getDbErrorMessage(error);
@@ -81,12 +85,13 @@ export const updateStatus = attendance(
 export const removeAttendance = attendance(
   ['delete'],
   async function remove(_, attendance_id: string) {
+    const t = await getTranslations('actions.attendance');
     try {
       await deleteAttendance(attendance_id);
 
       revalidate.attendances();
 
-      return ResponseFactory.success('Deleted attendance record successfully');
+      return ResponseFactory.success(t('deleted'));
     } catch (error) {
       const shortId = attendance_id.slice(0, 8);
       const { message } = getDbErrorMessage(error);

@@ -10,15 +10,17 @@ import {
   Span,
 } from '@chakra-ui/react';
 import { CalendarSearch } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 
 import { CloseButton } from '@/components/ui/close-button';
 
 import useSyncedState from '@/hooks/use-synced-state';
+import { INTL_LOCALE } from '@/i18n/config';
 
 import type { DateRange } from '@/types/common';
-import { LOCALE } from '@/utils/constants';
 import {
   describeRange,
+  findPreset,
   formatCalendarDay,
   type DateSelection,
 } from '@/utils/datetime';
@@ -66,12 +68,14 @@ export function DateRangePicker({
   min,
   max,
   label,
-  placeholder = 'All time',
+  placeholder,
   disabled,
   width = { base: 'full', sm: 'max-content' },
   icon = <CalendarSearch size={16} />,
   onClear,
 }: DateRangePickerProps) {
+  const t = useTranslations('components.datePicker');
+  const locale = useLocale();
   const committed = useMemo(
     () => toSelection(value, selection),
     [value.from, value.to, selection],
@@ -88,7 +92,12 @@ export function DateRangePicker({
   };
 
   const isSet = Boolean(value.from && value.to);
-  const text = isSet ? describeRange(value, selection) : placeholder;
+  const preset = isSet ? findPreset(value, selection) : undefined;
+  const text = !isSet
+    ? (placeholder ?? t('allTime'))
+    : preset && t.has(`presets.${preset.id}` as never)
+      ? t(`presets.${preset.id}` as never)
+      : describeRange(value, selection);
   const clearable = Boolean(onClear) && isSet;
 
   return (
@@ -100,7 +109,7 @@ export function DateRangePicker({
       width={width}
       flexShrink={{ base: 1, sm: 0 }}
       minWidth={0}
-      locale={LOCALE}
+      locale={INTL_LOCALE[locale]}
       size={{ base: 'sm', md: 'md' }}
       disabled={disabled}
       min={parseIsoDay(min)}
@@ -134,7 +143,7 @@ export function DateRangePicker({
             <CloseButton
               size="2xs"
               disabled={disabled}
-              aria-label={label ? `Clear ${label}` : 'Clear dates'}
+              aria-label={label ? t('clearLabel', { label }) : t('clearDates')}
               onClick={onClear}
             />
           </ChakraDatePicker.IndicatorGroup>

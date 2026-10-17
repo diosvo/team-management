@@ -1,0 +1,21 @@
+{
+  "required": "Vui lòng nhập trường này.",
+  "invalid": "Giá trị không hợp lệ.",
+  "email": "Vui lòng nhập email hợp lệ.",
+  "minLength": "Tối thiểu {min} ký tự.",
+  "maxLength": "Tối đa {max} ký tự.",
+  "exactDigits": "Phải gồm đúng {length} chữ số.",
+  "minValue": "Tối thiểu là {min}.",
+  "maxValue": "Không được vượt quá {max}.",
+  "minItems": "Chọn ít nhất {min} mục.",
+  "maxItems": "Chọn tối đa {max} mục.",
+  "notInFuture": "Không được ở tương lai.",
+  "afterClubFounded": "Phải sau năm thành lập CLB.",
+  "awardedPlayerRequired": "Chọn cầu thủ nhận giải cho thành tích cá nhân.",
+  "noteTooLarge": "Ghi chú quá dài.",
+  "feedbackDescriptionRequired": "Hãy cho chúng tôi biết chuyện gì đã xảy ra.",
+  "endDateAfterStartDate": "Ngày kết thúc phải sau ngày bắt đầu",
+  "endTimeAfterStartTime": "Giờ kết thúc phải sau giờ bắt đầu",
+  "recipientsRequired": "Thêm ít nhất một người nhận.",
+  "scoreRequiresCompleted": "Chỉ trận đã đấu mới được có tỉ số"
+}

@@ -1,5 +1,6 @@
 'use server';
 
+import { getTranslations } from 'next-intl/server';
 import { ResponseFactory } from '@/utils/response';
 
 import {
@@ -27,6 +28,7 @@ export const upsertAsset = assets(
     asset_id: string,
     asset: UpsertAssetSchemaValues,
   ) {
+    const t = await getTranslations('actions.asset');
     const newData = { ...asset, team_id: user.team_id };
 
     try {
@@ -38,9 +40,7 @@ export const upsertAsset = assets(
 
       revalidate.assets();
 
-      return ResponseFactory.success(
-        `${asset_id ? 'Updated' : 'Added'} asset successfully`,
-      );
+      return ResponseFactory.success(t(asset_id ? 'updated' : 'added'));
     } catch (error) {
       const { message } = getDbErrorMessage(error);
       return ResponseFactory.error(message);
@@ -51,14 +51,15 @@ export const upsertAsset = assets(
 export const removeAsset = assets(
   ['delete'],
   async function remove(_, asset_id: string) {
+    const t = await getTranslations('actions.asset');
     try {
       await deleteAsset(asset_id);
 
       revalidate.assets();
 
-      return ResponseFactory.success('Asset deleted successfully');
+      return ResponseFactory.success(t('deleted'));
     } catch {
-      return ResponseFactory.error('Failed to delete asset');
+      return ResponseFactory.error(t('deleteFailed'));
     }
   },
 );

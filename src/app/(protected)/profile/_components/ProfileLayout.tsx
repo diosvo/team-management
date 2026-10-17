@@ -1,6 +1,7 @@
 'use client';
 
 import { Center, Tabs, useBreakpointValue } from '@chakra-ui/react';
+import { useTranslations } from 'next-intl';
 
 import type { User } from '@/drizzle/schema';
 
@@ -15,6 +16,7 @@ export default function ProfileLayout({
   user: User;
   viewOnly: boolean;
 }) {
+  const t = useTranslations('profile.tabs');
   const orientation = useBreakpointValue<'horizontal' | 'vertical'>({
     base: 'horizontal',
     md: 'vertical',
@@ -30,9 +32,9 @@ export default function ProfileLayout({
         orientation={orientation}
       >
         <Tabs.List>
-          <Tabs.Trigger value="avatar">Overview</Tabs.Trigger>
-          <Tabs.Trigger value="personal-info">Personal</Tabs.Trigger>
-          <Tabs.Trigger value="team-info">Team</Tabs.Trigger>
+          <Tabs.Trigger value="avatar">{t('overview')}</Tabs.Trigger>
+          <Tabs.Trigger value="personal-info">{t('personal')}</Tabs.Trigger>
+          <Tabs.Trigger value="team-info">{t('team')}</Tabs.Trigger>
         </Tabs.List>
 
         <Tabs.Content value="avatar" flex="1">

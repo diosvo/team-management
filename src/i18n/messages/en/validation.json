@@ -1,0 +1,21 @@
+{
+  "required": "This field is required.",
+  "invalid": "Invalid value.",
+  "email": "Please enter a valid email.",
+  "minLength": "Be at least {min} characters long.",
+  "maxLength": "Be at most {max} characters long.",
+  "exactDigits": "Must contain exactly {length} digits.",
+  "minValue": "Must be at least {min}.",
+  "maxValue": "Cannot exceed {max}.",
+  "minItems": "Select at least {min, plural, one {# item} other {# items}}.",
+  "maxItems": "Select at most {max, plural, one {# item} other {# items}}.",
+  "notInFuture": "Not be in the future.",
+  "afterClubFounded": "Be after the club was founded.",
+  "awardedPlayerRequired": "Select the awarded player for an individual honor.",
+  "noteTooLarge": "Note is too large.",
+  "feedbackDescriptionRequired": "Tell us what happened.",
+  "endDateAfterStartDate": "End date must be after start date",
+  "endTimeAfterStartTime": "End time must be after start time",
+  "recipientsRequired": "Add at least one recipient.",
+  "scoreRequiresCompleted": "Only a completed match can carry a score"
+}

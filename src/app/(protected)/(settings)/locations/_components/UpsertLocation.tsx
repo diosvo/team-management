@@ -13,6 +13,7 @@ import {
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Save } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
 
 import { CloseButton } from '@/components/ui/close-button';
@@ -29,6 +30,8 @@ import {
 } from '@/schemas/location';
 
 export const UpsertLocation = createOverlay(({ action, item, ...rest }) => {
+  const t = useTranslations('locations.upsert');
+  const tCommon = useTranslations('common');
   const { mutate } = useSWRConfig();
   const [isPending, startTransition] = useTransition();
 
@@ -45,7 +48,7 @@ export const UpsertLocation = createOverlay(({ action, item, ...rest }) => {
   const onSubmit = (data: UpsertLocationSchemaValues) => {
     const id = toaster.create({
       type: 'loading',
-      title: 'Saving location information...',
+      title: t('savingToast'),
     });
 
     startTransition(async () => {
@@ -77,30 +80,32 @@ export const UpsertLocation = createOverlay(({ action, item, ...rest }) => {
               <CloseButton />
             </Dialog.CloseTrigger>
             <Dialog.Header>
-              <Dialog.Title>{action} Location</Dialog.Title>
+              <Dialog.Title>
+                {action === 'Add' ? t('addTitle') : t('updateTitle')}
+              </Dialog.Title>
             </Dialog.Header>
             <Dialog.Body>
               <VStack alignItems="stretch" gap={3}>
                 <Field
                   required
-                  label="Name"
+                  label={t('name')}
                   invalid={!!errors.name}
                   errorText={errors.name?.message}
                 >
                   <Input
-                    placeholder="Headquarters"
+                    placeholder={t('namePlaceholder')}
                     disabled={isPending}
                     {...register('name')}
                   />
                 </Field>
                 <Field
                   required
-                  label="Address"
+                  label={t('address')}
                   invalid={!!errors.address}
                   errorText={errors.address?.message}
                 >
                   <Input
-                    placeholder="123 Main St, City, Country"
+                    placeholder={t('addressPlaceholder')}
                     disabled={isPending}
                     {...register('address')}
                   />
@@ -110,11 +115,11 @@ export const UpsertLocation = createOverlay(({ action, item, ...rest }) => {
             <Dialog.Footer>
               <Button
                 type="submit"
-                loadingText="Saving..."
+                loadingText={t('saving')}
                 loading={isPending}
                 disabled={!isValid}
               >
-                <Save /> {action}
+                <Save /> {action === 'Add' ? tCommon('add') : tCommon('update')}
               </Button>
             </Dialog.Footer>
           </Dialog.Content>

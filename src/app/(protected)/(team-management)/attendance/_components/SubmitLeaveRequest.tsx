@@ -12,6 +12,7 @@ import {
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Send } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
 
 import { DatePickerField } from '@/components/date-picker/DatePicker';
@@ -32,6 +33,7 @@ export default function SubmitLeaveRequest({
 }: {
   trigger: React.ReactNode;
 }) {
+  const t = useTranslations('attendance.leave');
   const { user } = useSessionContext();
 
   const {
@@ -51,7 +53,7 @@ export default function SubmitLeaveRequest({
 
     const id = toaster.create({
       type: 'loading',
-      title: 'Submitting your leave request...',
+      title: t('loading'),
     });
 
     startTransition(async () => {
@@ -79,13 +81,13 @@ export default function SubmitLeaveRequest({
         <Dialog.Positioner as="form" onSubmit={handleSubmit(onSubmit)}>
           <Dialog.Content>
             <Dialog.Header>
-              <Dialog.Title>Submit Leave Request</Dialog.Title>
+              <Dialog.Title>{t('title')}</Dialog.Title>
             </Dialog.Header>
             <Dialog.Body>
               <VStack alignItems="stretch" gap={4}>
                 <Field
                   required
-                  label="Date"
+                  label={t('date')}
                   invalid={!!errors.date}
                   errorText={errors.date?.message}
                 >
@@ -96,15 +98,15 @@ export default function SubmitLeaveRequest({
                   />
                 </Field>
                 <Field
-                  label="Reason"
-                  helperText="Max 128 characters."
+                  label={t('reason')}
+                  helperText={t('reasonHelper')}
                   invalid={!!errors.reason}
                   errorText={errors.reason?.message}
                 >
                   <Textarea
                     autoresize
                     maxLength={128}
-                    placeholder="Reason for leave..."
+                    placeholder={t('reasonPlaceholder')}
                     {...register('reason')}
                   />
                 </Field>
@@ -113,11 +115,11 @@ export default function SubmitLeaveRequest({
             <Dialog.Footer>
               <Button
                 type="submit"
-                loadingText="Submitting..."
+                loadingText={t('submitting')}
                 loading={isPending}
                 disabled={!isValid || isPending}
               >
-                <Send /> Submit
+                <Send /> {t('submit')}
               </Button>
             </Dialog.Footer>
             <Dialog.CloseTrigger asChild>

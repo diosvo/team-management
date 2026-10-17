@@ -19,6 +19,7 @@ import {
   Textarea,
 } from '@chakra-ui/react';
 import { Base64 } from 'js-base64';
+import { useTranslations } from 'next-intl';
 import { HelpCircle, Trophy, Upload, UsersRound } from 'lucide-react';
 
 import SearchableSelect from '@/components/SearchableSelect';
@@ -57,6 +58,8 @@ const FIELD_GUIDE: Array<{ label: string; names: Array<string> }> = [
 ];
 
 export default function RegistrationPageClient() {
+  const t = useTranslations('registration');
+  const tCommon = useTranslations('common');
   const [league, setLeague] = useState<League>();
   const [selection, setSelection] = useState<Array<User>>([]);
   const [template, setTemplate] = useState<File>();
@@ -88,23 +91,28 @@ export default function RegistrationPageClient() {
         pdfBase64: Base64.fromUint8Array(bytes),
       });
       toaster.success({
-        title: 'Registration saved',
-        description: `${selection.length} player(s) for ${name}.`,
+        title: t('save.success'),
+        description: t('save.successDescription', {
+          count: selection.length,
+          name,
+        }),
       });
     } catch (error) {
       toaster.error({
-        title: 'Could not save registration',
+        title: t('save.error'),
         description:
-          error instanceof Error ? error.message : 'Something went wrong.',
+          error instanceof Error
+            ? error.message
+            : tCommon('somethingWentWrong'),
       });
     }
   };
 
   const steps: Array<StepDef> = [
-    { title: 'Choose players', done: selection.length > 0 },
-    { title: 'Pick league', done: !!league },
-    { title: 'Attach PDF', done: !!template, isOptional: true },
-    { title: 'Review & Export', done: selection.length > 0 && !!league },
+    { title: t('steps.choosePlayers'), done: selection.length > 0 },
+    { title: t('steps.pickLeague'), done: !!league },
+    { title: t('steps.attachPdf'), done: !!template, isOptional: true },
+    { title: t('steps.review'), done: selection.length > 0 && !!league },
   ];
 
   return (
@@ -117,7 +125,7 @@ export default function RegistrationPageClient() {
             title={
               <HStack>
                 <UsersRound size={16} />
-                Select players
+                {t('players.title')}
               </HStack>
             }
             action={
@@ -125,13 +133,16 @@ export default function RegistrationPageClient() {
                 variant="surface"
                 colorPalette={selection.length ? 'green' : 'gray'}
               >
-                {selection.length} selected
+                {t('players.selected', { count: selection.length })}
               </Badge>
             }
             description={
               <>
-                Only <Span backgroundColor="green.100">active</Span> players are
-                shown.
+                {t.rich('players.description', {
+                  active: (chunks) => (
+                    <Span backgroundColor="green.100">{chunks}</Span>
+                  ),
+                })}
               </>
             }
           >
@@ -151,10 +162,10 @@ export default function RegistrationPageClient() {
             title={
               <HStack>
                 <Trophy size={16} />
-                Choose a league
+                {t('league.title')}
               </HStack>
             }
-            description="Pick which competition this registration is for."
+            description={t('league.description')}
           >
             <SearchableSelect
               multiple={false}
@@ -172,9 +183,9 @@ export default function RegistrationPageClient() {
             title={
               <HStack>
                 <Upload size={16} />
-                Attach PDF
+                {t('attach.title')}
                 <Span fontSize="xs" color="fg.muted">
-                  (optional)
+                  {t('optional')}
                 </Span>
               </HStack>
             }
@@ -185,7 +196,7 @@ export default function RegistrationPageClient() {
                     size="sm"
                     variant="ghost"
                     colorPalette="blue"
-                    aria-label="Field names"
+                    aria-label={t('attach.fieldNames')}
                   >
                     <HelpCircle size={14} />
                   </IconButton>
@@ -196,11 +207,10 @@ export default function RegistrationPageClient() {
                       <Popover.Arrow />
                       <Popover.Body>
                         <Popover.Title fontWeight="medium">
-                          Field names
+                          {t('attach.fieldNames')}
                         </Popover.Title>
                         <Text fontSize="xs" color="fg.muted" marginTop={1}>
-                          Upload a fillable PDF whose text fields are named like
-                          below — they&apos;ll be filled automatically.
+                          {t('attach.fieldNamesHint')}
                         </Text>
                         <Stack gap={2} marginTop={3}>
                           {FIELD_GUIDE.map(({ label, names }) => (
@@ -229,15 +239,14 @@ export default function RegistrationPageClient() {
                         </Stack>
                       </Popover.Body>
                       <Popover.Footer fontSize="xs" color="fg.muted">
-                        No fillable fields? We&apos;ll generate a roster from
-                        scratch instead.
+                        {t('attach.noFillableFields')}
                       </Popover.Footer>
                     </Popover.Content>
                   </Popover.Positioner>
                 </Portal>
               </Popover.Root>
             }
-            description="Upload a fillable PDF form or auto-generate a roster for the current league."
+            description={t('attach.description')}
           >
             <FileUpload.Root
               accept="application/pdf"
@@ -253,9 +262,9 @@ export default function RegistrationPageClient() {
                 <FileUpload.Dropzone width="full" minHeight="20">
                   <Upload size={16} />
                   <FileUpload.DropzoneContent>
-                    <Span>Click to upload PDF</Span>
+                    <Span>{t('attach.upload')}</Span>
                     <Span color="fg.muted" fontSize="xs">
-                      Max 10 MB
+                      {t('attach.maxSize')}
                     </Span>
                   </FileUpload.DropzoneContent>
                 </FileUpload.Dropzone>
@@ -265,10 +274,10 @@ export default function RegistrationPageClient() {
 
             <HStack marginBlock={2}>
               <Span fontWeight="medium" fontSize="sm">
-                Notes
+                {t('attach.notes')}
               </Span>
               <Span fontSize="xs" color="fg.muted">
-                (optional)
+                {t('optional')}
               </Span>
               <Span fontSize="xs" color="fg.muted" marginLeft="auto">
                 {notes.length}/{NOTES_LIMIT}
@@ -281,7 +290,7 @@ export default function RegistrationPageClient() {
               value={notes}
               disabled={isDisabled}
               maxLength={NOTES_LIMIT}
-              placeholder="Internal notes about this registration…"
+              placeholder={t('attach.notesPlaceholder')}
               onChange={(event) => setNotes(event.target.value)}
             />
           </Card>

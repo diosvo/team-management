@@ -1,5 +1,6 @@
 'use server';
 
+import { getTranslations } from 'next-intl/server';
 import env from '@env';
 
 import { buildIssueBody } from '@/lib/feedback';
@@ -9,6 +10,7 @@ import {
   type SubmitFeedbackSchemaValues,
 } from '@/schemas/feedback';
 import { FEEDBACK_ASSIGNEES, FEEDBACK_TYPES } from '@/utils/constants/feedback';
+import { localizeIssue } from '@/i18n/zod';
 import { ResponseFactory } from '@/utils/response';
 
 import { withAuth } from './auth';
@@ -19,10 +21,22 @@ import { withAuth } from './auth';
  */
 export const submitFeedback = withAuth(
   async (user, values: SubmitFeedbackSchemaValues) => {
-    const parsed = SubmitFeedbackSchema.safeParse(values);
+    const [t, tValidation] = await Promise.all([
+      getTranslations('actions.feedback'),
+      getTranslations('validation'),
+    ]);
+    const parsed = SubmitFeedbackSchema.safeParse(values, {
+      error: (issue) => localizeIssue(issue, tValidation),
+    });
 
     if (!parsed.success) {
-      return ResponseFactory.error(parsed.error.issues[0].message);
+      // Schema-specific messages are `validation` keys
+      const { message } = parsed.error.issues[0];
+      return ResponseFactory.error(
+        tValidation.has(message as never)
+          ? tValidation(message as never)
+          : message,
+      );
     }
 
     const { type, title, description, page } = parsed.data;
@@ -42,14 +56,12 @@ export const submitFeedback = withAuth(
       });
 
       return ResponseFactory.success(
-        `Thanks! Your feedback was filed as #${issue.number}.`,
+        t('submitted', { number: issue.number }),
         issue,
       );
     } catch (error) {
       return ResponseFactory.error(
-        env.NODE_ENV === 'development'
-          ? (error as Error).message
-          : 'Unable to send your feedback right now. Please try again later.',
+        env.NODE_ENV === 'development' ? (error as Error).message : t('failed'),
       );
     }
   },

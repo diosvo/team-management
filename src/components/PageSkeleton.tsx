@@ -7,6 +7,7 @@ import {
   Table,
 } from '@chakra-ui/react';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import FiltersSkeleton from '@/components/filters/FiltersSkeleton';
 import PageHeader from '@/components/PageHeader';
@@ -49,11 +50,13 @@ export function TitleSkeleton({ title, actions = [] }: TitleSkeletonProps) {
 
 /** A `StatGroup` of `count` cards. */
 export function StatsSkeleton({ count }: { count: number }) {
+  const t = useTranslations('components.pageSkeleton');
+
   return (
     <StatGroup>
       {Array.from({ length: count }, (_, index) => (
         <Skeleton key={index}>
-          <Stat label="Label" value={0} />
+          <Stat label={t('statLabel')} value={0} />
         </Skeleton>
       ))}
     </StatGroup>
@@ -69,6 +72,8 @@ const cells = (columns: number, Cell: typeof Table.Cell) =>
 
 /** A `DataTable` page of `rows` rows, followed by its pagination. */
 export function TableSkeleton({ columns = 5, rows = 5 }) {
+  const t = useTranslations('components.pagination');
+
   return (
     <>
       <Table.ScrollArea>
@@ -88,10 +93,10 @@ export function TableSkeleton({ columns = 5, rows = 5 }) {
         <Skeleton height={5} width={40} />
         <Skeleton>
           <ButtonGroup variant="ghost" size={{ base: 'xs', sm: 'sm' }}>
-            <IconButton aria-label="Previous page">
+            <IconButton aria-label={t('previousPage')}>
               <ChevronLeft />
             </IconButton>
-            <IconButton aria-label="Next page">
+            <IconButton aria-label={t('nextPage')}>
               <ChevronRight />
             </IconButton>
           </ButtonGroup>

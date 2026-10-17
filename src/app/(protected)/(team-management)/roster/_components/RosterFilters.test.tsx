@@ -38,11 +38,13 @@ describe('RosterFilters', () => {
     perms: Record<string, boolean> = {},
     values: Record<string, unknown> = {},
   ) => {
-    mockUsePermissions.mockReturnValue(createPermissionsMock({
-      isAdmin: false,
-      isCaptain: false,
-      ...perms,
-    }));
+    mockUsePermissions.mockReturnValue(
+      createPermissionsMock({
+        isAdmin: false,
+        isCaptain: false,
+        ...perms,
+      }),
+    );
     mockUseQueryStates(
       { page: 1, q: '', role: [], state: [], ...values },
       mockSetSearchParams,
