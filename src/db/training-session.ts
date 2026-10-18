@@ -1,8 +1,7 @@
-import { and, desc, eq, gte, inArray, lte } from 'drizzle-orm';
+import { and, desc, eq, inArray } from 'drizzle-orm';
 
 import { AttendanceStatus, SessionStatus } from '@/utils/enum';
 import type { TrainingSearchParams } from '@/lib/nuqs';
-import { TIME_DURATION } from '@/utils/formatter';
 
 import db from '@/drizzle';
 import {
@@ -15,19 +14,18 @@ import type {
   TrainingSessionStats,
   TrainingSessionWithDetails,
 } from '@/types/training-session';
+import { withinRange } from './utils';
 
 export async function getSessions(
   team_id: string,
   params: TrainingSearchParams,
 ): Promise<DataWithStats<TrainingSessionWithDetails, TrainingSessionStats>> {
-  const { interval } = params;
-  const { start, end } = TIME_DURATION[interval];
+  const { from, to } = params;
 
   try {
     const conditions = [
       eq(TrainingSessionTable.team_id, team_id),
-      gte(TrainingSessionTable.date, start.toISOString()),
-      lte(TrainingSessionTable.date, end.toISOString()),
+      withinRange(TrainingSessionTable.date, { from, to }),
     ];
 
     if (params.status.length > 0) {

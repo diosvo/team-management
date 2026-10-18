@@ -4,6 +4,7 @@ import {
   setupTestLifecycle,
 } from '@/test/utilities';
 
+import { ESTABLISHED_DATE } from '@/utils/constants';
 import { AssetCategory, AssetCondition } from '@/utils/enum';
 
 import AssetFilters from './AssetFilters';
@@ -38,10 +39,15 @@ describe('AssetFilters', () => {
 
   setupTestLifecycle();
 
-  test('provides the category and condition filters', () => {
+  test('provides the acquired date, category and condition filters', () => {
     setup();
 
     expect(propsSpy.filters).toMatchObject([
+      {
+        key: 'acquired_date',
+        label: 'Acquired Date',
+        control: { type: 'date-range', min: ESTABLISHED_DATE },
+      },
       { key: 'category', label: 'Category' },
       { key: 'condition', label: 'Condition' },
     ]);
@@ -53,7 +59,13 @@ describe('AssetFilters', () => {
     expect(propsSpy.values).toMatchObject({
       category: [AssetCategory.EQUIPMENT],
     });
-    expect(propsSpy.defaults).toMatchObject({ category: [], condition: [] });
+    // No default window: the acquired date range is optional (all time).
+    expect(propsSpy.defaults).toMatchObject({
+      category: [],
+      condition: [],
+      from: '',
+      to: '',
+    });
   });
 
   test('resets to the first page when filters are applied', () => {

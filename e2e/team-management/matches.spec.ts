@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import {
+  fillDate,
   testCheckboxFilter,
   testCheckboxFilterReset,
   testDeleteWithCheckbox,
@@ -147,7 +148,7 @@ test.describe('Add Match', () => {
     await page.getByRole('button', { name: 'Add' }).click();
 
     // Fill required fields
-    await page.getByLabel('Date').fill('2026-12-31');
+    await fillDate(page, 'Date', '2026-12-31');
     await page.getByLabel('Time').fill('18:00');
 
     // Select opponent team

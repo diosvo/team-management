@@ -13,8 +13,8 @@ import useTableState from '@/hooks/use-table-state';
 import { useEmailFilters } from '@/lib/nuqs';
 import type { FilterDef } from '@/types/filters';
 import { EMAIL_STATUS_SELECTION } from '@/utils/constants';
+import { formatDatetime } from '@/utils/datetime';
 import { buildPredicate } from '@/utils/filters';
-import { formatDatetime } from '@/utils/formatter';
 import { getColor } from '@/utils/helper';
 
 const FILTERS: Array<FilterDef> = [

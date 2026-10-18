@@ -13,7 +13,7 @@ const FILTERS: Array<FilterDef> = [
   {
     key: 'date',
     label: 'Date',
-    control: { type: 'date', min: ESTABLISHED_DATE },
+    control: { type: 'date-range', selection: 'single', min: ESTABLISHED_DATE },
   },
   {
     key: 'status',

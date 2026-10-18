@@ -25,7 +25,7 @@ import {
 } from '@/components/ui/rich-text-editor';
 
 import { editorToPlainText } from '@/components/editor/plain-text';
-import { formatDatetime } from '@/utils/formatter';
+import { formatDatetime } from '@/utils/datetime';
 
 type TextEditorProps = {
   content: string;

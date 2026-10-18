@@ -19,7 +19,6 @@ import {
 } from '@/test/db-operations';
 import {
   MOCK_ATTENDANCE_BY_DATE,
-  MOCK_ATTENDANCE_DATE,
   MOCK_ATTENDANCE_INPUT,
   MOCK_ATTENDANCE_ON_TIME,
   MOCK_ATTENDANCE_RESPONSE,
@@ -28,10 +27,11 @@ import { MOCK_TEAM } from '@/test/mocks/team';
 
 import {
   deleteAttendance,
-  getAttendanceByDate,
+  getAttendances,
   insertAttendance,
   updateAttendance,
 } from './attendance';
+import { withinRange } from './utils';
 
 vi.mock('@/drizzle', () => ({
   default: {
@@ -75,7 +75,9 @@ const MOCK_JOINED_ROWS = MOCK_ATTENDANCE_BY_DATE.map(
   ({ player, ...attendance }) => ({ attendance, name: player.user.name }),
 );
 
-describe('getAttendanceByDate', () => {
+describe('getAttendances', () => {
+  const RANGE = { from: '2026-02-01', to: '2026-02-28' };
+
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -84,10 +86,7 @@ describe('getAttendanceByDate', () => {
     const { mockFrom, mockInnerJoin, mockWhereWithGroupBy, mockOrderBy } =
       mockSelectSuccess(MOCK_JOINED_ROWS);
 
-    const result = await getAttendanceByDate(
-      MOCK_TEAM.team_id,
-      MOCK_ATTENDANCE_DATE,
-    );
+    const result = await getAttendances(MOCK_TEAM.team_id, RANGE);
 
     expect(result).toEqual(MOCK_ATTENDANCE_RESPONSE);
     // Verify query construction
@@ -104,10 +103,14 @@ describe('getAttendanceByDate', () => {
     expect(mockWhereWithGroupBy).toHaveBeenCalledWith(
       and(
         eq(UserTable.team_id, MOCK_TEAM.team_id),
-        eq(AttendanceTable.date, MOCK_ATTENDANCE_DATE),
+        withinRange(AttendanceTable.date, RANGE),
       ),
     );
-    expect(mockOrderBy).toHaveBeenCalledWith(desc(AttendanceTable.status));
+    // Newest day first, then by status within the day
+    expect(mockOrderBy).toHaveBeenCalledWith(
+      desc(AttendanceTable.date),
+      desc(AttendanceTable.status),
+    );
   });
 
   test.each([
@@ -124,10 +127,7 @@ describe('getAttendanceByDate', () => {
     async ({ mockError }) => {
       mockSelectFailure(mockError as string | Error);
 
-      const result = await getAttendanceByDate(
-        MOCK_TEAM.team_id,
-        MOCK_ATTENDANCE_DATE,
-      );
+      const result = await getAttendances(MOCK_TEAM.team_id, RANGE);
 
       expect(result).toEqual({
         stats: {

@@ -11,13 +11,14 @@ import {
   Span,
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { capitalize } from 'es-toolkit/string';
 import { Base64 } from 'js-base64';
 import { useForm, useWatch } from 'react-hook-form';
 
 import { SearchableSelectField } from '@/components/SearchableSelect';
 import { toaster } from '@/components/ui/toaster';
 
+import type { DateRange } from '@/types/common';
+import { formatDateRange } from '@/utils/datetime';
 import { formatValueUnit } from '@/utils/formatter';
 
 import { getReportRecipients, sendReportEmail } from '@/actions/report';
@@ -30,20 +31,19 @@ import AnalyticsReport from '../../reports/_components/AnalyticsReport';
 
 type EmailReportProps = {
   open: boolean;
-  interval: string;
-  formattedPeriod: string;
+  range: DateRange;
   filename: string;
   onOpenChange: (open: boolean) => void;
 };
 
 export default function EmailReport({
-  interval,
   open,
-  formattedPeriod,
+  range,
   filename,
   onOpenChange,
 }: EmailReportProps) {
   const [sending, setSending] = useState(false);
+  const formattedPeriod = formatDateRange(range);
 
   const { control, reset, handleSubmit } = useForm<EmailReportSchemaValues>({
     resolver: zodResolver(EmailReportSchema),
@@ -59,7 +59,7 @@ export default function EmailReport({
     try {
       const response = await fetch('/api/reports/dashboard', {
         method: 'POST',
-        body: JSON.stringify({ interval, filename }),
+        body: JSON.stringify({ ...range, filename }),
       });
 
       if (!response.ok) {
@@ -144,7 +144,7 @@ export default function EmailReport({
                 fieldProps={{
                   helperText: noRecipients
                     ? 'No recipients selected. Please select at least one.'
-                    : `${capitalize(interval.split('_').join(' '))}'s report will be emailed to ${recipients.length} ${formatValueUnit(recipients.length, 'recipient')}.`,
+                    : `The ${formattedPeriod} report will be emailed to ${recipients.length} ${formatValueUnit(recipients.length, 'recipient')}.`,
                 }}
               />
             </Dialog.Body>

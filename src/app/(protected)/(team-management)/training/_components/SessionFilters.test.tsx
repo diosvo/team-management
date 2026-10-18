@@ -4,7 +4,8 @@ import {
   setupTestLifecycle,
 } from '@/test/utilities';
 
-import { Interval, SessionStatus } from '@/utils/enum';
+import { thisYear } from '@/utils/datetime';
+import { SessionStatus } from '@/utils/enum';
 
 import SessionFilters from './SessionFilters';
 
@@ -33,7 +34,7 @@ describe('SessionFilters', () => {
         page: 1,
         q: '',
         status: [],
-        interval: Interval.THIS_MONTH,
+        ...thisYear(),
         ...values,
       },
       mockSetSearchParams,
@@ -44,11 +45,11 @@ describe('SessionFilters', () => {
 
   setupTestLifecycle();
 
-  test('provides the interval and status filters', () => {
+  test('provides the range and status filters', () => {
     setup();
 
     expect(propsSpy.filters).toMatchObject([
-      { key: 'interval', label: 'Time' },
+      { key: 'range', label: 'Time' },
       { key: 'status', label: 'Status' },
     ]);
   });
@@ -61,7 +62,7 @@ describe('SessionFilters', () => {
     });
     expect(propsSpy.defaults).toMatchObject({
       status: [],
-      interval: Interval.THIS_MONTH,
+      ...thisYear(),
     });
   });
 

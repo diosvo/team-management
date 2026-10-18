@@ -9,8 +9,8 @@ import {
   setupTestLifecycle,
 } from '@/test/utilities';
 import { ESTABLISHED_DATE } from '@/utils/constants';
+import { formatDate } from '@/utils/datetime';
 import { AchievementType } from '@/utils/enum';
-import { formatDate } from '@/utils/formatter';
 
 import type { AchievementWithRelations } from '@/db/achievement';
 

@@ -14,8 +14,8 @@ import usePermissions from '@/hooks/use-permissions';
 import useTableState from '@/hooks/use-table-state';
 
 import { useAssetFilters } from '@/lib/nuqs';
+import { formatDate, formatDatetime } from '@/utils/datetime';
 import { buildPredicate } from '@/utils/filters';
-import { formatDate, formatDatetime } from '@/utils/formatter';
 import { getColor } from '@/utils/helper';
 
 import { removeAsset } from '@/actions/asset';
@@ -30,15 +30,17 @@ const RichTextViewer = dynamic(
 
 export default function AssetTable({ data }: { data: Array<Asset> }) {
   const { can, isGuest } = usePermissions();
-  const [{ q, page, category, condition }, setSearchParams] = useAssetFilters();
+  const [{ q, page, category, condition, from, to }, setSearchParams] =
+    useAssetFilters();
 
   const predicate = useMemo(
     () =>
       buildPredicate<Asset>({
         search: { query: q, fields: ['name'] },
         match: { category, condition },
+        within: { field: 'acquired_date', range: { from, to } },
       }),
-    [q, category, condition],
+    [q, category, condition, from, to],
   );
   const { items, currentData, selection, setSelection, totalCount } =
     useTableState(data, predicate, page);
@@ -65,11 +67,7 @@ export default function AssetTable({ data }: { data: Array<Asset> }) {
     },
     {
       header: 'Category',
-      cell: (item) => (
-        <Badge variant="outline" borderRadius="full">
-          {capitalize(item.category)}
-        </Badge>
-      ),
+      cell: (item) => capitalize(item.category),
     },
     { header: 'Quantity', cell: (item) => item.quantity },
     {

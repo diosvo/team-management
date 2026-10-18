@@ -5,10 +5,18 @@ import Filters from '@/components/filters/Filters';
 import type { FilterDef } from '@/types/filters';
 
 import { useMatchFilters } from '@/lib/nuqs';
-import { GAME_TYPE_SELECTION, MATCH_TYPE_SELECTION } from '@/utils/constants';
+import {
+  ESTABLISHED_DATE,
+  GAME_TYPE_SELECTION,
+  MATCH_TYPE_SELECTION,
+} from '@/utils/constants';
 
 const FILTERS: Array<FilterDef> = [
-  { key: 'interval', label: 'Time', control: { type: 'interval' } },
+  {
+    key: 'range',
+    label: 'Time',
+    control: { type: 'date-range', min: ESTABLISHED_DATE },
+  },
   {
     key: 'game_type',
     label: 'Game Type',

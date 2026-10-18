@@ -8,20 +8,22 @@ import { ResponseFactory } from '@/utils/response';
 
 import {
   deleteAttendance,
-  getAttendanceByDate as fetchAttendance,
+  getAttendances as fetchAttendances,
   insertAttendance,
   updateAttendance,
 } from '@/db/attendance';
 import { getDbErrorMessage } from '@/db/pg-error';
 import type { InsertAttendance } from '@/drizzle/schema';
+import type { DateRange } from '@/types/common';
 
 import { withAuth, withResource } from './auth';
 import { revalidate } from './cache';
 
 const attendance = withResource('attendance');
 
-export const getAttendanceByDate = withAuth(
-  async ({ team_id }, date: string) => await fetchAttendance(team_id, date),
+export const getAttendances = withAuth(
+  async ({ team_id }, range: DateRange) =>
+    await fetchAttendances(team_id, range),
 );
 
 export const submitLeave = attendance(

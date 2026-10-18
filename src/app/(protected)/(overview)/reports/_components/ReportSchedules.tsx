@@ -16,7 +16,7 @@ import {
   SCHEDULED_INTERVAL_LABEL,
   SCHEDULED_INTERVALS,
 } from '@/utils/constants';
-import { formatDatetime } from '@/utils/formatter';
+import { formatDatetime } from '@/utils/datetime';
 
 import {
   removeReportSchedules,

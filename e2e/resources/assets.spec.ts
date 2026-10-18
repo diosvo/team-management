@@ -59,6 +59,27 @@ test.describe('Filtering', () => {
     await testSearchWithQueryParams(page, 'Ball', /q=Ball/);
   });
 
+  test('filters assets by acquired date and clears back to all time', async ({
+    page,
+  }) => {
+    const trigger = page.getByRole('button', { name: /^Acquired Date:/ });
+    // Optional window: no dates in the URL until one is picked.
+    await expect(trigger).toHaveAccessibleName('Acquired Date: All time');
+    await expect(page).not.toHaveURL(/from=/);
+
+    await trigger.click();
+    await page.getByRole('button', { name: 'This year' }).click();
+
+    await expect(page).toHaveURL(/from=\d{4}-01-01/);
+    await expect(page).toHaveURL(/to=\d{4}-12-31/);
+    await expect(trigger).toHaveAccessibleName('Acquired Date: This year');
+
+    await page.getByRole('button', { name: 'Clear Acquired Date' }).click();
+
+    await expect(trigger).toHaveAccessibleName('Acquired Date: All time');
+    await expect(page).not.toHaveURL(/from=/);
+  });
+
   test('filters assets by Condition and updates query params', async ({
     page,
   }) => {

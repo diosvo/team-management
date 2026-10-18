@@ -7,7 +7,6 @@ import {
   Badge,
   HStack,
   IconButton,
-  Input,
   InputGroup,
   SimpleGrid,
   Stack,
@@ -18,6 +17,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { Activity, Edit, LucideClock9, Save, Shirt } from 'lucide-react';
 import { Controller, useForm } from 'react-hook-form';
 
+import { DatePickerField } from '@/components/date-picker/DatePicker';
 import TextField from '@/components/TextField';
 import { Card } from '@/components/ui/card';
 import { CloseButton } from '@/components/ui/close-button';
@@ -33,13 +33,13 @@ import { ControlledStateSelection } from '@/components/user/StateSelection';
 import Visibility from '@/components/Visibility';
 
 import { CACHE_KEY, ESTABLISHED_DATE } from '@/utils/constants';
+import { formatDate } from '@/utils/datetime';
 import {
   CoachPosition,
   PlayerPosition,
   UserRole,
   UserState,
 } from '@/utils/enum';
-import { formatDate } from '@/utils/formatter';
 import { getColor } from '@/utils/helper';
 
 import { updateTeamInfo } from '@/actions/user';
@@ -64,7 +64,6 @@ export default function TeamInfo({
     control,
     reset,
     watch,
-    register,
     setValue,
     handleSubmit,
     formState: { isDirty, isValid, errors },
@@ -222,11 +221,11 @@ export default function TeamInfo({
               </Field>
             </Visibility>
             <Field label="Join Date">
-              <Input
-                type="date"
+              <DatePickerField
+                control={control}
+                name="user.join_date"
                 min={ESTABLISHED_DATE}
                 disabled={isPending}
-                {...register('user.join_date')}
               />
             </Field>
           </SimpleGrid>

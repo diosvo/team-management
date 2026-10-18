@@ -2,27 +2,19 @@
 
 import type { ReactNode } from 'react';
 
-import {
-  Badge,
-  Box,
-  Button,
-  Drawer,
-  HStack,
-  Input,
-  Portal,
-} from '@chakra-ui/react';
+import { Badge, Box, Button, Drawer, HStack, Portal } from '@chakra-ui/react';
 import { SlidersHorizontal } from 'lucide-react';
 
+import { DateRangePicker } from '@/components/date-picker/DateRangePicker';
 import SearchInput from '@/components/SearchInput';
 import { CloseButton } from '@/components/ui/close-button';
 
 import useSyncedState from '@/hooks/use-synced-state';
 
-import { type FilterControl, type FilterDef } from '@/types/filters';
+import type { FilterControl, FilterDef } from '@/types/filters';
 import { countActiveFilters } from '@/utils/filters';
 
 import CheckboxGroupFilter from './CheckboxGroupFilter';
-import TimePicker from './TimePicker';
 
 type FiltersProps<T extends Record<string, unknown>> = {
   filters: Array<FilterDef>;
@@ -45,9 +37,6 @@ const pickArrays = (
     keys.map((key) => [key, (source[key] as Array<string>) ?? []]),
   );
 
-export const isInlineControl = (control: FilterControl): boolean =>
-  ['interval', 'date'].includes(control.type);
-
 export default function Filters<T extends Record<string, unknown>>({
   filters,
   values,
@@ -57,7 +46,6 @@ export default function Filters<T extends Record<string, unknown>>({
   disabled = false,
   actions,
 }: FiltersProps<T>) {
-  const inlineDefs = filters.filter((f) => isInlineControl(f.control));
   const categoricalDefs = filters.filter(
     (f) => f.control.type === 'checkbox-group',
   );
@@ -81,43 +69,31 @@ export default function Filters<T extends Record<string, unknown>>({
 
   const activeCount = countActiveFilters(committed, defaultsSubset);
 
-  const renderInline = (def: FilterDef) => {
-    switch (def.control.type) {
-      case 'interval':
-        return (
-          <TimePicker
-            key={def.key}
-            value={values[def.key] as string}
-            onChange={(value) => onApply({ [def.key]: value } as Partial<T>)}
-          />
-        );
-      case 'date':
-        return (
-          <Input
-            key={def.key}
-            type="date"
-            aria-label={def.label}
-            width="max-content"
-            flexShrink={0}
-            disabled={disabled}
-            min={def.control.min}
-            max={def.control.max}
-            size={{ base: 'sm', md: 'md' }}
-            value={values[def.key] as string}
-            onChange={(event) =>
-              onApply({ [def.key]: event.target.value } as Partial<T>)
-            }
-          />
-        );
-      default:
-        return null;
-    }
-  };
-
   return (
     <HStack gap={{ base: 3, lg: 4 }}>
       {searchable && <SearchInput disabled={disabled} />}
-      {inlineDefs.map(renderInline)}
+      {filters.map(
+        ({ key, label, control }) =>
+          control.type === 'date-range' && (
+            <DateRangePicker
+              key={key}
+              label={label}
+              selection={control.selection}
+              icon={control.icon}
+              disabled={disabled}
+              min={control.min}
+              max={control.max}
+              value={{ from: values.from as string, to: values.to as string }}
+              onChange={(range) => onApply(range as unknown as Partial<T>)}
+              // No default window means the range is optional (all time).
+              onClear={
+                defaults.from
+                  ? undefined
+                  : () => onApply({ from: '', to: '' } as unknown as Partial<T>)
+              }
+            />
+          ),
+      )}
 
       {categoricalDefs.length > 0 && (
         <Drawer.Root
@@ -133,7 +109,11 @@ export default function Filters<T extends Record<string, unknown>>({
               <SlidersHorizontal size={14} />
               Filters
               {activeCount > 0 && (
-                <Badge variant="surface" borderRadius="full" colorPalette="cyan">
+                <Badge
+                  variant="surface"
+                  borderRadius="full"
+                  colorPalette="cyan"
+                >
                   {activeCount}
                 </Badge>
               )}

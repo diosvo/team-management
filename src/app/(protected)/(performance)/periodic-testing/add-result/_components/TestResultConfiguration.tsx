@@ -1,7 +1,8 @@
 'use client';
 
-import { Input, Span, VStack } from '@chakra-ui/react';
+import { Span, VStack } from '@chakra-ui/react';
 
+import DatePicker from '@/components/date-picker/DatePicker';
 import SearchableSelect from '@/components/SearchableSelect';
 import { Field } from '@/components/ui/field';
 import { PlayerSelectionWithActions } from '@/components/user/PlayerSelection';
@@ -58,14 +59,13 @@ export default function TestResultConfiguration({
         }
       />
       <Field label="Test Date" required>
-        <Input
-          type="date"
+        <DatePicker
           min={ESTABLISHED_DATE}
-          defaultValue={selection.date}
-          onChange={(e) =>
+          value={selection.date}
+          onChange={(date) =>
             setSelection((prev) => ({
               ...prev,
-              date: e.target.value,
+              date,
             }))
           }
         />

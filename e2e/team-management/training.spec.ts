@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import {
+  fillDate,
   testCheckboxFilter,
   testCheckboxFilterReset,
   testDeleteWithCheckbox,
@@ -50,23 +51,18 @@ test.describe('Training Sessions - Search and Filtering', () => {
     await testCheckboxFilter(page, 'Status', 'Scheduled', /status=/);
   });
 
-  test('filters sessions by date range', async ({ page }) => {
-    const filterSection = page.locator('text=Date').first();
-    if (await filterSection.isVisible()) {
-      await filterSection.click();
+  test('opens on this year and filters sessions by date range', async ({
+    page,
+  }) => {
+    const trigger = page.getByRole('button', { name: /^Time:/ });
+    await expect(trigger).toHaveAccessibleName('Time: This year');
 
-      const fromDate = page.getByLabel('From');
-      if (await fromDate.isVisible()) {
-        await fromDate.fill('2026-01-01');
+    await trigger.click();
+    await page.getByRole('button', { name: 'Last month' }).click();
 
-        const applyButton = page.getByRole('button', { name: 'Apply' });
-        if (await applyButton.isVisible()) {
-          await applyButton.click();
-        }
-
-        await expect(page).toHaveURL(/from=/);
-      }
-    }
+    await expect(page).toHaveURL(/from=\d{4}-\d{2}-\d{2}/);
+    await expect(page).toHaveURL(/to=\d{4}-\d{2}-\d{2}/);
+    await expect(trigger).toHaveAccessibleName('Time: Last month');
   });
 
   test('clears filters when reset is clicked', async ({ page }) => {
@@ -135,7 +131,7 @@ test.describe('Add Training Session', () => {
   test('adds a new training session with required fields', async ({ page }) => {
     await page.getByRole('button', { name: 'Add' }).click();
 
-    await page.getByLabel('Date').fill('2026-12-31');
+    await fillDate(page, 'Date', '2026-12-31');
     await page.getByLabel('Start Time').fill('16:00');
     await page.getByLabel('End Time').fill('18:00');
 
@@ -163,7 +159,7 @@ test.describe('Add Training Session', () => {
   test('validates time range (end time after start time)', async ({ page }) => {
     await page.getByRole('button', { name: 'Add' }).click();
 
-    await page.getByLabel('Date').fill('2026-12-31');
+    await fillDate(page, 'Date', '2026-12-31');
     await page.getByLabel('Start Time').fill('18:00');
     await page.getByLabel('End Time').fill('16:00');
 
@@ -284,10 +280,7 @@ test.describe('Training Session Display', () => {
   test('displays present rate with tooltip', async ({ page }) => {
     const firstRow = page.getByRole('row').nth(1);
     if (await firstRow.isVisible()) {
-      const presentRate = firstRow
-        .getByRole('cell')
-        .last()
-        .getByText(/\d+%/);
+      const presentRate = firstRow.getByRole('cell').last().getByText(/\d+%/);
       await expect(presentRate).toBeVisible();
 
       // Hover to show tooltip

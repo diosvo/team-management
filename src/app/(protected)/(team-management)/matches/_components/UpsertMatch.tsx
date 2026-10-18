@@ -20,6 +20,7 @@ import { Controller, useForm } from 'react-hook-form';
 
 import Authorized from '@/components/Authorized';
 import LocationSelection from '@/components/common/LocationSelection';
+import { DatePickerField } from '@/components/date-picker/DatePicker';
 import { SearchableSelectField } from '@/components/SearchableSelect';
 import { CloseButton } from '@/components/ui/close-button';
 import { Field } from '@/components/ui/field';
@@ -29,7 +30,7 @@ import { toaster } from '@/components/ui/toaster';
 import Visibility from '@/components/Visibility';
 
 import { CACHE_KEY, CURRENT_DATE, ESTABLISHED_DATE } from '@/utils/constants';
-import { formatDatetime } from '@/utils/formatter';
+import { formatDatetime } from '@/utils/datetime';
 import { getColor } from '@/utils/helper';
 
 import { getDefaults } from '@/lib/zod';
@@ -55,7 +56,11 @@ export const UpsertMatch = createOverlay(({ action, item, ...rest }) => {
     formState: { isValid, errors },
   } = useForm({
     resolver: zodResolver(UpsertMatchSchema),
-    defaultValues: getDefaults(UpsertMatchSchema, item),
+    defaultValues: {
+      ...getDefaults(UpsertMatchSchema, item),
+      // The schema has no default, so a new match starts on today's date.
+      date: item.date ?? CURRENT_DATE,
+    },
   });
 
   const onSubmit = (data: UpsertMatchSchemaValues) => {
@@ -167,12 +172,11 @@ export const UpsertMatch = createOverlay(({ action, item, ...rest }) => {
                 />
                 <HStack>
                   <Field required label="Date" disabled={isPending}>
-                    <Input
-                      type="date"
+                    <DatePickerField
+                      control={control}
+                      name="date"
                       min={ESTABLISHED_DATE}
-                      defaultValue={CURRENT_DATE}
                       disabled={isPending}
-                      {...register('date')}
                     />
                   </Field>
                   <Field required label="Time" disabled={isPending}>

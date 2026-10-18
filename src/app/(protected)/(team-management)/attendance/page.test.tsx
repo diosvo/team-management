@@ -10,14 +10,14 @@ import {
   setupTestLifecycle,
 } from '@/test/utilities';
 
-import { getAttendanceByDate } from '@/actions/attendance';
+import { getAttendances } from '@/actions/attendance';
 import { loadAttendanceFilters } from '@/lib/nuqs';
 
 import { AttendanceStatus } from '@/utils/enum';
 import AttendancePage, { metadata } from './page';
 
 vi.mock('@/actions/attendance', () => ({
-  getAttendanceByDate: vi.fn(),
+  getAttendances: vi.fn(),
 }));
 
 vi.mock('@/lib/nuqs', () => ({
@@ -44,7 +44,7 @@ vi.mock('./_components/AttendanceTable', () => ({
 
 describe('AttendancePage', () => {
   const mockLoadFilters = vi.mocked(loadAttendanceFilters);
-  const mockGetAttendance = vi.mocked(getAttendanceByDate);
+  const mockGetAttendance = vi.mocked(getAttendances);
 
   const setup = async (searchParams: Record<string, unknown> = {}) => {
     const searchParamsPromise = Promise.resolve(searchParams);
@@ -63,7 +63,8 @@ describe('AttendancePage', () => {
     mockLoadFilters.mockResolvedValue({
       q: '',
       page: 1,
-      date: MOCK_ATTENDANCE_DATE,
+      from: MOCK_ATTENDANCE_DATE,
+      to: MOCK_ATTENDANCE_DATE,
       status: [],
     });
     mockGetAttendance.mockResolvedValue(MOCK_ATTENDANCE_RESPONSE);
@@ -93,7 +94,8 @@ describe('AttendancePage', () => {
 
   test('loads filters from the incoming search params', async () => {
     const searchParams = {
-      date: '2026-03-15',
+      from: '2026-03-01',
+      to: '2026-03-15',
       status: [AttendanceStatus.ABSENT],
     };
     const { searchParamsPromise } = await setup(searchParams);
@@ -101,10 +103,13 @@ describe('AttendancePage', () => {
     expect(mockLoadFilters).toHaveBeenCalledWith(searchParamsPromise);
   });
 
-  test('fetches attendance for the resolved date', async () => {
+  test('fetches attendance for the resolved window only', async () => {
     await setup();
 
-    expect(mockGetAttendance).toHaveBeenCalledWith(MOCK_ATTENDANCE_DATE);
+    expect(mockGetAttendance).toHaveBeenCalledWith({
+      from: MOCK_ATTENDANCE_DATE,
+      to: MOCK_ATTENDANCE_DATE,
+    });
   });
 
   test('passes the fetched stats to the stats section', async () => {

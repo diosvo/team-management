@@ -2,7 +2,8 @@
 import { renderWithUI, screen, setupTestLifecycle } from '@/test/utilities';
 
 import { loadDashboardFilters } from '@/lib/nuqs';
-import { Interval } from '@/utils/enum';
+import type { DateRange } from '@/types/common';
+import { thisYear } from '@/utils/datetime';
 
 import DashboardsPage from './page';
 
@@ -56,9 +57,9 @@ vi.mock('./_components/AnalyticsSections', () => ({
 describe('DashboardsPage', () => {
   const mockLoadFilters = vi.mocked(loadDashboardFilters);
 
-  const setup = async (interval: Interval = Interval.THIS_YEAR) => {
-    // `page`/`q` come from the shared params; the page forwards `interval`.
-    mockLoadFilters.mockResolvedValue({ interval, page: 1, q: '' });
+  const setup = async (range: DateRange = thisYear()) => {
+    // `page`/`q` come from the shared params; the page forwards the window.
+    mockLoadFilters.mockResolvedValue({ ...range, page: 1, q: '' });
 
     return renderWithUI(
       await DashboardsPage({ searchParams: Promise.resolve({}) } as never),
@@ -87,13 +88,14 @@ describe('DashboardsPage', () => {
     expect(screen.getByText('AbsenceReasonsBreakdown')).toBeInTheDocument();
   });
 
-  test('passes the loaded interval to every analytics section', async () => {
-    await setup(Interval.LAST_YEAR);
+  test('passes the loaded window to every analytics section', async () => {
+    const range = { from: '2025-01-01', to: '2025-12-31' };
+    await setup(range);
 
     expect(mockLoadFilters).toHaveBeenCalled();
-    expect(propsSpy.matchesRate).toEqual({ interval: Interval.LAST_YEAR });
-    expect(propsSpy.attendanceTrend).toEqual({ interval: Interval.LAST_YEAR });
-    expect(propsSpy.ranking).toEqual({ interval: Interval.LAST_YEAR });
-    expect(propsSpy.absence).toEqual({ interval: Interval.LAST_YEAR });
+    expect(propsSpy.matchesRate).toEqual({ range });
+    expect(propsSpy.attendanceTrend).toEqual({ range });
+    expect(propsSpy.ranking).toEqual({ range });
+    expect(propsSpy.absence).toEqual({ range });
   });
 });

@@ -67,7 +67,7 @@ describe('AttendanceTable', () => {
   test('renders the column headers', () => {
     setup();
 
-    ['Name', 'Status', 'Reason', 'Last Updated'].forEach((header) => {
+    ['Date', 'Name', 'Status', 'Reason', 'Last Updated'].forEach((header) => {
       expect(screen.getByText(header)).toBeInTheDocument();
     });
   });

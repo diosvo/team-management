@@ -2,6 +2,7 @@
 import {
   MOCK_ABSENCE_REASONS,
   MOCK_ATTENDANCE_HISTORY,
+  MOCK_DATE_RANGE,
   MOCK_PLAYERS_ATTENDANCE_SUMMARY,
 } from '@/test/mocks/analytics';
 import { renderWithUI, screen, setupTestLifecycle } from '@/test/utilities';
@@ -12,7 +13,6 @@ import {
   getMatchesRate,
   getMostAbsenceReasons,
 } from '@/actions/analytics';
-import { Interval } from '@/utils/enum';
 
 import {
   AbsenceReasonsBreakdownSection,
@@ -58,56 +58,54 @@ vi.mock('./PlayerAttendanceRanking', () => ({
   },
 }));
 
-const INTERVAL = Interval.LAST_YEAR;
-
 describe('AnalyticsSections', () => {
   setupTestLifecycle();
 
-  test('MatchesRateSection fetches by interval and passes records', async () => {
+  test('MatchesRateSection fetches by range and passes records', async () => {
     const MOCK_MATCHES_RATE = [{ outcome: 'win', league: 3, friendly: 2 }];
     (vi.mocked(getMatchesRate)).mockResolvedValue(MOCK_MATCHES_RATE);
 
-    renderWithUI(await MatchesRateSection({ interval: INTERVAL }));
+    renderWithUI(await MatchesRateSection({ range: MOCK_DATE_RANGE }));
 
-    expect(getMatchesRate).toHaveBeenCalledWith(INTERVAL);
+    expect(getMatchesRate).toHaveBeenCalledWith(MOCK_DATE_RANGE);
     expect(screen.getByText('MatchesRate')).toBeInTheDocument();
     expect(propsSpy.matchesRate).toEqual({ records: MOCK_MATCHES_RATE });
   });
 
-  test('AttendanceTrendSection fetches by interval and passes records', async () => {
+  test('AttendanceTrendSection fetches by range and passes records', async () => {
     (vi.mocked(getAttendanceHistory)).mockResolvedValue(
       MOCK_ATTENDANCE_HISTORY,
     );
 
-    renderWithUI(await AttendanceTrendSection({ interval: INTERVAL }));
+    renderWithUI(await AttendanceTrendSection({ range: MOCK_DATE_RANGE }));
 
-    expect(getAttendanceHistory).toHaveBeenCalledWith(INTERVAL);
+    expect(getAttendanceHistory).toHaveBeenCalledWith(MOCK_DATE_RANGE);
     expect(propsSpy.attendanceTrend).toEqual({
       records: MOCK_ATTENDANCE_HISTORY,
     });
   });
 
-  test('PlayerAttendanceRankingSection fetches by interval and passes records', async () => {
+  test('PlayerAttendanceRankingSection fetches by range and passes records', async () => {
     (vi.mocked(getAttendanceSummary)).mockResolvedValue(
       MOCK_PLAYERS_ATTENDANCE_SUMMARY,
     );
 
-    renderWithUI(await PlayerAttendanceRankingSection({ interval: INTERVAL }));
+    renderWithUI(await PlayerAttendanceRankingSection({ range: MOCK_DATE_RANGE }));
 
-    expect(getAttendanceSummary).toHaveBeenCalledWith(INTERVAL);
+    expect(getAttendanceSummary).toHaveBeenCalledWith(MOCK_DATE_RANGE);
     expect(propsSpy.ranking).toEqual({
       records: MOCK_PLAYERS_ATTENDANCE_SUMMARY,
     });
   });
 
-  test('AbsenceReasonsBreakdownSection fetches by interval and passes reasons', async () => {
+  test('AbsenceReasonsBreakdownSection fetches by range and passes reasons', async () => {
     (vi.mocked(getMostAbsenceReasons)).mockResolvedValue(
       MOCK_ABSENCE_REASONS,
     );
 
-    renderWithUI(await AbsenceReasonsBreakdownSection({ interval: INTERVAL }));
+    renderWithUI(await AbsenceReasonsBreakdownSection({ range: MOCK_DATE_RANGE }));
 
-    expect(getMostAbsenceReasons).toHaveBeenCalledWith(INTERVAL);
+    expect(getMostAbsenceReasons).toHaveBeenCalledWith(MOCK_DATE_RANGE);
     expect(propsSpy.absence).toEqual({ reasons: MOCK_ABSENCE_REASONS });
   });
 });

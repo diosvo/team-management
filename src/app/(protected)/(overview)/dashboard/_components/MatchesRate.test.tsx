@@ -22,9 +22,24 @@ describe('MatchesRate', () => {
     ).toBeInTheDocument();
   });
 
-  test('renders without crashing when there are no records', () => {
+  test('shows the empty state when there are no records', () => {
     setup([]);
 
     expect(screen.getByText('Matches Record')).toBeInTheDocument();
+    expect(screen.getByText('No matches records')).toBeInTheDocument();
+  });
+
+  test('shows the empty state when every outcome is zero', () => {
+    setup(
+      MOCK_RECORDS.map(({ outcome }) => ({ outcome, league: 0, friendly: 0 })),
+    );
+
+    expect(screen.getByText('No matches records')).toBeInTheDocument();
+  });
+
+  test('shows the chart instead of the empty state when matches exist', () => {
+    setup(MOCK_RECORDS);
+
+    expect(screen.queryByText('No matches records')).not.toBeInTheDocument();
   });
 });

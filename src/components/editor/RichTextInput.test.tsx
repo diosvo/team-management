@@ -280,10 +280,8 @@ describe('RichTextInput', () => {
       expect(attributes()).toMatchObject({
         id: label?.htmlFor,
         'aria-labelledby': label?.id,
-        'aria-describedby': [
-          screen.getByText('Note is required.').id,
-          screen.getByText('Keep it short.').id,
-        ].join(' '),
+        'aria-describedby': screen.getByText('Keep it short.').id,
+        'aria-errormessage': screen.getByText('Note is required.').id,
         role: 'textbox',
         'aria-multiline': 'true',
         'aria-invalid': 'true',

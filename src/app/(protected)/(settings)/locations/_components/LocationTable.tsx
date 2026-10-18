@@ -12,8 +12,8 @@ import { toaster } from '@/components/ui/toaster';
 import usePermissions from '@/hooks/use-permissions';
 import useTableState from '@/hooks/use-table-state';
 import { useCommonParams } from '@/lib/nuqs';
+import { formatDatetime } from '@/utils/datetime';
 import { buildPredicate } from '@/utils/filters';
-import { formatDatetime } from '@/utils/formatter';
 
 import { removeLocation } from '@/actions/location';
 import type { Location } from '@/drizzle/schema';

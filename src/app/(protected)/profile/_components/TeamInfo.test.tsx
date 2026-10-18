@@ -12,8 +12,8 @@ import {
 
 import { updateTeamInfo } from '@/actions/user';
 import usePermissions from '@/hooks/use-permissions';
+import { formatDate } from '@/utils/datetime';
 import { UserState } from '@/utils/enum';
-import { formatDate } from '@/utils/formatter';
 
 import TeamInfo from './TeamInfo';
 
@@ -60,7 +60,8 @@ describe('TeamInfo', () => {
 
   const enterEditMode = async (user: ReturnType<typeof setup>['user']) => {
     await user.click(screen.getByRole('button'));
-    return screen.findByDisplayValue(MOCK_USER_WITH_PLAYER.join_date!);
+    // The picker shows the locale format, not the stored ISO day.
+    return screen.findByDisplayValue(formatDate(MOCK_USER_WITH_PLAYER.join_date));
   };
 
   test('should be accessible', async () => {
@@ -113,7 +114,10 @@ describe('TeamInfo', () => {
     const { container, user } = setup();
 
     const joinDate = await enterEditMode(user);
-    fireEvent.change(joinDate, { target: { value: '2024-03-01' } });
+    await user.clear(joinDate);
+    await user.type(joinDate, '01/03/2024');
+    // The picker commits the typed value on blur.
+    await user.tab();
 
     const submit = container.querySelector(
       'button[type="submit"]',
@@ -137,7 +141,10 @@ describe('TeamInfo', () => {
     const { container, user } = setup();
 
     const joinDate = await enterEditMode(user);
-    fireEvent.change(joinDate, { target: { value: '2024-03-01' } });
+    await user.clear(joinDate);
+    await user.type(joinDate, '01/03/2024');
+    // The picker commits the typed value on blur.
+    await user.tab();
 
     const submit = container.querySelector(
       'button[type="submit"]',

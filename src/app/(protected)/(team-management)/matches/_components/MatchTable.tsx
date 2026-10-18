@@ -15,7 +15,7 @@ import useTableState from '@/hooks/use-table-state';
 
 import { useMatchFilters } from '@/lib/nuqs';
 import type { MatchWithTeams } from '@/types/match';
-import { formatDate, formatDay } from '@/utils/formatter';
+import { formatDate, formatDay } from '@/utils/datetime';
 import { getColor } from '@/utils/helper';
 
 import { removeMatch } from '@/actions/match';

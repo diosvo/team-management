@@ -1,7 +1,7 @@
 import { revalidate } from '@/actions/cache';
 import {
   deleteAttendance,
-  getAttendanceByDate as fetchAttendance,
+  getAttendances as fetchAttendances,
   insertAttendance,
   updateAttendance,
 } from '@/db/attendance';
@@ -24,7 +24,7 @@ import { MOCK_USER } from '@/test/mocks/user';
 import { AttendanceStatus } from '@/utils/enum';
 
 import {
-  getAttendanceByDate,
+  getAttendances,
   removeAttendance,
   submitLeave,
   updateStatus,
@@ -36,7 +36,7 @@ vi.mock('./auth', () => ({
 }));
 
 vi.mock('@/db/attendance', () => ({
-  getAttendanceByDate: vi.fn(),
+  getAttendances: vi.fn(),
   insertAttendance: vi.fn(),
   updateAttendance: vi.fn(),
   deleteAttendance: vi.fn(),
@@ -89,27 +89,25 @@ describe('Attendance Actions', () => {
     fields: [],
   };
 
-  describe('getAttendanceByDate', () => {
-    test('calls fetchAttendance with team_id and date', async () => {
-      vi.mocked(fetchAttendance).mockResolvedValue(MOCK_ATTENDANCE_RESPONSE);
+  describe('getAttendances', () => {
+    test('calls fetchAttendances with team_id and the window', async () => {
+      vi.mocked(fetchAttendances).mockResolvedValue(MOCK_ATTENDANCE_RESPONSE);
+      const range = { from: MOCK_ATTENDANCE_DATE, to: MOCK_ATTENDANCE_DATE };
 
-      const result = await getAttendanceByDate(MOCK_ATTENDANCE_DATE);
+      const result = await getAttendances(range);
 
-      expect(fetchAttendance).toHaveBeenCalledWith(
-        MOCK_TEAM.team_id,
-        MOCK_ATTENDANCE_DATE,
-      );
+      expect(fetchAttendances).toHaveBeenCalledWith(MOCK_TEAM.team_id, range);
       expect(result).toEqual(MOCK_ATTENDANCE_RESPONSE);
     });
 
-    test('propagates errors from fetchAttendance', async () => {
+    test('propagates errors from fetchAttendances', async () => {
       const message = 'Database error';
       const error = new Error(message);
-      vi.mocked(fetchAttendance).mockRejectedValue(error);
+      vi.mocked(fetchAttendances).mockRejectedValue(error);
 
-      await expect(getAttendanceByDate(MOCK_ATTENDANCE_DATE)).rejects.toThrow(
-        message,
-      );
+      await expect(
+        getAttendances({ from: MOCK_ATTENDANCE_DATE, to: MOCK_ATTENDANCE_DATE }),
+      ).rejects.toThrow(message);
     });
   });
 
