@@ -1,3 +1,5 @@
+import { capitalize } from 'es-toolkit/string';
+
 import { MOCK_MATCH_RESPONSE } from '@/test/mocks/match';
 import {
   createPermissionsMock,
@@ -101,7 +103,7 @@ describe('MatchTable', () => {
         `${LOSS_MATCH.home_team_score} - ${LOSS_MATCH.away_team_score}`,
       ),
     ).toBeInTheDocument();
-    expect(screen.getByText(MatchResult.LOSS)).toBeInTheDocument();
+    expect(screen.getByText(capitalize(MatchResult.LOSS))).toBeInTheDocument();
   });
 
   test('shows no result for a match that has not been played', () => {
@@ -117,8 +119,12 @@ describe('MatchTable', () => {
       ],
     });
 
-    expect(screen.getByText(MatchStatus.SCHEDULED)).toBeInTheDocument();
-    expect(screen.queryByText(MatchResult.LOSS)).not.toBeInTheDocument();
+    expect(
+      screen.getByText(capitalize(MatchStatus.SCHEDULED)),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText(capitalize(MatchResult.LOSS)),
+    ).not.toBeInTheDocument();
     // Neither a score nor a result for an unplayed fixture.
     expect(screen.getAllByText('-')).toHaveLength(2);
   });

@@ -127,6 +127,58 @@ describe('UpsertMatch', () => {
     expect(screen.getByText('Our Score')).not.toBeVisible();
   });
 
+  test('records the score once a new match is marked completed', async () => {
+    mockUpsertMatch.mockResolvedValue({ success: true, message: 'Saved' });
+
+    const { user } = await open('Add', {
+      match_id: '',
+      away_team: AWAY_TEAM_ID,
+      location_id: null,
+    });
+
+    await user.click(await screen.findByText('Completed'));
+
+    const [ours, theirs] = screen.getAllByRole('spinbutton');
+    await user.clear(ours);
+    await user.type(ours, '72');
+    await user.clear(theirs);
+    await user.type(theirs, '65');
+
+    const submit = screen.getByRole('button', { name: /add/i });
+    await waitFor(() => expect(submit).toBeEnabled());
+    await user.click(submit);
+
+    await waitFor(() => {
+      expect(mockUpsertMatch).toHaveBeenCalledWith(
+        '',
+        expect.objectContaining({
+          status: MatchStatus.COMPLETED,
+          home_team_score: 72,
+          away_team_score: 65,
+        }),
+      );
+    });
+  });
+
+  test('saves a 3x3 match once the 5x5 switch is turned off', async () => {
+    mockUpsertMatch.mockResolvedValue({ success: true, message: 'Saved' });
+
+    const { user } = await open('Update', EXISTING_MATCH);
+
+    await user.click(await screen.findByText('5x5'));
+
+    const submit = screen.getByRole('button', { name: /update/i });
+    await waitFor(() => expect(submit).toBeEnabled());
+    await user.click(submit);
+
+    await waitFor(() => {
+      expect(mockUpsertMatch).toHaveBeenCalledWith(
+        EXISTING_MATCH.match_id,
+        expect.objectContaining({ is_5x5: false }),
+      );
+    });
+  });
+
   test('clears the score when a completed match is moved off completed', async () => {
     mockUpsertMatch.mockResolvedValue({ success: true, message: 'Saved' });
 

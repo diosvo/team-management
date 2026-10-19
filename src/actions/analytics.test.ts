@@ -222,6 +222,23 @@ describe('Analytics Actions', () => {
         { outcome: 'lose', league: 0, friendly: 1 },
       ]);
     });
+
+    test('leaves out matches that have not been played', async () => {
+      vi.mocked(getMatches).mockResolvedValue(
+        matchesResponse([
+          { result: MatchResult.WIN, league_id: null },
+          // Scheduled and cancelled fixtures carry no result.
+          { result: null, league_id: 'league-1' },
+          { result: null, league_id: null },
+        ]),
+      );
+
+      await expect(getMatchesRate(MOCK_DATE_RANGE)).resolves.toEqual([
+        { outcome: 'win', league: 0, friendly: 1 },
+        { outcome: 'draw', league: 0, friendly: 0 },
+        { outcome: 'lose', league: 0, friendly: 0 },
+      ]);
+    });
   });
 
   describe('getOverviewStats', () => {

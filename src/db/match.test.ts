@@ -1,4 +1,13 @@
-import { and, desc, eq, inArray, isNotNull, isNull } from 'drizzle-orm';
+import {
+  and,
+  count,
+  desc,
+  eq,
+  inArray,
+  isNotNull,
+  isNull,
+  or,
+} from 'drizzle-orm';
 
 import db from '@/drizzle';
 import { type InsertMatch, MatchTable } from '@/drizzle/schema';
@@ -12,6 +21,8 @@ import {
   mockDeleteSuccess,
   mockInsertFailure,
   mockInsertSuccess,
+  mockSelectFailure,
+  mockSelectSuccess,
   mockUpdateFailure,
   mockUpdateSuccess,
 } from '@/test/db-operations';
@@ -19,7 +30,13 @@ import { MOCK_DATE_RANGE } from '@/test/mocks/analytics';
 import { MOCK_MATCH, MOCK_MATCH_INPUT } from '@/test/mocks/match';
 import { MOCK_AWAY_TEAM, MOCK_TEAM } from '@/test/mocks/team';
 
-import { deleteMatch, getMatches, insertMatch, updateMatch } from './match';
+import {
+  countTeamMatches,
+  deleteMatch,
+  getMatches,
+  insertMatch,
+  updateMatch,
+} from './match';
 import { withinRange } from './utils';
 
 vi.mock('@/drizzle', () => ({
@@ -29,6 +46,7 @@ vi.mock('@/drizzle', () => ({
         findMany: vi.fn(),
       },
     },
+    select: vi.fn(),
     insert: vi.fn(() => ({
       values: vi.fn(),
     })),
@@ -47,6 +65,7 @@ vi.mock('@/drizzle/schema', () => ({
   MatchTable: {
     match_id: 'match_id',
     home_team: 'home_team',
+    away_team: 'away_team',
     is_5x5: 'is_5x5',
     league_id: 'league_id',
     date: 'date',
@@ -398,5 +417,40 @@ describe('deleteMatch', () => {
     mockDeleteFailure(message);
 
     await expect(deleteMatch(MOCK_MATCH.match_id)).rejects.toThrow(message);
+  });
+});
+
+describe('countTeamMatches', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  test('counts the matches a team plays on either side', async () => {
+    const { mockFrom, mockWhere } = mockSelectSuccess([{ total: 3 }]);
+
+    await expect(countTeamMatches(MOCK_TEAM.team_id)).resolves.toBe(3);
+
+    expect(db.select).toHaveBeenCalledWith({ total: count() });
+    expect(mockFrom).toHaveBeenCalledWith(MatchTable);
+    expect(mockWhere).toHaveBeenCalledWith(
+      or(
+        eq(MatchTable.home_team, MOCK_TEAM.team_id),
+        eq(MatchTable.away_team, MOCK_TEAM.team_id),
+      ),
+    );
+  });
+
+  test('returns 0 when the query yields no row', async () => {
+    mockSelectSuccess([]);
+
+    await expect(countTeamMatches(MOCK_TEAM.team_id)).resolves.toBe(0);
+  });
+
+  test('propagates a database error to the caller', async () => {
+    mockSelectFailure('Count failed');
+
+    await expect(countTeamMatches(MOCK_TEAM.team_id)).rejects.toThrow(
+      'Count failed',
+    );
   });
 });

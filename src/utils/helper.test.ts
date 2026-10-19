@@ -4,6 +4,7 @@ import {
   AttendanceStatus,
   LeagueStatus,
   MatchResult,
+  MatchStatus,
   SessionStatus,
   UserState,
 } from './enum';
@@ -39,6 +40,10 @@ describe('getColor', () => {
     { value: MatchResult.WIN, expected: 'green' },
     { value: MatchResult.LOSS, expected: 'red' },
     { value: MatchResult.DRAW, expected: 'gray' },
+    // MatchStatus shares its values, and so its colors, with SessionStatus
+    { value: MatchStatus.SCHEDULED, expected: 'orange' },
+    { value: MatchStatus.COMPLETED, expected: 'gray' },
+    { value: MatchStatus.CANCELLED, expected: 'red' },
     // AttendanceStatus
     { value: AttendanceStatus.ON_TIME, expected: 'green' },
     { value: AttendanceStatus.ABSENT, expected: 'red' },

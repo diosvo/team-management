@@ -1,4 +1,7 @@
+import { and, asc, eq } from 'drizzle-orm';
+
 import db from '@/drizzle';
+import { MatchTable } from '@/drizzle/schema';
 import { AttendanceTable } from '@/drizzle/schema/attendance';
 
 import { mockSelectFailure, mockSelectSuccess } from '@/test/db-operations';
@@ -14,19 +17,34 @@ import {
 } from '@/test/mocks/analytics';
 import { MOCK_TEAM } from '@/test/mocks/team';
 
+import { MatchStatus } from '@/utils/enum';
+
 import {
   getMostCommonAbsenceReasons,
+  getUpcomingMatches,
   getPlayersAttendanceSummary,
   getTeamAttendanceHistory,
 } from './analytics';
+import { fromNow } from './utils';
 
 vi.mock('@/drizzle', () => ({
   default: {
     select: vi.fn(),
+    query: {
+      MatchTable: {
+        findMany: vi.fn(),
+      },
+    },
   },
 }));
 
 vi.mock('@/drizzle/schema', () => ({
+  MatchTable: {
+    home_team: 'home_team',
+    status: 'status',
+    date: 'date',
+    time: 'time',
+  },
   UserTable: {
     id: 'id',
     name: 'name',
@@ -44,6 +62,44 @@ vi.mock('@/drizzle/schema/attendance', () => ({
     updated_at: 'updated_at',
   },
 }));
+
+describe('getUpcomingMatches', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  test('reads the next three scheduled matches from today on', async () => {
+    const upcoming = [{ match_id: 'match-1' }];
+    vi.mocked(db.query.MatchTable.findMany).mockResolvedValue(
+      upcoming as never,
+    );
+
+    await expect(getUpcomingMatches(MOCK_TEAM.team_id)).resolves.toEqual(
+      upcoming,
+    );
+
+    expect(db.query.MatchTable.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        // Cancelled and already-completed fixtures are not "upcoming".
+        where: and(
+          eq(MatchTable.home_team, MOCK_TEAM.team_id),
+          eq(MatchTable.status, MatchStatus.SCHEDULED),
+          fromNow(MatchTable.date),
+        ),
+        orderBy: [asc(MatchTable.date), asc(MatchTable.time)],
+        limit: 3,
+      }),
+    );
+  });
+
+  test('returns an empty list when the query fails', async () => {
+    vi.mocked(db.query.MatchTable.findMany).mockRejectedValue(
+      new Error('Query failed'),
+    );
+
+    await expect(getUpcomingMatches(MOCK_TEAM.team_id)).resolves.toEqual([]);
+  });
+});
 
 describe('getTeamAttendanceHistory', () => {
   beforeEach(() => {
