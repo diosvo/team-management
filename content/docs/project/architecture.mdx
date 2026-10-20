@@ -36,6 +36,7 @@ flowchart LR
     server -- "Drizzle ORM" --> prod
     server --> blob
     server -- "password reset /<br/>email feature" --> resend
+
 `}
 />
 
@@ -99,7 +100,7 @@ team-management/
 │   ├── actions/                # 'use server' write path: one file per domain, permission-guarded
 │   ├── db/                     # Data-access layer: db.query.* per domain + pg-error mapping
 │   ├── drizzle/                # Schema, migrations, seed SQL, migrate/reset scripts, db instance
-│   │   ├── schema/             #   13 modules → 19 tables + PG enums
+│   │   ├── schema/             #   14 modules → 19 tables + PG enums
 │   │   ├── migrations/         #   4 generated migrations + snapshots
 │   │   ├── scripts/            #   migrate.ts, reset.ts
 │   │   └── sql/                #   raw seed/bootstrap SQL (default team, admin, mock data)
@@ -194,6 +195,7 @@ flowchart TB
     team -- "home_team / away_team" --> match
     match -- "1 : N" --> match_player_stats
     player -- "1 : N" --> match_player_stats
+
 `}
 />
 
@@ -410,19 +412,20 @@ erDiagram
     team ||--o{ test_type : "defines"
     test_type ||--o{ test_result : "measured as"
     player ||--o{ test_result : "achieves"
+
 `}
 />
 
 ### Foreign-key delete behavior
 
-| Child column                                                                                                                                                    | References                                         | On delete                                                    |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- | ------------------------------------------------------------ |
+| Child column                                                                                                                                                           | References                                         | On delete                                                    |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- | ------------------------------------------------------------ |
 | `user.team_id`, `user_team.*`, `match_player_stats.team_id`, `asset.team_id`, `test_type.team_id`, `training_session.team_id`, `league_team.*`, `league_team_roster.*` | `team` / `league` / `player`                       | **cascade**                                                  |
-| `session.user_id`, `account.user_id`, `player.id`, `coach.id`                                                                                                   | `user`                                             | **cascade**                                                  |
-| `attendance.player_id`, `attendance.(session_id, date)`, `match_player_stats.player_id`, `test_result.player_id`, `match.league_id`, `match_player_stats.match_id`                               | `player` / `league` / `match`                      | **cascade**                                                  |
-| `asset.assigned_to`, `match.location_id`, `training_session.coach_id`, `training_session.location_id`                                  | `user` / `training_session` / `location` / `coach` | **set null**                                                 |
-| `test_result.type_id`                                                                                                                                           | `test_type`                                        | **restrict** (guarded in `removeTestType`, migration `0002`) |
-| `match.home_team`, `match.away_team`                                                                                                                            | `team`                                             | **no action** (default)                                      |
+| `session.user_id`, `account.user_id`, `player.id`, `coach.id`                                                                                                          | `user`                                             | **cascade**                                                  |
+| `attendance.player_id`, `attendance.(session_id, date)`, `match_player_stats.player_id`, `test_result.player_id`, `match.league_id`, `match_player_stats.match_id`     | `player` / `league` / `match`                      | **cascade**                                                  |
+| `asset.assigned_to`, `match.location_id`, `training_session.coach_id`, `training_session.location_id`                                                                  | `user` / `training_session` / `location` / `coach` | **set null**                                                 |
+| `test_result.type_id`                                                                                                                                                  | `test_type`                                        | **restrict** (guarded in `removeTestType`, migration `0002`) |
+| `match.home_team`, `match.away_team`                                                                                                                                   | `team`                                             | **no action** (default)                                      |
 
 ### Migrations & seed
 
@@ -484,6 +487,7 @@ sequenceDiagram
     end
 
     Note over U: authClient.useSession() keeps the session fresh on the client#59;<br/>AppShell also redirects to /login if the client resolves unauthenticated
+
 `}
 />
 
@@ -513,6 +517,7 @@ sequenceDiagram
             SA-->>C: ResponseFactory.success / error
         end
     end
+
 `}
 />
 
@@ -540,6 +545,7 @@ flowchart TB
     I --> J["Sign in at /login<br/>authClient.signIn.email()"]
 
     K["Existing user: /forgot-password<br/>authClient.requestPasswordReset()"] --> H
+
 `}
 />
 
@@ -575,16 +581,16 @@ Each feature is a Server Component page under `src/app/(protected)/…` whose in
 
 ## 8. External services
 
-| Service                           | Purpose                               | Config file                                 | Env vars                                                       |
-| --------------------------------- | ------------------------------------- | ------------------------------------------- | -------------------------------------------------------------- |
-| Vercel (hosting)                  | App deploy (preview + production)     | `.github/workflows/*.yaml`                  | `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`           |
-| PostgreSQL / Neon                 | Primary database                      | `src/drizzle/index.ts`, `drizzle.config.ts` | `DATABASE_URL`                                                 |
-| Better Auth                       | Authentication (email/password)       | `src/lib/auth.ts`                           | `BETTER_AUTH_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_API_KEY` |
-| Vercel Blob                       | Private file storage (avatars, logos) | `src/lib/blob.ts`                           | `BLOB_READ_WRITE_TOKEN`, `BLOB_STORE_ID`                       |
-| Resend                            | Transactional email                   | `src/lib/resend.ts`                         | `RESEND_API_KEY`                                               |
-| Chromium pack                     | Serverless headless browser for PDF   | `src/lib/puppeteer.ts`                      | `CHROMIUM_PACK_URL` (production)                               |
-| Vercel Analytics + Speed Insights | Web analytics (production only)       | `src/app/layout.tsx`                        | —                                                              |
-| GitHub Issues                     | In-app feedback opens a prefilled issue form | `.github/ISSUE_TEMPLATE/*.yml`, `src/utils/feedback.ts` | —                                                    |
+| Service                           | Purpose                                      | Config file                                             | Env vars                                                       |
+| --------------------------------- | -------------------------------------------- | ------------------------------------------------------- | -------------------------------------------------------------- |
+| Vercel (hosting)                  | App deploy (preview + production)            | `.github/workflows/*.yaml`                              | `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`           |
+| PostgreSQL / Neon                 | Primary database                             | `src/drizzle/index.ts`, `drizzle.config.ts`             | `DATABASE_URL`                                                 |
+| Better Auth                       | Authentication (email/password)              | `src/lib/auth.ts`                                       | `BETTER_AUTH_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_API_KEY` |
+| Vercel Blob                       | Private file storage (avatars, logos)        | `src/lib/blob.ts`                                       | `BLOB_READ_WRITE_TOKEN`, `BLOB_STORE_ID`                       |
+| Resend                            | Transactional email                          | `src/lib/resend.ts`                                     | `RESEND_API_KEY`                                               |
+| Chromium pack                     | Serverless headless browser for PDF          | `src/lib/puppeteer.ts`                                  | `CHROMIUM_PACK_URL` (production)                               |
+| Vercel Analytics + Speed Insights | Web analytics (production only)              | `src/app/layout.tsx`                                    | —                                                              |
+| GitHub Issues                     | In-app feedback opens a prefilled issue form | `.github/ISSUE_TEMPLATE/*.yml`, `src/utils/feedback.ts` | —                                                              |
 
 Notes: `BLOB_STORE_ID`, `BETTER_AUTH_*`, and `CRON_SECRET` appear in `.env` but are **not** part of the validated `env.config.ts` schema, because Better Auth reads its own vars directly from `process.env`. Resend's sender is currently `Acme <onboarding@resend.dev>` (`src/lib/resend.ts:7`) with every subject prefixed `SGR - `. `next.config.ts` allowlists remote images from `https://blob.vercel-storage.com/**`.
 
@@ -639,11 +645,11 @@ Environment variables are loaded and **Zod-validated** in `env.config.ts` (impor
 
 **CI/CD (`.github/workflows/`)**
 
-| Workflow          | Trigger                                                      | Does                                                                                                               |
-| ----------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
-| `preview.yaml`    | PR → `main`                                                  | `unit-test` (`pnpm test`) → gated `build-and-deploy` to **Vercel preview**                                         |
-| `production.yaml` | push → `main`                                                | `vercel pull/build --prod/deploy --prod` to **Vercel production** (⚠️ no test gate)                                |
-| `playwright.yml`  | PR → `main`                                                  | E2E job, **currently disabled** (`if: ${{ false }}`) pending an isolated test DB                                  |
+| Workflow          | Trigger       | Does                                                                                |
+| ----------------- | ------------- | ----------------------------------------------------------------------------------- |
+| `preview.yaml`    | PR → `main`   | `unit-test` (`pnpm test`) → gated `build-and-deploy` to **Vercel preview**          |
+| `production.yaml` | push → `main` | `vercel pull/build --prod/deploy --prod` to **Vercel production** (⚠️ no test gate) |
+| `playwright.yml`  | PR → `main`   | E2E job, **currently disabled** (`if: ${{ false }}`) pending an isolated test DB    |
 
 > The docs are no longer a separate deployment: Fumadocs pages live in `src/app/docs` (content in `content/docs/`) and ship with the main app build.
 
@@ -663,20 +669,20 @@ Environment variables are loaded and **Zod-validated** in `env.config.ts` (impor
 
 ## 13. Security considerations
 
-| Aspect | Implementation | Where |
-| --- | --- | --- |
-| Authentication | Better Auth email/password, **no email verification**, **no public sign-up** (admin-provisioned) | `src/lib/auth.ts` |
-| Password reset | Token-based, delivered by Resend; tokens stored in the `verification` table | `auth.ts` `sendResetPassword`, `verification` table |
-| Session | Signed cookie (prefix `sgr`), 1 hour expiry + 1 hour cookie cache; server validation via `auth.api.getSession()` | `src/utils/constant.ts`, `src/actions/auth.ts` |
-| Password storage | Hashed by Better Auth, stored in `account.password` | `account` table |
-| Authorization | RBAC: `can()` / `defineAbility()` over `<resource>:<action>` permissions, plus captain overrides | `src/utils/permissions.ts` |
-| Defense-in-depth | 3 layers: middleware (view-gate) → server action (`withResource`) → client (`usePermissions`) | `src/proxy.ts`, `src/actions/auth.ts` |
-| Record-level access | Actions on per-member data re-check the target against the session user (`forbidden()` on mismatch): self-only leave, self-only profile edits, role pinned for non-admins, avatar blob matched against the stored `image` | `src/actions/attendance.ts`, `src/actions/user.ts` |
-| Client payload | The protected layout passes only `session.user` to `SessionProvider`, so the session token is never serialized to the client; list reads narrow their columns (`RosterUser`) so undisplayed personal data never crosses the React Server Component boundary | `src/app/(protected)/layout.tsx`, `src/db/user.ts` |
-| CSRF / origin | `trustedOrigins` restricted to `DEV_URL` + `PRODUCTION_URL` | `src/lib/auth.ts:32` |
-| File access | Vercel Blob objects are **private** (`access: 'private'`), fetched server-side and returned as base64 data URLs | `src/lib/blob.ts` |
-| Transport / at-rest encryption | TLS in transit and at-rest encryption are provided by the managed platforms (Vercel, Neon, Vercel Blob, Resend); not configured in application code | > Not Found in repo (platform-managed) |
-| Secrets | Env vars validated by Zod (`env.config.ts`); auth secrets read directly from `process.env`; CI secrets via GitHub Actions | `env.config.ts`, `.github/workflows/*` |
+| Aspect                         | Implementation                                                                                                                                                                                                                                              | Where                                               |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| Authentication                 | Better Auth email/password, **no email verification**, **no public sign-up** (admin-provisioned)                                                                                                                                                            | `src/lib/auth.ts`                                   |
+| Password reset                 | Token-based, delivered by Resend; tokens stored in the `verification` table                                                                                                                                                                                 | `auth.ts` `sendResetPassword`, `verification` table |
+| Session                        | Signed cookie (prefix `sgr`), 1 hour expiry + 1 hour cookie cache; server validation via `auth.api.getSession()`                                                                                                                                            | `src/utils/constant.ts`, `src/actions/auth.ts`      |
+| Password storage               | Hashed by Better Auth, stored in `account.password`                                                                                                                                                                                                         | `account` table                                     |
+| Authorization                  | RBAC: `can()` / `defineAbility()` over `<resource>:<action>` permissions, plus captain overrides                                                                                                                                                            | `src/utils/permissions.ts`                          |
+| Defense-in-depth               | 3 layers: middleware (view-gate) → server action (`withResource`) → client (`usePermissions`)                                                                                                                                                               | `src/proxy.ts`, `src/actions/auth.ts`               |
+| Record-level access            | Actions on per-member data re-check the target against the session user (`forbidden()` on mismatch): self-only leave, self-only profile edits, role pinned for non-admins, avatar blob matched against the stored `image`                                   | `src/actions/attendance.ts`, `src/actions/user.ts`  |
+| Client payload                 | The protected layout passes only `session.user` to `SessionProvider`, so the session token is never serialized to the client; list reads narrow their columns (`RosterUser`) so undisplayed personal data never crosses the React Server Component boundary | `src/app/(protected)/layout.tsx`, `src/db/user.ts`  |
+| CSRF / origin                  | `trustedOrigins` restricted to `DEV_URL` + `PRODUCTION_URL`                                                                                                                                                                                                 | `src/lib/auth.ts:32`                                |
+| File access                    | Vercel Blob objects are **private** (`access: 'private'`), fetched server-side and returned as base64 data URLs                                                                                                                                             | `src/lib/blob.ts`                                   |
+| Transport / at-rest encryption | TLS in transit and at-rest encryption are provided by the managed platforms (Vercel, Neon, Vercel Blob, Resend); not configured in application code                                                                                                         | > Not Found in repo (platform-managed)              |
+| Secrets                        | Env vars validated by Zod (`env.config.ts`); auth secrets read directly from `process.env`; CI secrets via GitHub Actions                                                                                                                                   | `env.config.ts`, `.github/workflows/*`              |
 
 Notable boundary: the PDF report route (`api/reports/dashboard`) **forwards the caller's auth cookies** into a headless Chromium instance so protected pages render. It is auth-gated (401 without a session), but the cookie-forwarding is a trust boundary worth keeping in mind.
 
@@ -701,32 +707,31 @@ Beyond the schema: enabling the disabled E2E CI job once an isolated test DB exi
 
 ## 16. Project identification
 
-| | |
-| --- | --- |
-| **Project name** | Saigon Rovers Basketball Club Portal (`saigon-rovers-basketball-club-portal`) |
-| **Repository** | `git@github.com:diosvo/team-management.git` |
+|                         |                                                                                                            |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------- |
+| **Project name**        | Saigon Rovers Basketball Club Portal (`saigon-rovers-basketball-club-portal`)                              |
+| **Repository**          | `git@github.com:diosvo/team-management.git`                                                                |
 | **Author / maintainer** | Dios Vo, [vtmn1212@gmail.com](mailto:vtmn1212@gmail.com) ([LinkedIn](https://www.linkedin.com/in/diosvo/)) |
-| **Version** | `1.0.0` (`package.json`) |
-| **Default branch** | `main` (production deploys from here) |
-| **Hosting** | Vercel (app) + Neon (database) |
-| **Last updated** | 2026-07-22 |
+| **Version**             | `1.0.0` (`package.json`)                                                                                   |
+| **Default branch**      | `main` (production deploys from here)                                                                      |
+| **Hosting**             | Vercel (app) + Neon (database)                                                                             |
+| **Last updated**        | 2026-07-22                                                                                                 |
 
 ## 17. Glossary / acronyms
 
-| Term | Definition |
-| --- | --- |
-| **RSC** | React Server Component: server-rendered component, the default for pages here |
-| **Server Action** | A `'use server'` function invoked from the client as the write path (no REST API) |
-| **RBAC** | Role-Based Access Control: the `can()` / `ROLE_CONFIG` permission model |
-| **Resource** | A permission-scoped area of the app (e.g. `roster`, `matches`); 16 total in `src/routes.ts` |
-| **Ability** | Object returned by `defineAbility(role, isCaptain)` with `can` / `canAll` / `canAny` |
-| **Captain** | A `PLAYER` with `is_captain=true`, granted extra permissions via `CAPTAIN_PERMISSIONS` |
-| **Provisioning** | Admin/captain creating an account (no self-signup) that the user activates via reset email |
-| **Blob** | Vercel Blob: private object storage for avatars and team logos |
-| **ERD** | Entity Relationship Diagram (see [§5](#5-database-relationships-detailed-erd)) |
-| **PRD** | Product Requirements Document: specs under `content/docs/`, served by the app at `/docs` |
-| **SGR** | Saigon Rovers: the club; used as the email subject prefix and app abbreviation |
-| **Cookie cache** | Better Auth's signed session snapshot in the cookie, checked without a DB hit |
+| Term              | Definition                                                                                  |
+| ----------------- | ------------------------------------------------------------------------------------------- |
+| **RSC**           | React Server Component: server-rendered component, the default for pages here               |
+| **Server Action** | A `'use server'` function invoked from the client as the write path (no REST API)           |
+| **RBAC**          | Role-Based Access Control: the `can()` / `ROLE_CONFIG` permission model                     |
+| **Resource**      | A permission-scoped area of the app (e.g. `roster`, `matches`); 16 total in `src/routes.ts` |
+| **Ability**       | Object returned by `defineAbility(role, isCaptain)` with `can` / `canAll` / `canAny`        |
+| **Captain**       | A `PLAYER` with `is_captain=true`, granted extra permissions via `CAPTAIN_PERMISSIONS`      |
+| **Provisioning**  | Admin/captain creating an account (no self-signup) that the user activates via reset email  |
+| **Blob**          | Vercel Blob: private object storage for avatars and team logos                              |
+| **ERD**           | Entity Relationship Diagram (see [§5](#5-database-relationships-detailed-erd))              |
+| **PRD**           | Product Requirements Document: specs under `content/docs/`, served by the app at `/docs`    |
+| **SGR**           | Saigon Rovers: the club; used as the email subject prefix and app abbreviation              |
+| **Cookie cache**  | Better Auth's signed session snapshot in the cookie, checked without a DB hit               |
 
 _Analyzed on 2026-07-22 from the `dev_242` branch: `package.json` + all config files, `src/app` route tree, `src/actions` + `src/db` + `src/drizzle/schema`, `src/lib` + `src/utils` + `src/proxy.ts`, `.github/workflows`, and the test/e2e/PRD tooling. Diagrams reflect 19 tables and 16 permission resources present in the source at that time._
-
