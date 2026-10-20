@@ -13,7 +13,7 @@ import {
 import { upsertRule } from '@/actions/rule';
 import usePermissions from '@/hooks/use-permissions';
 
-import type { NullishRule } from '@/drizzle/schema/rule';
+import type { NullishTeamRule } from '@/drizzle/schema/team';
 
 import type TextEditor from '@/components/editor/TextEditor';
 
@@ -45,7 +45,7 @@ describe('RuleEditor', () => {
   const mockUsePermissions = vi.mocked(usePermissions);
   const mockUpsertRule = vi.mocked(upsertRule);
 
-  const setup = async (rule: NullishRule = MOCK_RULE, canEdit = false) => {
+  const setup = async (rule: NullishTeamRule = MOCK_RULE, canEdit = false) => {
     mockUsePermissions.mockReturnValue(
       createPermissionsMock({
         can: (resource, action) =>
@@ -77,7 +77,7 @@ describe('RuleEditor', () => {
     test('passes the rule content to the editor', async () => {
       await setup();
 
-      expect(editorSpy.content).toBe(MOCK_RULE.content);
+      expect(editorSpy.content).toBe(MOCK_RULE.rule_content);
     });
 
     test('uses a default message when no rule is provided', async () => {
@@ -91,7 +91,7 @@ describe('RuleEditor', () => {
     test('passes lastUpdated to the editor', async () => {
       await setup();
 
-      expect(editorSpy.lastUpdated).toEqual(MOCK_RULE.updated_at);
+      expect(editorSpy.lastUpdated).toEqual(MOCK_RULE.rule_updated_at);
     });
   });
 

@@ -55,6 +55,12 @@ export const MatchPlayerStatsTable = pgTable(
     player_id: text()
       .notNull()
       .references(() => PlayerTable.id, { onDelete: 'cascade' }),
+    // The team the player turned out for in this match. Recorded per row
+    // because a player's current team can change; without it, historical box
+    // scores would silently re-attribute to wherever the player is today.
+    team_id: uuid()
+      .notNull()
+      .references(() => TeamTable.team_id, { onDelete: 'cascade' }),
     points_scored: integer().default(0).notNull(),
     rebounds: integer().default(0).notNull(),
     assists: integer().default(0).notNull(),
@@ -101,6 +107,10 @@ export const MatchPlayerStatsRelations = relations(
     player: one(PlayerTable, {
       fields: [MatchPlayerStatsTable.player_id],
       references: [PlayerTable.id],
+    }),
+    team: one(TeamTable, {
+      fields: [MatchPlayerStatsTable.team_id],
+      references: [TeamTable.team_id],
     }),
   }),
 );

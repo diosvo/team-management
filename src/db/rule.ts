@@ -1,25 +1,29 @@
 import { eq } from 'drizzle-orm';
 
 import db from '@/drizzle';
-import { type InsertRule, RuleTable } from '@/drizzle/schema/rule';
+import { type NullishTeamRule, TeamTable } from '@/drizzle/schema/team';
 
-export async function getRule(team_id: string) {
+/**
+ * The rule document lives on `team` (`rule_content`), not in a table of its
+ * own. `rule_updated_at` is maintained here so the editor's "last updated"
+ * tracks revisions to the rules rather than any edit to the team.
+ */
+export async function getRule(team_id: string): Promise<NullishTeamRule> {
   try {
-    return await db.query.RuleTable.findFirst({
-      where: eq(RuleTable.team_id, team_id),
+    const team = await db.query.TeamTable.findFirst({
+      columns: { rule_content: true, rule_updated_at: true },
+      where: eq(TeamTable.team_id, team_id),
     });
+
+    return team ?? null;
   } catch {
     return null;
   }
 }
 
-export async function insertRule(data: InsertRule) {
-  return await db.insert(RuleTable).values(data);
-}
-
-export async function updateRule(rule_id: string, content: string) {
+export async function upsertRule(team_id: string, content: string) {
   return await db
-    .update(RuleTable)
-    .set({ content })
-    .where(eq(RuleTable.rule_id, rule_id));
+    .update(TeamTable)
+    .set({ rule_content: content, rule_updated_at: new Date() })
+    .where(eq(TeamTable.team_id, team_id));
 }

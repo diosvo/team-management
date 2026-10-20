@@ -9,7 +9,7 @@ import { toaster } from '@/components/ui/toaster';
 
 import usePermissions from '@/hooks/use-permissions';
 
-import type { NullishRule } from '@/drizzle/schema/rule';
+import type { NullishTeamRule } from '@/drizzle/schema/team';
 
 import { upsertRule } from '@/actions/rule';
 
@@ -18,7 +18,7 @@ const TextEditor = dynamic(() => import('@/components/editor/TextEditor'), {
   loading: () => <Skeleton height={240} borderRadius="md" />,
 });
 
-export default function RuleEditor({ rule }: { rule: NullishRule }) {
+export default function RuleEditor({ rule }: { rule: NullishTeamRule }) {
   const { can } = usePermissions();
 
   const onSave = async (content: string) => {
@@ -40,9 +40,11 @@ export default function RuleEditor({ rule }: { rule: NullishRule }) {
   return (
     <TextEditor
       header={<PageTitle title="Team Rule" />}
-      content={rule?.content || 'Please wait for admin to set up the rule.'}
+      content={
+        rule?.rule_content || 'Please wait for admin to set up the rule.'
+      }
       canEdit={can('team-rule', 'edit')}
-      lastUpdated={rule?.updated_at}
+      lastUpdated={rule?.rule_updated_at ?? undefined}
       onSave={onSave}
     />
   );

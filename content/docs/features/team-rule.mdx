@@ -60,12 +60,13 @@ title: "Team Rule"
 
 ### Data model (logical)
 
-Rule:
+The rule lives on the team row; there is no separate `rule` table.
 
-- `content`: rich text
-- `updated_at`: timestamp
+- `team.rule_content`: rich text (nullable until a rule is written)
+- `team.rule_updated_at`: timestamp, written only when the rule changes — so
+  renaming the team or replacing its logo does not read as a rule revision
 
 ### API
 
-- `getRule()`: fetch current rule
-- `upsertRule(content)`: create or update
+- `getRule()`: fetch the current rule, narrowed to the two columns above
+- `upsertRule(content)`: write the content and stamp `rule_updated_at`

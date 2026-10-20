@@ -2,7 +2,7 @@
 
 import { revalidate } from '@/actions/cache';
 import { getDbErrorMessage } from '@/db/pg-error';
-import { getRule as getAction, insertRule, updateRule } from '@/db/rule';
+import { getRule as getAction, upsertRule as saveRule } from '@/db/rule';
 
 import { ResponseFactory } from '@/utils/response';
 import { withAuth, withResource } from './auth';
@@ -17,18 +17,16 @@ export const upsertRule = teamRule(
   ['create', 'edit'],
   async function upsert({ team_id }, content: string) {
     try {
-      const existingRule = await getRule();
+      // The row always exists, so the only thing "added" vs "updated"
+      // distinguishes is whether the team had any rules written yet.
+      const existing = await getAction(team_id);
 
-      if (existingRule) {
-        await updateRule(existingRule.rule_id, content);
-      } else {
-        await insertRule({ team_id, content });
-      }
+      await saveRule(team_id, content);
 
       revalidate.rule();
 
       return ResponseFactory.success(
-        `${existingRule ? 'Updated' : 'Added'} rule successfully`,
+        `${existing?.rule_content ? 'Updated' : 'Added'} rule successfully`,
       );
     } catch (error) {
       const { message } = getDbErrorMessage(error);

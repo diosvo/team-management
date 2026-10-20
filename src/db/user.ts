@@ -1,4 +1,4 @@
-import { and, eq, ne } from 'drizzle-orm';
+import { and, eq, isNull, ne } from 'drizzle-orm';
 
 import db from '@/drizzle';
 import {
@@ -11,7 +11,8 @@ import {
   type Player,
   PlayerTable,
 } from '@/drizzle/schema/player';
-import { type User, UserTable } from '@/drizzle/schema/user';
+import { type InsertUser, type User, UserTable } from '@/drizzle/schema/user';
+import { type UserTeam, UserTeamTable } from '@/drizzle/schema/user-team';
 
 import { UserRole, UserState } from '@/utils/enum';
 
@@ -119,36 +120,54 @@ export async function getTeamHeadCoach(team_id: string) {
 
 export async function getUserById(id: string): Promise<Nullish<User>> {
   try {
-    return await db.query.UserTable.findFirst({
+    const user = await db.query.UserTable.findFirst({
       where: eq(UserTable.id, id),
       with: {
         coach: true,
         player: true,
+        // The open stint carries the dates the profile renders. Past stints
+        // are read separately, via `getMemberships`.
+        memberships: {
+          where: isNull(UserTeamTable.leave_date),
+          limit: 1,
+        },
       },
     });
+
+    if (!user) return null;
+
+    const { memberships, ...rest } = user;
+    const [current] = memberships;
+
+    return {
+      ...rest,
+      join_date: current?.join_date ?? null,
+      leave_date: current?.leave_date ?? null,
+    };
   } catch {
     return null;
   }
 }
 
-export async function updateUser(user_id: string, user: Partial<User>) {
+export async function updateUser(user_id: string, user: Partial<InsertUser>) {
   return await db.update(UserTable).set(user).where(eq(UserTable.id, user_id));
 }
 
 /**
- * Update a user and role rows in one transaction; new rows are upserted and
- * old ones removed so role data stays in sync.
+ * Update a user, their open membership stint and role rows in one transaction;
+ * new rows are upserted and old ones removed so role data stays in sync.
  */
 export async function updateUserTeamInfo(
   user_id: string,
   values: {
-    user: Partial<User>;
+    user: Partial<InsertUser>;
+    membership?: Partial<Pick<UserTeam, 'join_date' | 'leave_date'>>;
     player?: Omit<InsertPlayer, 'id'>;
     coach?: Omit<InsertCoach, 'id'>;
     remove: { player: boolean; coach: boolean };
   },
 ) {
-  const { user, player, coach, remove } = values;
+  const { user, membership, player, coach, remove } = values;
 
   return await db.transaction(async (tx) => {
     if (player) {
@@ -168,6 +187,19 @@ export async function updateUserTeamInfo(
     }
 
     await tx.update(UserTable).set(user).where(eq(UserTable.id, user_id));
+
+    // `join_date` belongs to the open stint, not the user row
+    if (membership) {
+      await tx
+        .update(UserTeamTable)
+        .set(membership)
+        .where(
+          and(
+            eq(UserTeamTable.user_id, user_id),
+            isNull(UserTeamTable.leave_date),
+          ),
+        );
+    }
 
     if (remove.player) {
       await tx.delete(PlayerTable).where(eq(PlayerTable.id, user_id));

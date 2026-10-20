@@ -36,6 +36,7 @@ flowchart LR
     server -- "Drizzle ORM" --> prod
     server --> blob
     server -- "password reset /<br/>email feature" --> resend
+
 `}
 />
 
@@ -99,7 +100,7 @@ team-management/
 │   ├── actions/                # 'use server' write path: one file per domain, permission-guarded
 │   ├── db/                     # Data-access layer: db.query.* per domain + pg-error mapping
 │   ├── drizzle/                # Schema, migrations, seed SQL, migrate/reset scripts, db instance
-│   │   ├── schema/             #   12 modules → 19 tables + PG enums
+│   │   ├── schema/             #   14 modules → 19 tables + PG enums
 │   │   ├── migrations/         #   4 generated migrations + snapshots
 │   │   ├── scripts/            #   migrate.ts, reset.ts
 │   │   └── sql/                #   raw seed/bootstrap SQL (default team, admin, mock data)
@@ -139,7 +140,7 @@ flowchart TB
     subgraph core["Team domain"]
         team["team"]
         user["user"]
-        rule["rule"]
+        user_team["user_team ⨝"]
         asset["asset"]
         player["player"]
         coach["coach"]
@@ -168,7 +169,8 @@ flowchart TB
     user --> account
 
     team -- "1 : N" --> user
-    team -- "1 : 1" --> rule
+    team -- "1 : N" --> user_team
+    user -- "1 : N" --> user_team
     team -- "1 : N" --> asset
     user -. "assigned_to (optional)" .-> asset
     user -- "extends to" --> player
@@ -193,6 +195,7 @@ flowchart TB
     team -- "home_team / away_team" --> match
     match -- "1 : N" --> match_player_stats
     player -- "1 : N" --> match_player_stats
+
 `}
 />
 
@@ -207,7 +210,7 @@ Structural notes:
 
 ## 5. Database relationships (detailed ERD)
 
-All 19 tables from `src/drizzle/schema/` (barrel: `src/drizzle/schema.ts`, 12 modules). Every table also carries `created_at` / `updated_at` (from `src/drizzle/helpers.ts`, omitted below for brevity). PostgreSQL enums back the `*_enum` columns (`src/utils/enum.ts`). Casing is `snake_case` (`drizzle.config.ts`).
+All 19 tables from `src/drizzle/schema/` (barrel: `src/drizzle/schema.ts`, 13 modules). Every table also carries `created_at` / `updated_at` (from `src/drizzle/helpers.ts`, omitted below for brevity). PostgreSQL enums back the `*_enum` columns (`src/utils/enum.ts`). Casing is `snake_case` (`drizzle.config.ts`).
 
 <Mermaid
   chart={`
@@ -225,8 +228,13 @@ erDiagram
         varchar citizen_identification
         user_state state "ACTIVE | INACTIVE | TEMPORARILY_ABSENT | UNKNOWN"
         user_role role "SUPER_ADMIN | COACH | PLAYER | GUEST"
+    }
+    user_team {
+        uuid user_team_id PK
+        text user_id FK
+        uuid team_id FK
         date join_date
-        date leave_date
+        date leave_date "null while the stint is open"
     }
     session {
         text id PK
@@ -256,15 +264,13 @@ erDiagram
     team {
         uuid team_id PK
         boolean is_default "unique partial index: only one default"
+        boolean is_external "opponent; check: never both with is_default"
         varchar name
         varchar email UK
         integer establish_year "check: 2000..current year"
         text image "Vercel Blob path"
-    }
-    rule {
-        uuid rule_id PK
-        uuid team_id FK,UK "1:1 with team"
-        text content
+        text rule_content "the team rule document"
+        timestamp rule_updated_at "revised independently of updated_at"
     }
     asset {
         uuid asset_id PK
@@ -376,8 +382,9 @@ erDiagram
     user ||--o{ session : "has"
     user ||--o{ account : "has"
 
-    team ||--o{ user : "has members"
-    team ||--o| rule : "has one"
+    team ||--o{ user : "current team"
+    team ||--o{ user_team : "membership stints"
+    user ||--o{ user_team : "joined / left"
     team ||--o{ asset : "owns"
     user |o--o{ asset : "assigned_to"
     user ||--o| player : "extends to"
@@ -405,23 +412,24 @@ erDiagram
     team ||--o{ test_type : "defines"
     test_type ||--o{ test_result : "measured as"
     player ||--o{ test_result : "achieves"
+
 `}
 />
 
 ### Foreign-key delete behavior
 
-| Child column                                                                                                                                                    | References                                         | On delete                                                    |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- | ------------------------------------------------------------ |
-| `user.team_id`, `rule.team_id`, `asset.team_id`, `test_type.team_id`, `training_session.team_id`, `league_team.*`, `league_team_roster.*` | `team` / `league` / `player`                       | **cascade**                                                  |
-| `session.user_id`, `account.user_id`, `player.id`, `coach.id`                                                                                                   | `user`                                             | **cascade**                                                  |
-| `attendance.player_id`, `attendance.(session_id, date)`, `match_player_stats.player_id`, `test_result.player_id`, `match.league_id`, `match_player_stats.match_id`                               | `player` / `league` / `match`                      | **cascade**                                                  |
-| `asset.assigned_to`, `match.location_id`, `training_session.coach_id`, `training_session.location_id`                                  | `user` / `training_session` / `location` / `coach` | **set null**                                                 |
-| `test_result.type_id`                                                                                                                                           | `test_type`                                        | **restrict** (guarded in `removeTestType`, migration `0002`) |
-| `match.home_team`, `match.away_team`                                                                                                                            | `team`                                             | **no action** (default)                                      |
+| Child column                                                                                                                                                           | References                                         | On delete                                                    |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- | ------------------------------------------------------------ |
+| `user.team_id`, `user_team.*`, `match_player_stats.team_id`, `asset.team_id`, `test_type.team_id`, `training_session.team_id`, `league_team.*`, `league_team_roster.*` | `team` / `league` / `player`                       | **cascade**                                                  |
+| `session.user_id`, `account.user_id`, `player.id`, `coach.id`                                                                                                          | `user`                                             | **cascade**                                                  |
+| `attendance.player_id`, `attendance.(session_id, date)`, `match_player_stats.player_id`, `test_result.player_id`, `match.league_id`, `match_player_stats.match_id`     | `player` / `league` / `match`                      | **cascade**                                                  |
+| `asset.assigned_to`, `match.location_id`, `training_session.coach_id`, `training_session.location_id`                                                                  | `user` / `training_session` / `location` / `coach` | **set null**                                                 |
+| `test_result.type_id`                                                                                                                                                  | `test_type`                                        | **restrict** (guarded in `removeTestType`, migration `0002`) |
+| `match.home_team`, `match.away_team`                                                                                                                                   | `team`                                             | **no action** (default)                                      |
 
 ### Migrations & seed
 
-`src/drizzle/migrations/` (dialect postgresql, 11 migrations): `0000_base_tables`, `0001_update_asset_table` (adds `OBSOLETE`, `assigned_to`, `acquired_date`), `0002_complete_doctor_doom` (recreates `test_result.type_id` FK as `ON DELETE restrict`), `0003_update_team_image` (renames `team.logo_url` → `team.image`, to `text`), `0004_add_achievement_table`, `0005_update_test_type_unit_enum`, `0006_lowercase_all_enum_values`, `0007_lowercase_achievement_type`, `0008_drop_global_jersey_unique` (jersey uniqueness moves to the action layer), `0009_attendance_per_session` (composite `(session_id, date)` FK + the two partial unique indexes), `0010_unique_asset_name` (drops the global `asset.name` unique, adds `team_asset_name` on `(team_id, name)`, drops the redundant `attendance.team_id`). Raw bootstrap/seed SQL lives in `src/drizzle/sql/` (`team.sql` default team, `admin_user.sql`, `team_rule.sql`, `periodic-testing.sql`, and `seed_data.sql`, a re-runnable mock-data importer targeting 20 teams / 100 users / 100 rows per domain).
+`src/drizzle/migrations/` (dialect postgresql, 18 migrations): `0000_base_tables`, `0001_update_asset_table` (adds `OBSOLETE`, `assigned_to`, `acquired_date`), `0002_complete_doctor_doom` (recreates `test_result.type_id` FK as `ON DELETE restrict`), `0003_update_team_image` (renames `team.logo_url` → `team.image`, to `text`), `0004_add_achievement_table`, `0005_update_test_type_unit_enum`, `0006_lowercase_all_enum_values`, `0007_lowercase_achievement_type`, `0008_drop_global_jersey_unique` (jersey uniqueness moves to the action layer), `0009_attendance_per_session` (composite `(session_id, date)` FK + the two partial unique indexes), `0010_unique_asset_name` (drops the global `asset.name` unique, adds `team_asset_name` on `(team_id, name)`, drops the redundant `attendance.team_id`), `0011_require_date_test_results`, `0012_enforce_roster_integrity` (composite `league_team_roster` → `league_team` FK, drops `league.status`), `0013_omniscient_luminals` (`asset.note` to `text`), `0014_report_schedule_table` (adds `report_schedule` / `report_history`), `0015_team_membership_history` (adds `user_team`, moves `user.join_date` / `leave_date` into it, adds `match_player_stats.team_id` — all backfilled), `0016_flag_external_teams` (adds `team.is_external`, backfilled as `NOT is_default`), `0017_merge_rule_into_team` (copies `rule` onto `team.rule_content` / `rule_updated_at`, then drops the table). Raw bootstrap/seed SQL lives in `src/drizzle/sql/` (`team.sql` default team, `admin_user.sql` (user + opening stint), `team_rule.sql` (updates `team.rule_content`), `periodic-testing.sql`, and `seed_data.sql`, a re-runnable mock-data importer targeting 20 teams / 100 users / 100 rows per domain).
 
 ## 6. Authentication & authorization
 
@@ -479,6 +487,7 @@ sequenceDiagram
     end
 
     Note over U: authClient.useSession() keeps the session fresh on the client#59;<br/>AppShell also redirects to /login if the client resolves unauthenticated
+
 `}
 />
 
@@ -508,6 +517,7 @@ sequenceDiagram
             SA-->>C: ResponseFactory.success / error
         end
     end
+
 `}
 />
 
@@ -535,6 +545,7 @@ flowchart TB
     I --> J["Sign in at /login<br/>authClient.signIn.email()"]
 
     K["Existing user: /forgot-password<br/>authClient.requestPasswordReset()"] --> H
+
 `}
 />
 
@@ -546,7 +557,7 @@ Each feature is a Server Component page under `src/app/(protected)/…` whose in
 | ---------------- | ---------------------------------------------------- | -------------------------------- | -------------------------------- | ------------------------ | -------------------------------------------------------- |
 | Login / reset    | `/login`, `/forgot-password`, `/new-password`        | `(auth)/*/page.tsx`              | `auth.ts` (helpers)              | public                   | `user`, `account`, `verification`, `session`             |
 | Dashboard        | `/dashboard`                                         | `(overview)/dashboard`           | `analytics.ts`                   | **dashboard**            | player, match, training_session, attendance              |
-| Team rule        | `/team-rule`                                         | `(overview)/team-rule`           | `rule.ts`                        | **team-rule**            | `rule`                                                   |
+| Team rule        | `/team-rule`                                         | `(overview)/team-rule`           | `rule.ts`                        | **team-rule**            | `team.rule_content`                                      |
 | Roster           | `/roster`                                            | `(team-management)/roster`       | `user.ts`                        | **roster**               | `user`, `player`, `coach` (+ Better Auth signup, Resend) |
 | Training         | `/training`                                          | `(team-management)/training`     | `training-session.ts`            | **training**             | `training_session`, coach                                |
 | Attendance       | `/attendance`                                        | `(team-management)/attendance`   | `attendance.ts`                  | **attendance**           | `attendance`                                             |
@@ -570,16 +581,16 @@ Each feature is a Server Component page under `src/app/(protected)/…` whose in
 
 ## 8. External services
 
-| Service                           | Purpose                               | Config file                                 | Env vars                                                       |
-| --------------------------------- | ------------------------------------- | ------------------------------------------- | -------------------------------------------------------------- |
-| Vercel (hosting)                  | App deploy (preview + production)     | `.github/workflows/*.yaml`                  | `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`           |
-| PostgreSQL / Neon                 | Primary database                      | `src/drizzle/index.ts`, `drizzle.config.ts` | `DATABASE_URL`                                                 |
-| Better Auth                       | Authentication (email/password)       | `src/lib/auth.ts`                           | `BETTER_AUTH_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_API_KEY` |
-| Vercel Blob                       | Private file storage (avatars, logos) | `src/lib/blob.ts`                           | `BLOB_READ_WRITE_TOKEN`, `BLOB_STORE_ID`                       |
-| Resend                            | Transactional email                   | `src/lib/resend.ts`                         | `RESEND_API_KEY`                                               |
-| Chromium pack                     | Serverless headless browser for PDF   | `src/lib/puppeteer.ts`                      | `CHROMIUM_PACK_URL` (production)                               |
-| Vercel Analytics + Speed Insights | Web analytics (production only)       | `src/app/layout.tsx`                        | —                                                              |
-| GitHub Issues                     | In-app feedback opens a prefilled issue form | `.github/ISSUE_TEMPLATE/*.yml`, `src/utils/feedback.ts` | —                                                    |
+| Service                           | Purpose                                      | Config file                                             | Env vars                                                       |
+| --------------------------------- | -------------------------------------------- | ------------------------------------------------------- | -------------------------------------------------------------- |
+| Vercel (hosting)                  | App deploy (preview + production)            | `.github/workflows/*.yaml`                              | `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`           |
+| PostgreSQL / Neon                 | Primary database                             | `src/drizzle/index.ts`, `drizzle.config.ts`             | `DATABASE_URL`                                                 |
+| Better Auth                       | Authentication (email/password)              | `src/lib/auth.ts`                                       | `BETTER_AUTH_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_API_KEY` |
+| Vercel Blob                       | Private file storage (avatars, logos)        | `src/lib/blob.ts`                                       | `BLOB_READ_WRITE_TOKEN`, `BLOB_STORE_ID`                       |
+| Resend                            | Transactional email                          | `src/lib/resend.ts`                                     | `RESEND_API_KEY`                                               |
+| Chromium pack                     | Serverless headless browser for PDF          | `src/lib/puppeteer.ts`                                  | `CHROMIUM_PACK_URL` (production)                               |
+| Vercel Analytics + Speed Insights | Web analytics (production only)              | `src/app/layout.tsx`                                    | —                                                              |
+| GitHub Issues                     | In-app feedback opens a prefilled issue form | `.github/ISSUE_TEMPLATE/*.yml`, `src/utils/feedback.ts` | —                                                              |
 
 Notes: `BLOB_STORE_ID`, `BETTER_AUTH_*`, and `CRON_SECRET` appear in `.env` but are **not** part of the validated `env.config.ts` schema, because Better Auth reads its own vars directly from `process.env`. Resend's sender is currently `Acme <onboarding@resend.dev>` (`src/lib/resend.ts:7`) with every subject prefixed `SGR - `. `next.config.ts` allowlists remote images from `https://blob.vercel-storage.com/**`.
 
@@ -634,11 +645,11 @@ Environment variables are loaded and **Zod-validated** in `env.config.ts` (impor
 
 **CI/CD (`.github/workflows/`)**
 
-| Workflow          | Trigger                                                      | Does                                                                                                               |
-| ----------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
-| `preview.yaml`    | PR → `main`                                                  | `unit-test` (`pnpm test`) → gated `build-and-deploy` to **Vercel preview**                                         |
-| `production.yaml` | push → `main`                                                | `vercel pull/build --prod/deploy --prod` to **Vercel production** (⚠️ no test gate)                                |
-| `playwright.yml`  | PR → `main`                                                  | E2E job, **currently disabled** (`if: ${{ false }}`) pending an isolated test DB                                  |
+| Workflow          | Trigger       | Does                                                                                |
+| ----------------- | ------------- | ----------------------------------------------------------------------------------- |
+| `preview.yaml`    | PR → `main`   | `unit-test` (`pnpm test`) → gated `build-and-deploy` to **Vercel preview**          |
+| `production.yaml` | push → `main` | `vercel pull/build --prod/deploy --prod` to **Vercel production** (⚠️ no test gate) |
+| `playwright.yml`  | PR → `main`   | E2E job, **currently disabled** (`if: ${{ false }}`) pending an isolated test DB    |
 
 > The docs are no longer a separate deployment: Fumadocs pages live in `src/app/docs` (content in `content/docs/`) and ship with the main app build.
 
@@ -658,20 +669,20 @@ Environment variables are loaded and **Zod-validated** in `env.config.ts` (impor
 
 ## 13. Security considerations
 
-| Aspect | Implementation | Where |
-| --- | --- | --- |
-| Authentication | Better Auth email/password, **no email verification**, **no public sign-up** (admin-provisioned) | `src/lib/auth.ts` |
-| Password reset | Token-based, delivered by Resend; tokens stored in the `verification` table | `auth.ts` `sendResetPassword`, `verification` table |
-| Session | Signed cookie (prefix `sgr`), 1 hour expiry + 1 hour cookie cache; server validation via `auth.api.getSession()` | `src/utils/constant.ts`, `src/actions/auth.ts` |
-| Password storage | Hashed by Better Auth, stored in `account.password` | `account` table |
-| Authorization | RBAC: `can()` / `defineAbility()` over `<resource>:<action>` permissions, plus captain overrides | `src/utils/permissions.ts` |
-| Defense-in-depth | 3 layers: middleware (view-gate) → server action (`withResource`) → client (`usePermissions`) | `src/proxy.ts`, `src/actions/auth.ts` |
-| Record-level access | Actions on per-member data re-check the target against the session user (`forbidden()` on mismatch): self-only leave, self-only profile edits, role pinned for non-admins, avatar blob matched against the stored `image` | `src/actions/attendance.ts`, `src/actions/user.ts` |
-| Client payload | The protected layout passes only `session.user` to `SessionProvider`, so the session token is never serialized to the client; list reads narrow their columns (`RosterUser`) so undisplayed personal data never crosses the React Server Component boundary | `src/app/(protected)/layout.tsx`, `src/db/user.ts` |
-| CSRF / origin | `trustedOrigins` restricted to `DEV_URL` + `PRODUCTION_URL` | `src/lib/auth.ts:32` |
-| File access | Vercel Blob objects are **private** (`access: 'private'`), fetched server-side and returned as base64 data URLs | `src/lib/blob.ts` |
-| Transport / at-rest encryption | TLS in transit and at-rest encryption are provided by the managed platforms (Vercel, Neon, Vercel Blob, Resend); not configured in application code | > Not Found in repo (platform-managed) |
-| Secrets | Env vars validated by Zod (`env.config.ts`); auth secrets read directly from `process.env`; CI secrets via GitHub Actions | `env.config.ts`, `.github/workflows/*` |
+| Aspect                         | Implementation                                                                                                                                                                                                                                              | Where                                               |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| Authentication                 | Better Auth email/password, **no email verification**, **no public sign-up** (admin-provisioned)                                                                                                                                                            | `src/lib/auth.ts`                                   |
+| Password reset                 | Token-based, delivered by Resend; tokens stored in the `verification` table                                                                                                                                                                                 | `auth.ts` `sendResetPassword`, `verification` table |
+| Session                        | Signed cookie (prefix `sgr`), 1 hour expiry + 1 hour cookie cache; server validation via `auth.api.getSession()`                                                                                                                                            | `src/utils/constant.ts`, `src/actions/auth.ts`      |
+| Password storage               | Hashed by Better Auth, stored in `account.password`                                                                                                                                                                                                         | `account` table                                     |
+| Authorization                  | RBAC: `can()` / `defineAbility()` over `<resource>:<action>` permissions, plus captain overrides                                                                                                                                                            | `src/utils/permissions.ts`                          |
+| Defense-in-depth               | 3 layers: middleware (view-gate) → server action (`withResource`) → client (`usePermissions`)                                                                                                                                                               | `src/proxy.ts`, `src/actions/auth.ts`               |
+| Record-level access            | Actions on per-member data re-check the target against the session user (`forbidden()` on mismatch): self-only leave, self-only profile edits, role pinned for non-admins, avatar blob matched against the stored `image`                                   | `src/actions/attendance.ts`, `src/actions/user.ts`  |
+| Client payload                 | The protected layout passes only `session.user` to `SessionProvider`, so the session token is never serialized to the client; list reads narrow their columns (`RosterUser`) so undisplayed personal data never crosses the React Server Component boundary | `src/app/(protected)/layout.tsx`, `src/db/user.ts`  |
+| CSRF / origin                  | `trustedOrigins` restricted to `DEV_URL` + `PRODUCTION_URL`                                                                                                                                                                                                 | `src/lib/auth.ts:32`                                |
+| File access                    | Vercel Blob objects are **private** (`access: 'private'`), fetched server-side and returned as base64 data URLs                                                                                                                                             | `src/lib/blob.ts`                                   |
+| Transport / at-rest encryption | TLS in transit and at-rest encryption are provided by the managed platforms (Vercel, Neon, Vercel Blob, Resend); not configured in application code                                                                                                         | > Not Found in repo (platform-managed)              |
+| Secrets                        | Env vars validated by Zod (`env.config.ts`); auth secrets read directly from `process.env`; CI secrets via GitHub Actions                                                                                                                                   | `env.config.ts`, `.github/workflows/*`              |
 
 Notable boundary: the PDF report route (`api/reports/dashboard`) **forwards the caller's auth cookies** into a headless Chromium instance so protected pages render. It is auth-gated (401 without a session), but the cookie-forwarding is a trust boundary worth keeping in mind.
 
@@ -688,42 +699,39 @@ Sourced from [TODO.md](https://github.com/diosvo/team-management/blob/main/TODO.
 
 - ⭐ **Add a `match` status enum**: scores default to 0, so a scheduled-but-unplayed match is indistinguishable from a 0–0 result.
 - ⭐ **`match.home_team` / `away_team` have no `onDelete`**: deleting a team with match history throws a raw FK error.
-- **Team membership history (biggest structural gap)**: `user.team_id` is a single FK, so transfers/rejoins lose history and `match_player_stats` lacks team context. Consider a `user_team` membership table.
-- Recently closed: jersey-number uniqueness per team (`0008`), attendance per session (`0009`), `asset.name` unique per team and the redundant `attendance.team_id` dropped (`0010`), `test_result.date` NOT NULL (`0011`), the `league_team_roster` → `league_team` composite FK and the derivable `league.status` column dropped (`0012`).
+- Recently closed: jersey-number uniqueness per team (`0008`), attendance per session (`0009`), `asset.name` unique per team and the redundant `attendance.team_id` dropped (`0010`), `test_result.date` NOT NULL (`0011`), the `league_team_roster` → `league_team` composite FK and the derivable `league.status` column dropped (`0012`), team membership history (`0015`), `team.is_external` (`0016`), and the `rule` merge (`0017`).
 - **No tables behind `emails` / `documents` / `reports` resources**: routes and permissions exist, but there's no send log, document metadata, or report registry (reports go to Blob with no DB index).
-- **Simplification candidates**: `rule` could fold into `team`.
 - **Out of scope** (no product signal yet): injury/medical tracking, payments/fees, audit logs.
 
 Beyond the schema: enabling the disabled E2E CI job once an isolated test DB exists, and adding a unit-test gate to production deploys (see [§12](#12-known-gaps--risks)).
 
 ## 16. Project identification
 
-| | |
-| --- | --- |
-| **Project name** | Saigon Rovers Basketball Club Portal (`saigon-rovers-basketball-club-portal`) |
-| **Repository** | `git@github.com:diosvo/team-management.git` |
+|                         |                                                                                                            |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------- |
+| **Project name**        | Saigon Rovers Basketball Club Portal (`saigon-rovers-basketball-club-portal`)                              |
+| **Repository**          | `git@github.com:diosvo/team-management.git`                                                                |
 | **Author / maintainer** | Dios Vo, [vtmn1212@gmail.com](mailto:vtmn1212@gmail.com) ([LinkedIn](https://www.linkedin.com/in/diosvo/)) |
-| **Version** | `1.0.0` (`package.json`) |
-| **Default branch** | `main` (production deploys from here) |
-| **Hosting** | Vercel (app) + Neon (database) |
-| **Last updated** | 2026-07-22 |
+| **Version**             | `1.0.0` (`package.json`)                                                                                   |
+| **Default branch**      | `main` (production deploys from here)                                                                      |
+| **Hosting**             | Vercel (app) + Neon (database)                                                                             |
+| **Last updated**        | 2026-07-22                                                                                                 |
 
 ## 17. Glossary / acronyms
 
-| Term | Definition |
-| --- | --- |
-| **RSC** | React Server Component: server-rendered component, the default for pages here |
-| **Server Action** | A `'use server'` function invoked from the client as the write path (no REST API) |
-| **RBAC** | Role-Based Access Control: the `can()` / `ROLE_CONFIG` permission model |
-| **Resource** | A permission-scoped area of the app (e.g. `roster`, `matches`); 16 total in `src/routes.ts` |
-| **Ability** | Object returned by `defineAbility(role, isCaptain)` with `can` / `canAll` / `canAny` |
-| **Captain** | A `PLAYER` with `is_captain=true`, granted extra permissions via `CAPTAIN_PERMISSIONS` |
-| **Provisioning** | Admin/captain creating an account (no self-signup) that the user activates via reset email |
-| **Blob** | Vercel Blob: private object storage for avatars and team logos |
-| **ERD** | Entity Relationship Diagram (see [§5](#5-database-relationships-detailed-erd)) |
-| **PRD** | Product Requirements Document: specs under `content/docs/`, served by the app at `/docs` |
-| **SGR** | Saigon Rovers: the club; used as the email subject prefix and app abbreviation |
-| **Cookie cache** | Better Auth's signed session snapshot in the cookie, checked without a DB hit |
+| Term              | Definition                                                                                  |
+| ----------------- | ------------------------------------------------------------------------------------------- |
+| **RSC**           | React Server Component: server-rendered component, the default for pages here               |
+| **Server Action** | A `'use server'` function invoked from the client as the write path (no REST API)           |
+| **RBAC**          | Role-Based Access Control: the `can()` / `ROLE_CONFIG` permission model                     |
+| **Resource**      | A permission-scoped area of the app (e.g. `roster`, `matches`); 16 total in `src/routes.ts` |
+| **Ability**       | Object returned by `defineAbility(role, isCaptain)` with `can` / `canAll` / `canAny`        |
+| **Captain**       | A `PLAYER` with `is_captain=true`, granted extra permissions via `CAPTAIN_PERMISSIONS`      |
+| **Provisioning**  | Admin/captain creating an account (no self-signup) that the user activates via reset email  |
+| **Blob**          | Vercel Blob: private object storage for avatars and team logos                              |
+| **ERD**           | Entity Relationship Diagram (see [§5](#5-database-relationships-detailed-erd))              |
+| **PRD**           | Product Requirements Document: specs under `content/docs/`, served by the app at `/docs`    |
+| **SGR**           | Saigon Rovers: the club; used as the email subject prefix and app abbreviation              |
+| **Cookie cache**  | Better Auth's signed session snapshot in the cookie, checked without a DB hit               |
 
 _Analyzed on 2026-07-22 from the `dev_242` branch: `package.json` + all config files, `src/app` route tree, `src/actions` + `src/db` + `src/drizzle/schema`, `src/lib` + `src/utils` + `src/proxy.ts`, `.github/workflows`, and the test/e2e/PRD tooling. Diagrams reflect 19 tables and 16 permission resources present in the source at that time._
-

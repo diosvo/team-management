@@ -3,7 +3,10 @@
 -- - user: 100 (exactly: 1 SUPER_ADMIN, 20 COACH, 70 PLAYER, 9 GUEST)
 -- - coach: 20 (exact)
 -- - player: 70 (exact)
--- - rule: 20 (exact, 1 per team because rule.team_id is UNIQUE)
+-- - user_team: 100 (exact, one open stint per user)
+--
+-- Mock data spreads users across all 20 teams, so the 19 `is_external` teams
+-- here carry members. Production opponents never do — see team.is_external.
 -- - asset/location/league/match/training_session/attendance/test_type/test_result/match_player_stats: 100 each (exact)
 -- - account/session: 100 each (optional but included)
 --
@@ -22,7 +25,7 @@ TRUNCATE
   "match",
   training_session,
   asset,
-  rule,
+  user_team,
   test_type,
   location,
   league,
@@ -47,15 +50,19 @@ CREATE TEMP TABLE seed_team_map (
 
 WITH ins AS (
   INSERT INTO team (
-    team_id, is_default, name, email, establish_year, image, created_at, updated_at
+    team_id, is_default, is_external, name, email, establish_year, image,
+    rule_content, rule_updated_at, created_at, updated_at
   )
   SELECT
     gen_random_uuid(),
     (gs = 1),
+    (gs <> 1),
     'Mock Team ' || gs,
     'team' || gs || '@example.com',
     greatest(2000, least(extract(year from current_date)::int, 2000 + gs))::int,
     'https://example.com/logos/team-' || gs || '.png',
+    'Rule for Mock Team ' || gs,
+    now(),
     now(),
     now()
   FROM generate_series(1, 20) gs
@@ -78,7 +85,7 @@ SELECT idx, team_id FROM numbered;
 -- ============================================================
 INSERT INTO "user" (
   id, name, email, email_verified, image, created_at, updated_at,
-  team_id, dob, phone_number, citizen_identification, state, role, join_date, leave_date
+  team_id, dob, phone_number, citizen_identification, state, role
 )
 SELECT
   'user-' || to_char(gs, 'FM000') AS id,
@@ -106,10 +113,21 @@ SELECT
     WHEN gs BETWEEN 2 AND 21 THEN 'COACH'::user_role
     WHEN gs BETWEEN 22 AND 91 THEN 'PLAYER'::user_role
     ELSE 'GUEST'::user_role
-  END AS role,
-  (date '2024-01-01' + ((gs * 13) % 700)) AS join_date,
-  NULL::date AS leave_date
+  END AS role
 FROM generate_series(1, 100) gs;
+
+-- ============================================================
+-- 2b) USER_TEAM (100) - one open stint per user, on their current team
+-- ============================================================
+INSERT INTO user_team (user_id, team_id, join_date, leave_date, created_at, updated_at)
+SELECT
+  u.id,
+  u.team_id,
+  (date '2024-01-01' + ((row_number() OVER (ORDER BY u.id) * 13) % 700)),
+  NULL::date,
+  now(),
+  now()
+FROM "user" u;
 
 -- ============================================================
 -- 3) COACH (20) for users user-002..user-021
@@ -147,17 +165,7 @@ SELECT
   now()
 FROM players_src ps;
 
--- ============================================================
--- 5) RULE (20) - 1 per team (unique team_id)
--- ============================================================
-INSERT INTO rule (rule_id, team_id, content, created_at, updated_at)
-SELECT
-  gen_random_uuid(),
-  tm.team_id,
-  'Rule for Mock Team ' || tm.idx,
-  now(),
-  now()
-FROM seed_team_map tm;
+-- 5) RULE - seeded inline on `team` (`rule_content`) in step 1.
 
 -- ============================================================
 -- 6) LOCATION (100)
@@ -431,17 +439,19 @@ SELECT idx, match_id FROM numbered;
 -- 14) MATCH_PLAYER_STATS (100)
 -- ============================================================
 WITH player_ids AS (
-  SELECT p.id, row_number() OVER (ORDER BY p.id) AS rn
+  SELECT p.id, u.team_id, row_number() OVER (ORDER BY p.id) AS rn
   FROM player p
+  JOIN "user" u ON u.id = p.id
 )
 INSERT INTO match_player_stats (
-  match_id, player_id,
+  match_id, player_id, team_id,
   points_scored, rebounds, assists, steals, blocks, turnovers, fouls, minutes_played,
   created_at, updated_at
 )
 SELECT
   (SELECT match_id FROM seed_match_map WHERE idx = 1 + ((gs - 1) % 100)),
   (SELECT id FROM player_ids WHERE rn = 1 + ((gs - 1) % (SELECT count(*) FROM player_ids))),
+  (SELECT team_id FROM player_ids WHERE rn = 1 + ((gs - 1) % (SELECT count(*) FROM player_ids))),
   (gs * 2) % 41,
   (gs * 3) % 16,
   (gs * 5) % 12,

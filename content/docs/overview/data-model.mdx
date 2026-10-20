@@ -19,8 +19,9 @@ erDiagram
     user ||--o| coach : "extends"
 
     %% ===== Team domain =====
-    team ||--o{ user : "has members"
-    team ||--o| rule : "one rule doc"
+    team ||--o{ user : "current team"
+    team ||--o{ user_team : "membership stints"
+    user ||--o{ user_team : "joined / left"
     team ||--o{ asset : "owns"
     user |o--o{ asset : "assigned_to (optional)"
 
@@ -47,6 +48,7 @@ erDiagram
     team ||--o{ match : "away_team"
     match ||--o{ match_player_stats : "per player"
     player ||--o{ match_player_stats : "box score"
+    team ||--o{ match_player_stats : "turned out for"
 
     %% ===== Honors =====
     league |o--o{ achievement : "awarded in (optional)"
@@ -61,13 +63,13 @@ foreign keys and is omitted from the diagram.
 
 | Domain          | Entity               | Purpose                                                        | Key constraints                                                                     |
 | --------------- | -------------------- | -------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| **Identity**    | `user`               | Every person; carries `role`, `state`, and a required `team_id` | `email` unique; cascade-deleted with its team                                       |
+| **Identity**    | `user`               | Every person; carries `role`, `state`, and a required `team_id` (their current team) | `email` unique; cascade-deleted with its team                                  |
+|                 | `user_team`          | One row per stint on a team (`join_date` / `leave_date`)       | At most one open stint per user (`user_current_team`); `(user, team, join_date)` unique |
 |                 | `session`, `account` | Better Auth login sessions and credentials                     | Cascade-deleted with the user                                                       |
 |                 | `verification`       | Password-reset tokens                                          | No foreign keys                                                                     |
 |                 | `player`             | Extension of `user` (shared `id`)                              | `jersey_number` 0–99, unique per team (action layer); height/weight checks          |
 |                 | `coach`              | Extension of `user` (shared `id`)                              | —                                                                                   |
-| **Team**        | `team`               | The club and opponents                                         | Partial unique index: only one `is_default` team                                    |
-|                 | `rule`               | Team rule document                                             | `team_id` unique → strict 1:1 with `team`                                           |
+| **Team**        | `team`               | The club and opponents; also holds the rule document (`rule_content`) | Only one `is_default` team; `is_external` marks opponents, and the two can't both be true |
 |                 | `asset`              | Equipment inventory                                            | Name unique within a team (`team_asset_name`); `assigned_to` → user, `set null` on delete |
 | **Performance** | `test_type`          | Per-team test definitions                                      | Name unique within a team                                                           |
 |                 | `test_result`        | A player's measurement                                         | `type_id` delete is `restrict` — types with results can't be removed                |
@@ -77,13 +79,33 @@ foreign keys and is omitted from the diagram.
 |                 | `league_team`        | League ⨯ team junction                                         | Composite PK (`league_id`, `team_id`)                                               |
 |                 | `league_team_roster` | Adds the player dimension                                      | Composite PK (`league_id`, `team_id`, `player_id`)                                  |
 |                 | `match`              | A game; references **two** teams directly                      | Check: `home_team != away_team`; no `league_id` ⇒ friendly match                    |
-|                 | `match_player_stats` | Per-player box score                                           | Composite PK (`match_id`, `player_id`)                                              |
+|                 | `match_player_stats` | Per-player box score, with the team played for                 | Composite PK (`match_id`, `player_id`); `team_id` is the team at match time          |
 |                 | `location`           | Venue for matches and training                                 | Referenced with `set null` from both                                                |
 | **Honors**      | `achievement`        | Manually recorded honors                                       | One honor per (`league`, `type`) except `custom`; league/player links survive deletes (`set null`) |
 
+## Membership over time
+
+`user_team` records one row per stint a person spends on a team, so transfers
+and leave-and-rejoin keep their history instead of overwriting it.
+
+- `user.team_id` stays as the pointer to the **open** stint — every read path
+  filters on it, so it is kept in sync rather than derived. `transferMembership`
+  closes the old stint and moves the pointer in a single transaction.
+- `user_current_team`, a partial unique index on `user_id WHERE leave_date IS
+  NULL`, allows at most one open stint. `user_team_stint` (`user_id`, `team_id`,
+  `join_date`) permits rejoining the same team later but not starting the same
+  stint twice.
+- `match_player_stats.team_id` records who the player turned out for in that
+  match, so an old box score keeps pointing at the team they played for rather
+  than following them to their current one.
+
+Jersey numbers remain unique per team in the action layer, not the database:
+with history, uniqueness is "per open membership", which a partial unique index
+can't express.
+
 ## Deletion behavior at a glance
 
-- **Cascade from `team`:** users, assets, rules, test types, training sessions, league junctions — deleting a team removes its whole subtree (attendance follows its player).
-- **Cascade from `user`:** sessions, accounts, player/coach extensions (and from `player`: attendance, roster entries, stats, test results).
+- **Cascade from `team`:** users, memberships, assets, test types, training sessions, league junctions — deleting a team removes its whole subtree (attendance follows its player).
+- **Cascade from `user`:** sessions, accounts, memberships, player/coach extensions (and from `player`: attendance, roster entries, stats, test results).
 - **`set null` (record survives):** `asset.assigned_to`, `match.location_id`, `training_session.coach_id` / `location_id`, `achievement.league_id` / `player_id`.
 - **`restrict`:** `test_result.type_id` — a test type with recorded results cannot be deleted.

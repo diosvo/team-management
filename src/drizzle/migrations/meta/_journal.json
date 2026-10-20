@@ -106,6 +106,27 @@
       "when": 1791900679581,
       "tag": "0014_report_schedule_table",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1792000000000,
+      "tag": "0015_team_membership_history",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1792000000001,
+      "tag": "0016_flag_external_teams",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1792000000002,
+      "tag": "0017_merge_rule_into_team",
+      "breakpoints": true
     }
   ]
 }
