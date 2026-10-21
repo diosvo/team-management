@@ -89,11 +89,11 @@ export const removeTeam = teams(
     try {
       // `match.home_team` / `away_team` are `restrict`: without this the
       // delete comes back as a raw foreign key error naming a constraint.
-      const played = await countTeamMatches(team_id);
+      const matchCount = await countTeamMatches(team_id);
 
-      if (played > 0) {
+      if (matchCount > 0) {
         return ResponseFactory.error(
-          `This team appears in ${played} match(es). Delete those matches first, or keep the team to preserve the record.`,
+          `This team appears in ${matchCount} match(es). Delete those matches first, or keep the team to preserve the record.`,
         );
       }
 

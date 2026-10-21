@@ -700,7 +700,7 @@ Sourced from [TODO.md](https://github.com/diosvo/team-management/blob/main/TODO.
 
 - ⭐ **Add a `match` status enum**: scores default to 0, so a scheduled-but-unplayed match is indistinguishable from a 0–0 result.
 - ⭐ **`match.home_team` / `away_team` have no `onDelete`**: deleting a team with match history throws a raw FK error.
-- Recently closed: jersey-number uniqueness per team (`0008`), attendance per session (`0009`), `asset.name` unique per team and the redundant `attendance.team_id` dropped (`0010`), `test_result.date` NOT NULL (`0011`), the `league_team_roster` → `league_team` composite FK and the derivable `league.status` column dropped (`0012`), team membership history (`0015`), `team.is_external` (`0016`), and the `rule` merge (`0017`).
+- Recently closed: jersey-number uniqueness per team (`0008`), attendance per session (`0009`), `asset.name` unique per team and the redundant `attendance.team_id` dropped (`0010`), `test_result.date` NOT NULL (`0011`), the `league_team_roster` → `league_team` composite FK and the derivable `league.status` column dropped (`0012`), team membership history (`0015`), `team.is_external` (`0016`), the `rule` merge (`0017`), and the match lifecycle with `restrict` on `match.home_team` / `away_team` (`0018`).
 - **No tables behind `emails` / `documents` / `reports` resources**: routes and permissions exist, but there's no send log, document metadata, or report registry (reports go to Blob with no DB index).
 - **Out of scope** (no product signal yet): injury/medical tracking, payments/fees, audit logs.
 
