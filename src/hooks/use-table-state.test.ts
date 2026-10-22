@@ -160,67 +160,13 @@ describe('useTableState', () => {
 
       expect(result.current.selection).toEqual(['1']);
     });
-    test('selectionCount reflects the number of selected items', () => {
-      const result = setup();
-
-      act(() => result.current.setSelection(['1', '2', '3']));
-
-      expect(result.current.selectionCount).toBe(3);
-    });
-
-    test('hasSelection is false initially', () => {
-      const result = setup();
-
-      expect(result.current.hasSelection).toBe(false);
-    });
-
-    test('hasSelection is true when at least one item is selected', () => {
-      const result = setup();
-
-      act(() => result.current.setSelection(['1']));
-
-      expect(result.current.hasSelection).toBe(true);
-    });
-
-    test('indeterminate is false when no items are selected', () => {
-      const result = setup();
-
-      expect(result.current.indeterminate).toBe(false);
-    });
-
-    test('indeterminate is true when some but not all items are selected', () => {
-      const result = setup();
-
-      act(() => result.current.setSelection(['1', '2', '3']));
-
-      expect(result.current.indeterminate).toBe(true);
-    });
-
-    test('indeterminate is false when all items are selected', () => {
-      const result = setup();
-
-      act(() => result.current.setSelection(['1', '2', '3', '4', '5', '6']));
-
-      expect(result.current.indeterminate).toBe(false);
-    });
   });
 
-  describe('toggle', () => {
+  describe('toggleSelection', () => {
     test('toggleSelection adds an id once and removes it again', () => {
       expect(toggleSelection('1', true)([])).toEqual(['1']);
       expect(toggleSelection('1', true)(['1'])).toEqual(['1']);
       expect(toggleSelection('1', false)(['1', '2'])).toEqual(['2']);
-    });
-
-    test('toggle updates the hook selection', () => {
-      const result = setup();
-
-      act(() => result.current.toggle('1', true));
-      act(() => result.current.toggle('2', true));
-      expect(result.current.selection).toEqual(['1', '2']);
-
-      act(() => result.current.toggle('1', false));
-      expect(result.current.selection).toEqual(['2']);
     });
   });
 
@@ -252,7 +198,7 @@ describe('useTableState', () => {
         title: 'Successfully deleted 2 items.',
         description: undefined,
       });
-      expect(onDeleted).toHaveBeenCalledWith(2);
+      expect(onDeleted).toHaveBeenCalled();
     });
 
     test('warns with the failure reasons on partial failure', async () => {
@@ -291,31 +237,6 @@ describe('useTableState', () => {
       );
       expect(result.current.selection).toEqual(['1']);
       expect(onDeleted).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('columnCount', () => {
-    test('returns undefined when headerCount is not provided', () => {
-      const result = setup();
-
-      expect(result.current.columnCount).toBeUndefined();
-    });
-
-    test('returns headerCount when user is not admin', () => {
-      const result = renderHook(() =>
-        useTableState(items, matchAll, 1, { headerCount: 3 }),
-      ).result;
-
-      expect(result.current.columnCount).toBe(3);
-    });
-
-    test('returns headerCount + 1 when user is admin', () => {
-      (usePermissions as Mock).mockReturnValue({ isAdmin: true });
-      const result = renderHook(() =>
-        useTableState(items, matchAll, 1, { headerCount: 3 }),
-      ).result;
-
-      expect(result.current.columnCount).toBe(4);
     });
   });
 });

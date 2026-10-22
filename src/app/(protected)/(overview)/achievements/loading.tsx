@@ -1,16 +1,19 @@
 import {
   Box,
-  Center,
   Circle,
   Grid,
   GridItem,
   HStack,
-  Separator,
   Skeleton,
   SkeletonText,
   Stack,
   VStack,
 } from '@chakra-ui/react';
+
+import { ButtonSkeleton } from '@/components/PageSkeleton';
+
+import AchievementFooter from './_components/AchievementFooter';
+import AchievementHero from './_components/AchievementHero';
 
 /** Mirrors the timeline's anchor so the dot lines up with the first honor. */
 const ANCHOR = '1.25rem';
@@ -21,24 +24,11 @@ const GROUPS = [2, 1, 1];
 export default function AchievementsLoading() {
   return (
     <>
-      {/* AchievementHeader */}
-      <Skeleton height={10} />
+      {/* AchievementHeader: the Record button waits on permissions. */}
+      <ButtonSkeleton label="Record" />
 
-      {/* AchievementHero */}
-      <Center paddingBlock={{ base: 8, md: 14 }}>
-        <VStack gap={4} width="full" maxWidth="lg">
-          <Skeleton height={{ base: 8, md: 12, lg: 16 }} width="full" />
-          <HStack width="full" gap={4}>
-            <Separator flex={1} borderColor="primary" opacity={0.4} />
-            <Skeleton
-              height={{ base: 3, md: 4 }}
-              width={{ base: 32, md: 48 }}
-            />
-            <Separator flex={1} borderColor="primary" opacity={0.4} />
-          </HStack>
-          <Skeleton height={4} width="70%" />
-        </VStack>
-      </Center>
+      {/* Hero and footer are static: rendered for real. */}
+      <AchievementHero />
 
       {/* AchievementTimeline */}
       <Stack gap={0}>
@@ -128,12 +118,7 @@ export default function AchievementsLoading() {
         })}
       </Stack>
 
-      {/* AchievementFooter */}
-      <HStack gap={{ base: 4, md: 8 }}>
-        <Separator flex={1} borderColor="gray.200" />
-        <Skeleton height={4} width={{ base: 40, md: 56 }} />
-        <Separator flex={1} borderColor="gray.200" />
-      </HStack>
+      <AchievementFooter />
     </>
   );
 }

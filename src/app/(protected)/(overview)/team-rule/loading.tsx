@@ -1,10 +1,22 @@
-import { Skeleton, SkeletonText, Stack } from '@chakra-ui/react';
+import { Button, HStack, Skeleton, SkeletonText } from '@chakra-ui/react';
+import { Copy } from 'lucide-react';
 
+import PageTitle from '@/components/PageTitle';
+
+// Mirrors `TextEditor` in preview mode: title + copy action, then the content.
 export default function Loading() {
   return (
-    <Stack gap={8}>
-      <Skeleton height={9} width={36} />
+    <>
+      <HStack justifyContent="space-between" flexWrap="wrap">
+        <PageTitle title="Team Rule" />
+        <Skeleton>
+          <Button size="sm">
+            <Copy />
+            Copy
+          </Button>
+        </Skeleton>
+      </HStack>
       <SkeletonText noOfLines={16} gap={4} />
-    </Stack>
+    </>
   );
 }

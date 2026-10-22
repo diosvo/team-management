@@ -40,6 +40,7 @@ import {
   UserRole,
   UserState,
 } from '@/utils/enum';
+import { toLabel } from '@/utils/formatter';
 import { getColor } from '@/utils/helper';
 
 import { updateTeamInfo } from '@/actions/user';
@@ -167,15 +168,16 @@ export default function TeamInfo({
           <SimpleGrid columns={{ base: 1, md: 2 }}>
             <TextField label="Role">
               <Badge variant="outline" borderRadius="full">
-                {user.role}
+                {toLabel(user.role)}
               </Badge>
             </TextField>
             <Visibility isVisible={isPlayer || isCoach}>
               <TextField label="Position">
                 <Badge variant="outline" borderRadius="full">
                   {isPlayer &&
-                    (user.player?.position || PlayerPosition.UNKNOWN)}
-                  {isCoach && (user.coach?.position || CoachPosition.UNKNOWN)}
+                    toLabel(user.player?.position || PlayerPosition.UNKNOWN)}
+                  {isCoach &&
+                    toLabel(user.coach?.position || CoachPosition.UNKNOWN)}
                 </Badge>
               </TextField>
             </Visibility>
@@ -183,13 +185,7 @@ export default function TeamInfo({
         )}
 
         {isEditing && !viewOnly ? (
-          <SimpleGrid
-            columns={{
-              base: 1,
-              md: 3,
-            }}
-            gap={4}
-          >
+          <SimpleGrid minChildWidth="12rem" gap={4}>
             <ControlledStateSelection
               control={control}
               name="user.state"
@@ -238,7 +234,7 @@ export default function TeamInfo({
                   borderRadius="full"
                   colorPalette={getColor(user.state)}
                 >
-                  {user.state}
+                  {toLabel(user.state)}
                 </Badge>
               </TextField>
               <Visibility isVisible={isPlayer}>

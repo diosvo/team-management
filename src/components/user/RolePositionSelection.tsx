@@ -1,10 +1,7 @@
-'use client';
-
 import { useEffect, useMemo } from 'react';
 
 import {
   createListCollection,
-  HStack,
   Portal,
   Select,
   type SelectRootProps,
@@ -126,7 +123,7 @@ export function RolePositionSelection<T extends FieldValues>({
   }, [selectedRole]);
 
   return (
-    <HStack width="inherit" gap={4}>
+    <Stack direction={{ base: 'column', sm: 'row' }} width="inherit" gap={4}>
       <Field required label="Role">
         <Controller
           control={control}
@@ -187,6 +184,6 @@ export function RolePositionSelection<T extends FieldValues>({
           )}
         />
       </Field>
-    </HStack>
+    </Stack>
   );
 }

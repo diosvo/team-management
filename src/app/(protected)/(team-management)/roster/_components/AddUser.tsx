@@ -56,7 +56,7 @@ export default function AddUser() {
   return (
     <Dialog.Root size="lg" lazyMount unmountOnExit>
       <Dialog.Trigger asChild>
-        <Button size={{ base: 'sm', md: 'md' }}>
+        <Button>
           <UserRoundPlus />
           Add
         </Button>

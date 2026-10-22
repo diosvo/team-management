@@ -124,7 +124,14 @@ export default function PreviewPanel({
         </HStack>
       }
       footer={
-        <Text fontSize="xs" color="fg.muted" marginInline="auto">
+        <Text
+          textStyle="caption"
+          color="fg.muted"
+          marginInline="auto"
+          minWidth={0}
+          lineClamp={1}
+          wordBreak="break-all"
+        >
           {template
             ? `Using uploaded form: ${template.name}`
             : 'No PDF uploaded - showing the registration as a table.'}
@@ -163,12 +170,10 @@ function TablePreview({ players }: { players: Array<User> }) {
       cell: (_player, index) => (page - 1) * PAGE_SIZE + index + 1,
       cellProps: { color: 'fg.muted' },
     },
-    ...COLUMNS.map(
-      (column): Column<User> => ({
-        header: column.header,
-        cell: (player) => toRow(player)[column.key],
-      }),
-    ),
+    ...COLUMNS.map((column): Column<User> => ({
+      header: column.header,
+      cell: (player) => toRow(player)[column.key],
+    })),
   ];
 
   return (
@@ -242,7 +247,7 @@ function PdfPreview({
   return (
     <Box
       asChild
-      height="70vh"
+      height={{ base: '60vh', md: '70vh' }}
       borderWidth={1}
       borderRadius="md"
       overflow="hidden"

@@ -3,7 +3,6 @@
 import { useCallback } from 'react';
 
 import { Badge, HStack, Span } from '@chakra-ui/react';
-import { capitalize } from 'es-toolkit/string';
 
 import { LeagueLink } from '@/components/common/LeagueSelection';
 import { LocationLink } from '@/components/common/LocationSelection';
@@ -17,6 +16,7 @@ import { useMatchFilters } from '@/lib/nuqs';
 import type { MatchWithTeams } from '@/types/match';
 import { formatDate, formatDay } from '@/utils/datetime';
 import { MatchStatus } from '@/utils/enum';
+import { toLabel } from '@/utils/formatter';
 import { getColor } from '@/utils/helper';
 
 import { removeMatch } from '@/actions/match';
@@ -64,7 +64,7 @@ export default function MatchTable({
           borderRadius="full"
           colorPalette={getColor(item.status)}
         >
-          {capitalize(item.status)}
+          {toLabel(item.status)}
         </Badge>
       ),
     },
@@ -84,7 +84,7 @@ export default function MatchTable({
             borderRadius="full"
             colorPalette={getColor(item.result)}
           >
-            {capitalize(item.result)}
+            {toLabel(item.result)}
           </Badge>
         ) : (
           '-'

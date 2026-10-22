@@ -16,6 +16,7 @@ import usePermissions, {
   type PermissionsResult,
 } from '@/hooks/use-permissions';
 import type { TrainingSessionWithDetails } from '@/types/training-session';
+import { toLabel } from '@/utils/formatter';
 
 import { removeSession } from '@/actions/training-session';
 
@@ -100,7 +101,9 @@ describe('SessionTable', () => {
 
     expect(screen.getByText(COMPLETED_SESSION.start_time)).toBeInTheDocument();
     expect(screen.getByText(COMPLETED_SESSION.end_time)).toBeInTheDocument();
-    expect(screen.getByText(COMPLETED_SESSION.status)).toBeInTheDocument();
+    expect(
+      screen.getByText(toLabel(COMPLETED_SESSION.status)),
+    ).toBeInTheDocument();
     expect(
       screen.getByText(`${COMPLETED_SESSION.analytics.present_rate}%`),
     ).toBeInTheDocument();
@@ -142,7 +145,9 @@ describe('SessionTable', () => {
     test('opens the dialog in update mode', async () => {
       const { user } = setup();
 
-      await user.click(rowOf(OTHER_SESSION).getByText(OTHER_SESSION.status));
+      await user.click(
+        rowOf(OTHER_SESSION).getByText(toLabel(OTHER_SESSION.status)),
+      );
 
       expect(mockOpen).toHaveBeenCalledWith('update-session', {
         action: 'Update',
@@ -153,7 +158,9 @@ describe('SessionTable', () => {
     test('does nothing for a guest', async () => {
       const { user } = setup({ isGuest: true });
 
-      await user.click(rowOf(OTHER_SESSION).getByText(OTHER_SESSION.status));
+      await user.click(
+        rowOf(OTHER_SESSION).getByText(toLabel(OTHER_SESSION.status)),
+      );
 
       expect(mockOpen).not.toHaveBeenCalled();
     });

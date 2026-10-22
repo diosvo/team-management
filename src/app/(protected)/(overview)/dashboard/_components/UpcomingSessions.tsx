@@ -29,13 +29,9 @@ export default async function UpcomingSessions() {
                   borderLeft="4px solid"
                   backgroundColor={isToday ? 'blue.50' : 'gray.50'}
                   borderColor={isToday ? 'blue.500' : 'gray.300'}
-                  _hover={{
-                    backgroundColor: isToday ? 'blue.100' : 'gray.100',
-                    transition: 'background-color 0.2s',
-                  }}
                 >
-                  <VStack alignItems="start" flex={1} gap={1}>
-                    <HStack gap={2} width="full">
+                  <VStack alignItems="start" flex={1} minWidth={0} gap={1}>
+                    <HStack gap={2} width="full" flexWrap="wrap">
                       <Span fontSize="sm">{formatDay(date)}</Span>
                       <Span color="gray.400">&bull;</Span>
                       <Span fontSize="sm">{formatDate(date)}</Span>
@@ -61,9 +57,18 @@ export default async function UpcomingSessions() {
                       </HStack>
                     </HStack>
 
-                    <HStack fontSize="sm" color="gray.600">
+                    <HStack
+                      textStyle="secondary"
+                      color="gray.600"
+                      width="full"
+                      minWidth={0}
+                    >
                       <MapPin size={14} />
-                      <LocationLink name={location?.name} />
+                      <LocationLink
+                        name={location?.name}
+                        minWidth={0}
+                        truncate
+                      />
                     </HStack>
                   </VStack>
                 </Flex>

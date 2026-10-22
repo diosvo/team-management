@@ -126,14 +126,27 @@ export const Calendar = ({
   return (
     <Portal>
       <ChakraDatePicker.Positioner>
-        <ChakraDatePicker.Content width="fit-content" maxWidth="100dvw">
-          <HStack alignItems="start" gap={3}>
+        <ChakraDatePicker.Content
+          width="fit-content"
+          maxWidth="calc(100dvw - {spacing.4})"
+        >
+          {/* Presets stack above the calendar on phones. */}
+          <Stack
+            direction={{ base: 'column', md: 'row' }}
+            alignItems={{ base: 'stretch', md: 'start' }}
+            gap={3}
+          >
             {presets && shortcuts.length > 0 && (
               <Stack
                 gap={0}
-                minWidth={selection === 'range' ? '56' : '44'}
-                paddingEnd={3}
-                borderEndWidth="1px"
+                minWidth={{
+                  base: 'auto',
+                  md: selection === 'range' ? '56' : '44',
+                }}
+                paddingEnd={{ base: 0, md: 3 }}
+                paddingBottom={{ base: 2, md: 0 }}
+                borderEndWidth={{ base: 0, md: '1px' }}
+                borderBottomWidth={{ base: '1px', md: 0 }}
               >
                 {shortcuts.map((preset) => (
                   <PresetButton
@@ -158,7 +171,7 @@ export const Calendar = ({
                 <ChakraDatePicker.YearTable />
               </ChakraDatePicker.View>
             </Stack>
-          </HStack>
+          </Stack>
         </ChakraDatePicker.Content>
       </ChakraDatePicker.Positioner>
     </Portal>

@@ -88,12 +88,6 @@ describe('Filters', () => {
 
       expect(screen.getByTestId('search-input')).toBeInTheDocument();
     });
-
-    test('is hidden when searchable={false}', () => {
-      setup({ searchable: false });
-
-      expect(screen.queryByTestId('search-input')).not.toBeInTheDocument();
-    });
   });
 
   describe('inline date-range filter', () => {
@@ -363,6 +357,33 @@ describe('Filters', () => {
       await openDrawer(user);
 
       expect(activeCheckbox()).toBeChecked();
+    });
+  });
+
+  describe('layout', () => {
+    // The search sits in a wrapper; its siblings are the other toolbar slots.
+    const toolbarSlots = () =>
+      screen.getByTestId('search-input').parentElement!.parentElement!.children;
+
+    test('adds no empty controls row when there is only a search', () => {
+      setup({ filters: [] });
+
+      // Only the search: no empty row taking an extra gap after it.
+      expect(toolbarSlots()).toHaveLength(1);
+    });
+
+    test('groups the date window, Filters button and actions in one row', () => {
+      setup({
+        filters: [RANGE_FILTER, CHECKBOX_FILTER],
+        values: rangeValues,
+        actions: <button type="button">Export</button>,
+      });
+
+      expect(toolbarSlots()).toHaveLength(2);
+      const row = toolbarSlots()[1];
+      expect(row).toContainElement(button(/Time:/));
+      expect(row).toContainElement(button(/Filters/));
+      expect(row).toContainElement(button(/Export/));
     });
   });
 

@@ -124,19 +124,19 @@ describe('Sidebar', () => {
     test('only shows groups with visible items', () => {
       setup({ can: only('dashboard', 'periodic-testing') });
 
-      expect(screen.getByText('OVERVIEW')).toBeInTheDocument();
-      expect(screen.getByText('PERFORMANCE')).toBeInTheDocument();
-      expect(screen.queryByText('TEAM MANAGEMENT')).not.toBeInTheDocument();
+      expect(screen.getByText('Overview')).toBeInTheDocument();
+      expect(screen.getByText('Performance')).toBeInTheDocument();
+      expect(screen.queryByText('Team Management')).not.toBeInTheDocument();
     });
 
     test('renders items under their respective groups', () => {
       setup({ can: only('dashboard', 'roster', 'emails') });
 
-      expect(screen.getByText('OVERVIEW')).toBeInTheDocument();
+      expect(screen.getByText('Overview')).toBeInTheDocument();
       expect(getLink(/dashboard/i)).toBeInTheDocument();
-      expect(screen.getByText('TEAM MANAGEMENT')).toBeInTheDocument();
+      expect(screen.getByText('Team Management')).toBeInTheDocument();
       expect(getLink(/roster/i)).toBeInTheDocument();
-      expect(screen.getByText('RESOURCES')).toBeInTheDocument();
+      expect(screen.getByText('Resources')).toBeInTheDocument();
       expect(getLink(/emails/i)).toBeInTheDocument();
     });
   });
@@ -185,7 +185,7 @@ describe('Sidebar', () => {
     test('shows group titles and labels when expanded', () => {
       setup({ can: only('dashboard'), isExpanded: true });
 
-      expect(screen.getByText('OVERVIEW')).toBeInTheDocument();
+      expect(screen.getByText('Overview')).toBeInTheDocument();
       expect(getLink(/dashboard/i)).toHaveTextContent('Dashboard');
     });
 
@@ -193,7 +193,7 @@ describe('Sidebar', () => {
     test('keeps group titles and labels mounted but hidden when collapsed', () => {
       setup({ can: only('dashboard'), isExpanded: false });
 
-      expect(screen.getByText('OVERVIEW')).not.toBeVisible();
+      expect(screen.getByText('Overview')).not.toBeVisible();
       expect(screen.getByText('Dashboard')).not.toBeVisible();
     });
 
@@ -210,8 +210,8 @@ describe('Sidebar', () => {
     test('shows every group title when multiple groups are visible', () => {
       setup({ can: only('dashboard', 'roster') });
 
-      expect(screen.getByText('OVERVIEW')).toBeInTheDocument();
-      expect(screen.getByText('TEAM MANAGEMENT')).toBeInTheDocument();
+      expect(screen.getByText('Overview')).toBeInTheDocument();
+      expect(screen.getByText('Team Management')).toBeInTheDocument();
     });
   });
 

@@ -10,13 +10,13 @@ export default function TestingHeader() {
   return (
     <PageHeader title="Periodic Testing">
       <Authorized resource="periodic-testing" action="create">
-        <Button size={{ base: 'sm', md: 'md' }} variant="surface" asChild>
+        <Button variant="surface" asChild>
           <Link href="/periodic-testing/test-types">
             <Settings2 size={14} />
             Manage Types
           </Link>
         </Button>
-        <Button size={{ base: 'sm', md: 'md' }} asChild>
+        <Button asChild>
           <Link href="/periodic-testing/add-result">
             <Plus size={14} />
             Add Result

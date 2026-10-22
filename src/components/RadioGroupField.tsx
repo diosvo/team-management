@@ -30,16 +30,12 @@ type RadioGroupFieldProps<T extends FieldValues> = Required<{
     colorPalette: ColorPalette;
     /** Lay the options out on a grid instead of a single wrapping row. */
     columns: SimpleGridProps['columns'];
-    disabled: boolean;
     /** Hide an option without removing it from the schema (e.g. add vs. edit). */
     isHidden: (option: Option<string>) => boolean;
   }> &
   Omit<FieldsetRootProps, 'children'>;
 
-/**
- * A react-hook-form controlled radio group inside a fieldset. Options with a
- * `description` get it as a tooltip.
- */
+/** Form-controlled radio group; option descriptions show as tooltips. */
 export default function RadioGroupField<T extends FieldValues>({
   control,
   name,
@@ -47,12 +43,13 @@ export default function RadioGroupField<T extends FieldValues>({
   options,
   colorPalette,
   columns,
-  disabled,
   isHidden,
   ...rest
 }: RadioGroupFieldProps<T>) {
   const Layout = columns ? SimpleGrid : HStack;
-  const layoutProps = columns ? { columns, gap: 2 } : { gap: 4, wrap: 'wrap' };
+  const layoutProps = columns
+    ? { columns, gap: 2 }
+    : { gap: 4, rowGap: 2, wrap: 'wrap' };
 
   return (
     <Fieldset.Root {...rest}>
@@ -67,7 +64,7 @@ export default function RadioGroupField<T extends FieldValues>({
             colorPalette={colorPalette}
             name={field.name}
             value={field.value}
-            disabled={disabled || field.disabled}
+            disabled={field.disabled}
             onValueChange={({ value }) => field.onChange(value)}
           >
             <Layout {...layoutProps}>

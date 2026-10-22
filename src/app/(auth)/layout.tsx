@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 export default async function AuthLayout({ children }: PropsWithChildren) {
   return (
-    <Box height="100vh" position="relative">
+    <Box minHeight="100dvh" position="relative">
       <Image
         fill
         priority
@@ -23,9 +23,9 @@ export default async function AuthLayout({ children }: PropsWithChildren) {
         style={{ objectFit: 'cover' }}
         alt="Saigon Rovers Basketball Club Background Layer"
       />
-      <Center padding={8} height="100%">
+      <Center padding={{ base: 4, md: 8 }} minHeight="100dvh">
         <Container
-          padding={8}
+          padding={{ base: 4, md: 8 }}
           maxWidth="xl"
           shadow="lg"
           rounded="lg"

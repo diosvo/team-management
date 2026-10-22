@@ -1,4 +1,4 @@
-import { formatValueUnit, pluralize } from './formatter';
+import { formatValueUnit, pluralize, toLabel } from './formatter';
 
 describe('formatValueUnit', () => {
   test('returns null when count is 0', () => {
@@ -44,5 +44,18 @@ describe('pluralize', () => {
   test('pluralizes the last word of a phrase', () => {
     expect(pluralize(2, 'attendance record')).toBe('2 attendance records');
     expect(pluralize(4, 'test type')).toBe('4 test types');
+  });
+});
+
+describe('toLabel', () => {
+  test.each([
+    { value: 'super_admin', expected: 'Super Admin' },
+    { value: 'temporarily_absent', expected: 'Temporarily Absent' },
+    { value: 'team-rule', expected: 'Team Rule' },
+    { value: 'active', expected: 'Active' },
+    { value: 'Already Title', expected: 'Already Title' },
+    { value: '', expected: '' },
+  ])('turns "$value" into "$expected"', ({ value, expected }) => {
+    expect(toLabel(value)).toBe(expected);
   });
 });

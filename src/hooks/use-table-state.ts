@@ -1,23 +1,10 @@
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-  useTransition,
-} from 'react';
+import { useEffect, useMemo, useState, useTransition } from 'react';
 
 import { toaster } from '@/components/ui/toaster';
 
 import { paginateData } from '@/utils/filters';
 import { pluralize } from '@/utils/formatter';
 import type { Response } from '@/utils/response';
-
-import usePermissions from './use-permissions';
-
-type Options = {
-  pageSize: number;
-  headerCount: number;
-};
 
 /** Server action that deletes a single row by id. */
 type Remover = (id: string) => Promise<Response>;
@@ -37,9 +24,8 @@ export default function useTableState<T>(
   data: Array<T>,
   predicate: (item: T) => boolean,
   page: number,
-  { pageSize, headerCount }: Partial<Options> = {},
+  { pageSize }: { pageSize?: number } = {},
 ) {
-  const { isAdmin } = usePermissions();
   const [selection, setSelection] = useState<Array<string>>([]);
   const [isPending, startTransition] = useTransition();
 
@@ -56,24 +42,14 @@ export default function useTableState<T>(
     };
   }, [data, predicate, page, pageSize]);
 
-  const toggle = useCallback(
-    (id: string, checked: boolean) =>
-      setSelection(toggleSelection(id, checked)),
-    [],
-  );
-
   /**
-   * Deletes every selected row through `remove`, reporting progress and the
-   * outcome in one toast. The selection is cleared once anything was deleted;
-   * on total failure it is kept so the user can retry.
-   *
-   * @param noun singular label for the toast, e.g. `'asset'`.
-   * @param onDeleted runs after at least one row was deleted.
+   * Deletes the selected rows with one progress toast. Keeps the selection
+   * if every delete fails, so the user can retry.
    */
   const removeSelected = (
     remove: Remover,
     noun: string,
-    onDeleted?: (count: number) => void,
+    onDeleted?: () => void,
   ) => {
     const ids = selection;
     const toastId = toaster.create({
@@ -100,26 +76,15 @@ export default function useTableState<T>(
 
       if (deleted > 0) {
         setSelection([]);
-        onDeleted?.(deleted);
+        onDeleted?.();
       }
     });
   };
-
-  const selectionCount = selection.length;
-  const hasSelection = selectionCount > 0;
-  const indeterminate = hasSelection && selectionCount < pagination.totalCount;
-  const columnCount =
-    headerCount !== undefined ? headerCount + (isAdmin ? 1 : 0) : undefined;
 
   return {
     ...pagination,
     selection,
     setSelection,
-    toggle,
-    selectionCount,
-    hasSelection,
-    indeterminate,
-    columnCount,
     isPending,
     removeSelected,
   };

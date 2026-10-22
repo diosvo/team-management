@@ -9,9 +9,9 @@ import {
   Button,
   Dialog,
   Flex,
-  HStack,
   Input,
   Portal,
+  Stack,
   Textarea,
   VStack,
   createOverlay,
@@ -154,7 +154,11 @@ export const UpsertLeague = createOverlay(({ action, item, ...rest }) => {
                     {...register('name')}
                   />
                 </Field>
-                <HStack alignItems="start" gap={4}>
+                <Stack
+                  direction={{ base: 'column', sm: 'row' }}
+                  alignItems={{ base: 'stretch', sm: 'start' }}
+                  gap={4}
+                >
                   <Field
                     required
                     label="Start Date"
@@ -183,7 +187,7 @@ export const UpsertLeague = createOverlay(({ action, item, ...rest }) => {
                       disabled={disabledField}
                     />
                   </Field>
-                </HStack>
+                </Stack>
                 <Field label="Description" disabled={isReadonly}>
                   <Textarea
                     autoresize

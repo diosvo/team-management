@@ -19,11 +19,7 @@ export default function AttendanceHeader() {
       <Visibility isVisible={isAdmin}>
         <BulkAttendanceManager
           trigger={
-            <Button
-              size={{ base: 'sm', md: 'md' }}
-              colorPalette="green"
-              variant="outline"
-            >
+            <Button colorPalette="green" variant="outline">
               <ClipboardCheck />
               Mark Attendance
             </Button>
@@ -33,7 +29,7 @@ export default function AttendanceHeader() {
       <Visibility isVisible={isPlayer}>
         <SubmitLeaveRequest
           trigger={
-            <Button size={{ base: 'sm', md: 'md' }}>
+            <Button>
               <DoorOpen />
               Submit Leave Request
             </Button>

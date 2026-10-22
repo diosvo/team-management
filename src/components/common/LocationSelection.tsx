@@ -67,7 +67,7 @@ export default function LocationSelection<TFieldValues extends FieldValues>({
       renderItem={(item) => (
         <Stack gap={0}>
           {item.name}
-          <Span color="fg.muted" fontSize="xs">
+          <Span color="fg.muted" textStyle="caption">
             {item.address}
           </Span>
         </Stack>

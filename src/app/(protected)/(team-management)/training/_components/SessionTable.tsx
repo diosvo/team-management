@@ -24,6 +24,7 @@ import type { TrainingSessionWithDetails } from '@/types/training-session';
 
 import { useTrainingFilters } from '@/lib/nuqs';
 import { formatDate, formatDay } from '@/utils/datetime';
+import { toLabel } from '@/utils/formatter';
 import { getColor } from '@/utils/helper';
 
 import { removeSession } from '@/actions/training-session';
@@ -99,7 +100,7 @@ export default function SessionTable({
           borderRadius="full"
           colorPalette={getColor(item.status)}
         >
-          {item.status}
+          {toLabel(item.status)}
         </Badge>
       ),
     },

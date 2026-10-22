@@ -15,6 +15,7 @@ import useTableState from '@/hooks/use-table-state';
 import { useRosterFilters } from '@/lib/nuqs';
 import { UserRole } from '@/utils/enum';
 import { buildPredicate } from '@/utils/filters';
+import { toLabel } from '@/utils/formatter';
 import { getColor } from '@/utils/helper';
 
 import { removeUser } from '@/actions/user';
@@ -88,7 +89,7 @@ export default function RosterTable({ users }: { users: Array<RosterUser> }) {
           borderRadius="full"
           colorPalette={getColor(user.state)}
         >
-          {user.state}
+          {toLabel(user.state)}
         </Badge>
       ),
     },
@@ -96,7 +97,7 @@ export default function RosterTable({ users }: { users: Array<RosterUser> }) {
       header: 'Roles',
       cell: (user) => (
         <Badge variant="outline" borderRadius="full">
-          {user.role}
+          {toLabel(user.role)}
         </Badge>
       ),
     },
@@ -112,7 +113,7 @@ export default function RosterTable({ users }: { users: Array<RosterUser> }) {
 
         return position ? (
           <Badge variant="outline" borderRadius="full">
-            {position}
+            {toLabel(position)}
           </Badge>
         ) : (
           '-'

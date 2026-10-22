@@ -22,6 +22,7 @@ import { useAttendanceFilters } from '@/lib/nuqs';
 import { formatDate, formatDatetime } from '@/utils/datetime';
 import { AttendanceStatus } from '@/utils/enum';
 import { buildPredicate } from '@/utils/filters';
+import { toLabel } from '@/utils/formatter';
 import { getColor } from '@/utils/helper';
 
 import { removeAttendance, updateStatus } from '@/actions/attendance';
@@ -70,7 +71,6 @@ export default function AttendanceTable({
     currentData,
     selection,
     setSelection,
-    selectionCount,
     totalCount,
     isPending,
     removeSelected,
@@ -86,7 +86,7 @@ export default function AttendanceTable({
     toaster.create({
       type: hasErrors ? 'warning' : 'success',
       title: hasErrors
-        ? `Failed to update ${selectionCount - successCount} attendance record(s)`
+        ? `Failed to update ${selection.length - successCount} attendance record(s)`
         : `Updated ${successCount} attendance record(s) successfully`,
     });
 
@@ -114,7 +114,7 @@ export default function AttendanceTable({
           borderRadius="full"
           colorPalette={getColor(item.status)}
         >
-          {item.status}
+          {toLabel(item.status)}
         </Badge>
       ),
     },

@@ -23,9 +23,9 @@ export default function AccountMenu() {
   const router = useRouter();
   const { user, isAuthenticated } = useSessionContext();
 
-  if (!isAuthenticated || !user) return null;
+  const { data: image, isLoading } = useUserAvatar(user?.image);
 
-  const { data: image, isLoading } = useUserAvatar(user.image);
+  if (!isAuthenticated || !user) return null;
 
   async function handleLogout() {
     await authClient.signOut({
@@ -50,7 +50,7 @@ export default function AccountMenu() {
 
   return (
     <Menu.Root>
-      <Menu.Trigger focusVisibleRing="none">
+      <Menu.Trigger aria-label="Account menu" borderRadius="full">
         {isLoading ? (
           <SkeletonCircle size="10" />
         ) : (
@@ -93,7 +93,7 @@ export default function AccountMenu() {
               _hover={{ cursor: 'pointer' }}
               onClick={handleLogout}
             >
-              <LogOut size={14} /> Logout
+              <LogOut size={14} /> Log Out
             </Menu.Item>
           </Menu.Content>
         </Menu.Positioner>

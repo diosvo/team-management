@@ -102,7 +102,7 @@ export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
               <Dialog.Title>{action} Item</Dialog.Title>
             </Dialog.Header>
             <Dialog.Body>
-              <SimpleGrid columns={2} gap={4}>
+              <SimpleGrid columns={{ base: 1, sm: 2 }} gap={4}>
                 <Field
                   required
                   label="Name"

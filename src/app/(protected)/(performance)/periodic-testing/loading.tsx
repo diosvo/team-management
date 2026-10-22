@@ -1,24 +1,14 @@
-import { HStack, Skeleton, VStack } from '@chakra-ui/react';
-
-import {
-  StatsSkeleton,
-  TableSkeleton,
-  TitleSkeleton,
-} from '@/components/PageSkeleton';
+import ListPageSkeleton from '@/components/PageSkeleton';
 
 export default function Loading() {
   return (
-    <VStack alignItems="stretch" gap={{ base: 4, lg: 6 }}>
-      <TitleSkeleton action />
-      {/* TestingStats: Players Joined + Completed Tests */}
-      <StatsSkeleton count={2} />
-      {/* TestingFilters: search + date select (no categorical filters) */}
-      <HStack gap={{ base: 3, lg: 4 }}>
-        <Skeleton height={10} flex={1} />
-        <Skeleton height={10} width={36} flexShrink={0} />
-      </HStack>
-      {/* PlayerPerformanceMatrix */}
-      <TableSkeleton />
-    </VStack>
+    <ListPageSkeleton
+      title="Periodic Testing"
+      actions={['Manage Types', 'Add Result']}
+      stats={2}
+      // The date select sits in the actions slot; no categorical filters.
+      toolbar={{ action: '01/01/2026' }}
+      columns={6}
+    />
   );
 }

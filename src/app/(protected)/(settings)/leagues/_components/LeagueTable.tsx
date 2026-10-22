@@ -5,7 +5,6 @@ import { useMemo } from 'react';
 
 import { Badge, IconButton, VisuallyHidden } from '@chakra-ui/react';
 import { isPast } from 'date-fns';
-import { capitalize } from 'es-toolkit/string';
 import { CircuitBoard } from 'lucide-react';
 
 import Authorized from '@/components/Authorized';
@@ -18,6 +17,7 @@ import { ACHIEVEMENT_STYLE } from '@/utils/constants/achievement';
 import { formatDate } from '@/utils/datetime';
 import { AchievementType, LeagueStatus } from '@/utils/enum';
 import { buildPredicate } from '@/utils/filters';
+import { toLabel } from '@/utils/formatter';
 import { getColor } from '@/utils/helper';
 
 import usePermissions from '@/hooks/use-permissions';
@@ -107,7 +107,7 @@ export default function LeagueTable({
           borderRadius="full"
           colorPalette={getColor(item.status)}
         >
-          {capitalize(item.status)}
+          {toLabel(item.status)}
         </Badge>
       ),
     },

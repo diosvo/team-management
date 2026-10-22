@@ -136,7 +136,7 @@ export function EditorToolbar({
         </RichTextEditor.ControlGroup>
       ))}
       <RichTextEditor.ControlGroup alignItems="center" marginLeft="auto">
-        <Text fontSize="xs">
+        <Text textStyle="caption">
           <Span
             color={isOverLimit ? 'red' : 'GrayText'}
             fontWeight={isOverLimit ? 'bold' : 'normal'}

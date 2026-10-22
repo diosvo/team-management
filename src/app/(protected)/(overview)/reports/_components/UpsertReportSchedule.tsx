@@ -191,7 +191,7 @@ export const UpsertReportSchedule = createOverlay<UpsertProps>(
                     onChange={setInterval}
                   />
 
-                  <Text fontSize={13} color="gray.500">
+                  <Text textStyle="caption" color="fg.muted">
                     Reports are emailed once the period has closed, in the
                     morning (around 8:00 AM).
                   </Text>
@@ -203,7 +203,7 @@ export const UpsertReportSchedule = createOverlay<UpsertProps>(
                     errorText="Add at least one recipient."
                   >
                     {members.length === 0 ? (
-                      <Text fontSize={13} color="gray.500">
+                      <Text textStyle="caption" color="fg.muted">
                         No team members available to select.
                       </Text>
                     ) : (
@@ -219,9 +219,13 @@ export const UpsertReportSchedule = createOverlay<UpsertProps>(
                             setRecipients(items.map(({ email }) => email))
                           }
                           renderItem={({ name, email }) => (
-                            <HStack>
+                            <HStack minWidth={0}>
                               {name}{' '}
-                              <Span fontSize="sm" color="GrayText">
+                              <Span
+                                textStyle="secondary"
+                                color="GrayText"
+                                truncate
+                              >
                                 &lt;{email}&gt;
                               </Span>
                             </HStack>
@@ -236,8 +240,13 @@ export const UpsertReportSchedule = createOverlay<UpsertProps>(
                                 display="flex"
                                 alignItems="center"
                                 justifyContent="space-between"
+                                gap={2}
                               >
-                                <Span fontSize="sm">
+                                <Span
+                                  textStyle="secondary"
+                                  minWidth={0}
+                                  truncate
+                                >
                                   {member.name}{' '}
                                   <Span color="GrayText">
                                     &lt;{member.email}&gt;

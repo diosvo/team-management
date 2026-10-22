@@ -1,8 +1,10 @@
 'use client';
 
+import NextLink from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import { Chart, useChart } from '@chakra-ui/charts';
+import { Link } from '@chakra-ui/react';
 import { ChartColumnBig } from 'lucide-react';
 import {
   Bar,
@@ -41,6 +43,11 @@ export default function MatchesRate({
     <Card
       title="Matches Record"
       description="Performance in league vs friendly matches"
+      action={
+        <Link textStyle="secondary" colorPalette="blue" asChild>
+          <NextLink href="/matches">View Matches</NextLink>
+        </Link>
+      }
     >
       {isEmpty ? (
         <EmptyState icon={<ChartColumnBig />} title="No matches records" />
@@ -70,6 +77,7 @@ export default function MatchesRate({
                 dataKey={chart.key(item.name)}
                 fill={chart.color(item.color)}
                 stroke={chart.color(item.color)}
+                cursor="pointer"
                 onClick={() => router.push(`/matches?match_type=${item.name}`)}
               >
                 <LabelList position="top" dataKey={chart.key(item.name)} />

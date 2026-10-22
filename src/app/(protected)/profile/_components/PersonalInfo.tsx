@@ -108,14 +108,7 @@ export default function PersonalInfo({
         )
       }
     >
-      <SimpleGrid
-        columns={{
-          base: 1,
-          md: 2,
-          xl: 3,
-        }}
-        gap={4}
-      >
+      <SimpleGrid minChildWidth="12rem" gap={4}>
         {isEditing ? (
           <>
             <Field label="Email">

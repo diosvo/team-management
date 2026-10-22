@@ -15,6 +15,7 @@ import type { FilterDef } from '@/types/filters';
 import { EMAIL_STATUS_SELECTION } from '@/utils/constants';
 import { formatDatetime } from '@/utils/datetime';
 import { buildPredicate } from '@/utils/filters';
+import { toLabel } from '@/utils/formatter';
 import { getColor } from '@/utils/helper';
 
 const FILTERS: Array<FilterDef> = [
@@ -62,7 +63,7 @@ export default function SentEmails({ emails }: { emails: Array<ListEmail> }) {
           borderRadius="full"
           colorPalette={getColor(item.last_event)}
         >
-          {item.last_event}
+          {toLabel(item.last_event)}
         </Badge>
       ),
     },

@@ -65,16 +65,19 @@ export default function AchievementCard({
       <Box color="colorPalette.solid">
         <Icon size={20} role="img" aria-label={label} />
       </Box>
-      <VStack flex={1} alignItems="stretch">
-        <Text fontWeight="semibold">{achievement.title}</Text>
-        <Text fontSize="sm" color="gray.700">
+      <VStack flex={1} minWidth={0} alignItems="stretch">
+        <Text fontWeight="semibold" lineClamp={2}>
+          {achievement.title}
+        </Text>
+        <Text textStyle="secondary" color="gray.700">
           {caption}
         </Text>
       </VStack>
       <HStack
-        opacity={0}
+        // Hover-to-reveal only where a pointer can hover; always shown on touch.
+        opacity={1}
+        css={{ '@media (hover: hover)': { opacity: 0 } }}
         transition="opacity 0.2s"
-        display={{ base: 'none', md: 'flex' }}
         _groupHover={{ opacity: 1 }}
         _focusWithin={{ opacity: 1 }}
       >

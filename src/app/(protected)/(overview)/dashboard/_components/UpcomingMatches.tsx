@@ -27,15 +27,11 @@ export default async function UpcomingMatches() {
                 padding={4}
                 borderRadius="sm"
                 borderLeft="4px solid"
-                backgroundColor={isToday ? 'gray.100' : 'gray.50'}
+                backgroundColor={isToday ? 'blue.50' : 'gray.50'}
                 borderColor={isToday ? 'blue.500' : 'gray.300'}
-                _hover={{
-                  backgroundColor: isToday ? 'blue.50' : 'gray.100',
-                  transition: 'background-color 0.2s',
-                }}
               >
-                <VStack align="start" flex={1} gap={1}>
-                  <HStack gap={2} width="full">
+                <VStack align="start" flex={1} minWidth={0} gap={1}>
+                  <HStack gap={2} width="full" flexWrap="wrap">
                     <Span fontSize="sm">{formatDay(date)}</Span>
                     <Span color="gray.400">&bull;</Span>
                     <Span fontSize="sm">{formatDate(date)}</Span>
@@ -47,17 +43,22 @@ export default async function UpcomingMatches() {
                         size="sm"
                         borderRadius="full"
                         variant="surface"
-                        colorPalette="red"
+                        colorPalette="blue"
                       >
-                        TODAY
+                        Today
                       </Badge>
                     )}
                   </HStack>
 
-                  <HStack fontSize="sm" color="gray.600" width="full">
+                  <HStack
+                    textStyle="secondary"
+                    color="gray.600"
+                    width="full"
+                    minWidth={0}
+                  >
                     <MapPin size={12} />
-                    <LocationLink name={location?.name} />
-                    <Span fontSize="sm" marginLeft="auto">
+                    <LocationLink name={location?.name} minWidth={0} truncate />
+                    <Span marginLeft="auto" flexShrink={0}>
                       {isLeague ? league.name : 'Friendly'}
                     </Span>
                   </HStack>

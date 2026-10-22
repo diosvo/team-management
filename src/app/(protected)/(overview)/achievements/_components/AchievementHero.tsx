@@ -62,7 +62,7 @@ export default function AchievementHero() {
             fontWeight="bold"
             letterSpacing="wide"
             textTransform="uppercase"
-            fontSize={{ base: '2xs', md: 'sm' }}
+            fontSize={{ base: 'xs', md: 'sm' }}
           >
             {getYearsActive} of playing together
           </Text>

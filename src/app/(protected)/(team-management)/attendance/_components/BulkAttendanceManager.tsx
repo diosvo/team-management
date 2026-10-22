@@ -12,6 +12,7 @@ import {
   Input,
   Portal,
   Span,
+  Stack,
   Table,
   Text,
   VStack,
@@ -185,7 +186,10 @@ export default function BulkAttendanceManager({
             </Dialog.Header>
             <Dialog.Body>
               <VStack alignItems="stretch" gap={4}>
-                <HStack>
+                <Stack
+                  direction={{ base: 'column', sm: 'row' }}
+                  alignItems={{ base: 'stretch', sm: 'start' }}
+                >
                   <Field required label="Date">
                     <DatePickerField
                       control={control}
@@ -197,87 +201,93 @@ export default function BulkAttendanceManager({
                     selection={selection}
                     onSelectionChange={handlePlayersChange}
                   />
-                </HStack>
+                </Stack>
                 <Visibility isVisible={selection.length > 0}>
-                  <Table.Root>
-                    <Table.Caption marginTop={3} color="GrayText">
-                      <Span color="red">Absent</Span>: {absentCount}
-                      &nbsp; &bull; &nbsp;
-                      <Span color="orange">Late</Span>: {lateCount}
-                    </Table.Caption>
-                    <Table.Header>
-                      <Table.Row>
-                        <Table.ColumnHeader>Name</Table.ColumnHeader>
-                        <Tooltip
-                          showArrow
-                          content="Check for absent, uncheck for late."
-                        >
-                          <Table.ColumnHeader textAlign="center">
-                            Absent
-                          </Table.ColumnHeader>
-                        </Tooltip>
-                        <Table.ColumnHeader>Reason</Table.ColumnHeader>
-                      </Table.Row>
-                    </Table.Header>
-                    <Table.Body>
-                      {fields.map(({ id, player_id }, index) => {
-                        const player = selection.find(
-                          ({ id }) => id === player_id,
-                        );
-                        const isAbsent =
-                          watch(`attendances.${index}.status`) ===
-                          AttendanceStatus.ABSENT;
+                  <Table.ScrollArea>
+                    <Table.Root size="sm">
+                      <Table.Caption marginTop={3} color="GrayText">
+                        <Span color="red">Absent</Span>: {absentCount}
+                        &nbsp; &bull; &nbsp;
+                        <Span color="orange">Late</Span>: {lateCount}
+                      </Table.Caption>
+                      <Table.Header>
+                        <Table.Row>
+                          <Table.ColumnHeader>Name</Table.ColumnHeader>
+                          <Tooltip
+                            showArrow
+                            content="Check for absent, uncheck for late."
+                          >
+                            <Table.ColumnHeader textAlign="center">
+                              Absent
+                            </Table.ColumnHeader>
+                          </Tooltip>
+                          <Table.ColumnHeader>Reason</Table.ColumnHeader>
+                        </Table.Row>
+                      </Table.Header>
+                      <Table.Body>
+                        {fields.map(({ id, player_id }, index) => {
+                          const player = selection.find(
+                            ({ id }) => id === player_id,
+                          );
+                          const isAbsent =
+                            watch(`attendances.${index}.status`) ===
+                            AttendanceStatus.ABSENT;
 
-                        return (
-                          <Table.Row key={id}>
-                            <Table.Cell
-                              _hover={{
-                                cursor: 'pointer',
-                                color: 'tomato',
-                                textDecoration: 'line-through',
-                                transition: 'all 0.2s',
-                              }}
-                              onClick={() =>
-                                handlePlayersChange(
-                                  selection.filter(
-                                    ({ id }) => id !== player_id,
-                                  ),
-                                )
-                              }
-                            >
-                              {player?.name}
-                            </Table.Cell>
-                            <Table.Cell textAlign="center">
-                              <Checkbox
-                                checked={isAbsent}
-                                variant="outline"
-                                colorPalette="red"
-                                onCheckedChange={(details) => {
-                                  setValue(
-                                    `attendances.${index}.status`,
-                                    details.checked
-                                      ? AttendanceStatus.ABSENT
-                                      : AttendanceStatus.LATE,
-                                  );
+                          return (
+                            <Table.Row key={id}>
+                              <Table.Cell
+                                _hover={{
+                                  cursor: 'pointer',
+                                  color: 'tomato',
+                                  textDecoration: 'line-through',
+                                  transition: 'all 0.2s',
                                 }}
-                              />
-                            </Table.Cell>
-                            <Table.Cell>
-                              <Input
-                                maxLength={128}
-                                placeholder="..."
-                                {...register(`attendances.${index}.reason`)}
-                              />
-                            </Table.Cell>
-                          </Table.Row>
-                        );
-                      })}
-                    </Table.Body>
-                  </Table.Root>
+                                onClick={() =>
+                                  handlePlayersChange(
+                                    selection.filter(
+                                      ({ id }) => id !== player_id,
+                                    ),
+                                  )
+                                }
+                              >
+                                {player?.name}
+                              </Table.Cell>
+                              <Table.Cell textAlign="center">
+                                <Checkbox
+                                  checked={isAbsent}
+                                  variant="outline"
+                                  colorPalette="red"
+                                  onCheckedChange={(details) => {
+                                    setValue(
+                                      `attendances.${index}.status`,
+                                      details.checked
+                                        ? AttendanceStatus.ABSENT
+                                        : AttendanceStatus.LATE,
+                                    );
+                                  }}
+                                />
+                              </Table.Cell>
+                              <Table.Cell>
+                                <Input
+                                  maxLength={128}
+                                  placeholder="..."
+                                  {...register(`attendances.${index}.reason`)}
+                                />
+                              </Table.Cell>
+                            </Table.Row>
+                          );
+                        })}
+                      </Table.Body>
+                    </Table.Root>
+                  </Table.ScrollArea>
                 </Visibility>
               </VStack>
             </Dialog.Body>
-            <Dialog.Footer justifyContent="space-between">
+            <Dialog.Footer
+              justifyContent="space-between"
+              flexWrap="wrap"
+              gap={2}
+            >
               <Text color="GrayText" fontStyle="italic">
                 <Span textDecoration="underline">
                   {absentCount > 0 || lateCount > 0 ? 'The remaining' : 'All'}

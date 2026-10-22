@@ -39,9 +39,9 @@ describe('DashboardFilters', () => {
     return renderWithUI(<DashboardFilters />);
   };
 
-  // Download lives behind the Actions menu — open it, then click the item.
+  // Download lives behind the Export Report menu — open it, then click the item.
   const clickDownload = async (user: ReturnType<typeof setup>['user']) => {
-    await user.click(screen.getByRole('button', { name: /Actions/i }));
+    await user.click(screen.getByRole('button', { name: /Export Report/i }));
     await user.click(
       await screen.findByRole('menuitem', { name: /Download/i }),
     );
@@ -66,7 +66,7 @@ describe('DashboardFilters', () => {
     setup();
 
     expect(
-      screen.getByRole('button', { name: /Actions/i }),
+      screen.getByRole('button', { name: /Export Report/i }),
     ).toBeInTheDocument();
     // A window that matches a preset is announced by the preset's name.
     expect(

@@ -97,12 +97,4 @@ describe('RadioGroupField', () => {
     ).toBeInTheDocument();
     expect(screen.getByRole('radio', { name: 'Ball' })).toBeVisible();
   });
-
-  test('disables every option when disabled', () => {
-    setup({ disabled: true });
-
-    screen.getAllByRole('radio').forEach((radio) => {
-      expect(radio).toBeDisabled();
-    });
-  });
 });

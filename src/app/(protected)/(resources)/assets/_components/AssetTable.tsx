@@ -4,7 +4,6 @@ import dynamic from 'next/dynamic';
 import { useMemo } from 'react';
 
 import { Badge } from '@chakra-ui/react';
-import { capitalize } from 'es-toolkit/string';
 
 import DataTable, { type Column } from '@/components/DataTable';
 import HighlightText from '@/components/HighlightText';
@@ -15,6 +14,7 @@ import useTableState from '@/hooks/use-table-state';
 import { useAssetFilters } from '@/lib/nuqs';
 import { formatDate, formatDatetime } from '@/utils/datetime';
 import { buildPredicate } from '@/utils/filters';
+import { toLabel } from '@/utils/formatter';
 import { getColor } from '@/utils/helper';
 
 import { removeAsset } from '@/actions/asset';
@@ -58,7 +58,7 @@ export default function AssetTable({ data }: { data: Array<Asset> }) {
     },
     {
       header: 'Category',
-      cell: (item) => capitalize(item.category),
+      cell: (item) => toLabel(item.category),
     },
     { header: 'Quantity', cell: (item) => item.quantity },
     {
@@ -69,7 +69,7 @@ export default function AssetTable({ data }: { data: Array<Asset> }) {
           borderRadius="full"
           colorPalette={getColor(item.condition)}
         >
-          {capitalize(item.condition)}
+          {toLabel(item.condition)}
         </Badge>
       ),
     },

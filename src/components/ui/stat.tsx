@@ -42,8 +42,9 @@ export function Stat({
       cursor: 'pointer',
       shadow: 'sm',
       transform: 'translateY(-2px)',
-      transition: 'all 0.2s ease-in-out',
+      transition: 'box-shadow 0.2s ease-in-out, transform 0.2s ease-in-out',
     },
+    _motionReduce: { _hover: { transform: 'none' } },
     onClick,
     onKeyDown: (event: React.KeyboardEvent) => {
       if (event.key === 'Enter' || event.key === ' ') {
@@ -55,6 +56,7 @@ export function Stat({
 
   return (
     <ChakraStat.Root
+      size={{ base: 'sm', md: 'md' }}
       borderWidth={1}
       padding={4}
       rounded="md"
@@ -62,7 +64,10 @@ export function Stat({
       {...rest}
     >
       <ChakraStat.Label>{label}</ChakraStat.Label>
-      <ChakraStat.ValueText alignItems="baseline">
+      <ChakraStat.ValueText
+        alignItems="baseline"
+        fontVariantNumeric="tabular-nums"
+      >
         <Span color={color}>{value}</Span>
         {formattedUnit != null && (
           <ChakraStat.ValueUnit>{formattedUnit}</ChakraStat.ValueUnit>
@@ -72,7 +77,7 @@ export function Stat({
   );
 }
 
-/** Responsive row of `Stat` cards, shared by every page that shows them. */
+/** Grid of `Stat` cards shared by the list pages and their loading skeletons. */
 export function StatGroup(props: SimpleGridProps) {
   return (
     <SimpleGrid

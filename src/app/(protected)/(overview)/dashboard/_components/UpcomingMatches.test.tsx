@@ -1,4 +1,3 @@
-
 import { MOCK_LEAGUE } from '@/test/mocks/league';
 import { MOCK_LOCATION, MOCK_LOCATION_2 } from '@/test/mocks/location';
 import { MOCK_MATCH } from '@/test/mocks/match';
@@ -74,9 +73,9 @@ describe('UpcomingMatches', () => {
     expect(screen.getByText('14:00')).toBeInTheDocument();
   });
 
-  test('shows the TODAY badge for matches scheduled today', async () => {
+  test('shows the Today badge for matches scheduled today', async () => {
     await setup(MOCK_MATCHES);
 
-    expect(screen.getByText('TODAY')).toBeInTheDocument();
+    expect(screen.getByText('Today')).toBeInTheDocument();
   });
 });

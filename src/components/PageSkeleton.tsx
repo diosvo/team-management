@@ -1,73 +1,130 @@
 import {
+  Button,
+  ButtonGroup,
   HStack,
+  IconButton,
   Skeleton,
-  SkeletonText,
-  Stat,
-  VStack,
-  type StackProps,
+  Table,
 } from '@chakra-ui/react';
+import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 
-import { StatGroup } from '@/components/ui/stat';
+import FiltersSkeleton from '@/components/filters/FiltersSkeleton';
+import PageHeader from '@/components/PageHeader';
+import { Stat, StatGroup } from '@/components/ui/stat';
 
-/** Placeholder for `PageHeader`: the title and, optionally, its action. */
-export function TitleSkeleton({ action = false }: { action?: boolean }) {
+/*
+ * Placeholders render the real components hidden in a `Skeleton`, so nothing
+ * shifts on load. Fragments: the page shell sets the gaps.
+ */
+
+/** Placeholder for a header button: the real button, hidden, for its size. */
+export function ButtonSkeleton({ label }: { label: string }) {
   return (
-    <HStack justifyContent="space-between">
-      <Skeleton height={9} width={40} />
-      {action && <Skeleton height={9} width={24} />}
-    </HStack>
+    <Skeleton>
+      <Button>
+        <Plus />
+        {label}
+      </Button>
+    </Skeleton>
   );
 }
 
-/** Placeholder for a `StatGroup` with `count` cards. */
+type TitleSkeletonProps = {
+  /** The page title is static, so it renders for real. */
+  title: string;
+  /** Labels of the header buttons, which wait on permissions. */
+  actions?: Array<string>;
+};
+
+/** The page header: title on the left, actions on the right. */
+export function TitleSkeleton({ title, actions = [] }: TitleSkeletonProps) {
+  return (
+    <PageHeader title={title}>
+      {actions.length > 0
+        ? actions.map((label) => <ButtonSkeleton key={label} label={label} />)
+        : null}
+    </PageHeader>
+  );
+}
+
+/** A `StatGroup` of `count` cards. */
 export function StatsSkeleton({ count }: { count: number }) {
   return (
     <StatGroup>
-      {Array.from({ length: count }).map((_, index) => (
-        <Stat.Root key={index}>
-          <Skeleton width="full" height="90px" />
-        </Stat.Root>
+      {Array.from({ length: count }, (_, index) => (
+        <Skeleton key={index}>
+          <Stat label="Label" value={0} />
+        </Skeleton>
       ))}
     </StatGroup>
   );
 }
 
-/** Placeholder for the search + filters bar. */
-export function FiltersSkeleton() {
-  return <Skeleton height={10} width="full" />;
+const cells = (columns: number, Cell: typeof Table.Cell) =>
+  Array.from({ length: columns }, (_, index) => (
+    <Cell key={index}>
+      <Skeleton height={5} />
+    </Cell>
+  ));
+
+/** A `DataTable` page of `rows` rows, followed by its pagination. */
+export function TableSkeleton({ columns = 5, rows = 5 }) {
+  return (
+    <>
+      <Table.ScrollArea>
+        <Table.Root borderWidth={1} size={{ base: 'sm', md: 'md' }}>
+          <Table.Header>
+            <Table.Row>{cells(columns, Table.ColumnHeader)}</Table.Row>
+          </Table.Header>
+          <Table.Body>
+            {Array.from({ length: rows }, (_, index) => (
+              <Table.Row key={index}>{cells(columns, Table.Cell)}</Table.Row>
+            ))}
+          </Table.Body>
+        </Table.Root>
+      </Table.ScrollArea>
+
+      <HStack justifyContent="space-between">
+        <Skeleton height={5} width={40} />
+        <Skeleton>
+          <ButtonGroup variant="ghost" size={{ base: 'xs', sm: 'sm' }}>
+            <IconButton aria-label="Previous page">
+              <ChevronLeft />
+            </IconButton>
+            <IconButton aria-label="Next page">
+              <ChevronRight />
+            </IconButton>
+          </ButtonGroup>
+        </Skeleton>
+      </HStack>
+    </>
+  );
 }
 
-/** Placeholder for a `DataTable` with `rows` rows. */
-export function TableSkeleton({ rows = 7 }: { rows?: number }) {
-  return <SkeletonText noOfLines={rows} gap={2} height={10} />;
-}
+type ListPageSkeletonProps = TitleSkeletonProps &
+  Partial<{
+    /** Number of stat cards; omit when the page has none. */
+    stats: number;
+    /** The toolbar's controls, as `FiltersSkeleton` takes them. */
+    toolbar: React.ComponentProps<typeof FiltersSkeleton>;
+    /** Number of table columns. */
+    columns: number;
+  }>;
 
-type ListPageSkeletonProps = Partial<{
-  /** Show the header action placeholder next to the title. */
-  action: boolean;
-  /** Number of stat cards; omit when the page has none. */
-  stats: number;
-  /** Replaces the default table placeholder. */
-  children: React.ReactNode;
-}> &
-  StackProps;
-
-/**
- * Loading state for the standard list page: header, optional stats, filter
- * bar, then a table (or whatever `children` renders instead).
- */
+/** Loading state for a list page: header, stats, toolbar, then a table. */
 export default function ListPageSkeleton({
-  action,
+  title,
+  actions,
   stats = 0,
-  children,
-  ...rest
+  toolbar,
+  columns,
 }: ListPageSkeletonProps) {
   return (
-    <VStack alignItems="stretch" gap={{ base: 4, lg: 6 }} {...rest}>
-      <TitleSkeleton action={action} />
+    <>
+      <TitleSkeleton title={title} actions={actions} />
       {stats > 0 && <StatsSkeleton count={stats} />}
-      <FiltersSkeleton />
-      {children ?? <TableSkeleton />}
-    </VStack>
+      <FiltersSkeleton {...toolbar} />
+      <TableSkeleton columns={columns} />
+    </>
   );
 }
