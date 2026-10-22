@@ -406,10 +406,14 @@ CREATE TEMP TABLE seed_match_map (
   match_id uuid NOT NULL
 ) ON COMMIT DROP;
 
+-- Mostly played matches, plus a slice of upcoming fixtures and a couple of
+-- call-offs. Only a completed match may carry a score — see the
+-- `unplayed_match_has_no_score` constraint — so the others sit at 0-0, and
+-- the scheduled ones are dated ahead so the dashboard has something upcoming.
 WITH ins AS (
   INSERT INTO "match" (
     match_id, is_5x5, league_id, location_id,
-    home_team, away_team, date, time,
+    home_team, away_team, date, time, status,
     home_team_score, away_team_score, created_at, updated_at
   )
   SELECT
@@ -419,13 +423,26 @@ WITH ins AS (
     (SELECT location_id FROM seed_location_map WHERE idx = 1 + ((gs * 5) % 100)),
     (SELECT team_id FROM seed_team_map WHERE idx = 1 + ((gs - 1) % 20)),
     (SELECT team_id FROM seed_team_map WHERE idx = 1 + ((gs) % 20)),
-    (date '2024-01-01' + (gs * 2)),
+    CASE status
+      WHEN 'scheduled' THEN CURRENT_DATE + (gs % 21)
+      ELSE date '2024-01-01' + (gs * 2)
+    END,
     (time '18:00' + ((gs % 6) * interval '1 hour'))::time,
-    (gs * 3) % 101,
-    (gs * 7) % 101,
+    status,
+    CASE WHEN status = 'completed' THEN (gs * 3) % 101 ELSE 0 END,
+    CASE WHEN status = 'completed' THEN (gs * 7) % 101 ELSE 0 END,
     now(),
     now()
-  FROM generate_series(1, 100) gs
+  FROM generate_series(1, 100) gs,
+  LATERAL (
+    SELECT (
+      CASE
+        WHEN gs % 10 = 9 THEN 'scheduled'
+        WHEN gs % 10 = 0 THEN 'cancelled'
+        ELSE 'completed'
+      END
+    )::match_status AS status
+  ) s
   RETURNING match_id
 ),
 numbered AS (

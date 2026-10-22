@@ -1,17 +1,28 @@
-import { and, desc, eq, isNotNull, isNull } from 'drizzle-orm';
+import {
+  and,
+  count,
+  desc,
+  eq,
+  inArray,
+  isNotNull,
+  isNull,
+  or,
+} from 'drizzle-orm';
 
 import db from '@/drizzle';
 import { type InsertMatch, MatchTable } from '@/drizzle/schema';
 
 import type { MatchSearchParams } from '@/lib/nuqs';
 import type { UpsertMatchSchemaValues } from '@/schemas/match';
-import { MatchStatus, MatchType } from '@/utils/enum';
+import { MatchResult, MatchStatus, MatchType } from '@/utils/enum';
 
 import {
   mockDeleteFailure,
   mockDeleteSuccess,
   mockInsertFailure,
   mockInsertSuccess,
+  mockSelectFailure,
+  mockSelectSuccess,
   mockUpdateFailure,
   mockUpdateSuccess,
 } from '@/test/db-operations';
@@ -19,7 +30,13 @@ import { MOCK_DATE_RANGE } from '@/test/mocks/analytics';
 import { MOCK_MATCH, MOCK_MATCH_INPUT } from '@/test/mocks/match';
 import { MOCK_AWAY_TEAM, MOCK_TEAM } from '@/test/mocks/team';
 
-import { deleteMatch, getMatches, insertMatch, updateMatch } from './match';
+import {
+  countTeamMatches,
+  deleteMatch,
+  getMatches,
+  insertMatch,
+  updateMatch,
+} from './match';
 import { withinRange } from './utils';
 
 vi.mock('@/drizzle', () => ({
@@ -29,6 +46,7 @@ vi.mock('@/drizzle', () => ({
         findMany: vi.fn(),
       },
     },
+    select: vi.fn(),
     insert: vi.fn(() => ({
       values: vi.fn(),
     })),
@@ -47,9 +65,11 @@ vi.mock('@/drizzle/schema', () => ({
   MatchTable: {
     match_id: 'match_id',
     home_team: 'home_team',
+    away_team: 'away_team',
     is_5x5: 'is_5x5',
     league_id: 'league_id',
     date: 'date',
+    status: 'status',
     updated_at: 'updated_at',
   },
 }));
@@ -64,6 +84,7 @@ describe('getMatches', () => {
     game_type: ['true'],
     ...MOCK_DATE_RANGE,
     match_type: [],
+    status: [],
     page: 1,
     q: '',
   };
@@ -92,13 +113,14 @@ describe('getMatches', () => {
     expect(result).toEqual({
       stats: {
         total_matches: 2,
+        played_matches: 2,
         win_streak: 1,
         avg_win_rate: 50,
         avg_points_per_game: 84.5,
       },
       data: [
-        { ...mockMatchData[0], result: MatchStatus.LOSS },
-        { ...mockMatchData[1], result: MatchStatus.WIN },
+        { ...mockMatchData[0], result: MatchResult.LOSS },
+        { ...mockMatchData[1], result: MatchResult.WIN },
       ],
     });
     // Verify query construction
@@ -201,6 +223,63 @@ describe('getMatches', () => {
     );
   });
 
+  test('narrows to the selected statuses', async () => {
+    vi.mocked(db.query.MatchTable.findMany).mockResolvedValue([]);
+
+    await getMatches({ ...mockParams, status: [MatchStatus.SCHEDULED] });
+
+    expect(db.query.MatchTable.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: and(
+          eq(MatchTable.home_team, MOCK_TEAM.team_id),
+          eq(MatchTable.is_5x5, true),
+          withinRange(MatchTable.date, MOCK_DATE_RANGE),
+          inArray(MatchTable.status, [MatchStatus.SCHEDULED]),
+        ),
+      }),
+    );
+  });
+
+  test('leaves an unplayed match without a result and out of the stats', async () => {
+    const mockMatchData = [
+      {
+        ...MOCK_MATCH,
+        status: MatchStatus.COMPLETED,
+        home_team_score: 90,
+        away_team_score: 85,
+      },
+      // 0-0 because it has not been played, not because it was a draw.
+      {
+        ...MOCK_MATCH,
+        status: MatchStatus.SCHEDULED,
+        home_team_score: 0,
+        away_team_score: 0,
+      },
+      {
+        ...MOCK_MATCH,
+        status: MatchStatus.CANCELLED,
+        home_team_score: 0,
+        away_team_score: 0,
+      },
+    ];
+    vi.mocked(db.query.MatchTable.findMany).mockResolvedValue(mockMatchData);
+
+    const result = await getMatches(mockParams);
+
+    expect(result.data.map(({ result }) => result)).toEqual([
+      MatchResult.WIN,
+      null,
+      null,
+    ]);
+    expect(result.stats).toEqual({
+      total_matches: 3,
+      played_matches: 1,
+      win_streak: 1,
+      avg_win_rate: 100,
+      avg_points_per_game: 90,
+    });
+  });
+
   test('returns empty stats when no matches exist', async () => {
     vi.mocked(db.query.MatchTable.findMany).mockResolvedValue([]);
 
@@ -209,6 +288,7 @@ describe('getMatches', () => {
     expect(result).toEqual({
       stats: {
         total_matches: 0,
+        played_matches: 0,
         win_streak: 0,
         avg_win_rate: 0,
         avg_points_per_game: 0,
@@ -236,6 +316,7 @@ describe('getMatches', () => {
       expect(result).toEqual({
         stats: {
           total_matches: 0,
+          played_matches: 0,
           win_streak: 0,
           avg_win_rate: 0,
           avg_points_per_game: 0,
@@ -336,5 +417,40 @@ describe('deleteMatch', () => {
     mockDeleteFailure(message);
 
     await expect(deleteMatch(MOCK_MATCH.match_id)).rejects.toThrow(message);
+  });
+});
+
+describe('countTeamMatches', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  test('counts the matches a team plays on either side', async () => {
+    const { mockFrom, mockWhere } = mockSelectSuccess([{ total: 3 }]);
+
+    await expect(countTeamMatches(MOCK_TEAM.team_id)).resolves.toBe(3);
+
+    expect(db.select).toHaveBeenCalledWith({ total: count() });
+    expect(mockFrom).toHaveBeenCalledWith(MatchTable);
+    expect(mockWhere).toHaveBeenCalledWith(
+      or(
+        eq(MatchTable.home_team, MOCK_TEAM.team_id),
+        eq(MatchTable.away_team, MOCK_TEAM.team_id),
+      ),
+    );
+  });
+
+  test('returns 0 when the query yields no row', async () => {
+    mockSelectSuccess([]);
+
+    await expect(countTeamMatches(MOCK_TEAM.team_id)).resolves.toBe(0);
+  });
+
+  test('propagates a database error to the caller', async () => {
+    mockSelectFailure('Count failed');
+
+    await expect(countTeamMatches(MOCK_TEAM.team_id)).rejects.toThrow(
+      'Count failed',
+    );
   });
 });

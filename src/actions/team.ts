@@ -3,6 +3,7 @@
 import { deleteFile, getFile, uploadFile } from '@/lib/blob';
 import { ResponseFactory } from '@/utils/response';
 
+import { countTeamMatches } from '@/db/match';
 import { getDbErrorMessage } from '@/db/pg-error';
 import {
   deleteTeam,
@@ -86,6 +87,16 @@ export const removeTeam = teams(
   ['delete'],
   async function remove(_, team_id: string) {
     try {
+      // `match.home_team` / `away_team` are `restrict`: without this the
+      // delete comes back as a raw foreign key error naming a constraint.
+      const matchCount = await countTeamMatches(team_id);
+
+      if (matchCount > 0) {
+        return ResponseFactory.error(
+          `This team appears in ${matchCount} match(es). Delete those matches first, or keep the team to preserve the record.`,
+        );
+      }
+
       await deleteTeam(team_id);
 
       revalidate.teams();

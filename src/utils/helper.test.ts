@@ -3,6 +3,7 @@ import {
   AssetCondition,
   AttendanceStatus,
   LeagueStatus,
+  MatchResult,
   MatchStatus,
   SessionStatus,
   UserState,
@@ -35,10 +36,14 @@ describe('getColor', () => {
     { value: LeagueStatus.UPCOMING, expected: 'orange' },
     { value: LeagueStatus.ONGOING, expected: 'green' },
     { value: LeagueStatus.ENDED, expected: 'red' },
-    // MatchStatus
-    { value: MatchStatus.WIN, expected: 'green' },
-    { value: MatchStatus.LOSS, expected: 'red' },
-    { value: MatchStatus.DRAW, expected: 'gray' },
+    // MatchResult
+    { value: MatchResult.WIN, expected: 'green' },
+    { value: MatchResult.LOSS, expected: 'red' },
+    { value: MatchResult.DRAW, expected: 'gray' },
+    // MatchStatus shares its values, and so its colors, with SessionStatus
+    { value: MatchStatus.SCHEDULED, expected: 'orange' },
+    { value: MatchStatus.COMPLETED, expected: 'gray' },
+    { value: MatchStatus.CANCELLED, expected: 'red' },
     // AttendanceStatus
     { value: AttendanceStatus.ON_TIME, expected: 'green' },
     { value: AttendanceStatus.ABSENT, expected: 'red' },

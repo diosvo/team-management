@@ -4,6 +4,7 @@ import {
   check,
   date,
   integer,
+  pgEnum,
   pgTable,
   primaryKey,
   text,
@@ -11,11 +12,15 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 
+import { enumValues, MatchStatus } from '@/utils/enum';
+
 import { created_at, updated_at } from '../helpers';
 import { LeagueTable } from './league';
 import { LocationTable } from './location';
 import { PlayerTable } from './player';
 import { TeamTable } from './team';
+
+export const matchStatusEnum = pgEnum('match_status', enumValues(MatchStatus));
 
 export const MatchTable = pgTable(
   'match',
@@ -28,14 +33,17 @@ export const MatchTable = pgTable(
     location_id: uuid().references(() => LocationTable.location_id, {
       onDelete: 'set null',
     }),
+    // A team with match history is history: deleting it would silently rewrite
+    // the record, so the delete is blocked and `removeTeam` explains why.
     home_team: uuid()
       .notNull()
-      .references(() => TeamTable.team_id),
+      .references(() => TeamTable.team_id, { onDelete: 'restrict' }),
     away_team: uuid()
       .notNull()
-      .references(() => TeamTable.team_id),
+      .references(() => TeamTable.team_id, { onDelete: 'restrict' }),
     date: date().notNull(),
     time: time().notNull(),
+    status: matchStatusEnum().notNull().default(MatchStatus.SCHEDULED),
     home_team_score: integer().default(0).notNull(),
     away_team_score: integer().default(0).notNull(),
     created_at,
@@ -43,6 +51,12 @@ export const MatchTable = pgTable(
   },
   (table) => [
     check('diff_team', sql`${table.home_team} != ${table.away_team}`),
+    // Keeps the point of `status` intact: a fixture that was never played
+    // cannot carry a score, so 0-0 always means a real 0-0 draw.
+    check(
+      'unplayed_match_has_no_score',
+      sql`${table.status} = 'completed' OR (${table.home_team_score} = 0 AND ${table.away_team_score} = 0)`,
+    ),
   ],
 );
 

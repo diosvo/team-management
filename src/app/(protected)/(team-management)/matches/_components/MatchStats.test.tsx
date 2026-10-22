@@ -21,15 +21,17 @@ describe('MatchStats', () => {
     setup();
 
     expect(screen.getByText('Total Matches')).toBeInTheDocument();
+    expect(screen.getByText('Played')).toBeInTheDocument();
     expect(screen.getByText('Win Streak')).toBeInTheDocument();
     expect(screen.getByText('Avg Win Rate')).toBeInTheDocument();
     expect(screen.getByText('Avg Points/Game')).toBeInTheDocument();
   });
 
   test('renders the stat values', () => {
-    setup();
+    setup({ total_matches: 3, played_matches: 2 });
 
-    // total_matches: 2, win_streak: 1, avg_win_rate: 50, avg_points_per_game: 84.5
+    // played_matches: 2, win_streak: 1, avg_win_rate: 50, avg_points_per_game: 84.5
+    expect(screen.getByText('3')).toBeInTheDocument();
     expect(screen.getByText('2')).toBeInTheDocument();
     expect(screen.getByText('1')).toBeInTheDocument();
     expect(screen.getByText('50')).toBeInTheDocument();
@@ -37,9 +39,10 @@ describe('MatchStats', () => {
   });
 
   test('pluralizes the games unit based on the value', () => {
-    setup({ total_matches: 2, win_streak: 1 });
+    setup({ total_matches: 2, played_matches: 2, win_streak: 1 });
 
-    expect(screen.getByText('games')).toBeInTheDocument(); // total_matches: 2
+    // total_matches and played_matches: 2 each
+    expect(screen.getAllByText('games')).toHaveLength(2);
     expect(screen.getByText('game')).toBeInTheDocument(); // win_streak: 1
   });
 

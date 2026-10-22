@@ -8,6 +8,7 @@ import { useMatchFilters } from '@/lib/nuqs';
 import {
   ESTABLISHED_DATE,
   GAME_TYPE_SELECTION,
+  MATCH_STATUS_SELECTION,
   MATCH_TYPE_SELECTION,
 } from '@/utils/constants';
 
@@ -26,6 +27,11 @@ const FILTERS: Array<FilterDef> = [
     key: 'match_type',
     label: 'Match Type',
     control: { type: 'checkbox-group', options: MATCH_TYPE_SELECTION },
+  },
+  {
+    key: 'status',
+    label: 'Status',
+    control: { type: 'checkbox-group', options: MATCH_STATUS_SELECTION },
   },
 ];
 

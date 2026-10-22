@@ -6,7 +6,12 @@ import { MOCK_ATTENDANCE_DATE } from '@/test/mocks/attendance';
 
 import { ALL, SESSION_STATUS_VALUES } from '@/utils/constants';
 import { thisDay, thisMonth, thisYear } from '@/utils/datetime';
-import { AttendanceStatus, MatchType, SessionStatus } from '@/utils/enum';
+import {
+  AttendanceStatus,
+  MatchStatus,
+  MatchType,
+  SessionStatus,
+} from '@/utils/enum';
 
 import {
   getDefaults,
@@ -188,6 +193,7 @@ describe('Client-Side Filter Hooks', () => {
         game_type: [],
         ...thisYear(),
         match_type: [],
+        status: [],
       });
     });
   });
@@ -557,6 +563,28 @@ describe('Server-Side Filter Loaders', () => {
           match_type: [MatchType.LEAGUE, MatchType.FRIENDLY],
         }),
       );
+    });
+
+    test('parses the selected match statuses', async () => {
+      const result = await loadMatchFilters(
+        new URLSearchParams({
+          status: `${MatchStatus.SCHEDULED},${MatchStatus.CANCELLED}`,
+        }),
+      );
+
+      expect(result).toEqual(
+        expect.objectContaining({
+          status: [MatchStatus.SCHEDULED, MatchStatus.CANCELLED],
+        }),
+      );
+    });
+
+    test('drops an unknown match status', async () => {
+      const result = await loadMatchFilters(
+        new URLSearchParams({ status: 'live' }),
+      );
+
+      expect(result).toEqual(expect.objectContaining({ status: [] }));
     });
 
     test('falls back to this year when the window is absent', async () => {

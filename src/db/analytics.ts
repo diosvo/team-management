@@ -16,7 +16,7 @@ import type { AttendanceStatusValues } from '@/types/attendance';
 import type { DateRange } from '@/types/common';
 
 import { LOCALE_DATE_FORMAT } from '@/utils/constants';
-import { AttendanceStatus, SessionStatus } from '@/utils/enum';
+import { AttendanceStatus, MatchStatus, SessionStatus } from '@/utils/enum';
 
 import db from '@/drizzle';
 import { MatchTable, TrainingSessionTable, UserTable } from '@/drizzle/schema';
@@ -29,7 +29,11 @@ import { calculatePercentage, countWhen, fromNow, withinRange } from './utils';
 export const getUpcomingMatches = cache(async (team_id: string) => {
   try {
     return await db.query.MatchTable.findMany({
-      where: and(eq(MatchTable.home_team, team_id), fromNow(MatchTable.date)),
+      where: and(
+        eq(MatchTable.home_team, team_id),
+        eq(MatchTable.status, MatchStatus.SCHEDULED),
+        fromNow(MatchTable.date),
+      ),
       columns: {
         match_id: true,
         date: true,

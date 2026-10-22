@@ -19,6 +19,7 @@ import {
   SELECTABLE_EMAIL_STATUS,
   SELECTABLE_GAME_TYPES,
   SELECTABLE_LEAGUE_STATUS,
+  SELECTABLE_MATCH_STATUS,
   SELECTABLE_MATCH_TYPES,
   SELECTABLE_SESSION_STATUS,
   SELECTABLE_TEST_TYPES,
@@ -117,6 +118,9 @@ export const matchSearchParams = {
   ).withDefault([]),
   match_type: parseAsArrayOf(
     parseAsStringEnum([...SELECTABLE_MATCH_TYPES]),
+  ).withDefault([]),
+  status: parseAsArrayOf(
+    parseAsStringEnum([...SELECTABLE_MATCH_STATUS]),
   ).withDefault([]),
 };
 const matchFilters = { params: matchSearchParams, window: thisYear };

@@ -127,6 +127,13 @@
       "when": 1792000000002,
       "tag": "0017_merge_rule_into_team",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1792517225737,
+      "tag": "0018_match_lifecycle",
+      "breakpoints": true
     }
   ]
 }

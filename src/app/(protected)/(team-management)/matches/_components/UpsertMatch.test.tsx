@@ -11,6 +11,7 @@ import {
 } from '@/test/utilities';
 
 import usePermissions from '@/hooks/use-permissions';
+import { MatchStatus } from '@/utils/enum';
 
 import { upsertMatch } from '@/actions/match';
 
@@ -61,6 +62,7 @@ describe('UpsertMatch', () => {
     location_id: null,
     date: '2026-01-15',
     time: '19:00:00',
+    status: MatchStatus.COMPLETED,
     home_team_score: 40,
     away_team_score: 35,
     is_5x5: true,
@@ -103,11 +105,101 @@ describe('UpsertMatch', () => {
   test('renders the dialog title and fields for the given action', async () => {
     await open('Add');
 
-    expect(await screen.findByText('Add result')).toBeInTheDocument();
+    expect(await screen.findByText('Add match')).toBeInTheDocument();
     expect(screen.getByText('Date')).toBeInTheDocument();
     expect(screen.getByText('Time')).toBeInTheDocument();
-    expect(screen.getByText('Our Score')).toBeInTheDocument();
-    expect(screen.getByText('Their Score')).toBeInTheDocument();
+    expect(screen.getByText('Status')).toBeInTheDocument();
+  });
+
+  test('shows the score fields only for a completed match', async () => {
+    await open('Update', EXISTING_MATCH);
+
+    expect(await screen.findByText('Our Score')).toBeVisible();
+    expect(screen.getByText('Their Score')).toBeVisible();
+  });
+
+  test('hides the score fields for a new, scheduled match', async () => {
+    await open('Add');
+
+    await screen.findByText('Add match');
+
+    // Visibility keeps the fields mounted but hidden.
+    expect(screen.getByText('Our Score')).not.toBeVisible();
+  });
+
+  test('records the score once a new match is marked completed', async () => {
+    mockUpsertMatch.mockResolvedValue({ success: true, message: 'Saved' });
+
+    const { user } = await open('Add', {
+      match_id: '',
+      away_team: AWAY_TEAM_ID,
+      location_id: null,
+    });
+
+    await user.click(await screen.findByText('Completed'));
+
+    const [ours, theirs] = screen.getAllByRole('spinbutton');
+    await user.clear(ours);
+    await user.type(ours, '72');
+    await user.clear(theirs);
+    await user.type(theirs, '65');
+
+    const submit = screen.getByRole('button', { name: /add/i });
+    await waitFor(() => expect(submit).toBeEnabled());
+    await user.click(submit);
+
+    await waitFor(() => {
+      expect(mockUpsertMatch).toHaveBeenCalledWith(
+        '',
+        expect.objectContaining({
+          status: MatchStatus.COMPLETED,
+          home_team_score: 72,
+          away_team_score: 65,
+        }),
+      );
+    });
+  });
+
+  test('saves a 3x3 match once the 5x5 switch is turned off', async () => {
+    mockUpsertMatch.mockResolvedValue({ success: true, message: 'Saved' });
+
+    const { user } = await open('Update', EXISTING_MATCH);
+
+    await user.click(await screen.findByText('5x5'));
+
+    const submit = screen.getByRole('button', { name: /update/i });
+    await waitFor(() => expect(submit).toBeEnabled());
+    await user.click(submit);
+
+    await waitFor(() => {
+      expect(mockUpsertMatch).toHaveBeenCalledWith(
+        EXISTING_MATCH.match_id,
+        expect.objectContaining({ is_5x5: false }),
+      );
+    });
+  });
+
+  test('clears the score when a completed match is moved off completed', async () => {
+    mockUpsertMatch.mockResolvedValue({ success: true, message: 'Saved' });
+
+    const { user } = await open('Update', EXISTING_MATCH);
+
+    await user.click(await screen.findByText('Cancelled'));
+
+    const submit = await screen.findByRole('button', { name: /update/i });
+    await waitFor(() => expect(submit).toBeEnabled());
+    await user.click(submit);
+
+    await waitFor(() => {
+      expect(mockUpsertMatch).toHaveBeenCalledWith(
+        EXISTING_MATCH.match_id,
+        expect.objectContaining({
+          status: MatchStatus.CANCELLED,
+          home_team_score: 0,
+          away_team_score: 0,
+        }),
+      );
+    });
   });
 
   test('renders the opponent and location pickers', async () => {
@@ -136,7 +228,7 @@ describe('UpsertMatch', () => {
     test('starts off when the match has no league', async () => {
       await open('Update', { ...EXISTING_MATCH, league_id: null });
 
-      await screen.findByText('Update result');
+      await screen.findByText('Update match');
 
       // Visibility keeps the picker mounted but hidden.
       expect(screen.getByTestId('select-league_id')).not.toBeVisible();
@@ -158,7 +250,7 @@ describe('UpsertMatch', () => {
     test('hides the league picker from a user who cannot edit', async () => {
       await open('Update', EXISTING_MATCH, false);
 
-      await screen.findByText('Update result');
+      await screen.findByText('Update match');
 
       expect(screen.queryByTestId('select-league_id')).not.toBeInTheDocument();
     });
