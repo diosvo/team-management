@@ -9,11 +9,16 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { getUpcomingSessions } from '@/actions/analytics';
 import { formatDate, formatDay } from '@/utils/datetime';
 
+export const UPCOMING_SESSIONS = {
+  title: 'Upcoming Sessions',
+  description: 'Next 3 training sessions',
+};
+
 export default async function UpcomingSessions() {
   const sessions = await getUpcomingSessions();
 
   return (
-    <Card title="Upcoming Sessions" description="Next 3 training sessions">
+    <Card {...UPCOMING_SESSIONS}>
       <VStack alignItems="stretch" gap={4}>
         {sessions.length > 0 ? (
           sessions.map(

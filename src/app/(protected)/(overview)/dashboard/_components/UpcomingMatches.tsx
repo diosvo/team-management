@@ -9,11 +9,16 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { getUpcomingMatches } from '@/actions/analytics';
 import { formatDate, formatDay } from '@/utils/datetime';
 
+export const UPCOMING_MATCHES = {
+  title: 'Upcoming Matches',
+  description: 'Next 3 scheduled games',
+};
+
 export default async function UpcomingMatches() {
   const matches = await getUpcomingMatches();
 
   return (
-    <Card title="Upcoming Matches" description="Next 3 scheduled games">
+    <Card {...UPCOMING_MATCHES}>
       <VStack alignItems="stretch" gap={4}>
         {matches.length > 0 ? (
           matches.map(({ match_id, date, time, location, league }) => {

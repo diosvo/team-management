@@ -3,9 +3,14 @@ import { CalendarSearch, ChevronDown } from 'lucide-react';
 
 import PageTitle from '@/components/PageTitle';
 
-import { CardFallback, ChartFallback } from './_components/fallbacks';
+import {
+  CardFallback,
+  ChartFallback,
+  UpcomingFallback,
+} from './_components/fallbacks';
+import { UPCOMING_MATCHES } from './_components/UpcomingMatches';
+import { UPCOMING_SESSIONS } from './_components/UpcomingSessions';
 
-// Mirrors `page.tsx` so nothing shifts while sections stream in.
 export default function DashboardLoading() {
   return (
     <>
@@ -16,8 +21,8 @@ export default function DashboardLoading() {
       </SimpleGrid>
 
       <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={6}>
-        <CardFallback />
-        <CardFallback />
+        <UpcomingFallback {...UPCOMING_SESSIONS} />
+        <UpcomingFallback {...UPCOMING_MATCHES} />
       </SimpleGrid>
 
       <HStack justifyContent="space-between" flexWrap="wrap">
