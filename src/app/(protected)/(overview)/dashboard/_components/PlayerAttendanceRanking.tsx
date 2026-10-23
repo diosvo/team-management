@@ -5,19 +5,33 @@ import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 
 import type { PlayerSessionSummary, PlayerStats } from '@/types/analytics';
+import { formatValueUnit } from '@/utils/formatter';
 import { colorRank } from '@/utils/helper';
 
 const PlayerRank = (player: PlayerStats, index: number) => {
   return (
     <HStack key={index}>
-      <Text fontSize="sm" color="GrayText">
+      <Text textStyle="secondary" color="GrayText">
         {index + 1}.
       </Text>
-      <Text fontSize="sm">{player.player_name}</Text>
-      <Text fontSize="xs" color="GrayText" marginLeft="auto" marginRight={4}>
-        {player.attended} sessions
+      <Text textStyle="secondary" minWidth={0} truncate>
+        {player.player_name}
       </Text>
-      <Text fontSize="sm" color={colorRank(player.attendance_rate)}>
+      <Text
+        textStyle="caption"
+        color="GrayText"
+        marginLeft="auto"
+        marginRight={4}
+        flexShrink={0}
+      >
+        {player.attended}{' '}
+        {formatValueUnit(player.attended, 'session') ?? 'sessions'}
+      </Text>
+      <Text
+        textStyle="secondary"
+        fontVariantNumeric="tabular-nums"
+        color={colorRank(player.attendance_rate)}
+      >
         {player.attendance_rate}%
       </Text>
     </HStack>

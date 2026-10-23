@@ -14,7 +14,7 @@ export default async function OverviewStats() {
       title="Overview"
       description={`${getYearsActive} of playing together`}
     >
-      <SimpleGrid columns={4} gap={4}>
+      <SimpleGrid minChildWidth="9rem" gap={4}>
         <Stat
           label="Next Game"
           value={stats.next_game}
@@ -31,7 +31,7 @@ export default async function OverviewStats() {
         <Stat
           label="Achievements"
           value={stats.achievements}
-          unit="champions, mvp, ..."
+          unit="champions, MVP, ..."
           color={stats.achievements > 0 ? 'green' : 'red'}
         />
       </SimpleGrid>

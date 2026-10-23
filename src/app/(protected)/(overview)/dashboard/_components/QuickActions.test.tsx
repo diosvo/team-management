@@ -7,7 +7,6 @@ import {
   renderWithUI,
   screen,
   setupTestLifecycle,
-  waitFor,
 } from '@/test/utilities';
 
 import usePermissions from '@/hooks/use-permissions';
@@ -15,16 +14,6 @@ import usePermissions from '@/hooks/use-permissions';
 import { useSessionContext, type SessionUser } from '@/providers/session';
 
 import QuickActions from './QuickActions';
-
-const mockPush = vi.fn();
-
-vi.mock('next/navigation', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('next/navigation')>();
-  return {
-    ...actual,
-    useRouter: () => ({ push: mockPush }),
-  };
-});
 
 vi.mock('@/hooks/use-permissions', () => ({
   default: vi.fn(),
@@ -106,25 +95,19 @@ describe('QuickActions', () => {
     expect(await screen.findByText('Mark Attendance')).toBeInTheDocument();
   });
 
-  test('navigates to the schedule when View Schedule is clicked', async () => {
-    const { user } = setup();
+  test('links View Schedule to the training page', async () => {
+    setup();
 
-    await user.click(await screen.findByText('View Schedule'));
-
-    await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith('/training');
-    });
+    expect(
+      await screen.findByRole('link', { name: 'View Schedule' }),
+    ).toHaveAttribute('href', '/training');
   });
 
-  test('navigates to the player stats page when My Stats is clicked', async () => {
-    const { user } = setup({ isPlayer: true });
+  test('links My Stats to the player stats page', async () => {
+    setup({ isPlayer: true });
 
-    await user.click(await screen.findByText('My Stats'));
-
-    await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith(
-        `/performance/${MOCK_SESSION_USER.id}`,
-      );
-    });
+    expect(
+      await screen.findByRole('link', { name: 'My Stats' }),
+    ).toHaveAttribute('href', `/performance/${MOCK_SESSION_USER.id}`);
   });
 });

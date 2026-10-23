@@ -24,7 +24,8 @@ export default function ProfileLayout({
     <Center>
       <Tabs.Root
         size={orientation === 'vertical' ? 'lg' : 'sm'}
-        width={orientation === 'vertical' ? '50%' : '100%'}
+        width={{ base: 'full', xl: '3/4' }}
+        maxWidth="5xl"
         defaultValue="avatar"
         orientation={orientation}
       >

@@ -28,7 +28,11 @@ export function Card({
       {(heading || description || action) && (
         <ChakraCard.Header>
           {action ? (
-            <HStack justifyContent="space-between" alignItems="start">
+            <HStack
+              justifyContent="space-between"
+              alignItems="start"
+              flexWrap="wrap"
+            >
               {heading}
               {action}
             </HStack>

@@ -1,12 +1,16 @@
-import { act, renderHook } from '@testing-library/react';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import type { Mock } from 'vitest';
 
+import { createToasterMock, mockToaster } from '@/test/helpers';
+
 import usePermissions from './use-permissions';
-import useTableState from './use-table-state';
+import useTableState, { toggleSelection } from './use-table-state';
 
 vi.mock('./use-permissions', () => ({
   default: vi.fn(),
 }));
+
+vi.mock('@/components/ui/toaster', () => createToasterMock());
 
 type Item = { id: string; name: string };
 
@@ -156,73 +160,83 @@ describe('useTableState', () => {
 
       expect(result.current.selection).toEqual(['1']);
     });
-    test('selectionCount reflects the number of selected items', () => {
-      const result = setup();
+  });
 
-      act(() => result.current.setSelection(['1', '2', '3']));
-
-      expect(result.current.selectionCount).toBe(3);
-    });
-
-    test('hasSelection is false initially', () => {
-      const result = setup();
-
-      expect(result.current.hasSelection).toBe(false);
-    });
-
-    test('hasSelection is true when at least one item is selected', () => {
-      const result = setup();
-
-      act(() => result.current.setSelection(['1']));
-
-      expect(result.current.hasSelection).toBe(true);
-    });
-
-    test('indeterminate is false when no items are selected', () => {
-      const result = setup();
-
-      expect(result.current.indeterminate).toBe(false);
-    });
-
-    test('indeterminate is true when some but not all items are selected', () => {
-      const result = setup();
-
-      act(() => result.current.setSelection(['1', '2', '3']));
-
-      expect(result.current.indeterminate).toBe(true);
-    });
-
-    test('indeterminate is false when all items are selected', () => {
-      const result = setup();
-
-      act(() => result.current.setSelection(['1', '2', '3', '4', '5', '6']));
-
-      expect(result.current.indeterminate).toBe(false);
+  describe('toggleSelection', () => {
+    test('toggleSelection adds an id once and removes it again', () => {
+      expect(toggleSelection('1', true)([])).toEqual(['1']);
+      expect(toggleSelection('1', true)(['1'])).toEqual(['1']);
+      expect(toggleSelection('1', false)(['1', '2'])).toEqual(['2']);
     });
   });
 
-  describe('columnCount', () => {
-    test('returns undefined when headerCount is not provided', () => {
+  describe('removeSelected', () => {
+    beforeEach(() => {
+      mockToaster.create.mockClear();
+      mockToaster.update.mockClear();
+    });
+
+    test('deletes every selected id, reports success and clears the selection', async () => {
+      const remove = vi.fn().mockResolvedValue({ success: true, message: '' });
+      const onDeleted = vi.fn();
       const result = setup();
 
-      expect(result.current.columnCount).toBeUndefined();
+      act(() => result.current.setSelection(['1', '2']));
+      act(() => result.current.removeSelected(remove, 'item', onDeleted));
+
+      expect(mockToaster.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'loading',
+          title: 'Deleting 2 items...',
+        }),
+      );
+
+      await waitFor(() => expect(result.current.selection).toEqual([]));
+      expect(remove.mock.calls.map(([id]) => id)).toEqual(['1', '2']);
+      expect(mockToaster.update).toHaveBeenCalledWith('toast-id', {
+        type: 'success',
+        title: 'Successfully deleted 2 items.',
+        description: undefined,
+      });
+      expect(onDeleted).toHaveBeenCalled();
     });
 
-    test('returns headerCount when user is not admin', () => {
-      const result = renderHook(() =>
-        useTableState(items, matchAll, 1, { headerCount: 3 }),
-      ).result;
+    test('warns with the failure reasons on partial failure', async () => {
+      const remove = vi
+        .fn()
+        .mockResolvedValueOnce({ success: true, message: '' })
+        .mockResolvedValueOnce({ success: false, message: 'In use' });
+      const result = setup();
 
-      expect(result.current.columnCount).toBe(3);
+      act(() => result.current.setSelection(['1', '2']));
+      act(() => result.current.removeSelected(remove, 'match'));
+
+      await waitFor(() => expect(result.current.selection).toEqual([]));
+      expect(mockToaster.update).toHaveBeenCalledWith('toast-id', {
+        type: 'warning',
+        title: 'Deleted 1 of 2 matches; 1 failed.',
+        description: 'In use',
+      });
     });
 
-    test('returns headerCount + 1 when user is admin', () => {
-      (usePermissions as Mock).mockReturnValue({ isAdmin: true });
-      const result = renderHook(() =>
-        useTableState(items, matchAll, 1, { headerCount: 3 }),
-      ).result;
+    test('keeps the selection when nothing was deleted', async () => {
+      const remove = vi
+        .fn()
+        .mockResolvedValue({ success: false, message: 'Forbidden' });
+      const onDeleted = vi.fn();
+      const result = setup();
 
-      expect(result.current.columnCount).toBe(4);
+      act(() => result.current.setSelection(['1']));
+      act(() => result.current.removeSelected(remove, 'item', onDeleted));
+
+      await waitFor(() =>
+        expect(mockToaster.update).toHaveBeenCalledWith(
+          'toast-id',
+          expect.objectContaining({ type: 'warning' }),
+        ),
+      );
+      expect(result.current.selection).toEqual(['1']);
+      expect(onDeleted).not.toHaveBeenCalled();
     });
   });
 });

@@ -102,32 +102,32 @@ export default function AchievementTimeline({
         return (
           <Grid
             key={year}
-            templateColumns={{ base: '1fr 3fr', md: '1fr 8fr' }}
-            columnGap={{ base: 4, md: 6 }}
+            // Phones: the year and tagline become a header above the honors.
+            templateColumns={{
+              base: 'minmax(0, 1fr)',
+              md: 'minmax(0, 1fr) minmax(0, 8fr)',
+            }}
+            columnGap={6}
           >
-            <GridItem>
+            <GridItem marginBottom={{ base: 3, md: 0 }}>
               <Heading
                 color="primary"
                 fontWeight={400}
                 fontStyle="italic"
                 fontFamily={neuse.style.fontFamily}
-                size={{ base: 'xl', md: '3xl' }}
-                lineHeight={`calc(${ANCHOR} * 2)`}
+                size={{ base: '2xl', md: '3xl' }}
+                lineHeight={{ base: 'shorter', md: `calc(${ANCHOR} * 2)` }}
               >
                 {year}
               </Heading>
-              <Text
-                color="gray.500"
-                fontSize={{ base: '2xs', md: 'sm' }}
-                lineHeight="short"
-              >
+              <Text color="gray.500" textStyle="secondary" lineHeight="short">
                 {getYearTagline(groups.length - 1 - index)}
               </Text>
             </GridItem>
 
             <GridItem
               position="relative"
-              paddingLeft={{ base: 4, md: 8 }}
+              paddingLeft={{ base: 0, md: 8 }}
               paddingBottom={{ base: 4, md: 6 }}
               marginBottom={{ base: 4, md: 6 }}
               borderBottomWidth={isLast ? undefined : '1px'}
@@ -135,6 +135,7 @@ export default function AchievementTimeline({
             >
               <Box
                 aria-hidden="true"
+                hideBelow="md"
                 position="absolute"
                 top={0}
                 left={0}
@@ -146,6 +147,7 @@ export default function AchievementTimeline({
               />
               <Circle
                 aria-hidden="true"
+                hideBelow="md"
                 position="absolute"
                 top={ANCHOR}
                 left={0}
@@ -179,7 +181,7 @@ export default function AchievementTimeline({
                         <Text fontWeight="semibold">
                           {FOUNDING_STYLE.label}
                         </Text>
-                        <Text fontSize="sm" color="gray.600">
+                        <Text textStyle="secondary" color="gray.600">
                           {formatDate(ESTABLISHED_DATE)}
                         </Text>
                       </VStack>
@@ -189,6 +191,7 @@ export default function AchievementTimeline({
 
                 {quote && (
                   <Box
+                    hideBelow="md"
                     position="relative"
                     alignSelf="center"
                     paddingLeft={4}
@@ -196,7 +199,7 @@ export default function AchievementTimeline({
                     borderLeftWidth={2}
                     borderLeftColor="red.200"
                   >
-                    <Text fontSize="sm" color="gray.600">
+                    <Text textStyle="secondary" color="gray.600">
                       {quote}
                     </Text>
                     <Box

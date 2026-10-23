@@ -1,5 +1,3 @@
-import { capitalize } from 'es-toolkit/string';
-
 import { MOCK_MATCH_RESPONSE } from '@/test/mocks/match';
 import {
   createPermissionsMock,
@@ -18,6 +16,7 @@ import usePermissions, {
 } from '@/hooks/use-permissions';
 import type { MatchWithTeams } from '@/types/match';
 import { MatchResult, MatchStatus } from '@/utils/enum';
+import { toLabel } from '@/utils/formatter';
 
 import { removeMatch } from '@/actions/match';
 
@@ -43,9 +42,8 @@ describe('MatchTable', () => {
   const mockRemoveMatch = vi.mocked(removeMatch);
   const mockOpen = vi.mocked(UpsertMatch.open);
 
-  const [LOSS_MATCH, WIN_MATCH] = MOCK_MATCH_RESPONSE.data as Array<
-    unknown
-  > as Array<MatchWithTeams>;
+  const [LOSS_MATCH, WIN_MATCH] =
+    MOCK_MATCH_RESPONSE.data as Array<unknown> as Array<MatchWithTeams>;
 
   // Both fixtures share an opponent; give one its own name so the search
   // filter has something to discriminate on.
@@ -103,7 +101,7 @@ describe('MatchTable', () => {
         `${LOSS_MATCH.home_team_score} - ${LOSS_MATCH.away_team_score}`,
       ),
     ).toBeInTheDocument();
-    expect(screen.getByText(capitalize(MatchResult.LOSS))).toBeInTheDocument();
+    expect(screen.getByText(toLabel(MatchResult.LOSS))).toBeInTheDocument();
   });
 
   test('shows no result for a match that has not been played', () => {
@@ -120,10 +118,10 @@ describe('MatchTable', () => {
     });
 
     expect(
-      screen.getByText(capitalize(MatchStatus.SCHEDULED)),
+      screen.getByText(toLabel(MatchStatus.SCHEDULED)),
     ).toBeInTheDocument();
     expect(
-      screen.queryByText(capitalize(MatchResult.LOSS)),
+      screen.queryByText(toLabel(MatchResult.LOSS)),
     ).not.toBeInTheDocument();
     // Neither a score nor a result for an unplayed fixture.
     expect(screen.getAllByText('-')).toHaveLength(2);

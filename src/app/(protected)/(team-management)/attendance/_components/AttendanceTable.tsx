@@ -22,6 +22,7 @@ import { useAttendanceFilters } from '@/lib/nuqs';
 import { formatDate, formatDatetime } from '@/utils/datetime';
 import { AttendanceStatus } from '@/utils/enum';
 import { buildPredicate } from '@/utils/filters';
+import { toLabel } from '@/utils/formatter';
 import { getColor } from '@/utils/helper';
 
 import { removeAttendance, updateStatus } from '@/actions/attendance';
@@ -70,24 +71,10 @@ export default function AttendanceTable({
     currentData,
     selection,
     setSelection,
-    selectionCount,
     totalCount,
+    isPending,
+    removeSelected,
   } = useTableState(attendances, predicate, page);
-
-  const removeItems = async () => {
-    const results = await Promise.all(selection.map(removeAttendance));
-    const successCount = results.filter(({ success }) => success).length;
-    const hasErrors = successCount < selectionCount;
-
-    toaster.create({
-      type: hasErrors ? 'warning' : 'success',
-      title: hasErrors
-        ? `Failed to delete ${selectionCount - successCount} attendance record(s)`
-        : `Deleted ${successCount} attendance record(s) successfully`,
-    });
-
-    if (!hasErrors) setSelection([]);
-  };
 
   const updateItems = async (newStatus: AttendanceStatus) => {
     const results = await Promise.all(
@@ -99,7 +86,7 @@ export default function AttendanceTable({
     toaster.create({
       type: hasErrors ? 'warning' : 'success',
       title: hasErrors
-        ? `Failed to update ${selectionCount - successCount} attendance record(s)`
+        ? `Failed to update ${selection.length - successCount} attendance record(s)`
         : `Updated ${successCount} attendance record(s) successfully`,
     });
 
@@ -127,7 +114,7 @@ export default function AttendanceTable({
           borderRadius="full"
           colorPalette={getColor(item.status)}
         >
-          {item.status}
+          {toLabel(item.status)}
         </Badge>
       ),
     },
@@ -149,7 +136,8 @@ export default function AttendanceTable({
         items,
         selection,
         setSelection,
-        onDelete: removeItems,
+        disabled: isPending,
+        onDelete: () => removeSelected(removeAttendance, 'attendance record'),
         actions: ACTIONS.map(({ label, value, icon: Icon, color }) => (
           <Visibility key={value} isVisible={!status.includes(value)}>
             <Button

@@ -31,13 +31,6 @@ type SidebarGroup = {
 const TEAM_ID = 'saigon.rovers';
 export const getYearsActive = formatDistanceToNow(new Date(ESTABLISHED_DATE));
 
-/** Convert a kebab-case URL segment or resource key into a Title Case label */
-export function segmentToLabel(segment: string): string {
-  return segment
-    .replace(/-/g, ' ')
-    .replace(/\b\w/g, (char) => char.toUpperCase());
-}
-
 export const SIDEBAR_GROUP: Array<SidebarGroup> = [
   {
     title: 'Overview',
@@ -92,9 +85,11 @@ export const SOCIAL_LINKS: Array<{
 
 // Hoisted so the memoized NavButton keeps a stable prop identity.
 export const BUTTON_CONFIG = {
-  size: { base: 'xs', md: 'sm', mdTo2xl: 'md' },
+  // `sm` on phones keeps labels above the 12px group titles.
+  size: { base: 'sm', mdTo2xl: 'md' },
   color: 'gray.700',
   _hover: { _icon: { animation: 'wiggle 1s linear infinite' } },
+  _motionReduce: { _hover: { _icon: { animation: 'none' } } },
 } as const;
 
 /** Left inset shared by nav icons and group titles so they line up. */
@@ -115,27 +110,10 @@ export const FADE_CSS = {
   ...REDUCED_MOTION_CSS,
 } as const;
 
-/** Thin scrollbar, visible only while scrolling. */
+/** Hide the scrollbar to keep the rail aligned without affecting scroll behavior. */
 export const SCROLL_AREA_CSS = {
-  scrollbarWidth: 'thin',
-  scrollbarColor: 'transparent transparent',
-  // Reserved scrollbar space on the inline-end shifts buttons left on short
-  // viewports. Matching gutters keep them centred, and `stable` reserves space
-  // whether or not the list overflows. */
-  scrollbarGutter: 'stable both-edges',
-  '@supports not (scrollbar-gutter: stable)': { paddingInline: '8px' },
-  '&::-webkit-scrollbar': { width: '6px' },
-  '&::-webkit-scrollbar-thumb': {
-    borderRadius: '3px',
-    backgroundColor: 'transparent',
-    transition: 'background-color 0.2s ease',
-  },
-  '[data-scrolling] &': {
-    scrollbarColor: 'var(--chakra-colors-gray-300) transparent',
-    '&::-webkit-scrollbar-thumb': {
-      backgroundColor: 'var(--chakra-colors-gray-300)',
-    },
-  },
+  scrollbarWidth: 'none',
+  '&::-webkit-scrollbar': { display: 'none' },
 } as const;
 
 /** Toggle fades out while scrolling. */

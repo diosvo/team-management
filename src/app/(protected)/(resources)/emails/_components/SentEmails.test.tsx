@@ -11,6 +11,7 @@ import {
 
 import usePermissions from '@/hooks/use-permissions';
 import { EmailStatus } from '@/utils/enum';
+import { toLabel } from '@/utils/formatter';
 
 import SentEmails from './SentEmails';
 
@@ -97,7 +98,9 @@ describe('SentEmails', () => {
     setup({ emails: [DELIVERED_EMAIL] });
 
     expect(screen.getByText('coach@example.com')).toBeInTheDocument();
-    expect(screen.getByText(EmailStatus.DELIVERED)).toBeInTheDocument();
+    expect(
+      screen.getByText(toLabel(EmailStatus.DELIVERED)),
+    ).toBeInTheDocument();
   });
 
   test('shows the empty state when nothing has been sent', () => {
@@ -110,9 +113,7 @@ describe('SentEmails', () => {
     setup({ params: { q: 'player@' } });
 
     expect(screen.getByText(BOUNCED_EMAIL.subject)).toBeInTheDocument();
-    expect(
-      screen.queryByText(DELIVERED_EMAIL.subject),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText(DELIVERED_EMAIL.subject)).not.toBeInTheDocument();
   });
 
   test('filters the emails by subject', () => {
@@ -127,9 +128,7 @@ describe('SentEmails', () => {
     setup({ params: { status: [EmailStatus.BOUNCED] } });
 
     expect(screen.getByText(BOUNCED_EMAIL.subject)).toBeInTheDocument();
-    expect(
-      screen.queryByText(DELIVERED_EMAIL.subject),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText(DELIVERED_EMAIL.subject)).not.toBeInTheDocument();
   });
 
   describe('filters', () => {

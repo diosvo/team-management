@@ -78,7 +78,7 @@ export const UpsertSession = createOverlay(({ action, item, ...rest }) => {
               <Dialog.Title>{action} Session</Dialog.Title>
             </Dialog.Header>
             <Dialog.Body>
-              <SimpleGrid columns={2} gap={3} mb={4}>
+              <SimpleGrid columns={{ base: 1, sm: 2 }} gap={3} mb={4}>
                 <Field
                   required
                   label="Date"
@@ -113,8 +113,12 @@ export const UpsertSession = createOverlay(({ action, item, ...rest }) => {
               </SimpleGrid>
               <LocationSelection control={control} isDisabled={isPending} />
             </Dialog.Body>
-            <Dialog.Footer justifyContent="space-between">
-              <Text fontSize="xs" color="GrayText">
+            <Dialog.Footer
+              justifyContent="space-between"
+              flexWrap="wrap"
+              gap={2}
+            >
+              <Text textStyle="caption" color="GrayText">
                 {item.updated_at &&
                   `Last updated on ${formatDatetime(item.updated_at)}`}
               </Text>

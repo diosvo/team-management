@@ -6,8 +6,6 @@ import { useTransition } from 'react';
 import {
   Button,
   Dialog,
-  Fieldset,
-  HStack,
   Input,
   Portal,
   SimpleGrid,
@@ -20,14 +18,13 @@ import { Controller, useForm } from 'react-hook-form';
 
 import { DatePickerField } from '@/components/date-picker/DatePicker';
 import { CloseButton } from '@/components/ui/close-button';
+import RadioGroupField from '@/components/RadioGroupField';
 import { Field } from '@/components/ui/field';
 import {
   NumberInputField,
   NumberInputRoot,
 } from '@/components/ui/number-input';
-import { Radio, RadioGroup } from '@/components/ui/radio';
 import { toaster } from '@/components/ui/toaster';
-import { Tooltip } from '@/components/ui/tooltip';
 import { OnePlayerSelection } from '@/components/user/PlayerSelection';
 
 import { getDefaults, onError } from '@/lib/zod';
@@ -105,7 +102,7 @@ export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
               <Dialog.Title>{action} Item</Dialog.Title>
             </Dialog.Header>
             <Dialog.Body>
-              <SimpleGrid columns={2} gap={4}>
+              <SimpleGrid columns={{ base: 1, sm: 2 }} gap={4}>
                 <Field
                   required
                   label="Name"
@@ -154,68 +151,24 @@ export const UpsertAsset = createOverlay(({ action, item, ...rest }) => {
                   label="owner"
                 />
               </SimpleGrid>
-              <Fieldset.Root marginBlock={4}>
-                <Fieldset.Legend color="GrayText">Category</Fieldset.Legend>
-                <Controller
-                  name="category"
-                  control={control}
-                  render={({ field }) => (
-                    <RadioGroup
-                      size="sm"
-                      colorPalette="red"
-                      marginTop={2}
-                      name={field.name}
-                      value={field.value}
-                      onValueChange={({ value }) => field.onChange(value)}
-                    >
-                      <HStack gap={4}>
-                        {ASSET_CATEGORY_SELECTION.map((item) => (
-                          <Tooltip key={item.value} content={item.description}>
-                            <Radio value={item.value} onBlur={field.onBlur}>
-                              {item.label}
-                            </Radio>
-                          </Tooltip>
-                        ))}
-                      </HStack>
-                    </RadioGroup>
-                  )}
-                />
-              </Fieldset.Root>
-              <Fieldset.Root>
-                <Fieldset.Legend color="GrayText">Condition</Fieldset.Legend>
-                <Controller
-                  name="condition"
-                  control={control}
-                  render={({ field }) => (
-                    <RadioGroup
-                      size="sm"
-                      colorPalette="green"
-                      marginTop={2}
-                      name={field.name}
-                      value={field.value}
-                      onValueChange={({ value }) => {
-                        field.onChange(value);
-                      }}
-                    >
-                      <HStack gap={4}>
-                        {ASSET_CONDITION_SELECTION.map((item) => (
-                          <Radio
-                            key={item.value}
-                            value={item.value}
-                            onBlur={field.onBlur}
-                            hidden={
-                              action === 'Add' &&
-                              item.value === AssetCondition.OBSOLETE
-                            }
-                          >
-                            {item.label}
-                          </Radio>
-                        ))}
-                      </HStack>
-                    </RadioGroup>
-                  )}
-                />
-              </Fieldset.Root>
+              <RadioGroupField
+                control={control}
+                name="category"
+                legend="Category"
+                options={ASSET_CATEGORY_SELECTION}
+                colorPalette="red"
+                marginBlock={4}
+              />
+              <RadioGroupField
+                control={control}
+                name="condition"
+                legend="Condition"
+                options={ASSET_CONDITION_SELECTION}
+                colorPalette="green"
+                isHidden={({ value }) =>
+                  action === 'Add' && value === AssetCondition.OBSOLETE
+                }
+              />
               <Field
                 label="Note"
                 invalid={!!errors.note}

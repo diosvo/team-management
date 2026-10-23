@@ -144,11 +144,10 @@ export default function ReportSchedules({
 
   return (
     <>
-      <HStack justifyContent="space-between">
+      <HStack justifyContent="space-between" flexWrap="wrap">
         <PageTitle title="Report Schedules" />
         <Authorized resource="reports" action="create">
           <Button
-            size={{ base: 'sm', md: 'md' }}
             disabled={allScheduled}
             title={
               allScheduled ? 'Every report is already scheduled' : undefined

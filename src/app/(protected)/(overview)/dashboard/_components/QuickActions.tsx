@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 import { Flex, SimpleGrid, Skeleton, VStack } from '@chakra-ui/react';
 import {
@@ -21,17 +21,13 @@ const tileFallback = () => <Skeleton borderRadius="md" />;
 
 const SubmitLeaveRequest = dynamic(
   () =>
-    import(
-      '@/app/(protected)/(team-management)/attendance/_components/SubmitLeaveRequest'
-    ),
+    import('@/app/(protected)/(team-management)/attendance/_components/SubmitLeaveRequest'),
   { ssr: false, loading: tileFallback },
 );
 
 const BulkAttendanceManager = dynamic(
   () =>
-    import(
-      '@/app/(protected)/(team-management)/attendance/_components/BulkAttendanceManager'
-    ),
+    import('@/app/(protected)/(team-management)/attendance/_components/BulkAttendanceManager'),
   { ssr: false, loading: tileFallback },
 );
 
@@ -42,6 +38,8 @@ const actionItemStyles = {
   padding: 4,
   borderWidth: 1,
   borderRadius: 'md',
+  textAlign: 'center',
+  focusVisibleRing: 'outside',
   _hover: {
     cursor: 'pointer',
     backgroundColor: 'gray.100',
@@ -51,7 +49,6 @@ const actionItemStyles = {
 } as const;
 
 export default function QuickActions() {
-  const router = useRouter();
   const { user } = useSessionContext();
   const { isAdmin, isPlayer } = usePermissions();
 
@@ -67,37 +64,35 @@ export default function QuickActions() {
       enabled: true,
       title: 'View Schedule',
       icon: CalendarRange,
-      onClick: () => router.push('/training'),
+      href: '/training',
     },
     {
       enabled: true,
       title: 'Match Results',
       icon: TvMinimalPlay,
-      onClick: () => router.push('/matches'),
+      href: '/matches',
     },
     {
       enabled: isPlayer,
       title: 'My Stats',
       icon: FileCheck,
-      onClick: () => router.push('/performance/' + user!.id),
+      href: `/performance/${user?.id}`,
     },
   ];
 
   return (
     <Card title={title} description="Shortcuts to common tasks">
-      <SimpleGrid columns={Actions.length} gap={4}>
-        {Actions.map(({ title, icon: Icon, enabled, onClick }) => (
-          <VStack
-            key={title}
-            as="button"
-            display={enabled ? 'flex' : 'none'}
-            {...actionItemStyles}
-            onClick={onClick}
-          >
-            <Icon size={18} strokeWidth={1.5} />
-            {title}
-          </VStack>
-        ))}
+      <SimpleGrid minChildWidth="8rem" gap={4}>
+        {Actions.filter(({ enabled }) => enabled).map(
+          ({ title, icon: Icon, href }) => (
+            <VStack key={title} {...actionItemStyles} asChild>
+              <Link href={href}>
+                <Icon size={18} strokeWidth={1.5} />
+                {title}
+              </Link>
+            </VStack>
+          ),
+        )}
         {isPlayer && (
           <SubmitLeaveRequest
             trigger={

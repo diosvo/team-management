@@ -17,9 +17,11 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
           {icon || <ChakraCheckbox.Indicator />}
         </ChakraCheckbox.Control>
         {children != null && (
-          <ChakraCheckbox.Label fontSize={13}>{children}</ChakraCheckbox.Label>
+          <ChakraCheckbox.Label textStyle="secondary">
+            {children}
+          </ChakraCheckbox.Label>
         )}
       </ChakraCheckbox.Root>
     );
-  }
+  },
 );

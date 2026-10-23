@@ -8,7 +8,6 @@ import { ShieldAlert, ShieldCheck, SwatchBook } from 'lucide-react';
 
 import DataTable, { type Column } from '@/components/DataTable';
 import HighlightText from '@/components/HighlightText';
-import { toaster } from '@/components/ui/toaster';
 
 import usePermissions from '@/hooks/use-permissions';
 import useTableState from '@/hooks/use-table-state';
@@ -16,6 +15,7 @@ import useTableState from '@/hooks/use-table-state';
 import { useRosterFilters } from '@/lib/nuqs';
 import { UserRole } from '@/utils/enum';
 import { buildPredicate } from '@/utils/filters';
+import { toLabel } from '@/utils/formatter';
 import { getColor } from '@/utils/helper';
 
 import { removeUser } from '@/actions/user';
@@ -24,11 +24,7 @@ import type { RosterUser } from '@/db/user';
 const mask = (cc: string, num = 4) =>
   `${cc}`.slice(-num).padStart(`${cc}`.length, '*');
 
-export default function RosterTable({
-  users,
-}: {
-  users: Array<RosterUser>;
-}) {
+export default function RosterTable({ users }: { users: Array<RosterUser> }) {
   const router = useRouter();
   const { isAdmin, isCaptain, isGuest } = usePermissions();
   const [{ q, page, state, role }, setSearchParams] = useRosterFilters();
@@ -43,23 +39,15 @@ export default function RosterTable({
       }),
     [q, state, role],
   );
-  const { items, currentData, selection, setSelection, totalCount } =
-    useTableState(users, predicate, page);
-
-  const removeUsers = async () => {
-    const results = await Promise.all(selection.map(removeUser));
-    const hasErrors = results.some(({ success }) => !success);
-    const successCount = results.filter(({ success }) => success).length;
-
-    toaster.create({
-      type: hasErrors ? 'warning' : 'success',
-      title: hasErrors
-        ? `Deleted ${successCount} user(s), but some operations failed.`
-        : `Successfully deleted ${successCount} user(s).`,
-    });
-
-    setSelection([]);
-  };
+  const {
+    items,
+    currentData,
+    selection,
+    setSelection,
+    totalCount,
+    isPending,
+    removeSelected,
+  } = useTableState(users, predicate, page);
 
   const columns: Array<Column<RosterUser>> = [
     ...(canManage
@@ -101,7 +89,7 @@ export default function RosterTable({
           borderRadius="full"
           colorPalette={getColor(user.state)}
         >
-          {user.state}
+          {toLabel(user.state)}
         </Badge>
       ),
     },
@@ -109,7 +97,7 @@ export default function RosterTable({
       header: 'Roles',
       cell: (user) => (
         <Badge variant="outline" borderRadius="full">
-          {user.role}
+          {toLabel(user.role)}
         </Badge>
       ),
     },
@@ -125,7 +113,7 @@ export default function RosterTable({
 
         return position ? (
           <Badge variant="outline" borderRadius="full">
-            {position}
+            {toLabel(position)}
           </Badge>
         ) : (
           '-'
@@ -152,7 +140,8 @@ export default function RosterTable({
         items,
         selection,
         setSelection,
-        onDelete: removeUsers,
+        disabled: isPending,
+        onDelete: () => removeSelected(removeUser, 'user'),
       }}
     />
   );

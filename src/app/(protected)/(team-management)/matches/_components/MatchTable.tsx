@@ -1,15 +1,13 @@
 'use client';
 
-import { useCallback, useTransition } from 'react';
+import { useCallback } from 'react';
 
 import { Badge, HStack, Span } from '@chakra-ui/react';
-import { capitalize } from 'es-toolkit/string';
 
 import { LeagueLink } from '@/components/common/LeagueSelection';
 import { LocationLink } from '@/components/common/LocationSelection';
 import DataTable, { type Column } from '@/components/DataTable';
 import HighlightText from '@/components/HighlightText';
-import { toaster } from '@/components/ui/toaster';
 
 import usePermissions from '@/hooks/use-permissions';
 import useTableState from '@/hooks/use-table-state';
@@ -18,6 +16,7 @@ import { useMatchFilters } from '@/lib/nuqs';
 import type { MatchWithTeams } from '@/types/match';
 import { formatDate, formatDay } from '@/utils/datetime';
 import { MatchStatus } from '@/utils/enum';
+import { toLabel } from '@/utils/formatter';
 import { getColor } from '@/utils/helper';
 
 import { removeMatch } from '@/actions/match';
@@ -29,7 +28,6 @@ export default function MatchTable({
   matches: Array<MatchWithTeams>;
 }) {
   const { can } = usePermissions();
-  const [isPending, startTransition] = useTransition();
   const [{ q, page }, setSearchParams] = useMatchFilters();
 
   const predicate = useCallback(
@@ -37,30 +35,15 @@ export default function MatchTable({
       item.away_team.name.toLowerCase().includes(q.toLowerCase()),
     [q],
   );
-  const { items, currentData, selection, setSelection, totalCount } =
-    useTableState(matches, predicate, page);
-
-  const removeItems = async () => {
-    const id = toaster.create({
-      type: 'loading',
-      title: 'Deleting matches...',
-    });
-
-    startTransition(async () => {
-      const results = await Promise.all(selection.map(removeMatch));
-      const hasErrors = results.some(({ success }) => !success);
-      const successCount = results.filter(({ success }) => success).length;
-
-      toaster.update(id, {
-        type: hasErrors ? 'warning' : 'success',
-        title: hasErrors
-          ? `Deleted ${successCount} match(es), but some operations failed.`
-          : `Successfully deleted ${successCount} match(es).`,
-      });
-
-      setSelection([]);
-    });
-  };
+  const {
+    items,
+    currentData,
+    selection,
+    setSelection,
+    totalCount,
+    isPending,
+    removeSelected,
+  } = useTableState(matches, predicate, page);
 
   const columns: Array<Column<MatchWithTeams>> = [
     {
@@ -81,7 +64,7 @@ export default function MatchTable({
           borderRadius="full"
           colorPalette={getColor(item.status)}
         >
-          {capitalize(item.status)}
+          {toLabel(item.status)}
         </Badge>
       ),
     },
@@ -101,7 +84,7 @@ export default function MatchTable({
             borderRadius="full"
             colorPalette={getColor(item.result)}
           >
-            {capitalize(item.result)}
+            {toLabel(item.result)}
           </Badge>
         ) : (
           '-'
@@ -147,7 +130,7 @@ export default function MatchTable({
           selection,
           setSelection,
           disabled: isPending,
-          onDelete: removeItems,
+          onDelete: () => removeSelected(removeMatch, 'match'),
         }}
       />
       <UpsertMatch.Viewport />

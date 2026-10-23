@@ -13,7 +13,6 @@ export default function AchievementHeader() {
       <Authorized resource="achievements" action="create">
         <Button
           variant="ghost"
-          size={{ base: 'sm', md: 'md' }}
           onClick={() =>
             UpsertAchievement.open('add-achievement', {
               action: 'Add',

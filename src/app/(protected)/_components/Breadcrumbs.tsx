@@ -6,7 +6,7 @@ import { Fragment } from 'react';
 
 import { Breadcrumb } from '@chakra-ui/react';
 
-import { segmentToLabel } from '../_helpers/utils';
+import { toLabel } from '@/utils/formatter';
 
 /**
  * Segments that have no index route of their own, so they should be rendered
@@ -24,7 +24,7 @@ export default function Breadcrumbs() {
 
   const crumbs = segments.map((segment, index) => ({
     segment,
-    label: segmentToLabel(segment),
+    label: toLabel(segment),
     href: `/${segments.slice(0, index + 1).join('/')}`,
     isLast: index === segments.length - 1,
   }));

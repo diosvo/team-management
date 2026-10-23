@@ -61,12 +61,15 @@ export function PlayerSelectionWithActions({
     activePlayers.length > 0 && selection.length === activePlayers.length;
 
   return (
-    <HStack width="full" alignItems="end">
-      <PlayerSelection
-        disabled={disabled}
-        selection={selection}
-        onSelectionChange={onSelectionChange}
-      />
+    <HStack width="full" alignItems="end" flexWrap="wrap">
+      {/* Buttons drop to their own row once the select would be < 14rem. */}
+      <Box flex="1 1 14rem" minWidth={0}>
+        <PlayerSelection
+          disabled={disabled}
+          selection={selection}
+          onSelectionChange={onSelectionChange}
+        />
+      </Box>
       <Button
         variant="outline"
         disabled={disabled || activePlayers.length === 0 || allSelected}

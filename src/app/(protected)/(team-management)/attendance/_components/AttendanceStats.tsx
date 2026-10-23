@@ -1,8 +1,6 @@
 'use client';
 
-import { SimpleGrid } from '@chakra-ui/react';
-
-import { Stat } from '@/components/ui/stat';
+import { Stat, StatGroup } from '@/components/ui/stat';
 
 import { useAttendanceFilters } from '@/lib/nuqs';
 import type { AttendanceStats as StatsType } from '@/types/attendance';
@@ -16,7 +14,7 @@ export default function AttendanceStats({ stats }: { stats: StatsType }) {
     setSearchParams({ page: 1, q: '', status: [status] });
 
   return (
-    <SimpleGrid columns={{ base: 2, md: 4, xl: 6 }} gap={{ base: 3, lg: 4 }}>
+    <StatGroup>
       <Stat
         label="On Time"
         value={stats.on_time_count}
@@ -41,6 +39,6 @@ export default function AttendanceStats({ stats }: { stats: StatsType }) {
         unit="%"
         color={colorRank(stats.present_rate)}
       />
-    </SimpleGrid>
+    </StatGroup>
   );
 }

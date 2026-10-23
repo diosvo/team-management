@@ -20,6 +20,7 @@ import {
 
 import usePermissions from '@/hooks/use-permissions';
 import { UserRole, UserState } from '@/utils/enum';
+import { toLabel } from '@/utils/formatter';
 
 import { removeUser } from '@/actions/user';
 import type { RosterUser } from '@/db/user';
@@ -128,23 +129,27 @@ describe('RosterTable', () => {
       setup({ users: [ALICE] });
 
       expect(
-        screen.getByText(String(MOCK_PLAYER.position)),
+        screen.getByText(toLabel(String(MOCK_PLAYER.position))),
       ).toBeInTheDocument();
     });
 
     test("shows a coach's coach position", () => {
       setup({ users: [BOB] });
 
-      expect(screen.getByText(MOCK_COACH.position)).toBeInTheDocument();
+      expect(
+        screen.getByText(toLabel(MOCK_COACH.position)),
+      ).toBeInTheDocument();
     });
 
     test('picks the position matching the role, not whichever record exists', () => {
       // A user switched from player to coach may still carry a player record.
       setup({ users: [{ ...BOB, player: MOCK_PLAYER }] });
 
-      expect(screen.getByText(MOCK_COACH.position)).toBeInTheDocument();
       expect(
-        screen.queryByText(String(MOCK_PLAYER.position)),
+        screen.getByText(toLabel(MOCK_COACH.position)),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByText(toLabel(String(MOCK_PLAYER.position))),
       ).not.toBeInTheDocument();
     });
 
@@ -227,7 +232,8 @@ describe('RosterTable', () => {
         expect(ids).toEqual(expect.arrayContaining(['alice', 'bob']));
       });
 
-      expect(mockToaster.create).toHaveBeenCalledWith(
+      expect(mockToaster.update).toHaveBeenCalledWith(
+        'toast-id',
         expect.objectContaining({ type: 'success' }),
       );
     });
@@ -245,7 +251,8 @@ describe('RosterTable', () => {
       await user.click(screen.getByRole('button', { name: /Delete/ }));
 
       await waitFor(() => {
-        expect(mockToaster.create).toHaveBeenCalledWith(
+        expect(mockToaster.update).toHaveBeenCalledWith(
+          'toast-id',
           expect.objectContaining({ type: 'warning' }),
         );
       });

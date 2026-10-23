@@ -3,7 +3,13 @@
 import { useRouter } from 'next/navigation';
 import { type PropsWithChildren, Suspense, useEffect, useState } from 'react';
 
-import { Grid, GridItem, Stack } from '@chakra-ui/react';
+import {
+  Grid,
+  GridItem,
+  SkipNavContent,
+  SkipNavLink,
+  Stack,
+} from '@chakra-ui/react';
 
 import { toaster } from '@/components/ui/toaster';
 import { useSessionContext } from '@/providers/session';
@@ -35,46 +41,55 @@ export default function AppShell({ children }: PropsWithChildren) {
   }, []);
 
   return (
-    <Grid
-      height="100dvh"
-      templateRows="auto 1fr"
-      templateColumns={{ base: '1fr', lg: `${sidebarWidth} 1fr` }}
-      transition={`grid-template-columns ${SIDEBAR_TRANSITION}`}
-      css={REDUCED_MOTION_CSS}
-    >
-      <GridItem colSpan={{ base: 1, lg: 2 }}>
-        <Header />
-      </GridItem>
-
-      <GridItem
-        hideBelow="lg"
-        minHeight={0}
-        backgroundColor="gray.50"
-        borderRightWidth="1px"
-        borderRightColor="gray.200"
+    <>
+      <SkipNavLink>Skip to content</SkipNavLink>
+      <Grid
+        height="100dvh"
+        templateRows="auto 1fr"
+        templateColumns={{ base: '1fr', lg: `${sidebarWidth} 1fr` }}
+        transition={`grid-template-columns ${SIDEBAR_TRANSITION}`}
+        css={REDUCED_MOTION_CSS}
       >
-        <Sidebar isExpanded={isExpanded}>
-          <SidebarToggle
-            isExpanded={isExpanded}
-            onToggle={() => setIsExpanded((prev) => !prev)}
-          />
-        </Sidebar>
-      </GridItem>
+        <GridItem colSpan={{ base: 1, lg: 2 }}>
+          <Header />
+        </GridItem>
 
-      <GridItem position="relative" overflow="auto">
-        <Suspense>
-          <Stack
-            hideFrom="lg"
-            paddingBlock={2}
-            paddingInline={{ base: 4, lg: 6 }}
-          >
-            <Breadcrumbs />
-          </Stack>
-          <Stack gap={{ base: 4, lg: 6 }} padding={{ base: 4, lg: 6 }}>
-            {children}
-          </Stack>
-        </Suspense>
-      </GridItem>
-    </Grid>
+        <GridItem
+          hideBelow="lg"
+          minHeight={0}
+          backgroundColor="gray.50"
+          borderRightWidth="1px"
+          borderRightColor="gray.200"
+        >
+          <Sidebar isExpanded={isExpanded}>
+            <SidebarToggle
+              isExpanded={isExpanded}
+              onToggle={() => setIsExpanded((prev) => !prev)}
+            />
+          </Sidebar>
+        </GridItem>
+
+        <GridItem as="main" position="relative" overflow="auto">
+          <Suspense>
+            <Stack
+              hideFrom="lg"
+              paddingBlock={2}
+              paddingInline={{ base: 4, lg: 6 }}
+            >
+              <Breadcrumbs />
+            </Stack>
+            <SkipNavContent asChild>
+              <Stack
+                gap={{ base: 4, lg: 6 }}
+                padding={{ base: 4, lg: 6 }}
+                textStyle="body"
+              >
+                {children}
+              </Stack>
+            </SkipNavContent>
+          </Suspense>
+        </GridItem>
+      </Grid>
+    </>
   );
 }

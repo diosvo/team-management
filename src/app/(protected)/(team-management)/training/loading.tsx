@@ -1,24 +1,13 @@
-import {
-  SimpleGrid,
-  Skeleton,
-  SkeletonText,
-  Stat,
-  VStack,
-} from '@chakra-ui/react';
+import ListPageSkeleton from '@/components/PageSkeleton';
 
 export default function TrainingSessionsLoading() {
   return (
-    <VStack alignItems="stretch" gap={{ base: 4, lg: 6 }}>
-      <Skeleton height={9} width={48} />
-      <SimpleGrid columns={{ base: 2, md: 4, xl: 6 }} gap={{ base: 3, lg: 4 }}>
-        {Array.from({ length: 3 }).map((_, index) => (
-          <Stat.Root key={index}>
-            <Skeleton width="full" height="90px" />
-          </Stat.Root>
-        ))}
-      </SimpleGrid>
-      <Skeleton height={10} width="100%" />
-      <SkeletonText noOfLines={7} gap={2} height={10} />
-    </VStack>
+    <ListPageSkeleton
+      title="Training Sessions"
+      actions={['New Session']}
+      stats={3}
+      toolbar={{ date: 'This year', filters: true }}
+      columns={6}
+    />
   );
 }

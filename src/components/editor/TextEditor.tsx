@@ -1,5 +1,3 @@
-'use client';
-
 import {
   useCallback,
   useEffect,
@@ -164,9 +162,18 @@ function DraftActions({
   const labelId = useId();
 
   return (
-    <HStack role={label && 'group'} aria-labelledby={label && labelId}>
+    <HStack
+      role={label && 'group'}
+      aria-labelledby={label && labelId}
+      flexWrap="wrap"
+    >
       {label && (
-        <Text id={labelId} fontSize="sm" fontWeight="medium" color="orange.fg">
+        <Text
+          id={labelId}
+          textStyle="secondary"
+          fontWeight="medium"
+          color="orange.fg"
+        >
           {label}
         </Text>
       )}
@@ -203,9 +210,9 @@ export default function TextEditor({
 
   return (
     <>
-      <HStack justifyContent="space-between">
+      <HStack justifyContent="space-between" flexWrap="wrap">
         {header}
-        <HStack>
+        <HStack flexWrap="wrap" justifyContent="flex-end">
           {!isWriting && isDirty && (
             <DraftActions
               label="Save changes?"
@@ -245,7 +252,12 @@ export default function TextEditor({
       </RichTextEditor.Root>
 
       {!isWriting && lastUpdated && (
-        <Text fontSize="sm" paddingTop={4} color="GrayText" borderTopWidth={1}>
+        <Text
+          textStyle="secondary"
+          paddingTop={4}
+          color="GrayText"
+          borderTopWidth={1}
+        >
           {lastUpdatedLabel(lastUpdated)}
         </Text>
       )}

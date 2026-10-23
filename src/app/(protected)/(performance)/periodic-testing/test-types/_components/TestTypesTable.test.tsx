@@ -52,12 +52,14 @@ describe('TestTypesTable', () => {
     perms?: Record<string, unknown>;
     params?: Record<string, unknown>;
   } = {}) => {
-    mockUsePermissions.mockReturnValue(createPermissionsMock({
-      isGuest: false,
-      isAdmin: false,
-      can: () => false,
-      ...perms,
-    }));
+    mockUsePermissions.mockReturnValue(
+      createPermissionsMock({
+        isGuest: false,
+        isAdmin: false,
+        can: () => false,
+        ...perms,
+      }),
+    );
     mockUseQueryStates({ page: 1, q: '', unit: [], ...params });
 
     return renderWithUI(<TestTypesTable data={data} />);
@@ -144,7 +146,8 @@ describe('TestTypesTable', () => {
         expect(ids).toEqual(expect.arrayContaining(['type-123', 'type-456']));
       });
 
-      expect(mockToaster.create).toHaveBeenCalledWith(
+      expect(mockToaster.update).toHaveBeenCalledWith(
+        'toast-id',
         expect.objectContaining({ type: 'success' }),
       );
     });
@@ -162,7 +165,8 @@ describe('TestTypesTable', () => {
       await user.click(screen.getByRole('button', { name: /delete/i }));
 
       await waitFor(() => {
-        expect(mockToaster.create).toHaveBeenCalledWith(
+        expect(mockToaster.update).toHaveBeenCalledWith(
+          'toast-id',
           expect.objectContaining({ type: 'warning' }),
         );
       });

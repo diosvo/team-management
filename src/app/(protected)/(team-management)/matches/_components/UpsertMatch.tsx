@@ -11,6 +11,7 @@ import {
   Input,
   NumberInputRoot,
   Portal,
+  Stack,
   Text,
   VStack,
   createOverlay,
@@ -40,6 +41,7 @@ import {
 } from '@/utils/constants';
 import { formatDatetime } from '@/utils/datetime';
 import { MatchStatus } from '@/utils/enum';
+import { toLabel } from '@/utils/formatter';
 import { getColor } from '@/utils/helper';
 
 import { getDefaults } from '@/lib/zod';
@@ -162,7 +164,7 @@ export const UpsertMatch = createOverlay(({ action, item, ...rest }) => {
                             borderRadius="full"
                             colorPalette={getColor(item.status)}
                           >
-                            {item.status}
+                            {toLabel(item.status)}
                           </Badge>
                         </HStack>
                       )}
@@ -182,7 +184,10 @@ export const UpsertMatch = createOverlay(({ action, item, ...rest }) => {
                   itemToString={({ name }) => name}
                   itemToValue={({ team_id }) => team_id}
                 />
-                <HStack>
+                <Stack
+                  direction={{ base: 'column', sm: 'row' }}
+                  alignItems={{ base: 'stretch', sm: 'start' }}
+                >
                   <Field required label="Date" disabled={isPending}>
                     <DatePickerField
                       control={control}
@@ -199,7 +204,7 @@ export const UpsertMatch = createOverlay(({ action, item, ...rest }) => {
                       {...register('time')}
                     />
                   </Field>
-                </HStack>
+                </Stack>
                 <LocationSelection control={control} isDisabled={isPending} />
                 <Fieldset.Root invalid={!!errors.status} disabled={isPending}>
                   <Fieldset.Legend color="GrayText">Status</Fieldset.Legend>
@@ -222,7 +227,7 @@ export const UpsertMatch = createOverlay(({ action, item, ...rest }) => {
                           }
                         }}
                       >
-                        <HStack gap={4}>
+                        <HStack gap={4} rowGap={2} flexWrap="wrap">
                           {MATCH_STATUS_SELECTION.map((option) => (
                             <Tooltip
                               key={option.value}
@@ -289,8 +294,12 @@ export const UpsertMatch = createOverlay(({ action, item, ...rest }) => {
                 </Visibility>
               </VStack>
             </Dialog.Body>
-            <Dialog.Footer justifyContent="space-between">
-              <Text fontSize="xs" color="GrayText">
+            <Dialog.Footer
+              justifyContent="space-between"
+              flexWrap="wrap"
+              gap={2}
+            >
+              <Text textStyle="caption" color="GrayText">
                 {item.updated_at &&
                   `Last updated on ${formatDatetime(item.updated_at)}`}
               </Text>

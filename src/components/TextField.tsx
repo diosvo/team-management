@@ -15,7 +15,7 @@ export default function TextField({
 }: PropsWithChildren<InfoFieldProps>) {
   if (direction === 'horizontal') {
     return (
-      <HStack gap={1} fontSize={14}>
+      <HStack gap={1} textStyle="secondary" flexWrap="wrap" minWidth={0}>
         {IconComponent && <IconComponent size={14} color="GrayText" />}
         <Text color="GrayText">{label}:</Text>
         {children}
@@ -24,7 +24,13 @@ export default function TextField({
   }
 
   return (
-    <VStack gap={1} fontSize={14} alignItems="start">
+    <VStack
+      gap={1}
+      textStyle="secondary"
+      alignItems="start"
+      minWidth={0}
+      overflowWrap="anywhere"
+    >
       <HStack gap={1}>
         {IconComponent && <IconComponent size={14} color="GrayText" />}
         <Text color="GrayText">{label}</Text>

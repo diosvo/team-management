@@ -7,6 +7,7 @@ import {
   DatePicker as ChakraDatePicker,
   type DatePickerRootProps,
   type DateValue,
+  Span,
 } from '@chakra-ui/react';
 import { CalendarSearch } from 'lucide-react';
 
@@ -67,7 +68,7 @@ export function DateRangePicker({
   label,
   placeholder = 'All time',
   disabled,
-  width = 'max-content',
+  width = { base: 'full', sm: 'max-content' },
   icon = <CalendarSearch size={16} />,
   onClear,
 }: DateRangePickerProps) {
@@ -97,7 +98,8 @@ export function DateRangePicker({
       unmountOnExit
       selectionMode={selection}
       width={width}
-      flexShrink={0}
+      flexShrink={{ base: 1, sm: 0 }}
+      minWidth={0}
       locale={LOCALE}
       size={{ base: 'sm', md: 'md' }}
       disabled={disabled}
@@ -123,7 +125,7 @@ export function DateRangePicker({
             aria-label={label ? `${label}: ${text}` : text}
           >
             {icon}
-            {text}
+            <Span truncate>{text}</Span>
           </Button>
         </ChakraDatePicker.Trigger>
         {clearable && (

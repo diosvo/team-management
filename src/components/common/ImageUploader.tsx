@@ -82,6 +82,8 @@ export default function ImageUploader({
             backgroundColor="blackAlpha.600"
             inset={0}
             opacity={0}
+            // Touch screens can't hover: keep the upload hint visible.
+            css={{ '@media (hover: none)': { opacity: 0.6 } }}
             borderRadius="md"
             transition="opacity 0.2s"
           >

@@ -159,7 +159,8 @@ describe('LocationTable', () => {
         );
       });
 
-      expect(mockToaster.create).toHaveBeenCalledWith(
+      expect(mockToaster.update).toHaveBeenCalledWith(
+        'toast-id',
         expect.objectContaining({ type: 'success' }),
       );
     });
@@ -177,7 +178,8 @@ describe('LocationTable', () => {
       await user.click(screen.getByRole('button', { name: /delete/i }));
 
       await waitFor(() => {
-        expect(mockToaster.create).toHaveBeenCalledWith(
+        expect(mockToaster.update).toHaveBeenCalledWith(
+          'toast-id',
           expect.objectContaining({ type: 'warning' }),
         );
       });

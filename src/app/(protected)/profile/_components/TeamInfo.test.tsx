@@ -14,6 +14,7 @@ import { updateTeamInfo } from '@/actions/user';
 import usePermissions from '@/hooks/use-permissions';
 import { formatDate } from '@/utils/datetime';
 import { UserState } from '@/utils/enum';
+import { toLabel } from '@/utils/formatter';
 
 import TeamInfo from './TeamInfo';
 
@@ -61,7 +62,9 @@ describe('TeamInfo', () => {
   const enterEditMode = async (user: ReturnType<typeof setup>['user']) => {
     await user.click(screen.getByRole('button'));
     // The picker shows the locale format, not the stored ISO day.
-    return screen.findByDisplayValue(formatDate(MOCK_USER_WITH_PLAYER.join_date));
+    return screen.findByDisplayValue(
+      formatDate(MOCK_USER_WITH_PLAYER.join_date),
+    );
   };
 
   test('should be accessible', async () => {
@@ -74,11 +77,15 @@ describe('TeamInfo', () => {
     setup();
 
     await waitFor(() => {
-      expect(screen.getByText(MOCK_USER_WITH_PLAYER.role)).toBeInTheDocument();
       expect(
-        screen.getByText(String(MOCK_PLAYER.position)),
+        screen.getByText(toLabel(MOCK_USER_WITH_PLAYER.role)),
       ).toBeInTheDocument();
-      expect(screen.getByText(MOCK_USER_WITH_PLAYER.state)).toBeInTheDocument();
+      expect(
+        screen.getByText(toLabel(String(MOCK_PLAYER.position))),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(toLabel(MOCK_USER_WITH_PLAYER.state)),
+      ).toBeInTheDocument();
       expect(
         screen.getByText(String(MOCK_PLAYER.jersey_number)),
       ).toBeInTheDocument();
@@ -105,7 +112,9 @@ describe('TeamInfo', () => {
 
     expect(joinDate).toBeInTheDocument();
     // Non-admins cannot change the role, so it stays read-only.
-    expect(screen.getByText(MOCK_USER_WITH_PLAYER.role)).toBeInTheDocument();
+    expect(
+      screen.getByText(toLabel(MOCK_USER_WITH_PLAYER.role)),
+    ).toBeInTheDocument();
   });
 
   test('submits the edited values through updateTeamInfo', async () => {

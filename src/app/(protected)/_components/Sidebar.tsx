@@ -1,5 +1,3 @@
-'use client';
-
 import Link, { useLinkStatus } from 'next/link';
 import { usePathname } from 'next/navigation';
 import { memo, useEffect, useMemo, useRef, type ReactNode } from 'react';
@@ -8,7 +6,6 @@ import {
   Button,
   Link as ChakraLink,
   Flex,
-  HStack,
   Icon,
   IconButton,
   Menu,
@@ -16,6 +13,7 @@ import {
   Separator,
   Span,
   Spinner,
+  Stack,
   Text,
   VStack,
   type ColorPalette,
@@ -30,6 +28,7 @@ import {
 
 import { Tooltip } from '@/components/ui/tooltip';
 import usePermissions from '@/hooks/use-permissions';
+import { toLabel } from '@/utils/formatter';
 
 import FeedbackDialog from '@/app/(protected)/_components/FeedbackDialog';
 import {
@@ -40,7 +39,6 @@ import {
   SIDEBAR_GROUP,
   SOCIAL_LINKS,
   TOGGLE_CSS,
-  segmentToLabel,
 } from '../_helpers/utils';
 
 function LoadingIndicator() {
@@ -89,7 +87,7 @@ const NavButton = memo(function NavButton({
           as={icon}
           size="sm"
           transition="color 0.2s"
-          color={isDisabled ? undefined : isActive ? 'black' : 'gray.500'}
+          color={isDisabled ? undefined : isActive ? 'black' : 'gray.600'}
         />
       </Span>
       {/* Zero-basis so it collapses to nothing without stealing icon width. */}
@@ -128,7 +126,7 @@ const NavButton = memo(function NavButton({
         {...BUTTON_CONFIG}
         variant={isActive ? 'surface' : 'ghost'}
         fontWeight={isActive ? 500 : 400}
-        color={isActive ? 'black' : 'gray.500'}
+        color={isActive ? 'black' : 'gray.600'}
         // Spacing lives on the slots so the icon can centre itself when collapsed.
         gap={0}
         paddingInline={0}
@@ -137,7 +135,13 @@ const NavButton = memo(function NavButton({
         aria-label={label}
         asChild={!isDisabled}
       >
-        {isDisabled ? content : <Link href={href}>{content}</Link>}
+        {isDisabled ? (
+          content
+        ) : (
+          <Link href={href} aria-current={isActive ? 'page' : undefined}>
+            {content}
+          </Link>
+        )}
       </Button>
     </Tooltip>
   );
@@ -273,7 +277,7 @@ export default function Sidebar({ isExpanded, children }: SidebarProps) {
     [can],
   );
 
-  // Scrollbar shows only while scrolling, via `data-scrolling` on the root.
+  // `data-scrolling` on the root fades the toggle out while scrolling.
   const rootRef = useRef<HTMLDivElement>(null);
   const scrollTimeout = useRef<ReturnType<typeof setTimeout>>(undefined);
 
@@ -298,14 +302,15 @@ export default function Sidebar({ isExpanded, children }: SidebarProps) {
     >
       {children}
 
-      {/* Full-bleed scrollbar with inset gutters. */}
+      {/* Explicit inset: scrollbar gutters are 0px with overlay scrollbars. */}
       <VStack
+        as="nav"
+        aria-label="Main"
         flex={1}
         minHeight={0}
         overflowY="auto"
         alignItems="stretch"
         gap={4}
-        marginInline={-2}
         paddingInline={2}
         css={SCROLL_AREA_CSS}
         onScroll={handleScroll}
@@ -315,16 +320,15 @@ export default function Sidebar({ isExpanded, children }: SidebarProps) {
             {/* Fixed height; title and separator cross-fade in place. */}
             <Flex position="relative" height={4} alignItems="center">
               <Text
-                fontSize={9}
+                textStyle="overline"
                 color="gray.700"
-                letterSpacing="wider"
                 marginLeft={NAV_INSET}
                 truncate
                 opacity={isExpanded ? 1 : 0}
                 aria-hidden={!isExpanded}
                 css={FADE_CSS}
               >
-                {title.toUpperCase()}
+                {title}
               </Text>
               <Separator
                 position="absolute"
@@ -341,7 +345,7 @@ export default function Sidebar({ isExpanded, children }: SidebarProps) {
                   key={resource}
                   icon={icon}
                   href={href}
-                  label={segmentToLabel(resource)}
+                  label={toLabel(resource)}
                   isActive={pathname === href}
                   isExpanded={isExpanded}
                   isDisabled={disabled}
@@ -354,13 +358,17 @@ export default function Sidebar({ isExpanded, children }: SidebarProps) {
 
       <Separator />
 
-      <HStack justifyContent="center" flexWrap="wrap">
+      <Stack
+        direction={isExpanded ? 'row' : 'column'}
+        justifyContent="center"
+        alignItems="center"
+      >
         <FooterLink label="Documentation" href="/docs" colorPalette="pink">
           <BookMarked />
         </FooterLink>
         <SocialMenu />
         <FeedbackDialog />
-      </HStack>
+      </Stack>
     </VStack>
   );
 }

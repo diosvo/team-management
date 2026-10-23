@@ -28,9 +28,11 @@ vi.mock('./_components/QuickActions', () => ({
 }));
 vi.mock('./_components/UpcomingSessions', () => ({
   default: () => <div>UpcomingSessions</div>,
+  UPCOMING_SESSIONS: { title: 'UpcomingSessions', description: '' },
 }));
 vi.mock('./_components/UpcomingMatches', () => ({
   default: () => <div>UpcomingMatches</div>,
+  UPCOMING_MATCHES: { title: 'UpcomingMatches', description: '' },
 }));
 vi.mock('./_components/DashboardFilters', () => ({
   default: () => <div>DashboardFilters</div>,

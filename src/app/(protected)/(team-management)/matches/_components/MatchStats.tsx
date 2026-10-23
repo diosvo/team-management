@@ -1,12 +1,10 @@
-import { SimpleGrid } from '@chakra-ui/react';
-
-import { Stat } from '@/components/ui/stat';
+import { Stat, StatGroup } from '@/components/ui/stat';
 
 import type { MatchStats } from '@/types/match';
 
 export default function MatchesStats({ stats }: { stats: MatchStats }) {
   return (
-    <SimpleGrid columns={{ base: 2, md: 4, xl: 6 }} gap={{ base: 3, lg: 4 }}>
+    <StatGroup>
       <Stat label="Total Matches" value={stats.total_matches} unit="game" />
       <Stat label="Played" value={stats.played_matches} unit="game" />
       <Stat
@@ -26,6 +24,6 @@ export default function MatchesStats({ stats }: { stats: MatchStats }) {
         value={stats.avg_points_per_game}
         unit="pts"
       />
-    </SimpleGrid>
+    </StatGroup>
   );
 }

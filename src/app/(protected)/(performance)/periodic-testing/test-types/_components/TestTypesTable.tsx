@@ -7,7 +7,6 @@ import { formatDistanceToNow } from 'date-fns';
 
 import DataTable, { type Column } from '@/components/DataTable';
 import HighlightText from '@/components/HighlightText';
-import { toaster } from '@/components/ui/toaster';
 
 import usePermissions from '@/hooks/use-permissions';
 import useTableState from '@/hooks/use-table-state';
@@ -33,27 +32,15 @@ export default function TestTypesTable({ data }: { data: Array<TestType> }) {
       }),
     [q, unit],
   );
-  const { items, currentData, selection, setSelection, totalCount } =
-    useTableState(data, predicate, page);
-
-  const removeItems = async () => {
-    const results = await Promise.all(selection.map(removeTestType));
-    const hasErrors = results.some(({ success }) => !success);
-    const successCount = results.filter(({ success }) => success).length;
-    const errorMessages = results
-      .filter(({ success }) => !success)
-      .map(({ message }) => message)
-      .join('\n ');
-
-    toaster.create({
-      type: hasErrors ? 'warning' : 'success',
-      title: hasErrors
-        ? `${successCount} deleted, some operations failed: ${errorMessages}`
-        : `Successfully deleted ${successCount} type(s).`,
-    });
-
-    setSelection([]);
-  };
+  const {
+    items,
+    currentData,
+    selection,
+    setSelection,
+    totalCount,
+    isPending,
+    removeSelected,
+  } = useTableState(data, predicate, page);
 
   const columns: Array<Column<TestType>> = [
     {
@@ -66,8 +53,7 @@ export default function TestTypesTable({ data }: { data: Array<TestType> }) {
       // Named for screen readers only: the column repeats "Last Updated" as a
       // relative time, so a visible header would be redundant.
       header: <VisuallyHidden>Relative time</VisuallyHidden>,
-      cell: (item) =>
-        formatDistanceToNow(item.updated_at, { addSuffix: true }),
+      cell: (item) => formatDistanceToNow(item.updated_at, { addSuffix: true }),
       cellProps: { color: 'GrayText' },
     },
   ];
@@ -96,7 +82,8 @@ export default function TestTypesTable({ data }: { data: Array<TestType> }) {
           items,
           selection,
           setSelection,
-          onDelete: removeItems,
+          disabled: isPending,
+          onDelete: () => removeSelected(removeTestType, 'test type'),
         }}
       />
       <UpsertTestType.Viewport />

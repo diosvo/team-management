@@ -3,7 +3,6 @@
 import { useState } from 'react';
 
 import { Badge, Button, HStack, VisuallyHidden } from '@chakra-ui/react';
-import { capitalize } from 'es-toolkit/string';
 import { Download, FileClock } from 'lucide-react';
 
 import DataTable, { type Column } from '@/components/DataTable';
@@ -12,6 +11,7 @@ import PageTitle from '@/components/PageTitle';
 import { INTERVAL_LABEL, reportDownloadUrl } from '@/utils/constants';
 import { ReportStatus } from '@/utils/enum';
 import { formatDatetime } from '@/utils/datetime';
+import { toLabel } from '@/utils/formatter';
 import { getColor } from '@/utils/helper';
 
 import { ReportHistory as ReportHistoryRow } from '@/drizzle/schema';
@@ -35,7 +35,7 @@ const COLUMNS: Array<Column<ReportHistoryRow>> = [
         colorPalette={getColor(item.status)}
         title={item.error ?? undefined}
       >
-        {capitalize(item.status)}
+        {toLabel(item.status)}
         {item.attempts > 1 ? ` (${item.attempts} attempts)` : ''}
       </Badge>
     ),
@@ -49,7 +49,7 @@ const COLUMNS: Array<Column<ReportHistoryRow>> = [
           borderRadius="full"
           colorPalette={getColor(item.delivery_status)}
         >
-          {capitalize(item.delivery_status)}
+          {toLabel(item.delivery_status)}
         </Badge>
       ) : (
         '-'
@@ -59,7 +59,7 @@ const COLUMNS: Array<Column<ReportHistoryRow>> = [
     header: 'Trigger',
     cell: (item) => (
       <Badge variant="outline" borderRadius="full">
-        {capitalize(item.trigger)}
+        {toLabel(item.trigger)}
       </Badge>
     ),
   },

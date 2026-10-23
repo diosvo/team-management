@@ -60,7 +60,7 @@ export default function DashboardFilters() {
               loading={downloading}
               loadingText="Generating..."
             >
-              Actions <ChevronDown />
+              Export Report <ChevronDown />
             </Button>
           </Menu.Trigger>
           <Portal>
@@ -78,7 +78,7 @@ export default function DashboardFilters() {
                   _hover={{ cursor: 'pointer' }}
                   onClick={() => setOpen(true)}
                 >
-                  <Send size={14} /> Send to...
+                  <Send size={14} /> Send To...
                 </Menu.Item>
               </Menu.Content>
             </Menu.Positioner>

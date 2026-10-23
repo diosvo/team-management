@@ -113,15 +113,15 @@ describe('AccountMenu', () => {
     );
   });
 
-  test('shows a Logout option when the menu is open', async () => {
+  test('shows a Log Out option when the menu is open', async () => {
     const { user } = setup();
 
     await openMenu(user);
 
-    expect(await screen.findByText(/logout/i)).toBeInTheDocument();
+    expect(await screen.findByText(/log out/i)).toBeInTheDocument();
   });
 
-  test('calls signOut and redirects to login when Logout is clicked', async () => {
+  test('calls signOut and redirects to login when Log Out is clicked', async () => {
     mockSignOut.mockImplementation(async (options) => {
       const { fetchOptions } = (options ?? {}) as { fetchOptions?: unknown };
       authCallbacks(fetchOptions).onSuccess?.();
@@ -129,7 +129,7 @@ describe('AccountMenu', () => {
     const { user } = setup();
 
     await openMenu(user);
-    await user.click(await screen.findByText(/logout/i));
+    await user.click(await screen.findByText(/log out/i));
 
     expect(mockSignOut).toHaveBeenCalled();
     expect(mockReplace).toHaveBeenCalledWith(LOGIN_PATH);

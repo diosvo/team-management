@@ -18,7 +18,11 @@ export default function SelectionActionBar({
     <ActionBar.Root open={open}>
       <Portal>
         <ActionBar.Positioner>
-          <ActionBar.Content>
+          <ActionBar.Content
+            maxWidth="calc(100vw - {spacing.8})"
+            flexWrap="wrap"
+            justifyContent="center"
+          >
             <ActionBar.SelectionTrigger>
               {selectionCount} selected
             </ActionBar.SelectionTrigger>

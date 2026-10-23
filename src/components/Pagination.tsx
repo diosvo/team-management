@@ -35,7 +35,7 @@ export default function Pagination({
         pageSize={pageSize}
         onPageChange={onPageChange}
       >
-        <ChakraPagination.PageText format="long" fontSize={14} />
+        <ChakraPagination.PageText format="long" textStyle="secondary" />
         <ButtonGroup variant="ghost" size={{ base: 'xs', sm: 'sm' }}>
           <Tooltip content="Previous page">
             <ChakraPagination.PrevTrigger asChild>
