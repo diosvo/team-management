@@ -75,6 +75,11 @@
     "logoUploaded": "Uploaded logo successfully",
     "updated": "Updated team successfully"
   },
+  "testNote": {
+    "added": "Note added successfully",
+    "removed": "Note removed successfully",
+    "updated": "Note updated successfully"
+  },
   "testResult": {
     "deleted": "Test result deleted successfully",
     "saved": "{created} created, {updated} updated",

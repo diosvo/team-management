@@ -108,6 +108,12 @@
     "friendly": "Friendly",
     "league": "League"
   },
+  "performanceBand": {
+    "below_target": "Below target",
+    "elite": "Elite",
+    "needs_work": "Needs work",
+    "on_target": "On target"
+  },
   "playerPosition": {
     "center": "C",
     "point_guard": "PG",
@@ -122,6 +128,13 @@
     "power_forward": "Power Forward",
     "shooting_guard": "Shooting Guard",
     "small_forward": "Small Forward"
+  },
+  "progressStatus": {
+    "improving": "Improving",
+    "insufficient": "Not enough data",
+    "plateauing": "Plateauing",
+    "regressing": "Regressing",
+    "stable": "Stable"
   },
   "reportStatus": {
     "expired": "Expired",
@@ -142,6 +155,10 @@
     "cancelled": "Cancelled",
     "completed": "Completed",
     "scheduled": "Scheduled"
+  },
+  "testDirection": {
+    "higher": "Higher is better",
+    "lower": "Lower is better"
   },
   "testTypeUnit": {
     "meters": "Meters",

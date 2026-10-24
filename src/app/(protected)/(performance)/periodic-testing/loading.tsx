@@ -8,7 +8,7 @@ export default async function Loading() {
   return (
     <ListPageSkeleton
       title={t('title')}
-      actions={[t('manageTypes'), t('addResult')]}
+      actions={[t('progression'), t('manageTypes'), t('addResult')]}
       stats={2}
       // The date select sits in the actions slot; no categorical filters.
       toolbar={{ action: '01/01/2026' }}

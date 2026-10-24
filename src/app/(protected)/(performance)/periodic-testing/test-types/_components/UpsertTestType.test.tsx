@@ -123,4 +123,36 @@ describe('UpsertTestType', () => {
     );
     await waitFor(() => expect(name).toHaveValue(''));
   });
+
+  test.each([
+    [{ higher_is_better: false, target: '4.5' }, 'lower', '4.5'],
+    [{ higher_is_better: true, target: null }, 'higher', ''],
+  ])(
+    'prefills the direction and target of an existing type (%o)',
+    async (fields, direction, target) => {
+      mockUpsertTestType.mockResolvedValue({ success: true, message: 'Saved' });
+
+      const { user } = await open('Update', {
+        type_id: 'type-123',
+        name: 'Sprint',
+        unit: 'seconds',
+        ...fields,
+      });
+
+      expect(await screen.findByRole('spinbutton')).toHaveValue(
+        target === '' ? null : Number(target),
+      );
+
+      const submit = await screen.findByRole('button', { name: /update/i });
+      await waitFor(() => expect(submit).toBeEnabled());
+      await user.click(submit);
+
+      await waitFor(() =>
+        expect(mockUpsertTestType).toHaveBeenCalledWith(
+          'type-123',
+          expect.objectContaining({ direction, target }),
+        ),
+      );
+    },
+  );
 });

@@ -59,6 +59,19 @@ export default function TestTypesTable({ data }: { data: Array<TestType> }) {
       cell: (item) => enumLabel(tEnums, 'testTypeUnit', item.unit),
     },
     {
+      header: t('progress'),
+      cell: (item) =>
+        enumLabel(
+          tEnums,
+          'testDirection',
+          item.higher_is_better ? 'higher' : 'lower',
+        ),
+    },
+    {
+      header: t('target'),
+      cell: (item) => (item.target == null ? '-' : Number(item.target)),
+    },
+    {
       header: t('lastUpdated'),
       cell: (item) => formatDatetime(item.updated_at),
     },

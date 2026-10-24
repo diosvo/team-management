@@ -5,6 +5,7 @@ import {
 import {
   createPermissionsMock,
   createToasterMock,
+  enumText,
   expectNoA11yViolations,
   mockToaster,
   mockUseQueryStates,
@@ -86,6 +87,23 @@ describe('TestTypesTable', () => {
     ['Name', 'Unit', 'Last Updated'].forEach((header) => {
       expect(screen.getByText(header)).toBeInTheDocument();
     });
+  });
+
+  test('shows the progress direction and target of each type', () => {
+    setup({
+      data: [
+        { ...MOCK_TEST_TYPE, higher_is_better: false, target: '4.5' },
+        MOCK_TEST_TYPE_2,
+      ],
+    });
+
+    expect(
+      screen.getByText(enumText('testDirection', 'lower')),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(enumText('testDirection', 'higher')),
+    ).toBeInTheDocument();
+    expect(screen.getByText('4.5')).toBeInTheDocument();
   });
 
   test('shows the empty state when there are no matching types', () => {

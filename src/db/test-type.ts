@@ -3,8 +3,6 @@ import { asc, eq } from 'drizzle-orm';
 import db from '@/drizzle';
 import { type InsertTestType, TestTypeTable } from '@/drizzle/schema';
 
-import type { UpsertTestTypeSchemaValues } from '@/schemas/periodic-testing';
-
 export async function getTestTypes() {
   try {
     return await db.query.TestTypeTable.findMany({
@@ -31,7 +29,7 @@ export async function insertTestType(data: InsertTestType) {
 
 export async function updateTestType(
   type_id: string,
-  data: UpsertTestTypeSchemaValues,
+  data: Partial<InsertTestType>,
 ) {
   return await db
     .update(TestTypeTable)

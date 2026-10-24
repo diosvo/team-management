@@ -75,6 +75,11 @@
     "logoUploaded": "Đã tải lên logo",
     "updated": "Đã cập nhật đội"
   },
+  "testNote": {
+    "added": "Đã thêm ghi chú",
+    "removed": "Đã xóa ghi chú",
+    "updated": "Đã cập nhật ghi chú"
+  },
   "testResult": {
     "deleted": "Đã xóa kết quả kiểm tra",
     "saved": "Đã tạo {created}, cập nhật {updated}",

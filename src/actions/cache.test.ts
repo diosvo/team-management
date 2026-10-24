@@ -33,13 +33,32 @@ describe('revalidate', () => {
       ['roster', '/roster'],
       ['sessions', '/training'],
       ['teams', '/teams'],
-      ['testResults', '/periodic-testing'],
-      ['testTypes', '/periodic-testing/test-types'],
     ] as const)('revalidate %s() correctly', (method, path) => {
       revalidate[method]();
 
       expect(revalidatePath).toHaveBeenCalledWith(path);
       expect(revalidateTag).not.toHaveBeenCalled();
+    });
+
+    test.each(['testResults', 'testTypes'] as const)(
+      '%s() revalidates the whole periodic-testing layout',
+      (method) => {
+        revalidate[method]();
+
+        expect(revalidatePath).toHaveBeenCalledWith(
+          '/periodic-testing',
+          'layout',
+        );
+        expect(revalidateTag).not.toHaveBeenCalled();
+      },
+    );
+
+    test('testNotes() revalidates the player progression page', () => {
+      revalidate.testNotes('player-1');
+
+      expect(revalidatePath).toHaveBeenCalledWith(
+        '/periodic-testing/progression/player-1',
+      );
     });
 
     test('matchStats() revalidates every page showing a box score', () => {

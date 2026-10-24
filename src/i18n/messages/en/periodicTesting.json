@@ -23,6 +23,7 @@
   "header": {
     "addResult": "Add Result",
     "manageTypes": "Manage Types",
+    "progression": "Progression",
     "title": "Periodic Testing"
   },
   "matrix": {
@@ -34,6 +35,88 @@
   "metadata": {
     "description": "Performance testing and analytics for team players",
     "title": "Periodic Testing"
+  },
+  "playerProgression": {
+    "addNote": "Add Note",
+    "addNoteDialog": {
+      "editTitle": "Edit Note",
+      "focusArea": "Focus Area",
+      "general": "General",
+      "goal": "Goal for Next Test",
+      "observation": "Observation",
+      "saving": "Saving...",
+      "title": "Add Note"
+    },
+    "back": "Progression",
+    "best": "Best {result} on {date}",
+    "chartGoal": "Goal ({value})",
+    "chartPlayer": "Player: {value}",
+    "chartTarget": "Target ({value})",
+    "chartTeamAverage": "Team avg: {value}",
+    "direction": "({direction, select, higher {higher} other {lower}} is better)",
+    "emptyDescription": "Results appear here once this player is tested",
+    "emptyTitle": "No test results yet",
+    "history": {
+      "date": "Date",
+      "result": "Result",
+      "teamAverage": "Team Avg",
+      "test": "Test",
+      "title": "Test History",
+      "vsAverage": "vs Avg"
+    },
+    "improving": "Improving",
+    "metadata": {
+      "description": "Periodic testing progression and coaching notes for a player",
+      "title": "Player Progression"
+    },
+    "notes": {
+      "description": "Development observations and goals for the next test",
+      "edit": "Edit note",
+      "emptyDescription": "Coaches can add observations after each test cycle",
+      "emptyTitle": "No notes yet",
+      "general": "General",
+      "goal": "Goal: {value}",
+      "outcome": {
+        "met": "Goal met",
+        "missed": "Goal missed",
+        "pending": "Awaiting next test"
+      },
+      "remove": "Remove note",
+      "removing": "Removing note...",
+      "title": "Coaching Notes",
+      "unknownAuthor": "Unknown"
+    },
+    "onTarget": "On Target",
+    "regressing": "Regressing",
+    "since": "since {date}",
+    "testCount": "{count, plural, one {# test} other {# tests}}",
+    "testsTracked": "Tests Tracked"
+  },
+  "progression": {
+    "baseline": "Baseline",
+    "belowTarget": "Below Target",
+    "best": "Best",
+    "change": "Change",
+    "empty": "No progression found",
+    "improving": "Improving",
+    "lastTested": "Last Tested",
+    "latest": "Latest",
+    "manageTypes": "Manage Types",
+    "metadata": {
+      "description": "Track how each player develops across periodic tests",
+      "title": "Performance Progression"
+    },
+    "missedLatest": "Missed latest",
+    "missedLatestTest": "Missed Latest Test",
+    "player": "Player",
+    "regressing": "Regressing",
+    "results": "Results",
+    "target": "Target",
+    "teamAverage": "Team Average",
+    "teamBest": "Team Best",
+    "testType": "Test type",
+    "title": "Performance Progression",
+    "trend": "Trend"
   },
   "stats": {
     "completedTests": "Completed Tests",
@@ -50,13 +133,18 @@
       "description": "Manage and configure test types for periodic testing",
       "title": "Test Types"
     },
+    "progress": "Progress",
     "relativeTime": "Relative time",
+    "target": "Target",
     "title": "Test Types",
     "unit": "Unit"
   },
   "upsertTestType": {
     "addTitle": "Add Test Type",
+    "progress": "Progress",
     "saving": "Saving...",
+    "target": "Target",
+    "targetHelper": "Benchmark used for the progression bands. Leave empty for none.",
     "unit": "Unit",
     "updateTitle": "Update Test Type"
   }

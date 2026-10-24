@@ -77,6 +77,23 @@ export const TestTypeUnit = createEnum([
 ] as const);
 export type TestTypeUnit = enumUnion<typeof TestTypeUnit>;
 
+export const ProgressStatus = createEnum([
+  'improving',
+  'stable',
+  'plateauing',
+  'regressing',
+  'insufficient',
+] as const);
+export type ProgressStatus = enumUnion<typeof ProgressStatus>;
+
+export const PerformanceBand = createEnum([
+  'elite',
+  'on_target',
+  'below_target',
+  'needs_work',
+] as const);
+export type PerformanceBand = enumUnion<typeof PerformanceBand>;
+
 export const LeagueStatus = createEnum([
   'upcoming',
   'ongoing',

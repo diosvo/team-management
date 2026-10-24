@@ -14,7 +14,10 @@ import { toaster } from '@/components/ui/toaster';
 
 import { useSelection } from '@/i18n/enums';
 import { getDefaults } from '@/lib/zod';
-import { TEST_TYPE_UNIT_SELECTION } from '@/utils/constants';
+import {
+  TEST_DIRECTION_SELECTION,
+  TEST_TYPE_UNIT_SELECTION,
+} from '@/utils/constants';
 
 import { upsertTestType } from '@/actions/test-type';
 import {
@@ -26,6 +29,10 @@ export const UpsertTestType = createOverlay(({ action, item, ...rest }) => {
   const t = useTranslations('periodicTesting.upsertTestType');
   const tCommon = useTranslations('common');
   const unitOptions = useSelection(TEST_TYPE_UNIT_SELECTION, 'testTypeUnit');
+  const directionOptions = useSelection(
+    TEST_DIRECTION_SELECTION,
+    'testDirection',
+  );
   const isUpdate = action === 'Update';
   const [isPending, startTransition] = useTransition();
 
@@ -38,7 +45,18 @@ export const UpsertTestType = createOverlay(({ action, item, ...rest }) => {
   } = useForm({
     mode: 'onChange',
     resolver: zodResolver(UpsertTestTypeSchema),
-    defaultValues: getDefaults(UpsertTestTypeSchema, item),
+    defaultValues: getDefaults(
+      UpsertTestTypeSchema,
+      // An existing type stores direction/target as DB columns, not form fields.
+      item.type_id
+        ? {
+            name: item.name,
+            unit: item.unit,
+            direction: item.higher_is_better ? 'higher' : 'lower',
+            target: item.target == null ? '' : String(Number(item.target)),
+          }
+        : undefined,
+    ),
   });
 
   const onSubmit = (data: UpsertTestTypeSchemaValues) => {
@@ -95,6 +113,30 @@ export const UpsertTestType = createOverlay(({ action, item, ...rest }) => {
                 columns={{ base: 1, md: 3 }}
                 marginTop={3}
               />
+              <RadioGroupField
+                control={control}
+                name="direction"
+                legend={t('progress')}
+                options={directionOptions}
+                colorPalette="red"
+                columns={{ base: 1, md: 2 }}
+                marginTop={3}
+              />
+              <Field
+                label={t('target')}
+                helperText={t('targetHelper')}
+                invalid={!!errors.target}
+                errorText={errors.target?.message}
+                marginTop={3}
+              >
+                <Input
+                  type="number"
+                  min={0}
+                  step="any"
+                  {...register('target')}
+                  disabled={isPending}
+                />
+              </Field>
             </Dialog.Body>
             <Dialog.Footer>
               <Button

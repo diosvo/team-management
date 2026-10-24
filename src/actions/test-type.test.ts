@@ -107,6 +107,15 @@ describe('Test Type Actions', () => {
     const typeData: UpsertTestTypeSchemaValues = {
       name: MOCK_TEST_TYPE_INPUT.name!,
       unit: MOCK_TEST_TYPE_INPUT.unit!,
+      direction: 'higher',
+      target: '',
+    };
+    // The form's direction/target are stored as DB columns.
+    const dbValues = {
+      name: typeData.name,
+      unit: typeData.unit,
+      higher_is_better: true,
+      target: null,
     };
 
     test('updates existing test type and revalidates cache', async () => {
@@ -121,7 +130,7 @@ describe('Test Type Actions', () => {
       expect(getTestTypeById).toHaveBeenCalledWith(MOCK_TEST_TYPE.type_id);
       expect(updateTestType).toHaveBeenCalledWith(
         MOCK_TEST_TYPE.type_id,
-        typeData,
+        dbValues,
       );
       expect(insertTestType).not.toHaveBeenCalled();
       expect(revalidate.testTypes).toHaveBeenCalled();
@@ -141,7 +150,7 @@ describe('Test Type Actions', () => {
       const result = await upsertTestType('', typeData);
 
       expect(insertTestType).toHaveBeenCalledWith({
-        ...typeData,
+        ...dbValues,
         team_id: MOCK_TEAM.team_id,
       });
       expect(updateTestType).not.toHaveBeenCalled();
@@ -149,6 +158,27 @@ describe('Test Type Actions', () => {
       expect(result).toEqual({
         success: true,
         message: 'Test type updated successfully',
+      });
+    });
+
+    test('maps a lower-is-better direction and keeps a set target', async () => {
+      vi.mocked(getTestTypeById).mockResolvedValue(undefined);
+      vi.mocked(insertTestType).mockResolvedValue({
+        ...mockResult,
+        command: 'INSERT',
+      });
+
+      await upsertTestType('', {
+        ...typeData,
+        direction: 'lower',
+        target: '4.5',
+      });
+
+      expect(insertTestType).toHaveBeenCalledWith({
+        ...dbValues,
+        higher_is_better: false,
+        target: '4.5',
+        team_id: MOCK_TEAM.team_id,
       });
     });
 
