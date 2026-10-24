@@ -1,0 +1,195 @@
+---
+title: Deployment
+description: Where each container runs in production, plus scheduled jobs, environment variables and CI/CD.
+---
+
+## Deployment diagram
+
+<Mermaid
+  chart={`
+C4Deployment
+  title Deployment diagram for production
+
+Deployment_Node(browser, "User browser", "Chrome, Safari, mobile") {
+Container(client, "Client islands", "React 19", "Portal UI")
+}
+
+Deployment_Node(vercel, "Vercel", "Production project") {
+Deployment_Node(fn, "Serverless functions", "Node.js") {
+Container(server, "Next.js server", "Next.js 16", "Pages, actions, API routes")
+Container(chromium, "Headless Chromium", "chromium-min pack", "Report rendering")
+}
+Deployment_Node(cron, "Vercel Cron", "vercel.json") {
+Container(jobs, "Report jobs", "2 daily schedules", "schedule, retention")
+}
+Deployment_Node(store, "Vercel Blob", "Private store") {
+ContainerDb(blob, "Blob", "@vercel/blob", "Avatars, logos, PDFs")
+}
+}
+
+Deployment_Node(neon, "Neon", "Serverless Postgres") {
+ContainerDb(db, "PostgreSQL", "Drizzle migrations", "App data")
+}
+
+Rel(client, server, "HTTPS")
+Rel(jobs, server, "GET /api/reports/\*")
+Rel(server, db, "SQL, Pool max 1")
+Rel(server, blob, "Read, write")
+Rel(server, chromium, "Launch per PDF")
+
+UpdateLayoutConfig($c4ShapeInRow="2", $c4BoundaryInRow="2")
+`}
+/>
+
+**Development:** `pnpm dev`, local Postgres, system Chrome instead of the pack.
+
+## Scheduled jobs
+
+<TypeTable
+  type={{
+    '/api/reports/schedule': {
+      type: '0 1 * * * (08:00 ICT)',
+      description:
+        'Runs due schedules. maxDuration 60 s (Hobby cap); stops at 40 s, rest waits a tick.',
+      required: true,
+    },
+    '/api/reports/retention': {
+      type: '0 2 * * * (09:00 ICT)',
+      description: 'Deletes report PDFs older than 90 days.',
+      required: true,
+    },
+  }}
+/>
+
+- Both require `Authorization: Bearer $CRON_SECRET`; Vercel adds it to crons.
+- An empty `CRON_SECRET` rejects everything.
+
+## Environment variables
+
+- `env.config.ts` parses `process.env` with Zod; import it as `@env`.
+- Every variable has a default: builds never fail, the feature fails at runtime.
+- Better Auth reads `BETTER_AUTH_URL` and `BETTER_AUTH_SECRET` directly.
+
+<TypeTable
+  type={{
+    DATABASE_URL: {
+      type: 'string',
+      description: 'Postgres connection string.',
+      required: true,
+    },
+    DEV_URL: {
+      type: 'url',
+      description: 'Dev base URL, trusted origin, Playwright baseURL.',
+      default: 'http://localhost:3000',
+    },
+    PRODUCTION_URL: {
+      type: 'url',
+      description: 'Production base URL and trusted origin.',
+      default: 'http://localhost:3000',
+    },
+    CRON_SECRET: {
+      type: 'string',
+      description: 'Bearer token for the cron routes.',
+    },
+    RESEND_API_KEY: {
+      type: 'string',
+      description: 'Resend client key.',
+    },
+    RESEND_WEBHOOK_SECRET: {
+      type: 'whsec_…',
+      description: 'Verifies Resend delivery webhooks.',
+    },
+    BLOB_READ_WRITE_TOKEN: {
+      type: 'string',
+      description: 'Vercel Blob token; needed to store reports and images.',
+    },
+    CHROMIUM_PACK_URL: {
+      type: 'url',
+      description: 'Brotli pack of the Chromium binary, production only.',
+    },
+    GITHUB_TOKEN: {
+      type: 'string',
+      description: 'Issues write access on the feedback repository.',
+    },
+    'PW_USERNAME / PW_PASSWORD': {
+      type: 'string',
+      description:
+        'Playwright admin login; also the report cron service account.',
+    },
+    'NODE_ENV / CI': {
+      type: 'enum / boolean',
+      description:
+        'Chromium launch path, error verbosity; CI switches Playwright reporting.',
+      default: 'development / false',
+    },
+  }}
+/>
+
+## CI/CD
+
+<Mermaid
+  chart={`
+flowchart LR
+    pr["Pull request → main"] --> preview["preview.yaml"]
+    preview --> tad["test-and-deploy.yaml<br/>test:coverage · typecheck · audit"]
+    tad --> vp["Vercel preview<br/>+ PR comment"]
+    push["Push → main"] --> prod["production.yaml"]
+    prod --> tad2["test-and-deploy.yaml<br/>run-unit-test: false"]
+    tad2 --> vprod["vercel build --prod<br/>deploy --prod"]
+    pr -.-> e2e["playwright.yaml<br/>skipped (if: false)"]
+`}
+/>
+
+<TypeTable
+  type={{
+    'dev · build · analyze': {
+      type: 'next',
+      description: 'Dev server, production build, bundle analyzer.',
+      required: true,
+    },
+    typecheck: {
+      type: 'next typegen && tsc --noEmit',
+      description: 'The only step that type-checks test files.',
+      required: true,
+    },
+    'db:generate · db:migrate · db:reset': {
+      type: 'drizzle-kit · tsx',
+      description: 'Schema diff, migrate, reset (src/drizzle/scripts).',
+      required: true,
+    },
+    'test · e2e': {
+      type: 'vitest · playwright',
+      description:
+        'Unit tests in jsdom; E2E against pnpm dev. See E2E Testing.',
+      required: true,
+    },
+  }}
+/>
+
+## Known gaps
+
+<Accordions>
+  <Accordion title="Production deploys run no tests">
+    `production.yaml` sets `run-unit-test: false`; a direct push to `main`
+    skips the PR gate.
+  </Accordion>
+  <Accordion title="E2E is disabled in CI">
+    `playwright.yaml` is skipped until CI has an isolated test database.
+  </Accordion>
+  <Accordion title="Sandbox email sender">
+    `EMAIL_FROM` is `Acme <onboarding@resend.dev>` (Resend sandbox), not a
+    verified club domain.
+  </Accordion>
+  <Accordion title="Reports serve a single team">
+    The cron renders as one service account; only its team gets scheduled
+    reports.
+  </Accordion>
+  <Accordion title="Misspelled enum asset_catogory">
+    `asset_catogory` in `src/drizzle/schema/asset.ts`; renaming needs a
+    migration.
+  </Accordion>
+  <Accordion title="Scaffolded documents resource">
+    `documents` is in `RESOURCES` and the sidebar (`disabled: true`) but has
+    no route or table.
+  </Accordion>
+</Accordions>

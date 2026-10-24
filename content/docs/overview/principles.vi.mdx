@@ -1,0 +1,74 @@
+---
+title: Nguyên tắc
+description: Những quy tắc chung mọi trang đều theo, và chỗ nào trong code bảo đảm từng quy tắc.
+---
+
+- **Nguyên tắc UX (4):** người review dựa vào đây để kiểm tra.
+- **Cam kết kỹ thuật (3):** phần code giúp các nguyên tắc đó luôn đúng.
+
+## Nguyên tắc UX
+
+- **Rõ ai làm được gì.** `Authorized` ẩn những gì vai trò của bạn không được
+  làm; phần còn lại proxy chuyển tới `/forbidden`.
+- **Tìm nhanh.** Danh sách nào cũng lọc được theo `q` và theo các cột phân loại.
+- **Xoá an toàn.** Luôn hỏi xác nhận trước khi xoá và báo kết quả bằng toast.
+- **Gửi link là thấy đúng trạng thái.** Bộ lọc, ô tìm kiếm và số trang đều lưu
+  trên URL.
+
+## Kiểm tra quyền ở server
+
+- **Ghi.** `withResource` trong mỗi server action là lớp kiểm tra duy nhất
+  không thể lách; giao diện chỉ ẩn nút.
+- **Đọc.** Chưa có phiên đăng nhập thì `withAuth` chuyển bạn tới `/login`.
+- **Quyền theo vai trò + resource, không theo dòng.** Với dữ liệu của mình (hồ
+  sơ, đơn xin nghỉ, ảnh đại diện), action so với `user` trong phiên; lệch → `forbidden()`.
+- **Không tin ID gửi lên.** `team_id` lấy từ phiên đăng nhập; `user_id` hoặc
+  `player_id` gửi lên đều được đối chiếu với phiên.
+
+Bảng phân quyền và quy tắc đầy đủ:
+[Vai trò & Quyền](/docs/vi/access/roles-permissions).
+
+## Chỉ gửi cho client đúng những gì cần hiện
+
+- Server Component chỉ đọc các cột được hiển thị, không lấy cả dòng.
+- `getRoster` trả về `RosterUser`: tên, email, vai trò, trạng thái, số áo.
+- Ngày sinh, số điện thoại và CMND/CCCD nằm lại trên server, trừ trang hồ sơ
+  cá nhân (có quy tắc sở hữu riêng).
+- Layout cần đăng nhập chỉ đưa `session.user` vào `SessionProvider`, không bao
+  giờ đưa token của phiên.
+
+## Bộ lọc lưu trên URL
+
+- `q`, `page` và bộ lọc được `nuqs` đọc từ URL (parser trong
+  `src/lib/nuqs.ts`).
+- State cục bộ (ô tìm kiếm, bản nháp trong drawer Advanced Filters ở
+  `src/components/filters/Filters.tsx`) chỉ là bản sao của URL.
+
+Đồng bộ hai chiều:
+
+- **Cục bộ lên URL** khi chốt: bấm Apply, gõ xong (có debounce), bấm thẻ thống
+  kê.
+- **URL về cục bộ** khi URL đổi từ bên ngoài: bấm thẻ, back, reset, mở deep
+  link.
+
+`useSyncedState` (`src/hooks`) lo việc đồng bộ lại:
+
+- Chỉnh state ngay trong lúc render.
+- So theo giá trị, nên tham số mảng được tạo lại không gây đồng bộ nhầm.
+- Không bao giờ ghi ngược lên URL.
+
+<Mermaid
+  chart={`
+flowchart LR
+    L["Bản sao cục bộ<br/>ô tìm kiếm, bản nháp drawer"] -- "chốt: Apply / debounce / bấm thẻ" --> U["URL<br/>nơi duy nhất giữ trạng thái"]
+    U -- "đồng bộ lại qua useSyncedState<br/>khi URL đổi từ bên ngoài" --> L
+`}
+/>
+
+Nhờ vậy:
+
+- Bấm thẻ thống kê đặt `q=''` thì ô tìm kiếm cũng trống; chữ cũ không thể quay
+  lại URL.
+- Bản nháp trong drawer mở ra theo URL, khác đi khi bạn chỉnh, được lưu khi bấm
+  Apply, và trở lại như cũ khi bạn bấm ra ngoài.
+- Một lần đổi URL (nút back, deep link) cập nhật mọi bản sao cùng lúc.

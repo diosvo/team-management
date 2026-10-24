@@ -1,0 +1,227 @@
+---
+title: Component
+description: C4 cấp 3. Server Next.js gồm những khối nào và mỗi khối nằm ở đâu trong source code.
+---
+
+- Request nào cũng đi qua cùng một nhóm nhỏ component.
+- Trang lo đọc, action lo ghi; cả hai chỉ vào database qua `src/db`.
+
+## Sơ đồ component
+
+<Mermaid
+  chart={`
+C4Component
+  title Sơ đồ component của server Next.js
+
+Container(client, "Client island", "React 19", "Giao diện trình duyệt")
+System_Ext(cron, "Vercel Cron", "Job hằng ngày")
+
+Container_Boundary(server, "Server Next.js") {
+Component(proxy, "Proxy", "src/proxy.ts", "Cookie + kiểm tra view")
+Component(pages, "Trang", "RSC", "Đọc, render")
+Component(actions, "Server action", "src/actions", "Kiểm tra, ghi")
+Component(routes, "Route handler", "src/app/api", "PDF, cron, webhook")
+Component(authz, "Xác thực + phân quyền", "Better Auth, can()", "verifySession, withResource")
+Component(dal, "Truy cập dữ liệu", "src/db, Drizzle", "Truy vấn theo domain")
+Component(integrations, "Tích hợp", "src/lib", "Blob, Resend, Puppeteer, GitHub")
+}
+
+Boundary(data, "Dữ liệu", "") {
+ContainerDb(db, "PostgreSQL", "Neon", "Dữ liệu app")
+}
+
+Rel(client, proxy, "Điều hướng")
+Rel(client, actions, "Gọi")
+Rel(cron, routes, "Kích hoạt")
+Rel(proxy, pages, "Chuyển tiếp")
+Rel(proxy, authz, "view")
+Rel(actions, authz, "create/edit/delete")
+Rel(pages, dal, "Đọc")
+Rel(actions, dal, "Ghi")
+Rel(routes, dal, "Ghi lần chạy")
+Rel(routes, integrations, "Render, lưu")
+Rel(dal, db, "SQL")
+
+UpdateLayoutConfig($c4ShapeInRow="4", $c4BoundaryInRow="1")
+`}
+/>
+
+## Các component
+
+<TypeTable
+  type={{
+    Proxy: {
+      type: 'src/proxy.ts',
+      description: (
+        <ul>
+          <li>
+            Bỏ qua action và <code>/api</code>.
+          </li>
+          <li>Thiếu cookie hoặc cookie hết hạn thì redirect.</li>
+          <li>
+            Sau đó kiểm tra{' '}
+            <code>can(role, resolveResource(path), 'view')</code>; không gọi DB.
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+    Pages: {
+      type: 'src/app/(protected)/**/page.tsx',
+      description: (
+        <ul>
+          <li>RSC, mỗi nhóm menu một route group.</li>
+          <li>
+            <code>(overview)</code>, <code>(team-management)</code>,{' '}
+            <code>(performance)</code>, <code>(resources)</code>,{' '}
+            <code>(settings)</code>.
+          </li>
+          <li>
+            Layout truyền user từ <code>verifySession()</code> cho{' '}
+            <code>SessionProvider</code>.
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+    'Server actions': {
+      type: "src/actions/*.ts · 'use server'",
+      description:
+        'Mỗi domain một file. withResource đưa user vào, kiểm tra ability rồi gọi src/db.',
+      required: true,
+    },
+    'Route handlers': {
+      type: 'src/app/api/**/route.ts',
+      description:
+        'Dành cho bên gọi không qua giao diện và response dạng binary. Danh sách ở trang Container.',
+      required: true,
+    },
+    Auth: {
+      type: 'src/lib/auth.ts · src/actions/auth.ts',
+      description:
+        'Better Auth + Drizzle adapter. verifySession() chỉ chạy một lần mỗi request (cache()).',
+      required: true,
+    },
+    Permissions: {
+      type: 'src/utils/permissions.ts',
+      description:
+        'can() dựa trên ROLE_CONFIG + CAPTAIN_PERMISSIONS. Phía client dùng usePermissions().',
+      required: true,
+    },
+    'Data access': {
+      type: 'src/db/*.ts',
+      description:
+        'Truy vấn Drizzle theo domain. pg-error.ts đổi mã SQLSTATE thành thông báo dễ hiểu.',
+      required: true,
+    },
+    Integrations: {
+      type: 'src/lib/*.ts',
+      description:
+        'blob, resend, puppeteer, github, report, report-schedule. Chỉ nơi này gọi dịch vụ ngoài.',
+      required: true,
+    },
+  }}
+/>
+
+## Hàm chính
+
+<TypeTable
+  type={{
+    'withResource(resource)': {
+      type: '(actions, fn) => action',
+      description: (
+        <ul>
+          <li>
+            <code>withAuth</code> + <code>forbidden()</code> nếu không{' '}
+            <code>canAll(actions)</code>.
+          </li>
+          <li>Kiểm tra theo resource, không theo từng dòng.</li>
+          <li>Action đụng tới dữ liệu cá nhân tự kiểm tra lại user.</li>
+        </ul>
+      ),
+      required: true,
+    },
+    'withAuth(fn)': {
+      type: '(...args) => fn(user, ...args)',
+      description:
+        'Chưa đăng nhập thì redirect tới /login. Cho action ai cũng gọi được, như submitFeedback.',
+      required: true,
+    },
+    'verifySession()': {
+      type: 'cache(() => Session | null)',
+      description: 'auth.api.getSession(), mỗi request chỉ gọi một lần.',
+      required: true,
+    },
+    'can(role, resource, action, isCaptain?)': {
+      type: 'boolean',
+      description: 'Nơi duy nhất quyết định quyền. Xem bảng quyền.',
+      required: true,
+    },
+    ResponseFactory: {
+      type: '{ success, message, data? }',
+      description: (
+        <ul>
+          <li>
+            Dạng kết quả chung của mọi action (
+            <code>src/utils/response.ts</code>).
+          </li>
+          <li>
+            Lối ra khác: <code>redirect()</code>, <code>forbidden()</code>.
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+    'revalidate.<entity>()': {
+      type: 'src/actions/cache.ts',
+      description:
+        'Sau mỗi lần ghi, gọi revalidatePath() cho các trang có hiển thị dữ liệu đó.',
+      required: true,
+    },
+    'executeSchedule(options)': {
+      type: 'src/lib/report-schedule.ts',
+      description:
+        'Một lần chạy báo cáo: ghi, render, lưu, gửi email, dời kỳ. Dùng cho cron và "Run now".',
+      required: true,
+    },
+  }}
+/>
+
+Bảng phân quyền đầy đủ: [Vai trò & Quyền](/docs/vi/access/roles-permissions).
+
+## Quy ước
+
+- **Kiểm tra dữ liệu nhập.** Zod trong `src/schemas` dùng cho react-hook-form;
+  action parse lại. `getDefaults()` / `getMaxLength()` (`src/lib/zod.ts`) giữ khớp.
+- **Phạm vi lấy từ phiên đăng nhập.** `team_id` và người thao tác lấy từ
+  `user` được truyền vào, không lấy từ tham số.
+- **Không đọc trùng trong một request.** Các hàm đọc dùng chung được bọc React
+  `cache()`, key là giá trị primitive.
+- **Streaming.** Mỗi phần của Bảng tổng quan có một `<Suspense>` riêng;
+  Recharts, TipTap, `pdf-lib` và các dialog theo vai trò chỉ tải khi cần.
+
+## Sơ đồ source code
+
+Route group không thêm phần nào vào URL: `(protected)/(team-management)/roster`
+chính là `/roster`.
+
+<Files>
+  <Folder name="src" defaultOpen>
+    <Folder name="app" defaultOpen>
+      <File name="(auth) — login · forgot-password · new-password" />
+      <File name="(protected) — layout.tsx, trang tính năng, AppShell + FeedbackDialog" />
+      <File name="(system)/forbidden — trang lỗi 403" />
+      <File name="api — auth · reports/{dashboard,download,schedule,retention} · webhooks/resend · search" />
+      <File name="docs/[lang] — bộ docs này" />
+    </Folder>
+    <File name="proxy.ts · routes.ts (RESOURCES, AUTH_ROUTES)" />
+    <File name="actions — server action + auth.ts (withAuth, withResource) + cache.ts" />
+    <File name="db — truy cập dữ liệu theo domain + pg-error.ts" />
+    <File name="drizzle — schema · migrations · scripts · index.ts (Pool)" />
+    <File name="lib — auth · blob · resend · puppeteer · github · report · report-schedule · nuqs · zod" />
+    <File name="schemas — schema Zod cho dữ liệu nhập, theo domain" />
+    <File name="components · hooks (usePermissions) · providers (Chakra, Session) · utils" />
+  </Folder>
+  <File name="content/docs — *.mdx (en) · *.vi.mdx (vi)" />
+  <File name="e2e · test — spec Playwright, setup Vitest" />
+</Files>

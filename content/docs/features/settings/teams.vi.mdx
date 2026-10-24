@@ -1,0 +1,169 @@
+---
+title: Đội bóng
+description: Danh sách đội đối thủ, làm đội sân nhà hoặc sân khách trong Trận đấu; logo lưu riêng tư.
+---
+
+<Callout title="Route /teams">
+  Nhóm **Settings** · Resource `teams` · Trạng thái **Đã phát hành**
+</Callout>
+
+## Mục đích
+
+- Đội bóng (**Teams**) là danh sách các đội đối thủ (`is_external = true`): tên, email liên hệ, năm thành lập, logo.
+- Khi ghi một trận đấu, bạn chọn đội từ danh sách này làm đội sân nhà hoặc sân khách.
+- Đội của chính CLB (`is_default = true`) không bao giờ là đội đối thủ, nên không có trong danh sách và không sửa được ở đây.
+
+## Quyền truy cập
+
+<PermissionMatrix resource="teams" />
+
+- Cầu thủ (`PLAYER`), huấn luyện viên (`COACH`) và admin (`SUPER_ADMIN`) đều
+  được xem.
+- Chỉ admin được thêm, sửa, tải logo hoặc xóa.
+- Bấm vào dòng chỉ có tác dụng khi `can('teams', 'edit')`; người chỉ xem không
+  mở được hộp thoại.
+- Khách (`GUEST`) không có quyền `view`; mở trang sẽ được chuyển tới `/forbidden`.
+
+## Luồng
+
+<Steps>
+  <Step>
+    ### Xem danh sách
+
+    - Xếp theo tên; `q` tìm theo tên và email.
+    - Cột tên hiện logo trong avatar tròn; chưa có logo thì hiện chữ cái đầu.
+    - `useTeamLogo` lấy logo qua `getLogo`; SWR cache theo đường dẫn file.
+
+  </Step>
+  <Step>
+    ### Thêm hoặc cập nhật
+
+    - Bấm **+ Add** hoặc bấm vào một dòng đều mở cùng một hộp thoại: tên, email,
+      năm thành lập.
+    - **Add** giữ hộp thoại mở và xóa form; **Update** thì đóng lại.
+    - Lưu xong sẽ làm mới `/teams` và SWR key `opponents` (dùng trong form trận
+      đấu).
+
+  </Step>
+  <Step>
+    ### Tải logo
+
+    - Chỉ có khi **Update**, vì đường dẫn blob là `teams/{team_id}`.
+    - Chọn file PNG hoặc JPEG dưới 100 KB là `uploadLogo` chạy ngay, không cần
+      bấm Save.
+    - File khác bị chặn ngay trên trình duyệt, kèm toast báo lỗi.
+
+  </Step>
+  <Step>
+    ### Xóa
+
+    - Chọn các dòng cần xóa rồi bấm xóa.
+    - `removeTeam` chạy cho từng id; nếu có lỗi, toast sẽ liệt kê thông báo lỗi.
+
+  </Step>
+</Steps>
+
+## Quy tắc
+
+- **Không ai đụng được vào đội mặc định.**
+  - `insertTeam` luôn đặt `is_default: false` và `is_external: true`.
+  - `updateTeam` / `deleteTeam` thêm `is_external = true` vào `WHERE`; dù gửi
+    `team_id` giả cũng không có tác dụng.
+  - Partial unique index `default_team` chỉ cho phép một dòng mặc định.
+  - Check `default_team_not_external` không cho một đội vừa mặc định vừa là
+    đối thủ.
+- **Kiểm tra dữ liệu** (`UpsertTeamSchema`):
+  - Tên 3–128 ký tự.
+  - Email không bắt buộc; nếu có thì phải hợp lệ, tối đa 128 ký tự và không
+    trùng với đội khác (DB kiểm tra).
+  - Năm thành lập: số nguyên từ 2000 đến năm nay (mặc định), DB cũng có
+    `CHECK`.
+- **Logo được lưu riêng tư.**
+  - `uploadFile` gọi `put` của `@vercel/blob` với `access: 'private'`,
+    `addRandomSuffix: true`.
+  - Dòng dữ liệu lưu `pathname` trả về vào cột `image`.
+  - `getLogo` đọc file trên server thành data URL base64; không có URL công
+    khai.
+  - Blob cũ bị xóa sau khi dòng dữ liệu đã cập nhật.
+- **Đội đã có trận đấu thì không xóa được.**
+  - `match.home_team` / `away_team` là `ON DELETE restrict`.
+  - `removeTeam` đếm số trận trước và trả về thông báo dễ hiểu: "This team
+    appears in N match(es). Delete those matches first, or keep the team to
+    preserve the record."
+- **Xóa kéo theo (cascade).** Xóa một đội thì các lượt tham gia giải đấu của
+  đội đó cũng bị xóa theo; đội đối thủ không có thành viên.
+
+## Dữ liệu
+
+<AutoTypeTable path="src/drizzle/schema/team.ts" name="Team" />
+
+### Tham số URL
+
+<TypeTable
+  type={{
+    q: { type: 'string', description: 'Tìm theo tên hoặc email.' },
+    page: { type: 'number', description: 'Trang hiện tại.', default: '1' },
+  }}
+/>
+
+## API
+
+- Server action trong `src/actions/team.ts`, được kiểm tra quyền bằng `withResource('teams')`.
+- Các hàm xử lý blob trong `src/lib/blob.ts`.
+
+<TypeTable
+  type={{
+    'getTeams()': {
+      type: 'Array<Team>',
+      description:
+        'Các đội đối thủ (is_external = true), xếp theo tên. Chỉ cần đăng nhập.',
+      required: true,
+    },
+    'upsertTeam(team_id, values)': {
+      type: 'Response',
+      description:
+        'team_id rỗng thì tạo đội đối thủ mới, có rồi thì cập nhật đội đối thủ đó.',
+      required: true,
+    },
+    'uploadLogo(team_id, old_path, file)': {
+      type: 'Response<{ image }>',
+      description:
+        'Lưu file vào teams/{team_id}, ghi lại đường dẫn, xóa file ở old_path.',
+      required: true,
+    },
+    'getLogo(image)': {
+      type: 'string | null',
+      description:
+        'Data URL base64 của blob riêng tư tại đường dẫn đó. Cần quyền view.',
+      required: true,
+    },
+    'removeTeam(team_id)': {
+      type: 'Response',
+      description:
+        'Xóa một đội đối thủ; còn trận đấu dùng đội đó thì báo lỗi kèm số trận.',
+      required: true,
+    },
+  }}
+/>
+
+## Tiêu chí chấp nhận
+
+<Accordions>
+  <Accordion title="Người chỉ xem không chỉnh sửa được">
+    Cầu thủ hoặc huấn luyện viên thấy mọi đội đối thủ; không có **+ Add**, không
+    có checkbox, bấm vào dòng không có gì xảy ra.
+  </Accordion>
+  <Accordion title="Không dùng được email trùng">
+    Nhập email mà đội khác đã dùng sẽ báo lỗi bằng toast.
+  </Accordion>
+  <Accordion title="Đội đã thi đấu thì được giữ lại">
+    Xóa một đội đã có trận đấu được ghi lại sẽ báo lỗi bằng toast kèm số trận;
+    đội vẫn còn đó.
+  </Accordion>
+  <Accordion title="Logo được kiểm tra trước khi tải lên">
+
+    - File PNG/JPEG dưới 100 KB sẽ thay avatar và xóa blob cũ.
+    - File lớn hơn hoặc không phải ảnh sẽ báo lỗi bằng toast; logo giữ nguyên.
+
+  </Accordion>
+</Accordions>

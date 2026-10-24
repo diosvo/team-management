@@ -1,69 +1,114 @@
 ---
-title: "Locations"
+title: Locations
+description: The venues picked when scheduling a training session or a match.
 ---
 
-> Route: `/locations` · Nav group: **Settings** · Status: **Draft**
+<Callout title="Route /locations">
+  Nav group **Settings** · Resource `locations` · Status **Shipped**
+</Callout>
 
-## 1. Summary
+## Purpose
 
-- **Locations** manages the venues used for training sessions and matches.
-- This is a lightweight reference page; locations are selected when creating sessions or matches.
+- The shared list of venues.
+- Training sessions and matches store a `location_id`: define once, pick
+  everywhere.
 
-## 2. Goals / metrics
+## Access
 
-### Goals
+<PermissionMatrix resource="locations" />
 
-- Maintain a clean list of venues available to the team.
+- COACH views; SUPER_ADMIN holds every action.
+- PLAYER, GUEST and captains have no `view`; redirected to `/forbidden`.
+- A coach can open the row dialog, but `upsertLocation` needs `create` and
+  `edit`, so the server answers `forbidden()`.
 
-## 3. Users and permissions
+## Flows
 
-| Role             | View | Add | Edit | Delete |
-| ---------------- | ---- | --- | ---- | ------ |
-| GUEST            | No   | No  | No   | No     |
-| PLAYER           | No   | No  | No   | No     |
-| COACH            | Yes  | No  | No   | No     |
-| SUPER_ADMIN      | Yes  | Yes | Yes  | Yes    |
-| PLAYER (Captain) | No   | No  | No   | No     |
+<Steps>
+  <Step>
+    ### Browse
 
-## 4. UX / flows
+    - Columns: name, address, last update; sorted by name.
+    - `q` searches name and address.
+    - The name links to a Google Maps search for the venue.
 
-### Entry point
+  </Step>
+  <Step>
+    ### Add or update
 
-- Sidebar → **Locations**.
+    - **+ Add** and row click open the same dialog; name and address required.
+    - **Add** resets the form and stays open; **Update** closes it.
+    - Saving revalidates `/locations` and mutates the `locations` SWR key
+      (read by the session and match forms).
 
-### View
+  </Step>
+  <Step>
+    ### Delete
 
-- Table lists all locations with name and address.
-- Client-side name search.
+    - Select rows and delete.
+    - `removeLocation` runs per id; a summary toast reports the successes.
 
-### Create / edit
+  </Step>
+</Steps>
 
-- SUPER_ADMIN sees **+ Add**; clicking it opens a dialog.
-- Clicking a row opens the same dialog pre-filled.
+## Rules
 
-## 5. Functional requirements
+- **Validation** (`UpsertLocationSchema`): name 3–128, address 3–256
+  characters; both `NOT NULL`.
+- **Global, not team-scoped.** `location` has no `team_id`; all teams share it.
+- **Deleting a venue keeps its events.** `training_session.location_id` and
+  `match.location_id` are `onDelete: 'set null'`.
+- **Delete errors are flattened** to “Failed to delete location”; the DB
+  message is hidden.
 
-- **FR-1:** COACH and SUPER_ADMIN can view locations.
-- **FR-2:** Name search filters the list client-side.
-- **FR-3:** SUPER_ADMIN can create, edit, and delete locations.
-- **FR-4:** Changes show a success or error toast.
+## Data
 
-## 6. Acceptance criteria (Given/When/Then)
+<AutoTypeTable path="src/drizzle/schema/location.ts" name="Location" />
 
-- **AC-1:** Given I am a COACH, when I open Locations, then I see the list but no add, edit, or delete controls.
-- **AC-2:** Given I am SUPER_ADMIN, when I add a location, then it is available in the Training and Matches dialogs.
+### Query params
 
-## 7. Technical appendix
+<TypeTable
+  type={{
+    q: { type: 'string', description: 'Name or address search.' },
+    page: { type: 'number', description: 'Current page.', default: '1' },
+  }}
+/>
 
-### Data model (logical)
+## API
 
-Location:
+Server actions in `src/actions/location.ts`, gated by `withResource('locations')`.
 
-- `name`: string
-- `address`: string (optional)
+<TypeTable
+  type={{
+    'getLocations()': {
+      type: 'Array<Location>',
+      description: 'All venues by name. Auth only; the proxy enforces view.',
+      required: true,
+    },
+    'upsertLocation(location_id, values)': {
+      type: 'Response',
+      description:
+        'Inserts when location_id is empty, otherwise updates. Requires create and edit.',
+      required: true,
+    },
+    'removeLocation(location_id)': {
+      type: 'Response',
+      description: 'Deletes one venue. Requires delete.',
+      required: true,
+    },
+  }}
+/>
 
-### API
+## Acceptance
 
-- `getLocations()`: fetch all locations
-- `upsertLocation(id?, data)`: create or update
-- `removeLocation(id)`: delete
+<Accordions>
+  <Accordion title="A coach sees the list without controls">
+    A COACH sees every venue; no **+ Add**, no checkboxes.
+  </Accordion>
+  <Accordion title="A new venue is selectable elsewhere">
+    A new location appears in the Training and Matches dialogs without reload.
+  </Accordion>
+  <Accordion title="Address is required">
+    An empty address is blocked by validation.
+  </Accordion>
+</Accordions>

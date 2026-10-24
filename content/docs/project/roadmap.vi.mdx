@@ -1,0 +1,70 @@
+---
+title: Lộ trình
+description: Những gì đã có, những gì sắp làm, và những gì cố ý không làm.
+---
+
+- Đây là định hướng và thứ tự ưu tiên, không phải bảng sprint: không ghi ngày;
+  mục nào đứng trước thì ưu tiên hơn.
+- Các mục schema bám theo `TODO.md`; đã có số migration nghĩa là đã phát hành.
+
+## Đã phát hành
+
+- **Tính năng:** mọi trang trong [danh mục tính năng](/docs/vi/features):
+  - Bảng tổng quan (báo cáo PDF), Báo cáo, Thành tích, Nội quy đội, Danh sách
+    đội, Buổi tập.
+  - Điểm danh, Đăng ký giải, Trận đấu, Kiểm tra định kỳ, Dụng cụ của đội, Email.
+  - Đội bóng, Giải đấu, Sân tập, Hồ sơ cá nhân, Trang đăng nhập.
+- **Nền tảng:**
+  - Better Auth (giới hạn số lần thử đăng nhập), Vercel Blob, Resend.
+  - PDF bằng Puppeteer và `pdf-lib`.
+  - Giao diện co giãn trên điện thoại, máy tính bảng và laptop.
+- **Mô hình dữ liệu:**
+  - `0008` số áo không trùng trong mỗi đội.
+  - `0009` điểm danh theo từng buổi tập.
+  - `0010` tên dụng cụ không trùng trong mỗi đội.
+  - `0011` `test_result.date` NOT NULL.
+  - `0012` `league_team_roster` gắn với `league_team`; `league.status`
+    tính ra lúc đọc.
+  - `0014` `report_schedule` và `report_history` cho báo cáo định kỳ.
+  - `0015` lịch sử thành viên `user_team`; `user.team_id` vẫn là đội hiện tại,
+    `match_player_stats.team_id` ghi đội của cầu thủ trong từng trận.
+  - `0016` `team.is_external` đánh dấu đội đối thủ.
+  - `0017` gộp bảng `rule` vào `team.rule_content`.
+  - `0018` `match.status` (scheduled, completed, cancelled), chỉ trận đã đấu
+    mới có tỉ số; `match.home_team` / `away_team` chặn xóa đội đã có trận.
+- **Tài liệu:** có tại `/docs` (tiếng Việt tại `/docs/vi`), xuất
+  `llms.txt`, ma trận phân quyền sinh từ `ROLE_CONFIG`, mục kiến trúc theo C4.
+
+## Sắp làm
+
+<TypeTable
+  type={{
+    'E2E trên CI': {
+      type: 'quality',
+      description:
+        'Cần database test riêng, rồi gỡ if: false trong playwright.yaml và sửa đường dẫn báo cáo.',
+      required: true,
+    },
+    Documents: {
+      type: 'feature',
+      description:
+        'Đang bị tắt trên sidebar; cần đặc tả trong features/resources và nơi lưu metadata.',
+      required: true,
+    },
+  }}
+/>
+
+## Ý tưởng
+
+Chưa xếp ưu tiên, chờ nhu cầu thực tế:
+
+- **Nhật ký gửi** cho `emails`: hiện chưa có gì lưu lại các email đã gửi.
+- **Đội hình ra sân / danh sách triệu tập theo trận** nếu đăng ký giải cần nối
+  sang đội hình ngày thi đấu.
+
+## Không làm
+
+Xem [Ngoài phạm vi](/docs/vi/overview/vision#ngoài-phạm-vi):
+
+- Theo dõi chấn thương và sức khỏe, thanh toán, audit log.
+- Nhiều câu lạc bộ, app native, tự đăng ký tài khoản.

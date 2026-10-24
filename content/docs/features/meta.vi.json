@@ -1,0 +1,16 @@
+{
+  "title": "Tính năng",
+  "pages": [
+    "index",
+    "dashboard",
+    "reports",
+    "achievements",
+    "team-rule",
+    "team-management",
+    "performance",
+    "resources",
+    "settings",
+    "profile",
+    "sign-in"
+  ]
+}

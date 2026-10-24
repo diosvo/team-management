@@ -1,0 +1,122 @@
+---
+title: Sân tập
+description: Các sân được chọn khi lên lịch buổi tập hoặc trận đấu.
+---
+
+<Callout title="Route /locations">
+  Nhóm **Settings** · Resource `locations` · Trạng thái **Đã phát hành**
+</Callout>
+
+## Mục đích
+
+- Sân tập (**Locations**) là danh sách địa điểm dùng chung.
+- Buổi tập và trận đấu lưu `location_id`: thêm sân một lần, chọn lại ở mọi
+  nơi.
+
+## Quyền truy cập
+
+<PermissionMatrix resource="locations" />
+
+- Huấn luyện viên (`COACH`) được xem; admin (`SUPER_ADMIN`) làm được mọi thao
+  tác.
+- Cầu thủ (`PLAYER`), khách (`GUEST`) và đội trưởng không có quyền `view`; mở
+  trang sẽ được chuyển tới `/forbidden`.
+- Huấn luyện viên vẫn mở được hộp thoại khi bấm vào một dòng, nhưng
+  `upsertLocation` cần cả `create` và `edit`, nên server trả về `forbidden()`.
+
+## Luồng
+
+<Steps>
+  <Step>
+    ### Xem danh sách
+
+    - Các cột: tên, địa chỉ, lần cập nhật cuối; xếp theo tên.
+    - `q` tìm theo tên và địa chỉ.
+    - Bấm vào tên sân để mở Google Maps tìm đúng sân đó.
+
+  </Step>
+  <Step>
+    ### Thêm hoặc cập nhật
+
+    - Bấm **+ Add** hoặc bấm vào một dòng đều mở cùng một hộp thoại; bắt buộc
+      nhập tên và địa chỉ.
+    - **Add** xóa form và giữ hộp thoại mở; **Update** thì đóng lại.
+    - Lưu xong sẽ làm mới `/locations` và mutate SWR key `locations` (form buổi
+      tập và form trận đấu dùng key này).
+
+  </Step>
+  <Step>
+    ### Xóa
+
+    - Chọn các dòng cần xóa rồi bấm xóa.
+    - `removeLocation` chạy cho từng id; một toast tổng kết báo số sân đã xóa
+      được.
+
+  </Step>
+</Steps>
+
+## Quy tắc
+
+- **Kiểm tra dữ liệu** (`UpsertLocationSchema`): tên 3–128 ký tự, địa chỉ
+  3–256 ký tự; cả hai đều `NOT NULL`.
+- **Dùng chung, không tách theo đội.** `location` không có `team_id`; mọi đội
+  dùng chung một danh sách.
+- **Xóa sân không làm mất buổi tập hay trận đấu.**
+  `training_session.location_id` và `match.location_id` đặt
+  `onDelete: 'set null'`.
+- **Lỗi khi xóa chỉ báo chung chung** là “Failed to delete location”; thông
+  báo lỗi từ DB được ẩn đi.
+
+## Dữ liệu
+
+<AutoTypeTable path="src/drizzle/schema/location.ts" name="Location" />
+
+### Tham số URL
+
+<TypeTable
+  type={{
+    q: { type: 'string', description: 'Tìm theo tên hoặc địa chỉ.' },
+    page: { type: 'number', description: 'Trang hiện tại.', default: '1' },
+  }}
+/>
+
+## API
+
+Server action trong `src/actions/location.ts`, được kiểm tra quyền bằng `withResource('locations')`.
+
+<TypeTable
+  type={{
+    'getLocations()': {
+      type: 'Array<Location>',
+      description:
+        'Tất cả sân, xếp theo tên. Chỉ cần đăng nhập; proxy kiểm tra quyền view.',
+      required: true,
+    },
+    'upsertLocation(location_id, values)': {
+      type: 'Response',
+      description:
+        'location_id rỗng thì tạo mới, có rồi thì cập nhật. Cần quyền create và edit.',
+      required: true,
+    },
+    'removeLocation(location_id)': {
+      type: 'Response',
+      description: 'Xóa một sân. Cần quyền delete.',
+      required: true,
+    },
+  }}
+/>
+
+## Tiêu chí chấp nhận
+
+<Accordions>
+  <Accordion title="HLV chỉ xem, không chỉnh sửa">
+    Huấn luyện viên thấy mọi sân; không có nút **+ Add**, không có checkbox.
+  </Accordion>
+  <Accordion title="Sân mới chọn được ngay ở nơi khác">
+    Sân vừa thêm hiện ngay trong hộp thoại Buổi tập và Trận đấu, không cần tải
+    lại trang.
+  </Accordion>
+  <Accordion title="Bắt buộc nhập địa chỉ">
+    Để trống địa chỉ thì form báo lỗi và không cho lưu.
+  </Accordion>
+</Accordions>

@@ -2,6 +2,7 @@ import type { enumUnion } from './enum';
 
 export const Status = {
   OK: 200,
+  PERMANENT_REDIRECT: 308,
   BAD_REQUEST: 400,
   UNAUTHORIZED: 401,
   NOT_FOUND: 404,

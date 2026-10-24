@@ -1,0 +1,154 @@
+---
+title: Thành tích
+description: Tủ danh hiệu của câu lạc bộ, ghi tay cho những giải đã kết thúc.
+---
+
+<Callout title="Route /achievements">
+  Nhóm **Overview** · Resource `achievements` · Trạng thái **Đã phát hành**
+</Callout>
+
+## Mục đích
+
+- Thành tích (**Achievements**) là các danh hiệu của câu lạc bộ, xếp theo năm
+  trên một dòng thời gian.
+- **Ghi tay:** app chỉ lưu trận của đội mình, nên không tự tính được thứ hạng
+  chung cuộc.
+- Chỉ ghi được khi giải đã kết thúc, dựa vào `end_date` mỗi lần đọc (không lưu
+  cột trạng thái).
+- Cúp không quản lý như một giải đấu thì ghi thành danh hiệu riêng (không gắn
+  giải).
+- MVP và Vua ghi điểm (Top Scorer) gắn với một cầu thủ.
+
+## Quyền truy cập
+
+<PermissionMatrix resource="achievements" />
+
+- Huấn luyện viên (`COACH`) ghi và sửa; chỉ admin (`SUPER_ADMIN`) được xóa.
+- Đội trưởng không có thêm quyền gì ở đây.
+
+## Luồng
+
+<Steps>
+  <Step>
+    ### Xem tủ danh hiệu
+
+    - Banner lớn ở đầu, rồi mỗi năm một hàng (năm mới nhất trước), dựng bằng
+      `Grid` thường.
+    - Mỗi hàng: câu khẩu hiệu, các thẻ danh hiệu, và một câu trích từ danh hiệu
+      đầu tiên có mô tả.
+    - Năm thành lập đứng cuối danh sách nếu năm đó chưa có danh hiệu.
+    - Chưa có gì thì bạn sẽ thấy "The trophy cabinet awaits its first honor".
+
+  </Step>
+  <Step>
+    ### Ghi danh hiệu
+
+    - Bấm **Record** để mở `UpsertAchievement`.
+    - Loại danh hiệu tự điền tiêu đề mặc định, cho tới khi bạn sửa tiêu đề.
+    - Ô chọn giải: **chỉ có giải đã kết thúc** (`isPast(end_date)`).
+    - Năm: khóa theo `end_date` của giải; danh hiệu riêng thì chọn từ năm thành
+      lập tới nay.
+    - MVP / Top Scorer bắt buộc chọn cầu thủ.
+    - Khi đã chọn giải, 5 cầu thủ ghi điểm nhiều nhất từ `match_player_stats`
+      hiện thành chip, bấm một cái là chọn ("Name — 18.2 ppg").
+
+  </Step>
+  <Step>
+    ### Sửa / xóa
+
+    - Rê chuột lên thẻ sẽ thấy biểu tượng sửa/xóa (ẩn trên màn hình nhỏ hơn
+      `md`).
+    - Xóa sẽ gọi `removeAchievement`, kèm toast đang xử lý.
+    - Cả hai đều revalidate `/achievements`.
+
+  </Step>
+</Steps>
+
+## Quy tắc
+
+- **Chỉ giải đã kết thúc.** `upsertAchievement` từ chối nếu không
+  `isPast(league.end_date)`; bộ lọc trên trình duyệt chỉ để bạn chọn cho tiện.
+- **Mỗi giải, mỗi loại chỉ một danh hiệu.** Partial unique index
+  `achievement_league_type_idx` bỏ qua `custom` và danh hiệu riêng.
+- **Danh hiệu vẫn còn khi giải hay cầu thủ bị xóa.** `league_id` / `player_id`
+  là `ON DELETE SET NULL`; xóa giải thì danh hiệu thành danh hiệu riêng.
+- **Chỉ danh hiệu cá nhân mới gắn cầu thủ.** Bắt buộc cho MVP / Top Scorer;
+  `null` cho danh hiệu tập thể.
+- **Không lọc theo đội.** `getAchievements` (`withAuth`) trả về mọi dòng.
+- **Không có `team_id`.** Một `achievement` chỉ thuộc về đội thông qua giải
+  hoặc cầu thủ.
+
+## Dữ liệu
+
+<AutoTypeTable path="src/drizzle/schema/achievement.ts" name="Achievement" />
+
+Màu sắc và biểu tượng của thẻ lấy từ `ACHIEVEMENT_STYLE`
+(`src/utils/constants/achievement.ts`):
+
+<AutoTypeTable path="src/types/achievements.ts" name="AchievementStyle" />
+
+<TypeTable
+  type={{
+    champion: { type: 'yellow', description: 'Trophy icon.', required: true },
+    runner_up: { type: 'gray', description: 'Medal icon.', required: true },
+    third_place: { type: 'orange', description: 'Award icon.', required: true },
+    mvp: { type: 'purple', description: 'Crown icon.', required: true },
+    top_scorer: { type: 'teal', description: 'Flame icon.', required: true },
+    custom: { type: 'red', description: 'Sparkles icon.', required: true },
+  }}
+/>
+
+## API
+
+Server action trong `src/actions/achievement.ts`; các thao tác ghi dùng
+`withResource('achievements')`.
+
+<TypeTable
+  type={{
+    'getAchievements()': {
+      type: 'Array<AchievementWithRelations>',
+      description:
+        'Mọi danh hiệu kèm giải và cầu thủ, sắp theo năm giảm dần, loại, created_at giảm dần.',
+      required: true,
+    },
+    'getPlayerLeagueStatSuggestions(league_id)': {
+      type: 'Array<{ player_id, player_name, games_played, avg_points }>',
+      description:
+        '5 cầu thủ có điểm trung bình cao nhất trong giải đó. Cần quyền create hoặc edit.',
+      required: true,
+    },
+    'upsertAchievement(id, values)': {
+      type: 'Response',
+      description:
+        'id rỗng thì tạo mới, có rồi thì cập nhật. Từ chối giải chưa kết thúc.',
+      required: true,
+    },
+    'removeAchievement(id)': {
+      type: 'Response',
+      description: 'Xóa dòng. Cần quyền delete (SUPER_ADMIN).',
+      required: true,
+    },
+  }}
+/>
+
+## Tiêu chí chấp nhận
+
+<Accordions>
+  <Accordion title="Giải chưa kết thúc thì không ghi được">
+    Giải có end_date trong tương lai sẽ báo lỗi "Achievements can only be
+    recorded for ended leagues".
+  </Accordion>
+  <Accordion title="Không ghi trùng thứ hạng">
+
+    - Ghi thêm một chức vô địch (champion) cho cùng giải sẽ lỗi vì unique index.
+    - Ghi thêm một danh hiệu custom thì vẫn được.
+
+  </Accordion>
+  <Accordion title="Link từ Giải đấu điền sẵn hộp thoại">
+
+    - Mở `/achievements?record=<league_id>` khi có `achievements:create` sẽ mở
+      hộp thoại với giải đó đã được chọn sẵn.
+    - Vai trò khác chỉ thấy trang bình thường.
+
+  </Accordion>
+</Accordions>

@@ -1,0 +1,156 @@
+---
+title: System context
+description: C4 level 1. Who uses the portal and which external systems it depends on.
+---
+
+- One **Next.js 16 App Router** app on Vercel that a basketball club uses to
+  run its teams.
+- Pages are React Server Components; PostgreSQL is reached through Drizzle.
+- Every write is a **server action** guarded by `withResource`.
+- No public sign-up: an admin or captain provisions accounts.
+- Invitees activate through a password-reset email.
+
+Documented with the [C4 model](https://c4model.com), one level per page:
+
+<Cards>
+  <Card
+    href="/docs/architecture/containers"
+    title="Containers"
+    description="Level 2: the deployable pieces, their tech and data stores."
+  />
+  <Card
+    href="/docs/architecture/components"
+    title="Components"
+    description="Level 3: inside the Next.js app, from proxy to database."
+  />
+  <Card
+    href="/docs/architecture/flows"
+    title="Flows"
+    description="Numbered request flows: navigation, actions, reports."
+  />
+  <Card
+    href="/docs/architecture/deployment"
+    title="Deployment"
+    description="Vercel, crons, environment variables and CI/CD."
+  />
+</Cards>
+
+## Context diagram
+
+<Mermaid
+  chart={`
+C4Context
+  title System context for the Team Management Portal
+
+Person(admin, "Admin / Captain", "Provisions accounts, manages the club")
+System(portal, "Team Management Portal", "Rosters, training, attendance, matches, reports")
+Person(member, "Coach / Player / Guest", "Views and records team data")
+
+System_Ext(resend, "Resend", "Transactional email")
+System_Ext(github, "GitHub", "Feedback issues")
+System_Ext(vercel, "Vercel platform", "Hosting, cron, Blob")
+
+Rel(admin, portal, "Manages teams, accounts")
+Rel(member, portal, "Signs in, records")
+Rel(portal, resend, "Sends email, gets webhooks")
+Rel(portal, github, "Creates issues")
+Rel(vercel, portal, "Runs, triggers crons")
+
+UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")
+`}
+/>
+
+<TypeTable
+  type={{
+    'Admin / Captain': {
+      type: 'person',
+      description:
+        'SUPER_ADMIN or captain PLAYER. Adds users, edits settings, schedules reports.',
+      required: true,
+    },
+    'Coach / Player / Guest': {
+      type: 'person',
+      description: 'Every other signed-in role. See Roles & Permissions.',
+      required: true,
+    },
+    Resend: {
+      type: 'external',
+      description:
+        'Setup emails, reports, failure notices. Status via /api/webhooks/resend.',
+      required: true,
+    },
+    GitHub: {
+      type: 'external',
+      description:
+        'submitFeedback files an issue in diosvo/team-management (GITHUB_TOKEN).',
+      required: true,
+    },
+    'Vercel platform': {
+      type: 'external',
+      description:
+        'Runs the app, fires vercel.json crons, stores files in Blob.',
+      required: true,
+    },
+  }}
+/>
+
+## Key decisions
+
+- **One deployable.** UI, actions, API routes and docs in one Next.js app.
+- **Actions are the only write path.** Wrapped in `withResource(resource)`;
+  the proxy only gates `view`. See
+  [Roles & Permissions](/docs/access/roles-permissions).
+- **One permission function.** `can(role, resource, action, isCaptain?)` in
+  `src/utils/permissions.ts`, shared by proxy, actions and client hook.
+- **Serverless-first.** `pg.Pool({ max: 1 })`, Chromium pack fetched at
+  runtime, crons under the 60 s limit.
+- **Docs in the app.** Fumadocs serves `/docs` and `/docs/vi` from
+  `content/docs`.
+
+## Glossary
+
+<TypeTable
+  type={{
+    'Server action': {
+      type: 'rendering',
+      description: "A 'use server' function; the only write path.",
+      required: true,
+    },
+    Resource: {
+      type: 'authorization',
+      description:
+        'One of 17 permission scopes in RESOURCES (src/routes.ts), e.g. roster.',
+      required: true,
+    },
+    Ability: {
+      type: 'authorization',
+      description:
+        'The { can, canAll, canAny } object returned by defineAbility(role, isCaptain).',
+      required: true,
+    },
+    Captain: {
+      type: 'authorization',
+      description:
+        'A PLAYER with is_captain = true, extended by CAPTAIN_PERMISSIONS.',
+      required: true,
+    },
+    'Cookie cache': {
+      type: 'auth',
+      description:
+        "Better Auth's signed session snapshot; the proxy checks it without the DB.",
+      required: true,
+    },
+    'Service account': {
+      type: 'operations',
+      description:
+        'PW_USERNAME / PW_PASSWORD user the report cron signs in as.',
+      required: true,
+    },
+    SGR: {
+      type: 'naming',
+      description:
+        'Saigon Rovers: the cookie prefix and the email subject prefix.',
+      required: true,
+    },
+  }}
+/>

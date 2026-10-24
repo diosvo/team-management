@@ -1,0 +1,230 @@
+---
+title: Hồ sơ cá nhân
+description: Ảnh đại diện, thông tin cá nhân và trong đội; mỗi server action tự kiểm tra quyền sửa.
+---
+
+<Callout title="Route /profile/[id]">
+  Không có trên thanh điều hướng · Resource `profile` · Trạng thái **Đã phát
+  hành**
+</Callout>
+
+## Mục đích
+
+- Trong Hồ sơ cá nhân (**Profile**), mỗi thành viên xem và sửa thông tin của
+  chính mình.
+- Admin (`SUPER_ADMIN`) quản lý thông tin trong đội của bất kỳ thành viên nào:
+  vai trò, vị trí, trạng thái, số áo.
+- Mở từ menu tài khoản (hồ sơ của bạn) hoặc từ một dòng trong
+  [Danh sách đội](/docs/vi/features/team-management/roster).
+
+## Quyền truy cập
+
+<PermissionMatrix resource="profile" />
+
+- Khách (`GUEST`) không có quyền `view`: proxy chuyển bạn tới `/forbidden`, và
+  `getUserProfile` gọi `forbidden()`.
+- Mọi vai trò còn lại đều có `profile:edit`, nên các action phải tự kiểm tra
+  lại hồ sơ đó có phải của bạn không.
+
+### `viewOnly`
+
+Cờ chỉ dùng cho giao diện, lấy từ `getUserProfile`; khóa nút **Edit** ở tab
+Personal và Team.
+
+- Cầu thủ (`PLAYER`) / huấn luyện viên (`COACH`): sửa được hồ sơ của mình, chỉ
+  xem được hồ sơ người khác.
+- Admin: chỉ xem hồ sơ của mình, sửa được hồ sơ người khác.
+
+### Kiểm tra chủ hồ sơ trên server
+
+<TypeTable
+  type={{
+    updatePersonalInfo: {
+      type: 'SUPER_ADMIN or self',
+      description:
+        'SUPER_ADMIN sửa được user_id bất kỳ; người khác chỉ sửa được user_id của mình.',
+      required: true,
+    },
+    updateTeamInfo: {
+      type: 'SUPER_ADMIN or self',
+      description:
+        'Không phải admin: chỉ sửa user_id của mình, values.user.role phải đúng vai trò hiện tại.',
+      required: true,
+    },
+    uploadAvatar: {
+      type: 'self only',
+      description:
+        'Mọi vai trò, chỉ user_id của mình. old_path gửi lên phải trùng khớp với ảnh đang lưu.',
+      required: true,
+    },
+    getAvatar: {
+      type: 'users/ prefix',
+      description:
+        'image_path phải bắt đầu bằng users/; khác đi là forbidden().',
+      required: true,
+    },
+  }}
+/>
+
+- `old_path` phải trùng khớp hoàn toàn, không chỉ khớp phần đầu: khóa Blob có
+  hậu tố ngẫu nhiên.
+- `users/1` sẽ khớp phần đầu với `users/12-abc`.
+- Nhờ vậy, bạn chỉ xóa được đúng ảnh đại diện hiện tại của mình.
+
+## Luồng
+
+<Tabs items={['Overview', 'Personal', 'Team']}>
+  <Tab value="Overview">
+
+    - Ảnh đại diện (không có thì hiện chữ cái đầu tên), tên và vai trò.
+    - Chỉ chủ hồ sơ mới thấy nút tải ảnh lên (`sessionUser.id === user.id`).
+    - `ImageUploader`: PNG hoặc JPEG, tối đa 100 KB.
+    - Tải lên xong, phiên đăng nhập được tải lại nên ảnh trên header cũng đổi
+      theo.
+
+  </Tab>
+  <Tab value="Personal">
+
+    - Email (chỉ xem), họ tên, ngày sinh, số điện thoại, số CCCD.
+    - **Save** chỉ bấm được khi bạn đã sửa gì đó và dữ liệu hợp lệ; **Cancel**
+      trả về như cũ.
+
+  </Tab>
+  <Tab value="Team">
+
+    - Vai trò, vị trí, trạng thái, số áo, ngày vào đội (của lần gia nhập hiện
+      tại).
+    - Vai trò và vị trí: chỉ admin sửa. Số áo: chỉ cầu thủ mới có.
+    - Lưu với trạng thái `active` sẽ mutate SWR `CACHE_KEY.PLAYERS`, nên các ô
+      chọn cầu thủ cập nhật theo.
+
+  </Tab>
+</Tabs>
+
+## Quy tắc
+
+- **Số áo không trùng trong đội.** `isJerseyNumberTaken` (không tính người
+  đang được sửa) chạy trước mọi lần ghi.
+- **Ảnh đại diện là Blob riêng tư.** Lưu dưới `users/<user_id>` kèm hậu tố
+  ngẫu nhiên.
+- **Đọc ảnh đại diện.** `getAvatar` trả về data URL base64, được
+  `useUserAvatar` cache lại (SWR immutable).
+- **Ngày vào đội nằm ở lần gia nhập.** `join_date` được đọc và ghi trên lần
+  gia nhập đang mở trong `user_team`, không phải một cột của `user`.
+- **Đổi vai trò.** `updateTeamInfo` tạo hoặc cập nhật dòng `player` / `coach`
+  theo vai trò _được gửi lên_ và xóa dòng của vai trò cũ.
+  - Dòng user, lần gia nhập và dòng theo vai trò được ghi trong cùng một
+    transaction (`updateUserTeamInfo`).
+- **Làm mới trang.** Mọi lần ghi đều gọi `revalidatePath('/profile/<id>')`.
+
+## Dữ liệu
+
+Kiểm tra dữ liệu theo `USER_SCHEMA_VALIDATION` trong `src/schemas/utils.ts`:
+
+<TypeTable
+  type={{
+    name: { type: 'string', description: '6–128 ký tự.', required: true },
+    dob: { type: 'date', description: 'Ngày sinh.' },
+    phone_number: {
+      type: 'string',
+      description: 'Nếu nhập thì phải đúng 10 chữ số.',
+    },
+    citizen_identification: {
+      type: 'string',
+      description: 'Nếu nhập thì phải đúng 12 chữ số.',
+    },
+    role: {
+      type: 'UserRole',
+      description: 'Trên giao diện chỉ admin sửa được; server cũng kiểm tra.',
+      required: true,
+    },
+    state: {
+      type: 'UserState',
+      description: 'active | inactive | temporarily_absent | unknown',
+      required: true,
+    },
+    join_date: {
+      type: 'date',
+      description: 'Ngày vào đội của lần gia nhập đang mở trong user_team.',
+    },
+    'player.jersey_number': {
+      type: 'number',
+      description: '0–99, không trùng trong đội.',
+    },
+    'player.position / coach.position': {
+      type: 'PlayerPosition | CoachPosition',
+      description: 'Trên giao diện chỉ admin sửa được.',
+    },
+  }}
+/>
+
+## API
+
+Server action trong `src/actions/user.ts`; tất cả, trừ `getUserProfile`, đều
+dùng `withResource('profile')`.
+
+<TypeTable
+  type={{
+    'getUserProfile(id)': {
+      type: '{ targetUser: User, viewOnly: boolean }',
+      description:
+        'withAuth; forbidden() với GUEST, notFound() nếu không có người đó.',
+      required: true,
+    },
+    'getAvatar(image_path)': {
+      type: 'string | null',
+      description: 'Data URL của một blob riêng tư dưới users/.',
+      required: true,
+    },
+    'uploadAvatar(user_id, old_path, file)': {
+      type: 'Response<{ image }>',
+      description: 'Tải ảnh lên, cập nhật image, xóa blob cũ.',
+      required: true,
+    },
+    'updatePersonalInfo(user_id, values)': {
+      type: 'Response',
+      description: 'name, dob, phone_number, citizen_identification.',
+      required: true,
+    },
+    'updateTeamInfo(user_id, values)': {
+      type: 'Response',
+      description: (
+        <ul>
+          <li>
+            Cập nhật <code>user</code>, lần gia nhập đang mở trong{' '}
+            <code>user_team</code> và dòng player/coach.
+          </li>
+          <li>Tất cả trong một transaction.</li>
+          <li>Từ chối nếu số áo đã có người mặc.</li>
+        </ul>
+      ),
+      required: true,
+    },
+  }}
+/>
+
+## Tiêu chí chấp nhận
+
+<Accordions>
+  <Accordion title="Server tự chặn, không dựa vào giao diện">
+
+    - Cầu thủ gọi updatePersonalInfo hoặc updateTeamInfo cho user_id của người
+      khác sẽ bị từ chối.
+    - Dùng user_id của mình nhưng đổi vai trò cũng bị từ chối. Không có gì được
+      ghi.
+
+  </Accordion>
+  <Accordion title="Admin sửa hồ sơ người khác, không sửa hồ sơ mình">
+
+    - Hồ sơ người khác: sửa được Role, Position, State và Jersey Number.
+    - Hồ sơ của mình: cả hai tab chỉ xem; vẫn đổi được ảnh đại diện.
+
+  </Accordion>
+  <Accordion title="Giới hạn và thay ảnh đại diện">
+
+    - Trên 100 KB hoặc không phải PNG/JPEG: bị chặn ngay trên trình duyệt.
+    - Ảnh hợp lệ: cập nhật ảnh đại diện, xóa blob cũ, tải lại phiên đăng nhập.
+    - old_path không trùng ảnh đang lưu: bị từ chối, không xóa gì.
+
+  </Accordion>
+</Accordions>

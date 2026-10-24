@@ -54,7 +54,7 @@ export default function AttendanceTable({
 }) {
   const t = useTranslations('attendance.table');
   const tEnums = useTranslations('enums');
-  const { isAdmin } = usePermissions();
+  const { can } = usePermissions();
   const [{ q, page, status }, setSearchParams] = useAttendanceFilters();
 
   const predicate = useMemo(
@@ -135,7 +135,7 @@ export default function AttendanceTable({
       onPageChange={setSearchParams}
       empty={{ title: t('empty'), icon: <UsersRound /> }}
       selection={{
-        canSelect: isAdmin,
+        canSelect: can('attendance', 'edit'),
         items,
         selection,
         setSelection,

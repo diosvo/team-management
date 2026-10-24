@@ -1,0 +1,76 @@
+---
+title: Tổng quan
+description: Vì sao có cổng thông tin này, nó dành cho ai và dữ liệu gắn kết với nhau ra sao.
+---
+
+Các trang còn lại đều dựa trên những nền tảng ở phần này:
+
+- Cổng thông tin thay cho cách làm cũ nào, và thế nào là "xong".
+- Ai giữ vai trò gì, và những quy ước mọi tính năng đều theo.
+- Lược đồ dữ liệu mà tính năng nào cũng đọc.
+
+<Cards>
+  <Card
+    href="/docs/vi/overview/vision"
+    title="Tầm nhìn"
+    description="Vấn đề, tầm nhìn gói trong một câu, những gì cố ý không làm và các giới hạn."
+  />
+  <Card
+    href="/docs/vi/overview/goals"
+    title="Mục tiêu"
+    description="Dấu hiệu cho thấy app chạy tốt và các yêu cầu phi chức năng code phải đạt."
+  />
+  <Card
+    href="/docs/vi/overview/personas"
+    title="Chân dung người dùng"
+    description="Bốn vai trò cùng cờ đội trưởng, và mỗi người cần gì."
+  />
+  <Card
+    href="/docs/vi/overview/principles"
+    title="Nguyên tắc"
+    description="Server kiểm tra quyền, chỉ gửi đúng cột cần dùng và bộ lọc lưu trên URL."
+  />
+  <Card
+    href="/docs/vi/overview/data-model"
+    title="Mô hình dữ liệu"
+    description="Sơ đồ thực thể, các bảng theo nhóm và chuyện gì xảy ra khi xoá, lấy từ src/drizzle/schema."
+  />
+</Cards>
+
+## Mỗi người cần làm gì
+
+<TypeTable
+  type={{
+    'Cầu thủ': {
+      type: 'PLAYER',
+      description:
+        'Xem lịch tập, nội quy đội, điểm danh và kết quả kiểm tra của mình.',
+      required: true,
+    },
+    'Đội trưởng': {
+      type: 'PLAYER + is_captain',
+      description:
+        'Quản lý danh sách đội, sửa nội quy, ghi kết quả trận, lập hồ sơ đăng ký giải.',
+      required: true,
+    },
+    HLV: {
+      type: 'COACH',
+      description:
+        'Lên lịch buổi tập, điểm danh, ghi kết quả trận và kết quả kiểm tra.',
+      required: true,
+    },
+    Admin: {
+      type: 'SUPER_ADMIN',
+      description:
+        'Thiết lập đội bóng, giải đấu và sân tập; quản lý mọi thành viên và mọi dữ liệu.',
+      required: true,
+    },
+  }}
+/>
+
+<Callout type="info" title="Xem chi tiết ở đâu">
+
+- Từng trang hoạt động ra sao: [Tính năng](/docs/vi/features).
+- Bảng vai trò × resource, lấy từ `ROLE_CONFIG`: [Vai trò & Quyền](/docs/vi/access/roles-permissions).
+
+</Callout>

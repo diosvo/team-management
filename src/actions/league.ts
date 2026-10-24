@@ -6,6 +6,7 @@ import { ResponseFactory } from '@/utils/response';
 import {
   addPlayerToLeagueRoster,
   deleteLeague,
+  getLeagueById,
   getLeagues as fetchLeagues,
   getPlayersInLeague as fetchPlayersInLeague,
   insertLeague,
@@ -16,11 +17,22 @@ import {
 import { getDbErrorMessage } from '@/db/pg-error';
 import { getTeamPlayerIds } from '@/db/player';
 import type { UpsertLeagueSchemaValues } from '@/schemas/league';
+import { LeagueStatus } from '@/utils/enum';
 
 import { withAuth, withResource } from './auth';
 import { revalidate } from './cache';
 
 const leagues = withResource('leagues');
+
+/**
+ * A league that has started is history: the UI shows it read-only, and the
+ * server has to agree, otherwise a crafted request could rewrite results.
+ */
+async function assertUpcoming(league_id: string) {
+  const league = await getLeagueById(league_id);
+
+  return league?.status === LeagueStatus.UPCOMING;
+}
 
 export const getLeagues = withAuth(fetchLeagues);
 
@@ -44,6 +56,9 @@ export const upsertLeague = leagues(
       let leagueId = league_id;
 
       if (isUpdate) {
+        if (!(await assertUpcoming(league_id))) {
+          return ResponseFactory.error(t('notUpcoming'));
+        }
         await updateLeague(league_id, league);
       } else {
         const [result] = await insertLeague(league);
@@ -80,6 +95,10 @@ export const removeLeague = leagues(
   async function remove(_, league_id: string) {
     const t = await getTranslations('actions.league');
     try {
+      if (!(await assertUpcoming(league_id))) {
+        return ResponseFactory.error(t('notUpcoming'));
+      }
+
       await deleteLeague(league_id);
 
       revalidate.leagues();

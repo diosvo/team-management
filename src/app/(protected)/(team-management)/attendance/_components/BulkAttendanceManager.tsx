@@ -287,8 +287,8 @@ export default function BulkAttendanceManager({
               gap={2}
             >
               <Text color="GrayText" fontStyle="italic">
-                {t.rich('remainingOnTime', {
-                  remaining: String(absentCount > 0 || lateCount > 0),
+                {t.rich('footer', {
+                  selected: String(attendances.length > 0),
                   u: (chunks) => (
                     <Span textDecoration="underline">{chunks}</Span>
                   ),

@@ -1,0 +1,233 @@
+---
+title: Đăng ký giải
+description: Làm ngay trên trình duyệt, từ cầu thủ đang hoạt động ra hồ sơ đăng ký giải PDF hoặc CSV.
+---
+
+<Callout title="Route /registration">
+  Nhóm **Team Management** · Resource `registration` · Trạng thái **Đã phát
+  hành**
+</Callout>
+
+## Mục đích
+
+- Đăng ký giải (**Registration**) giúp bạn làm hồ sơ gửi ban tổ chức giải mà
+  không phải gõ lại thông tin cầu thủ.
+- Chọn cầu thủ và giải đấu, có thể tải lên mẫu PDF có ô điền sẵn, rồi xuất file.
+- Mọi thứ chạy trên trình duyệt bằng `pdf-lib`; không ghi gì vào cơ sở dữ liệu.
+
+## Quyền truy cập
+
+<PermissionMatrix resource="registration" />
+
+- Cầu thủ (`PLAYER`), huấn luyện viên (`COACH`) và admin (`SUPER_ADMIN`) đều mở
+  được trang; nhưng chỉ admin và đội trưởng dùng được.
+- Mọi nút và ô nhập bị khoá khi `!isCaptain && !isAdmin`.
+- **Chỉ chặn trên giao diện.** Không có server action cho việc xuất file;
+  `getActivePlayers`, `getLeagues` là hàm đọc `withAuth` mở cho mọi thành viên.
+- **Dữ liệu nhạy cảm.** `getActivePlayers` trả về đủ `User` (ngày sinh, số điện
+  thoại, CCCD); chỉ trang này gửi các thông tin đó xuống trình duyệt.
+
+## Luồng
+
+<Steps>
+  <Step>
+    ### Chọn cầu thủ
+
+    - Chọn nhiều người trong số thành viên của đội có `role = player`,
+      `state = active`.
+    - Có nút chọn tất cả và bỏ chọn.
+
+  </Step>
+  <Step>
+    ### Chọn giải đấu
+
+    - Chọn một giải, danh sách lấy từ `getLeagues`.
+    - Tên giải được dùng làm tiêu đề PDF và tạo slug cho tên file.
+
+  </Step>
+  <Step>
+    ### Đính kèm PDF (không bắt buộc)
+
+    - Một file `application/pdf`, tối đa 10 MB.
+    - Popover hướng dẫn liệt kê các tên trường ở bên dưới.
+    - Không có mẫu, hoặc mẫu không có ô nào điền được: app tự tạo danh sách cầu
+      thủ mặc định.
+
+  </Step>
+  <Step>
+    ### Xem lại & xuất file
+
+    - Xem trước: bảng có phân trang (khi không có mẫu) hoặc PDF đã điền trong
+      iframe.
+    - Ghi chú: tối đa 256 ký tự.
+    - Bấm **CSV** hoặc **PDF** để tải xuống; **Save** lưu lại PDF để tải lại sau.
+
+  </Step>
+</Steps>
+
+## Quy tắc
+
+### Ghép trường AcroForm
+
+- Chỉ điền các `PDFTextField`.
+- Tên trường được chuẩn hoá: NFD, bỏ dấu, `đ → d`, viết thường, bỏ mọi ký tự
+  không phải chữ hoặc số.
+- Mỗi cột có một regex, chỉ cần chứa chuỗi đó là khớp: `Họ và tên`, `hoTen`,
+  `full_name` → tên.
+- Thứ tự cầu thủ = nhóm chữ số đầu tiên trong tên trường (`hoTen2` → cầu thủ thứ
+  hai); không có số → cầu thủ đầu tiên.
+
+<TypeTable
+  type={{
+    'Họ tên': {
+      type: 'hoTen | fullName | name',
+      required: true,
+      description: 'Khớp hoten, hovaten, name.',
+    },
+    'Năm sinh': {
+      type: 'namSinh | dob | birth',
+      required: true,
+      description: 'Khớp ngaysinh, dob, birth, nam.',
+    },
+    CCCD: {
+      type: 'cccd | cmnd | citizen',
+      required: true,
+      description: 'Khớp cmnd, cccd, citizen, cancuoc.',
+    },
+    'Điện thoại': {
+      type: 'dienThoai | sdt | phone',
+      required: true,
+      description: 'Khớp dienthoai, sdt, phone, tel, mobile.',
+    },
+    'Số áo': {
+      type: 'soAo | jersey | number',
+      required: true,
+      description: 'Khớp soao, jersey, number.',
+    },
+  }}
+/>
+
+- `FIELD_GUIDE` (`_components/main.tsx`) phải khớp với `FIELD_PATTERNS`
+  (`_helpers/pdf.ts`); sửa cái này thì sửa luôn cái kia.
+- `updateFieldAppearances` vẽ lại các ô bằng font GoogleSans đã nhúng, để chữ
+  tiếng Việt hiện đúng và form vẫn điền tiếp được.
+
+### Danh sách cầu thủ mặc định
+
+Được tạo khi không có mẫu nào dùng được:
+
+- Khổ A4, có tiêu đề và tên giải.
+- Phần thông tin đội: dòng huấn luyện viên để trống, đội trưởng lấy từ
+  `player.is_captain`.
+- Thẻ cầu thủ xếp hai cột, có khung ảnh 3:4 để dán ảnh.
+
+Mẫu có ô nhưng không ô nào khớp vẫn tải xuống được, kèm cảnh báo "No fields
+matched".
+
+### Tách module
+
+<Tabs items={['roster.ts', 'pdf.ts']}>
+  <Tab value="roster.ts">
+
+    - Các cột, `toRow`, tạo CSV (BOM, đặt ngoặc kép theo RFC 4180), các hàm tải xuống.
+    - Không dùng `pdf-lib`, nên bảng xem trước, xuất CSV và danh sách đã lưu import tĩnh được.
+
+  </Tab>
+  <Tab value="pdf.ts">
+
+    - `buildRegistrationPdf` và toàn bộ code `pdf-lib` / `@pdf-lib/fontkit` (~400 KB).
+    - Dùng `await import()` ở ba chỗ: xuất PDF, effect xem trước PDF, lưu.
+    - Sau lần gọi đầu, bundler cache lại chunk này.
+
+  </Tab>
+</Tabs>
+
+### Hồ sơ đã lưu
+
+- `useSavedRegistrations` dùng khoá `localStorage` `registration:saved`, lưu
+  riêng trên từng trình duyệt, không đảm bảo giữ mãi.
+- Mỗi mục lưu PDF dạng base64 để tải lại.
+- Tên trùng sẽ được thêm đuôi ` (2)`, ` (3)`.
+- Ghi chú chỉ nằm trong mục đã lưu, không bao giờ có trong PDF.
+- Tên file: khi xuất là `sgr-<league-slug>`, khi lưu là
+  `saigon-rovers-<league-slug>`.
+
+## Dữ liệu
+
+<Tabs items={['FillResult', 'SavedRegistration']}>
+  <Tab value="FillResult">
+
+    <AutoTypeTable path="src/app/(protected)/(team-management)/registration/_helpers/pdf.ts" name="FillResult" />
+
+  </Tab>
+  <Tab value="SavedRegistration">
+
+    <AutoTypeTable path="src/app/(protected)/(team-management)/registration/_helpers/useSavedRegistrations.ts" name="SavedRegistration" />
+
+  </Tab>
+</Tabs>
+
+## API
+
+Các helper chạy trên trình duyệt trong `registration/_helpers`, cùng hai hàm đọc
+`withAuth`.
+
+<TypeTable
+  type={{
+    'buildRegistrationPdf(options)': {
+      type: 'Promise<FillResult>',
+      required: true,
+      description: (
+        <ul>
+          <li>Điền vào mẫu nếu mẫu có ô chữ.</li>
+          <li>Nếu không thì tạo danh sách cầu thủ mặc định.</li>
+          <li>
+            <code>pdf.ts</code>, chỉ import động.
+          </li>
+        </ul>
+      ),
+    },
+    'buildRosterCsv(players)': {
+      type: 'string',
+      required: true,
+      description:
+        'Một dòng tiêu đề cộng mỗi cầu thủ một dòng đã escape. roster.ts.',
+    },
+    'getActivePlayers()': {
+      type: 'Array<User & { player }>',
+      required: true,
+      description: 'Cầu thủ đang hoạt động của đội bạn. src/actions/user.ts.',
+    },
+    'getLeagues()': {
+      type: 'Array<League>',
+      required: true,
+      description:
+        'Tất cả giải đấu, kèm trạng thái tính sẵn. src/actions/league.ts.',
+    },
+  }}
+/>
+
+## Tiêu chí chấp nhận
+
+<Accordions>
+  <Accordion title="HLV xem được nhưng không xuất được">
+    Các ô chọn cầu thủ, giải, tải lên và ghi chú đều bị khoá; phần xem trước để
+    trống.
+  </Accordion>
+  <Accordion title="Ô có đánh số được điền theo từng cầu thủ">
+
+    - `hoTen1`…`hoTen5` nhận tên của năm cầu thủ đã chọn, theo đúng thứ tự.
+    - `soAo3` nhận số áo của cầu thủ thứ ba.
+
+  </Accordion>
+  <Accordion title="PDF không có ô điền thì dùng danh sách mặc định">
+    PDF không có ô form sẽ xuất ra danh sách cầu thủ mặc định, không phải file
+    bạn tải lên.
+  </Accordion>
+  <Accordion title="CSV mở đúng trong Excel">
+
+    - Bắt đầu bằng BOM UTF-8 và tiêu đề tiếng Việt lấy từ `COLUMNS`.
+    - Giá trị có dấu phẩy, ngoặc kép hoặc xuống dòng được đặt trong ngoặc kép.
+
+  </Accordion>
+</Accordions>

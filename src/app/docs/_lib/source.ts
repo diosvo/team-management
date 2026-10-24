@@ -1,6 +1,7 @@
 import { loader } from 'fumadocs-core/source';
 import { defineDocs } from 'fumadocs-mdx/macro';
 
+import { docsUrl, i18n } from './i18n';
 import { docsContentRoute, docsRoute } from './shared';
 
 export const docs = defineDocs({
@@ -17,22 +18,31 @@ export const docs = defineDocs({
 export const source = loader({
   source: docs.toFumadocsSource(),
   baseUrl: docsRoute,
+  i18n,
+  // Overrides `baseUrl`: `/docs/<slug>` for English, `/docs/vi/<slug>` for
+  // Vietnamese, instead of the default `/vi/docs/<slug>`.
+  url: docsUrl,
 });
 
-export function getPageMarkdownUrl(page: (typeof source)['$inferPage']) {
-  const segments = [...page.slugs, 'content.md'];
+export type DocsPage = (typeof source)['$inferPage'];
+
+/** Markdown export of a page, mirroring its public URL under `/llms.mdx`. */
+export function getPageMarkdownUrl(page: DocsPage) {
+  const localeSegment =
+    page.locale && page.locale !== i18n.defaultLanguage ? page.locale : null;
+  const segments = [localeSegment, ...page.slugs, 'content.md'].filter(
+    (segment): segment is string => !!segment,
+  );
 
   return {
     segments,
     url:
       '/' +
-      [page.locale, ...docsContentRoute.split('/'), ...segments]
-        .filter(Boolean)
-        .join('/'),
+      [...docsContentRoute.split('/'), ...segments].filter(Boolean).join('/'),
   };
 }
 
-export async function getLLMText(page: (typeof source)['$inferPage']) {
+export async function getLLMText(page: DocsPage) {
   const processed = await page.data.getText('processed');
 
   return `# ${page.data.title} (${page.url})

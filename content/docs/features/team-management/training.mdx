@@ -1,90 +1,179 @@
 ---
-title: "Training"
+title: Training
+description: The practice schedule, with a per-session present rate derived from attendance records.
 ---
 
-> Route: `/training` · Nav group: **Team Management** · Status: **Draft**
+<Callout title="Route /training">
+  Nav group **Team Management** · Resource `training` · Status **Shipped**
+</Callout>
 
-## 1. Summary
+## Purpose
 
-- **Training** lists all scheduled practice sessions with date, time, location, and attendance rate.
-- Coaches can create and edit sessions; each session links to the Attendance page for per-session tracking.
+- The practice schedule: when, where, how long, and how many turned up.
+- Present rate per row comes from that session's attendance rows.
+- This page is the summary;
+  [Attendance](/docs/features/team-management/attendance) is the detail.
 
-## 2. Goals / metrics
+## Access
 
-### Goals
+<PermissionMatrix resource="training" />
 
-- Give the team a clear training schedule.
-- Track attendance rates per session.
+- GUEST has no access.
+- COACH creates and edits; only SUPER_ADMIN deletes.
+- Captains gain nothing: `CAPTAIN_PERMISSIONS` has no `training` entry.
 
-## 3. Users and permissions
+## Flows
 
-| Role             | View | Add | Edit | Delete |
-| ---------------- | ---- | --- | ---- | ------ |
-| GUEST            | No   | No  | No   | No     |
-| PLAYER           | Yes  | No  | No   | No     |
-| COACH            | Yes  | Yes | Yes  | No     |
-| SUPER_ADMIN      | Yes  | Yes | Yes  | Yes    |
-| PLAYER (Captain) | Yes  | No  | No   | No     |
+<Steps>
+  <Step>
+    ### Browse
 
-## 4. UX / flows
+    - Defaults to this month.
+    - `interval` and `status` refetch on the server (`shallow: false`).
+    - Location search `q` and paging filter in the client.
+    - Stats:
+      - **Completed Sessions**: click to filter by `completed`.
+      - **Average Attendance**: records per session.
+      - **Total Hours**: sum of `end_time - start_time`.
 
-### Entry point
+  </Step>
+  <Step>
+    ### Create / edit
 
-- Sidebar → **Training**.
+    - **New Session** opens `UpsertSession`; clicking a row reopens it pre-filled.
+    - Fields: date, start time, end time, location.
+    - `UpsertSessionSchema`: defaults 20:00–22:00; refines `end_time > start_time`.
+    - No status control: new sessions are `scheduled`, edits keep their status.
 
-### View
+  </Step>
+  <Step>
+    ### Jump to attendance
 
-- Table lists sessions with date, time, location, status, and attendance rate.
-- Filter by location name.
-- Stats show total session count.
+    The date cell links to `/attendance?date=<date>`, that session's day view.
 
-### Create / edit
+  </Step>
+  <Step>
+    ### Delete
 
-- Authorized users see **+ Add**; clicking it opens a dialog.
-- Clicking a row opens the same dialog pre-filled.
-- Fields: date, start time, end time, location. Coach is auto-assigned (must be Head Coach).
+    - SUPER_ADMIN selects rows and deletes in bulk.
+    - The session's attendance rows cascade.
 
-### Attendance link
+  </Step>
+</Steps>
 
-- Each session row links to the Attendance page filtered to that session's date.
+## Rules
 
-## 5. Functional requirements
+- **A coach is required.** `upsertSession` calls `getTeamHeadCoach` on insert
+  and update.
+  - No COACH user: fails with "No coach assigned to the team".
+  - Picks the first `role = coach` user; `coach.position` is not checked.
+- **Present rate** = `(on_time + late) / attendances × 100`, one decimal; `0`
+  with no records.
+- **`(session_id, date)` is unique** (`training_session_id_date_unique`).
+  - Target of `attendance`'s composite FK, so rescheduling moves attendance rows.
+- **Nullable references.** Deleting a coach or location sets `NULL`; deleting
+  the team cascades.
+- **Period bounds** come from `TIME_DURATION[interval]`, evaluated once at
+  module load.
 
-- **FR-1:** PLAYER and above can view the training schedule.
-- **FR-2:** Filter by location name; filter state stored in URL.
-- **FR-3:** COACH and SUPER_ADMIN can create and edit sessions.
-- **FR-4:** A session requires a Head Coach; the coach is auto-assigned from the team.
-- **FR-5:** SUPER_ADMIN can delete a session.
-- **FR-6:** Each session row shows an attendance rate derived from attendance records.
-- **FR-7:** Changes show a success or error toast.
+## Data
 
-## 6. Acceptance criteria (Given/When/Then)
+<Tabs items={['TrainingSession', 'TrainingSessionWithDetails', 'TrainingSessionStats']}>
+  <Tab value="TrainingSession">
 
-- **AC-1:** Given I am a PLAYER, when I open Training, then I see the schedule but no add or edit controls.
-- **AC-2:** Given no Head Coach is assigned to the team, when a COACH tries to create a session, then the action is rejected.
-- **AC-3:** Given a session exists, when I click the attendance link, then I am taken to Attendance filtered to that date.
+    <AutoTypeTable path="src/drizzle/schema/training.ts" name="TrainingSession" />
 
-## 7. Technical appendix
+  </Tab>
+  <Tab value="TrainingSessionWithDetails">
 
-### Data model (`src/drizzle/schema/training.ts`)
+    <AutoTypeTable path="src/types/training-session.d.ts" name="TrainingSessionWithDetails" />
 
-TrainingSession (`training_session`):
+  </Tab>
+  <Tab value="TrainingSessionStats">
 
-- `session_id`: uuid PK
-- `team_id`: FK → team (cascade on team delete)
-- `coach_id`: FK → coach, nullable (set null on coach delete)
-- `location_id`: FK → location, nullable (set null on location delete)
-- `date`: date
-- `start_time` / `end_time`: time, both required
-- `status`: enum `session_status` (`scheduled` | `active` | `completed` | `cancelled`), default `scheduled`
+    <AutoTypeTable path="src/types/training-session.d.ts" name="TrainingSessionStats" />
+
+  </Tab>
+</Tabs>
 
 ### Query params
 
-- `q` (string): location name search
+<TypeTable
+  type={{
+    interval: {
+      type: 'Interval',
+      description: 'Period filter, applied on the server.',
+      default: 'this_month',
+    },
+    status: {
+      type: 'Array<SessionStatus>',
+      description: 'Status filter, applied on the server. Empty means all.',
+    },
+    q: { type: 'string', description: 'Location name search, client-side.' },
+    page: { type: 'number', description: 'Current page.', default: '1' },
+  }}
+/>
 
-### API
+## API
 
-- `getSessions(params)`: fetch schedule
-- `upsertSession(id?, values)`: create or update
-- `removeSession(id)`: delete
-- `getCoach()`: fetch assigned Head Coach
+- Server actions in `src/actions/training-session.ts`.
+- Reads use `withAuth`; writes use `withResource('training')`.
+
+<TypeTable
+  type={{
+    'getSessions(params)': {
+      type: 'DataWithStats<TrainingSessionWithDetails, TrainingSessionStats>',
+      required: true,
+      description: (
+        <ul>
+          <li>
+            Sessions of the caller’s team inside the interval, newest first.
+          </li>
+          <li>Includes per-session analytics and stats.</li>
+        </ul>
+      ),
+    },
+    'getCoach()': {
+      type: 'Nullable<{ id, name }>',
+      required: true,
+      description: 'The first COACH user of the caller’s team.',
+    },
+    'upsertSession(id, values)': {
+      type: 'Response',
+      required: true,
+      description: (
+        <ul>
+          <li>Creates (empty id) or updates a session.</li>
+          <li>
+            Assigns <code>coach_id</code> on create.
+          </li>
+          <li>Fails when the team has no coach.</li>
+        </ul>
+      ),
+    },
+    'removeSession(id)': {
+      type: 'Response',
+      required: true,
+      description: 'Deletes a session; attendance rows cascade.',
+    },
+  }}
+/>
+
+## Acceptance
+
+<Accordions>
+  <Accordion title="Viewers see the schedule without controls">
+    A PLAYER, captain or not, sees table and stats, but no **New Session** or
+    selection checkboxes.
+  </Accordion>
+  <Accordion title="No coach, no session">
+    With no COACH user, create or edit returns "No coach assigned to the team".
+  </Accordion>
+  <Accordion title="End time must follow start time">
+    Ending at or before the start is rejected client-side: "End time must be
+    after start time".
+  </Accordion>
+  <Accordion title="Date links to the day view">
+    Clicking a date opens `/attendance?date=<date>`, not the edit dialog.
+  </Accordion>
+</Accordions>

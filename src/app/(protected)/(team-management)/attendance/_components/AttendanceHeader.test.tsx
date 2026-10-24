@@ -22,10 +22,14 @@ vi.mock('@/hooks/use-permissions', () => ({ default: vi.fn() }));
 describe('AttendanceHeader', () => {
   const mockUsePermissions = vi.mocked(usePermissions);
 
+  // `isAdmin` in these tests means "can edit attendance", which is what the
+  // header now checks; COACH holds the same right.
   const setPermissions = (isAdmin: boolean, isPlayer: boolean) => {
-    mockUsePermissions.mockReturnValue({ isAdmin, isPlayer } as ReturnType<
-      typeof usePermissions
-    >);
+    mockUsePermissions.mockReturnValue({
+      isPlayer,
+      can: (resource: string, action: string) =>
+        isAdmin && resource === 'attendance' && action === 'edit',
+    } as unknown as ReturnType<typeof usePermissions>);
   };
 
   const setup = ({ isAdmin = false, isPlayer = false } = {}) => {

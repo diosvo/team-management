@@ -1,0 +1,170 @@
+---
+title: Kiểm thử E2E
+description: Bộ test Playwright được sắp xếp ra sao, nên dùng lại helper nào, và cách chạy, gỡ lỗi.
+---
+
+<Callout title="Quy mô bộ test">
+
+- 21 spec, 578 `test(`, đếm bằng `grep`; có thay đổi thì đếm lại.
+- 19 chức năng (576 test, `playwright.config.ts`).
+- 2 so sánh giao diện (`playwright.visual.config.ts`).
+
+</Callout>
+
+- Chạy trên **database thật** qua `pnpm dev`.
+- Spec nào tạo dữ liệu thì phải tự xóa dữ liệu đó.
+- CI vẫn tắt cho tới khi có database test riêng.
+
+## Cấu trúc
+
+<Mermaid
+  chart={`
+flowchart TD
+    root["e2e/"] --> auth["auth/ — login, forgot-password, new-password (87)"]
+    root --> overview["overview/ — dashboard, team-rule (66)"]
+    root --> perf["performance/ — periodic-testing, add-result, test-types (137)"]
+    root --> res["resources/ — assets, emails (34)"]
+    root --> settings["settings/ — teams, leagues, locations (76)"]
+    root --> tm["team-management/ — roster, training, attendance, registration, matches (159)"]
+    root --> cc["cross-cutting.spec.ts — hành vi dùng chung (17)"]
+    root --> setup["setup/ — auth.ts, helpers.ts, pom.ts"]
+    root --> visual["visual/ — public.spec.ts, app.spec.ts + __screenshots__"]
+`}
+/>
+
+## Project
+
+<TypeTable
+  type={{
+    auth: {
+      type: 'playwright.config.ts',
+      description: 'Các spec chưa đăng nhập trong e2e/auth.',
+      required: true,
+    },
+    setup: {
+      type: 'playwright.config.ts',
+      description:
+        'Đăng nhập bằng PW_USERNAME và PW_PASSWORD rồi ghi playwright/.auth/admin.json.',
+      required: true,
+    },
+    admin: {
+      type: 'playwright.config.ts',
+      description:
+        'Mọi thứ trừ e2e/auth và e2e/visual, dùng lại storage state từ setup.',
+      required: true,
+    },
+    'visual-public': {
+      type: 'playwright.visual.config.ts',
+      description:
+        'Chụp toàn trang /login và /forgot-password; không cần đăng nhập.',
+      required: true,
+    },
+    'visual-app': {
+      type: 'playwright.visual.config.ts',
+      description:
+        'Chụp /dashboard, /roster, /team-rule và /profile với storage state của admin.',
+      required: true,
+    },
+  }}
+/>
+
+- **Trình duyệt:** chỉ Desktop Chrome; phần kiểm tra responsive chỉ
+  đổi kích thước viewport.
+- **Timeout:** 20 giây mỗi test; giữ trace khi chạy lại (retry).
+- **Báo cáo:** HTML ở `playwright/report`.
+- **So sánh giao diện:** `maxDiffPixelRatio: 0.01`, để phát hiện CSS của docs
+  lấn sang app Chakra.
+
+## Helper
+
+- `e2e/setup/helpers.ts`: các assertion mà hầu hết trang đều dùng.
+- `e2e/setup/pom.ts`: `DialogPOM` và `TablePOM`, dùng ở gần như mọi trang.
+
+- **Trang:** `testNoErrors`, `testNoLoadingState`, `waitForNavigation`,
+  `testUrlPersistence`
+- **Bộ lọc:** `testSearchWithQueryParams`, `testFilterWithQueryParams`,
+  `testCheckboxFilter`, `testCheckboxFilterReset`, `testHighlightedText`
+- **Bảng:** `testTableHeaders`, `testEmptyState`, `testPaginationNavigation`,
+  `testRowClickEdit`, `testStatsCardClick`, `testDeleteWithCheckbox`
+- **Hộp thoại:** `testDialogOpenClose`, `testFormValidationDisabled`,
+  `testEnterToSubmit`, `testEscapeToCancel`, `testSuccessToast`
+- **Khác:** `testKeyboardNavigation`, `uniqueName(prefix)`
+
+## Mẫu kiểm thử
+
+- **Tải trang.** Tiêu đề, heading, `testNoErrors`, `testNoLoadingState`.
+- **Trạng thái trên URL.** Tìm kiếm và bộ lọc cập nhật query string và giữ
+  nguyên sau khi tải lại; assert bằng `toHaveURL`.
+- **CRUD qua hộp thoại.** **+ Add** để thêm, bấm dòng để sửa, tick checkbox để
+  xóa; mỗi luồng kết thúc bằng `testSuccessToast` và bảng được cập nhật.
+- **Assert điều bất biến, không assert dữ liệu.** Kiểm tra kèm điều kiện
+  (`if (await el.isVisible()) expect(el).toBeVisible()`) không bao giờ fail.
+- Hãy assert điều luôn đúng: bảng có hiển thị, HLV không bao giờ thấy nút tạo.
+- **Dữ liệu không trùng và được dọn sạch.** Tạo dòng bằng `uniqueName()`, xóa
+  trong `afterEach`; các lần chạy song song dùng chung một database.
+- **Chờ trạng thái, không chờ thời gian.** Web-first assertion thay cho
+  `waitForTimeout`.
+- Spec so sánh giao diện là ngoại lệ: animation của biểu đồ không bị
+  `animations: 'disabled'` tắt.
+
+## Chạy và gỡ lỗi
+
+<Tabs items={['Tất cả', 'Một tệp hoặc một test', 'UI & headed', 'Gỡ lỗi', 'Hình ảnh']}>
+<Tab value="Tất cả">
+
+```bash
+pnpm e2e                    # auth + setup + admin
+pnpm e2e --project=admin    # setup tự chạy trước
+```
+
+Cần `PW_USERNAME` và `PW_PASSWORD` trong `.env` cho project `setup`.
+
+</Tab>
+<Tab value="Một tệp hoặc một test">
+
+```bash
+pnpm e2e overview/dashboard.spec.ts
+pnpm e2e -g "has correct title"
+```
+
+</Tab>
+<Tab value="UI & headed">
+
+```bash
+pnpm e2e:ui
+pnpm e2e --headed
+```
+
+</Tab>
+<Tab value="Gỡ lỗi">
+
+```bash
+pnpm e2e --debug            # Playwright Inspector
+```
+
+- `await page.pause()` dừng tại dòng đó.
+- Mở trace của lần chạy lại từ `playwright/report`.
+
+</Tab>
+<Tab value="Hình ảnh">
+
+```bash
+pnpm exec playwright test -c playwright.visual.config.ts
+pnpm exec playwright test -c playwright.visual.config.ts --update-snapshots
+```
+
+</Tab>
+</Tabs>
+
+## Trạng thái CI
+
+<Callout type="warn" title="Chưa chạy trên CI">
+
+- `.github/workflows/playwright.yaml` chạy khi có PR vào `main`, nhưng
+  `if: false` luôn bỏ qua job.
+- Bước upload đọc `playwright-report/`, trong khi config lại ghi ra
+  `playwright/report`.
+- Khi bật lại thì sửa cả hai; trước đó, luồng E2E có hỏng cũng không làm PR
+  fail.
+
+</Callout>

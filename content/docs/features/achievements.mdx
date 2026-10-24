@@ -1,100 +1,149 @@
 ---
-title: "Achievements"
+title: Achievements
+description: The club's trophy cabinet, recorded by hand for leagues that have ended.
 ---
 
-> Route: `/achievements` · Nav group: **Overview** · Status: **Draft**
+<Callout title="Route /achievements">
+  Nav group **Overview** · Resource `achievements` · Status **Shipped**
+</Callout>
 
-## 1. Summary
+## Purpose
 
-- The **Achievements** page is the club's trophy cabinet: honors grouped by year
-  on a vertical timeline, topped by a hero stats strip (total honors,
-  championships, podium finishes, years active).
-- Because the database only stores our own team's matches, a final league
-  placement cannot be computed automatically. Achievements are therefore
-  **recorded manually** — but only for leagues that have **ended**, checked
-  against `end_date`. League status is not stored at all; it is derived from the
-  dates on every read.
-- Standalone honors (tournaments, cups not tracked as leagues) are supported by
-  leaving the league empty; individual honors (MVP, Top Scorer) reference a
+- The club's honours, grouped by year on a timeline.
+- **Recorded manually:** only our own matches are stored, so final placement
+  can't be computed.
+- Only once a league has ended, derived from `end_date` on every read (no
+  stored status).
+- Cups not tracked as leagues become standalone honours (no league).
+- MVP and Top Scorer reference a player.
+
+## Access
+
+<PermissionMatrix resource="achievements" />
+
+- COACH records and edits; only SUPER_ADMIN deletes.
+- Captains gain nothing here.
+
+## Flows
+
+<Steps>
+  <Step>
+    ### View
+
+    - Hero banner, then one row per year (descending), a plain `Grid`.
+    - Each row: tagline, honour cards, and a quote from the first honour with a
+      description.
+    - The founding year closes the list when it has no honour.
+    - Empty: "The trophy cabinet awaits its first honor".
+
+  </Step>
+  <Step>
+    ### Record
+
+    - **Record** opens `UpsertAchievement`.
+    - The type sets the default title until the title is edited.
+    - League picker: **ended leagues only** (`isPast(end_date)`).
+    - Year: locked to the league's `end_date`; standalone honours pick between
+      the founding year and today.
+    - MVP / Top Scorer require a player.
+    - With a league selected, the top 5 scorers from `match_player_stats` show
+      as one-click chips ("Name — 18.2 ppg").
+
+  </Step>
+  <Step>
+    ### Edit / delete
+
+    - Hover icons on each card (hidden below `md`).
+    - Delete runs `removeAchievement` with a loading toast.
+    - Both revalidate `/achievements`.
+
+  </Step>
+</Steps>
+
+## Rules
+
+- **Ended leagues only.** `upsertAchievement` rejects unless
+  `isPast(league.end_date)`; the client filter is convenience.
+- **One honour per type per league.** Partial unique index
+  `achievement_league_type_idx` skips `custom` and standalone rows.
+- **Honours outlive references.** `league_id` / `player_id` are
+  `ON DELETE SET NULL`; a deleted league leaves a standalone honour.
+- **Player only for individual types.** Required for MVP / Top Scorer; `null`
+  for team honours.
+- **Not team-scoped.** `getAchievements` (`withAuth`) returns every row.
+- **No `team_id`.** An `achievement` reaches a team only via its league or
   player.
 
-## 2. Goals / Metrics
+## Data
 
-### Goals
+<AutoTypeTable path="src/drizzle/schema/achievement.ts" name="Achievement" />
 
-- Preserve and showcase the club's history in a way that feels prestigious.
-- Prompt result entry at the natural moment: when a league ends.
-- Keep individual awards grounded in data via auto-suggested candidates.
+Card styling comes from `ACHIEVEMENT_STYLE` (`src/utils/constants/achievement.ts`):
 
-### Metrics
+<AutoTypeTable path="src/types/achievements.ts" name="AchievementStyle" />
 
-- Share of ended leagues with at least one recorded achievement.
+<TypeTable
+  type={{
+    champion: { type: 'yellow', description: 'Trophy icon.', required: true },
+    runner_up: { type: 'gray', description: 'Medal icon.', required: true },
+    third_place: { type: 'orange', description: 'Award icon.', required: true },
+    mvp: { type: 'purple', description: 'Crown icon.', required: true },
+    top_scorer: { type: 'teal', description: 'Flame icon.', required: true },
+    custom: { type: 'red', description: 'Sparkles icon.', required: true },
+  }}
+/>
 
-## 3. Users & Permissions
+## API
 
-| Role             | View | Record | Edit | Delete |
-| ---------------- | ---- | ------ | ---- | ------ |
-| GUEST            | Yes  | No     | No   | No     |
-| PLAYER           | Yes  | No     | No   | No     |
-| COACH            | Yes  | Yes    | Yes  | No     |
-| SUPER_ADMIN      | Yes  | Yes    | Yes  | Yes    |
-| PLAYER (Captain) | Yes  | No     | No   | No     |
+Server actions in `src/actions/achievement.ts`; writes use
+`withResource('achievements')`.
 
-## 4. UX / Flows
+<TypeTable
+  type={{
+    'getAchievements()': {
+      type: 'Array<AchievementWithRelations>',
+      description:
+        'All honours with league and player, ordered by year desc, type, created_at desc.',
+      required: true,
+    },
+    'getPlayerLeagueStatSuggestions(league_id)': {
+      type: 'Array<{ player_id, player_name, games_played, avg_points }>',
+      description:
+        'Top 5 by average points in that league. Needs create or edit.',
+      required: true,
+    },
+    'upsertAchievement(id, values)': {
+      type: 'Response',
+      description:
+        'Insert when id is empty, else update. Rejects a league that has not ended.',
+      required: true,
+    },
+    'removeAchievement(id)': {
+      type: 'Response',
+      description: 'Deletes the row. Requires delete (SUPER_ADMIN).',
+      required: true,
+    },
+  }}
+/>
 
-### Entry points
+## Acceptance
 
-- Sidebar → **Achievements** (Overview group).
-- Leagues table → trophy icon on ended rows → `/achievements?record=<league_id>`
-  opens the record dialog pre-filled with that league.
+<Accordions>
+  <Accordion title="An active league is rejected">
+    A league with a future end_date fails with "Achievements can only be
+    recorded for ended leagues".
+  </Accordion>
+  <Accordion title="Duplicate placement is rejected">
 
-### View
+    - A second champion for the same league fails on the unique index.
+    - A second custom honour succeeds.
 
-- Hero stats strip (`SimpleGrid` of `Stat` cards), then a Chakra `Timeline` with
-  one item per year (descending). Each year shows a count badge and achievement
-  cards colored by type: Champion (gold), Runner-up (silver), 3rd Place
-  (bronze), MVP (purple), Top Scorer (teal), Custom (maroon).
-- Empty state: "The trophy cabinet awaits its first honor".
+  </Accordion>
+  <Accordion title="Leagues link pre-fills the dialog">
 
-### Record / edit (dialog)
+    - `/achievements?record=<league_id>` with `achievements:create` opens the
+      dialog with that league selected.
+    - Other roles just see the page.
 
-- Fields: type (drives the default title), title, league (**ended leagues
-  only**), year (derived from the league's `end_date`, editable only for
-  standalone honors), player (required for MVP/Top Scorer), description.
-- For MVP/Top Scorer with a league selected, top candidates from
-  `match_player_stats` are suggested as one-click chips ("Name — 18.2 ppg").
-
-## 5. Functional Requirements
-
-- **FR-1:** All roles can view the achievements timeline.
-- **FR-2:** An achievement tied to a league is accepted only when that league
-  has ended — enforced server-side by deriving status from `end_date`
-  (`isPast`), not the stored `status` column.
-- **FR-3:** A league can hold at most one achievement per type (partial unique
-  index), except `CUSTOM` which may repeat.
-- **FR-4:** Deleting a league keeps its achievements (`ON DELETE SET NULL`);
-  they become standalone honors.
-- **FR-5:** Individual honors (MVP, Top Scorer) require a player; team honors
-  ignore any player value.
-
-## 6. Data Model
-
-`achievement` table (`src/drizzle/schema/achievement.ts`, migration
-`0004_add_achievement_table.sql`):
-
-| Column           | Type                    | Notes                                  |
-| ---------------- | ----------------------- | -------------------------------------- |
-| `achievement_id` | uuid PK                 |                                        |
-| `type`           | `achievement_type` enum | CHAMPION / RUNNER_UP / THIRD_PLACE / MVP / TOP_SCORER / CUSTOM |
-| `title`          | varchar(128)            | display title, defaults from the type  |
-| `year`           | integer                 | grouping key, derived from league end  |
-| `league_id`      | uuid FK → league, null  | `SET NULL` on delete                   |
-| `player_id`      | text FK → player, null  | for individual honors                  |
-| `description`    | varchar(256), null      |                                        |
-
-## 7. Out of Scope (Phase 2 ideas)
-
-- Photo per achievement (Vercel Blob pattern used for team logos).
-- Auto season summary per year (W/L record — needs the `getMatches` home/away
-  fix first).
-- Public shareable trophy-cabinet page; OG-image year recap.
+  </Accordion>
+</Accordions>

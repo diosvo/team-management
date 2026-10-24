@@ -1,28 +1,76 @@
 ---
-title: "Product Overview"
-description: "The strategic top of the PRD: what the product is and who it serves."
+title: Overview
+description: Why the portal exists, who it serves and how its data fits together.
 ---
 
-> Status: **Draft** · Feature-level detail lives in the [feature catalog](/docs/features).
+The rest of the docs assume the framing on these pages:
 
-Team Management is a web app for managing a basketball club's teams, people,
-and operations (rosters, schedules, assets) with role-based access. One
-private, role-based hub that is the club's single source of truth.
+- The problem the portal replaces, and what "done" looks like.
+- Who the roles are and the conventions every feature follows.
+- The schema every feature reads from.
 
-This section covers the strategic top of the PRD:
+<Cards>
+  <Card
+    href="/docs/overview/vision"
+    title="Vision"
+    description="The problem, the one-line vision, explicit non-goals and constraints."
+  />
+  <Card
+    href="/docs/overview/goals"
+    title="Goals"
+    description="Success signals and the non-functional requirements the code has to meet."
+  />
+  <Card
+    href="/docs/overview/personas"
+    title="Personas"
+    description="The four roles plus the Captain flag, and what each one needs."
+  />
+  <Card
+    href="/docs/overview/principles"
+    title="Principles"
+    description="Server-enforced authorization, narrow projections and URL-owned filter state."
+  />
+  <Card
+    href="/docs/overview/data-model"
+    title="Data Model"
+    description="Entity diagram, tables by domain and deletion behaviour from src/drizzle/schema."
+  />
+</Cards>
 
-- [Vision](/docs/overview/vision) — the problem, the vision, non-goals, and constraints.
-- [Goals](/docs/overview/goals) — goals, success metrics, and non-functional requirements.
-- [Personas](/docs/overview/personas) — target users and their jobs to be done.
-- [Principles](/docs/overview/principles) — shared UX expectations and cross-feature requirements.
+## Jobs to be done
 
-## Primary use cases (jobs to be done)
+<TypeTable
+  type={{
+    Player: {
+      type: 'PLAYER',
+      description:
+        'Checks the training schedule, team rules, own attendance and test results.',
+      required: true,
+    },
+    Captain: {
+      type: 'PLAYER + is_captain',
+      description:
+        'Manages the roster, edits the rules, records matches, produces registrations.',
+      required: true,
+    },
+    Coach: {
+      type: 'COACH',
+      description:
+        'Schedules training, takes attendance, records matches and test results.',
+      required: true,
+    },
+    Admin: {
+      type: 'SUPER_ADMIN',
+      description:
+        'Configures teams, leagues and locations; manages every person and record.',
+      required: true,
+    },
+  }}
+/>
 
-- A player checks team info, training schedule, and performance metrics.
-- A coach manages training sessions, attendance, and match records.
-- A captain handles registration, manages the roster, and edits team rules.
-- An admin manages teams, configuration, and all operational data.
+<Callout type="info" title="Where the detail lives">
 
-## Feature map (high level)
+- Per-page behaviour: [Features](/docs/features).
+- Role × resource matrix, from `ROLE_CONFIG`: [Roles & Permissions](/docs/access/roles-permissions).
 
-This is a high-level map; details live in the [feature catalog](/docs/features).
+</Callout>

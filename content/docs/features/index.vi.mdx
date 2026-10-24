@@ -1,0 +1,205 @@
+---
+title: Danh mục tính năng
+description: Tất cả các trang trong app, kèm route, khóa resource và đặc tả của từng trang.
+---
+
+- Đặc tả chia **theo từng trang**, giống hệt thứ tự trên thanh điều hướng
+  (`SIDEBAR_GROUP` trong `src/app/(protected)/_helpers/utils.ts`).
+- Route chính là khóa resource, thêm dấu `/` ở đầu.
+- Trước khi hiện trang, proxy đổi route về resource và kiểm tra bạn có quyền
+  `view` không.
+- Muốn xem các bảng liên kết với nhau ra sao: [Mô hình dữ liệu](/docs/vi/overview/data-model).
+
+<TypeTable
+  type={{
+    Dashboard: {
+      type: '/dashboard',
+      description: (
+        <>
+          Overview · <code>dashboard</code> ·{' '}
+          <a href="/docs/vi/features/dashboard">đặc tả</a>
+        </>
+      ),
+      required: true,
+    },
+    Achievements: {
+      type: '/achievements',
+      description: (
+        <>
+          Overview · <code>achievements</code> ·{' '}
+          <a href="/docs/vi/features/achievements">đặc tả</a>
+        </>
+      ),
+      required: true,
+    },
+    Reports: {
+      type: '/reports',
+      description: (
+        <>
+          Overview · <code>reports</code> ·{' '}
+          <a href="/docs/vi/features/reports">đặc tả</a>
+        </>
+      ),
+      required: true,
+    },
+    'Team Rule': {
+      type: '/team-rule',
+      description: (
+        <>
+          Overview · <code>team-rule</code> ·{' '}
+          <a href="/docs/vi/features/team-rule">đặc tả</a>
+        </>
+      ),
+      required: true,
+    },
+    Roster: {
+      type: '/roster',
+      description: (
+        <>
+          Team Management · <code>roster</code> ·{' '}
+          <a href="/docs/vi/features/team-management/roster">đặc tả</a>
+        </>
+      ),
+      required: true,
+    },
+    Training: {
+      type: '/training',
+      description: (
+        <>
+          Team Management · <code>training</code> ·{' '}
+          <a href="/docs/vi/features/team-management/training">đặc tả</a>
+        </>
+      ),
+      required: true,
+    },
+    Attendance: {
+      type: '/attendance',
+      description: (
+        <>
+          Team Management · <code>attendance</code> ·{' '}
+          <a href="/docs/vi/features/team-management/attendance">đặc tả</a>
+        </>
+      ),
+      required: true,
+    },
+    Registration: {
+      type: '/registration',
+      description: (
+        <>
+          Team Management · <code>registration</code> ·{' '}
+          <a href="/docs/vi/features/team-management/registration">đặc tả</a>
+        </>
+      ),
+      required: true,
+    },
+    Matches: {
+      type: '/matches',
+      description: (
+        <>
+          Team Management · <code>matches</code> ·{' '}
+          <a href="/docs/vi/features/team-management/matches">đặc tả</a>
+        </>
+      ),
+      required: true,
+    },
+    'Periodic Testing': {
+      type: '/periodic-testing',
+      description: (
+        <>
+          Performance · <code>periodic-testing</code> ·{' '}
+          <a href="/docs/vi/features/performance/periodic-testing">đặc tả</a>
+        </>
+      ),
+      required: true,
+    },
+    Assets: {
+      type: '/assets',
+      description: (
+        <>
+          Resources · <code>assets</code> ·{' '}
+          <a href="/docs/vi/features/resources/assets">đặc tả</a>
+        </>
+      ),
+      required: true,
+    },
+    Emails: {
+      type: '/emails',
+      description: (
+        <>
+          Resources · <code>emails</code> ·{' '}
+          <a href="/docs/vi/features/resources/emails">đặc tả</a>
+        </>
+      ),
+      required: true,
+    },
+    Documents: {
+      type: '/documents',
+      description: (
+        <>
+          Resources · <code>documents</code> · Sắp làm, chưa có route hay bảng
+        </>
+      ),
+    },
+    Teams: {
+      type: '/teams',
+      description: (
+        <>
+          Settings · <code>teams</code> ·{' '}
+          <a href="/docs/vi/features/settings/teams">đặc tả</a>
+        </>
+      ),
+      required: true,
+    },
+    Leagues: {
+      type: '/leagues',
+      description: (
+        <>
+          Settings · <code>leagues</code> ·{' '}
+          <a href="/docs/vi/features/settings/leagues">đặc tả</a>
+        </>
+      ),
+      required: true,
+    },
+    Locations: {
+      type: '/locations',
+      description: (
+        <>
+          Settings · <code>locations</code> ·{' '}
+          <a href="/docs/vi/features/settings/locations">đặc tả</a>
+        </>
+      ),
+      required: true,
+    },
+    Profile: {
+      type: '/profile/[id]',
+      description: (
+        <>
+          Menu tài khoản · <code>profile</code> ·{' '}
+          <a href="/docs/vi/features/profile">đặc tả</a>
+        </>
+      ),
+      required: true,
+    },
+    'Sign-in Pages': {
+      type: '/login · /forgot-password · /new-password',
+      description: (
+        <>
+          Ai cũng mở được · không có resource ·{' '}
+          <a href="/docs/vi/features/sign-in">đặc tả</a>
+        </>
+      ),
+      required: true,
+    },
+  }}
+/>
+
+<Callout type="info" title="Route con">
+
+- **Hồ sơ cá nhân (Profile):** mở từ menu tài khoản hoặc từ một dòng trong
+  Danh sách đội (Roster), không có trên thanh điều hướng.
+- **Kiểm tra thể lực định kỳ (Periodic Testing):** quản luôn
+  `/periodic-testing/test-types` và `/periodic-testing/add-result`.
+- **Bảng tổng quan (Dashboard):** gồm cả API xuất PDF `/api/reports/dashboard`.
+- **Báo cáo (Reports):** gồm các route cron, tải file và webhook Resend.
+
+</Callout>

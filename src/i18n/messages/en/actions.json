@@ -26,8 +26,9 @@
   },
   "league": {
     "added": "Added league successfully",
-    "deleted": "Deleted league successfully",
     "deleteFailed": "Failed to delete league",
+    "deleted": "Deleted league successfully",
+    "notUpcoming": "Only upcoming leagues can be changed",
     "playerNotOnTeam": "Player (id: {id}) is not on this team",
     "removePlayerFailed": "Failed to remove player (id: {id}) - {message}",
     "updated": "Updated league successfully"

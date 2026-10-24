@@ -1,0 +1,124 @@
+---
+title: Quản lý đội
+description: Danh sách đội, buổi tập, điểm danh, giải đấu, đăng ký giải và trận đấu nối tiếp nhau thế nào.
+---
+
+<Callout type="info" title="Phạm vi">
+
+- Chi tiết từng trang: [đặc tả Quản lý đội](/docs/vi/features/team-management/roster).
+- Trang này nói về chỗ các bước nối vào nhau, và vai trò nào phụ trách từng bước.
+
+</Callout>
+
+## Từ danh sách đội đến ngày thi đấu
+
+<Mermaid
+  chart={`
+flowchart TD
+    subgraph CA["Đội trưởng / Admin"]
+        R[Danh sách đội: mời, xoá thành viên] --> REG[Đăng ký giải: PDF / CSV cho một giải]
+    end
+    subgraph AD["Admin"]
+        LG[Giải đấu: ghi danh đội, chọn cầu thủ] --> REG
+    end
+    subgraph CO["HLV"]
+        T[Buổi tập: lên lịch] --> A[Điểm danh: theo từng buổi tập]
+        M[Trận đấu: lên lịch, rồi ghi kết quả]
+        PT[Kiểm tra định kỳ]
+    end
+    R --> T
+    LG --> M
+    A --> D[Bảng tổng quan]
+    M --> D
+    PT --> D
+`}
+/>
+
+- **Danh sách đội** (**Roster**; `addUser`, `removeUser`, quyền `roster`): nơi
+  mỗi thành viên bắt đầu; mọi trang khác đọc `user` / `player` từ đây.
+- **Giải đấu** (**Leagues**; `upsertLeague`, chỉ admin): ghi danh đội qua
+  `league_team`; đồng bộ cầu thủ được chọn vào `league_team_roster` (lưu DB).
+- **Đăng ký giải** (**Registration**; `registration:create`, đội trưởng và
+  admin): điền AcroForm của mẫu PDF (nếu có) từ cầu thủ đang thi đấu và giải.
+- Xuất ra PDF hoặc CSV; các bản đăng ký đã lưu nằm trong `localStorage`, không
+  lưu vào DB.
+- **Trận đấu** (**Matches**; `upsertMatch`, quyền `matches`): sân nhà là đội
+  bạn, đối thủ là đội bên ngoài, kèm `league_id` nếu có; không có là giao hữu.
+- Trận mới là `scheduled` và hiện ở **Upcoming Matches**; khi `completed` có tỉ
+  số thì mới tính vào tỷ lệ thắng và kết quả trên Bảng tổng quan.
+- Không xoá được đội bóng đã có trận.
+
+## Buổi tập và điểm danh
+
+<Mermaid
+  chart={`
+sequenceDiagram
+    autonumber
+    actor Coach as HLV
+    actor Player as Cầu thủ
+    participant App
+
+    Coach->>App: upsertSession (training:create)
+    Note over App: báo lỗi nếu đội chưa có HLV trưởng<br/>buổi tập mới nhận coach_id = HLV trưởng
+    App-->>Player: Buổi tập hiện trong trang Buổi tập
+    opt không đi tập được
+        Player->>App: submitLeave (attendance:create, chỉ player_id của mình)
+    end
+    Coach->>App: updateStatus cho từng cầu thủ (attendance:edit)
+    App->>App: revalidate attendances → tỷ lệ đi tập và lý do trên Bảng tổng quan
+
+`}
+/>
+
+Ràng buộc trong database:
+
+- Mỗi `(player, session)` chỉ có một bản ghi.
+- Đơn xin nghỉ: `session_id = null`, mỗi `(player, date)` chỉ có một đơn.
+- Đổi lịch một buổi tập thì `date` mới cũng được cập nhật sang các dòng điểm
+  danh của buổi đó.
+
+## Ai làm gì
+
+<TypeTable
+  type={{
+    'Mời hoặc xoá thành viên': {
+      type: 'Captain, SUPER_ADMIN',
+      description: 'roster:create / roster:delete',
+      required: true,
+    },
+    'Ghi danh đội và cầu thủ vào giải': {
+      type: 'SUPER_ADMIN',
+      description: 'leagues:create / leagues:edit qua upsertLeague',
+      required: true,
+    },
+    'Tạo hồ sơ đăng ký giải': {
+      type: 'Captain, SUPER_ADMIN',
+      description: 'registration:create',
+      required: true,
+    },
+    'Lên lịch buổi tập': {
+      type: 'COACH, SUPER_ADMIN',
+      description: 'training:create / training:edit',
+      required: true,
+    },
+    'Gửi đơn xin nghỉ': {
+      type: 'PLAYER, Captain, COACH, SUPER_ADMIN',
+      description:
+        'attendance:create; cầu thủ chỉ gửi được cho player_id của mình',
+      required: true,
+    },
+    'Điểm danh': {
+      type: 'COACH, SUPER_ADMIN',
+      description: 'attendance:edit',
+      required: true,
+    },
+    'Ghi kết quả trận đấu': {
+      type: 'Captain, COACH, SUPER_ADMIN',
+      description: 'matches:create / matches:edit',
+      required: true,
+    },
+  }}
+/>
+
+Lấy từ `ROLE_CONFIG` và `CAPTAIN_PERMISSIONS`. Ma trận đầy đủ:
+[Vai trò & Quyền](/docs/vi/access/roles-permissions#ma-trận-phân-quyền).

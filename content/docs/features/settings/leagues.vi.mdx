@@ -1,0 +1,155 @@
+---
+title: Giải đấu
+description: Các giải CLB tham gia, mỗi giải có danh sách cầu thủ riêng và trạng thái tự tính theo ngày.
+---
+
+<Callout title="Route /leagues">
+  Nhóm **Settings** · Resource `leagues` · Trạng thái **Đã phát hành**
+</Callout>
+
+## Mục đích
+
+- Giải đấu (**Leagues**) ghi lại các giải CLB tham gia và danh sách cầu thủ dự từng giải.
+- Trận đấu và thành tích đều gắn với một giải.
+- Có tên trong danh sách dự giải thì mới được tính là đã tham gia giải.
+
+## Quyền truy cập
+
+<PermissionMatrix resource="leagues" />
+
+- Huấn luyện viên (`COACH`) được xem; admin (`SUPER_ADMIN`) làm được mọi thao
+  tác.
+- Cầu thủ (`PLAYER`), khách (`GUEST`) và đội trưởng không có quyền `view`; mở
+  trang sẽ được chuyển tới `/forbidden`.
+
+## Luồng
+
+<Steps>
+  <Step>
+    ### Xem danh sách
+
+    - Các cột: tên, số cầu thủ, ngày, nhãn trạng thái; giải kết thúc gần nhất
+      xếp trước.
+    - Tìm theo tên (`q`), lọc theo trạng thái.
+    - Giải đã kết thúc và có thành tích sẽ có biểu tượng dẫn tới
+      `/achievements?record=<league_id>` (cần `achievements:create`).
+
+  </Step>
+  <Step>
+    ### Thêm hoặc cập nhật
+
+    - Bấm **+ Add** hoặc bấm vào một dòng đều mở cùng một hộp thoại.
+    - Các trường: tên, ngày bắt đầu và kết thúc, mô tả, ô chọn cầu thủ.
+    - Giải và danh sách cầu thủ được lưu cùng lúc trong một lần gọi
+      `upsertLeague`.
+    - Giải `ongoing` (đang diễn ra) / `ended` (đã kết thúc) chỉ xem được: các
+      trường bị khóa, không có ô chọn cầu thủ, không bỏ được cầu thủ, không có
+      nút Save.
+
+  </Step>
+  <Step>
+    ### Xóa
+
+    - Chỉ chọn được các dòng `upcoming` (sắp diễn ra) (`isSelectable`).
+    - `removeLeague` chạy cho từng id; một toast tổng kết báo kết quả.
+
+  </Step>
+</Steps>
+
+## Quy tắc
+
+- **Trạng thái được tính ra, không lưu.** Không có cột trạng thái;
+  `getLeagues` và `getLeagueById` dùng `deriveDateStatus`:
+  - `upcoming` khi `start_date` còn ở phía trước.
+  - `ended` khi `end_date` đã qua; còn lại là `ongoing`.
+- **Giải đã khởi tranh thì không sửa được, chặn ở cả hai phía.**
+  - Trình duyệt: hộp thoại và ô chọn dòng bị khóa với giải đang diễn ra hoặc
+    đã kết thúc.
+  - Server: `upsertLeague` (khi cập nhật) và `removeLeague` tính lại trạng
+    thái, không hợp lệ thì báo “Only upcoming leagues can be changed”.
+- **Kiểm tra dữ liệu** (`UpsertLeagueSchema`): tên 3–64 ký tự, không trùng
+  (DB kiểm tra); `end_date` phải sau `start_date`; mô tả tối đa 128 ký tự.
+- **Đồng bộ danh sách cầu thủ** trong `upsertLeague`:
+  - Đăng ký đội của bạn vào `league_team` (`onConflictDoNothing`); các dòng
+    danh sách cầu thủ có FK kép trỏ tới cặp giải–đội đó.
+  - So `player_ids` gửi lên với danh sách đã lưu.
+  - Bỏ các id không thuộc đội của bạn, dựa vào `getTeamPlayerIds` (`player`
+    lấy đội từ `user`).
+  - Thêm và bỏ cầu thủ bằng `Promise.allSettled`; mỗi lỗi ghi một dòng.
+- **Lỗi một phần thì không hoàn tác.**
+  - Giải và những thay đổi danh sách đã thành công vẫn được giữ.
+  - Phản hồi liệt kê các cầu thủ bị lỗi; `/leagues` không được làm mới.
+- **Xóa kéo theo (cascade)** `league_team`, `league_team_roster` và các trận
+  đấu của giải.
+
+## Dữ liệu
+
+`League` là một dòng giải cộng thêm trạng thái tính ra (`src/drizzle/schema/league.ts`):
+
+<AutoTypeTable path="src/drizzle/schema/league.ts" name="League" />
+
+### Tham số URL
+
+<TypeTable
+  type={{
+    q: { type: 'string', description: 'Tìm theo tên.' },
+    status: {
+      type: 'Array<LeagueStatus>',
+      description: 'upcoming, ongoing, ended.',
+    },
+    page: { type: 'number', description: 'Trang hiện tại.', default: '1' },
+  }}
+/>
+
+## API
+
+Server action trong `src/actions/league.ts`, được kiểm tra quyền bằng `withResource('leagues')`.
+
+<TypeTable
+  type={{
+    'getLeagues()': {
+      type: 'Array<League & { player_count, achievement_type }>',
+      description:
+        'Tất cả giải, xếp theo ngày kết thúc, kèm số cầu thủ và loại thành tích. Chỉ cần đăng nhập.',
+      required: true,
+    },
+    'getPlayersInLeague(league_id)': {
+      type: 'Array<User>',
+      description:
+        'Danh sách cầu thủ của đội bạn trong một giải. Chỉ cần đăng nhập.',
+      required: true,
+    },
+    'upsertLeague(league_id, values, player_ids?)': {
+      type: 'Response',
+      description: (
+        <ul>
+          <li>Tạo hoặc cập nhật giải và đăng ký đội.</li>
+          <li>Đồng bộ danh sách cầu thủ.</li>
+          <li>Cần quyền create và edit.</li>
+        </ul>
+      ),
+      required: true,
+    },
+    'removeLeague(league_id)': {
+      type: 'Response',
+      description: 'Xóa một giải cùng mọi dữ liệu kéo theo. Cần quyền delete.',
+      required: true,
+    },
+  }}
+/>
+
+## Tiêu chí chấp nhận
+
+<Accordions>
+  <Accordion title="Trạng thái tự đổi theo ngày">
+    Ngày bắt đầu còn ở phía trước thì hiện `upcoming`, giữa hai ngày là
+    `ongoing`, sau đó là `ended`, không cần ghi gì vào DB.
+  </Accordion>
+  <Accordion title="Giải đang diễn ra chỉ xem được">
+    Có nhãn Readonly, các trường bị khóa, không có nút Save; bấm vào cầu thủ đã
+    chọn thì cầu thủ đó vẫn ở trong danh sách.
+  </Accordion>
+  <Accordion title="Lỗi danh sách cầu thủ báo theo từng người">
+    Các thay đổi khác vẫn được lưu; toast lỗi nêu tên cầu thủ bị lỗi.
+  </Accordion>
+</Accordions>

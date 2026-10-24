@@ -1,28 +1,73 @@
 ---
 title: Introduction
-description: Documentation for the Saigon Rovers Basketball Club portal.
+description: Technical documentation for the Saigon Rovers Basketball Club portal.
 ---
 
-Internal documentation for the club portal — product requirements, roles and
-permissions, feature specs, user flows, and the end-to-end testing setup.
+- A private, role-based hub for one basketball club, in one Next.js app.
+- Covers roster, training, attendance, matches, testing, assets and analytics.
+- These docs record **why each page exists** and **how it is built**.
+- Use them to check a change against intent and against the code.
 
-## Where to start
+<Cards>
+  <Card
+    href="/docs/overview"
+    title="Overview"
+    description="Vision, goals, personas, principles and the data model."
+  />
+  <Card
+    href="/docs/features"
+    title="Features"
+    description="One spec per page: purpose, access, flows, rules, data and API."
+  />
+  <Card
+    href="/docs/access/roles-permissions"
+    title="Roles & Permissions"
+    description="The three auth layers and the permission matrix, rendered from code."
+  />
+  <Card
+    href="/docs/architecture"
+    title="Architecture"
+    description="C4 diagrams: context, containers, components, flows and deployment."
+  />
+</Cards>
 
-- [Overview](/docs/overview) — vision, goals, personas, and shared product principles.
-- [Features](/docs/features) — the feature catalog with one spec per page.
-- [Roles & Permissions](/docs/access/roles-permissions) — auth layers and the full permission matrix.
-- [User Flows](/docs/user-flows/authentication) — end-to-end journeys through the app.
-- [E2E Testing](/docs/quality/e2e-testing) — how the Playwright suite is set up and run.
-- [Roadmap](/docs/project/roadmap) and [Changelog](/docs/project/changelog) — where the product is going and how the PRD evolved.
+## How a spec is written
 
-Read in order: **Overview → Roles & Permissions → Feature catalog → individual
-specs → Roadmap**.
+Every feature page follows the same sections so readers know where to look:
 
-## Conventions
+<TypeTable
+  type={{
+    Purpose: {
+      type: 'prose',
+      description: 'Why the page exists and who it serves.',
+      required: true,
+    },
+    Access: {
+      type: 'PermissionMatrix',
+      description: 'Role × action permissions, generated from ROLE_CONFIG.',
+      required: true,
+    },
+    Flows: {
+      type: 'Steps',
+      description: 'Entry points and the main interactions.',
+      required: true,
+    },
+    Rules: {
+      type: 'list',
+      description: 'Invariants the server enforces.',
+      required: true,
+    },
+    'Data / API': {
+      type: 'AutoTypeTable · TypeTable',
+      description:
+        'Tables, query params and server actions, typed from the source.',
+      required: true,
+    },
+  }}
+/>
 
-- Every feature spec starts with a status line
-  (`> Route: /x · Nav group: X · Status: Draft | Approved | Shipped`). Keep it
-  current: it is the at-a-glance lifecycle marker of the spec.
-- Record meaningful doc changes in the [changelog](/docs/project/changelog).
-- Code changes can trigger documentation suggestions (see the docs automation
-  workflow), but PRDs remain human-reviewed and are the source of truth.
+<Callout type="info" title="Source of truth">
+  Generated tables read the TypeScript source at build time. The rest is
+  hand-reviewed: log meaningful changes in the
+  [changelog](/docs/project/changelog).
+</Callout>

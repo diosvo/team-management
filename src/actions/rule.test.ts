@@ -33,9 +33,9 @@ describe('permissions', () => {
     expect(mockWithResource).toHaveBeenCalledWith('team-rule');
   });
 
-  test('upsertRule requires create and edit actions', () => {
+  test('upsertRule requires the edit action only', () => {
     expect(mockWithResourceAction).toHaveBeenCalledWith(
-      ['create', 'edit'],
+      ['edit'],
       expect.objectContaining({ name: 'upsert' }),
     );
   });

@@ -11,26 +11,26 @@ import {
   ViewOptionsPopover,
 } from 'fumadocs-ui/layouts/docs/page';
 
-import { getMDXComponents } from '../_components/mdx';
-import { gitConfig } from '../_lib/shared';
-import { docs, getPageMarkdownUrl, source } from '../_lib/source';
+import { getMDXComponents } from '../../_components/mdx';
+import { gitConfig } from '../../_lib/shared';
+import { docs, getPageMarkdownUrl, source } from '../../_lib/source';
 
 interface PageProps {
-  params: Promise<{ slug?: Array<string> }>;
+  params: Promise<{ lang: string; slug?: Array<string> }>;
 }
 
 // Docs are fully enumerable at build time — unknown slugs are a hard 404.
 export const dynamicParams = false;
 
 export function generateStaticParams() {
-  return source.generateParams();
+  return source.generateParams('slug', 'lang');
 }
 
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
-  const { slug = [] } = await params;
-  const page = source.getPage(slug);
+  const { lang, slug = [] } = await params;
+  const page = source.getPage(slug, lang);
   if (!page) notFound();
 
   return {
@@ -40,8 +40,8 @@ export async function generateMetadata({
 }
 
 export default async function Page({ params }: PageProps) {
-  const { slug = [] } = await params;
-  const page = source.getPage(slug);
+  const { lang, slug = [] } = await params;
+  const page = source.getPage(slug, lang);
   if (!page) notFound();
 
   const content = docs.getPage(page.path);

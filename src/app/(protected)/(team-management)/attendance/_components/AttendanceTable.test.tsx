@@ -44,9 +44,10 @@ describe('AttendanceTable', () => {
     status?: Array<AttendanceStatus>;
     page?: number;
   } = {}) => {
-    mockUsePermissions.mockReturnValue({ isAdmin } as ReturnType<
-      typeof usePermissions
-    >);
+    mockUsePermissions.mockReturnValue({
+      can: (resource: string, action: string) =>
+        isAdmin && resource === 'attendance' && action === 'edit',
+    } as unknown as ReturnType<typeof usePermissions>);
     mockUseQueryStates({ q, status, page }, setSearchParams);
 
     return renderWithUI(<AttendanceTable attendances={attendances} />);

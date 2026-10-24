@@ -1,0 +1,124 @@
+---
+title: Email
+description: Trang để admin xem các email vừa gửi qua Resend và xem trước các mẫu email.
+---
+
+<Callout title="Route /emails">
+  Nhóm **Resources** · Resource `emails` · Trạng thái **Đã phát hành**
+</Callout>
+
+## Mục đích
+
+- Trang Email (**Emails**) giúp bạn kiểm tra portal đã gửi những email nào và email có tới nơi không.
+- Xem trước các mẫu email mà không phải gửi thật.
+- Chỉ để xem: trang này không gửi email hay thay đổi dữ liệu gì.
+
+## Quyền truy cập
+
+<PermissionMatrix resource="emails" />
+
+- Chỉ `SUPER_ADMIN` có `emails:view`.
+- Mọi vai trò khác, kể cả đội trưởng, mở trang sẽ được chuyển tới `/forbidden`.
+
+## Luồng
+
+<Steps>
+  <Step>
+    ### Xem email đã gửi
+
+    - Trang gọi `resend.emails.list()` trên server.
+    - Bảng hiện các cột **To**, **Subject**, **Status** và **Created At**.
+    - **Status** là `last_event` của Resend, hiện bằng badge màu.
+    - Nếu Resend báo lỗi, bạn sẽ thấy thông báo lỗi thay cho bảng.
+
+  </Step>
+  <Step>
+    ### Tìm kiếm và lọc
+
+    - Ô tìm kiếm tìm theo người nhận và tiêu đề.
+    - Bộ lọc **Status**: các checkbox cho 12 trạng thái (event) của Resend.
+    - Lọc và phân trang chạy trên trình duyệt; bộ lọc được lưu trên URL.
+
+  </Step>
+  <Step>
+    ### Xem trước mẫu email
+
+    - Mở một mục để xem email đã dựng sẵn với dữ liệu mẫu.
+    - **Reset password:** `ResetPassword` (`src/app/(auth)/_components`).
+    - **Analytics Report:** `AnalyticsReport` (`reports/_components`).
+
+  </Step>
+</Steps>
+
+## Quy tắc
+
+- **Không tách theo đội.** Danh sách lấy từ tài khoản Resend gắn với
+  `RESEND_API_KEY`, nên có email của tất cả các đội.
+- **Chỉ một trang từ Resend.** Không truyền `limit`, nên chỉ hiện số email gần
+  đây mà Resend trả về mặc định.
+- **Không lưu nhật ký riêng.** Email không được lưu vào database; mỗi lần chạy
+  báo cáo tự ghi trạng thái gửi trong `report_history`.
+- **Không phải email nào cũng xem trước được.** Email báo "Scheduled Report
+  Failed" là HTML viết thẳng trong `src/lib/report-schedule.ts`.
+- **Tiền tố tiêu đề.** `sendEmail` luôn thêm `SGR - ` vào đầu tiêu đề.
+
+## Dữ liệu
+
+Mỗi dòng có kiểu `ListEmail` của Resend; trang này không có bảng dữ liệu riêng.
+
+### Tham số URL
+
+<TypeTable
+  type={{
+    q: { type: 'string', description: 'Tìm theo người nhận hoặc tiêu đề.' },
+    status: {
+      type: 'Array<EmailStatus>',
+      description: (
+        <ul>
+          <li>
+            Giá trị <code>last_event</code> của Resend; chọn được nhiều giá trị.
+          </li>
+          <li>
+            Đủ 12 giá trị nằm trong <code>EMAIL_STATUS_SELECTION</code> (
+            <code>src/utils/constants/email.ts</code>).
+          </li>
+          <li>
+            Ví dụ <code>sent</code>, <code>delivered</code>,{' '}
+            <code>bounced</code>, <code>failed</code>.
+          </li>
+        </ul>
+      ),
+    },
+    page: { type: 'number', description: 'Trang hiện tại.', default: '1' },
+  }}
+/>
+
+## API
+
+Không có server action; trang đọc thẳng từ Resend.
+
+<TypeTable
+  type={{
+    'resend.emails.list()': {
+      type: '{ data, error }',
+      description:
+        'Gọi trong page.tsx bằng client dùng chung ở src/lib/resend.ts.',
+      required: true,
+    },
+  }}
+/>
+
+## Tiêu chí chấp nhận
+
+<Accordions>
+  <Accordion title="Chỉ admin mở được trang">
+    Huấn luyện viên, cầu thủ, khách hay đội trưởng mở `/emails` đều được chuyển
+    tới `/forbidden`.
+  </Accordion>
+  <Accordion title="Bộ lọc hiện trên URL">
+    Tìm "report" và tick Bounced sẽ ra `?q=report&status=bounced`.
+  </Accordion>
+  <Accordion title="Xem trước không gửi email">
+    Mở **Reset password** sẽ thấy mẫu email; không có email nào được gửi đi.
+  </Accordion>
+</Accordions>

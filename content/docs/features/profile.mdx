@@ -1,162 +1,220 @@
 ---
-title: "Profile"
+title: Profile
+description: A member's avatar, personal and team details, with ownership enforced by each server action.
 ---
 
-> Route: `/profile/[id]` · Nav group: **Account** (not in sidebar) · Status: **Draft**
+<Callout title="Route /profile/[id]">
+  Not in the sidebar · Resource `profile` · Status **Shipped**
+</Callout>
 
-## 1. Summary
+## Purpose
 
-- **Profile** shows a single member's details across three tabs: **Overview** (avatar), **Personal**, and **Team**.
-- Reached from the **Account Menu → Profile** (your own profile) or by clicking a member row in **Roster** (any member).
-- Members edit their own profile; SUPER_ADMIN can edit anyone's; GUEST has no access.
+- Members review and edit their own details.
+- SUPER_ADMIN manages any member's team data: role, position, state, jersey
+  number.
+- Reached from the account menu (own profile) or a
+  [Roster](/docs/features/team-management/roster) row.
 
-## 2. Goals / metrics
+## Access
 
-### Goals
+<PermissionMatrix resource="profile" />
 
-- Give each member a single place to review and maintain their own details.
-- Let admins manage any member's team-facing data (role, position, state, jersey number).
-- Keep avatars private and small enough to load inline, with a one-click replace.
+- GUEST has no `view`: the proxy redirects to `/forbidden`, and
+  `getUserProfile` calls `forbidden()`.
+- Every other role holds `profile:edit`, so actions re-check ownership.
 
-## 3. Users and permissions
+### `viewOnly`
 
-Backed by the `profile` resource.
+UI-only flag from `getUserProfile`; disables Edit on the Personal and Team tabs.
 
-| Role        | View own | Edit own     | View others | Edit others |
-| ----------- | -------- | ------------ | ----------- | ----------- |
-| GUEST       | No       | No           | No          | No          |
-| PLAYER      | Yes      | Yes          | Yes         | No          |
-| COACH       | Yes      | Yes          | Yes         | No          |
-| SUPER_ADMIN | Yes      | Avatar only¹ | Yes         | Yes         |
+- PLAYER / COACH: editable on their own profile, view only on another member.
+- SUPER_ADMIN: view only on their own profile, editable on another member.
 
-> ¹ On their **own** profile, SUPER_ADMIN sees the Personal/Team tabs as **read-only** (the edit action is disabled); admins manage their own team data by editing another admin or via Roster. They can still upload their own avatar.
-> GUEST is redirected away (`forbidden`), so the profile page is not viewable.
+### Server-side ownership
 
-### `viewOnly` rules
+<TypeTable
+  type={{
+    updatePersonalInfo: {
+      type: 'SUPER_ADMIN or self',
+      description:
+        'SUPER_ADMIN may target any user_id; everyone else only their own.',
+      required: true,
+    },
+    updateTeamInfo: {
+      type: 'SUPER_ADMIN or self',
+      description:
+        'Non-admins must target their own user_id and keep values.user.role at their current role.',
+      required: true,
+    },
+    uploadAvatar: {
+      type: 'self only',
+      description:
+        'Every role, own user_id only. A given old_path must equal the stored image exactly.',
+      required: true,
+    },
+    getAvatar: {
+      type: 'users/ prefix',
+      description:
+        'image_path must start with users/; anything else is forbidden().',
+      required: true,
+    },
+  }}
+/>
 
-The page computes a `viewOnly` flag that disables the **Edit** action on the Personal and Team tabs:
+- `old_path` must be equal, not a prefix: Blob keys have a random suffix.
+- `users/1` would prefix-match `users/12-abc`.
+- So only the caller's current avatar is deletable.
 
-- SUPER_ADMIN on **own** profile → `viewOnly = true`
-- SUPER_ADMIN on **another** profile → editable
-- PLAYER / COACH on **own** profile → editable
-- PLAYER / COACH on **another** profile → `viewOnly = true`
+## Flows
 
-Avatar upload is gated separately: only the **profile owner** can change the avatar (any role, own profile only).
+<Tabs items={['Overview', 'Personal', 'Team']}>
+  <Tab value="Overview">
 
-### Server-side ownership rules
+    - Avatar (initials fallback), name and role.
+    - Upload overlay for the owner only (`sessionUser.id === user.id`).
+    - `ImageUploader`: PNG or JPEG, up to 100 KB.
+    - On success the session is refetched, so the header avatar updates.
 
-`viewOnly` only disables controls; it decides nothing. Every non-GUEST role holds `profile:edit`, so the resource check alone would accept an edit that any member submits for any `user_id`. Each write therefore re-checks ownership against the session user and returns `forbidden()` on a mismatch:
+  </Tab>
+  <Tab value="Personal">
 
-| Action               | Rule                                                                                                             |
-| -------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `updatePersonalInfo` | SUPER_ADMIN: any member. Everyone else: own `user_id` only.                                                       |
-| `updateTeamInfo`     | SUPER_ADMIN: any member. Everyone else: own `user_id` only, and the submitted role must equal their current role. |
-| `uploadAvatar`       | Own `user_id` only, for every role. The `old_path` being deleted must equal the record's `image`.                 |
-| `getAvatar`          | The path must start with `users/`.                                                                                |
+    - Email (read-only), full name, DOB, phone, citizen ID.
+    - Save only when dirty and valid; Cancel resets.
 
-Two of these need the reasoning spelled out:
+  </Tab>
+  <Tab value="Team">
 
-- **Role escalation**: team info includes `role`, so a self-edit that submits a different role is rejected outright rather than silently ignored. Only SUPER_ADMIN changes roles.
-- **Blob ownership**: comparing `old_path` against the stored `image` is stricter than a `users/<user_id>` prefix test, which cannot separate one user's key from another's. Blob keys get a random suffix, so `users/1` prefix-matches `users/12-abc`. Equality leaves the caller's own record as the only deletable blob.
+    - Role, position, state, jersey number, join date (of the open
+      membership stint).
+    - Role and position: SUPER_ADMIN only. Jersey number: players only.
+    - Saving with state `active` mutates SWR `CACHE_KEY.PLAYERS`, refreshing
+      player pickers.
 
-## 4. UX / flows
+  </Tab>
+</Tabs>
 
-### Entry points
+## Rules
 
-- **Account Menu → Profile**: opens your own profile.
-- **Roster**: clicking a member row opens that member's profile.
+- **Unique jersey per team.** `isJerseyNumberTaken` (excluding the edited
+  member) runs before any write.
+- **Private avatar Blobs.** Under `users/<user_id>` with a random suffix.
+- **Avatar reads.** `getAvatar` returns a base64 data URL, cached by
+  `useUserAvatar` (SWR immutable).
+- **Join date lives on the membership.** `join_date` is read from and written
+  to the member's open `user_team` stint, not a column on `user`.
+- **Role switching.** `updateTeamInfo` upserts the `player` / `coach` row for
+  the _submitted_ role and deletes the previous role's row.
+  - User, stint and role rows are written in one transaction
+    (`updateUserTeamInfo`).
+- **Revalidation.** Every write calls `revalidatePath('/profile/<id>')`.
 
-### Layout
+## Data
 
-- Tabbed layout, centered; tabs are vertical on desktop and horizontal on mobile.
-- Tabs: **Overview**, **Personal**, **Team**. A “Last updated on …” timestamp shows below.
+Validation from `USER_SCHEMA_VALIDATION` in `src/schemas/utils.ts`:
 
-### Overview (avatar)
+<TypeTable
+  type={{
+    name: { type: 'string', description: '6–128 characters.', required: true },
+    dob: { type: 'date', description: 'Date of birth.' },
+    phone_number: {
+      type: 'string',
+      description: 'Exactly 10 digits when set.',
+    },
+    citizen_identification: {
+      type: 'string',
+      description: 'Exactly 12 digits when set.',
+    },
+    role: {
+      type: 'UserRole',
+      description: 'Admin-only in the UI; enforced server-side.',
+      required: true,
+    },
+    state: {
+      type: 'UserState',
+      description: 'active | inactive | temporarily_absent | unknown',
+      required: true,
+    },
+    join_date: {
+      type: 'date',
+      description: 'Join date of the open user_team stint.',
+    },
+    'player.jersey_number': {
+      type: 'number',
+      description: '0–99, unique per team.',
+    },
+    'player.position / coach.position': {
+      type: 'PlayerPosition | CoachPosition',
+      description: 'Admin-only in the UI.',
+    },
+  }}
+/>
 
-- Shows the member's avatar (or initials fallback) with name and role.
-- On your own profile, hovering the avatar reveals a camera overlay; clicking it opens a file picker.
-- Accepts **PNG or JPEG** files up to **100 KB**; the new avatar is stored privately and the old one is removed.
-- A loading toast turns into success/error; on success the avatar and the current session update immediately.
+## API
 
-### Personal
+Server actions in `src/actions/user.ts`; all but `getUserProfile` use
+`withResource('profile')`.
 
-- View mode shows Email, Fullname, DOB, Phone Number, Citizen ID (unset fields show `-`).
-- Edit mode exposes inputs; **Email is read-only**. Save is enabled only when the form is valid and changed.
-- Cancel discards edits and returns to view mode.
+<TypeTable
+  type={{
+    'getUserProfile(id)': {
+      type: '{ targetUser: User, viewOnly: boolean }',
+      description: 'withAuth; forbidden() for GUEST, notFound() when missing.',
+      required: true,
+    },
+    'getAvatar(image_path)': {
+      type: 'string | null',
+      description: 'Data URL of a private blob under users/.',
+      required: true,
+    },
+    'uploadAvatar(user_id, old_path, file)': {
+      type: 'Response<{ image }>',
+      description: 'Upload, update image, delete the previous blob.',
+      required: true,
+    },
+    'updatePersonalInfo(user_id, values)': {
+      type: 'Response',
+      description: 'name, dob, phone_number, citizen_identification.',
+      required: true,
+    },
+    'updateTeamInfo(user_id, values)': {
+      type: 'Response',
+      description: (
+        <ul>
+          <li>
+            Updates <code>user</code>, the open <code>user_team</code> stint and
+            player/coach rows.
+          </li>
+          <li>All in one transaction.</li>
+          <li>Rejects a taken jersey number.</li>
+        </ul>
+      ),
+      required: true,
+    },
+  }}
+/>
 
-### Team
+## Acceptance
 
-- View mode shows Role, Position, State, Jersey Number, and Joined date.
-- Edit mode exposes State, Jersey Number (players), and Join Date.
-- **SUPER_ADMIN** additionally edits Role and Position.
-- Activating a member (state → active) refreshes the active-players cache.
+<Accordions>
+  <Accordion title="Ownership is enforced without the UI">
 
-## 5. Functional requirements
+    - A PLAYER calling updatePersonalInfo or updateTeamInfo for another
+      user_id is rejected.
+    - So is their own user_id with a changed role. Nothing is written.
 
-- **FR-1:** GUEST cannot access any profile; all other roles can view any profile.
-- **FR-2:** A member can edit their own Personal and Team info; SUPER_ADMIN can edit any member's (except their own, which is read-only).
-- **FR-3:** Only the profile owner can upload/replace the avatar.
-- **FR-4:** Avatars accept PNG or JPEG files up to 100 KB (`MAX_FILE_SIZE`), are stored privately, and replace the previous file.
-- **FR-5:** Email is read-only in the Personal tab.
-- **FR-6:** Fullname is required (min 6 chars); Phone must be 10 digits; Citizen ID must be 12 digits when provided.
-- **FR-7:** Jersey numbers are unique per team; a duplicate is rejected with a clear message.
-- **FR-8:** Only SUPER_ADMIN can change a member's Role and Position.
-- **FR-9:** Save actions show a success or error toast; a failed save does not exit edit mode.
-- **FR-10:** The page shows when the profile was last updated.
-- **FR-11:** Personal and Team writes are rejected (`forbidden`) when a non-admin targets a `user_id` other than their own, regardless of what the UI allowed.
-- **FR-12:** A non-admin cannot change their own role: a team-info save whose `role` differs from the caller's current role is rejected.
-- **FR-13:** Avatar upload is rejected when the target `user_id` is not the caller's, and when the `old_path` to delete is not the path currently stored on that user's record.
-- **FR-14:** Avatar reads are limited to the `users/` prefix, so the action cannot resolve unrelated private blobs (for example team logos).
+  </Accordion>
+  <Accordion title="Admin edits others, not self">
 
-## 6. Acceptance criteria (Given/When/Then)
+    - Another member: Role, Position, State and Jersey Number are editable.
+    - Own profile: both tabs view only; the avatar can still be replaced.
 
-- **AC-1:** Given I am a PLAYER, when I open my own profile, then I can edit my Personal and Team info.
-- **AC-2:** Given I am a PLAYER, when I open another member's profile, then all fields are read-only.
-- **AC-3:** Given I am SUPER_ADMIN, when I open another member's profile, then I can edit their Role, Position, State, and Jersey Number.
-- **AC-4:** Given I am SUPER_ADMIN, when I open my own profile, then the Personal and Team tabs are read-only but I can still upload my avatar.
-- **AC-5:** Given I edit a player and enter a jersey number already used on the team, then the save is rejected with “Jersey number `<n>` is already taken”.
-- **AC-6:** Given I upload an avatar over 100 KB, or in a format other than PNG or JPEG, then it is rejected before upload with an error toast.
-- **AC-7:** Given I upload a valid avatar on my own profile, then the avatar updates, the previous file is removed, and the session reflects the new image.
-- **AC-8:** Given I am a GUEST, when I navigate to a profile URL, then I am blocked (forbidden).
-- **AC-9:** Given I am a PLAYER, when a personal- or team-info save is submitted for another member's `user_id`, then it is rejected and nothing is written.
-- **AC-10:** Given I am a PLAYER, when a team-info save is submitted with `role` set to `coach`, then it is rejected and my role is unchanged.
-- **AC-11:** Given an avatar upload passes an `old_path` that is not the path on my user record, then the upload is rejected and no blob is deleted.
+  </Accordion>
+  <Accordion title="Avatar limits and replacement">
 
-## 7. Technical appendix
+    - Over 100 KB or not PNG/JPEG: rejected client-side.
+    - Valid upload: updates the avatar, deletes the old blob, refreshes the
+      session.
+    - old_path not equal to the stored image: rejected, nothing deleted.
 
-### Data model (logical)
-
-User:
-
-- `name`: string (min 6)
-- `email`: string (unique, read-only here)
-- `dob`: date
-- `phone_number`: string (10 digits, optional)
-- `citizen_identification`: string (12 digits, optional)
-- `image`: string, private blob pathname of the avatar (nullable)
-- `role`: enum [`player`, `coach`, `super_admin`, `guest`]
-- `state`: enum [`active`, `inactive`, `temporarily_absent`, `unknown`]
-- `join_date`: date, read from and written to the member's open `user_team`
-  stint rather than a column on `user`
-
-Player: `position`, `jersey_number` (unique per team) · Coach: `position`.
-
-### Avatar storage
-
-- Stored in **Vercel Blob** with `access: 'private'` and a random suffix; served to the client as a base64 data URL.
-- Path convention: `users/<user_id>`.
-- Uploading replaces the record's `image` and deletes the previous blob.
-
-### API (server actions)
-
-The four write/read actions below are wrapped in `withResource('profile')` (`getUserProfile` uses `withAuth` and does its own GUEST check); each one that takes a `user_id` or a blob path additionally enforces the ownership rules in §3.
-
-- `getUserProfile(id)`: returns `{ targetUser, viewOnly }`; `notFound()` if missing, `forbidden()` for GUEST.
-- `getAvatar(image_path)`: resolves a private blob path to a data URL (`null` when unset); `forbidden()` for a path outside `users/`.
-- `uploadAvatar(user_id, old_path, file)`: uploads, updates `image`, removes the old blob, returns `{ image }`. `forbidden()` unless `user_id` is the caller and `old_path` matches the stored `image`.
-- `updatePersonalInfo(user_id, values)`: updates name/dob/phone/citizen ID. `forbidden()` when a non-admin targets another member.
-- `updateTeamInfo(user_id, values)`: updates user + role-specific (player/coach) data. `forbidden()` when a non-admin targets another member or submits a changed role.
-
-### Client data
-
-- `useUserAvatar(image)`: SWR-immutable fetch of the avatar data URL, keyed on the image path.
+  </Accordion>
+</Accordions>

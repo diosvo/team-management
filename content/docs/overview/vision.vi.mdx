@@ -1,0 +1,45 @@
+---
+title: Tầm nhìn
+description: Cổng thông tin thay cho cách làm cũ nào, tầm nhìn, và những gì cố ý không làm.
+---
+
+## Vấn đề
+
+Trước đây, việc của CLB nằm rải rác trong bảng tính và nhóm chat:
+
+- **Thông tin cũ.** Không có bản nào luôn được cập nhật.
+- **Không rõ ai lo việc gì.** Mỗi đầu việc không có người phụ trách rõ ràng.
+- **Mỗi người chỉ thấy phần của mình.** HLV không biết ai đã xin nghỉ; cầu thủ
+  phải hỏi mới biết buổi tập tới là khi nào.
+
+## Tầm nhìn
+
+Một cổng thông tin nội bộ, ai thấy gì tuỳ theo vai trò: nơi duy nhất ghi mọi
+thông tin của CLB.
+
+- Thành viên nào cũng trả lời được "ai, khi nào, ở đâu" chỉ trong vài giây.
+- Người lo từng việc (điểm danh, đăng ký giải, kiểm tra thể lực) làm trọn từ
+  đầu đến cuối ngay trong app.
+
+## Ngoài phạm vi
+
+Chưa có kế hoạch trừ khi có nhu cầu mới rõ ràng; code giả định chỉ phục vụ một
+CLB mà mọi người tin nhau.
+
+- **Nhiều CLB hoặc mở công khai.** Chỉ một dòng `team` có `is_default`; đội
+  bóng đối thủ chỉ là bản ghi `team` đơn giản, không phải tenant.
+- **Tự đăng ký tài khoản.** Không có trang đăng ký. Admin hoặc đội trưởng thêm
+  từ Danh sách đội (**Roster**, `addUser`); email đặt lại mật khẩu kích hoạt.
+- **Theo dõi chấn thương, thu phí, nhật ký kiểm toán.** Chỉ làm khi thật sự cần.
+- **App di động riêng.** Chỉ có web responsive.
+
+## Ràng buộc
+
+- **Thành viên đáng tin.** Ai cũng được mời vào; server vẫn kiểm tra mọi quyền
+  (xem [Nguyên tắc](/docs/vi/overview/principles)).
+- **Ít vai trò và cố định.** `UserRole`: `GUEST`, `PLAYER`, `COACH`,
+  `SUPER_ADMIN`, cộng `player.is_captain`. Quyền nằm trong code (`ROLE_CONFIG`).
+- **Vài chục người dùng, không phải hàng nghìn.** Một CLB, một đội mặc định;
+  hiệu năng và phân trang tính theo quy mô đó.
+- **Phiên đăng nhập Better Auth.** Chỉ email + mật khẩu; phiên đăng nhập 1 giờ,
+  cookie cache có chữ ký; không có OAuth.

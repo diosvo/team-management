@@ -1,72 +1,101 @@
 ---
-title: "Team Rule"
+title: Team Rule
+description: One rich-text rules page per team, editable in place by admins.
 ---
 
-> Route: `/team-rule` · Nav group: **Overview** · Status: **Draft**
+<Callout title="Route /team-rule">
+  Nav group **Overview** · Resource `team-rule` · Status **Shipped**
+</Callout>
 
-## 1. Summary
+## Purpose
 
-- The **Team Rule** page displays the team's rules and policies as rich text.
-- Authorized users can edit the content; all others have a read-only view.
+- Single source of truth for the team's policies.
+- Members read it; admins edit it in place, with no export or re-upload.
+- Stored as HTML from the TipTap editor, on the team row itself.
 
-## 2. Goals / metrics
+## Access
 
-### Goals
+<PermissionMatrix resource="team-rule" />
 
-- Give all members a single source of truth for team rules.
-- Let authorized users keep rules up to date from the page itself, with no export or re-upload step.
+GUEST has no `view`, so the proxy redirects `/team-rule` to `/forbidden`.
 
-## 3. Users and permissions
+<Callout type="info" title="One right for a singleton">
 
-| Role             | View | Edit |
-| ---------------- | ---- | ---- |
-| GUEST            | No   | No   |
-| PLAYER           | Yes  | No   |
-| COACH            | Yes  | No   |
-| SUPER_ADMIN      | Yes  | Yes  |
-| PLAYER (Captain) | Yes  | Yes  |
+- The rule is two columns on the team row, which always exists.
+- So `upsertRule` is a plain update needing only `team-rule:edit`.
+- Requiring `create` too would lock captains out.
 
-## 4. UX / flows
+</Callout>
 
-### Entry point
+## Flows
 
-- Sidebar → **Team Rule**.
+<Steps>
+  <Step>
+    ### View
 
-### View
+    - `getRule` reads `rule_content` and `rule_updated_at` from the team row.
+    - No content yet: "Please wait for admin to set up the rule."
+    - **Copy** copies HTML + plain text, with the last-updated line as footer.
 
-- The page renders the current rule content as read-only rich text.
+  </Step>
+  <Step>
+    ### Edit
 
-### Edit
+    - **Edit** / **Preview** toggle the same `RichTextEditor.Root` (no remount).
+    - Unsaved changes show **Save changes?**, which calls `upsertRule(html)`.
+    - The toast reads "Added rule successfully" the first time, "Updated rule
+      successfully" after that.
 
-- Authorized users see an **Edit** toggle that switches the view to an editable text editor.
-- The editor is TipTap/ProseMirror and never renders on the server (`immediatelyRender: false`), so it loads as a separate client-only chunk behind a skeleton instead of shipping with the page. Read-only viewers, meaning every PLAYER and COACH, never download it.
-- Clicking **Save** persists the changes and returns to read-only view.
-- Clicking **Cancel** discards changes.
+  </Step>
+</Steps>
 
-## 5. Functional requirements
+## Rules
 
-- **FR-1:** PLAYER, COACH, SUPER_ADMIN, and Captain can view the team rule.
-- **FR-2:** SUPER_ADMIN and Captain can edit the rule content.
-- **FR-3:** Saving shows a success or error toast.
-- **FR-4:** The rule last-updated timestamp is tracked server-side.
+- **One rule per team.** Stored in `team.rule_content` (null until first
+  save); there is no separate `rule` table, so it goes with the team.
+- **Client-only editor.** `next/dynamic` with `ssr: false`; TipTap uses
+  `immediatelyRender: false`.
+- **Revalidation.** Save calls `revalidatePath('/team-rule')`.
+- **Timestamp.** `rule_updated_at` shows as "Last updated on …".
+  - Only `upsertRule` sets it, so renaming the team or changing its logo is
+    not a rule revision.
 
-## 6. Acceptance criteria (Given/When/Then)
+## Data
 
-- **AC-1:** Given I am a GUEST, when I navigate to `/team-rule`, then I am redirected to `/forbidden`.
-- **AC-2:** Given I am a PLAYER, when I view Team Rule, then I see the content but no edit control.
-- **AC-3:** Given I am a Captain, when I edit and save the content, then the updated rule is visible to all permitted roles.
+<AutoTypeTable path="src/drizzle/schema/team.ts" name="TeamRule" />
 
-## 7. Technical appendix
+## API
 
-### Data model (logical)
+Server actions in `src/actions/rule.ts`.
 
-The rule lives on the team row; there is no separate `rule` table.
+<TypeTable
+  type={{
+    'getRule()': {
+      type: 'NullishTeamRule',
+      description:
+        'withAuth; rule_content and rule_updated_at of the caller’s team, or null.',
+      required: true,
+    },
+    'upsertRule(content)': {
+      type: 'Response',
+      description:
+        'withResource(team-rule) with edit; updates the team row and stamps rule_updated_at.',
+      required: true,
+    },
+  }}
+/>
 
-- `team.rule_content`: rich text (nullable until a rule is written)
-- `team.rule_updated_at`: timestamp, written only when the rule changes — so
-  renaming the team or replacing its logo does not read as a rule revision
+## Acceptance
 
-### API
-
-- `getRule()`: fetch the current rule, narrowed to the two columns above
-- `upsertRule(content)`: write the content and stamp `rule_updated_at`
+<Accordions>
+  <Accordion title="Guests are redirected">
+    A GUEST navigating to `/team-rule` lands on `/forbidden`.
+  </Accordion>
+  <Accordion title="Readers see no edit control">
+    A PLAYER or COACH sees the content and the Copy button, but no Edit button.
+  </Accordion>
+  <Accordion title="Admin save is visible to all">
+    After a SUPER_ADMIN saves, every permitted role sees the new content and
+    timestamp on next load.
+  </Accordion>
+</Accordions>

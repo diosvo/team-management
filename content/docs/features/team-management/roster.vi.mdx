@@ -1,0 +1,148 @@
+---
+title: Danh sách đội
+description: Danh sách thành viên của đội, admin và đội trưởng có thể mời thêm hoặc xoá người.
+---
+
+<Callout title="Route /roster">
+  Nhóm **Team Management** · Resource `roster` · Trạng thái **Đã phát hành**
+</Callout>
+
+## Mục đích
+
+- Danh sách đội (**Roster**) là nơi duy nhất cho biết ai đang trong đội: vai
+  trò, trạng thái và số áo.
+- Admin và đội trưởng quản lý thành viên ngay tại đây.
+- Thông tin cá nhân thì sửa trên [hồ sơ cá nhân](/docs/vi/features/profile) của
+  từng người.
+
+## Quyền truy cập
+
+<PermissionMatrix resource="roster" />
+
+- Ai cũng xem được.
+- Đội trưởng có mọi quyền của cầu thủ (`PLAYER`), cộng thêm toàn quyền quản lý:
+  mời và xoá thành viên giống hệt admin (`SUPER_ADMIN`).
+
+## Luồng
+
+<Steps>
+  <Step>
+    ### Mời thành viên
+
+    - Bấm **+ Add** để mở hộp thoại mời.
+    - `addUser` tạo tài khoản (kèm mật khẩu tạm) và bản ghi `player` hoặc
+      `coach`.
+    - Đồng thời mở một lần gia nhập trong `user_team` từ ngày vào đội; không
+      nhập thì lấy ngày thành lập CLB (`ESTABLISHED_DATE`).
+    - Resend gửi email "Create a new password" cho người được mời.
+    - Người được mời kích hoạt tài khoản tại `/new-password`; không cần bước xác
+      minh nào khác.
+
+  </Step>
+  <Step>
+    ### Lọc danh sách
+
+    - Tìm theo tên hoặc email; lọc theo vai trò và trạng thái.
+    - Bộ lọc được lưu trên URL: gửi link cho người khác được, tải lại trang vẫn
+      giữ nguyên.
+
+  </Step>
+  <Step>
+    ### Xoá thành viên
+
+    - Chọn nhiều dòng rồi xoá một lần.
+    - Xoá thành viên thì lịch sử gia nhập đội của người đó cũng bị xoá.
+    - Xoá xong, một toast tổng kết sẽ báo kết quả.
+
+  </Step>
+</Steps>
+
+## Quy tắc
+
+- **Chỉ lấy đúng phần cần hiển thị.** Danh sách chỉ đọc `RosterUser`.
+  - Ngày sinh, số điện thoại và CCCD không bao giờ ra khỏi Server Component;
+    trang hồ sơ hiển thị chúng theo quy tắc sở hữu riêng.
+- **Chỉ hiện thành viên hiện tại.** Danh sách lọc theo `user.team_id`, con
+  trỏ tới lần gia nhập đang mở của mỗi người trong `user_team`.
+- **Mỗi số áo chỉ một người trong đội.** `isJerseyNumberTaken` kiểm tra trong
+  action chứ không phải ở DB, vì `player` chỉ liên kết với đội thông qua `user`.
+  - Số áo được đặt ở tab Team trong hồ sơ; form mời không có ô số áo.
+- **Admin (`SUPER_ADMIN`) không hiện** trong danh sách.
+- **Gửi link là thấy đúng bộ lọc.** `q`, `role` và `state` là tham số trên URL.
+
+## Dữ liệu
+
+Sinh tự động từ `src/db/user.ts`:
+
+<AutoTypeTable path="src/db/user.ts" name="RosterUser" />
+
+### Tham số URL
+
+<TypeTable
+  type={{
+    q: { type: 'string', description: 'Tìm theo tên hoặc email.' },
+    role: { type: 'UserRole', description: 'Lọc theo vai trò.' },
+    state: {
+      type: 'UserState',
+      description: 'Lọc theo đang hoạt động / ngưng hoạt động.',
+    },
+  }}
+/>
+
+## API
+
+Server action trong `src/actions/user.ts`, được bảo vệ bởi
+`withResource('roster')`.
+
+<TypeTable
+  type={{
+    'getRoster()': {
+      type: 'Array<RosterUser>',
+      required: true,
+      description: 'Mọi thành viên trong đội của bạn, trừ SUPER_ADMIN.',
+    },
+    'addUser(values)': {
+      type: 'Response',
+      required: true,
+      description: (
+        <ul>
+          <li>Tạo tài khoản, bản ghi theo vai trò và lần gia nhập đội.</li>
+          <li>Rồi gửi email kích hoạt.</li>
+        </ul>
+      ),
+    },
+    'removeUser(id)': {
+      type: 'Response',
+      required: true,
+      description: (
+        <ul>
+          <li>Xoá một thành viên.</li>
+          <li>
+            Session, account, lịch sử gia nhập và bản ghi theo vai trò bị xoá
+            theo.
+          </li>
+        </ul>
+      ),
+    },
+  }}
+/>
+
+## Tiêu chí chấp nhận
+
+<Accordions>
+  <Accordion title="Người chỉ xem không thấy nút quản lý">
+    Khách, cầu thủ không phải đội trưởng và huấn luyện viên thấy toàn bộ thành
+    viên, nhưng không có nút **+ Add** hay ô chọn dòng.
+  </Accordion>
+  <Accordion title="Không cho trùng số áo">
+    Lưu hồ sơ với số áo đã có người dùng trong đội sẽ báo lỗi: “Jersey number
+    `<n>` is already taken”.
+  </Accordion>
+  <Accordion title="Thông tin cá nhân chỉ nằm trên server">
+    Dữ liệu gửi xuống trang không có ngày sinh, số điện thoại hay CCCD.
+  </Accordion>
+  <Accordion title="Email kích hoạt">
+    Mời thành công sẽ gửi email “Create a new password” có link tới
+    `/new-password`.
+  </Accordion>
+</Accordions>

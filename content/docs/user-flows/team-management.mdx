@@ -1,30 +1,51 @@
 ---
-title: "Team Management"
-description: "How rosters, training, attendance, registration, and matches flow together."
+title: Team Management
+description: How roster, training, attendance, leagues, registration and matches hand off to each other.
 ---
 
-> Feature-level detail lives in the [Team Management specs](/docs/features/team-management/roster).
-> These flows show how the workflows hand off to each other and who runs each step.
+<Callout type="info" title="Scope">
+
+- Per-page detail: [Team Management specs](/docs/features/team-management/roster).
+- This page covers hand-offs and which role drives each step.
+
+</Callout>
 
 ## From roster to match day
 
 <Mermaid
   chart={`
 flowchart TD
-    subgraph Captain
-        R[Roster: invite / remove players] --> REG[Registration: register players for a league]
+    subgraph CA["Captain / Admin"]
+        R[Roster: invite, remove] --> REG[Registration: PDF / CSV for a league]
     end
-    subgraph Coach
-        T[Training: schedule sessions] --> A[Attendance: record per session]
-        M[Matches: record results]
+    subgraph AD["Admin"]
+        LG[Leagues: enrol team, pick players] --> REG
+    end
+    subgraph CO["Coach"]
+        T[Training: schedule] --> A[Attendance: per session]
+        M[Matches: schedule, then results]
+        PT[Periodic Testing]
     end
     R --> T
-    REG --> M
-    A --> D[Dashboard: attendance trend, rankings]
+    LG --> M
+    A --> D[Dashboard]
     M --> D
-    PT[Periodic Testing: record player metrics] --> D
+    PT --> D
 `}
 />
+
+- **Roster** (`addUser`, `removeUser`, gated by `roster`): where a member
+  starts; every other page reads `user` / `player` from it.
+- **Leagues** (`upsertLeague`, admin only): enrols the caller's team via
+  `league_team`; syncs picked players into `league_team_roster` (persisted).
+- **Registration** (`registration:create`, captain and admin): fills an
+  optional PDF template's AcroForm from active players and leagues.
+- Exports PDF or CSV; saved registrations live in `localStorage`, not the DB.
+- **Matches** (`upsertMatch`, gated by `matches`): home is the caller's team,
+  away an external team, plus optional `league_id`; none means a friendly.
+- A match starts `scheduled` and feeds **Upcoming Matches**; once `completed`
+  with a score it counts toward Dashboard win rate and results.
+- A team that appears in any match can't be deleted.
 
 ## Training and attendance
 
@@ -36,30 +57,65 @@ sequenceDiagram
     actor Player
     participant App
 
-    Coach->>App: Schedule training session (date, location)
+    Coach->>App: upsertSession (training:create)
+    Note over App: fails without a team head coach<br/>new sessions get coach_id = head coach
     App-->>Player: Session appears in Training
-    alt player can't attend
-        Player->>App: Submit leave request (own player_id only)
+    opt cannot attend
+        Player->>App: submitLeave (attendance:create, own player_id only)
     end
-    Coach->>App: Take attendance for the session
-    App->>App: Update attendance rate + dashboard stats
+    Coach->>App: updateStatus per player (attendance:edit)
+    App->>App: revalidate attendances → dashboard rate and reasons
+
 `}
 />
 
-## League registration
+Database constraints:
 
-<Mermaid
-  chart={`
-flowchart LR
-    A[Captain opens Registration] --> B[Select league]
-    B --> C[Select players from roster]
-    C --> D[Upload registration PDF]
-    D --> E[Saved registration]
-    E --> F[Export]
-`}
+- One record per `(player, session)`.
+- Leave request: `session_id = null`, unique per `(player, date)`.
+- Rescheduling a session cascades the new `date` into its attendance rows.
+
+## Who runs what
+
+<TypeTable
+  type={{
+    'Invite or remove members': {
+      type: 'Captain, SUPER_ADMIN',
+      description: 'roster:create / roster:delete',
+      required: true,
+    },
+    'Enrol team and players in a league': {
+      type: 'SUPER_ADMIN',
+      description: 'leagues:create / leagues:edit through upsertLeague',
+      required: true,
+    },
+    'Generate a registration': {
+      type: 'Captain, SUPER_ADMIN',
+      description: 'registration:create',
+      required: true,
+    },
+    'Schedule training': {
+      type: 'COACH, SUPER_ADMIN',
+      description: 'training:create / training:edit',
+      required: true,
+    },
+    'Submit a leave request': {
+      type: 'PLAYER, Captain, COACH, SUPER_ADMIN',
+      description: 'attendance:create; players only for their own player_id',
+      required: true,
+    },
+    'Mark attendance': {
+      type: 'COACH, SUPER_ADMIN',
+      description: 'attendance:edit',
+      required: true,
+    },
+    'Record a match': {
+      type: 'Captain, COACH, SUPER_ADMIN',
+      description: 'matches:create / matches:edit',
+      required: true,
+    },
+  }}
 />
 
-Roles beyond the happy path: `SUPER_ADMIN` can run every step; `COACH` can
-create and edit training, attendance, and matches; a plain `PLAYER` only views
-these pages and submits their own leave requests — see the
-[permission matrix](/docs/access/roles-permissions#2-permission-matrix).
+Derived from `ROLE_CONFIG` and `CAPTAIN_PERMISSIONS`. Full matrix:
+[Roles & Permissions](/docs/access/roles-permissions#permission-matrix).

@@ -1,0 +1,128 @@
+---
+title: Đăng nhập & tài khoản
+description: Nhận tài khoản, đăng nhập, đặt lại mật khẩu, và cách mỗi request được kiểm tra quyền.
+---
+
+<Callout type="info" title="Chỉ vào được khi được mời">
+
+- Không có trang tự đăng ký: admin hoặc đội trưởng tạo tài khoản trong Danh
+  sách đội (**Roster**).
+- Thành viên kích hoạt qua email đặt lại mật khẩu.
+- Better Auth (`src/lib/auth.ts`), Drizzle adapter, chỉ email + mật khẩu.
+
+</Callout>
+
+## Tạo và kích hoạt tài khoản
+
+<Mermaid
+  chart={`
+sequenceDiagram
+    autonumber
+    actor Admin as Admin / Đội trưởng
+    actor Member as Thành viên
+    participant App
+    participant Resend
+
+    Admin->>App: addUser (roster:create)
+    App->>App: signUpEmail với mật khẩu tạm, thêm dòng player/coach
+    App->>Resend: requestPasswordReset → "Create a new password"
+    Resend-->>Member: Link kèm token, redirectTo /new-password
+    Member->>App: /new-password?token=... đặt mật khẩu mới
+    App-->>Member: resetPassword ok → router.push('/login')
+
+`}
+/>
+
+- **Yêu cầu mật khẩu** (kiểm tra ngay khi gõ trên `/new-password`): 8–128 ký
+  tự, có ít nhất một chữ cái, một chữ số và một ký tự đặc biệt.
+- `LoginSchema` chỉ kiểm tra độ dài.
+
+## Đăng nhập và phiên đăng nhập
+
+<Mermaid
+  chart={`
+sequenceDiagram
+    autonumber
+    actor User as Người dùng
+    participant Login as /login
+    participant Auth as Better Auth
+    User->>Login: email + mật khẩu
+    Login->>Auth: authClient.signIn.email
+    alt sai thông tin hoặc thử quá nhiều lần (3/phút mỗi IP)
+        Auth-->>Login: báo lỗi ngay dưới form
+    else đúng
+        Auth-->>User: cookie phiên (tiền tố sgr) + cookie cache có chữ ký
+        User->>Login: chuyển tới /dashboard
+    end
+`}
+/>
+
+<TypeTable
+  type={{
+    'session.expiresIn': {
+      type: '3600 s',
+      description: 'Thời hạn của phiên đăng nhập (COOKIE.expires).',
+      required: true,
+    },
+    'session.cookieCache.maxAge': {
+      type: '3600 s',
+      description: 'Cache có chữ ký để proxy đọc mà không cần hỏi DB.',
+      required: true,
+    },
+    'rateLimit (toàn cục)': {
+      type: '100 / 10 s',
+      description: 'Để rộng tay, vì /get-session được gọi rất thường xuyên.',
+      required: true,
+    },
+    'rateLimit (route đăng nhập)': {
+      type: '3 / 60 s per IP',
+      description: '/sign-in/*, /request-password-reset, /reset-password.',
+      required: true,
+    },
+  }}
+/>
+
+## Kiểm tra từng request
+
+<Mermaid
+  chart={`
+flowchart TD
+    A[Chuyển trang] --> B{Có cookie và cache còn hạn?}
+    B -- không --> L["/login"]
+    B -- có --> C{"can(role, resource, 'view')"}
+    C -- không --> F["/forbidden"]
+    C -- có --> P[Render trang]
+    P --> D[Server action] --> E{withResource: canAll?}
+    E -- không --> X[forbidden]
+    E -- có --> O{Kiểm tra sở hữu?}
+    O -- không khớp --> X
+    O -- ok --> S[Action chạy]
+`}
+/>
+
+- **Proxy** (`src/proxy.ts`): kiểm tra cookie, cache còn hạn, quyền `view`; chỉ
+  chạy khi chuyển trang. Request `next-action` không đi qua lớp này.
+- **`withAuth` / `withResource`** (`src/actions/auth.ts`): nằm trong mọi server
+  action. Chưa đăng nhập → `/login`; thiếu quyền → `forbidden()`.
+- **Phiên phía client**: `usePermissions` và `Authorized` chỉ ẩn bớt nút bấm.
+  Không bao giờ được tin.
+
+Chi tiết và ma trận quyền: [Vai trò & Quyền](/docs/vi/access/roles-permissions).
+
+## Quên mật khẩu
+
+<Mermaid
+  chart={`
+flowchart LR
+    A["/login"] -->|Forgot password?| B["/forgot-password"]
+    B -->|authClient.requestPasswordReset| C[Đã gửi email]
+    C --> D["/new-password?token=..."]
+    D -->|authClient.resetPassword| A
+`}
+/>
+
+- Kích hoạt tài khoản và đặt lại mật khẩu dùng chung một handler
+  `sendResetPassword`.
+- Cả hai email đều có tiêu đề "Create a new password".
+- Nếu bạn đã đăng nhập mà mở một trang đăng nhập/đặt mật khẩu, bạn sẽ được
+  chuyển về `/dashboard`.

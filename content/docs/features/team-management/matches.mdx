@@ -1,112 +1,203 @@
 ---
-title: "Matches"
+title: Matches
+description: Fixtures and results with a lifecycle status; season stats count completed matches only.
 ---
 
-> Route: `/matches` · Nav group: **Team Management** · Status: **Draft**
+<Callout title="Route /matches">
+  Nav group **Team Management** · Resource `matches` · Status **Shipped**
+</Callout>
 
-## 1. Summary
+## Purpose
 
-- **Matches** records all team matches (league and friendly), including opponent, status, score, result, and location.
-- Coaches and admins can add and update matches; all permitted roles can view.
+- One row per fixture: league or friendly, 5x5 or 3x3.
+- Each match is `scheduled`, `completed` or `cancelled`; only a completed one
+  has a score and a result.
+- Season stats (win streak, win rate, points per game) are derived from the
+  completed matches' scores, so the table never disagrees with itself.
 
-## 2. Goals / metrics
+## Access
 
-### Goals
+<PermissionMatrix resource="matches" />
 
-- Keep a full history of competitive results.
-- Surface win rate and outcome trends for the Dashboard.
+- GUEST can view, as on Roster.
+- COACH and Captain create and edit; only SUPER_ADMIN deletes.
 
-### Metrics
+## Flows
 
-- Win / Draw / Loss counts and overall win rate.
+<Steps>
+  <Step>
+    ### Browse
 
-## 3. Users and permissions
+    - Defaults to this year (`from` / `to` filled per read).
+    - **Time**, **Game Type**, **Match Type**, **Status** refetch on the server
+      (`shallow: false`).
+    - Opponent search `q` and paging filter in the client.
+    - Stats: **Total Matches**, **Played**, **Win Streak**, **Avg Win Rate**,
+      **Avg Points/Game**.
+    - Score and result read `-` until a match is completed.
 
-| Role             | View | Add | Edit | Delete |
-| ---------------- | ---- | --- | ---- | ------ |
-| GUEST            | Yes  | No  | No   | No     |
-| PLAYER           | Yes  | No  | No   | No     |
-| COACH            | Yes  | Yes | Yes  | No     |
-| SUPER_ADMIN      | Yes  | Yes | Yes  | Yes    |
-| PLAYER (Captain) | Yes  | Yes | Yes  | No     |
+  </Step>
+  <Step>
+    ### Add / update
 
-## 4. UX / flows
+    - **Add** opens `UpsertMatch`; clicking a row reopens it pre-filled.
+    - GUEST rows are not clickable (`onRowClick` is `undefined`).
+    - Switches: **5x5**; **League Match** reveals the league picker.
+    - Opponent: external teams only (`is_external`).
+    - Date, time (default 19:30), location, status (default **Scheduled**).
+    - **Our Score** / **Their Score** show only when status is **Completed**.
+    - Moving off **Completed** resets both scores to 0.
+    - No home-team field.
 
-### Entry point
+  </Step>
+  <Step>
+    ### Delete
 
-- Sidebar → **Matches**.
+    - SUPER_ADMIN selects rows and deletes in bulk.
+    - `match_player_stats` rows cascade.
+    - Deleting a team that played in any match is blocked (see Rules).
 
-### View
+  </Step>
+</Steps>
 
-- Table lists all matches with opponent, status, date, score, result, and match type. A match that has not been played shows `-` for score and result.
-- Filter by opponent name, and by time, game type, match type, and status.
-- Stats section shows total and played match counts, win streak, win rate, and points per game. Every average counts played matches only.
+## Rules
 
-### Create / edit
+- **Home is always us.** `upsertMatch` sets `home_team` to the caller's
+  `team_id`; `getMatches` filters on it.
+  - `diff_team` (`home_team != away_team`) rejects the club as its own opponent.
+- **Status is stored, result is derived.** `status` is a `match_status` enum
+  (`scheduled` | `completed` | `cancelled`), default `scheduled`.
+  - `getMatches` maps `home_team_score - away_team_score` to `MatchResult`
+    (`win`, `loss`, `draw`) for completed matches; others get `null`.
+  - `unplayed_match_has_no_score`: a non-completed match must be 0–0, so a
+    stored 0–0 is always a real draw.
+  - `UpsertMatchSchema` mirrors that check as a field error.
+- **Friendly means `league_id IS NULL`.** Turning **League Match** off nulls it.
+- **League deletion cascades**, location deletion sets `NULL`.
+- **Teams with matches can't be deleted.** `home_team` / `away_team` are
+  `ON DELETE restrict`; `removeTeam` refuses with the blocking match count.
+- **Scores are 0–100**, coerced to numbers by `UpsertMatchSchema`.
+- **Played-only stats.** **Played**, win streak, win rate and points per game
+  count completed matches only; **Total Matches** counts every filtered row.
+- **Win streak** = longest run of consecutive wins among them.
+- **Avg points per game** = mean of `home_team_score`.
+- **`match_player_stats`** exists in the schema, but no UI writes it yet.
+  - PK `(match_id, player_id)`: points, rebounds, assists, steals, blocks,
+    turnovers, fouls, minutes.
+  - `team_id` = the team the player played for at match time.
 
-- Authorized users see **+ Add**; clicking it opens a dialog.
-- Clicking a row opens the same dialog pre-filled.
-- Fields: date, time, home team, away team, location, league (optional; leaving it blank makes the match a friendly), status, home/away scores, and format (5x5 or 3x3).
-- The score inputs appear only when the status is **Completed**. Moving a match off Completed clears them back to 0.
+## Data
 
-### Delete
+<Tabs items={['Match', 'MatchWithTeams', 'MatchStats']}>
+  <Tab value="Match">
 
-- Only SUPER_ADMIN can delete a match record.
+    <AutoTypeTable path="src/drizzle/schema/match.ts" name="Match" />
 
-## 5. Functional requirements
+  </Tab>
+  <Tab value="MatchWithTeams">
 
-- **FR-1:** All roles (including GUEST) can view the match list.
-- **FR-2:** Filter by opponent name; filter state stored in URL.
-- **FR-3:** COACH, SUPER_ADMIN, and Captain can create and edit matches.
-- **FR-4:** Match result (win / draw / loss) is derived from the two scores at read time; it is not a stored column. A match that is not `completed` has no result, and is excluded from the win streak, win rate, and points-per-game figures.
-- **FR-4a:** A match carries a lifecycle status of `scheduled`, `completed`, or `cancelled`, defaulting to `scheduled`. Only a `completed` match may hold a non-zero score.
-- **FR-5:** League and location are optional references linked from Settings. A match with no league is a friendly.
-- **FR-6:** Home team and away team must be different teams.
-- **FR-7:** SUPER_ADMIN can delete a match.
-- **FR-8:** Changes show a success or error toast.
-- **FR-9:** The list and stats refresh after create, edit, or delete.
+    <AutoTypeTable path="src/types/match.d.ts" name="MatchWithTeams" />
 
-## 6. Acceptance criteria (Given/When/Then)
+  </Tab>
+  <Tab value="MatchStats">
 
-- **AC-1:** Given I am a GUEST, when I open Matches, then I see the list but no add or edit controls.
-- **AC-2:** Given I am a COACH, when I add a match where our team scores 78 against the opponent's 65, then the result reads win and the match appears in the list.
-- **AC-3:** Given I am a PLAYER, when I attempt to create a match via the API, then the request is rejected.
-- **AC-4:** Given I select the same team as both home and away, then the save is rejected by the `diff_team` check.
-- **AC-5:** Given a match is scheduled or cancelled, when I open Matches, then its score and result read `-` and it does not move the win rate.
-- **AC-6:** Given a team appears in at least one match, when a SUPER_ADMIN deletes it from Settings → Teams, then the delete is refused with a message naming how many matches block it.
+    <AutoTypeTable path="src/types/match.d.ts" name="MatchStats" />
 
-## 7. Technical appendix
-
-### Data model (`src/drizzle/schema/match.ts`)
-
-Match (`match`):
-
-- `match_id`: uuid PK
-- `is_5x5`: boolean (true = 5x5, false = 3x3)
-- `league_id`: FK → league, nullable (null means a friendly match)
-- `location_id`: FK → location, nullable
-- `home_team` / `away_team`: FK → team, both required, `ON DELETE restrict`; a `diff_team` check enforces that they differ
-- `date`: date · `time`: time
-- `status`: `match_status` enum (`scheduled` | `completed` | `cancelled`), default `scheduled`
-- `home_team_score` / `away_team_score`: integer, default 0
-
-There is no `result` column: the win/draw/loss badge is computed from the two scores at read time, and only for a `completed` match. The `unplayed_match_has_no_score` check keeps the two in step — a match that is not `completed` must sit at 0-0 — so a stored 0-0 always means a real draw rather than a fixture nobody has played.
-
-Deleting a team that appears in any match is blocked by the `restrict` on both FKs. `removeTeam` counts the team's matches first and returns that count in a plain-language error, so the block never surfaces as a raw constraint name.
-
-MatchPlayerStats (`match_player_stats`): per-player box score keyed on `(match_id, player_id)`, holding points scored, rebounds, assists, steals, blocks, turnovers, fouls, and minutes played.
+  </Tab>
+</Tabs>
 
 ### Query params
 
-- `q` (string): opponent name search
-- `page` (number): current page
-- `interval` (enum): time window, default `this_year`
-- `game_type` (array): `true` (5x5) / `false` (3x3)
-- `match_type` (array): `league` / `friendly`
-- `status` (array): `scheduled` / `completed` / `cancelled`
+<TypeTable
+  type={{
+    from: {
+      type: 'string',
+      description: 'Inclusive ISO start day, applied on the server.',
+      default: 'Jan 1 this year',
+    },
+    to: {
+      type: 'string',
+      description: 'Inclusive ISO end day, applied on the server.',
+      default: 'Dec 31 this year',
+    },
+    game_type: {
+      type: "Array<'true' | 'false'>",
+      description:
+        "is_5x5 filter, applied on the server; 'true' = 5x5. Empty or both means all.",
+    },
+    match_type: {
+      type: 'Array<MatchType>',
+      description:
+        'league (league_id set) or friendly (league_id null), applied on the server.',
+    },
+    status: {
+      type: 'Array<MatchStatus>',
+      description:
+        'scheduled, completed or cancelled, applied on the server. Empty means all.',
+    },
+    q: { type: 'string', description: 'Opponent name search, client-side.' },
+    page: { type: 'number', description: 'Current page.', default: '1' },
+  }}
+/>
 
-### API
+## API
 
-- `getMatches(params)`: fetch list with stats
-- `upsertMatch(id?, data)`: create or update
-- `removeMatch(id)`: delete
+- Server actions in `src/actions/match.ts`.
+- Read uses `withAuth`; writes use `withResource('matches')`.
+
+<TypeTable
+  type={{
+    'getMatches(params)': {
+      type: 'DataWithStats<MatchWithTeams, MatchStats>',
+      required: true,
+      description: (
+        <ul>
+          <li>Home matches of the caller’s team inside the filters.</li>
+          <li>Newest first.</li>
+          <li>
+            Result derived for completed matches, <code>null</code> otherwise.
+          </li>
+        </ul>
+      ),
+    },
+    'upsertMatch(id, values)': {
+      type: 'Response',
+      required: true,
+      description:
+        'Creates (empty id, home_team forced to the caller’s team) or updates a match.',
+    },
+    'removeMatch(id)': {
+      type: 'Response',
+      required: true,
+      description: 'Deletes a match; player stats cascade.',
+    },
+  }}
+/>
+
+## Acceptance
+
+<Accordions>
+  <Accordion title="A GUEST sees results only">
+
+    - List and stats render; no **Add**, checkboxes or row-click dialog.
+    - Any save attempt is rejected by `withResource('matches')`.
+
+  </Accordion>
+  <Accordion title="Result follows the scores">
+    A completed match saved 78–65 shows a `win` badge; 60–60 shows `draw`.
+  </Accordion>
+  <Accordion title="Unplayed matches stay out of the stats">
+    A scheduled or cancelled match shows `-` for score and result and does not
+    move the win rate.
+  </Accordion>
+  <Accordion title="A team with matches cannot be deleted">
+    Deleting it in Settings → Teams is refused with the count of blocking
+    matches.
+  </Accordion>
+  <Accordion title="A PLAYER cannot write">
+    A non-captain PLAYER calling `upsertMatch` directly is rejected.
+  </Accordion>
+  <Accordion title="Own team as opponent is rejected">
+    An `away_team` equal to the caller's team fails the `diff_team` check.
+  </Accordion>
+</Accordions>

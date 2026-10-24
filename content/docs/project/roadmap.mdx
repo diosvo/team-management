@@ -1,38 +1,67 @@
 ---
-title: "Roadmap"
-description: "Release plan: shipped, in progress, planned, and not planned."
+title: Roadmap
+description: What has shipped, what comes next, and what is deliberately out of scope.
 ---
 
-> Status: **Draft** · High-level direction and priorities. This is not a sprint board: dates are intentionally absent; order implies priority.
+- Direction and priority, not a sprint board: no dates; order is priority.
+- Schema items track `TODO.md`; a migration number means shipped.
 
-## Rollout principles
+## Shipped
 
-- Prefer feature flags for larger changes.
-- Ship in small increments with backward-compatible data changes.
+- **Features:** every page in the [feature catalog](/docs/features):
+  - Dashboard (PDF report), Reports, Achievements, Team Rule, Roster, Training.
+  - Attendance, Registration, Matches, Periodic Testing, Assets, Emails.
+  - Teams, Leagues, Locations, Profile, Sign-in Pages.
+- **Platform:**
+  - Better Auth (rate-limited credential routes), Vercel Blob, Resend.
+  - Puppeteer and `pdf-lib` PDFs.
+  - Responsive layout for phones, tablets and laptops.
+- **Data model:**
+  - `0008` jersey numbers unique per team.
+  - `0009` attendance per training session.
+  - `0010` asset names unique per team.
+  - `0011` `test_result.date` NOT NULL.
+  - `0012` `league_team_roster` bound to `league_team`; `league.status`
+    derived at read time.
+  - `0014` `report_schedule` and `report_history` for scheduled reports.
+  - `0015` `user_team` membership history; `user.team_id` stays the current
+    team, `match_player_stats.team_id` keeps per-match team context.
+  - `0016` `team.is_external` flags opponents.
+  - `0017` `rule` table merged into `team.rule_content`.
+  - `0018` `match.status` (scheduled, completed, cancelled), scores only on
+    completed matches; `match.home_team` / `away_team` restrict team deletion.
+- **Docs:** served at `/docs` (Vietnamese at `/docs/vi`), `llms.txt` exports,
+  permission matrix generated from `ROLE_CONFIG`, C4 architecture section.
 
-## Shipped (v1, the current app)
+## Planned
 
-All pages in the [feature catalog](/docs/features): Dashboard (incl. PDF reports), Team Rule, Roster, Training, Attendance, Registration, Matches, Periodic Testing, Assets, Settings (Teams / Leagues / Locations), Profile.
+<TypeTable
+  type={{
+    'E2E in CI': {
+      type: 'quality',
+      description:
+        'Isolated test database, then drop if: false in playwright.yaml and fix its report path.',
+      required: true,
+    },
+    Documents: {
+      type: 'feature',
+      description:
+        'Disabled in the sidebar; needs a spec under features/resources and metadata storage.',
+      required: true,
+    },
+  }}
+/>
 
-Recent platform work: Better Auth integration, media storage on Vercel Blob (user images, team logos), and data-model hardening — jersey numbers unique per team, attendance keyed per training session, asset names unique per team, team membership history (`user_team`), opponents flagged with `team.is_external`, and the team rule folded onto `team`.
+## Ideas
 
-## In progress
+Unprioritized, waiting for a product signal:
 
-_(keep this section to 1–3 items)_
-
-_Nothing in progress._
-
-## Planned / next
-
-- **Documents** (`/documents`): currently disabled in the sidebar; needs a spec under `features/resources/` plus document-metadata storage.
-- **Data-model hardening**: the remaining ⭐ items in [TODO.md](https://github.com/diosvo/team-management/blob/main/TODO.md), namely a `match` status enum, explicit `onDelete` for `match.home_team` / `away_team`, and `league_team_roster` → `league_team`. (Jersey-number uniqueness per team, attendance per session, per-team asset names, a required `test_result.date`, membership history, external-team flagging, and the rule merge have shipped.)
-- **Auth page specs**: `/login`, `/forgot-password`, `/new-password` are undocumented (listed in the feature catalog as gaps).
-
-## Later / ideas (unprioritized)
-
-- History for generated emails/reports (no DB index today; see TODO.md §3).
-- Per-match lineup / call-up tracking, if registration should feed match-day squads.
+- **Send log** for `emails`: nothing records sent emails today.
+- **Per-match lineups / call-ups** if registration should feed match-day squads.
 
 ## Not planned
 
-See [Non-Goals](/docs/overview/vision#non-goals-out-of-scope): injury/medical tracking, payments, audit logs, multi-club, native apps, self-service sign-up.
+See [Non-goals](/docs/overview/vision#non-goals):
+
+- Injury and medical tracking, payments, audit logs.
+- Multi-club, native apps, self-service sign-up.

@@ -32,7 +32,7 @@ export default function MatchTable({
   const tc = useTranslations('common');
   const te = useTranslations('enums');
   const locale = useLocale();
-  const { can } = usePermissions();
+  const { can, isGuest } = usePermissions();
   const [{ q, page }, setSearchParams] = useMatchFilters();
 
   const predicate = useCallback(
@@ -123,11 +123,14 @@ export default function MatchTable({
         page={page}
         onPageChange={setSearchParams}
         empty={{ title: t('empty') }}
-        onRowClick={(item) =>
-          UpsertMatch.open('update-match', {
-            action: 'Update',
-            item: { ...item, away_team: item.away_team.team_id },
-          })
+        onRowClick={
+          isGuest
+            ? undefined
+            : (item) =>
+                UpsertMatch.open('update-match', {
+                  action: 'Update',
+                  item: { ...item, away_team: item.away_team.team_id },
+                })
         }
         selection={{
           canSelect: can('matches', 'delete'),

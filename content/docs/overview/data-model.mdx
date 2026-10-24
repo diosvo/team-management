@@ -1,111 +1,407 @@
 ---
-title: "Data Model"
-description: "Database entities and the relationships between them."
+title: Data Model
+description: Entities, relationships and deletion behaviour, as defined in src/drizzle/schema.
 ---
 
-> Source of truth: `src/drizzle/schema/` (12 modules, 19 tables). Every table
-> also carries `created_at` / `updated_at` (omitted below). Column-level detail
-> lives in `ARCHITECTURE.md` §5.
+<Callout type="info" title="Source of truth">
+
+- `src/drizzle/schema/`: 14 modules, 22 tables.
+- All tables have `created_at` / `updated_at` (omitted below);
+  `report_history` has only `created_at`.
+- Column types render on each feature page via `AutoTypeTable`.
+
+</Callout>
 
 ## Entity relationships
+
+One diagram per domain; `team` and `player` repeat where they connect.
+
+<Tabs items={['People & teams', 'Training & testing', 'Competition', 'Honours & reports']}>
+
+<Tab value="People & teams">
 
 <Mermaid
   chart={`
 erDiagram
-    %% ===== Identity (Better Auth) =====
     user ||--o{ session : "logs in"
     user ||--o{ account : "credentials"
     user ||--o| player : "extends"
     user ||--o| coach : "extends"
-
-    %% ===== Team domain =====
     team ||--o{ user : "current team"
     team ||--o{ user_team : "membership stints"
     user ||--o{ user_team : "joined / left"
     team ||--o{ asset : "owns"
-    user |o--o{ asset : "assigned_to (optional)"
+    user |o--o{ asset : "assigned_to"
+`}
+/>
 
-    %% ===== Performance =====
+</Tab>
+
+<Tab value="Training & testing">
+
+<Mermaid
+  chart={`
+erDiagram
+    team ||--o{ training_session : "schedules"
+    coach |o--o{ training_session : "leads"
+    location |o--o{ training_session : "hosted at"
+    training_session |o--o{ attendance : "tracked by"
+    player ||--o{ attendance : "one per session"
     team ||--o{ test_type : "defines"
     test_type ||--o{ test_result : "measured as"
     player ||--o{ test_result : "records"
+`}
+/>
 
-    %% ===== Training =====
-    team ||--o{ training_session : "schedules"
-    coach |o--o{ training_session : "leads (optional)"
-    location |o--o{ training_session : "hosted at (optional)"
-    training_session |o--o{ attendance : "tracked by (optional)"
-    player ||--o{ attendance : "one per session"
+</Tab>
 
-    %% ===== Competition =====
-    league ||--o{ league_team : "enrolls"
+<Tab value="Competition">
+
+<Mermaid
+  chart={`
+erDiagram
+    league ||--o{ league_team : "enrols"
     team ||--o{ league_team : "joins"
     league_team ||--o{ league_team_roster : "fields"
     player ||--o{ league_team_roster : "plays in"
     league |o--o{ match : "friendly if absent"
-    location |o--o{ match : "played at (optional)"
-    team ||--o{ match : "home_team"
-    team ||--o{ match : "away_team"
-    match ||--o{ match_player_stats : "per player"
-    player ||--o{ match_player_stats : "box score"
-    team ||--o{ match_player_stats : "turned out for"
-
-    %% ===== Honors =====
-    league |o--o{ achievement : "awarded in (optional)"
-    player |o--o{ achievement : "awarded to (optional)"
+    location |o--o{ match : "played at"
+    team ||--o{ match : "home_team / away_team"
+    match ||--o{ match_player_stats : "box score"
+    player ||--o{ match_player_stats : "per player"
+    team ||--o{ match_player_stats : "played for"
 `}
 />
 
-`verification` (Better Auth password-reset tokens) is standalone — it has no
-foreign keys and is omitted from the diagram.
+</Tab>
+
+<Tab value="Honours & reports">
+
+<Mermaid
+  chart={`
+erDiagram
+    league |o--o{ achievement : "awarded in"
+    player |o--o{ achievement : "awarded to"
+    team ||--o{ report_schedule : "one per interval"
+    team ||--o{ report_history : "generates"
+    report_schedule |o--o{ report_history : "runs"
+`}
+/>
+
+</Tab>
+
+</Tabs>
+
+`verification` (Better Auth password-reset tokens) has no foreign keys and is
+omitted from the diagram.
 
 ## Entities by domain
 
-| Domain          | Entity               | Purpose                                                        | Key constraints                                                                     |
-| --------------- | -------------------- | -------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| **Identity**    | `user`               | Every person; carries `role`, `state`, and a required `team_id` (their current team) | `email` unique; cascade-deleted with its team                                  |
-|                 | `user_team`          | One row per stint on a team (`join_date` / `leave_date`)       | At most one open stint per user (`user_current_team`); `(user, team, join_date)` unique |
-|                 | `session`, `account` | Better Auth login sessions and credentials                     | Cascade-deleted with the user                                                       |
-|                 | `verification`       | Password-reset tokens                                          | No foreign keys                                                                     |
-|                 | `player`             | Extension of `user` (shared `id`)                              | `jersey_number` 0–99, unique per team (action layer); height/weight checks          |
-|                 | `coach`              | Extension of `user` (shared `id`)                              | —                                                                                   |
-| **Team**        | `team`               | The club and opponents; also holds the rule document (`rule_content`) | Only one `is_default` team; `is_external` marks opponents, and the two can't both be true |
-|                 | `asset`              | Equipment inventory                                            | Name unique within a team (`team_asset_name`); `assigned_to` → user, `set null` on delete |
-| **Performance** | `test_type`          | Per-team test definitions                                      | Name unique within a team                                                           |
-|                 | `test_result`        | A player's measurement                                         | `type_id` delete is `restrict` — types with results can't be removed                |
-| **Training**    | `training_session`   | Scheduled practice                                             | Coach and location optional (`set null`)                                            |
-|                 | `attendance`         | Player presence per session                                    | Unique (`player_id`, `session_id`), or (`player_id`, `date`) when session-less      |
-| **Competition** | `league`             | A competition window                                           | Name unique                                                                         |
-|                 | `league_team`        | League ⨯ team junction                                         | Composite PK (`league_id`, `team_id`)                                               |
-|                 | `league_team_roster` | Adds the player dimension                                      | Composite PK (`league_id`, `team_id`, `player_id`)                                  |
-|                 | `match`              | A game; references **two** teams directly                      | Check: `home_team != away_team`; no `league_id` ⇒ friendly match                    |
-|                 | `match_player_stats` | Per-player box score, with the team played for                 | Composite PK (`match_id`, `player_id`); `team_id` is the team at match time          |
-|                 | `location`           | Venue for matches and training                                 | Referenced with `set null` from both                                                |
-| **Honors**      | `achievement`        | Manually recorded honors                                       | One honor per (`league`, `type`) except `custom`; league/player links survive deletes (`set null`) |
+<TypeTable
+  type={{
+    user: {
+      type: 'Identity',
+      description: (
+        <ul>
+          <li>
+            Every person: <code>role</code>, <code>state</code>.
+          </li>
+          <li>
+            Required <code>team_id</code> points to the current team.
+          </li>
+          <li>
+            <code>email</code> is unique.
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+    user_team: {
+      type: 'Identity',
+      description: (
+        <ul>
+          <li>
+            One row per stint: <code>join_date</code>, <code>leave_date</code>.
+          </li>
+          <li>
+            At most one open stint per user (<code>user_current_team</code>).
+          </li>
+          <li>
+            <code>(user_id, team_id, join_date)</code> unique (
+            <code>user_team_stint</code>).
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+    'session, account, verification': {
+      type: 'Identity',
+      description:
+        'Better Auth tables. session.token is unique; verification has no foreign keys.',
+      required: true,
+    },
+    'player, coach': {
+      type: 'Identity',
+      description: (
+        <ul>
+          <li>
+            Extensions sharing <code>user.id</code>.
+          </li>
+          <li>
+            <code>jersey_number</code> 0–99, unique per team in the action
+            layer.
+          </li>
+          <li>
+            <code>height</code> ≤ 200, <code>weight</code> ≤ 100.
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+    team: {
+      type: 'Team',
+      description: (
+        <ul>
+          <li>
+            The club and its opponents; <code>email</code> is unique.
+          </li>
+          <li>
+            Partial unique index: exactly one <code>is_default</code>.
+          </li>
+          <li>
+            <code>is_external</code> marks opponents; check: not both.
+          </li>
+          <li>
+            Holds the rules: <code>rule_content</code>,{' '}
+            <code>rule_updated_at</code>.
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+    asset: {
+      type: 'Team',
+      description:
+        'Equipment; name unique per team (team_asset_name); assigned_to references user.',
+      required: true,
+    },
+    'test_type, test_result': {
+      type: 'Performance',
+      description: (
+        <ul>
+          <li>Per-team test definitions; name unique per team.</li>
+          <li>Decimal measurements per player and date.</li>
+        </ul>
+      ),
+      required: true,
+    },
+    training_session: {
+      type: 'Training',
+      description: (
+        <ul>
+          <li>Coach and location optional.</li>
+          <li>
+            <code>(session_id, date)</code> unique; anchors the attendance FK.
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+    attendance: {
+      type: 'Training',
+      description: (
+        <ul>
+          <li>
+            Composite FK <code>(session_id, date)</code>, on update cascade.
+          </li>
+          <li>
+            Unique per <code>(player, session)</code>.
+          </li>
+          <li>
+            Leave (<code>session_id</code> null) unique per{' '}
+            <code>(player, date)</code>.
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+    league: {
+      type: 'Competition',
+      description:
+        'Name unique; status is derived from the dates at read time, not stored.',
+      required: true,
+    },
+    'league_team, league_team_roster': {
+      type: 'Competition',
+      description: (
+        <ul>
+          <li>Junctions with composite primary keys.</li>
+          <li>
+            The roster row also references the <code>(league, team)</code> pair.
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+    'match, match_player_stats': {
+      type: 'Competition',
+      description: (
+        <ul>
+          <li>
+            Two team FKs (restrict); check <code>home_team != away_team</code>.
+          </li>
+          <li>
+            No <code>league_id</code> means a friendly.
+          </li>
+          <li>
+            <code>status</code>: scheduled / completed / cancelled; check{' '}
+            <code>unplayed_match_has_no_score</code>.
+          </li>
+          <li>
+            Stats keyed by <code>(match, player)</code>; <code>team_id</code> is
+            the team at match time.
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+    location: {
+      type: 'Competition',
+      description: 'Venue shared by training sessions and matches.',
+      required: true,
+    },
+    achievement: {
+      type: 'Honours',
+      description:
+        'One honour per (league, type) except custom; league_id and player_id are optional.',
+      required: true,
+    },
+    report_schedule: {
+      type: 'Reports',
+      description: (
+        <ul>
+          <li>
+            Recurring report; <code>(team_id, interval)</code> unique.
+          </li>
+          <li>
+            <code>interval</code> sets data window and cadence.
+          </li>
+          <li>
+            <code>next_run_at</code> precomputed; partial index on enabled rows.
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+    report_history: {
+      type: 'Reports',
+      description: (
+        <ul>
+          <li>
+            One row per report: <code>status</code>, <code>trigger</code>{' '}
+            (manual / scheduled), <code>attempts</code>.
+          </li>
+          <li>
+            PDF blob, delivery metadata, <code>expires_at</code>.
+          </li>
+          <li>
+            Unique <code>(schedule_id, scheduled_for)</code>.
+          </li>
+          <li>
+            <code>schedule_id</code> null for ad-hoc sends.
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+  }}
+/>
 
 ## Membership over time
 
-`user_team` records one row per stint a person spends on a team, so transfers
-and leave-and-rejoin keep their history instead of overwriting it.
+- `user_team` keeps one row per stint, so transfers and rejoins keep their history.
+- `user.team_id` points at the open stint; `transferMembership` closes the old
+  stint and moves the pointer in one transaction.
+- `user_current_team` allows one open stint per user; `user_team_stint` allows
+  rejoining a team, but not the same stint twice.
+- `match_player_stats.team_id` keeps old box scores on the team played for.
+- Jersey numbers stay unique per team in the action layer, not the database.
 
-- `user.team_id` stays as the pointer to the **open** stint — every read path
-  filters on it, so it is kept in sync rather than derived. `transferMembership`
-  closes the old stint and moves the pointer in a single transaction.
-- `user_current_team`, a partial unique index on `user_id WHERE leave_date IS
-  NULL`, allows at most one open stint. `user_team_stint` (`user_id`, `team_id`,
-  `join_date`) permits rejoining the same team later but not starting the same
-  stint twice.
-- `match_player_stats.team_id` records who the player turned out for in that
-  match, so an old box score keeps pointing at the team they played for rather
-  than following them to their current one.
+## Deletion behaviour
 
-Jersey numbers remain unique per team in the action layer, not the database:
-with history, uniqueness is "per open membership", which a partial unique index
-can't express.
-
-## Deletion behavior at a glance
-
-- **Cascade from `team`:** users, memberships, assets, test types, training sessions, league junctions — deleting a team removes its whole subtree (attendance follows its player).
-- **Cascade from `user`:** sessions, accounts, memberships, player/coach extensions (and from `player`: attendance, roster entries, stats, test results).
-- **`set null` (record survives):** `asset.assigned_to`, `match.location_id`, `training_session.coach_id` / `location_id`, `achievement.league_id` / `player_id`.
-- **`restrict`:** `test_result.type_id` — a test type with recorded results cannot be deleted.
+<TypeTable
+  type={{
+    'Delete team': {
+      type: 'cascade / restrict',
+      description: (
+        <ul>
+          <li>Cascades to users, memberships, assets, test types, sessions.</li>
+          <li>Also league junctions, report schedules and history.</li>
+          <li>
+            Blocked while a match uses it as <code>home_team</code> /{' '}
+            <code>away_team</code>.
+          </li>
+          <li>
+            <code>onDelete</code> restrict, also guarded in{' '}
+            <code>removeTeam</code>.
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+    'Delete user': {
+      type: 'cascade',
+      description: (
+        <ul>
+          <li>Sessions, accounts, memberships, player / coach.</li>
+          <li>From player: attendance, roster entries, stats and results.</li>
+        </ul>
+      ),
+      required: true,
+    },
+    'Delete league': {
+      type: 'cascade',
+      description: (
+        <ul>
+          <li>
+            <code>league_team</code>, <code>league_team_roster</code> and the
+            league matches.
+          </li>
+          <li>
+            <code>achievement.league_id</code> is set null.
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+    'Delete training_session': {
+      type: 'cascade',
+      description:
+        'Its attendance rows; rescheduling (date update) cascades into attendance.date.',
+      required: true,
+    },
+    'Delete test_type': {
+      type: 'restrict',
+      description:
+        'Rejected while results exist (onDelete restrict, also guarded in removeTestType).',
+      required: true,
+    },
+    'Delete location or coach': {
+      type: 'set null',
+      description:
+        'Referencing sessions and matches survive with the column cleared.',
+      required: true,
+    },
+    'Delete report_schedule': {
+      type: 'set null',
+      description: 'Past runs stay in report_history with schedule_id cleared.',
+      required: true,
+    },
+    'Delete an assigned user': {
+      type: 'set null',
+      description:
+        'asset.assigned_to is cleared; the asset stays in inventory.',
+      required: true,
+    },
+  }}
+/>

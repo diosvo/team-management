@@ -1,0 +1,157 @@
+---
+title: Bối cảnh hệ thống
+description: C4 cấp 1. Ai dùng portal và portal dựa vào những hệ thống bên ngoài nào.
+---
+
+- Một app **Next.js 16 App Router** chạy trên Vercel, giúp câu lạc bộ bóng rổ
+  quản lý các đội của mình.
+- Các trang là React Server Component; app đọc ghi PostgreSQL qua Drizzle.
+- Mọi thao tác ghi đều là **server action**, có `withResource` canh cửa.
+- Không ai tự đăng ký được: admin hoặc đội trưởng tạo tài khoản cho thành viên.
+- Người được mời kích hoạt tài khoản qua email đặt lại mật khẩu.
+
+Kiến trúc được mô tả theo [mô hình C4](https://c4model.com), mỗi trang một cấp:
+
+<Cards>
+  <Card
+    href="/docs/vi/architecture/containers"
+    title="Container"
+    description="Cấp 2: các phần deploy riêng, công nghệ và nơi lưu dữ liệu."
+  />
+  <Card
+    href="/docs/vi/architecture/components"
+    title="Component"
+    description="Cấp 3: bên trong ứng dụng Next.js, từ proxy tới cơ sở dữ liệu."
+  />
+  <Card
+    href="/docs/vi/architecture/flows"
+    title="Luồng xử lý"
+    description="Các luồng request theo từng bước: chuyển trang, action, báo cáo."
+  />
+  <Card
+    href="/docs/vi/architecture/deployment"
+    title="Triển khai"
+    description="Vercel, cron, biến môi trường và CI/CD."
+  />
+</Cards>
+
+## Sơ đồ bối cảnh
+
+<Mermaid
+  chart={`
+C4Context
+  title Bối cảnh hệ thống của Team Management Portal
+
+Person(admin, "Admin / Đội trưởng", "Tạo tài khoản, quản lý CLB")
+System(portal, "Team Management Portal", "Danh sách đội, buổi tập, điểm danh, trận đấu, báo cáo")
+Person(member, "Coach / Player / Guest", "Xem và ghi dữ liệu đội")
+
+System_Ext(resend, "Resend", "Email hệ thống")
+System_Ext(github, "GitHub", "Issue góp ý")
+System_Ext(vercel, "Nền tảng Vercel", "Lưu trữ, cron, Blob")
+
+Rel(admin, portal, "Quản lý đội, tài khoản")
+Rel(member, portal, "Đăng nhập, ghi nhận")
+Rel(portal, resend, "Gửi email, nhận webhook")
+Rel(portal, github, "Tạo issue")
+Rel(vercel, portal, "Chạy app, gọi cron")
+
+UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")
+`}
+/>
+
+<TypeTable
+  type={{
+    'Admin / Captain': {
+      type: 'person',
+      description:
+        'SUPER_ADMIN hoặc cầu thủ đội trưởng. Thêm người dùng, sửa cài đặt, đặt lịch báo cáo.',
+      required: true,
+    },
+    'Coach / Player / Guest': {
+      type: 'person',
+      description:
+        'Các vai trò còn lại sau khi đăng nhập. Xem Vai trò & Quyền.',
+      required: true,
+    },
+    Resend: {
+      type: 'external',
+      description:
+        'Email đặt mật khẩu, báo cáo, báo lỗi. Trạng thái gửi về qua /api/webhooks/resend.',
+      required: true,
+    },
+    GitHub: {
+      type: 'external',
+      description:
+        'submitFeedback tạo issue trong diosvo/team-management (GITHUB_TOKEN).',
+      required: true,
+    },
+    'Vercel platform': {
+      type: 'external',
+      description:
+        'Chạy app, gọi các cron trong vercel.json, lưu file trên Blob.',
+      required: true,
+    },
+  }}
+/>
+
+## Quyết định chính
+
+- **Chỉ deploy một app.** Giao diện, action, API route và docs nằm chung
+  trong một app Next.js.
+- **Chỉ ghi dữ liệu qua action.** Action được bọc trong
+  `withResource(resource)`; proxy chỉ kiểm tra quyền `view`. Xem
+  [Vai trò & Quyền](/docs/vi/access/roles-permissions).
+- **Một hàm phân quyền duy nhất.** `can(role, resource, action, isCaptain?)`
+  trong `src/utils/permissions.ts`, dùng chung cho proxy, action và hook client.
+- **Ưu tiên serverless.** `pg.Pool({ max: 1 })`, gói Chromium chỉ tải khi chạy,
+  cron chạy xong trong giới hạn 60 s.
+- **Docs nằm ngay trong app.** Fumadocs phục vụ `/docs` và `/docs/vi` từ
+  `content/docs`.
+
+## Thuật ngữ
+
+<TypeTable
+  type={{
+    'Server action': {
+      type: 'rendering',
+      description: "Hàm 'use server'; cách duy nhất để ghi dữ liệu.",
+      required: true,
+    },
+    Resource: {
+      type: 'authorization',
+      description:
+        'Một trong 17 nhóm quyền trong RESOURCES (src/routes.ts), ví dụ roster.',
+      required: true,
+    },
+    Ability: {
+      type: 'authorization',
+      description:
+        'Đối tượng { can, canAll, canAny } do defineAbility(role, isCaptain) trả về.',
+      required: true,
+    },
+    Captain: {
+      type: 'authorization',
+      description:
+        'Cầu thủ (PLAYER) có is_captain = true, được cộng thêm quyền từ CAPTAIN_PERMISSIONS.',
+      required: true,
+    },
+    'Cookie cache': {
+      type: 'auth',
+      description:
+        'Bản sao phiên đăng nhập có ký của Better Auth; proxy kiểm tra mà không cần gọi DB.',
+      required: true,
+    },
+    'Service account': {
+      type: 'operations',
+      description:
+        'Tài khoản PW_USERNAME / PW_PASSWORD mà cron báo cáo dùng để đăng nhập.',
+      required: true,
+    },
+    SGR: {
+      type: 'naming',
+      description: 'Saigon Rovers: tiền tố của cookie và của tiêu đề email.',
+      required: true,
+    },
+  }}
+/>
