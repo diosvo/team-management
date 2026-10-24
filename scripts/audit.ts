@@ -95,6 +95,11 @@ const labelled = (label: string, value: string): string =>
   `${label.padEnd(LABEL_WIDTH)}${value}`;
 const blocking = (counts: Counts): number =>
   GATE.reduce((sum, s) => sum + (counts[s] ?? 0), 0);
+const countBySeverity = (advisories: Array<Advisory>): Counts => {
+  const counts = Object.fromEntries(SEVERITIES.map((s) => [s, 0])) as Counts;
+  for (const a of advisories) counts[a.severity]++;
+  return counts;
+};
 
 // pnpm sets npm_execpath to whichever pnpm is running the script: a native
 // binary, or a .cjs shim under corepack. Bare `pnpm` is the by-hand fallback.
@@ -164,6 +169,13 @@ const runAudit = (): Promise<AuditResult> =>
         return;
       }
 
+      // pnpm still counts auditConfig.ignoreGhsas entries in the metadata,
+      // though it drops them from `advisories`. Recount so the saved report
+      // and the summary agree.
+      report.metadata.vulnerabilities = countBySeverity(
+        Object.values(report.advisories ?? {}),
+      );
+
       resolve({ report });
     });
   });
@@ -176,11 +188,6 @@ const runAudit = (): Promise<AuditResult> =>
 const splitTrees = (report: AuditReport): { full: Tree; prod: Tree } => {
   const all = Object.values(report.advisories ?? {});
   const prodAdvisories = all.filter((a) => a.findings.some((f) => !f.dev));
-  const count = (advisories: Array<Advisory>): Counts => {
-    const counts = Object.fromEntries(SEVERITIES.map((s) => [s, 0])) as Counts;
-    for (const a of advisories) counts[a.severity]++;
-    return counts;
-  };
 
   return {
     full: {
@@ -190,7 +197,7 @@ const splitTrees = (report: AuditReport): { full: Tree; prod: Tree } => {
     },
     prod: {
       label: 'Production tree only:',
-      counts: count(prodAdvisories),
+      counts: countBySeverity(prodAdvisories),
       advisories: prodAdvisories,
     },
   };

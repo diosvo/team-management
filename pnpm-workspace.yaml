@@ -6,6 +6,21 @@ allowBuilds:
   unrs-resolver: false
 minimumReleaseAgeExclude:
   - eslint@10.8.0
-packageConfigs:
-  ".":
-    saveExact: true
+saveExact: true
+overrides:
+  # drizzle-kit still loads config through the deprecated @esbuild-kit packages,
+  # which pin esbuild ~0.18 (GHSA-67mh-4wv8-2f99).
+  "@esbuild-kit/core-utils>esbuild": ^0.25.0
+  # mermaid 11 pins katex ^0.16 (GHSA-238p-pmpm-9mq7); mermaid 12 moved to ^0.18.
+  "mermaid>katex": ^0.18.2
+  # @vercel/blob > @vercel/oidc > @vercel/cli-config pins zod 4.1.11 exactly
+  # (GHSA-mrhx-c7xc-m3w5).
+  "@vercel/cli-config>zod": ^4.6.7
+auditConfig:
+  ignoreGhsas:
+    # zod: the only remaining copy is zod 3 (no patched 3.x release), reached
+    # through puppeteer-core > chromium-bidi. Puppeteer only loads chromium-bidi
+    # for the WebDriver BiDi protocol; getBrowser() launches Chrome over CDP.
+    # Newer puppeteer moves to zod 4 but targets Chrome 155+, ahead of the
+    # @sparticuz/chromium-min 149 pack used in production.
+    - GHSA-mrhx-c7xc-m3w5
