@@ -10,6 +10,7 @@ import {
   Save,
   Table as TableIcon,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import DataTable, { type Column } from '@/components/DataTable';
 import { Card } from '@/components/ui/card';
@@ -36,6 +37,8 @@ export default function PreviewPanel({
   template,
   onSave,
 }: PreviewPanelProps) {
+  const t = useTranslations('registration.preview');
+  const tCommon = useTranslations('common');
   const [busy, setBusy] = useState(false);
 
   const ready = players.length > 0 && !!league;
@@ -46,14 +49,16 @@ export default function PreviewPanel({
   const handleCsv = () => {
     toaster.promise((async () => downloadCsv(players, filename))(), {
       loading: {
-        title: 'Preparing CSV...',
-        description: 'Generating your file.',
+        title: t('csvLoading'),
+        description: t('csvLoadingDescription'),
       },
-      success: { title: 'CSV downloaded', description: 'Your file is ready.' },
+      success: { title: t('csvSuccess'), description: t('fileReady') },
       error: (error) => ({
-        title: 'Could not download CSV',
+        title: t('csvError'),
         description:
-          error instanceof Error ? error.message : 'Something went wrong.',
+          error instanceof Error
+            ? error.message
+            : tCommon('somethingWentWrong'),
       }),
     });
   };
@@ -66,22 +71,26 @@ export default function PreviewPanel({
         buildRegistrationPdf({ players, league, template }),
     );
     toaster.promise(pdfPromise, {
-      loading: { title: 'Generating PDF...', description: 'Please wait.' },
+      loading: { title: t('pdfLoading'), description: t('pleaseWait') },
       success: ({ bytes, filledCount, detectedFields }) => {
         downloadPdf(bytes, filename);
         if (template && filledCount === 0) {
           return {
             type: 'warning',
-            title: 'No fields matched',
-            description: `Found ${detectedFields.length} field(s) but none matched player data.`,
+            title: t('noFieldsMatched'),
+            description: t('noFieldsMatchedDescription', {
+              count: detectedFields.length,
+            }),
           };
         }
-        return { title: 'PDF downloaded', description: 'Your file is ready.' };
+        return { title: t('pdfSuccess'), description: t('fileReady') };
       },
       error: (error) => ({
-        title: 'Could not generate PDF',
+        title: t('pdfError'),
         description:
-          error instanceof Error ? error.message : 'Something went wrong.',
+          error instanceof Error
+            ? error.message
+            : tCommon('somethingWentWrong'),
       }),
       finally: () => setBusy(false),
     });
@@ -92,7 +101,7 @@ export default function PreviewPanel({
       title={
         <HStack>
           <Eye size={16} />
-          Preview
+          {t('title')}
         </HStack>
       }
       action={
@@ -119,7 +128,7 @@ export default function PreviewPanel({
             disabled={!ready}
             onClick={onSave}
           >
-            <Save /> Save
+            <Save /> {t('save')}
           </Button>
         </HStack>
       }
@@ -133,8 +142,8 @@ export default function PreviewPanel({
           wordBreak="break-all"
         >
           {template
-            ? `Using uploaded form: ${template.name}`
-            : 'No PDF uploaded - showing the registration as a table.'}
+            ? t('usingTemplate', { name: template.name })
+            : t('noTemplate')}
         </Text>
       }
     >
@@ -142,8 +151,8 @@ export default function PreviewPanel({
         <EmptyState
           size="sm"
           icon={<TableIcon />}
-          title="Nothing to preview yet"
-          description="Select at least one player and a league to see the preview."
+          title={t('emptyTitle')}
+          description={t('emptyDescription')}
         />
       ) : template ? (
         <PdfPreview players={players} league={league} template={template} />
@@ -157,6 +166,7 @@ export default function PreviewPanel({
 const PAGE_SIZE = 10;
 
 function TablePreview({ players }: { players: Array<User> }) {
+  const t = useTranslations('registration.preview');
   const [page, setPage] = useState(1);
 
   const predicate = useCallback(() => true, []);
@@ -187,7 +197,7 @@ function TablePreview({ players }: { players: Array<User> }) {
       currentData={currentData}
       onPageChange={({ page }) => setPage(page)}
       marginBottom={2}
-      empty={{ title: 'No players to preview', icon: <TableIcon /> }}
+      empty={{ title: t('noPlayers'), icon: <TableIcon /> }}
     />
   );
 }
@@ -197,6 +207,7 @@ function PdfPreview({
   league,
   template,
 }: Required<Pick<PreviewPanelProps, 'players' | 'league' | 'template'>>) {
+  const t = useTranslations('registration.preview');
   const [url, setUrl] = useState<Nullable<string>>(null);
   const [error, setError] = useState<Nullable<string>>(null);
 
@@ -218,7 +229,7 @@ function PdfPreview({
       })
       .catch((err) => {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : 'Preview failed.');
+          setError(err instanceof Error ? err.message : t('failed'));
         }
       });
 
@@ -226,7 +237,7 @@ function PdfPreview({
       cancelled = true;
       if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
-  }, [players, league, template]);
+  }, [players, league, template, t]);
 
   if (error) {
     return (
@@ -239,7 +250,7 @@ function PdfPreview({
   if (!url) {
     return (
       <HStack justifyContent="center" paddingBlock={10} color="fg.muted">
-        <Spinner size="sm" /> <Text fontSize="sm">Rendering preview…</Text>
+        <Spinner size="sm" /> <Text fontSize="sm">{t('rendering')}</Text>
       </HStack>
     );
   }
@@ -252,12 +263,7 @@ function PdfPreview({
       borderRadius="md"
       overflow="hidden"
     >
-      <iframe
-        title="Registration preview"
-        src={url}
-        width="100%"
-        height="100%"
-      />
+      <iframe title={t('iframeTitle')} src={url} width="100%" height="100%" />
     </Box>
   );
 }

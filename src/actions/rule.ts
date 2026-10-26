@@ -1,5 +1,6 @@
 'use server';
 
+import { getTranslations } from 'next-intl/server';
 import { revalidate } from '@/actions/cache';
 import { getDbErrorMessage } from '@/db/pg-error';
 import { getRule as getAction, upsertRule as saveRule } from '@/db/rule';
@@ -16,6 +17,7 @@ export const getRule = withAuth(
 export const upsertRule = teamRule(
   ['create', 'edit'],
   async function upsert({ team_id }, content: string) {
+    const t = await getTranslations('actions.rule');
     try {
       // The row always exists, so the only thing "added" vs "updated"
       // distinguishes is whether the team had any rules written yet.
@@ -26,7 +28,7 @@ export const upsertRule = teamRule(
       revalidate.rule();
 
       return ResponseFactory.success(
-        `${existing?.rule_content ? 'Updated' : 'Added'} rule successfully`,
+        t(existing?.rule_content ? 'updated' : 'added'),
       );
     } catch (error) {
       const { message } = getDbErrorMessage(error);

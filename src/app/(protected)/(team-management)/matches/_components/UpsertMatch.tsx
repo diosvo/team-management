@@ -18,6 +18,7 @@ import {
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Save } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Controller, useForm } from 'react-hook-form';
 
 import Authorized from '@/components/Authorized';
@@ -41,9 +42,9 @@ import {
 } from '@/utils/constants';
 import { formatDatetime } from '@/utils/datetime';
 import { MatchStatus } from '@/utils/enum';
-import { toLabel } from '@/utils/formatter';
 import { getColor } from '@/utils/helper';
 
+import { enumLabel, useSelection } from '@/i18n/enums';
 import { getDefaults } from '@/lib/zod';
 import {
   UpsertMatchSchema,
@@ -55,6 +56,11 @@ import { upsertMatch } from '@/actions/match';
 import { getTeams } from '@/actions/team';
 
 export const UpsertMatch = createOverlay(({ action, item, ...rest }) => {
+  const t = useTranslations('matches.upsertMatch');
+  const tc = useTranslations('common');
+  const te = useTranslations('enums');
+  const tv = useTranslations('validation');
+  const statusOptions = useSelection(MATCH_STATUS_SELECTION, 'matchStatus');
   const [isPending, startTransition] = useTransition();
   const [isLeague, setIsLeague] = useState<boolean>(!!item.league_id);
 
@@ -80,7 +86,7 @@ export const UpsertMatch = createOverlay(({ action, item, ...rest }) => {
   const onSubmit = (data: UpsertMatchSchemaValues) => {
     const id = toaster.create({
       type: 'loading',
-      title: 'Saving match information...',
+      title: t('saving'),
     });
 
     startTransition(async () => {
@@ -108,7 +114,9 @@ export const UpsertMatch = createOverlay(({ action, item, ...rest }) => {
               <CloseButton />
             </Dialog.CloseTrigger>
             <Dialog.Header>
-              <Dialog.Title>{action} match</Dialog.Title>
+              <Dialog.Title>
+                {action === 'Update' ? t('updateTitle') : t('addTitle')}
+              </Dialog.Title>
             </Dialog.Header>
             <Dialog.Body>
               <VStack alignItems="stretch" gap={4}>
@@ -138,7 +146,7 @@ export const UpsertMatch = createOverlay(({ action, item, ...rest }) => {
                   colorPalette="red"
                   onCheckedChange={({ checked }) => setIsLeague(checked)}
                 >
-                  League Match
+                  {t('leagueMatch')}
                 </Switch>
                 <Authorized resource="matches" action="edit">
                   <Visibility isVisible={isLeague}>
@@ -164,7 +172,7 @@ export const UpsertMatch = createOverlay(({ action, item, ...rest }) => {
                             borderRadius="full"
                             colorPalette={getColor(item.status)}
                           >
-                            {toLabel(item.status)}
+                            {enumLabel(te, 'leagueStatus', item.status)}
                           </Badge>
                         </HStack>
                       )}
@@ -188,7 +196,7 @@ export const UpsertMatch = createOverlay(({ action, item, ...rest }) => {
                   direction={{ base: 'column', sm: 'row' }}
                   alignItems={{ base: 'stretch', sm: 'start' }}
                 >
-                  <Field required label="Date" disabled={isPending}>
+                  <Field required label={tc('date')} disabled={isPending}>
                     <DatePickerField
                       control={control}
                       name="date"
@@ -196,7 +204,7 @@ export const UpsertMatch = createOverlay(({ action, item, ...rest }) => {
                       disabled={isPending}
                     />
                   </Field>
-                  <Field required label="Time" disabled={isPending}>
+                  <Field required label={tc('time')} disabled={isPending}>
                     <Input
                       type="time"
                       defaultValue="19:30"
@@ -207,7 +215,9 @@ export const UpsertMatch = createOverlay(({ action, item, ...rest }) => {
                 </Stack>
                 <LocationSelection control={control} isDisabled={isPending} />
                 <Fieldset.Root invalid={!!errors.status} disabled={isPending}>
-                  <Fieldset.Legend color="GrayText">Status</Fieldset.Legend>
+                  <Fieldset.Legend color="GrayText">
+                    {tc('status')}
+                  </Fieldset.Legend>
                   <Controller
                     name="status"
                     control={control}
@@ -228,7 +238,7 @@ export const UpsertMatch = createOverlay(({ action, item, ...rest }) => {
                         }}
                       >
                         <HStack gap={4} rowGap={2} flexWrap="wrap">
-                          {MATCH_STATUS_SELECTION.map((option) => (
+                          {statusOptions.map((option) => (
                             <Tooltip
                               key={option.value}
                               content={option.description}
@@ -243,13 +253,16 @@ export const UpsertMatch = createOverlay(({ action, item, ...rest }) => {
                     )}
                   />
                   <Fieldset.ErrorText>
-                    {errors.status?.message}
+                    {errors.status?.message &&
+                      (tv.has(errors.status.message as never)
+                        ? tv(errors.status.message as never)
+                        : errors.status.message)}
                   </Fieldset.ErrorText>
                 </Fieldset.Root>
                 <Visibility isVisible={isPlayed}>
                   <HStack alignItems="start">
                     <Field
-                      label="Our Score"
+                      label={t('ourScore')}
                       invalid={!!errors.home_team_score}
                       errorText={errors.home_team_score?.message}
                     >
@@ -270,7 +283,7 @@ export const UpsertMatch = createOverlay(({ action, item, ...rest }) => {
                       />
                     </Field>
                     <Field
-                      label="Their Score"
+                      label={t('theirScore')}
                       invalid={!!errors.away_team_score}
                       errorText={errors.away_team_score?.message}
                     >
@@ -301,15 +314,15 @@ export const UpsertMatch = createOverlay(({ action, item, ...rest }) => {
             >
               <Text textStyle="caption" color="GrayText">
                 {item.updated_at &&
-                  `Last updated on ${formatDatetime(item.updated_at)}`}
+                  t('lastUpdated', { date: formatDatetime(item.updated_at) })}
               </Text>
               <Button
                 type="submit"
-                loadingText="Saving..."
+                loadingText={t('savingButton')}
                 loading={isPending}
                 disabled={!isValid}
               >
-                <Save /> {action}
+                <Save /> {action === 'Update' ? tc('update') : tc('add')}
               </Button>
             </Dialog.Footer>
           </Dialog.Content>

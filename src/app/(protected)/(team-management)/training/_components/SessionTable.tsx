@@ -11,6 +11,7 @@ import {
   Span,
 } from '@chakra-ui/react';
 import { CirclePile } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 
 import { LocationLink } from '@/components/common/LocationSelection';
 import DataTable, { type Column } from '@/components/DataTable';
@@ -22,9 +23,10 @@ import useTableState from '@/hooks/use-table-state';
 
 import type { TrainingSessionWithDetails } from '@/types/training-session';
 
+import { enumLabel } from '@/i18n/enums';
+
 import { useTrainingFilters } from '@/lib/nuqs';
 import { formatDate, formatDay } from '@/utils/datetime';
-import { toLabel } from '@/utils/formatter';
 import { getColor } from '@/utils/helper';
 
 import { removeSession } from '@/actions/training-session';
@@ -35,6 +37,10 @@ export default function SessionTable({
 }: {
   sessions: Array<TrainingSessionWithDetails>;
 }) {
+  const t = useTranslations('training.table');
+  const tc = useTranslations('common');
+  const te = useTranslations('enums');
+  const locale = useLocale();
   const { can, isGuest } = usePermissions();
   const [{ q, page }, setSearchParams] = useTrainingFilters();
 
@@ -55,7 +61,7 @@ export default function SessionTable({
 
   const columns: Array<Column<TrainingSessionWithDetails>> = [
     {
-      header: 'Date',
+      header: tc('date'),
       cell: (item) => (
         <ChakraLink colorPalette="blue" asChild>
           <NextLink
@@ -66,7 +72,7 @@ export default function SessionTable({
             onClick={(e) => e.stopPropagation()}
           >
             <HStack>
-              <Span>{formatDay(item.date)}</Span>
+              <Span>{formatDay(item.date, undefined, locale)}</Span>
               <Span color="gray.400">&bull;</Span>
               <Span>{formatDate(item.date)}</Span>
             </HStack>
@@ -75,7 +81,7 @@ export default function SessionTable({
       ),
     },
     {
-      header: 'Time',
+      header: tc('time'),
       cell: (item) => (
         <HStack gap={1}>
           <Span>{item.start_time}</Span>
@@ -85,7 +91,7 @@ export default function SessionTable({
       ),
     },
     {
-      header: 'Location',
+      header: t('location'),
       cell: (item) => (
         <LocationLink name={item.location?.name}>
           <HighlightText query={q}>{item.location?.name ?? '-'}</HighlightText>
@@ -93,25 +99,31 @@ export default function SessionTable({
       ),
     },
     {
-      header: 'Status',
+      header: tc('status'),
       cell: (item) => (
         <Badge
           variant="surface"
           borderRadius="full"
           colorPalette={getColor(item.status)}
         >
-          {toLabel(item.status)}
+          {enumLabel(te, 'sessionStatus', item.status)}
         </Badge>
       ),
     },
     {
-      header: 'Present Rate',
+      header: t('presentRate'),
       cell: (item) => (
         <Tooltip
           content={
             <List.Root paddingInline={4}>
-              <List.Item>On Time: {item.analytics.on_time}</List.Item>
-              <List.Item>Late: {item.analytics.late}</List.Item>
+              <List.Item>
+                {enumLabel(te, 'attendanceStatus', 'on_time')}:{' '}
+                {item.analytics.on_time}
+              </List.Item>
+              <List.Item>
+                {enumLabel(te, 'attendanceStatus', 'late')}:{' '}
+                {item.analytics.late}
+              </List.Item>
             </List.Root>
           }
           interactive
@@ -131,7 +143,7 @@ export default function SessionTable({
         totalCount={totalCount}
         page={page}
         onPageChange={setSearchParams}
-        empty={{ title: 'No training sessions found', icon: <CirclePile /> }}
+        empty={{ title: t('empty'), icon: <CirclePile /> }}
         onRowClick={
           isGuest
             ? undefined

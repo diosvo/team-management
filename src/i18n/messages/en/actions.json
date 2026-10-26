@@ -1,0 +1,99 @@
+{
+  "achievement": {
+    "deleted": "Deleted achievement successfully",
+    "deleteFailed": "Failed to delete achievement",
+    "leagueNotEnded": "Achievements can only be recorded for ended leagues",
+    "leagueNotFound": "League not found",
+    "recorded": "Recorded achievement successfully",
+    "updated": "Updated achievement successfully"
+  },
+  "asset": {
+    "added": "Added asset successfully",
+    "deleted": "Asset deleted successfully",
+    "deleteFailed": "Failed to delete asset",
+    "updated": "Updated asset successfully"
+  },
+  "attendance": {
+    "alreadySubmitted": "{id}: Already submitted",
+    "deleted": "Deleted attendance record successfully",
+    "invalidPlayer": "Invalid or missing player ID",
+    "leaveSubmitted": "Leave request submitted successfully",
+    "statusUpdated": "Updated attendance status successfully"
+  },
+  "feedback": {
+    "failed": "Unable to send your feedback right now. Please try again later.",
+    "submitted": "Thanks! Your feedback was filed as #{number}."
+  },
+  "league": {
+    "added": "Added league successfully",
+    "deleted": "Deleted league successfully",
+    "deleteFailed": "Failed to delete league",
+    "playerNotOnTeam": "Player (id: {id}) is not on this team",
+    "removePlayerFailed": "Failed to remove player (id: {id}) - {message}",
+    "updated": "Updated league successfully"
+  },
+  "location": {
+    "added": "Added location successfully",
+    "deleted": "Deleted location successfully",
+    "deleteFailed": "Failed to delete location",
+    "updated": "Updated location successfully"
+  },
+  "match": {
+    "added": "Added match successfully",
+    "deleted": "Deleted match successfully",
+    "deleteFailed": "Failed to delete match",
+    "updated": "Updated match successfully"
+  },
+  "report": {
+    "generated": "Report generated successfully",
+    "generateFailed": "Failed to generate report",
+    "missingHeaders": "Missing request headers required for report generation",
+    "notAuthenticated": "User not authenticated",
+    "scheduleAdded": "Added report schedule successfully",
+    "scheduleDisabled": "Schedule disabled successfully",
+    "scheduleEnabled": "Schedule enabled successfully",
+    "scheduleNotFound": "Schedule not found",
+    "schedulesDeleted": "Deleted {count} schedule(s) successfully",
+    "schedulesDeleteFailed": "Failed to delete schedule(s)",
+    "scheduleUpdated": "Updated report schedule successfully",
+    "scheduleUpdateFailed": "Failed to update schedule",
+    "unavailable": "Unable to generate the report. Please try again later",
+    "unknownOrigin": "Unable to determine the request origin"
+  },
+  "rule": {
+    "added": "Added rule successfully",
+    "updated": "Updated rule successfully"
+  },
+  "team": {
+    "added": "Added team successfully",
+    "deleted": "Deleted team successfully",
+    "hasMatches": "This team appears in {count} match(es). Delete those matches first, or keep the team to preserve the record.",
+    "logoUploaded": "Uploaded logo successfully",
+    "updated": "Updated team successfully"
+  },
+  "testResult": {
+    "deleted": "Test result deleted successfully",
+    "saved": "{created} created, {updated} updated",
+    "updated": "Test result updated successfully"
+  },
+  "testType": {
+    "inUse": "Type is being in use.",
+    "removed": "Test type removed successfully",
+    "updated": "Test type updated successfully"
+  },
+  "training": {
+    "created": "Created training session successfully",
+    "deleted": "Training session deleted successfully",
+    "noCoach": "No coach assigned to the team",
+    "updated": "Updated training session successfully"
+  },
+  "user": {
+    "avatarUploaded": "Uploaded avatar successfully",
+    "deleted": "User deleted successfully",
+    "deleteFailed": "Failed to delete user",
+    "invited": "Sent an email with instructions",
+    "jerseyTaken": "Jersey number ''{number}'' is already taken",
+    "personalInfoUpdated": "Updated personal information successfully",
+    "teamInfoUpdated": "Updated team information successfully"
+  }
+}

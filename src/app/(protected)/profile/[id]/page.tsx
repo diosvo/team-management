@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 
 import { Text } from '@chakra-ui/react';
 
@@ -9,10 +10,10 @@ import { formatDatetime } from '@/utils/datetime';
 
 import ProfileLayout from '../_components/ProfileLayout';
 
-export const metadata: Metadata = {
-  title: 'Profile',
-  description: 'View and edit your profile details.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('profile.metadata');
+  return { title: t('title'), description: t('description') };
+}
 
 export default async function ProfilePage({
   params,
@@ -20,14 +21,17 @@ export default async function ProfilePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const { targetUser, viewOnly } = await getUserProfile(id);
+  const [{ targetUser, viewOnly }, t] = await Promise.all([
+    getUserProfile(id),
+    getTranslations('profile'),
+  ]);
 
   return (
     <>
-      <PageTitle title="Profile Details" />
+      <PageTitle title={t('title')} />
       <ProfileLayout user={targetUser} viewOnly={viewOnly} />
       <Text fontSize="sm" color="GrayText">
-        {`Last updated on ${formatDatetime(targetUser.updatedAt)}`}
+        {t('lastUpdated', { date: formatDatetime(targetUser.updatedAt) })}
       </Text>
     </>
   );

@@ -1,5 +1,6 @@
 import type { Option } from '../type';
 
+export const TEAM_ID = 'saigon.rovers';
 export const FOUNDING_YEAR = 2024;
 export const ESTABLISHED_DATE = FOUNDING_YEAR + '-02-20';
 export const DEFAULT_DOB = '2000-01-01';

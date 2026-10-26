@@ -1,5 +1,6 @@
 'use server';
 
+import { getTranslations } from 'next-intl/server';
 import { getDbErrorMessage } from '@/db/pg-error';
 import {
   deleteTestType,
@@ -25,6 +26,7 @@ export const upsertTestType = periodicTesting(
     type_id: string,
     data: UpsertTestTypeSchemaValues,
   ) {
+    const t = await getTranslations('actions.testType');
     try {
       const existingTestType = await getTestTypeById(type_id);
 
@@ -39,7 +41,7 @@ export const upsertTestType = periodicTesting(
 
       revalidate.testTypes();
 
-      return ResponseFactory.success('Test type updated successfully');
+      return ResponseFactory.success(t('updated'));
     } catch (error) {
       const { message } = getDbErrorMessage(error);
       return ResponseFactory.error(message);
@@ -50,16 +52,17 @@ export const upsertTestType = periodicTesting(
 export const removeTestType = periodicTesting(
   ['delete'],
   async function remove(_, type_id: string) {
+    const t = await getTranslations('actions.testType');
     try {
       await deleteTestType(type_id);
 
       revalidate.testTypes();
 
-      return ResponseFactory.success('Test type removed successfully');
+      return ResponseFactory.success(t('removed'));
     } catch (error) {
       const { message, constraint } = getDbErrorMessage(error);
       if (constraint === 'test_result_type_id_test_type_type_id_fk') {
-        return ResponseFactory.error('Type is being in use.');
+        return ResponseFactory.error(t('inUse'));
       }
       return ResponseFactory.error(message);
     }

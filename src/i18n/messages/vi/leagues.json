@@ -1,0 +1,35 @@
+{
+  "metadata": {
+    "description": "Quản lý và xem thông tin các giải đấu.",
+    "title": "Giải đấu"
+  },
+  "status": "Trạng thái",
+  "table": {
+    "achievement": "Thành tích",
+    "deleted": "Đã xóa {count} giải đấu.",
+    "deletedPartially": "Đã xóa {count} giải đấu, nhưng một số thao tác bị lỗi.",
+    "deleting": "Đang xóa giải đấu...",
+    "empty": "Không tìm thấy giải đấu nào",
+    "endDate": "Ngày kết thúc",
+    "name": "Tên",
+    "playerCount": "Số cầu thủ",
+    "recordAchievement": "Ghi nhận thành tích",
+    "startDate": "Ngày bắt đầu",
+    "status": "Trạng thái"
+  },
+  "title": "Giải đấu",
+  "upsert": {
+    "addTitle": "Thêm giải đấu",
+    "description": "Mô tả",
+    "descriptionPlaceholder": "Ghi chú...",
+    "endDate": "Ngày kết thúc",
+    "name": "Tên",
+    "namePlaceholder": "Giải bóng rổ",
+    "readonly": "Chỉ xem",
+    "saved": "Đã lưu thông tin giải đấu.",
+    "saving": "Đang lưu...",
+    "savingToast": "Đang lưu thông tin giải đấu...",
+    "startDate": "Ngày bắt đầu",
+    "updateTitle": "Cập nhật giải đấu"
+  }
+}

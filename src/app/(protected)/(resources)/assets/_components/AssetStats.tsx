@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
+
 import { Stat, StatGroup } from '@/components/ui/stat';
 
 import { useAssetFilters } from '@/lib/nuqs';
@@ -14,6 +16,7 @@ type AssetStatsProps = {
 };
 
 export default function AssetStats({ stats }: AssetStatsProps) {
+  const t = useTranslations('assets.stats');
   const [params, setSearchParams] = useAssetFilters();
 
   const handleClick = (condition: AssetCondition) => {
@@ -27,22 +30,22 @@ export default function AssetStats({ stats }: AssetStatsProps) {
   return (
     <StatGroup>
       <Stat
-        label="Total Quantity"
+        label={t('totalQuantity')}
         value={stats.total_items}
-        unit="item"
+        unit={t('unit')}
         onClick={() => setSearchParams(null)}
       />
       <Stat
-        label="Need Replacement"
+        label={t('needReplacement')}
         value={stats.need_replacement}
-        unit="item"
+        unit={t('unit')}
         color={stats.need_replacement > 0 ? 'red' : 'black'}
         onClick={() => handleClick(AssetCondition.POOR)}
       />
       <Stat
-        label="Outdated"
+        label={t('outdated')}
         value={stats.obsolete_count}
-        unit="item"
+        unit={t('unit')}
         color="gray"
         onClick={() => handleClick(AssetCondition.OBSOLETE)}
       />

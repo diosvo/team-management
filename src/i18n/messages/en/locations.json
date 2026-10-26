@@ -1,0 +1,25 @@
+{
+  "metadata": {
+    "description": "Manage your location settings.",
+    "title": "Locations"
+  },
+  "table": {
+    "address": "Address",
+    "deleted": "Successfully deleted {count} location(s).",
+    "deletedPartially": "Deleted {count} location(s), but some operations failed.",
+    "empty": "No locations found",
+    "lastUpdated": "Last Updated",
+    "name": "Name"
+  },
+  "title": "Locations",
+  "upsert": {
+    "address": "Address",
+    "addressPlaceholder": "123 Main St, City, Country",
+    "addTitle": "Add Location",
+    "name": "Name",
+    "namePlaceholder": "Headquarters",
+    "saving": "Saving...",
+    "savingToast": "Saving location information...",
+    "updateTitle": "Update Location"
+  }
+}

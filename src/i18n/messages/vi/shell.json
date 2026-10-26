@@ -1,0 +1,73 @@
+{
+  "accountMenu": {
+    "documentation": "Tài liệu",
+    "feedback": "Góp ý",
+    "logout": "Đăng xuất",
+    "performance": "Phong độ",
+    "profile": "Thông tin cá nhân",
+    "socialLinks": "Mạng xã hội",
+    "trigger": "Menu tài khoản",
+    "vietnamese": "Tiếng Việt"
+  },
+  "feedback": {
+    "description": "Mô tả",
+    "descriptionHelper": "Hỗ trợ Markdown.",
+    "descriptionPlaceholder": "Chuyện gì đã xảy ra, và bạn mong đợi điều gì?",
+    "filedForYou": "Góp ý của bạn sẽ được gửi kèm tên của bạn.",
+    "includePage": "Đính kèm trang tôi đang xem ({pathname})",
+    "label": "Góp ý + phản hồi + ý tưởng",
+    "send": "Gửi",
+    "sending": "Đang gửi...",
+    "title": "Gửi góp ý",
+    "titleLabel": "Tiêu đề",
+    "titlePlaceholder": "Xuất dữ liệu điểm danh bị thiếu tuần trước",
+    "type": "Loại"
+  },
+  "forbidden": {
+    "description": "Bạn không có quyền truy cập vào trang này.",
+    "returnDashboard": "Về trang tổng quan",
+    "title": "Không có quyền truy cập"
+  },
+  "header": {
+    "logoAlt": "Logo chữ",
+    "openNavigation": "Mở menu điều hướng",
+    "skipToContent": "Chuyển đến nội dung"
+  },
+  "metadata": {
+    "description": "Câu lạc bộ bóng rổ Saigon Rovers"
+  },
+  "nav": {
+    "achievements": "Thành tích",
+    "add-result": "Thêm kết quả",
+    "assets": "Tài sản",
+    "attendance": "Điểm danh",
+    "dashboard": "Tổng quan",
+    "documents": "Tài liệu",
+    "emails": "Email",
+    "leagues": "Giải đấu",
+    "locations": "Địa điểm",
+    "matches": "Trận đấu",
+    "performance": "Phong độ",
+    "periodic-testing": "Kiểm tra định kỳ",
+    "profile": "Hồ sơ",
+    "registration": "Đăng ký",
+    "reports": "Báo cáo",
+    "roster": "Đội hình",
+    "team-rule": "Nội quy đội",
+    "teams": "Đội",
+    "test-types": "Bài kiểm tra",
+    "training": "Tập luyện"
+  },
+  "sidebar": {
+    "collapseMenu": "Thu gọn",
+    "expandMenu": "Mở rộng",
+    "groups": {
+      "overview": "Tổng quan",
+      "performance": "Phong độ",
+      "resources": "Tài nguyên",
+      "settings": "Cài đặt",
+      "team-management": "Quản lý đội"
+    },
+    "mainNav": "Điều hướng chính"
+  }
+}

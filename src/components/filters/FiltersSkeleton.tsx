@@ -1,5 +1,6 @@
 import { Box, Button, HStack, Skeleton } from '@chakra-ui/react';
 import { CalendarSearch, SlidersHorizontal } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import {
   CONTROL_HEIGHT,
@@ -23,6 +24,7 @@ export default function FiltersSkeleton({
   filters = false,
   action,
 }: FiltersSkeletonProps) {
+  const tCommon = useTranslations('common');
   const hasControls = Boolean(date || filters || action);
 
   return (
@@ -47,7 +49,7 @@ export default function FiltersSkeleton({
             <Skeleton>
               <Button variant="outline">
                 <SlidersHorizontal />
-                Filters
+                {tCommon('filters')}
               </Button>
             </Skeleton>
           )}

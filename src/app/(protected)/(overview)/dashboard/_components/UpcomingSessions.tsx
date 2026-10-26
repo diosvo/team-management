@@ -1,6 +1,7 @@
 import { Badge, Flex, HStack, Span, VStack } from '@chakra-ui/react';
 import { isToday as isTodayParser } from 'date-fns';
 import { CircleOff, MapPin } from 'lucide-react';
+import { getLocale, getTranslations } from 'next-intl/server';
 
 import { LocationLink } from '@/components/common/LocationSelection';
 import { Card } from '@/components/ui/card';
@@ -9,16 +10,15 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { getUpcomingSessions } from '@/actions/analytics';
 import { formatDate, formatDay } from '@/utils/datetime';
 
-export const UPCOMING_SESSIONS = {
-  title: 'Upcoming Sessions',
-  description: 'Next 3 training sessions',
-};
-
 export default async function UpcomingSessions() {
-  const sessions = await getUpcomingSessions();
+  const [sessions, t, locale] = await Promise.all([
+    getUpcomingSessions(),
+    getTranslations('dashboard.upcomingSessions'),
+    getLocale(),
+  ]);
 
   return (
-    <Card {...UPCOMING_SESSIONS}>
+    <Card title={t('title')} description={t('description')}>
       <VStack alignItems="stretch" gap={4}>
         {sessions.length > 0 ? (
           sessions.map(
@@ -37,7 +37,9 @@ export default async function UpcomingSessions() {
                 >
                   <VStack alignItems="start" flex={1} minWidth={0} gap={1}>
                     <HStack gap={2} width="full" flexWrap="wrap">
-                      <Span fontSize="sm">{formatDay(date)}</Span>
+                      <Span fontSize="sm">
+                        {formatDay(date, undefined, locale)}
+                      </Span>
                       <Span color="gray.400">&bull;</Span>
                       <Span fontSize="sm">{formatDate(date)}</Span>
                       <Span color="gray.400">&bull;</Span>
@@ -56,7 +58,7 @@ export default async function UpcomingSessions() {
                             variant="surface"
                             colorPalette="blue"
                           >
-                            Today
+                            {t('today')}
                           </Badge>
                         )}
                       </HStack>
@@ -83,8 +85,8 @@ export default async function UpcomingSessions() {
         ) : (
           <EmptyState
             icon={<CircleOff />}
-            title="Nothing here"
-            description="Upcoming training sessions will be coming soon."
+            title={t('emptyTitle')}
+            description={t('emptyDescription')}
           />
         )}
       </VStack>

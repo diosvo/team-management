@@ -1,0 +1,63 @@
+{
+  "addResult": {
+    "activeOnly": "Chỉ cầu thủ đang hoạt động mới được tham gia kiểm tra.",
+    "activeQuery": "đang hoạt động",
+    "cellLabel": "{type} của {name}",
+    "configuration": "Thiết lập bài kiểm tra",
+    "emptyDescription": "Vui lòng chọn đủ các trường bắt buộc để nhập kết quả cho cầu thủ.",
+    "emptyTitle": "Chưa có thiết lập.",
+    "metadata": {
+      "description": "Thêm kết quả kiểm tra định kỳ mới.",
+      "title": "Thêm kết quả kiểm tra"
+    },
+    "playerName": "Tên cầu thủ",
+    "remove": "Bỏ \"{name}\"?",
+    "result": "Kết quả kiểm tra",
+    "saved": "Đã lưu kết quả",
+    "saveError": "Lỗi khi lưu kết quả",
+    "saving": "Đang lưu...",
+    "selectTypes": "Chọn bài kiểm tra",
+    "testDate": "Ngày kiểm tra",
+    "title": "Thêm kết quả kiểm tra"
+  },
+  "header": {
+    "addResult": "Thêm kết quả",
+    "manageTypes": "Quản lý bài kiểm tra",
+    "title": "Kiểm tra định kỳ"
+  },
+  "matrix": {
+    "deletingScore": "Đang xóa kết quả...",
+    "empty": "Không có kết quả kiểm tra",
+    "player": "Cầu thủ",
+    "savingScore": "Đang lưu kết quả..."
+  },
+  "metadata": {
+    "description": "Kiểm tra và phân tích phong độ của cầu thủ",
+    "title": "Kiểm tra định kỳ"
+  },
+  "stats": {
+    "completedTests": "Bài đã kiểm tra",
+    "playersJoined": "Cầu thủ tham gia",
+    "playerUnit": "cầu thủ",
+    "testUnit": "bài"
+  },
+  "testTypes": {
+    "deletePartial": "Đã xóa {count}, một số thao tác thất bại: {errors}",
+    "deleteSuccess": "Đã xóa {count} bài kiểm tra.",
+    "empty": "Không tìm thấy tên phù hợp",
+    "lastUpdated": "Cập nhật lần cuối",
+    "metadata": {
+      "description": "Quản lý và thiết lập các bài kiểm tra định kỳ",
+      "title": "Bài kiểm tra"
+    },
+    "relativeTime": "Thời gian tương đối",
+    "title": "Bài kiểm tra",
+    "unit": "Đơn vị"
+  },
+  "upsertTestType": {
+    "addTitle": "Thêm bài kiểm tra",
+    "saving": "Đang lưu...",
+    "unit": "Đơn vị",
+    "updateTitle": "Sửa bài kiểm tra"
+  }
+}

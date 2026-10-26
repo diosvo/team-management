@@ -6,6 +6,7 @@ import {
   type TableColumnHeaderProps,
   type TableRootProps,
 } from '@chakra-ui/react';
+import { useTranslations } from 'next-intl';
 
 import Pagination from '@/components/Pagination';
 import SelectionActionBar from '@/components/SelectionActionBar';
@@ -66,6 +67,7 @@ export default function DataTable<T>({
   onRowClick,
   ...rootProps
 }: DataTableProps<T>) {
+  const t = useTranslations('components.dataTable');
   const activeSelection = selection?.canSelect ? selection : null;
   const colSpan = columns.length + (activeSelection ? 1 : 0);
 
@@ -91,7 +93,7 @@ export default function DataTable<T>({
                 <Table.ColumnHeader width={6}>
                   <Checkbox
                     top={0.5}
-                    aria-label="Select all rows"
+                    aria-label={t('selectAllRows')}
                     disabled={
                       activeSelection.disabled || selectableItems.length === 0
                     }
@@ -134,7 +136,7 @@ export default function DataTable<T>({
                       <Table.Cell onClick={(e) => e.stopPropagation()}>
                         <Checkbox
                           top={0.5}
-                          aria-label="Select row"
+                          aria-label={t('selectRow')}
                           disabled={
                             activeSelection.disabled || !canSelectRow(item)
                           }

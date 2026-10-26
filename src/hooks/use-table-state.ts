@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState, useTransition } from 'react';
 
+import { useTranslations } from 'next-intl';
+
 import { toaster } from '@/components/ui/toaster';
 
 import { paginateData } from '@/utils/filters';
@@ -28,6 +30,17 @@ export default function useTableState<T>(
 ) {
   const [selection, setSelection] = useState<Array<string>>([]);
   const [isPending, startTransition] = useTransition();
+  const t = useTranslations('components.tableState');
+
+  /**
+   * Localized "N nouns": known nouns (_e.g.,_ `'test type'`) map to
+   * `components.tableState.entities.testType`; others fall back to English.
+   */
+  const countLabel = (count: number, noun: string): string => {
+    const key =
+      `entities.${noun.replace(/ (\w)/g, (_, char: string) => char.toUpperCase())}` as never;
+    return t.has(key) ? t(key, { count } as never) : pluralize(count, noun);
+  };
 
   useEffect(() => {
     setSelection([]);
@@ -54,7 +67,7 @@ export default function useTableState<T>(
     const ids = selection;
     const toastId = toaster.create({
       type: 'loading',
-      title: `Deleting ${pluralize(ids.length, noun)}...`,
+      title: t('deleting', { items: countLabel(ids.length, noun) }),
     });
 
     startTransition(async () => {
@@ -69,8 +82,12 @@ export default function useTableState<T>(
         type: failures.length > 0 ? 'warning' : 'success',
         title:
           failures.length > 0
-            ? `Deleted ${deleted} of ${pluralize(ids.length, noun)}; ${failures.length} failed.`
-            : `Successfully deleted ${pluralize(deleted, noun)}.`,
+            ? t('partial', {
+                deleted,
+                items: countLabel(ids.length, noun),
+                failed: failures.length,
+              })
+            : t('success', { items: countLabel(deleted, noun) }),
         description: reasons || undefined,
       });
 

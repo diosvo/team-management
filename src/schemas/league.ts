@@ -4,23 +4,11 @@ import { CURRENT_DATE } from '@/utils/constants';
 
 export const UpsertLeagueSchema = z
   .object({
-    name: z
-      .string()
-      .min(3, {
-        message: 'Be at least 3 characters long.',
-      })
-      .max(64, {
-        error: 'Be at most 64 characters long.',
-      }),
+    name: z.string().min(3).max(64),
     start_date: z.iso.date().default(CURRENT_DATE),
     end_date: z.iso.date().default(CURRENT_DATE),
     location_id: z.uuid().optional(),
-    description: z
-      .string()
-      .max(128, {
-        error: 'Be at most 128 characters long.',
-      })
-      .nullable(),
+    description: z.string().max(128).nullable(),
   })
   .refine(
     (data) => {
@@ -31,7 +19,7 @@ export const UpsertLeagueSchema = z
       return true;
     },
     {
-      message: 'End date must be after start date',
+      message: 'endDateAfterStartDate',
       path: ['end_date'],
     },
   );

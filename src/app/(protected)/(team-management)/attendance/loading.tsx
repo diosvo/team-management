@@ -1,12 +1,17 @@
+import { getTranslations } from 'next-intl/server';
+
 import ListPageSkeleton from '@/components/PageSkeleton';
 
-export default function AttendanceLoading() {
+export default async function AttendanceLoading() {
+  const t = await getTranslations('attendance');
+  const tPresets = await getTranslations('components.datePicker.presets');
+
   return (
     <ListPageSkeleton
-      title="Training Attendance"
-      actions={['Mark Attendance']}
+      title={t('title')}
+      actions={[t('markAttendance')]}
       stats={4}
-      toolbar={{ date: 'Today', filters: true }}
+      toolbar={{ date: tPresets('today'), filters: true }}
       columns={6}
     />
   );

@@ -11,6 +11,7 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
 
 import { Alert } from '@/components/ui/alert';
@@ -25,6 +26,8 @@ import { DEFAULT_LOGIN_REDIRECT } from '@/routes';
 import { LoginSchema, type LoginValues } from '@/schemas/auth';
 
 export default function LoginPage() {
+  const t = useTranslations('auth');
+  const tError = useTranslations('auth.errors');
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const {
@@ -57,7 +60,7 @@ export default function LoginPage() {
           onError: (context) => {
             setError('root', {
               type: ERROR_TYPE_BY_STATUS[context.response.status] ?? 'server',
-              message: authErrorMessage(context),
+              message: authErrorMessage(context, tError),
             });
           },
           onResponse: () => setIsLoading(false),
@@ -69,7 +72,7 @@ export default function LoginPage() {
       setIsLoading(false);
       setError('root', {
         type: 'server',
-        message: 'Unable to reach the server. Please try again.',
+        message: t('login.unreachable'),
       });
     }
   }
@@ -78,12 +81,12 @@ export default function LoginPage() {
     <form method="POST" onSubmit={handleSubmit(onSubmit)}>
       <VStack gap={4} alignItems="stretch">
         <Heading size={{ base: 'xl', md: '2xl' }} textAlign="center">
-          Sign in to your account
+          {t('login.heading')}
         </Heading>
 
         <Field
           required
-          label="Email"
+          label={t('email')}
           disabled={isLoading}
           invalid={!!errors.email}
           errorText={errors.email?.message}
@@ -96,7 +99,7 @@ export default function LoginPage() {
         </Field>
         <Field
           required
-          label="Password"
+          label={t('password')}
           disabled={isLoading}
           invalid={!!errors.password}
           errorText={errors.password?.message}
@@ -113,7 +116,9 @@ export default function LoginPage() {
           textDecoration="underline"
           asChild
         >
-          <NextLink href="/forgot-password">Forgot your password?</NextLink>
+          <NextLink href="/forgot-password">
+            {t('login.forgotPassword')}
+          </NextLink>
         </ChakraLink>
 
         {root?.message && <Alert status="error" title={root.message} />}
@@ -121,11 +126,11 @@ export default function LoginPage() {
         <Button
           type="submit"
           borderRadius="full"
-          loadingText="Directing..."
+          loadingText={t('login.submitting')}
           loading={isLoading}
           disabled={!isDirty || !isValid || isLoading || isUnauthorized}
         >
-          Sign In
+          {t('login.submit')}
         </Button>
       </VStack>
     </form>

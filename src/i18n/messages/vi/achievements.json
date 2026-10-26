@@ -1,0 +1,55 @@
+{
+  "card": {
+    "delete": "Xóa thành tích",
+    "deleting": "Đang xóa thành tích...",
+    "edit": "Sửa thành tích",
+    "standalone": "Danh hiệu độc lập"
+  },
+  "footer": {
+    "highlight": "Đây là hành trình của chúng ta.",
+    "lead": "Không chỉ là chiến thắng."
+  },
+  "header": {
+    "record": "Ghi nhận"
+  },
+  "hero": {
+    "heading": "Hành trình của chúng ta. Niềm tự hào của chúng ta.",
+    "logoAlt": "Logo đội",
+    "tagline": "Mỗi mùa giải. Mỗi thử thách. Mỗi thành tích.",
+    "yearsActive": "{duration} cùng nhau chơi bóng"
+  },
+  "metadata": {
+    "description": "Những danh hiệu của CLB qua từng năm.",
+    "title": "Thành tích"
+  },
+  "timeline": {
+    "emptyDescription": "Ghi nhận thành tích của CLB khi giải đấu kết thúc.",
+    "emptyTitle": "Tủ danh hiệu đang chờ thành tích đầu tiên",
+    "foundingQuote": "Một ước mơ. Một đội bóng.",
+    "taglines": [
+      "Nơi tất cả bắt đầu.",
+      "Bước đầu tiên, ước mơ lớn.",
+      "Vươn cao hơn.",
+      "Nền móng.",
+      "Tạo đà.",
+      "Không ngừng lớn mạnh.",
+      "Cùng nhau mạnh mẽ hơn."
+    ]
+  },
+  "upsert": {
+    "addTitle": "Thêm thành tích",
+    "description": "Mô tả",
+    "descriptionPlaceholder": "Nhận xét...",
+    "leagueHelper": "Để trống nếu là danh hiệu độc lập.",
+    "ppg": "{points} điểm/trận",
+    "saving": "Đang lưu thành tích...",
+    "savingButton": "Đang lưu...",
+    "suggested": "Gợi ý:",
+    "title": "Tiêu đề",
+    "titlePlaceholder": "Vô địch",
+    "type": "Loại",
+    "updateTitle": "Cập nhật thành tích",
+    "year": "Năm",
+    "yearHelper": "Lấy theo giải đấu đã chọn."
+  }
+}

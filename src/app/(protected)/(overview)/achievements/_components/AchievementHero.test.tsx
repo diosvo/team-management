@@ -35,7 +35,7 @@ describe('AchievementHero', () => {
     setup();
 
     expect(
-      screen.getAllByText(new RegExp(getYearsActive, 'i')).length,
+      screen.getAllByText(new RegExp(getYearsActive('en'), 'i')).length,
     ).toBeGreaterThan(0);
     expect(screen.getAllByText(/of playing together/i).length).toBeGreaterThan(
       0,

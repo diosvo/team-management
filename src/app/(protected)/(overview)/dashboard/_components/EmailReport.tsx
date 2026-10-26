@@ -12,6 +12,7 @@ import {
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Base64 } from 'js-base64';
+import { useTranslations } from 'next-intl';
 import { useForm, useWatch } from 'react-hook-form';
 
 import { SearchableSelectField } from '@/components/SearchableSelect';
@@ -19,7 +20,6 @@ import { toaster } from '@/components/ui/toaster';
 
 import type { DateRange } from '@/types/common';
 import { formatDateRange } from '@/utils/datetime';
-import { formatValueUnit } from '@/utils/formatter';
 
 import { getReportRecipients, sendReportEmail } from '@/actions/report';
 import {
@@ -42,6 +42,7 @@ export default function EmailReport({
   filename,
   onOpenChange,
 }: EmailReportProps) {
+  const t = useTranslations('dashboard.emailReport');
   const [sending, setSending] = useState(false);
   const formattedPeriod = formatDateRange(range);
 
@@ -65,7 +66,7 @@ export default function EmailReport({
       if (!response.ok) {
         const { error } = await response.json();
         toaster.error({
-          title: 'Download failed',
+          title: t('downloadFailed'),
           description: error,
         });
         return;
@@ -90,21 +91,17 @@ export default function EmailReport({
       });
 
       toaster.success({
-        title: 'Email sent',
-        description: `Report emailed to ${recipients.length} ${formatValueUnit(
-          recipients.length,
-          'recipient',
-        )}.`,
+        title: t('sent'),
+        description: t('sentDescription', { count: recipients.length }),
       });
 
       reset();
       onOpenChange(false);
     } catch (error) {
       toaster.error({
-        title: 'Email failed',
+        title: t('failed'),
         duration: 10000,
-        description:
-          error instanceof Error ? error.message : 'An unknown error occurred.',
+        description: error instanceof Error ? error.message : t('unknownError'),
       });
     } finally {
       setSending(false);
@@ -122,7 +119,7 @@ export default function EmailReport({
         <Dialog.Positioner as="form" onSubmit={handleSubmit(onSubmit)}>
           <Dialog.Content>
             <Dialog.Header>
-              <Dialog.Title>Email Analytics Report</Dialog.Title>
+              <Dialog.Title>{t('title')}</Dialog.Title>
             </Dialog.Header>
             <Dialog.Body>
               <SearchableSelectField
@@ -143,8 +140,11 @@ export default function EmailReport({
                 )}
                 fieldProps={{
                   helperText: noRecipients
-                    ? 'No recipients selected. Please select at least one.'
-                    : `The ${formattedPeriod} report will be emailed to ${recipients.length} ${formatValueUnit(recipients.length, 'recipient')}.`,
+                    ? t('noRecipients')
+                    : t('helper', {
+                        period: formattedPeriod,
+                        count: recipients.length,
+                      }),
                 }}
               />
             </Dialog.Body>
@@ -153,9 +153,9 @@ export default function EmailReport({
                 type="submit"
                 disabled={sending || recipients.length === 0}
                 loading={sending}
-                loadingText="Sending..."
+                loadingText={t('sending')}
               >
-                Generate &amp; Email
+                {t('submit')}
               </Button>
             </Dialog.Footer>
             <Dialog.CloseTrigger asChild>

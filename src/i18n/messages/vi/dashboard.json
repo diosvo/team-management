@@ -1,0 +1,86 @@
+{
+  "absenceReasons": {
+    "description": "5 lý do hàng đầu khiến cầu thủ nghỉ tập",
+    "empty": "Chưa có dữ liệu lý do vắng mặt",
+    "title": "Lý do vắng mặt phổ biến",
+    "unknown": "Không rõ"
+  },
+  "analytics": "Phân tích",
+  "attendanceRanking": {
+    "description": "Những ngôi sao chuyên cần và đồng đội cần cố gắng hơn",
+    "empty": "Chưa có dữ liệu điểm danh cầu thủ",
+    "needBoost": "Cần cố gắng hơn",
+    "sessions": "{count} buổi",
+    "stars": "Ngôi sao chuyên cần",
+    "title": "Xếp hạng điểm danh cầu thủ"
+  },
+  "attendanceTrend": {
+    "attended": "{attended}/{total} có mặt",
+    "description": "Tỉ lệ tham gia chung của đội",
+    "empty": "Chưa có dữ liệu điểm danh",
+    "target": "Mục tiêu ({rate}%)",
+    "title": "Xu hướng tỉ lệ điểm danh"
+  },
+  "emailReport": {
+    "downloadFailed": "Tải xuống thất bại",
+    "failed": "Gửi email thất bại",
+    "helper": "Báo cáo {period} sẽ được gửi tới {count} người nhận.",
+    "noRecipients": "Chưa chọn người nhận. Vui lòng chọn ít nhất một người.",
+    "sending": "Đang gửi...",
+    "sent": "Đã gửi email",
+    "sentDescription": "Đã gửi báo cáo tới {count} người nhận.",
+    "submit": "Tạo và gửi email",
+    "title": "Gửi báo cáo phân tích qua email",
+    "unknownError": "Đã xảy ra lỗi không xác định."
+  },
+  "filters": {
+    "download": "Tải xuống",
+    "downloadFailed": "Tải xuống thất bại",
+    "exportReport": "Xuất báo cáo",
+    "generating": "Đang tạo...",
+    "sendTo": "Gửi tới..."
+  },
+  "matchesRate": {
+    "description": "Phong độ ở trận giải đấu và trận giao hữu",
+    "empty": "Chưa có dữ liệu trận đấu",
+    "title": "Thành tích trận đấu",
+    "viewMatches": "Xem trận đấu"
+  },
+  "metadata": {
+    "description": "Tổng quan",
+    "title": "Tổng quan"
+  },
+  "overview": {
+    "achievements": "Thành tích",
+    "achievementsUnit": "vô địch, MVP, ...",
+    "activePlayers": "Cầu thủ đang hoạt động",
+    "daysRemaining": "ngày nữa",
+    "description": "{duration} cùng nhau chơi bóng",
+    "nextGame": "Trận tiếp theo",
+    "title": "Tổng quan",
+    "winRate": "Tỉ lệ thắng"
+  },
+  "quickActions": {
+    "description": "Lối tắt cho các việc thường làm",
+    "markAttendance": "Điểm danh",
+    "matchResults": "Kết quả trận đấu",
+    "myStats": "Thống kê của tôi",
+    "submitLeave": "Xin nghỉ",
+    "title": "Thao tác nhanh",
+    "viewSchedule": "Xem lịch"
+  },
+  "upcomingMatches": {
+    "description": "3 trận đấu tiếp theo",
+    "emptyDescription": "Tập trung tập luyện và sẵn sàng cho trận đấu tiếp theo!",
+    "emptyTitle": "Chưa có gì",
+    "title": "Trận sắp tới",
+    "today": "Hôm nay"
+  },
+  "upcomingSessions": {
+    "description": "3 buổi tập tiếp theo",
+    "emptyDescription": "Các buổi tập sắp tới sẽ sớm được cập nhật.",
+    "emptyTitle": "Chưa có gì",
+    "title": "Buổi tập sắp tới",
+    "today": "Hôm nay"
+  }
+}

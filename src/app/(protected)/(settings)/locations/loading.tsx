@@ -1,5 +1,16 @@
+import { getTranslations } from 'next-intl/server';
+
 import ListPageSkeleton from '@/components/PageSkeleton';
 
-export default function Loading() {
-  return <ListPageSkeleton title="Locations" actions={['Add']} columns={4} />;
+export default async function Loading() {
+  const t = await getTranslations('locations');
+  const tCommon = await getTranslations('common');
+
+  return (
+    <ListPageSkeleton
+      title={t('title')}
+      actions={[tCommon('add')]}
+      columns={4}
+    />
+  );
 }

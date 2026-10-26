@@ -5,6 +5,7 @@ import { useCallback, useState } from 'react';
 import { Box, HStack, IconButton } from '@chakra-ui/react';
 import { Base64 } from 'js-base64';
 import { Download, Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import DataTable, { type Column } from '@/components/DataTable';
 import HighlightText from '@/components/HighlightText';
@@ -28,6 +29,8 @@ export default function SavedRegistrations({
   items,
   onRemove,
 }: SavedRegistrationsProps) {
+  const t = useTranslations('registration.saved');
+  const tCommon = useTranslations('common');
   const [{ q, page }, setSearchParams] = useCommonParams();
   const [isDownloading, setIsDownloading] = useState(false);
 
@@ -48,17 +51,16 @@ export default function SavedRegistrations({
         ))(),
       {
         loading: {
-          title: 'Preparing download...',
-          description: 'Please wait.',
+          title: t('downloadLoading'),
+          description: t('pleaseWait'),
         },
         success: {
-          title: 'PDF downloaded',
-          description: 'Your file is ready.',
+          title: t('downloadSuccess'),
+          description: t('fileReady'),
         },
         error: {
-          title: 'Cannot download',
-          description:
-            'This registration was saved before downloads were supported. Re-save it to enable download.',
+          title: t('downloadError'),
+          description: t('downloadErrorDescription'),
         },
         finally: () => setIsDownloading(false),
       },
@@ -67,40 +69,43 @@ export default function SavedRegistrations({
 
   const handleRemove = (item: SavedRegistration) => {
     toaster.promise((async () => onRemove(item.id))(), {
-      loading: { title: 'Removing...', description: 'Please wait.' },
+      loading: { title: t('removeLoading'), description: t('pleaseWait') },
       success: {
-        title: 'Registration removed',
-        description: `${item.leagueName} was deleted.`,
+        title: t('removeSuccess'),
+        description: t('removeSuccessDescription', { name: item.leagueName }),
       },
       error: (error) => ({
-        title: 'Could not remove',
+        title: t('removeError'),
         description:
-          error instanceof Error ? error.message : 'Something went wrong.',
+          error instanceof Error
+            ? error.message
+            : tCommon('somethingWentWrong'),
       }),
     });
   };
 
   const columns: Array<Column<SavedRegistration>> = [
     {
-      header: 'Name',
+      header: t('name'),
       cellProps: { fontWeight: 'medium' },
       cell: (item) => (
         <HighlightText query={q}>{item.leagueName}</HighlightText>
       ),
     },
-    { header: 'Players', cell: (item) => item.playerCount },
+    { header: t('players'), cell: (item) => item.playerCount },
     {
-      header: 'Date saved',
+      header: t('dateSaved'),
       cellProps: { whiteSpace: 'nowrap' },
       cell: (item) => formatDatetime(item.savedAt),
     },
     {
-      header: 'Actions',
+      header: tCommon('actions'),
       cell: (item) => (
         <HStack gap={1}>
           <IconButton
             size="xs"
             variant="ghost"
+            aria-label={t('download')}
             hidden={!item.pdfBase64}
             disabled={isDownloading}
             onClick={() => handleDownload(item)}
@@ -111,6 +116,7 @@ export default function SavedRegistrations({
             size="xs"
             variant="ghost"
             colorPalette="red"
+            aria-label={t('remove')}
             disabled={isDownloading}
             onClick={() => handleRemove(item)}
           >
@@ -122,12 +128,9 @@ export default function SavedRegistrations({
   ];
 
   return (
-    <Card
-      title="Saved registrations"
-      description="Recent league registrations you have saved."
-    >
+    <Card title={t('title')} description={t('description')}>
       <Box marginBlock={4}>
-        <SearchInput placeholder="Filter by name..." />
+        <SearchInput placeholder={t('searchPlaceholder')} />
       </Box>
 
       <DataTable
@@ -138,8 +141,8 @@ export default function SavedRegistrations({
         page={page}
         onPageChange={setSearchParams}
         empty={{
-          title: 'No saved registrations yet',
-          description: 'Click Save in the preview to keep a registration here.',
+          title: t('emptyTitle'),
+          description: t('emptyDescription'),
         }}
         size="sm"
         borderWidth={undefined}

@@ -1,0 +1,33 @@
+{
+  "addUser": {
+    "adding": "Đang thêm thành viên...",
+    "dob": "Ngày sinh",
+    "email": "Email",
+    "fullname": "Họ tên",
+    "submit": "Thêm",
+    "submitting": "Đang thêm...",
+    "title": "Thêm vào đội hình",
+    "trigger": "Thêm"
+  },
+  "filters": {
+    "role": "Vai trò",
+    "state": "Trạng thái"
+  },
+  "metadata": {
+    "description": "Xem đội hình của đội",
+    "title": "Đội hình"
+  },
+  "table": {
+    "deletePartial": "Đã xóa {count} thành viên, nhưng một số thao tác bị lỗi.",
+    "deleteSuccess": "Đã xóa {count} thành viên.",
+    "email": "Email",
+    "empty": "Không tìm thấy thành viên",
+    "jerseyNumber": "Số áo",
+    "name": "Họ tên",
+    "position": "Vị trí",
+    "roles": "Vai trò",
+    "state": "Trạng thái",
+    "verified": "Đã xác minh"
+  },
+  "title": "Đội hình"
+}

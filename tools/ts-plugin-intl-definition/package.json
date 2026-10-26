@@ -1,0 +1,7 @@
+{
+  "name": "ts-plugin-intl-definition",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Go to definition from a next-intl message key to its JSON message",
+  "main": "index.cjs"
+}

@@ -1,14 +1,15 @@
 import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 
 import RegistrationIntro from './_components/RegistrationIntro';
 import RegistrationPageClient from './_components/main';
 
-export const metadata: Metadata = {
-  title: 'Tournament Registration',
-  description: 'Register players for the tournament',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('registration.metadata');
+  return { title: t('title'), description: t('description') };
+}
 
-export default async function RegistrationPage() {
+export default function RegistrationPage() {
   return (
     <>
       <RegistrationIntro />

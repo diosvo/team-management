@@ -7,10 +7,13 @@ import {
   ChakraProvider,
   createSystem,
   defaultConfig,
+  LocaleProvider,
   type SystemStyleObject,
 } from '@chakra-ui/react';
 import createCache from '@emotion/cache';
 import { CacheProvider } from '@emotion/react';
+
+import { DEFAULT_LOCALE, INTL_LOCALE, type Locale } from '@/i18n/config';
 
 type StyleMap = Record<string, unknown>;
 
@@ -102,7 +105,10 @@ const system = createSystem(defaultConfig, {
   },
 });
 
-export default function UiProvider({ children }: PropsWithChildren) {
+export default function UiProvider({
+  children,
+  locale = DEFAULT_LOCALE,
+}: PropsWithChildren<{ locale?: Locale }>) {
   const [cache] = useState(() => {
     const cache = createCache({ key: 'css' });
     cache.compat = true;
@@ -138,7 +144,9 @@ export default function UiProvider({ children }: PropsWithChildren) {
 
   return (
     <CacheProvider value={cache}>
-      <ChakraProvider value={system}>{children}</ChakraProvider>
+      <ChakraProvider value={system}>
+        <LocaleProvider locale={INTL_LOCALE[locale]}>{children}</LocaleProvider>
+      </ChakraProvider>
     </CacheProvider>
   );
 }

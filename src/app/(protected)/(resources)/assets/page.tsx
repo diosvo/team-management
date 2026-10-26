@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 
 import { getAssets } from '@/actions/asset';
 
@@ -7,10 +8,10 @@ import AssetHeader from './_components/AssetHeader';
 import AssetStats from './_components/AssetStats';
 import AssetTable from './_components/AssetTable';
 
-export const metadata: Metadata = {
-  title: 'Assets',
-  description: 'Assets inventory for the team.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('assets.metadata');
+  return { title: t('title'), description: t('description') };
+}
 
 export default async function AssetsPage() {
   const { stats, data } = await getAssets();

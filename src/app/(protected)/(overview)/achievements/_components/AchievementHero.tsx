@@ -10,6 +10,7 @@ import {
   Text,
   VStack,
 } from '@chakra-ui/react';
+import { useLocale, useTranslations } from 'next-intl';
 
 import { getYearsActive } from '@/app/(protected)/_helpers/utils';
 import BackgroundLayer from '@/assets/images/bg-layer.webp';
@@ -17,6 +18,9 @@ import BackgroundLayer from '@/assets/images/bg-layer.webp';
 const anton = Anton({ subsets: ['latin'], weight: '400' });
 
 export default function AchievementHero() {
+  const t = useTranslations('achievements.hero');
+  const locale = useLocale();
+
   return (
     <Center
       position="relative"
@@ -40,7 +44,7 @@ export default function AchievementHero() {
           sizes="100vw"
           src={BackgroundLayer}
           style={{ objectFit: 'cover' }}
-          alt="Team Logo"
+          alt={t('logoAlt')}
         />
       </Box>
 
@@ -52,7 +56,7 @@ export default function AchievementHero() {
           fontFamily={anton.style.fontFamily}
           size={{ base: '3xl', md: '5xl', lg: '6xl' }}
         >
-          Our Journey. Our Pride.
+          {t('heading')}
         </Heading>
 
         <HStack width="full" maxWidth="lg" gap={4}>
@@ -64,13 +68,13 @@ export default function AchievementHero() {
             textTransform="uppercase"
             fontSize={{ base: 'xs', md: 'sm' }}
           >
-            {getYearsActive} of playing together
+            {t('yearsActive', { duration: getYearsActive(locale) })}
           </Text>
           <Separator flex={1} borderColor="primary" opacity={0.4} />
         </HStack>
 
         <Text color="gray.600" fontSize={{ base: 'sm', md: 'md' }}>
-          Every season. Every challenge. Every achievement.
+          {t('tagline')}
         </Text>
       </VStack>
     </Center>

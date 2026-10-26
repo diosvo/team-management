@@ -18,6 +18,7 @@ import {
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SaveAll } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useFieldArray, useForm } from 'react-hook-form';
 
 import { DatePickerField } from '@/components/date-picker/DatePicker';
@@ -46,6 +47,7 @@ export default function BulkAttendanceManager({
 }: {
   trigger: React.ReactNode;
 }) {
+  const t = useTranslations('attendance.bulk');
   const [, setSearchParams] = useAttendanceFilters();
   const { data: activePlayers = [] } = useSWRImmutable<Array<User>>(
     CACHE_KEY.PLAYERS,
@@ -122,7 +124,7 @@ export default function BulkAttendanceManager({
 
     const id = toaster.create({
       type: 'loading',
-      title: 'Submitting leave requests...',
+      title: t('loading'),
     });
 
     startTransition(async () => {
@@ -143,8 +145,8 @@ export default function BulkAttendanceManager({
       toaster.update(id, {
         type: hasErrors ? 'warning' : 'success',
         title: hasErrors
-          ? `Failed to submit leave requests for ${results.length - successCount} player(s).`
-          : `Submitted leave requests for ${successCount} player(s).`,
+          ? t('failed', { count: results.length - successCount })
+          : t('success', { count: successCount }),
         description:
           hasErrors &&
           results.map(({ message }, index) => (
@@ -181,7 +183,7 @@ export default function BulkAttendanceManager({
         <Dialog.Positioner as="form" onSubmit={handleSubmit(onSubmit)}>
           <Dialog.Content>
             <Dialog.Header>
-              <Dialog.Title>Mark Bulk Attendance</Dialog.Title>
+              <Dialog.Title>{t('title')}</Dialog.Title>
             </Dialog.Header>
             <Dialog.Body>
               <VStack alignItems="stretch" gap={4}>
@@ -189,7 +191,7 @@ export default function BulkAttendanceManager({
                   direction={{ base: 'column', sm: 'row' }}
                   alignItems={{ base: 'stretch', sm: 'start' }}
                 >
-                  <Field required label="Date">
+                  <Field required label={t('date')}>
                     <DatePickerField
                       control={control}
                       name="date"
@@ -205,22 +207,19 @@ export default function BulkAttendanceManager({
                   <Table.ScrollArea>
                     <Table.Root size="sm">
                       <Table.Caption marginTop={3} color="GrayText">
-                        <Span color="red">Absent</Span>: {absentCount}
+                        <Span color="red">{t('absent')}</Span>: {absentCount}
                         &nbsp; &bull; &nbsp;
-                        <Span color="orange">Late</Span>: {lateCount}
+                        <Span color="orange">{t('late')}</Span>: {lateCount}
                       </Table.Caption>
                       <Table.Header>
                         <Table.Row>
-                          <Table.ColumnHeader>Name</Table.ColumnHeader>
-                          <Tooltip
-                            showArrow
-                            content="Check for absent, uncheck for late."
-                          >
+                          <Table.ColumnHeader>{t('name')}</Table.ColumnHeader>
+                          <Tooltip showArrow content={t('absentHint')}>
                             <Table.ColumnHeader textAlign="center">
-                              Absent
+                              {t('absent')}
                             </Table.ColumnHeader>
                           </Tooltip>
-                          <Table.ColumnHeader>Reason</Table.ColumnHeader>
+                          <Table.ColumnHeader>{t('reason')}</Table.ColumnHeader>
                         </Table.Row>
                       </Table.Header>
                       <Table.Body>
@@ -288,22 +287,25 @@ export default function BulkAttendanceManager({
               gap={2}
             >
               <Text color="GrayText" fontStyle="italic">
-                <Span textDecoration="underline">
-                  {absentCount > 0 || lateCount > 0 ? 'The remaining' : 'All'}
-                </Span>
-                &nbsp;players will be marked as&nbsp;
-                <Span color="green" fontWeight="bold">
-                  on time
-                </Span>
-                .
+                {t.rich('remainingOnTime', {
+                  remaining: String(absentCount > 0 || lateCount > 0),
+                  u: (chunks) => (
+                    <Span textDecoration="underline">{chunks}</Span>
+                  ),
+                  onTime: (chunks) => (
+                    <Span color="green" fontWeight="bold">
+                      {chunks}
+                    </Span>
+                  ),
+                })}
               </Text>
               <Button
                 type="submit"
-                loadingText="Submitting..."
+                loadingText={t('submitting')}
                 loading={isPending}
                 disabled={!isValid || isPending}
               >
-                <SaveAll /> Submit
+                <SaveAll /> {t('submit')}
               </Button>
             </Dialog.Footer>
             <Dialog.CloseTrigger asChild>

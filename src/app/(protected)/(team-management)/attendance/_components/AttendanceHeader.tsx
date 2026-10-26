@@ -2,6 +2,7 @@
 
 import { Button } from '@chakra-ui/react';
 import { ClipboardCheck, DoorOpen } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import PageHeader from '@/components/PageHeader';
 import Visibility from '@/components/Visibility';
@@ -12,16 +13,17 @@ import BulkAttendanceManager from './BulkAttendanceManager';
 import SubmitLeaveRequest from './SubmitLeaveRequest';
 
 export default function AttendanceHeader() {
+  const t = useTranslations('attendance');
   const { isAdmin, isPlayer } = usePermissions();
 
   return (
-    <PageHeader title="Training Attendance">
+    <PageHeader title={t('title')}>
       <Visibility isVisible={isAdmin}>
         <BulkAttendanceManager
           trigger={
             <Button colorPalette="green" variant="outline">
               <ClipboardCheck />
-              Mark Attendance
+              {t('markAttendance')}
             </Button>
           }
         />
@@ -31,7 +33,7 @@ export default function AttendanceHeader() {
           trigger={
             <Button>
               <DoorOpen />
-              Submit Leave Request
+              {t('submitLeaveRequest')}
             </Button>
           }
         />

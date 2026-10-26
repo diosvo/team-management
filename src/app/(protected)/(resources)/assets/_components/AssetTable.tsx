@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import { useMemo } from 'react';
 
 import { Badge } from '@chakra-ui/react';
+import { useTranslations } from 'next-intl';
 
 import DataTable, { type Column } from '@/components/DataTable';
 import HighlightText from '@/components/HighlightText';
@@ -11,10 +12,10 @@ import HighlightText from '@/components/HighlightText';
 import usePermissions from '@/hooks/use-permissions';
 import useTableState from '@/hooks/use-table-state';
 
+import { enumLabel } from '@/i18n/enums';
 import { useAssetFilters } from '@/lib/nuqs';
 import { formatDate, formatDatetime } from '@/utils/datetime';
 import { buildPredicate } from '@/utils/filters';
-import { toLabel } from '@/utils/formatter';
 import { getColor } from '@/utils/helper';
 
 import { removeAsset } from '@/actions/asset';
@@ -28,6 +29,8 @@ const RichTextViewer = dynamic(
 );
 
 export default function AssetTable({ data }: { data: Array<Asset> }) {
+  const t = useTranslations('assets.table');
+  const tEnums = useTranslations('enums');
   const { can, isGuest } = usePermissions();
   const [{ q, page, category, condition, from, to }, setSearchParams] =
     useAssetFilters();
@@ -53,31 +56,37 @@ export default function AssetTable({ data }: { data: Array<Asset> }) {
 
   const columns: Array<Column<Asset>> = [
     {
-      header: 'Name',
+      header: t('name'),
       cell: (item) => <HighlightText query={q}>{item.name}</HighlightText>,
     },
     {
-      header: 'Category',
-      cell: (item) => toLabel(item.category),
+      header: t('category'),
+      cell: (item) => enumLabel(tEnums, 'assetCategory', item.category),
     },
-    { header: 'Quantity', cell: (item) => item.quantity },
+    { header: t('quantity'), cell: (item) => item.quantity },
     {
-      header: 'Condition',
+      header: t('condition'),
       cell: (item) => (
         <Badge
           variant="surface"
           borderRadius="full"
           colorPalette={getColor(item.condition)}
         >
-          {toLabel(item.condition)}
+          {enumLabel(tEnums, 'assetCondition', item.condition)}
         </Badge>
       ),
     },
-    { header: 'Assigned To', cell: (item) => item.user?.name },
-    { header: 'Acquired Date', cell: (item) => formatDate(item.acquired_date) },
-    { header: 'Last Updated', cell: (item) => formatDatetime(item.updated_at) },
+    { header: t('assignedTo'), cell: (item) => item.user?.name },
     {
-      header: 'Note',
+      header: t('acquiredDate'),
+      cell: (item) => formatDate(item.acquired_date),
+    },
+    {
+      header: t('lastUpdated'),
+      cell: (item) => formatDatetime(item.updated_at),
+    },
+    {
+      header: t('note'),
       cell: (item) => item.note && <RichTextViewer content={item.note} />,
     },
   ];
@@ -91,7 +100,7 @@ export default function AssetTable({ data }: { data: Array<Asset> }) {
         totalCount={totalCount}
         page={page}
         onPageChange={setSearchParams}
-        empty={{ title: 'No assets found' }}
+        empty={{ title: t('empty') }}
         onRowClick={
           isGuest
             ? undefined

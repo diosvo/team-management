@@ -6,6 +6,7 @@ import { useMemo, useState, useTransition } from 'react';
 import { Button, Highlight, HStack, SimpleGrid } from '@chakra-ui/react';
 import { format } from 'date-fns';
 import { Save } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import StepIndicator from '@/components/StepIndicator';
 import { Card } from '@/components/ui/card';
@@ -21,6 +22,8 @@ import TestResultConfiguration from './TestResultConfiguration';
 import TestResultTable from './TestResultTable';
 
 export default function AddTestResultPageClient() {
+  const t = useTranslations('periodicTesting.addResult');
+  const tCommon = useTranslations('common');
   const router = useRouter();
   const [selection, setSelection] = useState<TestConfigurationSelection>({
     players: [],
@@ -49,7 +52,7 @@ export default function AddTestResultPageClient() {
   const onSave = () => {
     const id = toaster.create({
       type: 'loading',
-      title: 'Saving...',
+      title: t('saving'),
     });
 
     startTransition(async () => {
@@ -58,7 +61,7 @@ export default function AddTestResultPageClient() {
 
       toaster.update(id, {
         type: success ? 'success' : 'error',
-        title: success ? 'Results saved' : 'Error saving results',
+        title: success ? t('saved') : t('saveError'),
         description,
       });
 
@@ -79,15 +82,15 @@ export default function AddTestResultPageClient() {
         title={
           <HStack>
             <StepIndicator step={1} />
-            Test Configuration
+            {t('configuration')}
           </HStack>
         }
         description={
           <Highlight
-            query="active"
+            query={t('activeQuery')}
             styles={{ px: '0.5', backgroundColor: 'green.100' }}
           >
-            Only active players can be joined to the test.
+            {t('activeOnly')}
           </Highlight>
         }
       >
@@ -100,7 +103,7 @@ export default function AddTestResultPageClient() {
         title={
           <HStack>
             <StepIndicator step={2} />
-            Test Result
+            {t('result')}
           </HStack>
         }
         action={
@@ -115,7 +118,7 @@ export default function AddTestResultPageClient() {
             onClick={onSave}
           >
             <Save />
-            Save
+            {tCommon('save')}
           </Button>
         }
       >

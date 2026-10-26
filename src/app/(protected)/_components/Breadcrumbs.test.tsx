@@ -1,4 +1,3 @@
-
 import {
   expectNoA11yViolations,
   renderWithUI,
@@ -99,9 +98,10 @@ describe('Breadcrumbs', () => {
   test('ignores empty segments from trailing or duplicate slashes', () => {
     setup('/roster//details/');
 
-    expect(
-      screen.getByRole('link', { name: /roster/i }),
-    ).toHaveAttribute('href', '/roster');
+    expect(screen.getByRole('link', { name: /roster/i })).toHaveAttribute(
+      'href',
+      '/roster',
+    );
     expect(screen.getByText('Details')).toBeInTheDocument();
   });
 });

@@ -1,32 +1,43 @@
 # Saigon Rovers Basketball Club Management
 
-A private web portal for a basketball club: roster, training, attendance, matches, performance testing, and assets, all behind role-based access. This page covers the technology stack and how to run the app and its tests locally. For the system design see the [Architecture docs page](content/docs/project/architecture.mdx) (served at `/docs/project/architecture`); for naming and folder conventions see [DEVELOPMENT.md](DEVELOPMENT.md).
+A private web portal for a basketball club: roster, training, attendance, matches, performance testing, and assets, all behind role-based access. This page covers the technology stack and how to run the app and its tests locally.
+
+For the system design see the [Architecture docs page](content/docs/project/architecture.mdx) (served at `/docs/project/architecture`); for naming and folder conventions see [DEVELOPMENT.md](DEVELOPMENT.md).
 
 ## 🧑‍💻 Technology stack
 
-- 🚀 [Next.js](https://nextjs.org/)
-- 🧰 [Drizzle](https://orm.drizzle.team/) as the ORM for migrations and database access
-- 💾 [Neon](https://vercel.com/marketplace/neon) for PostgreSQL database interaction
-- 🔑 [Better Auth](https://www.better-auth.com) for authentication
-- 📩 [Resend](https://resend.com/) for email confirmation
-- 🗂️ [Vercel Blob](https://vercel.com/docs/vercel-blob) for file storage
-- ⏰ [date-fns](https://date-fns.org/) for datetime manipulation
-- PDF generation with:
-  - [pdf-lib](https://pdf-lib.js.org/) for PDF manipulation
-  - [js-base64](https://www.npmjs.com/package/js-base64) for base64 encoding and decoding
-- 💃 Using various parts of a modern frontend stack:
+- 🚀 Framework: [Next.js](https://nextjs.org/)
+- 🗄️ Backend:
+  - [Drizzle](https://orm.drizzle.team/) as the ORM for migrations and database access
+  - [Neon](https://vercel.com/marketplace/neon) for PostgreSQL database interaction
+  - [Better Auth](https://www.better-auth.com) for authentication
+  - [Resend](https://resend.com/) for email confirmation
+  - [Vercel Blob](https://vercel.com/docs/vercel-blob) for file storage
+- 💃 Frontend:
   - [Chakra UI](https://chakra-ui.com/) for component library
+  - [Chakra UI Charts](https://chakra-ui.com/docs/charts/installation) with [Recharts](https://recharts.org/) for analytics charts
+  - [Tiptap](https://tiptap.dev/) for the rich text editor
+  - [Lucide](https://lucide.dev/) for icons
   - [zod](https://zod.dev/) and [React Hook Form](https://react-hook-form.com/) for schema validation
-  - [es-toolkit](https://es-toolkit.com/) for utility functions
   - [nuqs](https://github.com/47ng/nuqs) for filters state management
   - [SWR](https://swr.vercel.app/) for data fetching and caching
+- 🌎 Internationalization: [next-intl](https://next-intl.dev/) for English and Vietnamese translations
+- 📄 PDF generation:
+  - [pdf-lib](https://pdf-lib.js.org/) and [@pdf-lib/fontkit](https://github.com/Hopding/fontkit) for PDF manipulation and custom fonts
+  - [Puppeteer](https://pptr.dev/) with [@sparticuz/chromium-min](https://github.com/Sparticuz/chromium) for rendering analytics reports
+  - [js-base64](https://www.npmjs.com/package/js-base64) for base64 encoding and decoding
+- 🧰 Utilities:
+  - [date-fns](https://date-fns.org/) for datetime manipulation
+  - [es-toolkit](https://es-toolkit.com/) for utility functions
+- 📚 Documentation: [Fumadocs](https://fumadocs.dev/) for the documentation site, with [Mermaid](https://mermaid.js.org/) diagrams
 - 🧪 Testing:
   - [Vitest](https://vitest.dev/) for unit and integration tests
   - [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/) for component testing
   - [Axe](https://github.com/nickcolley/jest-axe) for accessibility testing
   - [Playwright](https://playwright.dev/) for end-to-end testing
-- 🚢 [Vercel](http://vercel.com/) for deployment
-- 🏭 CI/CD with GitHub Actions
+- 🚢 Deployment:
+  - [Vercel](http://vercel.com/) for hosting, with [Analytics](https://vercel.com/docs/analytics) and [Speed Insights](https://vercel.com/docs/speed-insights)
+  - CI/CD with GitHub Actions
 
 ## ✨ How to start
 

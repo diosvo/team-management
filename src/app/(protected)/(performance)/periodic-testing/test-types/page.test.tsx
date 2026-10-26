@@ -11,7 +11,7 @@ import {
 
 import { getTestTypes } from '@/actions/test-type';
 
-import TestTypesPage, { metadata } from './page';
+import TestTypesPage, { generateMetadata } from './page';
 
 vi.mock('@/actions/test-type', () => ({
   getTestTypes: vi.fn(),
@@ -47,7 +47,8 @@ describe('TestTypesPage', () => {
 
   setupTestLifecycle();
 
-  test('exposes page metadata', () => {
+  test('exposes page metadata', async () => {
+    const metadata = await generateMetadata();
     expect(metadata.title).toBe('Test Types');
     expect(metadata.description).toBe(
       'Manage and configure test types for periodic testing',

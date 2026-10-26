@@ -1,3 +1,5 @@
+import { useTranslations } from 'next-intl';
+
 import { Skeleton, Text, VStack } from '@chakra-ui/react';
 
 import { Card } from '@/components/ui/card';
@@ -13,14 +15,14 @@ export function ChartFallback() {
 }
 
 export function UpcomingFallback({
-  title,
-  description,
+  section,
 }: {
-  title: string;
-  description: string;
+  section: 'upcomingSessions' | 'upcomingMatches';
 }) {
+  const t = useTranslations(`dashboard.${section}`);
+
   return (
-    <Card title={title} description={description}>
+    <Card title={t('title')} description={t('description')}>
       <VStack alignItems="stretch" gap={4}>
         {Array.from({ length: 3 }, (_, index) => (
           <Skeleton key={index} borderRadius="sm">

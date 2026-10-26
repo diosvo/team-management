@@ -16,8 +16,10 @@ import {
   type UseFormSetValue,
   useWatch,
 } from 'react-hook-form';
+import { useTranslations } from 'next-intl';
 
 import { Field } from '@/components/ui/field';
+import { useSelection } from '@/i18n/enums';
 
 import {
   COACH_POSITIONS_SELECTION,
@@ -33,21 +35,22 @@ type StateRoleProps = Omit<SelectRootProps, 'collection'> &
     contentRef: React.RefObject<Nullable<HTMLDivElement>>;
   }>;
 
-const roles = createListCollection({
-  items: USER_ROLE_SELECTION,
-});
-
 export function RoleSelection({
   contentRef,
-  placeholder = 'Role',
+  placeholder,
   ...props
 }: StateRoleProps) {
+  const t = useTranslations('components.rolePositionSelection');
+  const roles = createListCollection({
+    items: useSelection(USER_ROLE_SELECTION, 'userRole'),
+  });
+
   return (
     <Select.Root {...props} collection={roles}>
       <Select.HiddenSelect />
       <Select.Control>
         <Select.Trigger>
-          <Select.ValueText placeholder={placeholder} />
+          <Select.ValueText placeholder={placeholder ?? t('role')} />
         </Select.Trigger>
         <Select.IndicatorGroup>
           {props.multiple && <Select.ClearTrigger />}
@@ -87,6 +90,15 @@ export function RolePositionSelection<T extends FieldValues>({
   disabled = false,
   setValue,
 }: RoleSelectProps<T>) {
+  const t = useTranslations('components.rolePositionSelection');
+  const coachPositions = useSelection(
+    COACH_POSITIONS_SELECTION,
+    'coachPosition',
+  );
+  const playerPositions = useSelection(
+    PLAYER_POSITIONS_SELECTION,
+    'playerPosition',
+  );
   const selectedRole = useWatch({
     control,
     name: roleName,
@@ -98,14 +110,14 @@ export function RolePositionSelection<T extends FieldValues>({
 
   const positions = useMemo(() => {
     const mapped = {
-      [UserRole.COACH]: COACH_POSITIONS_SELECTION,
-      [UserRole.PLAYER]: PLAYER_POSITIONS_SELECTION,
+      [UserRole.COACH]: coachPositions,
+      [UserRole.PLAYER]: playerPositions,
       [UserRole.GUEST]: [],
     };
     return createListCollection<Option<string>>({
       items: selectedRole ? mapped[selectedRole] : [],
     });
-  }, [selectedRole]);
+  }, [selectedRole, coachPositions, playerPositions]);
 
   const disabledPosition =
     disabled || positions.items.length === 0 || selectedRole === UserRole.GUEST;
@@ -124,7 +136,7 @@ export function RolePositionSelection<T extends FieldValues>({
 
   return (
     <Stack direction={{ base: 'column', sm: 'row' }} width="inherit" gap={4}>
-      <Field required label="Role">
+      <Field required label={t('role')}>
         <Controller
           control={control}
           name={roleName}
@@ -141,7 +153,7 @@ export function RolePositionSelection<T extends FieldValues>({
         />
       </Field>
 
-      <Field label="Position">
+      <Field label={t('position')}>
         <Controller
           control={control}
           name={positionName}
@@ -157,7 +169,7 @@ export function RolePositionSelection<T extends FieldValues>({
               <Select.HiddenSelect />
               <Select.Control>
                 <Select.Trigger>
-                  <Select.ValueText placeholder="Position" />
+                  <Select.ValueText placeholder={t('position')} />
                 </Select.Trigger>
                 <Select.IndicatorGroup>
                   <Select.Indicator />

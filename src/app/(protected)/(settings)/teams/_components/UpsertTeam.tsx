@@ -13,6 +13,7 @@ import {
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ImageOff, Save } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
 
 import { CloseButton } from '@/components/ui/close-button';
@@ -28,6 +29,8 @@ import ImageUploader from '@/components/common/ImageUploader';
 import { useTeamLogo } from '@/hooks/use-image';
 
 export const UpsertTeam = createOverlay(({ action, item, ...rest }) => {
+  const t = useTranslations('teams.upsert');
+  const tCommon = useTranslations('common');
   const [isPending, startTransition] = useTransition();
   const [imagePath, setImagePath] = useState(item.image);
 
@@ -49,7 +52,7 @@ export const UpsertTeam = createOverlay(({ action, item, ...rest }) => {
   const onSubmit = (data: UpsertTeamSchemaValues) => {
     const id = toaster.create({
       type: 'loading',
-      title: 'Saving team information...',
+      title: t('savingToast'),
     });
 
     startTransition(async () => {
@@ -71,7 +74,7 @@ export const UpsertTeam = createOverlay(({ action, item, ...rest }) => {
   const handleFileChange = (file: File) => {
     const id = toaster.create({
       type: 'loading',
-      title: 'Setting team logo...',
+      title: t('settingLogo'),
     });
 
     startTransition(async () => {
@@ -102,7 +105,9 @@ export const UpsertTeam = createOverlay(({ action, item, ...rest }) => {
               <CloseButton />
             </Dialog.CloseTrigger>
             <Dialog.Header>
-              <Dialog.Title>{action} Team</Dialog.Title>
+              <Dialog.Title>
+                {isUpdate ? t('updateTitle') : t('addTitle')}
+              </Dialog.Title>
             </Dialog.Header>
             <Dialog.Body>
               <VStack alignItems="stretch" gap={4}>
@@ -116,18 +121,18 @@ export const UpsertTeam = createOverlay(({ action, item, ...rest }) => {
                 )}
                 <Field
                   required
-                  label="Name"
+                  label={t('name')}
                   invalid={!!errors.name}
                   errorText={errors.name?.message}
                 >
                   <Input
-                    placeholder="Basketball Club"
+                    placeholder={t('namePlaceholder')}
                     disabled={isPending}
                     {...register('name')}
                   />
                 </Field>
                 <Field
-                  label="Email"
+                  label={t('email')}
                   invalid={!!errors.email}
                   errorText={errors.email?.message}
                 >
@@ -139,7 +144,7 @@ export const UpsertTeam = createOverlay(({ action, item, ...rest }) => {
                   />
                 </Field>
                 <Field
-                  label="Establish Year"
+                  label={t('establishYear')}
                   invalid={!!errors.establish_year}
                   errorText={errors.establish_year?.message}
                 >
@@ -156,11 +161,11 @@ export const UpsertTeam = createOverlay(({ action, item, ...rest }) => {
             <Dialog.Footer>
               <Button
                 type="submit"
-                loadingText="Saving..."
+                loadingText={t('saving')}
                 loading={isPending}
                 disabled={!isValid || !isDirty || isPending}
               >
-                <Save /> {action}
+                <Save /> {isUpdate ? tCommon('update') : tCommon('add')}
               </Button>
             </Dialog.Footer>
           </Dialog.Content>

@@ -8,20 +8,12 @@ import {
 
 export const FeedbackFormSchema = z.object({
   type: z.enum(FEEDBACK_TYPE_KEYS),
-  title: z
-    .string()
-    .trim()
-    .min(5, { error: 'Be at least 5 characters long.' })
-    .max(FEEDBACK_TITLE_LIMIT, {
-      error: `Be at most ${FEEDBACK_TITLE_LIMIT} characters long.`,
-    }),
+  title: z.string().trim().min(5).max(FEEDBACK_TITLE_LIMIT),
   description: z
     .string()
     .trim()
-    .min(1, { error: 'Tell us what happened.' })
-    .max(FEEDBACK_DESCRIPTION_LIMIT, {
-      error: `Be at most ${FEEDBACK_DESCRIPTION_LIMIT} characters long. You can add more on GitHub.`,
-    }),
+    .min(1, { error: 'feedbackDescriptionRequired' })
+    .max(FEEDBACK_DESCRIPTION_LIMIT),
 });
 
 export type FeedbackFormSchemaValues = z.infer<typeof FeedbackFormSchema>;

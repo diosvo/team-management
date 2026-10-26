@@ -4,10 +4,12 @@ import { useTransition } from 'react';
 
 import { Box, HStack, IconButton, Text, VStack } from '@chakra-ui/react';
 import { Pencil, Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import Authorized from '@/components/Authorized';
 import { toaster } from '@/components/ui/toaster';
 
+import { enumLabel } from '@/i18n/enums';
 import { ACHIEVEMENT_STYLE } from '@/utils/constants/achievement';
 import { formatDate } from '@/utils/datetime';
 
@@ -21,13 +23,12 @@ export default function AchievementCard({
 }: {
   achievement: AchievementWithRelations;
 }) {
+  const t = useTranslations('achievements.card');
+  const tEnums = useTranslations('enums');
   const [isPending, startTransition] = useTransition();
 
-  const {
-    label,
-    colorPalette,
-    icon: Icon,
-  } = ACHIEVEMENT_STYLE[achievement.type];
+  const { colorPalette, icon: Icon } = ACHIEVEMENT_STYLE[achievement.type];
+  const label = enumLabel(tEnums, 'achievementType', achievement.type);
   const { league, player } = achievement;
 
   // Individual honors read better under the player's name than the league's.
@@ -38,12 +39,12 @@ export default function AchievementCard({
         `${formatDate(league.start_date)} – ${formatDate(league.end_date)}`,
     ]
       .filter(Boolean)
-      .join(' • ') || 'Standalone honor';
+      .join(' • ') || t('standalone');
 
   const removeItem = () => {
     const id = toaster.create({
       type: 'loading',
-      title: 'Deleting achievement...',
+      title: t('deleting'),
     });
 
     startTransition(async () => {
@@ -85,7 +86,7 @@ export default function AchievementCard({
           <IconButton
             size="xs"
             variant="ghost"
-            aria-label="Edit achievement"
+            aria-label={t('edit')}
             disabled={isPending}
             onClick={() =>
               UpsertAchievement.open('update-achievement', {
@@ -110,7 +111,7 @@ export default function AchievementCard({
             size="xs"
             variant="ghost"
             colorPalette="red"
-            aria-label="Delete achievement"
+            aria-label={t('delete')}
             disabled={isPending}
             onClick={removeItem}
           >

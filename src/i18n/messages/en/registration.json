@@ -1,0 +1,85 @@
+{
+  "attach": {
+    "description": "Upload a fillable PDF form or auto-generate a roster for the current league.",
+    "fieldNames": "Field names",
+    "fieldNamesHint": "Upload a fillable PDF whose text fields are named like below — they'll be filled automatically.",
+    "maxSize": "Max 10 MB",
+    "noFillableFields": "No fillable fields? We'll generate a roster from scratch instead.",
+    "notes": "Notes",
+    "notesPlaceholder": "Internal notes about this registration…",
+    "title": "Attach PDF",
+    "upload": "Click to upload PDF"
+  },
+  "league": {
+    "description": "Pick which competition this registration is for.",
+    "title": "Choose a league"
+  },
+  "metadata": {
+    "description": "Register players for the tournament",
+    "title": "Tournament Registration"
+  },
+  "optional": "(optional)",
+  "players": {
+    "description": "Only <active>active</active> players are shown.",
+    "selected": "{count} selected",
+    "title": "Select players"
+  },
+  "preview": {
+    "csvError": "Could not download CSV",
+    "csvLoading": "Preparing CSV...",
+    "csvLoadingDescription": "Generating your file.",
+    "csvSuccess": "CSV downloaded",
+    "emptyDescription": "Select at least one player and a league to see the preview.",
+    "emptyTitle": "Nothing to preview yet",
+    "failed": "Preview failed.",
+    "fileReady": "Your file is ready.",
+    "iframeTitle": "Registration preview",
+    "noFieldsMatched": "No fields matched",
+    "noFieldsMatchedDescription": "Found {count, plural, one {# field} other {# fields}} but none matched player data.",
+    "noPlayers": "No players to preview",
+    "noTemplate": "No PDF uploaded - showing the registration as a table.",
+    "pdfError": "Could not generate PDF",
+    "pdfLoading": "Generating PDF...",
+    "pdfSuccess": "PDF downloaded",
+    "pleaseWait": "Please wait.",
+    "rendering": "Rendering preview…",
+    "save": "Save",
+    "title": "Preview",
+    "usingTemplate": "Using uploaded form: {name}"
+  },
+  "save": {
+    "error": "Could not save registration",
+    "success": "Registration saved",
+    "successDescription": "{count, plural, one {# player} other {# players}} for {name}."
+  },
+  "saved": {
+    "dateSaved": "Date saved",
+    "description": "Recent league registrations you have saved.",
+    "download": "Download",
+    "downloadError": "Cannot download",
+    "downloadErrorDescription": "This registration was saved before downloads were supported. Re-save it to enable download.",
+    "downloadLoading": "Preparing download...",
+    "downloadSuccess": "PDF downloaded",
+    "emptyDescription": "Click Save in the preview to keep a registration here.",
+    "emptyTitle": "No saved registrations yet",
+    "fileReady": "Your file is ready.",
+    "name": "Name",
+    "players": "Players",
+    "pleaseWait": "Please wait.",
+    "remove": "Remove",
+    "removeError": "Could not remove",
+    "removeLoading": "Removing...",
+    "removeSuccess": "Registration removed",
+    "removeSuccessDescription": "{name} was deleted.",
+    "searchPlaceholder": "Filter by name...",
+    "title": "Saved registrations"
+  },
+  "steps": {
+    "attachPdf": "Attach PDF",
+    "choosePlayers": "Choose players",
+    "pickLeague": "Pick league",
+    "review": "Review & Export"
+  },
+  "subtitle": "Register players for a league. Optionally attach a registration PDF, then export as CSV or PDF.",
+  "title": "Registration"
+}

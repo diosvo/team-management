@@ -3,6 +3,7 @@
 import { Chart, useChart } from '@chakra-ui/charts';
 import { Box, Span, Text } from '@chakra-ui/react';
 import { ChartLine } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import type { TooltipContentProps } from 'recharts';
 import {
   CartesianGrid,
@@ -22,6 +23,7 @@ const TARGET_RATE = 80 as const;
 
 function CustomTooltip(props: Partial<TooltipContentProps<string, string>>) {
   const { active, payload } = props;
+  const t = useTranslations('dashboard.attendanceTrend');
   if (!active || !payload || payload.length === 0) return null;
 
   const entry = payload[0].payload as AttendanceHistoryRecord;
@@ -35,7 +37,7 @@ function CustomTooltip(props: Partial<TooltipContentProps<string, string>>) {
         {entry.present_rate}%
       </Text>
       <Text>
-        {entry.attended}/{entry.total} attended
+        {t('attended', { attended: entry.attended, total: entry.total })}
       </Text>
     </Box>
   );
@@ -46,6 +48,7 @@ export default function AttendanceTrend({
 }: {
   records: Array<AttendanceHistoryRecord>;
 }) {
+  const t = useTranslations('dashboard.attendanceTrend');
   const chart = useChart({
     data: [...records].reverse(),
     series: [{ name: 'present_rate', color: 'green' }],
@@ -59,10 +62,10 @@ export default function AttendanceTrend({
 
   return (
     <Card
-      title="Attendance Rate Trend"
+      title={t('title')}
       description={
         <>
-          Overall team attendance percentage
+          {t('description')}
           {avgRate > 0 ? (
             <>
               :&nbsp;
@@ -75,7 +78,7 @@ export default function AttendanceTrend({
       }
     >
       {records.length === 0 ? (
-        <EmptyState icon={<ChartLine />} title="No attendance records" />
+        <EmptyState icon={<ChartLine />} title={t('empty')} />
       ) : (
         <Chart.Root chart={chart} maxHeight="sm">
           <LineChart data={chart.data} responsive>
@@ -95,7 +98,7 @@ export default function AttendanceTrend({
               stroke="orange"
               strokeDasharray="2 2"
               label={{
-                value: `Target (${TARGET_RATE}%)`,
+                value: t('target', { rate: TARGET_RATE }),
                 position: 'top',
               }}
             />

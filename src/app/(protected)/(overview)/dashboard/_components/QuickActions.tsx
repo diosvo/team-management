@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 
@@ -49,39 +50,40 @@ const actionItemStyles = {
 } as const;
 
 export default function QuickActions() {
+  const t = useTranslations('dashboard.quickActions');
   const { user } = useSessionContext();
   const { isAdmin, isPlayer } = usePermissions();
 
   const title = (
     <Flex gap={2}>
       <Zap fill="yellow" />
-      Quick Actions
+      {t('title')}
     </Flex>
   );
 
   const Actions = [
     {
       enabled: true,
-      title: 'View Schedule',
+      title: t('viewSchedule'),
       icon: CalendarRange,
       href: '/training',
     },
     {
       enabled: true,
-      title: 'Match Results',
+      title: t('matchResults'),
       icon: TvMinimalPlay,
       href: '/matches',
     },
     {
       enabled: isPlayer,
-      title: 'My Stats',
+      title: t('myStats'),
       icon: FileCheck,
       href: `/performance/${user?.id}`,
     },
   ];
 
   return (
-    <Card title={title} description="Shortcuts to common tasks">
+    <Card title={title} description={t('description')}>
       <SimpleGrid minChildWidth="8rem" gap={4}>
         {Actions.filter(({ enabled }) => enabled).map(
           ({ title, icon: Icon, href }) => (
@@ -98,7 +100,7 @@ export default function QuickActions() {
             trigger={
               <VStack as="button" {...actionItemStyles}>
                 <DoorOpen size={18} strokeWidth={1.5} />
-                Submit Leave
+                {t('submitLeave')}
               </VStack>
             }
           />
@@ -108,7 +110,7 @@ export default function QuickActions() {
             trigger={
               <VStack as="button" {...actionItemStyles}>
                 <ClipboardCheck size={18} strokeWidth={1.5} />
-                Mark Attendance
+                {t('markAttendance')}
               </VStack>
             }
           />

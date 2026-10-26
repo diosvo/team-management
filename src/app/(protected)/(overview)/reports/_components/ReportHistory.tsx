@@ -1,32 +1,41 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { Badge, Button, HStack, VisuallyHidden } from '@chakra-ui/react';
 import { Download, FileClock } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import DataTable, { type Column } from '@/components/DataTable';
 import PageTitle from '@/components/PageTitle';
 
-import { INTERVAL_LABEL, reportDownloadUrl } from '@/utils/constants';
+import { enumLabel } from '@/i18n/enums';
+import { reportDownloadUrl } from '@/utils/constants';
 import { ReportStatus } from '@/utils/enum';
 import { formatDatetime } from '@/utils/datetime';
-import { toLabel } from '@/utils/formatter';
 import { getColor } from '@/utils/helper';
 
 import { ReportHistory as ReportHistoryRow } from '@/drizzle/schema';
 
 const PAGE_SIZE = 10;
 
-// Cells derive everything from the row, so the columns are a module constant.
-const COLUMNS: Array<Column<ReportHistoryRow>> = [
-  { header: 'Period', cell: (item) => item.period },
+type Translator = ReturnType<typeof useTranslations<'reports.history'>>;
+type CommonTranslator = ReturnType<typeof useTranslations<'common'>>;
+type EnumTranslator = ReturnType<typeof useTranslations<'enums'>>;
+
+// Cells derive everything from the row; only the labels depend on the locale.
+const createColumns = (
+  t: Translator,
+  tCommon: CommonTranslator,
+  tEnums: EnumTranslator,
+): Array<Column<ReportHistoryRow>> => [
+  { header: t('period'), cell: (item) => item.period },
   {
-    header: 'Time Duration',
-    cell: (item) => INTERVAL_LABEL[item.interval],
+    header: t('timeDuration'),
+    cell: (item) => enumLabel(tEnums, 'interval', item.interval),
   },
   {
-    header: 'Status',
+    header: tCommon('status'),
     cell: (item) => (
       // A failed run keeps its error on the row — surface it on hover.
       <Badge
@@ -35,13 +44,13 @@ const COLUMNS: Array<Column<ReportHistoryRow>> = [
         colorPalette={getColor(item.status)}
         title={item.error ?? undefined}
       >
-        {toLabel(item.status)}
-        {item.attempts > 1 ? ` (${item.attempts} attempts)` : ''}
+        {enumLabel(tEnums, 'reportStatus', item.status)}
+        {item.attempts > 1 ? t('attempts', { count: item.attempts }) : ''}
       </Badge>
     ),
   },
   {
-    header: 'Delivery',
+    header: t('delivery'),
     cell: (item) =>
       item.delivery_status ? (
         <Badge
@@ -49,23 +58,26 @@ const COLUMNS: Array<Column<ReportHistoryRow>> = [
           borderRadius="full"
           colorPalette={getColor(item.delivery_status)}
         >
-          {toLabel(item.delivery_status)}
+          {enumLabel(tEnums, 'emailStatus', item.delivery_status)}
         </Badge>
       ) : (
         '-'
       ),
   },
   {
-    header: 'Trigger',
+    header: t('trigger'),
     cell: (item) => (
       <Badge variant="outline" borderRadius="full">
-        {toLabel(item.trigger)}
+        {enumLabel(tEnums, 'reportTrigger', item.trigger)}
       </Badge>
     ),
   },
-  { header: 'Generated At', cell: (item) => formatDatetime(item.created_at) },
   {
-    header: <VisuallyHidden>Download</VisuallyHidden>,
+    header: t('generatedAt'),
+    cell: (item) => formatDatetime(item.created_at),
+  },
+  {
+    header: <VisuallyHidden>{t('download')}</VisuallyHidden>,
     align: 'right',
     cell: (item) => {
       const available = item.status === ReportStatus.SUCCESS && !!item.pathname;
@@ -79,11 +91,11 @@ const COLUMNS: Array<Column<ReportHistoryRow>> = [
         >
           {available ? (
             <a href={reportDownloadUrl(item.report_id)}>
-              <Download /> Download
+              <Download /> {t('download')}
             </a>
           ) : (
             <HStack>
-              <Download /> Download
+              <Download /> {t('download')}
             </HStack>
           )}
         </Button>
@@ -97,6 +109,13 @@ export default function ReportHistory({
 }: {
   history: Array<ReportHistoryRow>;
 }) {
+  const t = useTranslations('reports.history');
+  const tCommon = useTranslations('common');
+  const tEnums = useTranslations('enums');
+  const columns = useMemo(
+    () => createColumns(t, tCommon, tEnums),
+    [t, tCommon, tEnums],
+  );
   const [page, setPage] = useState(1);
 
   const start = (page - 1) * PAGE_SIZE;
@@ -104,9 +123,9 @@ export default function ReportHistory({
 
   return (
     <>
-      <PageTitle title="Report History" />
+      <PageTitle title={t('title')} />
       <DataTable
-        columns={COLUMNS}
+        columns={columns}
         rowId={(item) => item.report_id}
         currentData={currentData}
         totalCount={history.length}
@@ -114,8 +133,8 @@ export default function ReportHistory({
         pageSize={PAGE_SIZE}
         onPageChange={({ page }) => setPage(page)}
         empty={{
-          title: 'No reports generated yet',
-          description: 'Scheduled and manual runs will appear here.',
+          title: t('emptyTitle'),
+          description: t('emptyDescription'),
           icon: <FileClock />,
         }}
       />

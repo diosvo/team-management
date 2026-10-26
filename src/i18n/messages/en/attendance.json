@@ -1,0 +1,56 @@
+{
+  "bulk": {
+    "absent": "Absent",
+    "absentHint": "Check for absent, uncheck for late.",
+    "date": "Date",
+    "failed": "Failed to submit leave requests for {count, plural, one {# player} other {# players}}.",
+    "late": "Late",
+    "loading": "Submitting leave requests...",
+    "name": "Name",
+    "reason": "Reason",
+    "remainingOnTime": "<u>{remaining, select, true {The remaining} other {All}}</u> players will be marked as <onTime>on time</onTime>.",
+    "submit": "Submit",
+    "submitting": "Submitting...",
+    "success": "Submitted leave requests for {count, plural, one {# player} other {# players}}.",
+    "title": "Mark Bulk Attendance"
+  },
+  "filters": {
+    "date": "Date",
+    "status": "Status"
+  },
+  "leave": {
+    "date": "Date",
+    "loading": "Submitting your leave request...",
+    "reason": "Reason",
+    "reasonHelper": "Max 128 characters.",
+    "reasonPlaceholder": "Reason for leave...",
+    "submit": "Submit",
+    "submitting": "Submitting...",
+    "title": "Submit Leave Request"
+  },
+  "markAttendance": "Mark Attendance",
+  "metadata": {
+    "description": "Manage and view team attendance information.",
+    "title": "Attendance"
+  },
+  "stats": {
+    "absent": "Absent",
+    "late": "Late Entry",
+    "onTime": "On Time",
+    "presentRate": "Present Rate"
+  },
+  "submitLeaveRequest": "Submit Leave Request",
+  "table": {
+    "date": "Date",
+    "deleteFailed": "Failed to delete {count, plural, one {# attendance record} other {# attendance records}}",
+    "deleteSuccess": "Deleted {count, plural, one {# attendance record} other {# attendance records}} successfully",
+    "empty": "No players found",
+    "lastUpdated": "Last Updated",
+    "name": "Name",
+    "reason": "Reason",
+    "status": "Status",
+    "updateFailed": "Failed to update {count, plural, one {# attendance record} other {# attendance records}}",
+    "updateSuccess": "Updated {count, plural, one {# attendance record} other {# attendance records}} successfully"
+  },
+  "title": "Training Attendance"
+}

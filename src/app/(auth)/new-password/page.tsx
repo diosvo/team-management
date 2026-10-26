@@ -12,6 +12,7 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { CircleCheck, CircleDashed } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { Alert } from '@/components/ui/alert';
 import { Field } from '@/components/ui/field';
@@ -25,24 +26,26 @@ import { LOGIN_PATH } from '@/routes';
 
 const PASSWORD_RULES = [
   {
-    text: 'Be between 8 and 128 characters long',
+    key: 'length',
     regex: /^.{8,128}$/,
   },
   {
-    text: 'Contain at least one letter',
+    key: 'letter',
     regex: /[a-zA-Z]/,
   },
   {
-    text: 'Contain at least one number',
+    key: 'number',
     regex: /[0-9]/,
   },
   {
-    text: 'Contain at least one special character',
+    key: 'special',
     regex: /[^a-zA-Z0-9]/,
   },
 ] as const;
 
 export default function NewPasswordPage() {
+  const t = useTranslations('auth');
+  const tError = useTranslations('auth.errors');
   const router = useRouter();
   const [password, setPassword] = useState<string>('');
   const [error, setError] = useState<string>();
@@ -61,15 +64,15 @@ export default function NewPasswordPage() {
       },
       {
         onRequest: () => setIsLoading(true),
-        onError: (context) => setError(authErrorMessage(context)),
+        onError: (context) => setError(authErrorMessage(context, tError)),
         onSuccess: () => {
           toaster.success({
-            title: 'Create new password successful.',
+            title: t('newPassword.success'),
           });
           router.push(LOGIN_PATH);
         },
         onResponse: () => setIsLoading(false),
-      }
+      },
     );
   }
 
@@ -84,10 +87,10 @@ export default function NewPasswordPage() {
       }}
     >
       <Heading textAlign="center" size={{ base: 'xl', md: '2xl' }}>
-        Create a new password
+        {t('newPassword.heading')}
       </Heading>
 
-      <Field required label="Password" disabled={isLoading}>
+      <Field required label={t('password')} disabled={isLoading}>
         <PasswordInput
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -95,11 +98,11 @@ export default function NewPasswordPage() {
       </Field>
 
       <List.Root variant="plain" alignSelf="self-start">
-        {PASSWORD_RULES.map((rule, index) => {
+        {PASSWORD_RULES.map((rule) => {
           const matched = rule.regex.test(password);
           return (
             <List.Item
-              key={index}
+              key={rule.key}
               fontSize="sm"
               color={matched ? 'inherit' : 'GrayText'}
             >
@@ -113,7 +116,7 @@ export default function NewPasswordPage() {
                   <CircleDashed size={14} />
                 )}
               </List.Indicator>
-              {rule.text}
+              {t(`newPassword.rules.${rule.key}`)}
             </List.Item>
           );
         })}
@@ -123,11 +126,11 @@ export default function NewPasswordPage() {
         type="submit"
         width="full"
         borderRadius="full"
-        loadingText="Submitting..."
+        loadingText={t('newPassword.submitting')}
         loading={isLoading}
         disabled={!isValid || isLoading}
       >
-        Submit
+        {t('newPassword.submit')}
       </Button>
 
       <ChakraLink
@@ -136,7 +139,7 @@ export default function NewPasswordPage() {
         textDecoration="underline"
         asChild
       >
-        <NextLink href={LOGIN_PATH}>Go back to sign in</NextLink>
+        <NextLink href={LOGIN_PATH}>{t('backToSignIn')}</NextLink>
       </ChakraLink>
     </VStack>
   );

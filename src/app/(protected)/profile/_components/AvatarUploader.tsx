@@ -3,12 +3,14 @@
 import { useTransition } from 'react';
 
 import { Stack, Text, VStack } from '@chakra-ui/react';
+import { useTranslations } from 'next-intl';
 
 import ImageUploader from '@/components/common/ImageUploader';
 import { Card } from '@/components/ui/card';
 import { toaster } from '@/components/ui/toaster';
 
 import type { User } from '@/drizzle/schema/user';
+import { enumLabel } from '@/i18n/enums';
 import authClient from '@/lib/auth-client';
 import { useSessionContext } from '@/providers/session';
 
@@ -16,6 +18,8 @@ import { uploadAvatar } from '@/actions/user';
 import { useUserAvatar } from '@/hooks/use-image';
 
 export default function AvatarUploader({ user }: { user: User }) {
+  const t = useTranslations('profile.avatar');
+  const tEnums = useTranslations('enums');
   const [isPending, startTransition] = useTransition();
 
   const { refetch } = authClient.useSession();
@@ -27,7 +31,7 @@ export default function AvatarUploader({ user }: { user: User }) {
   const handleFileChange = (file: File) => {
     const id = toaster.create({
       type: 'loading',
-      title: 'Setting avatar...',
+      title: t('setting'),
     });
 
     startTransition(async () => {
@@ -67,7 +71,7 @@ export default function AvatarUploader({ user }: { user: User }) {
         <Stack gap={0} align="center">
           <Text fontWeight="medium">{user.name}</Text>
           <Text color="fg.muted" textStyle="sm">
-            {user.role}
+            {enumLabel(tEnums, 'userRole', user.role)}
           </Text>
         </Stack>
       </VStack>

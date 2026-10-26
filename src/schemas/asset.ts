@@ -12,19 +12,8 @@ import { plainTextLength } from '@/utils/helper';
 export const NOTE_LIMIT = 128;
 
 export const UpsertAssetSchema = z.object({
-  name: z
-    .string()
-    .min(3, {
-      message: 'Be at least 3 characters long.',
-    })
-    .max(64, {
-      error: 'Be at most 64 characters long.',
-    }),
-  quantity: z.coerce
-    .number()
-    .min(1, 'Must be at least 1.')
-    .max(100, 'Cannot exceed 100.')
-    .default(1),
+  name: z.string().min(3).max(64),
+  quantity: z.coerce.number().min(1).max(100).default(1),
   condition: z.enum(SELECTABLE_ASSET_CONDITIONS).default(AssetCondition.GOOD),
   category: z
     .enum(SELECTABLE_ASSET_CATEGORIES)
@@ -33,9 +22,18 @@ export const UpsertAssetSchema = z.object({
   acquired_date: z.iso.date().nullish().default(CURRENT_DATE),
   note: z
     .string()
-    .max(NOTE_LIMIT * 32, { error: 'Note is too large.' })
-    .refine((html) => plainTextLength(html) <= NOTE_LIMIT, {
-      error: `Be at most ${NOTE_LIMIT} characters long.`,
+    .max(NOTE_LIMIT * 32, { error: 'noteTooLarge' })
+    // Reported as a regular length issue so the error map localizes it
+    .superRefine((html, ctx) => {
+      if (plainTextLength(html) > NOTE_LIMIT) {
+        ctx.addIssue({
+          code: 'too_big',
+          origin: 'string',
+          maximum: NOTE_LIMIT,
+          inclusive: true,
+          input: html,
+        });
+      }
     })
     .nullable(),
 });

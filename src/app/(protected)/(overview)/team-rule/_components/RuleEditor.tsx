@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 
 import { Skeleton } from '@chakra-ui/react';
@@ -19,12 +20,13 @@ const TextEditor = dynamic(() => import('@/components/editor/TextEditor'), {
 });
 
 export default function RuleEditor({ rule }: { rule: NullishTeamRule }) {
+  const t = useTranslations('teamRule');
   const { can } = usePermissions();
 
   const onSave = async (content: string) => {
     const id = toaster.create({
       type: 'loading',
-      title: 'Updating rules...',
+      title: t('updating'),
     });
 
     const { success, message: title } = await upsertRule(content);
@@ -39,10 +41,8 @@ export default function RuleEditor({ rule }: { rule: NullishTeamRule }) {
 
   return (
     <TextEditor
-      header={<PageTitle title="Team Rule" />}
-      content={
-        rule?.rule_content || 'Please wait for admin to set up the rule.'
-      }
+      header={<PageTitle title={t('title')} />}
+      content={rule?.rule_content || t('placeholder')}
       canEdit={can('team-rule', 'edit')}
       lastUpdated={rule?.rule_updated_at ?? undefined}
       onSave={onSave}

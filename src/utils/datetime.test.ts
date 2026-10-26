@@ -13,6 +13,7 @@ import {
   intervalRange,
   isWithinBounds,
   describeRange,
+  findPreset,
   parseLocaleDate,
   thisDay,
   thisMonth,
@@ -39,6 +40,12 @@ describe('formatting', () => {
   test('formatDay names the weekday', () => {
     expect(formatDay(DATETIME)).toBe('Sunday');
     expect(formatDay(DATETIME, 'd MMM')).toBe('12 Dec');
+  });
+
+  test('formatDay names the weekday in Vietnamese', () => {
+    expect(formatDay(DATETIME, undefined, 'vi')).toBe('Chủ Nhật');
+    expect(formatDay(DATETIME, 'd MMM', 'vi')).toBe('12 thg 12');
+    expect(formatDay(DATETIME, undefined, 'en')).toBe('Sunday');
   });
 
   test('formatDate uses the locale day-first format', () => {
@@ -87,6 +94,7 @@ describe('calendar days', () => {
 
   test('formatDayHint shows the compact day', () => {
     expect(formatDayHint('2026-08-01')).toBe('1 Aug');
+    expect(formatDayHint('2026-08-01', 'vi')).toBe('1 thg 8');
   });
 });
 
@@ -135,6 +143,32 @@ describe('presets', () => {
       'This year': '2026-01-01..2026-12-31',
       'Last year': '2025-01-01..2025-12-31',
     });
+  });
+
+  test('every preset has a unique message id', () => {
+    const ids = [...getDayPresets(TODAY), ...getPeriodPresets(TODAY)].map(
+      ({ id }) => id,
+    );
+
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(ids).toEqual([
+      'today',
+      'yesterday',
+      'tomorrow',
+      'this_week',
+      'last_week',
+      ...Object.values(Interval),
+    ]);
+  });
+
+  test('findPreset returns the preset a window matches', () => {
+    expect(findPreset(thisDay(TODAY), 'single', TODAY)?.id).toBe('today');
+    expect(
+      findPreset({ from: '2026-07-01', to: '2026-07-31' }, 'range', TODAY)?.id,
+    ).toBe(Interval.LAST_MONTH);
+    expect(
+      findPreset({ from: '2026-02-01', to: '2026-02-14' }, 'range', TODAY),
+    ).toBeUndefined();
   });
 
   test('isWithinBounds keeps only windows wholly inside the bounds', () => {

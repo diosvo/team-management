@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 
 import { Badge, Box, Button, Drawer, HStack, Portal } from '@chakra-ui/react';
 import { SlidersHorizontal } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { DateRangePicker } from '@/components/date-picker/DateRangePicker';
 import SearchInput from '@/components/SearchInput';
@@ -43,6 +44,8 @@ export default function Filters<T extends Record<string, unknown>>({
   disabled = false,
   actions,
 }: FiltersProps<T>) {
+  const t = useTranslations('components.filters');
+  const tCommon = useTranslations('common');
   const dateDefs = filters.filter((f) => f.control.type === 'date-range');
   const categoricalDefs = filters.filter(
     (f) => f.control.type === 'checkbox-group',
@@ -112,7 +115,7 @@ export default function Filters<T extends Record<string, unknown>>({
               <Drawer.Trigger asChild>
                 <Button variant="outline" disabled={disabled}>
                   <SlidersHorizontal size={14} />
-                  Filters
+                  {tCommon('filters')}
                   {activeCount > 0 && (
                     <Badge
                       variant="surface"
@@ -129,7 +132,7 @@ export default function Filters<T extends Record<string, unknown>>({
                 <Drawer.Positioner>
                   <Drawer.Content maxWidth={{ base: 'full', lg: 'sm' }}>
                     <Drawer.Header>
-                      <Drawer.Title>Advanced Filters</Drawer.Title>
+                      <Drawer.Title>{t('advancedFilters')}</Drawer.Title>
                     </Drawer.Header>
                     <Drawer.Body
                       display="flex"
@@ -162,10 +165,12 @@ export default function Filters<T extends Record<string, unknown>>({
                         colorPalette="red"
                         onClick={handleReset}
                       >
-                        Reset all
+                        {t('resetAll')}
                       </Button>
                       <Drawer.ActionTrigger asChild>
-                        <Button onClick={handleApply}>Apply</Button>
+                        <Button onClick={handleApply}>
+                          {tCommon('apply')}
+                        </Button>
                       </Drawer.ActionTrigger>
                     </Drawer.Footer>
                     <Drawer.CloseTrigger asChild>

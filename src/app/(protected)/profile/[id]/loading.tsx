@@ -1,13 +1,16 @@
 import { Center, Skeleton, Stack } from '@chakra-ui/react';
+import { getTranslations } from 'next-intl/server';
 
 import PageTitle from '@/components/PageTitle';
 
 const TABS = ['Overview', 'Personal', 'Team'];
 
-export default function Loading() {
+export default async function Loading() {
+  const t = await getTranslations('profile');
+
   return (
     <>
-      <PageTitle title="Profile Details" />
+      <PageTitle title={t('title')} />
 
       {/* ProfileLayout: tabs on top on phones (`sm`), beside the card from `md` (`lg`). */}
       <Center>

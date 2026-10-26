@@ -1,5 +1,5 @@
-import type { ColorPalette } from '@chakra-ui/react';
 import { formatDistanceToNow } from 'date-fns';
+import { vi } from 'date-fns/locale';
 import {
   BadgeCheck,
   ChartColumn,
@@ -19,21 +19,43 @@ import {
   UsersRound,
   type LucideIcon,
 } from 'lucide-react';
+import type { Messages } from 'next-intl';
 
+import type { Locale } from '@/i18n/config';
 import { ESTABLISHED_DATE } from '@/utils/constants';
+import { toLabel } from '@/utils/formatter';
 import type { Resource } from '@/utils/permissions';
 
 type SidebarGroup = {
-  title: string;
+  /** Key under `shell.sidebar.groups` */
+  title: keyof Messages['shell']['sidebar']['groups'];
   items: Array<{ icon: LucideIcon; resource: Resource; disabled?: boolean }>;
 };
 
-const TEAM_ID = 'saigon.rovers';
-export const getYearsActive = formatDistanceToNow(new Date(ESTABLISHED_DATE));
+export const getYearsActive = (locale: Locale) =>
+  formatDistanceToNow(new Date(ESTABLISHED_DATE), {
+    locale: locale === 'vi' ? vi : undefined,
+  });
+
+/** Minimal shape of `useTranslations('shell.nav')` */
+type NavTranslator = {
+  (key: never): string;
+  has(key: never): boolean;
+};
+
+/**
+ * Localized label for a URL segment or resource key via `shell.nav` (keyed by
+ * the segment itself), falling back to `toLabel` for unknown segments
+ * (_e.g.,_ ids).
+ */
+export function navLabel(t: NavTranslator, segment: string): string {
+  const key = segment as never;
+  return t.has(key) ? t(key) : toLabel(segment);
+}
 
 export const SIDEBAR_GROUP: Array<SidebarGroup> = [
   {
-    title: 'Overview',
+    title: 'overview',
     items: [
       { icon: LayoutDashboard, resource: 'dashboard' },
       { icon: Medal, resource: 'achievements' },
@@ -42,7 +64,7 @@ export const SIDEBAR_GROUP: Array<SidebarGroup> = [
     ],
   },
   {
-    title: 'Team Management',
+    title: 'team-management',
     items: [
       { icon: UsersRound, resource: 'roster' },
       { icon: Dumbbell, resource: 'training' },
@@ -52,11 +74,11 @@ export const SIDEBAR_GROUP: Array<SidebarGroup> = [
     ],
   },
   {
-    title: 'Performance',
+    title: 'performance',
     items: [{ icon: PersonStanding, resource: 'periodic-testing' }],
   },
   {
-    title: 'Resources',
+    title: 'resources',
     items: [
       { icon: Package, resource: 'assets' },
       { icon: Film, resource: 'documents', disabled: true },
@@ -64,23 +86,13 @@ export const SIDEBAR_GROUP: Array<SidebarGroup> = [
     ],
   },
   {
-    title: 'Settings',
+    title: 'settings',
     items: [
       { icon: Swords, resource: 'teams' },
       { icon: Trophy, resource: 'leagues' },
       { icon: MapPinHouse, resource: 'locations' },
     ],
   },
-];
-
-export const SOCIAL_LINKS: Array<{
-  label: string;
-  href: string;
-  color: ColorPalette;
-}> = [
-  { label: 'Facebook', href: `facebook.com/${TEAM_ID}`, color: 'blue' },
-  { label: 'Instagram', href: `instagram.com/${TEAM_ID}`, color: 'pink' },
-  { label: 'TikTok', href: `tiktok.com/@${TEAM_ID}`, color: 'gray' },
 ];
 
 // Hoisted so the memoized NavButton keeps a stable prop identity.

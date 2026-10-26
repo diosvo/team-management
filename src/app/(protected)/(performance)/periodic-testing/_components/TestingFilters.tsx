@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 
 import { createListCollection, HStack, Portal, Select } from '@chakra-ui/react';
 import { CalendarSearch } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import Filters from '@/components/filters/Filters';
 
@@ -11,6 +12,7 @@ import { usePeriodicTestingFilters } from '@/lib/nuqs';
 import { formatDate } from '@/utils/datetime';
 
 export default function TestingFilters({ dates }: { dates: Array<string> }) {
+  const t = useTranslations('common');
   const [values, setSearchParams] = usePeriodicTestingFilters();
   const disabled = dates.length === 0;
 
@@ -52,7 +54,7 @@ export default function TestingFilters({ dates }: { dates: Array<string> }) {
             <Select.Trigger>
               <HStack>
                 <CalendarSearch size={16} />
-                <Select.ValueText placeholder="Date" />
+                <Select.ValueText placeholder={t('date')} />
               </HStack>
             </Select.Trigger>
             <Select.IndicatorGroup>

@@ -1,0 +1,63 @@
+{
+  "addResult": {
+    "activeOnly": "Only active players can be joined to the test.",
+    "activeQuery": "active",
+    "cellLabel": "{type} for {name}",
+    "configuration": "Test Configuration",
+    "emptyDescription": "Please select all required fields to create players' result.",
+    "emptyTitle": "No configuration set.",
+    "metadata": {
+      "description": "Add a new test result for periodic testing.",
+      "title": "Add Test Result"
+    },
+    "playerName": "Player Name",
+    "remove": "Remove \"{name}\" ?",
+    "result": "Test Result",
+    "saved": "Results saved",
+    "saveError": "Error saving results",
+    "saving": "Saving...",
+    "selectTypes": "Select types",
+    "testDate": "Test Date",
+    "title": "Add Test Result"
+  },
+  "header": {
+    "addResult": "Add Result",
+    "manageTypes": "Manage Types",
+    "title": "Periodic Testing"
+  },
+  "matrix": {
+    "deletingScore": "Deleting score...",
+    "empty": "No test result found",
+    "player": "Player",
+    "savingScore": "Saving score..."
+  },
+  "metadata": {
+    "description": "Performance testing and analytics for team players",
+    "title": "Periodic Testing"
+  },
+  "stats": {
+    "completedTests": "Completed Tests",
+    "playersJoined": "Players Joined",
+    "playerUnit": "player",
+    "testUnit": "test"
+  },
+  "testTypes": {
+    "deletePartial": "{count} deleted, some operations failed: {errors}",
+    "deleteSuccess": "Successfully deleted {count, plural, one {# type} other {# types}}.",
+    "empty": "No matching names found",
+    "lastUpdated": "Last Updated",
+    "metadata": {
+      "description": "Manage and configure test types for periodic testing",
+      "title": "Test Types"
+    },
+    "relativeTime": "Relative time",
+    "title": "Test Types",
+    "unit": "Unit"
+  },
+  "upsertTestType": {
+    "addTitle": "Add Test Type",
+    "saving": "Saving...",
+    "unit": "Unit",
+    "updateTitle": "Update Test Type"
+  }
+}

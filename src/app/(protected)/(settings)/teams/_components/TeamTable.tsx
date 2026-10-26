@@ -5,6 +5,7 @@ import { useSWRConfig } from 'swr';
 
 import { Avatar, HStack, Skeleton, Text } from '@chakra-ui/react';
 import { UsersRound } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import DataTable, { type Column } from '@/components/DataTable';
 import HighlightText from '@/components/HighlightText';
@@ -23,6 +24,7 @@ import { useTeamLogo } from '@/hooks/use-image';
 import { UpsertTeam } from './UpsertTeam';
 
 export default function TeamTable({ teams }: { teams: Array<Team> }) {
+  const t = useTranslations('teams.table');
   const { mutate } = useSWRConfig();
   const { can } = usePermissions();
   const [{ q, page }, setSearchParams] = useCommonParams();
@@ -46,11 +48,11 @@ export default function TeamTable({ teams }: { teams: Array<Team> }) {
 
   const columns: Array<Column<Team>> = [
     {
-      header: 'Name',
+      header: t('name'),
       cell: (item) => <TeamNameCell team={item} query={q} />,
     },
     {
-      header: 'Email',
+      header: t('email'),
       cell: (item) =>
         item.email ? (
           <HighlightText query={q}>{item.email}</HighlightText>
@@ -58,9 +60,9 @@ export default function TeamTable({ teams }: { teams: Array<Team> }) {
           '-'
         ),
     },
-    { header: 'Established', cell: (item) => item.establish_year },
+    { header: t('established'), cell: (item) => item.establish_year },
     {
-      header: 'Last Updated',
+      header: t('lastUpdated'),
       cell: (item) => formatDatetime(item.updated_at),
     },
   ];
@@ -74,7 +76,7 @@ export default function TeamTable({ teams }: { teams: Array<Team> }) {
         totalCount={totalCount}
         page={page}
         onPageChange={setSearchParams}
-        empty={{ title: 'No teams found', icon: <UsersRound /> }}
+        empty={{ title: t('empty'), icon: <UsersRound /> }}
         onRowClick={
           can('teams', 'edit')
             ? (item) =>

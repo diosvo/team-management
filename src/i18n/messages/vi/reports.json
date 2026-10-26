@@ -1,0 +1,46 @@
+{
+  "history": {
+    "attempts": " ({count} lần thử)",
+    "delivery": "Trạng thái gửi",
+    "download": "Tải xuống",
+    "emptyDescription": "Các lần chạy định kỳ và thủ công sẽ hiển thị ở đây.",
+    "emptyTitle": "Chưa có báo cáo nào",
+    "generatedAt": "Thời điểm tạo",
+    "period": "Kỳ báo cáo",
+    "timeDuration": "Khoảng thời gian",
+    "title": "Lịch sử báo cáo",
+    "trigger": "Kích hoạt"
+  },
+  "metadata": {
+    "description": "Báo cáo phân tích định kỳ và lịch sử tạo báo cáo.",
+    "title": "Báo cáo"
+  },
+  "schedules": {
+    "allScheduled": "Tất cả báo cáo đã được lên lịch",
+    "deleting": "Đang xóa lịch gửi...",
+    "emptyDescription": "Tạo lịch để tự động gửi báo cáo phân tích qua email.",
+    "emptyTitle": "Chưa có lịch gửi báo cáo",
+    "enable": "Bật lịch gửi",
+    "generating": "Đang tạo báo cáo...",
+    "lastRun": "Lần chạy gần nhất",
+    "newSchedule": "Lịch mới",
+    "nextRun": "Lần chạy tới",
+    "recipientCount": "{count} người nhận",
+    "recipients": "Người nhận",
+    "report": "Báo cáo",
+    "runNow": "Chạy ngay",
+    "title": "Lịch gửi báo cáo"
+  },
+  "upsert": {
+    "addTitle": "Thêm lịch gửi báo cáo",
+    "noMembers": "Không có thành viên nào để chọn.",
+    "recipients": "Người nhận",
+    "remove": "Xóa {name}",
+    "report": "Báo cáo",
+    "reportPlaceholder": "Chọn báo cáo",
+    "saving": "Đang lưu lịch gửi báo cáo...",
+    "savingButton": "Đang lưu...",
+    "timing": "Báo cáo được gửi qua email vào buổi sáng (khoảng 8:00) sau khi kỳ báo cáo kết thúc.",
+    "updateTitle": "Cập nhật lịch gửi báo cáo"
+  }
+}

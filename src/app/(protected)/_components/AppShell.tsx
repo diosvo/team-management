@@ -10,6 +10,7 @@ import {
   SkipNavLink,
   Stack,
 } from '@chakra-ui/react';
+import { useTranslations } from 'next-intl';
 
 import { toaster } from '@/components/ui/toaster';
 import { useSessionContext } from '@/providers/session';
@@ -22,6 +23,7 @@ import Sidebar, { SidebarToggle } from './Sidebar';
 
 export default function AppShell({ children }: PropsWithChildren) {
   const router = useRouter();
+  const t = useTranslations('shell.header');
   const [isExpanded, setIsExpanded] = useState(true);
   const { isAuthenticated, isLoading } = useSessionContext();
 
@@ -42,7 +44,7 @@ export default function AppShell({ children }: PropsWithChildren) {
 
   return (
     <>
-      <SkipNavLink>Skip to content</SkipNavLink>
+      <SkipNavLink>{t('skipToContent')}</SkipNavLink>
       <Grid
         height="100dvh"
         templateRows="auto 1fr"

@@ -4,6 +4,7 @@ import { memo, useCallback, useMemo, useState, useTransition } from 'react';
 
 import { Editable, Table, Text } from '@chakra-ui/react';
 import { FileUser } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 
 import HighlightText from '@/components/HighlightText';
 import Pagination from '@/components/Pagination';
@@ -18,6 +19,7 @@ import {
   deleteTestResultById,
   updateTestResultById,
 } from '@/actions/test-result';
+import { enumLabel } from '@/i18n/enums';
 import { usePeriodicTestingFilters } from '@/lib/nuqs';
 import type { PlayerTestResult, TestResult } from '@/types/periodic-testing';
 
@@ -52,6 +54,7 @@ const MatrixCell = memo(function MatrixCell({
   typeId,
   date,
 }: MatrixCellProps) {
+  const t = useTranslations('periodicTesting.matrix');
   const [score, setScore] = useState(value);
   const [committed, setCommitted] = useState(value);
   const [isPending, startTransition] = useTransition();
@@ -79,7 +82,7 @@ const MatrixCell = memo(function MatrixCell({
 
       const id = toaster.create({
         type: 'loading',
-        title: 'Deleting score...',
+        title: t('deletingScore'),
       });
 
       startTransition(async () => {
@@ -94,7 +97,7 @@ const MatrixCell = memo(function MatrixCell({
       return;
     }
 
-    const id = toaster.create({ type: 'loading', title: 'Saving score...' });
+    const id = toaster.create({ type: 'loading', title: t('savingScore') });
 
     startTransition(async () => {
       const { success, message: title } = resultId
@@ -134,6 +137,9 @@ const MatrixCell = memo(function MatrixCell({
 });
 
 function PlayerPerformanceMatrix({ result }: { result: TestResult }) {
+  const t = useTranslations('periodicTesting.matrix');
+  const tEnums = useTranslations('enums');
+  const locale = useLocale();
   const [{ q, page, type, date }, setSearchParams] =
     usePeriodicTestingFilters();
   const { can } = usePermissions();
@@ -168,7 +174,7 @@ function PlayerPerformanceMatrix({ result }: { result: TestResult }) {
             <Table.Header>
               <Table.Row>
                 <Table.ColumnHeader {...stickyColumn}>
-                  Player
+                  {t('player')}
                 </Table.ColumnHeader>
                 {headers.map(({ name, unit }) => (
                   <Table.ColumnHeader key={name} textAlign="center">
@@ -179,7 +185,13 @@ function PlayerPerformanceMatrix({ result }: { result: TestResult }) {
                       color="GrayText"
                       marginLeft={1}
                     >
-                      ({unit})
+                      (
+                      {enumLabel(
+                        tEnums,
+                        'testTypeUnit',
+                        unit,
+                      ).toLocaleLowerCase(locale)}
+                      )
                     </Text>
                   </Table.ColumnHeader>
                 ))}
@@ -212,10 +224,7 @@ function PlayerPerformanceMatrix({ result }: { result: TestResult }) {
             ) : (
               <Table.Row>
                 <Table.Cell colSpan={headers.length + 1}>
-                  <EmptyState
-                    icon={<FileUser />}
-                    title="No test result found"
-                  />
+                  <EmptyState icon={<FileUser />} title={t('empty')} />
                 </Table.Cell>
               </Table.Row>
             )}

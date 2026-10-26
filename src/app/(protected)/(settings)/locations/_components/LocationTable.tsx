@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 
 import { MapPinXInside } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { LocationLink } from '@/components/common/LocationSelection';
 import DataTable, { type Column } from '@/components/DataTable';
@@ -24,6 +25,7 @@ export default function LocationTable({
 }: {
   locations: Array<Location>;
 }) {
+  const t = useTranslations('locations.table');
   const { can, isGuest } = usePermissions();
   const [{ q, page }, setSearchParams] = useCommonParams();
 
@@ -46,7 +48,7 @@ export default function LocationTable({
 
   const columns: Array<Column<Location>> = [
     {
-      header: 'Name',
+      header: t('name'),
       cell: (item) => (
         <LocationLink name={item.name}>
           <HighlightText query={q}>{item.name}</HighlightText>
@@ -54,11 +56,11 @@ export default function LocationTable({
       ),
     },
     {
-      header: 'Address',
+      header: t('address'),
       cell: (item) => <HighlightText query={q}>{item.address}</HighlightText>,
     },
     {
-      header: 'Last Updated',
+      header: t('lastUpdated'),
       cell: (item) => formatDatetime(item.updated_at),
     },
   ];
@@ -72,7 +74,7 @@ export default function LocationTable({
         totalCount={totalCount}
         page={page}
         onPageChange={setSearchParams}
-        empty={{ title: 'No locations found', icon: <MapPinXInside /> }}
+        empty={{ title: t('empty'), icon: <MapPinXInside /> }}
         onRowClick={
           isGuest
             ? undefined

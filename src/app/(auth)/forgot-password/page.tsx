@@ -11,6 +11,7 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
 
 import { Alert } from '@/components/ui/alert';
@@ -29,6 +30,8 @@ import {
 } from '@/schemas/auth';
 
 export default function ForgotPasswordPage() {
+  const t = useTranslations('auth');
+  const tError = useTranslations('auth.errors');
   const [response, setResponse] = useState<Response>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -59,15 +62,14 @@ export default function ForgotPasswordPage() {
         onError(context) {
           setResponse({
             success: false,
-            message: authErrorMessage(context),
+            message: authErrorMessage(context, tError),
           });
         },
         onSuccess: () => {
           reset();
           setResponse({
             success: true,
-            message:
-              'Password reset instructions have been sent to your email.',
+            message: t('forgotPassword.sent'),
           });
         },
         onResponse: () => setIsLoading(false),
@@ -82,11 +84,13 @@ export default function ForgotPasswordPage() {
       alignItems="center"
       onSubmit={handleSubmit(onSubmit)}
     >
-      <Heading size={{ base: 'xl', md: '2xl' }}>Forgot your password?</Heading>
+      <Heading size={{ base: 'xl', md: '2xl' }}>
+        {t('forgotPassword.heading')}
+      </Heading>
 
       <Field
         required
-        label="Email"
+        label={t('email')}
         disabled={isLoading}
         invalid={!!errors.email}
         errorText={errors.email?.message}
@@ -110,11 +114,11 @@ export default function ForgotPasswordPage() {
         type="submit"
         width="full"
         borderRadius="full"
-        loadingText="Sending..."
+        loadingText={t('forgotPassword.submitting')}
         loading={isLoading}
         disabled={!isValid || isLoading}
       >
-        Send request password instruction
+        {t('forgotPassword.submit')}
       </Button>
 
       <ChakraLink
@@ -124,7 +128,7 @@ export default function ForgotPasswordPage() {
         textDecoration="underline"
         asChild
       >
-        <NextLink href={LOGIN_PATH}>Go back to sign in</NextLink>
+        <NextLink href={LOGIN_PATH}>{t('backToSignIn')}</NextLink>
       </ChakraLink>
     </VStack>
   );

@@ -1,0 +1,73 @@
+{
+  "accountMenu": {
+    "documentation": "Documentation",
+    "feedback": "Feedback",
+    "logout": "Log Out",
+    "performance": "Performance",
+    "profile": "Profile",
+    "socialLinks": "Social Links",
+    "trigger": "Account menu",
+    "vietnamese": "Vietnamese"
+  },
+  "feedback": {
+    "description": "Description",
+    "descriptionHelper": "Markdown is supported.",
+    "descriptionPlaceholder": "What happened, and what did you expect?",
+    "filedForYou": "Your report is filed for you, with your name attached.",
+    "includePage": "Include the page I am on ({pathname})",
+    "label": "Suggestions + feedback + ideas",
+    "send": "Send",
+    "sending": "Sending...",
+    "title": "Share Feedback",
+    "titleLabel": "Title",
+    "titlePlaceholder": "Attendance export is missing last week",
+    "type": "Type"
+  },
+  "forbidden": {
+    "description": "You are not authorized to access this resource.",
+    "returnDashboard": "Return Dashboard",
+    "title": "Access Denied"
+  },
+  "header": {
+    "logoAlt": "Text Logo",
+    "openNavigation": "Open navigation",
+    "skipToContent": "Skip to content"
+  },
+  "metadata": {
+    "description": "Saigon Rovers Basketball Club"
+  },
+  "nav": {
+    "achievements": "Achievements",
+    "add-result": "Add Result",
+    "assets": "Assets",
+    "attendance": "Attendance",
+    "dashboard": "Dashboard",
+    "documents": "Documents",
+    "emails": "Emails",
+    "leagues": "Leagues",
+    "locations": "Locations",
+    "matches": "Matches",
+    "performance": "Performance",
+    "periodic-testing": "Periodic Testing",
+    "profile": "Profile",
+    "registration": "Registration",
+    "reports": "Reports",
+    "roster": "Roster",
+    "team-rule": "Team Rule",
+    "teams": "Teams",
+    "test-types": "Test Types",
+    "training": "Training"
+  },
+  "sidebar": {
+    "collapseMenu": "Collapse menu",
+    "expandMenu": "Expand menu",
+    "groups": {
+      "overview": "Overview",
+      "performance": "Performance",
+      "resources": "Resources",
+      "settings": "Settings",
+      "team-management": "Team Management"
+    },
+    "mainNav": "Main"
+  }
+}

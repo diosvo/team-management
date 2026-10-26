@@ -11,6 +11,7 @@ import {
 import { Button, ButtonGroup, HStack, Text } from '@chakra-ui/react';
 import type { Editor } from '@tiptap/react';
 import { Check, Copy, Eye, Pencil, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import {
   EditorToolbar,
@@ -89,12 +90,8 @@ function useEditableContent({
   };
 }
 
-const lastUpdatedLabel = (lastUpdated: Date) =>
-  `Last updated on ${formatDatetime(lastUpdated)}`;
-
 /** Copy as HTML + plain text; fall back to plain text only. */
-async function copyEditorContent(editor: Editor, lastUpdated?: Date) {
-  const footer = lastUpdated && lastUpdatedLabel(lastUpdated);
+async function copyEditorContent(editor: Editor, footer?: string) {
   const text = [editorToPlainText(editor.state.doc), footer]
     .filter(Boolean)
     .join('\n\n');
@@ -122,6 +119,7 @@ function CopyButton({
   editor: Editor;
   lastUpdated?: Date;
 }) {
+  const t = useTranslations('components.textEditor');
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -132,7 +130,10 @@ function CopyButton({
 
   const copy = async () => {
     try {
-      await copyEditorContent(editor, lastUpdated);
+      await copyEditorContent(
+        editor,
+        lastUpdated && t('lastUpdated', { date: formatDatetime(lastUpdated) }),
+      );
       setCopied(true);
     } catch {
       // Clipboard unavailable or permission denied; leave the button unchanged.
@@ -142,7 +143,7 @@ function CopyButton({
   return (
     <Button size="sm" variant="outline" colorPalette="pink" onClick={copy}>
       {copied ? <Check /> : <Copy />}
-      {copied ? 'Copied' : 'Copy'}
+      {copied ? t('copied') : t('copy')}
     </Button>
   );
 }
@@ -159,6 +160,8 @@ function DraftActions({
   onSave: () => void;
   onCancel: () => void;
 }) {
+  const t = useTranslations('components.textEditor');
+  const tCommon = useTranslations('common');
   const labelId = useId();
 
   return (
@@ -180,16 +183,16 @@ function DraftActions({
       <ButtonGroup size="sm" variant="outline" attached>
         <Button colorPalette="red" disabled={isSaving} onClick={onCancel}>
           <X />
-          Cancel
+          {tCommon('cancel')}
         </Button>
         <Button
           colorPalette="green"
           loading={isSaving}
-          loadingText="Saving"
+          loadingText={t('saving')}
           onClick={onSave}
         >
           <Check />
-          Save
+          {tCommon('save')}
         </Button>
       </ButtonGroup>
     </HStack>
@@ -203,6 +206,8 @@ export default function TextEditor({
   lastUpdated,
   header,
 }: TextEditorProps) {
+  const t = useTranslations('components.textEditor');
+  const tCommon = useTranslations('common');
   const { editor, isWriting, isSaving, isDirty, toggleMode, cancel, save } =
     useEditableContent({ content, onSave });
 
@@ -215,7 +220,7 @@ export default function TextEditor({
         <HStack flexWrap="wrap" justifyContent="flex-end">
           {!isWriting && isDirty && (
             <DraftActions
-              label="Save changes?"
+              label={t('saveChanges')}
               isSaving={isSaving}
               onSave={save}
               onCancel={cancel}
@@ -226,7 +231,7 @@ export default function TextEditor({
           {canEdit && (
             <Button size="sm" disabled={isSaving} onClick={toggleMode}>
               {isWriting ? <Eye /> : <Pencil />}
-              {isWriting ? 'Preview' : 'Edit'}
+              {isWriting ? t('preview') : tCommon('edit')}
             </Button>
           )}
         </HStack>
@@ -258,7 +263,7 @@ export default function TextEditor({
           color="GrayText"
           borderTopWidth={1}
         >
-          {lastUpdatedLabel(lastUpdated)}
+          {t('lastUpdated', { date: formatDatetime(lastUpdated) })}
         </Text>
       )}
     </>

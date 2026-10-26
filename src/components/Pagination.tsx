@@ -6,6 +6,7 @@ import {
   IconButton,
 } from '@chakra-ui/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { Tooltip } from '@/components/ui/tooltip';
 
@@ -24,6 +25,8 @@ export default function Pagination({
   pageSize = 5,
   onPageChange,
 }: PaginationProps) {
+  const t = useTranslations('components.pagination');
+
   return (
     <Visibility isVisible={count > 0}>
       <ChakraPagination.Root
@@ -35,16 +38,25 @@ export default function Pagination({
         pageSize={pageSize}
         onPageChange={onPageChange}
       >
-        <ChakraPagination.PageText format="long" textStyle="secondary" />
+        <ChakraPagination.PageText
+          textStyle="secondary"
+          format={({ pageRange, count }) =>
+            t('pageText', {
+              start: pageRange.start + 1,
+              end: Math.min(pageRange.end, count),
+              count,
+            })
+          }
+        />
         <ButtonGroup variant="ghost" size={{ base: 'xs', sm: 'sm' }}>
-          <Tooltip content="Previous page">
+          <Tooltip content={t('previousPage')}>
             <ChakraPagination.PrevTrigger asChild>
               <IconButton>
                 <ChevronLeft />
               </IconButton>
             </ChakraPagination.PrevTrigger>
           </Tooltip>
-          <Tooltip content="Next page">
+          <Tooltip content={t('nextPage')}>
             <ChakraPagination.NextTrigger asChild>
               <IconButton>
                 <ChevronRight />

@@ -10,13 +10,13 @@ import {
   setupTestLifecycle,
   waitFor,
   within,
+  enumText,
 } from '@/test/utilities';
 
 import usePermissions, {
   type PermissionsResult,
 } from '@/hooks/use-permissions';
 import type { TrainingSessionWithDetails } from '@/types/training-session';
-import { toLabel } from '@/utils/formatter';
 
 import { removeSession } from '@/actions/training-session';
 
@@ -102,7 +102,7 @@ describe('SessionTable', () => {
     expect(screen.getByText(COMPLETED_SESSION.start_time)).toBeInTheDocument();
     expect(screen.getByText(COMPLETED_SESSION.end_time)).toBeInTheDocument();
     expect(
-      screen.getByText(toLabel(COMPLETED_SESSION.status)),
+      screen.getByText(enumText('sessionStatus', COMPLETED_SESSION.status)),
     ).toBeInTheDocument();
     expect(
       screen.getByText(`${COMPLETED_SESSION.analytics.present_rate}%`),
@@ -146,7 +146,9 @@ describe('SessionTable', () => {
       const { user } = setup();
 
       await user.click(
-        rowOf(OTHER_SESSION).getByText(toLabel(OTHER_SESSION.status)),
+        rowOf(OTHER_SESSION).getByText(
+          enumText('sessionStatus', OTHER_SESSION.status),
+        ),
       );
 
       expect(mockOpen).toHaveBeenCalledWith('update-session', {
@@ -159,7 +161,9 @@ describe('SessionTable', () => {
       const { user } = setup({ isGuest: true });
 
       await user.click(
-        rowOf(OTHER_SESSION).getByText(toLabel(OTHER_SESSION.status)),
+        rowOf(OTHER_SESSION).getByText(
+          enumText('sessionStatus', OTHER_SESSION.status),
+        ),
       );
 
       expect(mockOpen).not.toHaveBeenCalled();

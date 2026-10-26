@@ -15,7 +15,9 @@ import {
   subWeeks,
   subYears,
 } from 'date-fns';
+import { vi } from 'date-fns/locale';
 
+import type { Locale } from '@/i18n/config';
 import type { DateBounds, DateRange } from '@/types/common';
 import {
   DEFAULT_DATE_FORMAT,
@@ -31,12 +33,18 @@ import { Interval } from './enum';
 /*                                 Formatting                                 */
 /* -------------------------------------------------------------------------- */
 
+/** date-fns locale for names (weekdays, months, AM/PM); English is the default */
+const DATE_LOCALE = { vi } as const;
+const dateLocale = (locale?: Locale) =>
+  locale && DATE_LOCALE[locale as keyof typeof DATE_LOCALE];
+
 export function formatDay(
   date: Nullish<Date | string>,
   dFormat = DEFAULT_DAY_FORMAT,
+  locale?: Locale,
 ): string {
   if (!date) return '-';
-  return format(date, dFormat);
+  return format(date, dFormat, { locale: dateLocale(locale) });
 }
 
 export function formatDate(date: Nullish<Date | string>): string {
@@ -47,9 +55,10 @@ export function formatDate(date: Nullish<Date | string>): string {
 export function formatTime(
   date: Nullish<Date | string>,
   timeFormat = LOCALE_TIME_FORMAT,
+  locale?: Locale,
 ): string {
   if (!date) return '-';
-  return format(date, timeFormat);
+  return format(date, timeFormat, { locale: dateLocale(locale) });
 }
 
 export function formatDatetime(
@@ -94,8 +103,8 @@ export const formatCalendarDay = (day: CalendarDay): string =>
   formatDate(toLocalDate(day));
 
 /** Compact hint beside a preset: `1 Aug`. `parseISO` keeps a bare day local. */
-export const formatDayHint = (isoDay: string): string =>
-  format(parseISO(isoDay), 'd MMM');
+export const formatDayHint = (isoDay: string, locale?: Locale): string =>
+  format(parseISO(isoDay), 'd MMM', { locale: dateLocale(locale) });
 
 /* -------------------------------------------------------------------------- */
 /*                                   Windows                                  */
@@ -154,6 +163,8 @@ export function intervalRange(
 export type DateSelection = 'single' | 'range';
 
 export interface DatePreset {
+  /** Message key under `components.datePicker.presets` */
+  id: string;
   label: string;
   range: DateRange;
 }
@@ -163,9 +174,9 @@ const isSameRange = (a: DateRange, b: DateRange) =>
 
 /** Shortcuts for a `single` picker. */
 export const getDayPresets = (today: Date = new Date()): Array<DatePreset> => [
-  { label: 'Today', range: thisDay(today) },
-  { label: 'Yesterday', range: thisDay(subDays(today, 1)) },
-  { label: 'Tomorrow', range: thisDay(addDays(today, 1)) },
+  { id: 'today', label: 'Today', range: thisDay(today) },
+  { id: 'yesterday', label: 'Yesterday', range: thisDay(subDays(today, 1)) },
+  { id: 'tomorrow', label: 'Tomorrow', range: thisDay(addDays(today, 1)) },
 ];
 
 /**
@@ -177,10 +188,15 @@ export const getDayPresets = (today: Date = new Date()): Array<DatePreset> => [
 export const getPeriodPresets = (
   today: Date = new Date(),
 ): Array<DatePreset> => [
-  { label: 'This week', range: thisWeek(today) },
-  { label: 'Last week', range: thisWeek(subWeeks(today, 1)) },
+  { id: 'this_week', label: 'This week', range: thisWeek(today) },
+  {
+    id: 'last_week',
+    label: 'Last week',
+    range: thisWeek(subWeeks(today, 1)),
+  },
   // The report windows, so the picker and the scheduler agree on each one.
   ...Object.values(Interval).map((interval) => ({
+    id: interval,
     label: INTERVAL_LABEL[interval],
     range: intervalRange(interval, today),
   })),
@@ -206,14 +222,22 @@ export const isWithinBounds = (
  * What a picker's trigger shows for a committed window: the preset's name
  * when it is one (`Today`, `Last month`), otherwise the date(s) themselves.
  */
+/** The preset a committed window matches, if any. */
+export const findPreset = (
+  range: DateRange,
+  selection: DateSelection,
+  today: Date = new Date(),
+): DatePreset | undefined =>
+  getPresets(selection, today).find((candidate) =>
+    isSameRange(candidate.range, range),
+  );
+
 export function describeRange(
   range: DateRange,
   selection: DateSelection,
   today: Date = new Date(),
 ): string {
-  const preset = getPresets(selection, today).find((candidate) =>
-    isSameRange(candidate.range, range),
-  );
+  const preset = findPreset(range, selection, today);
   if (preset) return preset.label;
   return selection === 'single'
     ? formatDate(range.from)

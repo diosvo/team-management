@@ -7,11 +7,11 @@ import {
   renderWithUI,
   screen,
   setupTestLifecycle,
+  enumText,
 } from '@/test/utilities';
 
 import usePermissions from '@/hooks/use-permissions';
 import { EmailStatus } from '@/utils/enum';
-import { toLabel } from '@/utils/formatter';
 
 import SentEmails from './SentEmails';
 
@@ -99,7 +99,7 @@ describe('SentEmails', () => {
 
     expect(screen.getByText('coach@example.com')).toBeInTheDocument();
     expect(
-      screen.getByText(toLabel(EmailStatus.DELIVERED)),
+      screen.getByText(enumText('emailStatus', EmailStatus.DELIVERED)),
     ).toBeInTheDocument();
   });
 

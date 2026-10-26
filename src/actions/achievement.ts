@@ -1,5 +1,6 @@
 'use server';
 
+import { getTranslations } from 'next-intl/server';
 import { isPast } from 'date-fns';
 
 import { ResponseFactory } from '@/utils/response';
@@ -35,17 +36,17 @@ export const upsertAchievement = achievements(
     achievement_id: string,
     achievement: UpsertAchievementSchemaValues,
   ) {
+    const t = await getTranslations('actions.achievement');
+
     if (achievement.league_id) {
       const league = await getLeagueById(achievement.league_id);
 
       if (!league) {
-        return ResponseFactory.error('League not found');
+        return ResponseFactory.error(t('leagueNotFound'));
       }
 
       if (!isPast(league.end_date)) {
-        return ResponseFactory.error(
-          'Achievements can only be recorded for ended leagues',
-        );
+        return ResponseFactory.error(t('leagueNotEnded'));
       }
     }
 
@@ -60,9 +61,7 @@ export const upsertAchievement = achievements(
 
       revalidate.achievements();
 
-      return ResponseFactory.success(
-        `${isUpdate ? 'Updated' : 'Recorded'} achievement successfully`,
-      );
+      return ResponseFactory.success(t(isUpdate ? 'updated' : 'recorded'));
     } catch (error) {
       const { message } = getDbErrorMessage(error);
       return ResponseFactory.error(message);
@@ -73,14 +72,15 @@ export const upsertAchievement = achievements(
 export const removeAchievement = achievements(
   ['delete'],
   async function remove(_, achievement_id: string) {
+    const t = await getTranslations('actions.achievement');
     try {
       await deleteAchievement(achievement_id);
 
       revalidate.achievements();
 
-      return ResponseFactory.success('Deleted achievement successfully');
+      return ResponseFactory.success(t('deleted'));
     } catch {
-      return ResponseFactory.error('Failed to delete achievement');
+      return ResponseFactory.error(t('deleteFailed'));
     }
   },
 );

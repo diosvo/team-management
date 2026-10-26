@@ -1,4 +1,3 @@
-
 import { renderWithUI, screen, setupTestLifecycle } from '@/test/utilities';
 
 import { getOverviewStats } from '@/actions/analytics';
@@ -33,7 +32,7 @@ describe('OverviewStats', () => {
 
     expect(screen.getByText('Overview')).toBeInTheDocument();
     expect(
-      screen.getByText(`${getYearsActive} of playing together`),
+      screen.getByText(`${getYearsActive('en')} of playing together`),
     ).toBeInTheDocument();
   });
 

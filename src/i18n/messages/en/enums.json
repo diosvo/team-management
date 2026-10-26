@@ -1,0 +1,169 @@
+{
+  "achievementType": {
+    "champion": "Champion",
+    "custom": "Custom",
+    "founded": "Team Founded",
+    "mvp": "MVP",
+    "runner_up": "Runner-up",
+    "third_place": "3rd Place",
+    "top_scorer": "Top Scorer"
+  },
+  "achievementTypeHint": {
+    "custom": "Any other honor",
+    "mvp": "Most Valuable Player",
+    "third_place": "Third Place"
+  },
+  "all": "All",
+  "assetCategory": {
+    "equipment": "Equipment",
+    "others": "Others",
+    "training": "Training"
+  },
+  "assetCategoryHint": {
+    "equipment": "Balls, Backboards, etc",
+    "others": "Uniforms, Jerseys, etc",
+    "training": "Cones, Hurdles, Jump ropes, etc"
+  },
+  "assetCondition": {
+    "fair": "Fair",
+    "good": "Good",
+    "obsolete": "Obsolete",
+    "poor": "Poor"
+  },
+  "assetConditionHint": {
+    "fair": "Usable, Slightly Worn",
+    "good": "New, Excellent Condition",
+    "obsolete": "No longer used",
+    "poor": "Broken, Damaged"
+  },
+  "attendanceStatus": {
+    "absent": "Absent",
+    "late": "Late",
+    "on_time": "On Time"
+  },
+  "coachPosition": {
+    "assistant_coach": "Assistant",
+    "head_coach": "Head",
+    "unknown": "Unknown"
+  },
+  "coachPositionHint": {
+    "assistant_coach": "Assistant Coach",
+    "head_coach": "Head Coach"
+  },
+  "emailStatus": {
+    "bounced": "Bounced",
+    "canceled": "Canceled",
+    "clicked": "Clicked",
+    "complained": "Complained",
+    "delivered": "Delivered",
+    "delivery_delayed": "Delivery Delayed",
+    "failed": "Failed",
+    "opened": "Opened",
+    "queued": "Queued",
+    "scheduled": "Scheduled",
+    "sent": "Sent",
+    "suppressed": "Suppressed"
+  },
+  "feedbackType": {
+    "bug": "Bug",
+    "feature": "Feature",
+    "other": "Other"
+  },
+  "feedbackTypeHint": {
+    "bug": "Something is broken or behaves unexpectedly.",
+    "feature": "A new capability or an improvement to an existing one.",
+    "other": "A question, a typo, or anything else."
+  },
+  "gameType": {
+    "false": "3x3",
+    "true": "5x5"
+  },
+  "interval": {
+    "last_month": "Last month",
+    "last_year": "Last year",
+    "this_month": "This month",
+    "this_year": "This year"
+  },
+  "leagueStatus": {
+    "ended": "Ended",
+    "ongoing": "Ongoing",
+    "upcoming": "Upcoming"
+  },
+  "matchResult": {
+    "draw": "Draw",
+    "loss": "Loss",
+    "win": "Win"
+  },
+  "matchStatus": {
+    "cancelled": "Cancelled",
+    "completed": "Completed",
+    "scheduled": "Scheduled"
+  },
+  "matchStatusHint": {
+    "cancelled": "Called off and never played",
+    "completed": "Played, with a final score",
+    "scheduled": "Fixture on the calendar, not played yet"
+  },
+  "matchType": {
+    "friendly": "Friendly",
+    "league": "League"
+  },
+  "playerPosition": {
+    "center": "C",
+    "point_guard": "PG",
+    "power_forward": "PF",
+    "shooting_guard": "SG",
+    "small_forward": "SF",
+    "unknown": "Unknown"
+  },
+  "playerPositionHint": {
+    "center": "Center",
+    "point_guard": "Point Guard",
+    "power_forward": "Power Forward",
+    "shooting_guard": "Shooting Guard",
+    "small_forward": "Small Forward"
+  },
+  "reportStatus": {
+    "expired": "Expired",
+    "failed": "Failed",
+    "pending": "Pending",
+    "success": "Success"
+  },
+  "reportTrigger": {
+    "manual": "Manual",
+    "scheduled": "Scheduled"
+  },
+  "scheduledInterval": {
+    "last_month": "Monthly · last month, on the 1st",
+    "last_year": "Yearly · last year, on 1 January"
+  },
+  "sessionStatus": {
+    "active": "Active",
+    "cancelled": "Cancelled",
+    "completed": "Completed",
+    "scheduled": "Scheduled"
+  },
+  "testTypeUnit": {
+    "meters": "Meters",
+    "percent": "Percent",
+    "points": "Points",
+    "reps": "Reps",
+    "seconds": "Seconds",
+    "times": "Times"
+  },
+  "userRole": {
+    "coach": "Coach",
+    "guest": "Guest",
+    "player": "Player",
+    "super_admin": "Super Admin"
+  },
+  "userState": {
+    "active": "Active",
+    "inactive": "Inactive",
+    "temporarily_absent": "Absent",
+    "unknown": "Unknown"
+  },
+  "userStateHint": {
+    "temporarily_absent": "Temporarily Absent"
+  }
+}

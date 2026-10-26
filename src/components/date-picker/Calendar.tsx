@@ -12,6 +12,7 @@ import {
   useDatePickerContext,
   type DateValue,
 } from '@chakra-ui/react';
+import { useLocale, useTranslations } from 'next-intl';
 
 import type { DateBounds, DateRange } from '@/types/common';
 import {
@@ -58,20 +59,29 @@ export const isSameSelection = (a: Array<DateValue>, b: Array<DateValue>) =>
 /* -------------------------------- Calendar -------------------------------- */
 
 type PresetButtonProps = {
+  id: string;
   label: string;
   range: DateRange;
   selection: DateSelection;
 };
 
 /** One shortcut in the sidebar, highlighted while it is the selection. */
-const PresetButton = ({ label, range, selection }: PresetButtonProps) => {
+const PresetButton = ({
+  id,
+  range,
+  selection,
+  ...props
+}: PresetButtonProps) => {
+  const t = useTranslations('components.datePicker.presets');
+  const locale = useLocale();
   const ctx = useDatePickerContext();
   const value = toSelection(range, selection);
   const active = isSameSelection(ctx.value, value);
+  const label = t.has(id as never) ? t(id as never) : props.label;
   const hint =
     selection === 'range'
-      ? `${formatDayHint(range.from)} – ${formatDayHint(range.to)}`
-      : formatDayHint(range.from);
+      ? `${formatDayHint(range.from, locale)} – ${formatDayHint(range.to, locale)}`
+      : formatDayHint(range.from, locale);
 
   return (
     <ChakraDatePicker.PresetTrigger value={value} asChild>
@@ -149,7 +159,7 @@ export const Calendar = ({
               >
                 {shortcuts.map((preset) => (
                   <PresetButton
-                    key={preset.label}
+                    key={preset.id}
                     selection={selection}
                     {...preset}
                   />

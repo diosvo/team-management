@@ -1,0 +1,38 @@
+{
+  "filters": {
+    "time": "Time"
+  },
+  "header": {
+    "newSession": "New Session",
+    "title": "Training Sessions"
+  },
+  "metadata": {
+    "description": "Manage and schedule training sessions",
+    "title": "Training Sessions"
+  },
+  "stats": {
+    "averageAttendance": "Average Attendance",
+    "completedSessions": "Completed Sessions",
+    "hourUnit": "hr",
+    "playerUnit": "player",
+    "sessionUnit": "session",
+    "totalHours": "Total Hours"
+  },
+  "table": {
+    "deletePartial": "Deleted {count} session(s), but some operations failed.",
+    "deleteSuccess": "Successfully deleted {count} session(s).",
+    "empty": "No training sessions found",
+    "location": "Location",
+    "presentRate": "Present Rate"
+  },
+  "upsertSession": {
+    "createTitle": "Create Session",
+    "creating": "Creating training session...",
+    "day": "Day",
+    "endTime": "End Time",
+    "lastUpdated": "Last updated on {date}",
+    "savingButton": "Saving...",
+    "startTime": "Start Time",
+    "updateTitle": "Update Session"
+  }
+}

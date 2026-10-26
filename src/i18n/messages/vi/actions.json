@@ -1,0 +1,99 @@
+{
+  "achievement": {
+    "deleted": "Đã xóa thành tích",
+    "deleteFailed": "Không thể xóa thành tích",
+    "leagueNotEnded": "Chỉ ghi nhận thành tích cho giải đấu đã kết thúc",
+    "leagueNotFound": "Không tìm thấy giải đấu",
+    "recorded": "Đã ghi nhận thành tích",
+    "updated": "Đã cập nhật thành tích"
+  },
+  "asset": {
+    "added": "Đã thêm tài sản",
+    "deleted": "Đã xóa tài sản",
+    "deleteFailed": "Không thể xóa tài sản",
+    "updated": "Đã cập nhật tài sản"
+  },
+  "attendance": {
+    "alreadySubmitted": "{id}: Đã gửi trước đó",
+    "deleted": "Đã xóa bản ghi điểm danh",
+    "invalidPlayer": "Mã cầu thủ không hợp lệ hoặc bị thiếu",
+    "leaveSubmitted": "Đã gửi đơn xin nghỉ",
+    "statusUpdated": "Đã cập nhật trạng thái điểm danh"
+  },
+  "feedback": {
+    "failed": "Hiện không thể gửi góp ý. Vui lòng thử lại sau.",
+    "submitted": "Cảm ơn bạn! Góp ý của bạn đã được ghi nhận với mã #{number}."
+  },
+  "league": {
+    "added": "Đã thêm giải đấu",
+    "deleted": "Đã xóa giải đấu",
+    "deleteFailed": "Không thể xóa giải đấu",
+    "playerNotOnTeam": "Cầu thủ (id: {id}) không thuộc đội này",
+    "removePlayerFailed": "Không thể xóa cầu thủ (id: {id}) - {message}",
+    "updated": "Đã cập nhật giải đấu"
+  },
+  "location": {
+    "added": "Đã thêm địa điểm",
+    "deleted": "Đã xóa địa điểm",
+    "deleteFailed": "Không thể xóa địa điểm",
+    "updated": "Đã cập nhật địa điểm"
+  },
+  "match": {
+    "added": "Đã thêm trận đấu",
+    "deleted": "Đã xóa trận đấu",
+    "deleteFailed": "Không thể xóa trận đấu",
+    "updated": "Đã cập nhật trận đấu"
+  },
+  "report": {
+    "generated": "Đã tạo báo cáo",
+    "generateFailed": "Không thể tạo báo cáo",
+    "missingHeaders": "Thiếu thông tin yêu cầu để tạo báo cáo",
+    "notAuthenticated": "Bạn chưa đăng nhập",
+    "scheduleAdded": "Đã thêm lịch gửi báo cáo",
+    "scheduleDisabled": "Đã tắt lịch gửi báo cáo",
+    "scheduleEnabled": "Đã bật lịch gửi báo cáo",
+    "scheduleNotFound": "Không tìm thấy lịch gửi báo cáo",
+    "schedulesDeleted": "Đã xóa {count} lịch gửi báo cáo",
+    "schedulesDeleteFailed": "Không thể xóa lịch gửi báo cáo",
+    "scheduleUpdated": "Đã cập nhật lịch gửi báo cáo",
+    "scheduleUpdateFailed": "Không thể cập nhật lịch gửi báo cáo",
+    "unavailable": "Hiện không thể tạo báo cáo. Vui lòng thử lại sau",
+    "unknownOrigin": "Không xác định được nguồn yêu cầu"
+  },
+  "rule": {
+    "added": "Đã thêm nội quy",
+    "updated": "Đã cập nhật nội quy"
+  },
+  "team": {
+    "added": "Đã thêm đội",
+    "deleted": "Đã xóa đội",
+    "hasMatches": "Đội này có trong {count} trận đấu. Hãy xóa các trận đấu đó trước, hoặc giữ lại đội để không mất dữ liệu.",
+    "logoUploaded": "Đã tải lên logo",
+    "updated": "Đã cập nhật đội"
+  },
+  "testResult": {
+    "deleted": "Đã xóa kết quả kiểm tra",
+    "saved": "Đã tạo {created}, cập nhật {updated}",
+    "updated": "Đã cập nhật kết quả kiểm tra"
+  },
+  "testType": {
+    "inUse": "Bài kiểm tra đang được sử dụng.",
+    "removed": "Đã xóa bài kiểm tra",
+    "updated": "Đã cập nhật bài kiểm tra"
+  },
+  "training": {
+    "created": "Đã tạo buổi tập",
+    "deleted": "Đã xóa buổi tập",
+    "noCoach": "Đội chưa có huấn luyện viên",
+    "updated": "Đã cập nhật buổi tập"
+  },
+  "user": {
+    "avatarUploaded": "Đã tải lên ảnh đại diện",
+    "deleted": "Đã xóa người dùng",
+    "deleteFailed": "Không thể xóa người dùng",
+    "invited": "Đã gửi email hướng dẫn",
+    "jerseyTaken": "Số áo ''{number}'' đã có người sử dụng",
+    "personalInfoUpdated": "Đã cập nhật thông tin cá nhân",
+    "teamInfoUpdated": "Đã cập nhật thông tin đội"
+  }
+}

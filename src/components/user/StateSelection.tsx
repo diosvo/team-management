@@ -12,9 +12,11 @@ import {
   type FieldPath,
   type FieldValues,
 } from 'react-hook-form';
+import { useTranslations } from 'next-intl';
 
 import { Field } from '@/components/ui/field';
 import { Status } from '@/components/ui/status';
+import { useSelection } from '@/i18n/enums';
 
 import { USER_STATE_SELECTION } from '@/utils/constants';
 import { getColor } from '@/utils/helper';
@@ -25,21 +27,22 @@ type StateSelectionProps = Omit<SelectRootProps, 'collection'> &
     contentRef: React.RefObject<Nullable<HTMLDivElement>>;
   }>;
 
-const states = createListCollection({
-  items: USER_STATE_SELECTION,
-});
-
 export function StateSelection({
   contentRef,
-  placeholder = 'State',
+  placeholder,
   ...props
 }: StateSelectionProps) {
+  const t = useTranslations('components.stateSelection');
+  const states = createListCollection({
+    items: useSelection(USER_STATE_SELECTION, 'userState'),
+  });
+
   return (
     <Select.Root {...props} collection={states}>
       <Select.HiddenSelect />
       <Select.Control>
         <Select.Trigger>
-          <Select.ValueText placeholder={placeholder} />
+          <Select.ValueText placeholder={placeholder ?? t('state')} />
         </Select.Trigger>
         <Select.IndicatorGroup>
           {props.multiple && <Select.ClearTrigger />}
@@ -79,8 +82,9 @@ export function ControlledStateSelection<T extends FieldValues>({
   disabled = false,
   error,
 }: StateSelectProps<T>) {
+  const t = useTranslations('components.stateSelection');
   return (
-    <Field required label="State" invalid={!!error} errorText={error}>
+    <Field required label={t('state')} invalid={!!error} errorText={error}>
       <Controller
         control={control}
         name={name}

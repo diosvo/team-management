@@ -203,4 +203,72 @@ describe('DateRangePicker', () => {
       );
     });
   });
+
+  describe('vi', () => {
+    const setupVi = (
+      props: Partial<React.ComponentProps<typeof DateRangePicker>> = {},
+    ) =>
+      renderWithUI(
+        <DateRangePicker
+          label="Thời gian"
+          value={RANGE}
+          onChange={onChange}
+          {...props}
+        />,
+        { locale: 'vi' },
+      );
+
+    const viTrigger = (name: string) =>
+      screen.getByRole('button', { name: `Thời gian: ${name}` });
+
+    test('names a preset window in Vietnamese', () => {
+      setupVi({ value: thisYear() });
+
+      expect(viTrigger('Năm nay')).toBeInTheDocument();
+    });
+
+    test('keeps the day-first dates of a hand-picked window', () => {
+      setupVi();
+
+      expect(viTrigger(formatDateRange(RANGE))).toBeInTheDocument();
+    });
+
+    test('translates the default placeholder', () => {
+      setupVi({ value: { from: '', to: '' } });
+      expect(viTrigger('Mọi thời gian')).toBeVisible();
+    });
+
+    test('names the clear button in Vietnamese', () => {
+      setupVi({ onClear: vi.fn() });
+
+      expect(
+        screen.getByRole('button', { name: 'Xóa Thời gian' }),
+      ).toBeInTheDocument();
+    });
+
+    test('offers Vietnamese shortcuts with localized day hints', async () => {
+      const { user } = setupVi({ selection: 'single', value: DAY });
+
+      await user.click(viTrigger(formatDate(DAY.from)));
+      await screen.findByRole('grid');
+
+      for (const name of ['Hôm nay', 'Hôm qua', 'Ngày mai']) {
+        expect(screen.getByRole('button', { name })).toBeInTheDocument();
+      }
+      expect(screen.getByRole('button', { name: 'Hôm nay' })).toHaveTextContent(
+        /thg/,
+      );
+    });
+
+    test('emits the same ISO window for a Vietnamese preset', async () => {
+      const { user } = setupVi();
+
+      await user.click(viTrigger(formatDateRange(RANGE)));
+      await user.click(
+        await screen.findByRole('button', { name: 'Tháng này' }),
+      );
+
+      await waitFor(() => expect(onChange).toHaveBeenCalledWith(thisMonth()));
+    });
+  });
 });

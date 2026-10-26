@@ -1,5 +1,6 @@
 'use server';
 
+import { getTranslations } from 'next-intl/server';
 import { cookies, headers } from 'next/headers';
 
 import {
@@ -50,6 +51,7 @@ export const upsertReportSchedule = reports(
     schedule_id: string,
     input: UpsertReportScheduleValues,
   ) {
+    const t = await getTranslations('actions.report');
     // `next_run_at` is recomputed on every save so it always matches the
     // chosen window's cadence.
     const values = {
@@ -68,7 +70,7 @@ export const upsertReportSchedule = reports(
       revalidate.reports();
 
       return ResponseFactory.success(
-        `${schedule_id ? 'Updated' : 'Added'} report schedule successfully`,
+        t(schedule_id ? 'scheduleUpdated' : 'scheduleAdded'),
       );
     } catch (error) {
       const { message } = getDbErrorMessage(error);
@@ -80,6 +82,7 @@ export const upsertReportSchedule = reports(
 export const toggleReportSchedule = reports(
   ['edit'],
   async function toggle(user, schedule_id: string, enabled: boolean) {
+    const t = await getTranslations('actions.report');
     try {
       // Re-enabling recomputes `next_run_at` from now, so a schedule that was
       // paused past its occurrence never fires a backlog of missed runs.
@@ -98,10 +101,10 @@ export const toggleReportSchedule = reports(
       revalidate.reports();
 
       return ResponseFactory.success(
-        `Schedule ${enabled ? 'enabled' : 'disabled'} successfully`,
+        t(enabled ? 'scheduleEnabled' : 'scheduleDisabled'),
       );
     } catch {
-      return ResponseFactory.error('Failed to update schedule');
+      return ResponseFactory.error(t('scheduleUpdateFailed'));
     }
   },
 );
@@ -109,16 +112,17 @@ export const toggleReportSchedule = reports(
 export const removeReportSchedules = reports(
   ['delete'],
   async function remove(user, schedule_ids: Array<string>) {
+    const t = await getTranslations('actions.report');
     try {
       await deleteReportSchedules(user.team_id, schedule_ids);
 
       revalidate.reports();
 
       return ResponseFactory.success(
-        `Deleted ${schedule_ids.length} schedule(s) successfully`,
+        t('schedulesDeleted', { count: schedule_ids.length }),
       );
     } catch {
-      return ResponseFactory.error('Failed to delete schedule(s)');
+      return ResponseFactory.error(t('schedulesDeleteFailed'));
     }
   },
 );
@@ -132,16 +136,17 @@ export const removeReportSchedules = reports(
 export const runReportNow = reports(
   ['create', 'edit'],
   async function run(user, schedule_id: string) {
+    const t = await getTranslations('actions.report');
     const schedule = await getReportSchedule(user.team_id, schedule_id);
 
     if (!schedule) {
-      return ResponseFactory.error('Schedule not found');
+      return ResponseFactory.error(t('scheduleNotFound'));
     }
 
     const request = requestOrigin(await headers());
 
     if (!request) {
-      return ResponseFactory.error('Unable to determine the request origin');
+      return ResponseFactory.error(t('unknownOrigin'));
     }
 
     const cookieStore = await cookies();
@@ -158,7 +163,7 @@ export const runReportNow = reports(
     revalidate.reports();
 
     return result.outcome === 'sent'
-      ? ResponseFactory.success('Report generated successfully')
-      : ResponseFactory.error(result.error ?? 'Failed to generate report');
+      ? ResponseFactory.success(t('generated'))
+      : ResponseFactory.error(result.error ?? t('generateFailed'));
   },
 );

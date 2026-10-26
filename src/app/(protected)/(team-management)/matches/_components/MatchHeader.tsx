@@ -1,12 +1,17 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
+
 import PageHeader, { AddButton } from '@/components/PageHeader';
 
 import { UpsertMatch } from './UpsertMatch';
 
 export default function MatchHeader() {
+  const t = useTranslations('matches.header');
+  const tc = useTranslations('common');
+
   return (
-    <PageHeader title="Matches">
+    <PageHeader title={t('title')}>
       <AddButton
         resource="matches"
         onClick={() =>
@@ -15,7 +20,9 @@ export default function MatchHeader() {
             item: { match_id: '' },
           })
         }
-      />
+      >
+        {tc('add')}
+      </AddButton>
     </PageHeader>
   );
 }

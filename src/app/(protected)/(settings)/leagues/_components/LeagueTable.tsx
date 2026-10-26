@@ -6,18 +6,19 @@ import { useMemo } from 'react';
 import { Badge, IconButton, VisuallyHidden } from '@chakra-ui/react';
 import { isPast } from 'date-fns';
 import { CircuitBoard } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import Authorized from '@/components/Authorized';
 import DataTable, { type Column } from '@/components/DataTable';
 import HighlightText from '@/components/HighlightText';
 import { Tooltip } from '@/components/ui/tooltip';
 
+import { enumLabel } from '@/i18n/enums';
 import { useLeagueFilters } from '@/lib/nuqs';
 import { ACHIEVEMENT_STYLE } from '@/utils/constants/achievement';
 import { formatDate } from '@/utils/datetime';
 import { AchievementType, LeagueStatus } from '@/utils/enum';
 import { buildPredicate } from '@/utils/filters';
-import { toLabel } from '@/utils/formatter';
 import { getColor } from '@/utils/helper';
 
 import usePermissions from '@/hooks/use-permissions';
@@ -38,6 +39,8 @@ export default function LeagueTable({
 }: {
   leagues: Array<LeagueWithPlayerCount>;
 }) {
+  const t = useTranslations('leagues.table');
+  const tEnums = useTranslations('enums');
   const { can, isGuest } = usePermissions();
   const [{ q, page, status }, setSearchParams] = useLeagueFilters();
 
@@ -62,7 +65,7 @@ export default function LeagueTable({
   const columns: Array<Column<LeagueWithPlayerCount>> = [
     {
       // Named for screen readers only: the column shows an icon, not a label.
-      header: <VisuallyHidden>Achievement</VisuallyHidden>,
+      header: <VisuallyHidden>{t('achievement')}</VisuallyHidden>,
       headerProps: { width: '1px' },
       align: 'center',
       cell: (item) => {
@@ -70,7 +73,8 @@ export default function LeagueTable({
 
         if (!isPast(item.end_date) || !type) return null;
 
-        const { icon: Icon, colorPalette, label } = ACHIEVEMENT_STYLE[type];
+        const { icon: Icon, colorPalette } = ACHIEVEMENT_STYLE[type];
+        const label = enumLabel(tEnums, 'achievementType', type);
 
         return (
           <Authorized resource="achievements" action="create">
@@ -80,7 +84,7 @@ export default function LeagueTable({
                 size="2xs"
                 variant="ghost"
                 colorPalette={colorPalette}
-                aria-label="Record achievement"
+                aria-label={t('recordAchievement')}
                 onClick={(event) => event.stopPropagation()}
               >
                 <Link href={`/achievements?record=${item.league_id}`}>
@@ -93,21 +97,21 @@ export default function LeagueTable({
       },
     },
     {
-      header: 'Name',
+      header: t('name'),
       cell: (item) => <HighlightText query={q}>{item.name}</HighlightText>,
     },
-    { header: 'No. Players', cell: (item) => item.player_count },
-    { header: 'Start Date', cell: (item) => formatDate(item.start_date) },
-    { header: 'End Date', cell: (item) => formatDate(item.end_date) },
+    { header: t('playerCount'), cell: (item) => item.player_count },
+    { header: t('startDate'), cell: (item) => formatDate(item.start_date) },
+    { header: t('endDate'), cell: (item) => formatDate(item.end_date) },
     {
-      header: 'Status',
+      header: t('status'),
       cell: (item) => (
         <Badge
           variant="surface"
           borderRadius="full"
           colorPalette={getColor(item.status)}
         >
-          {toLabel(item.status)}
+          {enumLabel(tEnums, 'leagueStatus', item.status)}
         </Badge>
       ),
     },
@@ -122,7 +126,7 @@ export default function LeagueTable({
         totalCount={totalCount}
         page={page}
         onPageChange={setSearchParams}
-        empty={{ title: 'No leagues found', icon: <CircuitBoard /> }}
+        empty={{ title: t('empty'), icon: <CircuitBoard /> }}
         onRowClick={
           isGuest
             ? undefined

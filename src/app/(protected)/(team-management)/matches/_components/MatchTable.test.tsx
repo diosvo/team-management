@@ -9,6 +9,7 @@ import {
   screen,
   setupTestLifecycle,
   waitFor,
+  enumText,
 } from '@/test/utilities';
 
 import usePermissions, {
@@ -16,7 +17,6 @@ import usePermissions, {
 } from '@/hooks/use-permissions';
 import type { MatchWithTeams } from '@/types/match';
 import { MatchResult, MatchStatus } from '@/utils/enum';
-import { toLabel } from '@/utils/formatter';
 
 import { removeMatch } from '@/actions/match';
 
@@ -101,7 +101,9 @@ describe('MatchTable', () => {
         `${LOSS_MATCH.home_team_score} - ${LOSS_MATCH.away_team_score}`,
       ),
     ).toBeInTheDocument();
-    expect(screen.getByText(toLabel(MatchResult.LOSS))).toBeInTheDocument();
+    expect(
+      screen.getByText(enumText('matchResult', MatchResult.LOSS)),
+    ).toBeInTheDocument();
   });
 
   test('shows no result for a match that has not been played', () => {
@@ -118,10 +120,10 @@ describe('MatchTable', () => {
     });
 
     expect(
-      screen.getByText(toLabel(MatchStatus.SCHEDULED)),
+      screen.getByText(enumText('matchStatus', MatchStatus.SCHEDULED)),
     ).toBeInTheDocument();
     expect(
-      screen.queryByText(toLabel(MatchResult.LOSS)),
+      screen.queryByText(enumText('matchResult', MatchResult.LOSS)),
     ).not.toBeInTheDocument();
     // Neither a score nor a result for an unplayed fixture.
     expect(screen.getAllByText('-')).toHaveLength(2);

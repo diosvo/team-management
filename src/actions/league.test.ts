@@ -343,7 +343,7 @@ describe('League Actions', () => {
       expect(deleteLeague).toHaveBeenCalledWith(MOCK_LEAGUE.league_id);
       expect(result).toEqual({
         success: false,
-        message: 'Failed to delete asset',
+        message: 'Failed to delete league',
       });
     });
   });

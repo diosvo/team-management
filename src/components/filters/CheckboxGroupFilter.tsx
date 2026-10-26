@@ -1,6 +1,7 @@
 'use client';
 
 import { Button, CheckboxGroup, Fieldset, Span } from '@chakra-ui/react';
+import { useTranslations } from 'next-intl';
 
 import { Checkbox } from '@/components/ui/checkbox';
 
@@ -20,6 +21,7 @@ export default function CheckboxGroupFilter({
   options,
   onChange,
 }: CheckboxGroupFilterProps) {
+  const t = useTranslations('components.filters');
   const horizontal = options.length <= 3;
 
   return (
@@ -39,7 +41,7 @@ export default function CheckboxGroupFilter({
             visibility={value.length === 0 ? 'hidden' : 'visible'}
             onClick={() => onChange([])}
           >
-            clear
+            {t('clear')}
           </Button>
         </Fieldset.Legend>
         <Fieldset.Content

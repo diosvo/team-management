@@ -12,9 +12,11 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { Quote, Trophy } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { EmptyState } from '@/components/ui/empty-state';
 
+import { enumLabel } from '@/i18n/enums';
 import { FOUNDING_STYLE } from '@/utils/constants/achievement';
 import { ESTABLISHED_DATE, FOUNDING_YEAR } from '@/utils/constants/app';
 import { formatDate } from '@/utils/datetime';
@@ -24,20 +26,10 @@ import type { AchievementWithRelations } from '@/db/achievement';
 import AchievementCard from './AchievementCard';
 
 const neuse = Bebas_Neue({ subsets: ['latin'], weight: '400' });
-const YEAR_TAGLINES = [
-  'Where It All Began.',
-  'First Steps, Big Dreams.',
-  'Rising Higher.',
-  'The Foundation.',
-  'Building Momentum.',
-  'Relentless Growth.',
-  'Stronger Together.',
-];
+function getYearTagline(taglines: Array<string>, index: number): string {
+  if (index <= 0) return taglines[0];
 
-function getYearTagline(index: number): string {
-  if (index <= 0) return YEAR_TAGLINES[0];
-
-  const [, ...rest] = YEAR_TAGLINES;
+  const [, ...rest] = taglines;
   return rest[(index - 1) % rest.length];
 }
 
@@ -60,12 +52,16 @@ export default function AchievementTimeline({
 }: {
   achievements: Array<AchievementWithRelations>;
 }) {
+  const t = useTranslations('achievements.timeline');
+  const tEnums = useTranslations('enums');
+  const foundedLabel = enumLabel(tEnums, 'achievementType', 'founded');
+
   if (achievements.length === 0) {
     return (
       <EmptyState
         icon={<Trophy />}
-        title="The trophy cabinet awaits its first honor"
-        description="Record the club's achievements once a league has ended."
+        title={t('emptyTitle')}
+        description={t('emptyDescription')}
       />
     );
   }
@@ -90,9 +86,11 @@ export default function AchievementTimeline({
     groups.push({
       year: FOUNDING_YEAR,
       items: [],
-      quote: 'One dream. One team.',
+      quote: t('foundingQuote'),
     });
   }
+
+  const taglines = t.raw('taglines') as Array<string>;
 
   return (
     <Stack gap={0}>
@@ -121,7 +119,7 @@ export default function AchievementTimeline({
                 {year}
               </Heading>
               <Text color="gray.500" textStyle="secondary" lineHeight="short">
-                {getYearTagline(groups.length - 1 - index)}
+                {getYearTagline(taglines, groups.length - 1 - index)}
               </Text>
             </GridItem>
 
@@ -174,13 +172,11 @@ export default function AchievementTimeline({
                         <FOUNDING_STYLE.icon
                           size={20}
                           role="img"
-                          aria-label={FOUNDING_STYLE.label}
+                          aria-label={foundedLabel}
                         />
                       </Box>
                       <VStack alignItems="stretch">
-                        <Text fontWeight="semibold">
-                          {FOUNDING_STYLE.label}
-                        </Text>
+                        <Text fontWeight="semibold">{foundedLabel}</Text>
                         <Text textStyle="secondary" color="gray.600">
                           {formatDate(ESTABLISHED_DATE)}
                         </Text>

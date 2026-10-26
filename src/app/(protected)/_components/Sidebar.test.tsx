@@ -106,12 +106,7 @@ describe('Sidebar', () => {
     test('renders no nav links when user has no nav permissions', () => {
       setup({ can: () => false });
 
-      const navLinks = screen.getAllByRole('link').filter((link) => {
-        const href = link.getAttribute('href') ?? '';
-        return !href.startsWith('http') && href !== '/docs';
-      });
-
-      expect(navLinks).toHaveLength(0);
+      expect(screen.queryAllByRole('link')).toHaveLength(0);
     });
 
     test('renders all items when the user has full access', () => {
@@ -293,34 +288,6 @@ describe('Sidebar', () => {
       const { container } = setup({ can: only('dashboard'), ...props });
 
       expect(container).toBeInTheDocument();
-    });
-  });
-
-  describe('footer links', () => {
-    test('Documentation opens in a new tab securely', () => {
-      setup();
-
-      const link = getLink('Documentation');
-      expect(link).toBe(document.querySelector('a[href="/docs"]'));
-      expect(link).toHaveAttribute('target', '_blank');
-      expect(link).toHaveAttribute('rel', 'noopener noreferrer');
-    });
-
-    test('offers the feedback dialog', () => {
-      setup();
-
-      expect(
-        screen.getByRole('button', { name: 'Suggestions + feedback + ideas' }),
-      ).toBeInTheDocument();
-    });
-
-    // The menu uses trigger `id` and `data-scope`; the tooltip must not overwrite them.
-    test('social links trigger keeps the menu scope, not the tooltip one', () => {
-      setup();
-
-      const trigger = screen.getByRole('button', { name: 'Social Links' });
-      expect(trigger).toHaveAttribute('data-scope', 'menu');
-      expect(trigger.id).toMatch(/^menu:.*:trigger$/);
     });
   });
 

@@ -160,7 +160,10 @@ describe('PreviewPanel', () => {
       await user.click(screen.getByRole('button', { name: /csv/i }));
 
       await waitFor(() => {
-        expect(mockDownloadCsv).toHaveBeenCalledWith(players, 'sgr-summer-league');
+        expect(mockDownloadCsv).toHaveBeenCalledWith(
+          players,
+          'sgr-summer-league',
+        );
       });
       expect(mockToaster.promise).toHaveBeenCalled();
     });
@@ -224,7 +227,7 @@ describe('PreviewPanel', () => {
         expect(result).toMatchObject({
           type: 'warning',
           title: 'No fields matched',
-          description: 'Found 2 field(s) but none matched player data.',
+          description: 'Found 2 fields but none matched player data.',
         });
       });
     });

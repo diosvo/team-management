@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import NextLink from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -18,6 +19,7 @@ import {
 
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
+import { enumLabel } from '@/i18n/enums';
 
 import type { MatchesRateRecord } from '@/types/analytics';
 
@@ -26,12 +28,22 @@ export default function MatchesRate({
 }: {
   records: Array<MatchesRateRecord>;
 }) {
+  const t = useTranslations('dashboard.matchesRate');
+  const tEnums = useTranslations('enums');
   const router = useRouter();
   const chart = useChart({
     data: records,
     series: [
-      { name: 'league', color: 'purple.400' },
-      { name: 'friendly', color: 'teal.400' },
+      {
+        name: 'league',
+        color: 'purple.400',
+        label: enumLabel(tEnums, 'matchType', 'league'),
+      },
+      {
+        name: 'friendly',
+        color: 'teal.400',
+        label: enumLabel(tEnums, 'matchType', 'friendly'),
+      },
     ],
   });
 
@@ -41,16 +53,16 @@ export default function MatchesRate({
 
   return (
     <Card
-      title="Matches Record"
-      description="Performance in league vs friendly matches"
+      title={t('title')}
+      description={t('description')}
       action={
         <Link textStyle="secondary" colorPalette="blue" asChild>
-          <NextLink href="/matches">View Matches</NextLink>
+          <NextLink href="/matches">{t('viewMatches')}</NextLink>
         </Link>
       }
     >
       {isEmpty ? (
-        <EmptyState icon={<ChartColumnBig />} title="No matches records" />
+        <EmptyState icon={<ChartColumnBig />} title={t('empty')} />
       ) : (
         <Chart.Root chart={chart} maxHeight="sm">
           <BarChart data={chart.data} responsive>
@@ -63,6 +75,14 @@ export default function MatchesRate({
               axisLine={false}
               tickLine={false}
               dataKey={chart.key('outcome')}
+              // Analytics returns `lose`; the enum key is `loss`
+              tickFormatter={(outcome: string) =>
+                enumLabel(
+                  tEnums,
+                  'matchResult',
+                  outcome === 'lose' ? 'loss' : outcome,
+                )
+              }
             />
             <Tooltip
               content={<Chart.Tooltip />}

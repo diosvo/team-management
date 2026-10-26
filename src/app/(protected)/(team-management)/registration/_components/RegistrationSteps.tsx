@@ -1,5 +1,6 @@
 import StepIndicator from '@/components/StepIndicator';
 import { Span, Steps } from '@chakra-ui/react';
+import { useTranslations } from 'next-intl';
 
 export type StepDef = {
   title: string;
@@ -12,6 +13,8 @@ export default function RegistrationSteps({
 }: {
   steps: Array<StepDef>;
 }) {
+  const t = useTranslations('registration');
+
   return (
     <Steps.Root
       step={0}
@@ -32,7 +35,7 @@ export default function RegistrationSteps({
                 {step.title}
                 {step.isOptional && (
                   <Span color="fg.muted" fontSize="xs">
-                    &nbsp;(optional)
+                    &nbsp;{t('optional')}
                   </Span>
                 )}
               </Steps.Title>

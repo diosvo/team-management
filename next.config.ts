@@ -1,5 +1,6 @@
 import { createMDX } from 'fumadocs-mdx/next';
 import type { NextConfig } from 'next';
+import createNextIntlPlugin from 'next-intl/plugin';
 
 const nextConfig: NextConfig = {
   devIndicators: {
@@ -38,4 +39,6 @@ const nextConfig: NextConfig = {
 // Docs (/docs) are Fumadocs pages compiled from content/docs via fumadocs-mdx.
 const withMDX = createMDX();
 
-export default withMDX(nextConfig);
+const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
+
+export default withNextIntl(withMDX(nextConfig));

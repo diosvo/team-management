@@ -1,5 +1,6 @@
 'use server';
 
+import { getTranslations } from 'next-intl/server';
 import { deleteFile, getFile, uploadFile } from '@/lib/blob';
 import { ResponseFactory } from '@/utils/response';
 
@@ -24,6 +25,7 @@ export const getTeams = withAuth(fetchTeams);
 export const upsertTeam = teams(
   ['create', 'edit'],
   async function upsert(_, team_id: string, team: UpsertTeamSchemaValues) {
+    const t = await getTranslations('actions.team');
     try {
       if (team_id) {
         await updateTeam(team_id, team);
@@ -33,9 +35,7 @@ export const upsertTeam = teams(
 
       revalidate.teams();
 
-      return ResponseFactory.success(
-        `${team_id ? 'Updated' : 'Added'} team successfully`,
-      );
+      return ResponseFactory.success(t(team_id ? 'updated' : 'added'));
     } catch (error) {
       const { message } = getDbErrorMessage(error);
       return ResponseFactory.error(message);
@@ -60,6 +60,8 @@ export const uploadLogo = teams(
     old_path: Nullish<string>,
     file: File,
   ) {
+    const t = await getTranslations('actions.team');
+
     try {
       const { pathname } = await uploadFile('teams/' + team_id, file, {
         contentType: file.type,
@@ -73,7 +75,7 @@ export const uploadLogo = teams(
 
       revalidate.teams();
 
-      return ResponseFactory.success('Uploaded logo successfully', {
+      return ResponseFactory.success(t('logoUploaded'), {
         image: pathname,
       });
     } catch (error) {
@@ -86,22 +88,21 @@ export const uploadLogo = teams(
 export const removeTeam = teams(
   ['delete'],
   async function remove(_, team_id: string) {
+    const t = await getTranslations('actions.team');
     try {
       // `match.home_team` / `away_team` are `restrict`: without this the
       // delete comes back as a raw foreign key error naming a constraint.
       const matchCount = await countTeamMatches(team_id);
 
       if (matchCount > 0) {
-        return ResponseFactory.error(
-          `This team appears in ${matchCount} match(es). Delete those matches first, or keep the team to preserve the record.`,
-        );
+        return ResponseFactory.error(t('hasMatches', { count: matchCount }));
       }
 
       await deleteTeam(team_id);
 
       revalidate.teams();
 
-      return ResponseFactory.success('Deleted team successfully');
+      return ResponseFactory.success(t('deleted'));
     } catch (error) {
       const { message } = getDbErrorMessage(error);
       return ResponseFactory.error(message);

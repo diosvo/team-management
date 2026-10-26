@@ -10,6 +10,7 @@ import {
   type EditorOptions,
 } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import { useTranslations } from 'next-intl';
 
 import {
   Control,
@@ -114,6 +115,7 @@ export function EditorToolbar({
   limit = DEFAULT_CHARACTER_LIMIT,
   ...props
 }: EditorToolbarProps) {
+  const t = useTranslations('components.textEditor');
   const { editor } = useRichTextEditorContext();
   // Re-render controls on every transaction so their active state is current.
   useEditorState({
@@ -143,7 +145,7 @@ export function EditorToolbar({
           >
             {charsCount}
           </Span>
-          <Span color="GrayText"> / {limit} characters</Span>
+          <Span color="GrayText"> {t('characters', { limit })}</Span>
         </Text>
       </RichTextEditor.ControlGroup>
     </RichTextEditor.Toolbar>

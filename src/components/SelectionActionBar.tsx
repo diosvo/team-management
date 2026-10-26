@@ -1,5 +1,6 @@
 import { ActionBar, Button, Portal } from '@chakra-ui/react';
 import { Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import type { PropsWithChildren } from 'react';
 
 type SelectionActionBarProps = PropsWithChildren<{
@@ -14,6 +15,9 @@ export default function SelectionActionBar({
   selectionCount,
   onDelete,
 }: SelectionActionBarProps) {
+  const t = useTranslations('components.selectionActionBar');
+  const tCommon = useTranslations('common');
+
   return (
     <ActionBar.Root open={open}>
       <Portal>
@@ -24,7 +28,7 @@ export default function SelectionActionBar({
             justifyContent="center"
           >
             <ActionBar.SelectionTrigger>
-              {selectionCount} selected
+              {t('selected', { count: selectionCount })}
             </ActionBar.SelectionTrigger>
             <ActionBar.Separator />
             {children}
@@ -35,7 +39,7 @@ export default function SelectionActionBar({
               onClick={onDelete}
             >
               <Trash2 />
-              Delete
+              {tCommon('delete')}
             </Button>
           </ActionBar.Content>
         </ActionBar.Positioner>

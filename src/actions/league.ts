@@ -1,5 +1,6 @@
 'use server';
 
+import { getTranslations } from 'next-intl/server';
 import { ResponseFactory } from '@/utils/response';
 
 import {
@@ -36,6 +37,8 @@ export const upsertLeague = leagues(
     league: UpsertLeagueSchemaValues,
     player_ids?: Array<string>,
   ) {
+    const t = await getTranslations('actions.league');
+
     try {
       const isUpdate = !!league_id;
       let leagueId = league_id;
@@ -64,9 +67,7 @@ export const upsertLeague = leagues(
 
       revalidate.leagues();
 
-      return ResponseFactory.success(
-        `${isUpdate ? 'Updated' : 'Added'} league successfully`,
-      );
+      return ResponseFactory.success(t(isUpdate ? 'updated' : 'added'));
     } catch (error) {
       const { message } = getDbErrorMessage(error);
       return ResponseFactory.error(message);
@@ -77,14 +78,15 @@ export const upsertLeague = leagues(
 export const removeLeague = leagues(
   ['delete'],
   async function remove(_, league_id: string) {
+    const t = await getTranslations('actions.league');
     try {
       await deleteLeague(league_id);
 
       revalidate.leagues();
 
-      return ResponseFactory.success('Deleted league successfully');
+      return ResponseFactory.success(t('deleted'));
     } catch {
-      return ResponseFactory.error('Failed to delete asset');
+      return ResponseFactory.error(t('deleteFailed'));
     }
   },
 );
@@ -96,6 +98,8 @@ async function syncLeagueRoster(
   player_ids?: Array<string>,
 ): Promise<Array<string>> {
   if (!league_id || player_ids == null) return [];
+
+  const t = await getTranslations('actions.league');
 
   // Get current players only for existing leagues
   const currentPlayers = isUpdate
@@ -115,7 +119,7 @@ async function syncLeagueRoster(
   const toAdd = requestedToAdd.filter((id) => eligible.has(id));
   const rejected = requestedToAdd
     .filter((id) => !eligible.has(id))
-    .map((id) => `Player (id: ${id.slice(0, 8)}) is not on this team`);
+    .map((id) => t('playerNotOnTeam', { id: id.slice(0, 8) }));
 
   // Each add/remove targets a distinct row, so run the whole batch in
   // parallel and keep the per-player error messages via allSettled
@@ -128,7 +132,7 @@ async function syncLeagueRoster(
     ...toRemove.map((player_id) => ({
       run: () => removePlayerFromLeagueRoster(team_id, league_id, player_id),
       describe: (message: string) =>
-        `Failed to remove player (id: ${player_id.slice(0, 8)}) - ${message}`,
+        t('removePlayerFailed', { id: player_id.slice(0, 8), message }),
     })),
   ];
 

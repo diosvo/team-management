@@ -7,7 +7,6 @@ import {
   Button,
   Dialog,
   HStack,
-  IconButton,
   Input,
   Portal,
   Text,
@@ -15,7 +14,8 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Flag, Send } from 'lucide-react';
+import { Send } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Controller, useForm } from 'react-hook-form';
 
 import { CloseButton } from '@/components/ui/close-button';
@@ -33,20 +33,26 @@ import {
 import {
   FEEDBACK_DESCRIPTION_LIMIT,
   FEEDBACK_TITLE_LIMIT,
-  FEEDBACK_TYPES,
   FEEDBACK_TYPE_KEYS,
 } from '@/utils/constants';
-
-const LABEL = 'Suggestions + feedback + ideas';
 
 /**
  * Collects the gist of a report and files it as a GitHub issue with the app's
  * token, so reporters do not need a GitHub account.
  */
-export default function FeedbackDialog() {
-  const pathname = usePathname();
+type FeedbackDialogProps = {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+};
 
-  const [open, setOpen] = useState(false);
+export default function FeedbackDialog({
+  open,
+  onOpenChange,
+}: FeedbackDialogProps) {
+  const pathname = usePathname();
+  const t = useTranslations('shell.feedback');
+  const tEnums = useTranslations('enums');
+
   const [sharePage, setSharePage] = useState(true);
   const [isPending, startTransition] = useTransition();
 
@@ -64,12 +70,12 @@ export default function FeedbackDialog() {
   const page = sharePage ? pathname : undefined;
 
   const close = () => {
-    setOpen(false);
+    onOpenChange(false);
     reset();
   };
 
   const onSend = (values: FeedbackFormSchemaValues) => {
-    const id = toaster.create({ type: 'loading', title: 'Sending...' });
+    const id = toaster.create({ type: 'loading', title: t('sending') });
 
     startTransition(async () => {
       const { success, message: title } = await submitFeedback({
@@ -89,20 +95,8 @@ export default function FeedbackDialog() {
       unmountOnExit
       open={open}
       size="lg"
-      onOpenChange={({ open }) => setOpen(open)}
+      onOpenChange={({ open }) => onOpenChange(open)}
     >
-      <Tooltip content={LABEL}>
-        <Dialog.Trigger asChild>
-          <IconButton
-            size="2xs"
-            variant="ghost"
-            colorPalette="green"
-            aria-label={LABEL}
-          >
-            <Flag />
-          </IconButton>
-        </Dialog.Trigger>
-      </Tooltip>
       <Portal>
         <Dialog.Backdrop />
         <Dialog.Positioner as="form" onSubmit={handleSubmit(onSend)}>
@@ -111,7 +105,7 @@ export default function FeedbackDialog() {
               <CloseButton />
             </Dialog.CloseTrigger>
             <Dialog.Header>
-              <Dialog.Title>Share Feedback</Dialog.Title>
+              <Dialog.Title>{t('title')}</Dialog.Title>
             </Dialog.Header>
             <Dialog.Body>
               <VStack alignItems="stretch" gap={4}>
@@ -121,7 +115,7 @@ export default function FeedbackDialog() {
                   render={({ field }) => (
                     <Field
                       required
-                      label="Type"
+                      label={t('type')}
                       invalid={!!errors.type}
                       errorText={errors.type?.message}
                     >
@@ -135,10 +129,10 @@ export default function FeedbackDialog() {
                           {FEEDBACK_TYPE_KEYS.map((type) => (
                             <Tooltip
                               key={type}
-                              content={FEEDBACK_TYPES[type].description}
+                              content={tEnums(`feedbackTypeHint.${type}`)}
                             >
                               <Radio value={type} onBlur={field.onBlur}>
-                                {FEEDBACK_TYPES[type].label}
+                                {tEnums(`feedbackType.${type}`)}
                               </Radio>
                             </Tooltip>
                           ))}
@@ -150,22 +144,22 @@ export default function FeedbackDialog() {
 
                 <Field
                   required
-                  label="Title"
+                  label={t('titleLabel')}
                   invalid={!!errors.title}
                   errorText={errors.title?.message}
                 >
                   <Input
                     autoFocus
                     maxLength={FEEDBACK_TITLE_LIMIT}
-                    placeholder="Attendance export is missing last week"
+                    placeholder={t('titlePlaceholder')}
                     {...register('title')}
                   />
                 </Field>
 
                 <Field
                   required
-                  label="Description"
-                  helperText="Markdown is supported."
+                  label={t('description')}
+                  helperText={t('descriptionHelper')}
                   invalid={!!errors.description}
                   errorText={errors.description?.message}
                 >
@@ -173,7 +167,7 @@ export default function FeedbackDialog() {
                     autoresize
                     rows={5}
                     maxLength={FEEDBACK_DESCRIPTION_LIMIT}
-                    placeholder="What happened, and what did you expect?"
+                    placeholder={t('descriptionPlaceholder')}
                     {...register('description')}
                   />
                 </Field>
@@ -183,17 +177,17 @@ export default function FeedbackDialog() {
                   checked={sharePage}
                   onCheckedChange={({ checked }) => setSharePage(checked)}
                 >
-                  Include the page I am on ({pathname})
+                  {t('includePage', { pathname })}
                 </Switch>
 
                 <Text fontSize="sm" color="GrayText">
-                  Your report is filed for you, with your name attached.
+                  {t('filedForYou')}
                 </Text>
               </VStack>
             </Dialog.Body>
             <Dialog.Footer>
               <Button type="submit" loading={isPending} disabled={!isValid}>
-                Send <Send />
+                {t('send')} <Send />
               </Button>
             </Dialog.Footer>
           </Dialog.Content>
