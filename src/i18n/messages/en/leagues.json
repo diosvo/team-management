@@ -1,35 +1,35 @@
 {
   "metadata": {
-    "title": "Leagues",
-    "description": "Manage and view leagues information."
+    "description": "Manage and view leagues information.",
+    "title": "Leagues"
   },
-  "title": "Leagues",
   "status": "Status",
   "table": {
     "achievement": "Achievement",
-    "recordAchievement": "Record achievement",
+    "deleted": "Successfully deleted {count} league(s).",
+    "deletedPartially": "Deleted {count} league(s), but some operations failed.",
+    "deleting": "Deleting leagues...",
+    "empty": "No leagues found",
+    "endDate": "End Date",
     "name": "Name",
     "playerCount": "No. Players",
+    "recordAchievement": "Record achievement",
     "startDate": "Start Date",
-    "endDate": "End Date",
-    "status": "Status",
-    "empty": "No leagues found",
-    "deleting": "Deleting leagues...",
-    "deleted": "Successfully deleted {count} league(s).",
-    "deletedPartially": "Deleted {count} league(s), but some operations failed."
+    "status": "Status"
   },
+  "title": "Leagues",
   "upsert": {
     "addTitle": "Add League",
-    "updateTitle": "Update League",
-    "readonly": "Readonly",
-    "name": "Name",
-    "namePlaceholder": "Basketball League",
-    "startDate": "Start Date",
-    "endDate": "End Date",
     "description": "Description",
     "descriptionPlaceholder": "Comment...",
+    "endDate": "End Date",
+    "name": "Name",
+    "namePlaceholder": "Basketball League",
+    "readonly": "Readonly",
+    "saved": "League information saved successfully.",
     "saving": "Saving...",
     "savingToast": "Saving league information...",
-    "saved": "League information saved successfully."
+    "startDate": "Start Date",
+    "updateTitle": "Update League"
   }
 }

@@ -1,56 +1,56 @@
 {
-  "metadata": {
-    "title": "Attendance",
-    "description": "Manage and view team attendance information."
+  "bulk": {
+    "absent": "Absent",
+    "absentHint": "Check for absent, uncheck for late.",
+    "date": "Date",
+    "failed": "Failed to submit leave requests for {count, plural, one {# player} other {# players}}.",
+    "late": "Late",
+    "loading": "Submitting leave requests...",
+    "name": "Name",
+    "reason": "Reason",
+    "remainingOnTime": "<u>{remaining, select, true {The remaining} other {All}}</u> players will be marked as <onTime>on time</onTime>.",
+    "submit": "Submit",
+    "submitting": "Submitting...",
+    "success": "Submitted leave requests for {count, plural, one {# player} other {# players}}.",
+    "title": "Mark Bulk Attendance"
   },
-  "title": "Training Attendance",
-  "markAttendance": "Mark Attendance",
-  "submitLeaveRequest": "Submit Leave Request",
   "filters": {
     "date": "Date",
     "status": "Status"
   },
-  "stats": {
-    "onTime": "On Time",
-    "late": "Late Entry",
-    "absent": "Absent",
-    "presentRate": "Present Rate"
-  },
-  "table": {
-    "date": "Date",
-    "name": "Name",
-    "status": "Status",
-    "reason": "Reason",
-    "lastUpdated": "Last Updated",
-    "empty": "No players found",
-    "deleteFailed": "Failed to delete {count, plural, one {# attendance record} other {# attendance records}}",
-    "deleteSuccess": "Deleted {count, plural, one {# attendance record} other {# attendance records}} successfully",
-    "updateFailed": "Failed to update {count, plural, one {# attendance record} other {# attendance records}}",
-    "updateSuccess": "Updated {count, plural, one {# attendance record} other {# attendance records}} successfully"
-  },
-  "bulk": {
-    "title": "Mark Bulk Attendance",
-    "date": "Date",
-    "name": "Name",
-    "absent": "Absent",
-    "late": "Late",
-    "reason": "Reason",
-    "absentHint": "Check for absent, uncheck for late.",
-    "loading": "Submitting leave requests...",
-    "failed": "Failed to submit leave requests for {count, plural, one {# player} other {# players}}.",
-    "success": "Submitted leave requests for {count, plural, one {# player} other {# players}}.",
-    "remainingOnTime": "<u>{remaining, select, true {The remaining} other {All}}</u> players will be marked as <onTime>on time</onTime>.",
-    "submitting": "Submitting...",
-    "submit": "Submit"
-  },
   "leave": {
-    "title": "Submit Leave Request",
     "date": "Date",
+    "loading": "Submitting your leave request...",
     "reason": "Reason",
     "reasonHelper": "Max 128 characters.",
     "reasonPlaceholder": "Reason for leave...",
-    "loading": "Submitting your leave request...",
+    "submit": "Submit",
     "submitting": "Submitting...",
-    "submit": "Submit"
-  }
+    "title": "Submit Leave Request"
+  },
+  "markAttendance": "Mark Attendance",
+  "metadata": {
+    "description": "Manage and view team attendance information.",
+    "title": "Attendance"
+  },
+  "stats": {
+    "absent": "Absent",
+    "late": "Late Entry",
+    "onTime": "On Time",
+    "presentRate": "Present Rate"
+  },
+  "submitLeaveRequest": "Submit Leave Request",
+  "table": {
+    "date": "Date",
+    "deleteFailed": "Failed to delete {count, plural, one {# attendance record} other {# attendance records}}",
+    "deleteSuccess": "Deleted {count, plural, one {# attendance record} other {# attendance records}} successfully",
+    "empty": "No players found",
+    "lastUpdated": "Last Updated",
+    "name": "Name",
+    "reason": "Reason",
+    "status": "Status",
+    "updateFailed": "Failed to update {count, plural, one {# attendance record} other {# attendance records}}",
+    "updateSuccess": "Updated {count, plural, one {# attendance record} other {# attendance records}} successfully"
+  },
+  "title": "Training Attendance"
 }

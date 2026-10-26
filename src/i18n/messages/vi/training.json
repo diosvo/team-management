@@ -1,38 +1,38 @@
 {
-  "metadata": {
-    "title": "Buổi tập",
-    "description": "Quản lý và lên lịch các buổi tập"
-  },
-  "header": {
-    "title": "Buổi tập",
-    "newSession": "Thêm buổi tập"
-  },
-  "stats": {
-    "completedSessions": "Buổi tập đã hoàn thành",
-    "averageAttendance": "Điểm danh trung bình",
-    "totalHours": "Tổng số giờ",
-    "sessionUnit": "buổi",
-    "playerUnit": "cầu thủ",
-    "hourUnit": "giờ"
-  },
   "filters": {
     "time": "Thời gian"
   },
+  "header": {
+    "newSession": "Thêm buổi tập",
+    "title": "Buổi tập"
+  },
+  "metadata": {
+    "description": "Quản lý và lên lịch các buổi tập",
+    "title": "Buổi tập"
+  },
+  "stats": {
+    "averageAttendance": "Điểm danh trung bình",
+    "completedSessions": "Buổi tập đã hoàn thành",
+    "hourUnit": "giờ",
+    "playerUnit": "cầu thủ",
+    "sessionUnit": "buổi",
+    "totalHours": "Tổng số giờ"
+  },
   "table": {
-    "location": "Địa điểm",
-    "presentRate": "Tỉ lệ có mặt",
-    "empty": "Không tìm thấy buổi tập nào",
+    "deletePartial": "Đã xóa {count} buổi tập, nhưng một số thao tác thất bại.",
     "deleteSuccess": "Đã xóa {count} buổi tập.",
-    "deletePartial": "Đã xóa {count} buổi tập, nhưng một số thao tác thất bại."
+    "empty": "Không tìm thấy buổi tập nào",
+    "location": "Địa điểm",
+    "presentRate": "Tỉ lệ có mặt"
   },
   "upsertSession": {
     "createTitle": "Tạo buổi tập",
-    "updateTitle": "Cập nhật buổi tập",
-    "day": "Thứ",
-    "startTime": "Giờ bắt đầu",
-    "endTime": "Giờ kết thúc",
     "creating": "Đang tạo buổi tập...",
+    "day": "Thứ",
+    "endTime": "Giờ kết thúc",
+    "lastUpdated": "Cập nhật lần cuối: {date}",
     "savingButton": "Đang lưu...",
-    "lastUpdated": "Cập nhật lần cuối: {date}"
+    "startTime": "Giờ bắt đầu",
+    "updateTitle": "Cập nhật buổi tập"
   }
 }

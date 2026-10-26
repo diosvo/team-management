@@ -1,27 +1,27 @@
 {
   "metadata": {
-    "title": "Teams",
-    "description": "Manage and view opponent teams information."
+    "description": "Manage and view opponent teams information.",
+    "title": "Teams"
   },
-  "title": "Teams",
   "table": {
-    "name": "Name",
+    "deleted": "Successfully deleted {count} team(s).",
+    "deletedPartially": "{count} deleted, some operations failed: {errors}",
     "email": "Email",
+    "empty": "No teams found",
     "established": "Established",
     "lastUpdated": "Last Updated",
-    "empty": "No teams found",
-    "deleted": "Successfully deleted {count} team(s).",
-    "deletedPartially": "{count} deleted, some operations failed: {errors}"
+    "name": "Name"
   },
+  "title": "Teams",
   "upsert": {
     "addTitle": "Add Team",
-    "updateTitle": "Update Team",
-    "name": "Name",
-    "namePlaceholder": "Basketball Club",
     "email": "Email",
     "establishYear": "Establish Year",
+    "name": "Name",
+    "namePlaceholder": "Basketball Club",
     "saving": "Saving...",
     "savingToast": "Saving team information...",
-    "settingLogo": "Setting team logo..."
+    "settingLogo": "Setting team logo...",
+    "updateTitle": "Update Team"
   }
 }

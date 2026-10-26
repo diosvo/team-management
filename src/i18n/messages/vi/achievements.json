@@ -1,24 +1,30 @@
 {
-  "metadata": {
-    "title": "Thành tích",
-    "description": "Những danh hiệu của CLB qua từng năm."
+  "card": {
+    "delete": "Xóa thành tích",
+    "deleting": "Đang xóa thành tích...",
+    "edit": "Sửa thành tích",
+    "standalone": "Danh hiệu độc lập"
+  },
+  "footer": {
+    "highlight": "Đây là hành trình của chúng ta.",
+    "lead": "Không chỉ là chiến thắng."
   },
   "header": {
     "record": "Ghi nhận"
   },
   "hero": {
-    "logoAlt": "Logo đội",
     "heading": "Hành trình của chúng ta. Niềm tự hào của chúng ta.",
-    "yearsActive": "{duration} cùng nhau chơi bóng",
-    "tagline": "Mỗi mùa giải. Mỗi thử thách. Mỗi thành tích."
+    "logoAlt": "Logo đội",
+    "tagline": "Mỗi mùa giải. Mỗi thử thách. Mỗi thành tích.",
+    "yearsActive": "{duration} cùng nhau chơi bóng"
   },
-  "footer": {
-    "lead": "Không chỉ là chiến thắng.",
-    "highlight": "Đây là hành trình của chúng ta."
+  "metadata": {
+    "description": "Những danh hiệu của CLB qua từng năm.",
+    "title": "Thành tích"
   },
   "timeline": {
-    "emptyTitle": "Tủ danh hiệu đang chờ thành tích đầu tiên",
     "emptyDescription": "Ghi nhận thành tích của CLB khi giải đấu kết thúc.",
+    "emptyTitle": "Tủ danh hiệu đang chờ thành tích đầu tiên",
     "foundingQuote": "Một ước mơ. Một đội bóng.",
     "taglines": [
       "Nơi tất cả bắt đầu.",
@@ -30,26 +36,20 @@
       "Cùng nhau mạnh mẽ hơn."
     ]
   },
-  "card": {
-    "standalone": "Danh hiệu độc lập",
-    "deleting": "Đang xóa thành tích...",
-    "edit": "Sửa thành tích",
-    "delete": "Xóa thành tích"
-  },
   "upsert": {
     "addTitle": "Thêm thành tích",
-    "updateTitle": "Cập nhật thành tích",
+    "description": "Mô tả",
+    "descriptionPlaceholder": "Nhận xét...",
+    "leagueHelper": "Để trống nếu là danh hiệu độc lập.",
+    "ppg": "{points} điểm/trận",
     "saving": "Đang lưu thành tích...",
     "savingButton": "Đang lưu...",
-    "type": "Loại",
+    "suggested": "Gợi ý:",
     "title": "Tiêu đề",
     "titlePlaceholder": "Vô địch",
-    "leagueHelper": "Để trống nếu là danh hiệu độc lập.",
+    "type": "Loại",
+    "updateTitle": "Cập nhật thành tích",
     "year": "Năm",
-    "yearHelper": "Lấy theo giải đấu đã chọn.",
-    "suggested": "Gợi ý:",
-    "ppg": "{points} điểm/trận",
-    "description": "Mô tả",
-    "descriptionPlaceholder": "Nhận xét..."
+    "yearHelper": "Lấy theo giải đấu đã chọn."
   }
 }

@@ -1,20 +1,20 @@
 {
+  "error": "Error: {message}",
   "metadata": {
-    "title": "Email Preview",
-    "description": "Static, read-only previews of the transactional email templates."
+    "description": "Static, read-only previews of the transactional email templates.",
+    "title": "Email Preview"
+  },
+  "previewTitle": "Email Preview",
+  "samples": {
+    "analyticsReport": "Analytics Report",
+    "resetPassword": "Reset password"
   },
   "sentTitle": "Sent Emails",
-  "previewTitle": "Email Preview",
-  "error": "Error: {message}",
   "table": {
-    "to": "To",
-    "subject": "Subject",
-    "status": "Status",
     "createdAt": "Created At",
-    "empty": "No emails sent."
-  },
-  "samples": {
-    "resetPassword": "Reset password",
-    "analyticsReport": "Analytics Report"
+    "empty": "No emails sent.",
+    "status": "Status",
+    "subject": "Subject",
+    "to": "To"
   }
 }

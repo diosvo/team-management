@@ -1,156 +1,54 @@
 {
-  "all": "All",
-  "userRole": {
-    "player": "Player",
-    "coach": "Coach",
-    "guest": "Guest",
-    "super_admin": "Super Admin"
-  },
-  "userState": {
-    "active": "Active",
-    "inactive": "Inactive",
-    "temporarily_absent": "Absent",
-    "unknown": "Unknown"
-  },
-  "userStateHint": {
-    "temporarily_absent": "Temporarily Absent"
-  },
-  "coachPosition": {
-    "head_coach": "Head",
-    "assistant_coach": "Assistant",
-    "unknown": "Unknown"
-  },
-  "coachPositionHint": {
-    "head_coach": "Head Coach",
-    "assistant_coach": "Assistant Coach"
-  },
-  "playerPosition": {
-    "point_guard": "PG",
-    "shooting_guard": "SG",
-    "small_forward": "SF",
-    "power_forward": "PF",
-    "center": "C",
-    "unknown": "Unknown"
-  },
-  "playerPositionHint": {
-    "point_guard": "Point Guard",
-    "shooting_guard": "Shooting Guard",
-    "small_forward": "Small Forward",
-    "power_forward": "Power Forward",
-    "center": "Center"
-  },
   "achievementType": {
     "champion": "Champion",
+    "custom": "Custom",
+    "founded": "Team Founded",
+    "mvp": "MVP",
     "runner_up": "Runner-up",
     "third_place": "3rd Place",
-    "mvp": "MVP",
-    "top_scorer": "Top Scorer",
-    "custom": "Custom",
-    "founded": "Team Founded"
+    "top_scorer": "Top Scorer"
   },
   "achievementTypeHint": {
-    "third_place": "Third Place",
+    "custom": "Any other honor",
     "mvp": "Most Valuable Player",
-    "custom": "Any other honor"
+    "third_place": "Third Place"
   },
+  "all": "All",
   "assetCategory": {
     "equipment": "Equipment",
-    "training": "Training",
-    "others": "Others"
+    "others": "Others",
+    "training": "Training"
   },
   "assetCategoryHint": {
     "equipment": "Balls, Backboards, etc",
-    "training": "Cones, Hurdles, Jump ropes, etc",
-    "others": "Uniforms, Jerseys, etc"
+    "others": "Uniforms, Jerseys, etc",
+    "training": "Cones, Hurdles, Jump ropes, etc"
   },
   "assetCondition": {
-    "poor": "Poor",
     "fair": "Fair",
     "good": "Good",
-    "obsolete": "Obsolete"
+    "obsolete": "Obsolete",
+    "poor": "Poor"
   },
   "assetConditionHint": {
-    "poor": "Broken, Damaged",
     "fair": "Usable, Slightly Worn",
     "good": "New, Excellent Condition",
-    "obsolete": "No longer used"
+    "obsolete": "No longer used",
+    "poor": "Broken, Damaged"
   },
   "attendanceStatus": {
-    "on_time": "On Time",
+    "absent": "Absent",
     "late": "Late",
-    "absent": "Absent"
+    "on_time": "On Time"
   },
-  "interval": {
-    "this_month": "This month",
-    "last_month": "Last month",
-    "this_year": "This year",
-    "last_year": "Last year"
+  "coachPosition": {
+    "assistant_coach": "Assistant",
+    "head_coach": "Head",
+    "unknown": "Unknown"
   },
-  "scheduledInterval": {
-    "last_month": "Monthly · last month, on the 1st",
-    "last_year": "Yearly · last year, on 1 January"
-  },
-  "leagueStatus": {
-    "upcoming": "Upcoming",
-    "ongoing": "Ongoing",
-    "ended": "Ended"
-  },
-  "gameType": {
-    "false": "3x3",
-    "true": "5x5"
-  },
-  "matchType": {
-    "league": "League",
-    "friendly": "Friendly"
-  },
-  "matchResult": {
-    "win": "Win",
-    "loss": "Loss",
-    "draw": "Draw"
-  },
-  "matchStatus": {
-    "scheduled": "Scheduled",
-    "completed": "Completed",
-    "cancelled": "Cancelled"
-  },
-  "matchStatusHint": {
-    "scheduled": "Fixture on the calendar, not played yet",
-    "completed": "Played, with a final score",
-    "cancelled": "Called off and never played"
-  },
-  "testTypeUnit": {
-    "meters": "Meters",
-    "percent": "Percent",
-    "points": "Points",
-    "reps": "Reps",
-    "seconds": "Seconds",
-    "times": "Times"
-  },
-  "sessionStatus": {
-    "scheduled": "Scheduled",
-    "active": "Active",
-    "completed": "Completed",
-    "cancelled": "Cancelled"
-  },
-  "reportStatus": {
-    "pending": "Pending",
-    "success": "Success",
-    "failed": "Failed",
-    "expired": "Expired"
-  },
-  "reportTrigger": {
-    "manual": "Manual",
-    "scheduled": "Scheduled"
-  },
-  "feedbackType": {
-    "bug": "Bug",
-    "feature": "Feature",
-    "other": "Other"
-  },
-  "feedbackTypeHint": {
-    "bug": "Something is broken or behaves unexpectedly.",
-    "feature": "A new capability or an improvement to an existing one.",
-    "other": "A question, a typo, or anything else."
+  "coachPositionHint": {
+    "assistant_coach": "Assistant Coach",
+    "head_coach": "Head Coach"
   },
   "emailStatus": {
     "bounced": "Bounced",
@@ -165,5 +63,107 @@
     "scheduled": "Scheduled",
     "sent": "Sent",
     "suppressed": "Suppressed"
+  },
+  "feedbackType": {
+    "bug": "Bug",
+    "feature": "Feature",
+    "other": "Other"
+  },
+  "feedbackTypeHint": {
+    "bug": "Something is broken or behaves unexpectedly.",
+    "feature": "A new capability or an improvement to an existing one.",
+    "other": "A question, a typo, or anything else."
+  },
+  "gameType": {
+    "false": "3x3",
+    "true": "5x5"
+  },
+  "interval": {
+    "last_month": "Last month",
+    "last_year": "Last year",
+    "this_month": "This month",
+    "this_year": "This year"
+  },
+  "leagueStatus": {
+    "ended": "Ended",
+    "ongoing": "Ongoing",
+    "upcoming": "Upcoming"
+  },
+  "matchResult": {
+    "draw": "Draw",
+    "loss": "Loss",
+    "win": "Win"
+  },
+  "matchStatus": {
+    "cancelled": "Cancelled",
+    "completed": "Completed",
+    "scheduled": "Scheduled"
+  },
+  "matchStatusHint": {
+    "cancelled": "Called off and never played",
+    "completed": "Played, with a final score",
+    "scheduled": "Fixture on the calendar, not played yet"
+  },
+  "matchType": {
+    "friendly": "Friendly",
+    "league": "League"
+  },
+  "playerPosition": {
+    "center": "C",
+    "point_guard": "PG",
+    "power_forward": "PF",
+    "shooting_guard": "SG",
+    "small_forward": "SF",
+    "unknown": "Unknown"
+  },
+  "playerPositionHint": {
+    "center": "Center",
+    "point_guard": "Point Guard",
+    "power_forward": "Power Forward",
+    "shooting_guard": "Shooting Guard",
+    "small_forward": "Small Forward"
+  },
+  "reportStatus": {
+    "expired": "Expired",
+    "failed": "Failed",
+    "pending": "Pending",
+    "success": "Success"
+  },
+  "reportTrigger": {
+    "manual": "Manual",
+    "scheduled": "Scheduled"
+  },
+  "scheduledInterval": {
+    "last_month": "Monthly · last month, on the 1st",
+    "last_year": "Yearly · last year, on 1 January"
+  },
+  "sessionStatus": {
+    "active": "Active",
+    "cancelled": "Cancelled",
+    "completed": "Completed",
+    "scheduled": "Scheduled"
+  },
+  "testTypeUnit": {
+    "meters": "Meters",
+    "percent": "Percent",
+    "points": "Points",
+    "reps": "Reps",
+    "seconds": "Seconds",
+    "times": "Times"
+  },
+  "userRole": {
+    "coach": "Coach",
+    "guest": "Guest",
+    "player": "Player",
+    "super_admin": "Super Admin"
+  },
+  "userState": {
+    "active": "Active",
+    "inactive": "Inactive",
+    "temporarily_absent": "Absent",
+    "unknown": "Unknown"
+  },
+  "userStateHint": {
+    "temporarily_absent": "Temporarily Absent"
   }
 }

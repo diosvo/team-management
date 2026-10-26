@@ -1,146 +1,146 @@
 {
-  "dataTable": {
-    "selectAllRows": "Select all rows",
-    "selectRow": "Select row"
-  },
-  "pagination": {
-    "pageText": "{start} - {end} of {count}",
-    "previousPage": "Previous page",
-    "nextPage": "Next page"
-  },
-  "selectionActionBar": {
-    "selected": "{count} selected"
-  },
-  "searchInput": {
-    "placeholder": "Search..."
-  },
-  "searchableSelect": {
-    "label": "Select {entity}",
-    "placeholder": "Type to search",
-    "empty": "No {entity} found.",
-    "maxItems": "You can only select up to {max} items.",
-    "entities": {
-      "players": "players",
-      "player": "player",
-      "leagues": "leagues",
-      "ended_leagues": "league",
-      "locations": "locations",
-      "opponents": "opponents",
-      "types": "types",
-      "recipients": "recipients",
-      "owner": "owner"
-    }
-  },
-  "emptyState": {
-    "description": "Try adjusting your filters"
-  },
   "closeButton": {
     "close": "Close"
   },
-  "passwordInput": {
-    "toggleVisibility": "Toggle password visibility",
-    "low": "Low",
-    "medium": "Medium",
-    "high": "High"
-  },
-  "filters": {
-    "advancedFilters": "Advanced Filters",
-    "resetAll": "Reset all",
-    "clear": "clear"
-  },
-  "playerSelection": {
-    "selectAll": "Select all",
-    "clear": "Clear",
-    "noPlayersSelected": "No players selected",
-    "selectFromList": "Select players from the list above."
-  },
-  "rolePositionSelection": {
-    "role": "Role",
-    "position": "Position"
-  },
-  "stateSelection": {
-    "state": "State"
-  },
-  "locationLink": {
-    "unknown": "Unknown"
-  },
-  "imageUploader": {
-    "upload": "Upload image",
-    "tooLarge": "Image must be smaller than 100 KB",
-    "invalidType": "Only PNG or JPEG images are allowed"
-  },
-  "textEditor": {
-    "characters": "/ {limit} characters",
-    "lastUpdated": "Last updated on {date}",
-    "copy": "Copy",
-    "copied": "Copied",
-    "saveChanges": "Save changes?",
-    "saving": "Saving",
-    "preview": "Preview"
-  },
-  "richTextEditor": {
-    "select": "Select",
-    "fontSize": "Font Size",
-    "bold": "Bold",
-    "italic": "Italic",
-    "underline": "Underline",
-    "strikethrough": "Strikethrough",
-    "code": "Code",
-    "h1": "H1",
-    "h2": "H2",
-    "h3": "H3",
-    "h4": "H4",
-    "bulletList": "Bullet List",
-    "orderedList": "Ordered List",
-    "blockquote": "Blockquote",
-    "horizontalRule": "Horizontal Rule",
-    "link": "Link",
-    "unlink": "Unlink",
-    "undo": "Undo",
-    "redo": "Redo",
-    "enterUrl": "Enter URL",
-    "textColor": "Text Color",
-    "textStyle": "Text Style",
-    "paragraph": "Paragraph",
-    "heading1": "Heading 1",
-    "heading2": "Heading 2",
-    "heading3": "Heading 3",
-    "quote": "Quote",
-    "divider": "Divider"
+  "dataTable": {
+    "selectAllRows": "Select all rows",
+    "selectRow": "Select row"
   },
   "datePicker": {
     "allTime": "All time",
     "clearDates": "Clear dates",
     "clearLabel": "Clear {label}",
     "presets": {
-      "today": "Today",
-      "yesterday": "Yesterday",
-      "tomorrow": "Tomorrow",
-      "this_week": "This week",
-      "last_week": "Last week",
-      "this_month": "This month",
       "last_month": "Last month",
+      "last_week": "Last week",
+      "last_year": "Last year",
+      "this_month": "This month",
+      "this_week": "This week",
       "this_year": "This year",
-      "last_year": "Last year"
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "yesterday": "Yesterday"
     }
+  },
+  "emptyState": {
+    "description": "Try adjusting your filters"
+  },
+  "filters": {
+    "advancedFilters": "Advanced Filters",
+    "clear": "clear",
+    "resetAll": "Reset all"
+  },
+  "imageUploader": {
+    "invalidType": "Only PNG or JPEG images are allowed",
+    "tooLarge": "Image must be smaller than 100 KB",
+    "upload": "Upload image"
+  },
+  "locationLink": {
+    "unknown": "Unknown"
   },
   "pageSkeleton": {
     "statLabel": "Label"
   },
+  "pagination": {
+    "nextPage": "Next page",
+    "pageText": "{start} - {end} of {count}",
+    "previousPage": "Previous page"
+  },
+  "passwordInput": {
+    "high": "High",
+    "low": "Low",
+    "medium": "Medium",
+    "toggleVisibility": "Toggle password visibility"
+  },
+  "playerSelection": {
+    "clear": "Clear",
+    "noPlayersSelected": "No players selected",
+    "selectAll": "Select all",
+    "selectFromList": "Select players from the list above."
+  },
+  "richTextEditor": {
+    "blockquote": "Blockquote",
+    "bold": "Bold",
+    "bulletList": "Bullet List",
+    "code": "Code",
+    "divider": "Divider",
+    "enterUrl": "Enter URL",
+    "fontSize": "Font Size",
+    "h1": "H1",
+    "h2": "H2",
+    "h3": "H3",
+    "h4": "H4",
+    "heading1": "Heading 1",
+    "heading2": "Heading 2",
+    "heading3": "Heading 3",
+    "horizontalRule": "Horizontal Rule",
+    "italic": "Italic",
+    "link": "Link",
+    "orderedList": "Ordered List",
+    "paragraph": "Paragraph",
+    "quote": "Quote",
+    "redo": "Redo",
+    "select": "Select",
+    "strikethrough": "Strikethrough",
+    "textColor": "Text Color",
+    "textStyle": "Text Style",
+    "underline": "Underline",
+    "undo": "Undo",
+    "unlink": "Unlink"
+  },
+  "rolePositionSelection": {
+    "position": "Position",
+    "role": "Role"
+  },
+  "searchableSelect": {
+    "empty": "No {entity} found.",
+    "entities": {
+      "ended_leagues": "league",
+      "leagues": "leagues",
+      "locations": "locations",
+      "opponents": "opponents",
+      "owner": "owner",
+      "player": "player",
+      "players": "players",
+      "recipients": "recipients",
+      "types": "types"
+    },
+    "label": "Select {entity}",
+    "maxItems": "You can only select up to {max} items.",
+    "placeholder": "Type to search"
+  },
+  "searchInput": {
+    "placeholder": "Search..."
+  },
+  "selectionActionBar": {
+    "selected": "{count} selected"
+  },
+  "stateSelection": {
+    "state": "State"
+  },
   "tableState": {
     "deleting": "Deleting {items}...",
-    "partial": "Deleted {deleted} of {items}; {failed} failed.",
-    "success": "Successfully deleted {items}.",
     "entities": {
-      "testType": "{count, plural, one {# test type} other {# test types}}",
       "asset": "{count, plural, one {# asset} other {# assets}}",
       "attendanceRecord": "{count, plural, one {# attendance record} other {# attendance records}}",
-      "user": "{count, plural, one {# user} other {# users}}",
-      "session": "{count, plural, one {# session} other {# sessions}}",
-      "match": "{count, plural, one {# match} other {# matches}}",
       "league": "{count, plural, one {# league} other {# leagues}}",
       "location": "{count, plural, one {# location} other {# locations}}",
-      "team": "{count, plural, one {# team} other {# teams}}"
-    }
+      "match": "{count, plural, one {# match} other {# matches}}",
+      "session": "{count, plural, one {# session} other {# sessions}}",
+      "team": "{count, plural, one {# team} other {# teams}}",
+      "testType": "{count, plural, one {# test type} other {# test types}}",
+      "user": "{count, plural, one {# user} other {# users}}"
+    },
+    "partial": "Deleted {deleted} of {items}; {failed} failed.",
+    "success": "Successfully deleted {items}."
+  },
+  "textEditor": {
+    "characters": "/ {limit} characters",
+    "copied": "Copied",
+    "copy": "Copy",
+    "lastUpdated": "Last updated on {date}",
+    "preview": "Preview",
+    "saveChanges": "Save changes?",
+    "saving": "Saving"
   }
 }

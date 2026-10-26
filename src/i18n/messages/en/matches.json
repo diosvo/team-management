@@ -1,45 +1,45 @@
 {
-  "metadata": {
-    "title": "Matches",
-    "description": "Manage and view team matches information."
+  "filters": {
+    "gameType": "Game Type",
+    "matchType": "Match Type",
+    "status": "Status",
+    "time": "Time"
   },
   "header": {
     "title": "Matches"
   },
-  "stats": {
-    "totalMatches": "Total Matches",
-    "played": "Played",
-    "winStreak": "Win Streak",
-    "avgWinRate": "Avg Win Rate",
-    "avgPointsPerGame": "Avg Points/Game",
-    "gameUnit": "game",
-    "pointsUnit": "pts"
+  "metadata": {
+    "description": "Manage and view team matches information.",
+    "title": "Matches"
   },
-  "filters": {
-    "time": "Time",
-    "gameType": "Game Type",
-    "matchType": "Match Type",
-    "status": "Status"
+  "stats": {
+    "avgPointsPerGame": "Avg Points/Game",
+    "avgWinRate": "Avg Win Rate",
+    "gameUnit": "game",
+    "played": "Played",
+    "pointsUnit": "pts",
+    "totalMatches": "Total Matches",
+    "winStreak": "Win Streak"
   },
   "table": {
-    "opponent": "Opponent",
-    "league": "League",
-    "score": "Score",
-    "result": "Result",
-    "location": "Location",
-    "empty": "No matches found",
-    "deleting": "Deleting matches...",
+    "deletePartial": "Deleted {count} match(es), but some operations failed.",
     "deleteSuccess": "Successfully deleted {count} match(es).",
-    "deletePartial": "Deleted {count} match(es), but some operations failed."
+    "deleting": "Deleting matches...",
+    "empty": "No matches found",
+    "league": "League",
+    "location": "Location",
+    "opponent": "Opponent",
+    "result": "Result",
+    "score": "Score"
   },
   "upsertMatch": {
     "addTitle": "Add match",
-    "updateTitle": "Update match",
+    "lastUpdated": "Last updated on {date}",
     "leagueMatch": "League Match",
     "ourScore": "Our Score",
-    "theirScore": "Their Score",
     "saving": "Saving match information...",
     "savingButton": "Saving...",
-    "lastUpdated": "Last updated on {date}"
+    "theirScore": "Their Score",
+    "updateTitle": "Update match"
   }
 }

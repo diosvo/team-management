@@ -1,33 +1,33 @@
 {
-  "metadata": {
-    "title": "Roster",
-    "description": "View the team roster"
+  "addUser": {
+    "adding": "Adding user to database...",
+    "dob": "DOB",
+    "email": "Email",
+    "fullname": "Fullname",
+    "submit": "Add",
+    "submitting": "Adding...",
+    "title": "Add to Roster",
+    "trigger": "Add"
   },
-  "title": "Team Roster",
   "filters": {
-    "state": "State",
-    "role": "Role"
+    "role": "Role",
+    "state": "State"
+  },
+  "metadata": {
+    "description": "View the team roster",
+    "title": "Roster"
   },
   "table": {
-    "verified": "Verified",
+    "deletePartial": "Deleted {count, plural, one {# user} other {# users}}, but some operations failed.",
+    "deleteSuccess": "Successfully deleted {count, plural, one {# user} other {# users}}.",
+    "email": "Email",
+    "empty": "No users found",
     "jerseyNumber": "No.",
     "name": "Name",
-    "email": "Email",
-    "state": "State",
-    "roles": "Roles",
     "position": "Position",
-    "empty": "No users found",
-    "deletePartial": "Deleted {count, plural, one {# user} other {# users}}, but some operations failed.",
-    "deleteSuccess": "Successfully deleted {count, plural, one {# user} other {# users}}."
+    "roles": "Roles",
+    "state": "State",
+    "verified": "Verified"
   },
-  "addUser": {
-    "trigger": "Add",
-    "title": "Add to Roster",
-    "fullname": "Fullname",
-    "email": "Email",
-    "dob": "DOB",
-    "adding": "Adding user to database...",
-    "submitting": "Adding...",
-    "submit": "Add"
-  }
+  "title": "Team Roster"
 }

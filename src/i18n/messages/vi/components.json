@@ -1,146 +1,146 @@
 {
-  "dataTable": {
-    "selectAllRows": "Chọn tất cả các dòng",
-    "selectRow": "Chọn dòng"
-  },
-  "pagination": {
-    "pageText": "{start} - {end} trên {count}",
-    "previousPage": "Trang trước",
-    "nextPage": "Trang sau"
-  },
-  "selectionActionBar": {
-    "selected": "Đã chọn {count}"
-  },
-  "searchInput": {
-    "placeholder": "Tìm kiếm..."
-  },
-  "searchableSelect": {
-    "label": "Chọn {entity}",
-    "placeholder": "Nhập để tìm kiếm",
-    "empty": "Không tìm thấy {entity}.",
-    "maxItems": "Bạn chỉ có thể chọn tối đa {max} mục.",
-    "entities": {
-      "players": "cầu thủ",
-      "player": "cầu thủ",
-      "leagues": "giải đấu",
-      "ended_leagues": "giải đấu",
-      "locations": "địa điểm",
-      "opponents": "đối thủ",
-      "types": "bài kiểm tra",
-      "recipients": "người nhận",
-      "owner": "người sở hữu"
-    }
-  },
-  "emptyState": {
-    "description": "Hãy thử điều chỉnh bộ lọc"
-  },
   "closeButton": {
     "close": "Đóng"
   },
-  "passwordInput": {
-    "toggleVisibility": "Hiện/ẩn mật khẩu",
-    "low": "Yếu",
-    "medium": "Trung bình",
-    "high": "Mạnh"
-  },
-  "filters": {
-    "advancedFilters": "Bộ lọc nâng cao",
-    "resetAll": "Đặt lại tất cả",
-    "clear": "xóa"
-  },
-  "playerSelection": {
-    "selectAll": "Chọn tất cả",
-    "clear": "Bỏ chọn",
-    "noPlayersSelected": "Chưa chọn cầu thủ nào",
-    "selectFromList": "Chọn cầu thủ từ danh sách phía trên."
-  },
-  "rolePositionSelection": {
-    "role": "Vai trò",
-    "position": "Vị trí"
-  },
-  "stateSelection": {
-    "state": "Trạng thái"
-  },
-  "locationLink": {
-    "unknown": "Không rõ"
-  },
-  "imageUploader": {
-    "upload": "Tải ảnh lên",
-    "tooLarge": "Ảnh phải nhỏ hơn 100 KB",
-    "invalidType": "Chỉ chấp nhận ảnh PNG hoặc JPEG"
-  },
-  "textEditor": {
-    "characters": "/ {limit} ký tự",
-    "lastUpdated": "Cập nhật lần cuối: {date}",
-    "copy": "Sao chép",
-    "copied": "Đã sao chép",
-    "saveChanges": "Lưu thay đổi?",
-    "saving": "Đang lưu",
-    "preview": "Xem trước"
-  },
-  "richTextEditor": {
-    "select": "Chọn",
-    "fontSize": "Cỡ chữ",
-    "bold": "In đậm",
-    "italic": "In nghiêng",
-    "underline": "Gạch chân",
-    "strikethrough": "Gạch ngang",
-    "code": "Mã",
-    "h1": "H1",
-    "h2": "H2",
-    "h3": "H3",
-    "h4": "H4",
-    "bulletList": "Danh sách dấu chấm",
-    "orderedList": "Danh sách đánh số",
-    "blockquote": "Trích dẫn",
-    "horizontalRule": "Đường kẻ ngang",
-    "link": "Chèn liên kết",
-    "unlink": "Gỡ liên kết",
-    "undo": "Hoàn tác",
-    "redo": "Làm lại",
-    "enterUrl": "Nhập URL",
-    "textColor": "Màu chữ",
-    "textStyle": "Kiểu chữ",
-    "paragraph": "Đoạn văn",
-    "heading1": "Tiêu đề 1",
-    "heading2": "Tiêu đề 2",
-    "heading3": "Tiêu đề 3",
-    "quote": "Trích dẫn",
-    "divider": "Đường phân cách"
+  "dataTable": {
+    "selectAllRows": "Chọn tất cả các dòng",
+    "selectRow": "Chọn dòng"
   },
   "datePicker": {
     "allTime": "Mọi thời gian",
     "clearDates": "Xóa ngày",
     "clearLabel": "Xóa {label}",
     "presets": {
-      "today": "Hôm nay",
-      "yesterday": "Hôm qua",
-      "tomorrow": "Ngày mai",
-      "this_week": "Tuần này",
-      "last_week": "Tuần trước",
-      "this_month": "Tháng này",
       "last_month": "Tháng trước",
+      "last_week": "Tuần trước",
+      "last_year": "Năm trước",
+      "this_month": "Tháng này",
+      "this_week": "Tuần này",
       "this_year": "Năm nay",
-      "last_year": "Năm trước"
+      "today": "Hôm nay",
+      "tomorrow": "Ngày mai",
+      "yesterday": "Hôm qua"
     }
+  },
+  "emptyState": {
+    "description": "Hãy thử điều chỉnh bộ lọc"
+  },
+  "filters": {
+    "advancedFilters": "Bộ lọc nâng cao",
+    "clear": "xóa",
+    "resetAll": "Đặt lại tất cả"
+  },
+  "imageUploader": {
+    "invalidType": "Chỉ chấp nhận ảnh PNG hoặc JPEG",
+    "tooLarge": "Ảnh phải nhỏ hơn 100 KB",
+    "upload": "Tải ảnh lên"
+  },
+  "locationLink": {
+    "unknown": "Không rõ"
   },
   "pageSkeleton": {
     "statLabel": "Nhãn"
   },
+  "pagination": {
+    "nextPage": "Trang sau",
+    "pageText": "{start} - {end} trên {count}",
+    "previousPage": "Trang trước"
+  },
+  "passwordInput": {
+    "high": "Mạnh",
+    "low": "Yếu",
+    "medium": "Trung bình",
+    "toggleVisibility": "Hiện/ẩn mật khẩu"
+  },
+  "playerSelection": {
+    "clear": "Bỏ chọn",
+    "noPlayersSelected": "Chưa chọn cầu thủ nào",
+    "selectAll": "Chọn tất cả",
+    "selectFromList": "Chọn cầu thủ từ danh sách phía trên."
+  },
+  "richTextEditor": {
+    "blockquote": "Trích dẫn",
+    "bold": "In đậm",
+    "bulletList": "Danh sách dấu chấm",
+    "code": "Mã",
+    "divider": "Đường phân cách",
+    "enterUrl": "Nhập URL",
+    "fontSize": "Cỡ chữ",
+    "h1": "H1",
+    "h2": "H2",
+    "h3": "H3",
+    "h4": "H4",
+    "heading1": "Tiêu đề 1",
+    "heading2": "Tiêu đề 2",
+    "heading3": "Tiêu đề 3",
+    "horizontalRule": "Đường kẻ ngang",
+    "italic": "In nghiêng",
+    "link": "Chèn liên kết",
+    "orderedList": "Danh sách đánh số",
+    "paragraph": "Đoạn văn",
+    "quote": "Trích dẫn",
+    "redo": "Làm lại",
+    "select": "Chọn",
+    "strikethrough": "Gạch ngang",
+    "textColor": "Màu chữ",
+    "textStyle": "Kiểu chữ",
+    "underline": "Gạch chân",
+    "undo": "Hoàn tác",
+    "unlink": "Gỡ liên kết"
+  },
+  "rolePositionSelection": {
+    "position": "Vị trí",
+    "role": "Vai trò"
+  },
+  "searchableSelect": {
+    "empty": "Không tìm thấy {entity}.",
+    "entities": {
+      "ended_leagues": "giải đấu",
+      "leagues": "giải đấu",
+      "locations": "địa điểm",
+      "opponents": "đối thủ",
+      "owner": "người sở hữu",
+      "player": "cầu thủ",
+      "players": "cầu thủ",
+      "recipients": "người nhận",
+      "types": "bài kiểm tra"
+    },
+    "label": "Chọn {entity}",
+    "maxItems": "Bạn chỉ có thể chọn tối đa {max} mục.",
+    "placeholder": "Nhập để tìm kiếm"
+  },
+  "searchInput": {
+    "placeholder": "Tìm kiếm..."
+  },
+  "selectionActionBar": {
+    "selected": "Đã chọn {count}"
+  },
+  "stateSelection": {
+    "state": "Trạng thái"
+  },
   "tableState": {
     "deleting": "Đang xóa {items}...",
-    "partial": "Đã xóa {deleted}/{items}; {failed} thất bại.",
-    "success": "Đã xóa {items}.",
     "entities": {
-      "testType": "{count} bài kiểm tra",
       "asset": "{count} tài sản",
       "attendanceRecord": "{count} bản ghi điểm danh",
-      "user": "{count} người dùng",
-      "session": "{count} buổi tập",
-      "match": "{count} trận đấu",
       "league": "{count} giải đấu",
       "location": "{count} địa điểm",
-      "team": "{count} đội"
-    }
+      "match": "{count} trận đấu",
+      "session": "{count} buổi tập",
+      "team": "{count} đội",
+      "testType": "{count} bài kiểm tra",
+      "user": "{count} người dùng"
+    },
+    "partial": "Đã xóa {deleted}/{items}; {failed} thất bại.",
+    "success": "Đã xóa {items}."
+  },
+  "textEditor": {
+    "characters": "/ {limit} ký tự",
+    "copied": "Đã sao chép",
+    "copy": "Sao chép",
+    "lastUpdated": "Cập nhật lần cuối: {date}",
+    "preview": "Xem trước",
+    "saveChanges": "Lưu thay đổi?",
+    "saving": "Đang lưu"
   }
 }

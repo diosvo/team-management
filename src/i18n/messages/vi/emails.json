@@ -1,20 +1,20 @@
 {
+  "error": "Lỗi: {message}",
   "metadata": {
-    "title": "Xem trước Email",
-    "description": "Bản xem trước (chỉ đọc) của các mẫu Email hệ thống."
+    "description": "Bản xem trước (chỉ đọc) của các mẫu Email hệ thống.",
+    "title": "Xem trước Email"
+  },
+  "previewTitle": "Xem trước Email",
+  "samples": {
+    "analyticsReport": "Báo cáo thống kê",
+    "resetPassword": "Đặt lại mật khẩu"
   },
   "sentTitle": "Email đã gửi",
-  "previewTitle": "Xem trước Email",
-  "error": "Lỗi: {message}",
   "table": {
-    "to": "Người nhận",
-    "subject": "Tiêu đề",
-    "status": "Trạng thái",
     "createdAt": "Ngày tạo",
-    "empty": "Chưa gửi Email nào."
-  },
-  "samples": {
-    "resetPassword": "Đặt lại mật khẩu",
-    "analyticsReport": "Báo cáo thống kê"
+    "empty": "Chưa gửi Email nào.",
+    "status": "Trạng thái",
+    "subject": "Tiêu đề",
+    "to": "Người nhận"
   }
 }

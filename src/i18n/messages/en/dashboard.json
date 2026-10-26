@@ -1,86 +1,86 @@
 {
-  "metadata": {
-    "title": "Dashboard",
-    "description": "Overview"
+  "absenceReasons": {
+    "description": "Top 5 reasons why players miss training",
+    "empty": "No absence reasons records",
+    "title": "Most Common Absence Reasons",
+    "unknown": "Unknown"
   },
   "analytics": "Analytics",
+  "attendanceRanking": {
+    "description": "Stars of attendance and teammates who need a boost",
+    "empty": "No player attendance records",
+    "needBoost": "Need a Boost",
+    "sessions": "{count, plural, one {# session} other {# sessions}}",
+    "stars": "Attendance Stars",
+    "title": "Player Attendance Rankings"
+  },
+  "attendanceTrend": {
+    "attended": "{attended}/{total} attended",
+    "description": "Overall team attendance percentage",
+    "empty": "No attendance records",
+    "target": "Target ({rate}%)",
+    "title": "Attendance Rate Trend"
+  },
+  "emailReport": {
+    "downloadFailed": "Download failed",
+    "failed": "Email failed",
+    "helper": "The {period} report will be emailed to {count, plural, one {# recipient} other {# recipients}}.",
+    "noRecipients": "No recipients selected. Please select at least one.",
+    "sending": "Sending...",
+    "sent": "Email sent",
+    "sentDescription": "Report emailed to {count, plural, one {# recipient} other {# recipients}}.",
+    "submit": "Generate & Email",
+    "title": "Email Analytics Report",
+    "unknownError": "An unknown error occurred."
+  },
+  "filters": {
+    "download": "Download",
+    "downloadFailed": "Download failed",
+    "exportReport": "Export Report",
+    "generating": "Generating...",
+    "sendTo": "Send To..."
+  },
+  "matchesRate": {
+    "description": "Performance in league vs friendly matches",
+    "empty": "No matches records",
+    "title": "Matches Record",
+    "viewMatches": "View Matches"
+  },
+  "metadata": {
+    "description": "Overview",
+    "title": "Dashboard"
+  },
   "overview": {
-    "title": "Overview",
+    "achievements": "Achievements",
+    "achievementsUnit": "champions, MVP, ...",
+    "activePlayers": "Active Players",
+    "daysRemaining": "days remaining",
     "description": "{duration} of playing together",
     "nextGame": "Next Game",
-    "daysRemaining": "days remaining",
-    "activePlayers": "Active Players",
-    "winRate": "Win Rate",
-    "achievements": "Achievements",
-    "achievementsUnit": "champions, MVP, ..."
+    "title": "Overview",
+    "winRate": "Win Rate"
   },
   "quickActions": {
-    "title": "Quick Actions",
     "description": "Shortcuts to common tasks",
-    "viewSchedule": "View Schedule",
+    "markAttendance": "Mark Attendance",
     "matchResults": "Match Results",
     "myStats": "My Stats",
     "submitLeave": "Submit Leave",
-    "markAttendance": "Mark Attendance"
-  },
-  "upcomingSessions": {
-    "title": "Upcoming Sessions",
-    "description": "Next 3 training sessions",
-    "today": "Today",
-    "emptyTitle": "Nothing here",
-    "emptyDescription": "Upcoming training sessions will be coming soon."
+    "title": "Quick Actions",
+    "viewSchedule": "View Schedule"
   },
   "upcomingMatches": {
-    "title": "Upcoming Matches",
     "description": "Next 3 scheduled games",
-    "today": "Today",
+    "emptyDescription": "Focus on training and get ready for the next game!",
     "emptyTitle": "Nothing here",
-    "emptyDescription": "Focus on training and get ready for the next game!"
+    "title": "Upcoming Matches",
+    "today": "Today"
   },
-  "filters": {
-    "exportReport": "Export Report",
-    "generating": "Generating...",
-    "download": "Download",
-    "sendTo": "Send To...",
-    "downloadFailed": "Download failed"
-  },
-  "emailReport": {
-    "title": "Email Analytics Report",
-    "noRecipients": "No recipients selected. Please select at least one.",
-    "helper": "The {period} report will be emailed to {count, plural, one {# recipient} other {# recipients}}.",
-    "submit": "Generate & Email",
-    "sending": "Sending...",
-    "downloadFailed": "Download failed",
-    "sent": "Email sent",
-    "sentDescription": "Report emailed to {count, plural, one {# recipient} other {# recipients}}.",
-    "failed": "Email failed",
-    "unknownError": "An unknown error occurred."
-  },
-  "matchesRate": {
-    "title": "Matches Record",
-    "description": "Performance in league vs friendly matches",
-    "viewMatches": "View Matches",
-    "empty": "No matches records"
-  },
-  "attendanceTrend": {
-    "title": "Attendance Rate Trend",
-    "description": "Overall team attendance percentage",
-    "empty": "No attendance records",
-    "attended": "{attended}/{total} attended",
-    "target": "Target ({rate}%)"
-  },
-  "attendanceRanking": {
-    "title": "Player Attendance Rankings",
-    "description": "Stars of attendance and teammates who need a boost",
-    "empty": "No player attendance records",
-    "stars": "Attendance Stars",
-    "needBoost": "Need a Boost",
-    "sessions": "{count, plural, one {# session} other {# sessions}}"
-  },
-  "absenceReasons": {
-    "title": "Most Common Absence Reasons",
-    "description": "Top 5 reasons why players miss training",
-    "empty": "No absence reasons records",
-    "unknown": "Unknown"
+  "upcomingSessions": {
+    "description": "Next 3 training sessions",
+    "emptyDescription": "Upcoming training sessions will be coming soon.",
+    "emptyTitle": "Nothing here",
+    "title": "Upcoming Sessions",
+    "today": "Today"
   }
 }

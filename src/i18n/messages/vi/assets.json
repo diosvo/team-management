@@ -1,41 +1,41 @@
 {
-  "metadata": {
-    "title": "Tài sản",
-    "description": "Danh sách tài sản của đội."
-  },
-  "title": "Tài sản",
   "category": "Danh mục",
   "condition": "Tình trạng",
+  "metadata": {
+    "description": "Danh sách tài sản của đội.",
+    "title": "Tài sản"
+  },
   "stats": {
-    "totalQuantity": "Tổng số lượng",
     "needReplacement": "Cần thay mới",
     "outdated": "Ngưng sử dụng",
+    "totalQuantity": "Tổng số lượng",
     "unit": "món"
   },
   "table": {
-    "name": "Tên",
-    "category": "Danh mục",
-    "quantity": "Số lượng",
-    "condition": "Tình trạng",
-    "assignedTo": "Người giữ",
     "acquiredDate": "Ngày nhận",
-    "lastUpdated": "Cập nhật lần cuối",
-    "note": "Ghi chú",
-    "empty": "Không tìm thấy tài sản nào",
+    "assignedTo": "Người giữ",
+    "category": "Danh mục",
+    "condition": "Tình trạng",
     "deleted": "Đã xóa {count} tài sản.",
-    "deletedPartially": "Đã xóa {count} tài sản, nhưng một số thao tác bị lỗi."
+    "deletedPartially": "Đã xóa {count} tài sản, nhưng một số thao tác bị lỗi.",
+    "empty": "Không tìm thấy tài sản nào",
+    "lastUpdated": "Cập nhật lần cuối",
+    "name": "Tên",
+    "note": "Ghi chú",
+    "quantity": "Số lượng"
   },
+  "title": "Tài sản",
   "upsert": {
+    "acquiredDate": "Ngày nhận",
     "addTitle": "Thêm tài sản",
-    "updateTitle": "Cập nhật tài sản",
+    "category": "Danh mục",
+    "condition": "Tình trạng",
     "name": "Tên",
     "namePlaceholder": "Bóng số #",
-    "quantity": "Số lượng",
-    "acquiredDate": "Ngày nhận",
-    "category": "Danh mục",
-    "condition": "Tình trạng",
     "note": "Ghi chú",
+    "quantity": "Số lượng",
     "saving": "Đang lưu...",
-    "savingToast": "Đang lưu tài sản vào kho..."
+    "savingToast": "Đang lưu tài sản vào kho...",
+    "updateTitle": "Cập nhật tài sản"
   }
 }

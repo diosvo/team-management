@@ -1,46 +1,46 @@
 {
-  "metadata": {
-    "title": "Reports",
-    "description": "Scheduled analytics reports and their generation history."
-  },
   "history": {
-    "title": "Report History",
+    "attempts": " ({count} attempts)",
+    "delivery": "Delivery",
+    "download": "Download",
+    "emptyDescription": "Scheduled and manual runs will appear here.",
+    "emptyTitle": "No reports generated yet",
+    "generatedAt": "Generated At",
     "period": "Period",
     "timeDuration": "Time Duration",
-    "delivery": "Delivery",
-    "trigger": "Trigger",
-    "generatedAt": "Generated At",
-    "attempts": " ({count} attempts)",
-    "download": "Download",
-    "emptyTitle": "No reports generated yet",
-    "emptyDescription": "Scheduled and manual runs will appear here."
+    "title": "Report History",
+    "trigger": "Trigger"
+  },
+  "metadata": {
+    "description": "Scheduled analytics reports and their generation history.",
+    "title": "Reports"
   },
   "schedules": {
-    "title": "Report Schedules",
-    "report": "Report",
-    "recipients": "Recipients",
-    "recipientCount": "{count} recipient(s)",
-    "nextRun": "Next Run",
-    "lastRun": "Last Run",
-    "enable": "Enable schedule",
-    "runNow": "Run now",
-    "generating": "Generating report...",
-    "deleting": "Deleting schedules...",
     "allScheduled": "Every report is already scheduled",
-    "newSchedule": "New Schedule",
+    "deleting": "Deleting schedules...",
+    "emptyDescription": "Create a schedule to email analytics reports automatically.",
     "emptyTitle": "No report schedules yet",
-    "emptyDescription": "Create a schedule to email analytics reports automatically."
+    "enable": "Enable schedule",
+    "generating": "Generating report...",
+    "lastRun": "Last Run",
+    "newSchedule": "New Schedule",
+    "nextRun": "Next Run",
+    "recipientCount": "{count} recipient(s)",
+    "recipients": "Recipients",
+    "report": "Report",
+    "runNow": "Run now",
+    "title": "Report Schedules"
   },
   "upsert": {
     "addTitle": "Add Report Schedule",
-    "updateTitle": "Update Report Schedule",
+    "noMembers": "No team members available to select.",
+    "recipients": "Recipients",
+    "remove": "Remove {name}",
     "report": "Report",
     "reportPlaceholder": "Select a report",
-    "timing": "Reports are emailed once the period has closed, in the morning (around 8:00 AM).",
-    "recipients": "Recipients",
-    "noMembers": "No team members available to select.",
-    "remove": "Remove {name}",
     "saving": "Saving report schedule...",
-    "savingButton": "Saving..."
+    "savingButton": "Saving...",
+    "timing": "Reports are emailed once the period has closed, in the morning (around 8:00 AM).",
+    "updateTitle": "Update Report Schedule"
   }
 }

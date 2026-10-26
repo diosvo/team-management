@@ -1,25 +1,25 @@
 {
   "metadata": {
-    "title": "Địa điểm",
-    "description": "Quản lý các địa điểm của bạn."
+    "description": "Quản lý các địa điểm của bạn.",
+    "title": "Địa điểm"
+  },
+  "table": {
+    "address": "Địa chỉ",
+    "deleted": "Đã xóa {count} địa điểm.",
+    "deletedPartially": "Đã xóa {count} địa điểm, nhưng một số thao tác bị lỗi.",
+    "empty": "Không tìm thấy địa điểm nào",
+    "lastUpdated": "Cập nhật lần cuối",
+    "name": "Tên"
   },
   "title": "Địa điểm",
-  "table": {
-    "name": "Tên",
-    "address": "Địa chỉ",
-    "lastUpdated": "Cập nhật lần cuối",
-    "empty": "Không tìm thấy địa điểm nào",
-    "deleted": "Đã xóa {count} địa điểm.",
-    "deletedPartially": "Đã xóa {count} địa điểm, nhưng một số thao tác bị lỗi."
-  },
   "upsert": {
-    "addTitle": "Thêm địa điểm",
-    "updateTitle": "Cập nhật địa điểm",
-    "name": "Tên",
-    "namePlaceholder": "Sân chính",
     "address": "Địa chỉ",
     "addressPlaceholder": "123 Lê Lợi, Quận 1, TP.HCM",
+    "addTitle": "Thêm địa điểm",
+    "name": "Tên",
+    "namePlaceholder": "Sân chính",
     "saving": "Đang lưu...",
-    "savingToast": "Đang lưu thông tin địa điểm..."
+    "savingToast": "Đang lưu thông tin địa điểm...",
+    "updateTitle": "Cập nhật địa điểm"
   }
 }

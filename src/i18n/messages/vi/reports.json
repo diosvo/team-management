@@ -1,46 +1,46 @@
 {
-  "metadata": {
-    "title": "Báo cáo",
-    "description": "Báo cáo phân tích định kỳ và lịch sử tạo báo cáo."
-  },
   "history": {
-    "title": "Lịch sử báo cáo",
+    "attempts": " ({count} lần thử)",
+    "delivery": "Trạng thái gửi",
+    "download": "Tải xuống",
+    "emptyDescription": "Các lần chạy định kỳ và thủ công sẽ hiển thị ở đây.",
+    "emptyTitle": "Chưa có báo cáo nào",
+    "generatedAt": "Thời điểm tạo",
     "period": "Kỳ báo cáo",
     "timeDuration": "Khoảng thời gian",
-    "delivery": "Trạng thái gửi",
-    "trigger": "Kích hoạt",
-    "generatedAt": "Thời điểm tạo",
-    "attempts": " ({count} lần thử)",
-    "download": "Tải xuống",
-    "emptyTitle": "Chưa có báo cáo nào",
-    "emptyDescription": "Các lần chạy định kỳ và thủ công sẽ hiển thị ở đây."
+    "title": "Lịch sử báo cáo",
+    "trigger": "Kích hoạt"
+  },
+  "metadata": {
+    "description": "Báo cáo phân tích định kỳ và lịch sử tạo báo cáo.",
+    "title": "Báo cáo"
   },
   "schedules": {
-    "title": "Lịch gửi báo cáo",
-    "report": "Báo cáo",
-    "recipients": "Người nhận",
-    "recipientCount": "{count} người nhận",
-    "nextRun": "Lần chạy tới",
-    "lastRun": "Lần chạy gần nhất",
-    "enable": "Bật lịch gửi",
-    "runNow": "Chạy ngay",
-    "generating": "Đang tạo báo cáo...",
-    "deleting": "Đang xóa lịch gửi...",
     "allScheduled": "Tất cả báo cáo đã được lên lịch",
-    "newSchedule": "Lịch mới",
+    "deleting": "Đang xóa lịch gửi...",
+    "emptyDescription": "Tạo lịch để tự động gửi báo cáo phân tích qua email.",
     "emptyTitle": "Chưa có lịch gửi báo cáo",
-    "emptyDescription": "Tạo lịch để tự động gửi báo cáo phân tích qua email."
+    "enable": "Bật lịch gửi",
+    "generating": "Đang tạo báo cáo...",
+    "lastRun": "Lần chạy gần nhất",
+    "newSchedule": "Lịch mới",
+    "nextRun": "Lần chạy tới",
+    "recipientCount": "{count} người nhận",
+    "recipients": "Người nhận",
+    "report": "Báo cáo",
+    "runNow": "Chạy ngay",
+    "title": "Lịch gửi báo cáo"
   },
   "upsert": {
     "addTitle": "Thêm lịch gửi báo cáo",
-    "updateTitle": "Cập nhật lịch gửi báo cáo",
+    "noMembers": "Không có thành viên nào để chọn.",
+    "recipients": "Người nhận",
+    "remove": "Xóa {name}",
     "report": "Báo cáo",
     "reportPlaceholder": "Chọn báo cáo",
-    "timing": "Báo cáo được gửi qua email vào buổi sáng (khoảng 8:00) sau khi kỳ báo cáo kết thúc.",
-    "recipients": "Người nhận",
-    "noMembers": "Không có thành viên nào để chọn.",
-    "remove": "Xóa {name}",
     "saving": "Đang lưu lịch gửi báo cáo...",
-    "savingButton": "Đang lưu..."
+    "savingButton": "Đang lưu...",
+    "timing": "Báo cáo được gửi qua email vào buổi sáng (khoảng 8:00) sau khi kỳ báo cáo kết thúc.",
+    "updateTitle": "Cập nhật lịch gửi báo cáo"
   }
 }

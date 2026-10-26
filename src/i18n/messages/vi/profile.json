@@ -1,40 +1,40 @@
 {
-  "metadata": {
-    "title": "Hồ sơ",
-    "description": "Xem và chỉnh sửa thông tin hồ sơ của bạn."
+  "avatar": {
+    "setting": "Đang cập nhật ảnh đại diện..."
   },
-  "title": "Chi tiết hồ sơ",
   "lastUpdated": "Cập nhật lần cuối: {date}",
-  "viewOnly": "Chỉ xem",
+  "metadata": {
+    "description": "Xem và chỉnh sửa thông tin hồ sơ của bạn.",
+    "title": "Hồ sơ"
+  },
   "notFound": {
-    "title": "Không tìm thấy người dùng",
-    "description": "Hồ sơ bạn tìm không tồn tại hoặc đã bị xóa."
+    "description": "Hồ sơ bạn tìm không tồn tại hoặc đã bị xóa.",
+    "title": "Không tìm thấy người dùng"
+  },
+  "personal": {
+    "citizenId": "Số CCCD",
+    "dob": "Ngày sinh",
+    "fullname": "Họ và tên",
+    "namePlaceholder": "Ẩn danh",
+    "phoneNumber": "Số điện thoại",
+    "title": "Thông tin cá nhân",
+    "updating": "Đang cập nhật thông tin cá nhân..."
   },
   "tabs": {
     "overview": "Tổng quan",
     "personal": "Cá nhân",
     "team": "Đội"
   },
-  "avatar": {
-    "setting": "Đang cập nhật ảnh đại diện..."
-  },
-  "personal": {
-    "title": "Thông tin cá nhân",
-    "updating": "Đang cập nhật thông tin cá nhân...",
-    "fullname": "Họ và tên",
-    "namePlaceholder": "Ẩn danh",
-    "dob": "Ngày sinh",
-    "phoneNumber": "Số điện thoại",
-    "citizenId": "Số CCCD"
-  },
   "team": {
-    "title": "Thông tin đội",
-    "updating": "Đang cập nhật thông tin đội...",
-    "role": "Vai trò",
-    "position": "Vị trí",
-    "state": "Trạng thái",
     "jerseyNumber": "Số áo",
     "joinDate": "Ngày gia nhập",
-    "joinedDate": "Ngày gia nhập"
-  }
+    "joinedDate": "Ngày gia nhập",
+    "position": "Vị trí",
+    "role": "Vai trò",
+    "state": "Trạng thái",
+    "title": "Thông tin đội",
+    "updating": "Đang cập nhật thông tin đội..."
+  },
+  "title": "Chi tiết hồ sơ",
+  "viewOnly": "Chỉ xem"
 }

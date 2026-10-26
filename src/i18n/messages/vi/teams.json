@@ -1,27 +1,27 @@
 {
   "metadata": {
-    "title": "Đội",
-    "description": "Quản lý và xem thông tin các đội đối thủ."
+    "description": "Quản lý và xem thông tin các đội đối thủ.",
+    "title": "Đội"
   },
-  "title": "Đội",
   "table": {
-    "name": "Tên",
+    "deleted": "Đã xóa {count} đội.",
+    "deletedPartially": "Đã xóa {count} đội, một số thao tác bị lỗi: {errors}",
     "email": "Email",
+    "empty": "Không tìm thấy đội nào",
     "established": "Năm thành lập",
     "lastUpdated": "Cập nhật lần cuối",
-    "empty": "Không tìm thấy đội nào",
-    "deleted": "Đã xóa {count} đội.",
-    "deletedPartially": "Đã xóa {count} đội, một số thao tác bị lỗi: {errors}"
+    "name": "Tên"
   },
+  "title": "Đội",
   "upsert": {
     "addTitle": "Thêm đội",
-    "updateTitle": "Cập nhật đội",
-    "name": "Tên",
-    "namePlaceholder": "CLB bóng rổ",
     "email": "Email",
     "establishYear": "Năm thành lập",
+    "name": "Tên",
+    "namePlaceholder": "CLB bóng rổ",
     "saving": "Đang lưu...",
     "savingToast": "Đang lưu thông tin đội...",
-    "settingLogo": "Đang cập nhật logo đội..."
+    "settingLogo": "Đang cập nhật logo đội...",
+    "updateTitle": "Cập nhật đội"
   }
 }

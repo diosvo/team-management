@@ -1,40 +1,40 @@
 {
-  "metadata": {
-    "title": "Profile",
-    "description": "View and edit your profile details."
+  "avatar": {
+    "setting": "Setting avatar..."
   },
-  "title": "Profile Details",
   "lastUpdated": "Last updated on {date}",
-  "viewOnly": "View Only",
+  "metadata": {
+    "description": "View and edit your profile details.",
+    "title": "Profile"
+  },
   "notFound": {
-    "title": "User not found",
-    "description": "The profile you are looking for does not exist or has been removed."
+    "description": "The profile you are looking for does not exist or has been removed.",
+    "title": "User not found"
+  },
+  "personal": {
+    "citizenId": "Citizen ID",
+    "dob": "DOB",
+    "fullname": "Fullname",
+    "namePlaceholder": "Anonymous",
+    "phoneNumber": "Phone Number",
+    "title": "Personal Information",
+    "updating": "Updating personal information..."
   },
   "tabs": {
     "overview": "Overview",
     "personal": "Personal",
     "team": "Team"
   },
-  "avatar": {
-    "setting": "Setting avatar..."
-  },
-  "personal": {
-    "title": "Personal Information",
-    "updating": "Updating personal information...",
-    "fullname": "Fullname",
-    "namePlaceholder": "Anonymous",
-    "dob": "DOB",
-    "phoneNumber": "Phone Number",
-    "citizenId": "Citizen ID"
-  },
   "team": {
-    "title": "Team Information",
-    "updating": "Updating team information...",
-    "role": "Role",
-    "position": "Position",
-    "state": "State",
     "jerseyNumber": "Jersey Number",
     "joinDate": "Join Date",
-    "joinedDate": "Joined Date"
-  }
+    "joinedDate": "Joined Date",
+    "position": "Position",
+    "role": "Role",
+    "state": "State",
+    "title": "Team Information",
+    "updating": "Updating team information..."
+  },
+  "title": "Profile Details",
+  "viewOnly": "View Only"
 }

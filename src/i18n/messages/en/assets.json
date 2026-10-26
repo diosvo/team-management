@@ -1,41 +1,41 @@
 {
-  "metadata": {
-    "title": "Assets",
-    "description": "Assets inventory for the team."
-  },
-  "title": "Assets",
   "category": "Category",
   "condition": "Condition",
+  "metadata": {
+    "description": "Assets inventory for the team.",
+    "title": "Assets"
+  },
   "stats": {
-    "totalQuantity": "Total Quantity",
     "needReplacement": "Need Replacement",
     "outdated": "Outdated",
+    "totalQuantity": "Total Quantity",
     "unit": "item"
   },
   "table": {
-    "name": "Name",
-    "category": "Category",
-    "quantity": "Quantity",
-    "condition": "Condition",
-    "assignedTo": "Assigned To",
     "acquiredDate": "Acquired Date",
-    "lastUpdated": "Last Updated",
-    "note": "Note",
-    "empty": "No assets found",
+    "assignedTo": "Assigned To",
+    "category": "Category",
+    "condition": "Condition",
     "deleted": "Successfully deleted {count} asset(s).",
-    "deletedPartially": "Deleted {count} asset(s), but some operations failed."
+    "deletedPartially": "Deleted {count} asset(s), but some operations failed.",
+    "empty": "No assets found",
+    "lastUpdated": "Last Updated",
+    "name": "Name",
+    "note": "Note",
+    "quantity": "Quantity"
   },
+  "title": "Assets",
   "upsert": {
+    "acquiredDate": "Acquired date",
     "addTitle": "Add Item",
-    "updateTitle": "Update Item",
+    "category": "Category",
+    "condition": "Condition",
     "name": "Name",
     "namePlaceholder": "Ball #",
-    "quantity": "Quantity",
-    "acquiredDate": "Acquired date",
-    "category": "Category",
-    "condition": "Condition",
     "note": "Note",
+    "quantity": "Quantity",
     "saving": "Saving...",
-    "savingToast": "Saving item to the asset inventory..."
+    "savingToast": "Saving item to the asset inventory...",
+    "updateTitle": "Update Item"
   }
 }

@@ -1,24 +1,30 @@
 {
-  "metadata": {
-    "title": "Achievements",
-    "description": "The club's honors, year by year."
+  "card": {
+    "delete": "Delete achievement",
+    "deleting": "Deleting achievement...",
+    "edit": "Edit achievement",
+    "standalone": "Standalone honor"
+  },
+  "footer": {
+    "highlight": "This is our journey.",
+    "lead": "More than victories."
   },
   "header": {
     "record": "Record"
   },
   "hero": {
-    "logoAlt": "Team Logo",
     "heading": "Our Journey. Our Pride.",
-    "yearsActive": "{duration} of playing together",
-    "tagline": "Every season. Every challenge. Every achievement."
+    "logoAlt": "Team Logo",
+    "tagline": "Every season. Every challenge. Every achievement.",
+    "yearsActive": "{duration} of playing together"
   },
-  "footer": {
-    "lead": "More than victories.",
-    "highlight": "This is our journey."
+  "metadata": {
+    "description": "The club's honors, year by year.",
+    "title": "Achievements"
   },
   "timeline": {
-    "emptyTitle": "The trophy cabinet awaits its first honor",
     "emptyDescription": "Record the club's achievements once a league has ended.",
+    "emptyTitle": "The trophy cabinet awaits its first honor",
     "foundingQuote": "One dream. One team.",
     "taglines": [
       "Where It All Began.",
@@ -30,26 +36,20 @@
       "Stronger Together."
     ]
   },
-  "card": {
-    "standalone": "Standalone honor",
-    "deleting": "Deleting achievement...",
-    "edit": "Edit achievement",
-    "delete": "Delete achievement"
-  },
   "upsert": {
     "addTitle": "Add Achievement",
-    "updateTitle": "Update Achievement",
+    "description": "Description",
+    "descriptionPlaceholder": "Comment...",
+    "leagueHelper": "Leave empty for a standalone honor.",
+    "ppg": "{points} ppg",
     "saving": "Saving achievement...",
     "savingButton": "Saving...",
-    "type": "Type",
+    "suggested": "Suggested:",
     "title": "Title",
     "titlePlaceholder": "Champion",
-    "leagueHelper": "Leave empty for a standalone honor.",
+    "type": "Type",
+    "updateTitle": "Update Achievement",
     "year": "Year",
-    "yearHelper": "Derived from the selected league.",
-    "suggested": "Suggested:",
-    "ppg": "{points} ppg",
-    "description": "Description",
-    "descriptionPlaceholder": "Comment..."
+    "yearHelper": "Derived from the selected league."
   }
 }
