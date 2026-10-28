@@ -4,12 +4,17 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { SWRConfig } from 'swr';
 import type { Mock } from 'vitest';
 
+import { getLogo } from '@/actions/team';
 import { getAvatar } from '@/actions/user';
 
-import { useUserAvatar } from './use-image';
+import { useTeamLogo, useUserAvatar } from './use-image';
 
 vi.mock('@/actions/user', () => ({
   getAvatar: vi.fn(),
+}));
+
+vi.mock('@/actions/team', () => ({
+  getLogo: vi.fn(),
 }));
 
 /**
@@ -73,5 +78,32 @@ describe('useUserAvatar', () => {
 
     await waitFor(() => expect(result.current.data).toBe('second.png'));
     expect(getAvatar).toHaveBeenCalledTimes(2);
+  });
+});
+
+const renderLogo = (image: Nullable<string>) =>
+  renderHook(() => useTeamLogo(image), { wrapper });
+
+describe('useTeamLogo', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  test('does not fetch when image is null', () => {
+    const { result } = renderLogo(null);
+
+    expect(getLogo).not.toHaveBeenCalled();
+    expect(result.current.data).toBeUndefined();
+  });
+
+  test('fetches and returns the logo for a given image path', async () => {
+    (getLogo as Mock).mockResolvedValue('https://blob/logo.png');
+
+    const { result } = renderLogo('teams/123/logo.png');
+
+    await waitFor(() =>
+      expect(result.current.data).toBe('https://blob/logo.png'),
+    );
+    expect(getLogo).toHaveBeenCalledExactlyOnceWith('teams/123/logo.png');
   });
 });

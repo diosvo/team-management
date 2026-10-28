@@ -5,6 +5,7 @@ import type {
   EditPersonalInfoValues,
   EditTeamInfoValues,
 } from '@/schemas/user';
+import { ESTABLISHED_DATE } from '@/utils/constants';
 import { CoachPosition, PlayerPosition, UserRole } from '@/utils/enum';
 
 import {
@@ -176,6 +177,17 @@ describe('User Actions', () => {
       expect(fetchActivePlayers).toHaveBeenCalledWith(MOCK_TEAM.team_id);
       expect(result).toEqual([MOCK_USER_WITH_PLAYER]);
     });
+
+    test('returns an empty array without querying when the user has no team', async () => {
+      setMockAuthUser({ ...MOCK_USER, team_id: '' });
+
+      const result = await getActivePlayers();
+
+      expect(result).toEqual([]);
+      expect(fetchActivePlayers).not.toHaveBeenCalled();
+
+      resetMockAuthUser();
+    });
   });
 
   describe('getUsers', () => {
@@ -219,6 +231,52 @@ describe('User Actions', () => {
       vi.mocked(getUserById).mockResolvedValue(null);
 
       await expect(getUserProfile('invalid-id')).rejects.toThrow('NOT_FOUND');
+    });
+
+    test('forbids a guest from viewing any profile', async () => {
+      setMockAuthUser({ ...MOCK_USER, role: UserRole.GUEST });
+
+      await expect(getUserProfile(MOCK_USER.id)).rejects.toThrow('FORBIDDEN');
+
+      resetMockAuthUser();
+    });
+
+    test('is view-only when an admin views their own profile', async () => {
+      setMockAuthUser({ ...MOCK_USER, role: UserRole.SUPER_ADMIN });
+      vi.mocked(getUserById).mockResolvedValue({
+        ...MOCK_USER_WITH_PLAYER,
+        id: MOCK_USER.id,
+      });
+
+      const result = await getUserProfile(MOCK_USER.id);
+
+      expect(result.viewOnly).toBe(true);
+
+      resetMockAuthUser();
+    });
+
+    test('is view-only when a player views someone else’s profile', async () => {
+      setMockAuthUser({ ...MOCK_USER, role: UserRole.PLAYER });
+      const otherUser = { ...MOCK_USER_WITH_COACH, id: 'someone-elses-id' };
+      vi.mocked(getUserById).mockResolvedValue(otherUser);
+
+      const result = await getUserProfile(otherUser.id);
+
+      expect(result.viewOnly).toBe(true);
+
+      resetMockAuthUser();
+    });
+
+    test('is view-only when a coach views someone else’s profile', async () => {
+      setMockAuthUser({ ...MOCK_USER, role: UserRole.COACH });
+      const otherUser = { ...MOCK_USER_WITH_COACH, id: 'someone-elses-id' };
+      vi.mocked(getUserById).mockResolvedValue(otherUser);
+
+      const result = await getUserProfile(otherUser.id);
+
+      expect(result.viewOnly).toBe(true);
+
+      resetMockAuthUser();
     });
   });
 
@@ -274,6 +332,28 @@ describe('User Actions', () => {
         success: true,
         message: 'Sent an email with instructions',
       });
+    });
+
+    test('opens the membership from the club founding date when join_date is omitted', async () => {
+      vi.mocked(auth.api.signUpEmail).mockResolvedValue({
+        user: newUser,
+        token: null,
+      });
+      vi.mocked(insertPlayer).mockResolvedValue({
+        ...mockResult,
+        command: 'INSERT',
+      });
+      vi.mocked(auth.api.requestPasswordReset).mockResolvedValue(
+        expect.anything(),
+      );
+
+      await addUser({ ...newPlayerData, join_date: undefined as never });
+
+      expect(insertMembership).toHaveBeenCalledWith(
+        'new-user-id',
+        MOCK_TEAM.team_id,
+        ESTABLISHED_DATE,
+      );
     });
 
     test('adds coach user successfully', async () => {
@@ -338,6 +418,12 @@ describe('User Actions', () => {
       expect(getFile).toHaveBeenCalledWith('users/user-123/avatar.png');
       expect(result).toBe(dataUrl);
     });
+
+    test('rejects paths outside the users/ prefix', async () => {
+      await expect(getAvatar('reports/1.pdf')).rejects.toThrow('FORBIDDEN');
+
+      expect(getFile).not.toHaveBeenCalled();
+    });
   });
 
   describe('uploadAvatar', () => {
@@ -368,6 +454,14 @@ describe('User Actions', () => {
         message: 'Uploaded avatar successfully',
         data: { image: pathname },
       });
+    });
+
+    test('forbids uploading an avatar for another user', async () => {
+      await expect(
+        uploadAvatar('someone-elses-id', null, file),
+      ).rejects.toThrow('FORBIDDEN');
+
+      expect(uploadFile).not.toHaveBeenCalled();
     });
 
     test('deletes the old avatar when it is the one on record', async () => {
@@ -452,6 +546,31 @@ describe('User Actions', () => {
       expect(result.success).toBe(false);
       expect(revalidate.user).not.toHaveBeenCalled();
     });
+
+    test('forbids a non-admin from editing another user’s personal info', async () => {
+      await expect(
+        updatePersonalInfo('someone-elses-id', personalInfoData),
+      ).rejects.toThrow('FORBIDDEN');
+
+      expect(updateDbUser).not.toHaveBeenCalled();
+    });
+
+    test('allows an admin to edit another user’s personal info', async () => {
+      setMockAuthUser({ ...MOCK_USER, role: UserRole.SUPER_ADMIN });
+      vi.mocked(updateDbUser).mockResolvedValue({
+        ...mockResult,
+        command: 'UPDATE',
+      });
+
+      const result = await updatePersonalInfo(
+        'someone-elses-id',
+        personalInfoData,
+      );
+
+      expect(result.success).toBe(true);
+
+      resetMockAuthUser();
+    });
   });
 
   describe('updateTeamInfo', () => {
@@ -501,6 +620,20 @@ describe('User Actions', () => {
       await expect(updateTeamInfo(MOCK_USER.id, escalation)).rejects.toThrow();
 
       expect(updateUserTeamInfo).not.toHaveBeenCalled();
+    });
+
+    test('leaves the membership untouched when join_date is not provided', async () => {
+      asAdmin();
+
+      await updateTeamInfo(MOCK_PLAYER.id, {
+        ...teamInfoData,
+        user: { ...teamInfoData.user, join_date: null },
+      });
+
+      expect(updateUserTeamInfo).toHaveBeenCalledWith(
+        MOCK_PLAYER.id,
+        expect.objectContaining({ membership: undefined }),
+      );
     });
 
     test('updates team info for player successfully', async () => {

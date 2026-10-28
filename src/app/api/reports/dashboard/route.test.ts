@@ -19,17 +19,20 @@ vi.mock('@env', () => ({
 }));
 
 // Minimal Puppeteer page/browser doubles exposing only what the route touches.
+// `evaluate` runs its callback for real against jsdom's `document` (the
+// closest in-process stand-in for the browser page) so the DOM-rewrite logic
+// is actually exercised instead of left as dead code under the mock.
 function createPage() {
+  document.body.innerHTML = '<div id="reports-dashboard"></div>';
+
   return {
     setViewport: vi.fn().mockResolvedValue(undefined),
     goto: vi.fn().mockResolvedValue(undefined),
     waitForSelector: vi.fn().mockResolvedValue(undefined),
     waitForFunction: vi.fn().mockResolvedValue(undefined),
-    // Two evaluate calls: DOM rewrite (undefined) then scrollHeight (number).
-    evaluate: vi
-      .fn()
-      .mockResolvedValueOnce(undefined)
-      .mockResolvedValueOnce(1024),
+    evaluate: vi.fn((fn: (arg?: unknown) => unknown, arg?: unknown) =>
+      Promise.resolve(fn(arg)),
+    ),
     addStyleTag: vi.fn().mockResolvedValue(undefined),
     pdf: vi.fn().mockResolvedValue(Buffer.from('%PDF-1.4 mock')),
   };
@@ -74,6 +77,7 @@ function createRequest(
 describe('POST /api/reports/dashboard', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    document.body.innerHTML = '';
     // Authenticated by default; the 401 case overrides this.
     vi.mocked(verifySession).mockResolvedValue({
       user: { id: 'diosvo' },
@@ -92,6 +96,19 @@ describe('POST /api/reports/dashboard', () => {
     expect(getBrowser).not.toHaveBeenCalled();
   });
 
+  test('returns 400 when the host header is missing', async () => {
+    const request = createRequest();
+    vi.mocked(request.headers.get).mockImplementation(() => null);
+
+    const response = await POST(request);
+
+    expect(response.status).toBe(Status.BAD_REQUEST);
+    await expect(response.json()).resolves.toEqual({
+      error: 'Missing request headers required for report generation',
+    });
+    expect(getBrowser).not.toHaveBeenCalled();
+  });
+
   test('generates a PDF for a valid period', async () => {
     const browser = createBrowser();
     vi.mocked(getBrowser).mockResolvedValue(browser as never);
@@ -99,6 +116,10 @@ describe('POST /api/reports/dashboard', () => {
     const response = await POST(createRequest());
 
     expect(response.status).toBe(Status.OK);
+
+    // The DOM was rewritten into the printable layout.
+    expect(document.getElementById('pdf-wrapper')).toBeTruthy();
+    expect(document.title).toBe('SGR | Analytics Overview Report');
 
     // Renders the referer URL with forwarded cookies scoped to the host.
     expect(browser.setCookie).toHaveBeenCalledWith({
@@ -133,6 +154,30 @@ describe('POST /api/reports/dashboard', () => {
     await expect(response.json()).resolves.toEqual({
       error: 'chromium missing',
     });
+  });
+
+  test('hides the error message outside of development', async () => {
+    vi.doMock('@env', () => ({ default: { NODE_ENV: 'production' } }));
+    vi.resetModules();
+    const { POST: postProd } = await import('./route');
+    const { getBrowser: getBrowserProd } = await import('@/lib/puppeteer');
+    const { verifySession: verifySessionProd } = await import(
+      '@/actions/auth'
+    );
+    vi.mocked(verifySessionProd).mockResolvedValue({
+      user: { id: 'diosvo' },
+    } as never);
+    vi.mocked(getBrowserProd).mockRejectedValue(new Error('chromium missing'));
+
+    const response = await postProd(createRequest());
+
+    expect(response.status).toBe(Status.INTERNAL_SERVER_ERROR);
+    await expect(response.json()).resolves.toEqual({
+      error: 'Unable to generate the report. Please try again later',
+    });
+
+    vi.doUnmock('@env');
+    vi.resetModules();
   });
 
   test('returns 500 when the request body cannot be parsed', async () => {

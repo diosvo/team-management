@@ -39,6 +39,14 @@ export default defineConfig({
         // App wiring & config
         '**/routes.ts',
         '**/providers/**',
+        // Fumadocs-powered docs site: generated/wired content, not app logic
+        'src/app/docs/**',
+        'src/app/llms.txt/**',
+        'src/app/llms-full.txt/**',
+        'src/app/llms.mdx/**',
+        'src/app/api/search/**',
+        // Thin re-export wiring a third-party lib's handler (no logic of ours)
+        'src/app/api/auth/**',
       ],
     },
   },

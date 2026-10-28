@@ -37,4 +37,12 @@ describe('PageSkeleton', () => {
     expect(container.querySelector('.chakra-stat__root')).toBeNull();
     expect(screen.getAllByRole('row')).toHaveLength(6);
   });
+
+  test('renders stat placeholders when the list page has some', () => {
+    const { container } = renderWithUI(
+      <ListPageSkeleton title="Assets" stats={3} />,
+    );
+
+    expect(container.querySelectorAll('.chakra-stat__root')).toHaveLength(3);
+  });
 });

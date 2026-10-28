@@ -13,22 +13,35 @@ import { sendReportEmail } from '@/actions/report';
 import EmailReport from './EmailReport';
 
 const RECIPIENTS = ['alice@example.com', 'bob@example.com'];
+const MOCK_RECIPIENT = { name: 'Alice', email: 'alice@example.com' };
 
 // Drive the recipients field directly instead of exercising the full
 // SearchableSelectField (covered by its own suite); a button toggles the selection.
+// renderItem / itemToString / itemToValue are also invoked so their bodies are covered.
 vi.mock('@/components/SearchableSelect', () => ({
   SearchableSelectField: ({
     control,
     name,
+    renderItem,
+    itemToString,
+    itemToValue,
   }: {
     control: unknown;
     name: string;
+    renderItem: (item: typeof MOCK_RECIPIENT) => React.ReactNode;
+    itemToString: (item: typeof MOCK_RECIPIENT) => string;
+    itemToValue: (item: typeof MOCK_RECIPIENT) => string;
   }) => {
     const { field } = useController({ control: control as never, name });
     return (
-      <button type="button" onClick={() => field.onChange(RECIPIENTS)}>
-        Select recipients
-      </button>
+      <>
+        {renderItem(MOCK_RECIPIENT)}
+        {itemToString(MOCK_RECIPIENT)}
+        {itemToValue(MOCK_RECIPIENT)}
+        <button type="button" onClick={() => field.onChange(RECIPIENTS)}>
+          Select recipients
+        </button>
+      </>
     );
   },
 }));
@@ -193,5 +206,56 @@ describe('EmailReport', () => {
 
     expect(mockToaster.success).not.toHaveBeenCalled();
     expect(mockOnOpenChange).not.toHaveBeenCalled();
+  });
+
+  test('shows the unknown error message when a non-Error is thrown', async () => {
+    mockPdfResponse();
+    mockSendReportEmail.mockRejectedValue('unexpected');
+
+    const { user } = setup();
+
+    await selectRecipients(user);
+    await user.click(
+      await screen.findByRole('button', { name: /Generate & Email/i }),
+    );
+
+    await waitFor(() => {
+      expect(mockToaster.error).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: 'Email failed',
+          description: 'An unknown error occurred.',
+        }),
+      );
+    });
+  });
+
+  test('calls onOpenChange with false when the close button is clicked', async () => {
+    const { user } = setup();
+
+    await screen.findByText('Email Analytics Report');
+    await user.click(screen.getByRole('button', { name: 'Close' }));
+
+    expect(mockOnOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  test('resets the form when the dialog exits', async () => {
+    const { rerender } = setup();
+
+    await screen.findByText('Email Analytics Report');
+
+    rerender(
+      <EmailReport
+        open={false}
+        range={range}
+        filename={filename}
+        onOpenChange={mockOnOpenChange}
+      />,
+    );
+
+    await waitFor(() =>
+      expect(
+        screen.queryByText('Email Analytics Report'),
+      ).not.toBeInTheDocument(),
+    );
   });
 });

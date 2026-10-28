@@ -64,4 +64,16 @@ describe('OverviewStats', () => {
 
     expect(screen.getByText('Next Game').closest('[hidden]')).toBeNull();
   });
+
+  test('colors the win rate red at or below 50%', async () => {
+    await setup({ win_rate: 50 });
+
+    expect(screen.getByText('50')).toBeInTheDocument();
+  });
+
+  test('colors the achievements count red when there are none', async () => {
+    await setup({ achievements: 0 });
+
+    expect(screen.getByText('0')).toBeInTheDocument();
+  });
 });

@@ -153,6 +153,8 @@ export const UpsertReportSchedule = createOverlay<UpsertProps>(
     );
 
     const onSubmit = () => {
+      // The submit button is disabled whenever `!parsed.success`; this just
+      // narrows the type for `parsed.data` below.
       if (!parsed.success) return;
 
       const id = toaster.create({

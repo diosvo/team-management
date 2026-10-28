@@ -19,6 +19,17 @@ describe('AnalyticsReport', () => {
     expect(html).toContain('Click the attachment link to open or download it.');
   });
 
+  test('links to the download URL when provided', () => {
+    const html = AnalyticsReport({
+      period: PERIOD,
+      downloadUrl: 'https://sgr-portal.vercel.app/api/reports/download?id=1',
+    });
+
+    expect(html).toContain(
+      '<a href="https://sgr-portal.vercel.app/api/reports/download?id=1">Open or download the report</a> (sign-in required).',
+    );
+  });
+
   test('wraps the body in the shared email layout', () => {
     const html = AnalyticsReport({ period: PERIOD });
 

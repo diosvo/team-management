@@ -181,6 +181,40 @@ describe('executeSchedule', () => {
     );
   });
 
+  test('falls back to a null resend id when the send response has no data', async () => {
+    vi.mocked(sendEmail).mockResolvedValue({ data: null } as never);
+
+    const result = await executeSchedule(options);
+
+    expect(result.outcome).toBe('sent');
+    expect(completeReportRun).toHaveBeenCalledWith(
+      'report-1',
+      expect.objectContaining({ resend_email_id: null }),
+      'schedule-1',
+      expect.anything(),
+    );
+  });
+
+  test('generates and stores the report without emailing when there are no recipients', async () => {
+    const result = await executeSchedule({
+      ...options,
+      schedule: { ...schedule, recipients: [] },
+    });
+
+    expect(result).toEqual({
+      schedule_id: 'schedule-1',
+      outcome: 'sent',
+      report_id: 'report-1',
+    });
+    expect(sendEmail).not.toHaveBeenCalled();
+    expect(completeReportRun).toHaveBeenCalledWith(
+      'report-1',
+      expect.objectContaining({ resend_email_id: null }),
+      'schedule-1',
+      expect.anything(),
+    );
+  });
+
   test('skips an occurrence that is already running', async () => {
     vi.mocked(insertReportHistory).mockRejectedValue(new Error('duplicate'));
     vi.mocked(isUniqueViolation).mockReturnValue(true);
@@ -194,6 +228,20 @@ describe('executeSchedule', () => {
     });
     expect(renderReportPdf).not.toHaveBeenCalled();
     expect(completeReportRun).not.toHaveBeenCalled();
+  });
+
+  test('skips the occurrence when reclaiming the stale run itself fails', async () => {
+    vi.mocked(insertReportHistory).mockRejectedValue(new Error('duplicate'));
+    vi.mocked(isUniqueViolation).mockReturnValue(true);
+    vi.mocked(reclaimStaleReportRun).mockRejectedValue(new Error('db error'));
+
+    const result = await executeSchedule(options);
+
+    expect(result).toEqual({
+      schedule_id: 'schedule-1',
+      outcome: 'skipped_duplicate',
+    });
+    expect(renderReportPdf).not.toHaveBeenCalled();
   });
 
   test('takes over a stale pending run and reuses its stored PDF', async () => {
@@ -280,6 +328,38 @@ describe('executeSchedule', () => {
         subject: 'Scheduled Report Failed',
       }),
     );
+  });
+
+  test('does not notify when there are no default recipients', async () => {
+    vi.mocked(sendEmail).mockImplementation(async ({ subject }) => {
+      if (subject === 'Analytics Overview Report') {
+        throw new Error('resend down');
+      }
+      return { data: { id: 'email-2' } } as never;
+    });
+    vi.mocked(fetchDefaultRecipientEmails).mockResolvedValue([]);
+
+    await executeSchedule(options);
+
+    expect(sendEmail).not.toHaveBeenCalledWith(
+      expect.objectContaining({ subject: 'Scheduled Report Failed' }),
+    );
+  });
+
+  test('stringifies a non-Error failure', async () => {
+    vi.mocked(renderReportPdf).mockRejectedValue('plain string failure');
+
+    const result = await executeSchedule({
+      ...options,
+      trigger: ReportTrigger.MANUAL,
+    });
+
+    expect(result).toEqual({
+      schedule_id: 'schedule-1',
+      outcome: 'failed',
+      report_id: 'report-1',
+      error: 'plain string failure',
+    });
   });
 
   test('leaves expires_at empty when no PDF was stored', async () => {

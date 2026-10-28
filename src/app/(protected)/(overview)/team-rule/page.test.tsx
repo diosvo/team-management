@@ -2,7 +2,7 @@ import { renderWithUI, screen } from '@/test/utilities';
 
 import { getRule } from '@/actions/rule';
 
-import TeamRulePage from './page';
+import TeamRulePage, { generateMetadata } from './page';
 
 vi.mock('@/actions/rule', () => ({
   getRule: vi.fn(),
@@ -25,6 +25,12 @@ describe('TeamRulePage', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  test('exposes page metadata', async () => {
+    const metadata = await generateMetadata();
+
+    expect(metadata.title).toBe('Rule');
   });
 
   test('renders RuleEditor', async () => {

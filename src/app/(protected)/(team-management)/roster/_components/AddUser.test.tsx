@@ -81,4 +81,43 @@ describe('AddUser', () => {
       expect(mockAddUser).not.toHaveBeenCalled();
     });
   });
+
+  test('submits the form once the required fields are valid', async () => {
+    mockAddUser.mockResolvedValue({ success: true, message: 'Added' });
+
+    const { user } = await openDialog();
+
+    await user.type(screen.getByLabelText(/fullname/i), 'Dios Vo');
+    await user.type(screen.getByLabelText(/email/i), 'dios@example.com');
+
+    const submit = await screen.findByRole('button', { name: /^Add$/ });
+    await waitFor(() => expect(submit).toBeEnabled());
+    await user.click(submit);
+
+    await waitFor(() => {
+      expect(mockAddUser).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: 'Dios Vo',
+          email: 'dios@example.com',
+        }),
+      );
+    });
+  });
+
+  test('shows an error toast and keeps the form when submission fails', async () => {
+    mockAddUser.mockResolvedValue({ success: false, message: 'Email taken' });
+
+    const { user } = await openDialog();
+
+    await user.type(screen.getByLabelText(/fullname/i), 'Dios Vo');
+    await user.type(screen.getByLabelText(/email/i), 'dios@example.com');
+
+    const submit = await screen.findByRole('button', { name: /^Add$/ });
+    await waitFor(() => expect(submit).toBeEnabled());
+    await user.click(submit);
+
+    await waitFor(() => expect(mockAddUser).toHaveBeenCalled());
+    // The dialog stays open with the entered values on failure.
+    expect(screen.getByLabelText(/fullname/i)).toHaveValue('Dios Vo');
+  });
 });

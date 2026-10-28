@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { getDefaults } from './zod';
+import { getDefaults, onError } from './zod';
 
 describe('getDefaults', () => {
   test('returns defaults from schema with default values', () => {
@@ -136,5 +136,31 @@ describe('getDefaults', () => {
       disabled: false,
       empty: '',
     });
+  });
+});
+
+describe('onError', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.restoreAllMocks();
+  });
+
+  test('logs the errors in development', () => {
+    vi.stubEnv('NODE_ENV', 'development');
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const errors = { name: { type: 'required', message: 'Required' } };
+
+    onError(errors as never);
+
+    expect(errorSpy).toHaveBeenCalledWith('[zod validation]:', errors);
+  });
+
+  test('does not log outside of development', () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    onError({} as never);
+
+    expect(errorSpy).not.toHaveBeenCalled();
   });
 });

@@ -7,7 +7,7 @@ import {
   updateTeam,
 } from '@/db/team';
 
-import { deleteFile, uploadFile } from '@/lib/blob';
+import { deleteFile, getFile, uploadFile } from '@/lib/blob';
 
 import { revalidate } from '@/actions/cache';
 import type { UpsertTeamSchemaValues } from '@/schemas/team';
@@ -19,7 +19,7 @@ import {
 } from '@/test/mocks/auth';
 import { MOCK_AWAY_TEAM } from '@/test/mocks/team';
 
-import { getTeams, removeTeam, uploadLogo, upsertTeam } from './team';
+import { getLogo, getTeams, removeTeam, uploadLogo, upsertTeam } from './team';
 
 vi.mock('./auth', () => ({
   withAuth: mockWithAuth,
@@ -41,6 +41,7 @@ vi.mock('@/db/match', () => ({
 vi.mock('@/lib/blob', () => ({
   uploadFile: vi.fn(),
   deleteFile: vi.fn(),
+  getFile: vi.fn(),
 }));
 
 vi.mock('@/db/pg-error', () => ({
@@ -193,6 +194,35 @@ describe('Team Actions', () => {
 
       expect(deleteFile).not.toHaveBeenCalled();
       expect(result.success).toBe(true);
+    });
+
+    test('returns an error when the upload fails', async () => {
+      vi.mocked(uploadFile).mockRejectedValue(new Error('upload failed'));
+      vi.mocked(getDbErrorMessage).mockReturnValueOnce({
+        message: 'db error',
+      } as never);
+
+      const result = await uploadLogo(MOCK_AWAY_TEAM.team_id, null, file);
+
+      expect(result).toEqual({ success: false, message: 'db error' });
+    });
+  });
+
+  describe('getLogo', () => {
+    test('returns null when there is no image', async () => {
+      const result = await getLogo(undefined);
+
+      expect(result).toBeNull();
+      expect(getFile).not.toHaveBeenCalled();
+    });
+
+    test('returns the fetched file for the given image', async () => {
+      vi.mocked(getFile).mockResolvedValue('data:image/png;base64,abc');
+
+      const result = await getLogo('teams/hcm.png');
+
+      expect(getFile).toHaveBeenCalledWith('teams/hcm.png');
+      expect(result).toBe('data:image/png;base64,abc');
     });
   });
 

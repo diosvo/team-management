@@ -4,7 +4,7 @@ import { renderWithUI, screen, setupTestLifecycle } from '@/test/utilities';
 import { getReportHistory, getReportSchedules } from '@/actions/report';
 import type { ReportHistory, ReportSchedule } from '@/drizzle/schema';
 
-import ReportsPage from './page';
+import ReportsPage, { generateMetadata } from './page';
 
 vi.mock('@/actions/report', () => ({
   getReportSchedules: vi.fn(),
@@ -49,6 +49,12 @@ describe('ReportsPage', () => {
   };
 
   setupTestLifecycle();
+
+  test('exposes page metadata', async () => {
+    const metadata = await generateMetadata();
+
+    expect(metadata.title).toBe('Reports');
+  });
 
   test('renders the schedules and history sections', async () => {
     await setup();

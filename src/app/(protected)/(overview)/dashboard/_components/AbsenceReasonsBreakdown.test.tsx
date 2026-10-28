@@ -2,7 +2,10 @@ import { MOCK_ABSENCE_REASONS } from '@/test/mocks/analytics';
 import { renderWithUI, screen } from '@/test/utilities';
 
 import type { AbsenceReason } from '@/types/analytics';
-import AbsenceReasonsBreakdown from './AbsenceReasonsBreakdown';
+import AbsenceReasonsBreakdown, {
+  formatSliceLabel,
+  ReasonSector,
+} from './AbsenceReasonsBreakdown';
 
 describe('AbsenceReasonsBreakdown', () => {
   const setup = (reasons: Array<AbsenceReason>) =>
@@ -29,5 +32,40 @@ describe('AbsenceReasonsBreakdown', () => {
     expect(
       screen.queryByText('No absence reasons records'),
     ).not.toBeInTheDocument();
+  });
+});
+
+describe('formatSliceLabel', () => {
+  test('localizes the "Unknown" reason name', () => {
+    expect(formatSliceLabel('Unknown', 3, 'Unknown reason')).toBe(
+      'Unknown reason: 3',
+    );
+  });
+
+  test('uses the reason name as-is otherwise', () => {
+    expect(formatSliceLabel('Injury', 5, 'Unknown reason')).toBe('Injury: 5');
+  });
+});
+
+describe('ReasonSector', () => {
+  test('fills the slice with the reason’s own color', () => {
+    const { container } = renderWithUI(
+      <svg>
+        <ReasonSector
+          cx={50}
+          cy={50}
+          innerRadius={10}
+          outerRadius={40}
+          startAngle={0}
+          endAngle={180}
+          payload={{ color: '#123456' }}
+        />
+      </svg>,
+    );
+
+    expect(container.querySelector('path')).toHaveAttribute(
+      'fill',
+      '#123456',
+    );
   });
 });

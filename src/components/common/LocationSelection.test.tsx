@@ -9,7 +9,7 @@ import {
 import { useForm } from 'react-hook-form';
 
 import { getLocations } from '@/actions/location';
-import LocationSelection from './LocationSelection';
+import LocationSelection, { LocationLink } from './LocationSelection';
 
 vi.mock('@/actions/location', () => ({
   getLocations: vi.fn(),
@@ -123,5 +123,44 @@ describe('LocationSelection', () => {
   test('is disabled when isDisabled is true', async () => {
     const { placeholder } = await setup({ isDisabled: true });
     expect(placeholder).toBeDisabled();
+  });
+});
+
+describe('LocationLink', () => {
+  test('renders a fallback when there is no name', () => {
+    renderWithUI(<LocationLink name={null} />);
+
+    expect(screen.getByText('Unknown')).toBeInTheDocument();
+  });
+
+  test('links to a Google Maps search for the location name', () => {
+    renderWithUI(<LocationLink name="Court A" />);
+
+    const link = screen.getByRole('link', { name: 'Court A' });
+    expect(link).toHaveAttribute(
+      'href',
+      'https://www.google.com/maps/search/?api=1&query=Court%20A',
+    );
+    expect(link).toHaveAttribute('target', '_blank');
+  });
+
+  test('renders custom children instead of the name', () => {
+    renderWithUI(<LocationLink name="Court A">Custom label</LocationLink>);
+
+    expect(screen.getByText('Custom label')).toBeInTheDocument();
+  });
+
+  test('does not propagate the click to an ancestor row', async () => {
+    const onRowClick = vi.fn();
+    const { user } = renderWithUI(
+      // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
+      <div onClick={onRowClick}>
+        <LocationLink name="Court A" />
+      </div>,
+    );
+
+    await user.click(screen.getByRole('link', { name: 'Court A' }));
+
+    expect(onRowClick).not.toHaveBeenCalled();
   });
 });

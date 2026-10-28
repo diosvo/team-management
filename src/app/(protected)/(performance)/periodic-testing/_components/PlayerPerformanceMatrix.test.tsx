@@ -193,6 +193,33 @@ describe('PlayerPerformanceMatrix', () => {
     expect(mockDelete).not.toHaveBeenCalled();
   });
 
+  test('adopts a revalidated server value for an uncommitted cell', () => {
+    const { rerender } = setup();
+
+    expect(screen.getByText(FIRST_RESULT)).toBeInTheDocument();
+
+    const updatedResult: TestResult = {
+      ...MOCK_TEST_RESULT_RESPONSE,
+      players: [
+        {
+          ...MOCK_TEST_RESULT_RESPONSE.players[0],
+          tests: {
+            [MOCK_TEST_TYPE.name]: {
+              result_id: MOCK_TEST_RESULT.result_id,
+              result: '9.900',
+            },
+          },
+        },
+        MOCK_TEST_RESULT_RESPONSE.players[1],
+      ],
+    };
+
+    rerender(<PlayerPerformanceMatrix result={updatedResult} />);
+
+    expect(screen.getByText('9.900')).toBeInTheDocument();
+    expect(screen.queryByText(FIRST_RESULT)).not.toBeInTheDocument();
+  });
+
   test('does not allow editing without the edit permission', async () => {
     const { user } = setup({ canEdit: false });
 

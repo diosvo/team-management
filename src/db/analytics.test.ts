@@ -1,7 +1,7 @@
 import { and, asc, eq } from 'drizzle-orm';
 
 import db from '@/drizzle';
-import { MatchTable } from '@/drizzle/schema';
+import { MatchTable, TrainingSessionTable } from '@/drizzle/schema';
 import { AttendanceTable } from '@/drizzle/schema/attendance';
 
 import { mockSelectFailure, mockSelectSuccess } from '@/test/db-operations';
@@ -17,11 +17,12 @@ import {
 } from '@/test/mocks/analytics';
 import { MOCK_TEAM } from '@/test/mocks/team';
 
-import { MatchStatus } from '@/utils/enum';
+import { MatchStatus, SessionStatus } from '@/utils/enum';
 
 import {
   getMostCommonAbsenceReasons,
   getUpcomingMatches,
+  getUpcomingSessions,
   getPlayersAttendanceSummary,
   getTeamAttendanceHistory,
 } from './analytics';
@@ -34,6 +35,9 @@ vi.mock('@/drizzle', () => ({
       MatchTable: {
         findMany: vi.fn(),
       },
+      TrainingSessionTable: {
+        findMany: vi.fn(),
+      },
     },
   },
 }));
@@ -44,6 +48,12 @@ vi.mock('@/drizzle/schema', () => ({
     status: 'status',
     date: 'date',
     time: 'time',
+  },
+  TrainingSessionTable: {
+    team_id: 'team_id',
+    status: 'status',
+    date: 'date',
+    start_time: 'start_time',
   },
   UserTable: {
     id: 'id',
@@ -98,6 +108,46 @@ describe('getUpcomingMatches', () => {
     );
 
     await expect(getUpcomingMatches(MOCK_TEAM.team_id)).resolves.toEqual([]);
+  });
+});
+
+describe('getUpcomingSessions', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  test('reads the next three scheduled sessions from today on', async () => {
+    const upcoming = [{ session_id: 'session-1' }];
+    vi.mocked(db.query.TrainingSessionTable.findMany).mockResolvedValue(
+      upcoming as never,
+    );
+
+    await expect(getUpcomingSessions(MOCK_TEAM.team_id)).resolves.toEqual(
+      upcoming,
+    );
+
+    expect(db.query.TrainingSessionTable.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: and(
+          eq(TrainingSessionTable.team_id, MOCK_TEAM.team_id),
+          eq(TrainingSessionTable.status, SessionStatus.SCHEDULED),
+          fromNow(TrainingSessionTable.date),
+        ),
+        orderBy: [
+          asc(TrainingSessionTable.date),
+          asc(TrainingSessionTable.start_time),
+        ],
+        limit: 3,
+      }),
+    );
+  });
+
+  test('returns an empty list when the query fails', async () => {
+    vi.mocked(db.query.TrainingSessionTable.findMany).mockRejectedValue(
+      new Error('Query failed'),
+    );
+
+    await expect(getUpcomingSessions(MOCK_TEAM.team_id)).resolves.toEqual([]);
   });
 });
 
@@ -160,9 +210,16 @@ describe('getPlayersAttendanceSummary', () => {
   });
 
   test('returns players attendance summary when database query succeeds', async () => {
-    const { mockFrom, mockInnerJoin, mockWhereWithGroupBy, mockGroupBy } =
-      mockSelectSuccess(MOCK_PLAYERS_ATTENDANCE_SUMMARY.top_performers);
-    mockSelectSuccess(MOCK_PLAYERS_ATTENDANCE_SUMMARY.need_attention);
+    const {
+      mockFrom,
+      mockInnerJoin,
+      mockWhereWithGroupBy,
+      mockGroupBy,
+      mockHaving: mockTopHaving,
+    } = mockSelectSuccess(MOCK_PLAYERS_ATTENDANCE_SUMMARY.top_performers);
+    const { mockHaving: mockNeedAttentionHaving } = mockSelectSuccess(
+      MOCK_PLAYERS_ATTENDANCE_SUMMARY.need_attention,
+    );
 
     const result = await getPlayersAttendanceSummary(
       MOCK_TEAM.team_id,
@@ -176,6 +233,21 @@ describe('getPlayersAttendanceSummary', () => {
     expect(mockInnerJoin).toHaveBeenCalled();
     expect(mockWhereWithGroupBy).toHaveBeenCalled();
     expect(mockGroupBy).toHaveBeenCalled();
+
+    // The `having` predicates passed to drizzle aren't invoked by the mock
+    // chain, so call them directly to cover their bodies.
+    const [topHaving] = mockTopHaving.mock.calls[0];
+    expect(topHaving({ attendance_rate: 80 } as never)).toEqual({
+      field: 80,
+      value: 80,
+      type: 'gte',
+    });
+    const [needAttentionHaving] = mockNeedAttentionHaving.mock.calls[0];
+    expect(needAttentionHaving({ attendance_rate: 40 } as never)).toEqual({
+      field: 40,
+      value: 50,
+      type: 'lt',
+    });
   });
 
   test('filters top performers correctly (attendance_rate >= 80)', async () => {

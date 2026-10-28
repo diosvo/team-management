@@ -1,11 +1,13 @@
 import { headers } from 'next/headers';
-import { redirect, RedirectType } from 'next/navigation';
+import { forbidden, redirect, RedirectType } from 'next/navigation';
 
 import auth from '@/lib/auth';
 import { LOGIN_PATH } from '@/routes';
 import { MOCK_PLAYER, MOCK_USER } from '@/test/mocks/user';
 
-import { verifySession, withAuth } from './auth';
+import { UserRole } from '@/utils/enum';
+
+import { verifySession, withAuth, withResource } from './auth';
 
 type MockHeaders = Awaited<ReturnType<typeof headers>>;
 export type Session = typeof auth.$Infer.Session;
@@ -174,6 +176,90 @@ describe('Auth Actions', () => {
 
       await expect(wrappedAction()).rejects.toThrow('Session fetch failed');
       expect(mockServerAction).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('withResource', () => {
+    const roster = withResource('roster');
+
+    test('calls the server action when the user has every required permission', async () => {
+      const mockSession = {
+        ...createMockSession(),
+        user: { ...MOCK_USER, role: UserRole.SUPER_ADMIN },
+      };
+      vi.mocked(headers).mockResolvedValue({} as MockHeaders);
+      vi.mocked(auth.api.getSession).mockResolvedValue(mockSession as never);
+
+      const mockServerAction = vi.fn().mockResolvedValue('ok');
+      const action = roster(['create', 'edit'], mockServerAction);
+
+      const result = await action();
+
+      expect(mockServerAction).toHaveBeenCalledWith(
+        mockSession.user,
+      );
+      expect(result).toBe('ok');
+      expect(forbidden).not.toHaveBeenCalled();
+    });
+
+    test('accepts a single action shorthand', async () => {
+      const mockSession = {
+        ...createMockSession(),
+        user: { ...MOCK_USER, role: UserRole.SUPER_ADMIN },
+      };
+      vi.mocked(headers).mockResolvedValue({} as MockHeaders);
+      vi.mocked(auth.api.getSession).mockResolvedValue(mockSession as never);
+
+      const mockServerAction = vi.fn().mockResolvedValue('ok');
+      const action = roster('view', mockServerAction);
+
+      await action();
+
+      expect(mockServerAction).toHaveBeenCalled();
+    });
+
+    test('calls forbidden when the user lacks a required permission', async () => {
+      const mockSession = {
+        ...createMockSession(),
+        user: { ...MOCK_USER, role: UserRole.GUEST },
+      };
+      vi.mocked(headers).mockResolvedValue({} as MockHeaders);
+      vi.mocked(auth.api.getSession).mockResolvedValue(mockSession as never);
+
+      const mockServerAction = vi.fn();
+      const action = roster(['create'], mockServerAction);
+
+      await expect(action()).rejects.toThrow('FORBIDDEN');
+
+      expect(forbidden).toHaveBeenCalled();
+      expect(mockServerAction).not.toHaveBeenCalled();
+    });
+
+    test('redirects to login before checking permissions when unauthenticated', async () => {
+      vi.mocked(headers).mockResolvedValue({} as MockHeaders);
+      vi.mocked(auth.api.getSession).mockResolvedValue(null);
+
+      const mockServerAction = vi.fn();
+      const action = roster('view', mockServerAction);
+
+      await expect(action()).rejects.toThrow('NEXT_REDIRECT');
+
+      expect(redirect).toHaveBeenCalledWith(LOGIN_PATH, RedirectType.replace);
+      expect(mockServerAction).not.toHaveBeenCalled();
+    });
+
+    test('defaults is_captain to false when missing from the session user', async () => {
+      const mockSession = {
+        ...createMockSession(),
+        user: { ...MOCK_USER, role: UserRole.PLAYER, is_captain: undefined },
+      };
+      vi.mocked(headers).mockResolvedValue({} as MockHeaders);
+      vi.mocked(auth.api.getSession).mockResolvedValue(mockSession as never);
+
+      const mockServerAction = vi.fn();
+      const action = roster(['create'], mockServerAction);
+
+      await expect(action()).rejects.toThrow('FORBIDDEN');
     });
   });
 });

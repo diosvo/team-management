@@ -162,6 +162,21 @@ describe('DashboardFilters', () => {
     });
   });
 
+  describe('send to', () => {
+    test('opens the email dialog from the actions menu', async () => {
+      const { user } = setup();
+
+      await user.click(screen.getByRole('button', { name: /Export Report/i }));
+      await user.click(
+        await screen.findByRole('menuitem', { name: /Send To/i }),
+      );
+
+      expect(
+        await screen.findByText('Email Analytics Report'),
+      ).toBeInTheDocument();
+    });
+  });
+
   describe('DateRangePicker', () => {
     test('writes the picked window to the URL and resets the page', async () => {
       const { user } = setup();

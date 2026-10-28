@@ -4,7 +4,7 @@ vi.unmock('drizzle-orm');
 import { DrizzleError, DrizzleQueryError } from 'drizzle-orm';
 import { DatabaseError } from 'pg';
 
-import { PgErrorCode, getDbErrorMessage } from './pg-error';
+import { PgErrorCode, getDbErrorMessage, isUniqueViolation } from './pg-error';
 
 type Options = Partial<{
   constraint: string;
@@ -237,6 +237,10 @@ describe('getDbErrorMessage', () => {
         PgErrorCode.SERIALIZATION_FAILURE,
         'Transaction serialization failure. Please retry the transaction as it could not be completed due to concurrent modifications.',
       ],
+      [
+        PgErrorCode.DATATYPE_MISMATCH,
+        'A column type mismatch was detected. Check that foreign key types match the referenced column.',
+      ],
     ])(
       'code %s → correct static message (null constraint)',
       (code, message) => {
@@ -316,5 +320,53 @@ describe('getDbErrorMessage', () => {
         });
       },
     );
+  });
+});
+
+describe('isUniqueViolation', () => {
+  test('returns false when the error is not a DrizzleQueryError', () => {
+    expect(isUniqueViolation(new Error('boom'))).toBe(false);
+  });
+
+  test('returns false when the cause is not a DatabaseError', () => {
+    const error = new DrizzleQueryError(
+      'SELECT 1',
+      [],
+      new DrizzleError({ message: 'not a db error' }),
+    );
+
+    expect(isUniqueViolation(error)).toBe(false);
+  });
+
+  test('returns false when the code is not a unique violation', () => {
+    expect(
+      isUniqueViolation(createQueryError(PgErrorCode.FOREIGN_KEY_VIOLATION)),
+    ).toBe(false);
+  });
+
+  test('returns true for a unique violation with no constraint filter', () => {
+    expect(
+      isUniqueViolation(createQueryError(PgErrorCode.UNIQUE_VIOLATION)),
+    ).toBe(true);
+  });
+
+  test('returns true when the constraint matches the given filter', () => {
+    const error = createQueryError(PgErrorCode.UNIQUE_VIOLATION, {
+      constraint: 'reports_schedule_id_run_idx',
+    });
+
+    expect(
+      isUniqueViolation(error, 'reports_schedule_id_run_idx'),
+    ).toBe(true);
+  });
+
+  test('returns false when the constraint does not match the given filter', () => {
+    const error = createQueryError(PgErrorCode.UNIQUE_VIOLATION, {
+      constraint: 'other_constraint',
+    });
+
+    expect(
+      isUniqueViolation(error, 'reports_schedule_id_run_idx'),
+    ).toBe(false);
   });
 });

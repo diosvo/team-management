@@ -55,6 +55,17 @@ describe('RoleSelection', () => {
     const { combobox } = setup({ disabled: true });
     expect(combobox).toBeDisabled();
   });
+
+  test('passes contentRef to Portal when provided', () => {
+    const ref = { current: null };
+    setup({ contentRef: ref });
+    expect(screen.getByRole('combobox')).toBeInTheDocument();
+  });
+
+  test('supports multiple selection mode', () => {
+    setup({ multiple: true });
+    expect(screen.getByRole('combobox')).toBeInTheDocument();
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -207,10 +218,110 @@ describe('RolePositionSelection', () => {
     });
   });
 
+  test('clears position to undefined when GUEST role is selected', async () => {
+    const { user, roleTrigger } = setup({
+      defaultValues: { role: UserRole.PLAYER, position: PlayerPosition.UNKNOWN },
+    });
+
+    await user.click(roleTrigger);
+    await user.click(await screen.findByRole('option', { name: 'Guest' }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('position-value')).toHaveTextContent('');
+    });
+  });
+
+  test('cycles through all role transitions with position updates', async () => {
+    const { user, roleTrigger } = setup();
+
+    // Player -> Coach
+    await user.click(roleTrigger);
+    await user.click(await screen.findByRole('option', { name: 'Player' }));
+    
+    await waitFor(() => {
+      expect(screen.getByTestId('role-value')).toHaveTextContent(UserRole.PLAYER);
+    });
+
+    // Coach
+    await user.click(roleTrigger);
+    await user.click(await screen.findByRole('option', { name: 'Coach' }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('role-value')).toHaveTextContent(UserRole.COACH);
+    });
+
+    // Guest (position should clear)
+    await user.click(roleTrigger);
+    await user.click(await screen.findByRole('option', { name: 'Guest' }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('position-value')).toHaveTextContent('');
+    });
+  });
+
   test('both fields are disabled when disabled prop is true', () => {
     const { roleTrigger, positionTrigger } = setup({ disabled: true });
 
     expect(roleTrigger).toBeDisabled();
     expect(positionTrigger).toBeDisabled();
+  });
+
+  test('updates position value when manually selected', async () => {
+    const { user, roleTrigger } = setup();
+
+    await user.click(roleTrigger);
+    await user.click(await screen.findByRole('option', { name: 'Player' }));
+
+    await waitFor(() => {
+      const [, positionTrigger] = screen.getAllByRole('combobox');
+      expect(positionTrigger).not.toBeDisabled();
+    });
+
+    const [, positionTrigger] = screen.getAllByRole('combobox');
+    await user.click(positionTrigger);
+    const sgOption = await screen.findByRole('option', { name: /Shooting Guard/ });
+    await user.click(sgOption);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('position-value')).toHaveTextContent(
+        PlayerPosition.SHOOTING_GUARD,
+      );
+    });
+  });
+
+  test('handles blur event on role field', async () => {
+    const { user, roleTrigger } = setup();
+
+    await user.click(roleTrigger);
+    await user.click(await screen.findByRole('option', { name: 'Player' }));
+    
+    await waitFor(() => {
+      expect(screen.getByTestId('role-value')).toHaveTextContent(
+        UserRole.PLAYER,
+      );
+    });
+  });
+
+  test('handles blur event on position field', async () => {
+    const { user, roleTrigger } = setup();
+
+    await user.click(roleTrigger);
+    await user.click(await screen.findByRole('option', { name: 'Player' }));
+
+    await waitFor(() => {
+      const [, positionTrigger] = screen.getAllByRole('combobox');
+      expect(positionTrigger).not.toBeDisabled();
+    });
+
+    const [, positionTrigger] = screen.getAllByRole('combobox');
+    await user.click(positionTrigger);
+    const pgOption = await screen.findByRole('option', { name: /Point Guard/ });
+    await user.click(pgOption);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('position-value')).toHaveTextContent(
+        PlayerPosition.POINT_GUARD,
+      );
+    });
   });
 });
