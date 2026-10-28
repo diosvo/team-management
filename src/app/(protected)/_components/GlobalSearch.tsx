@@ -31,7 +31,11 @@ import { CloseButton } from '@/components/ui/close-button';
 import usePermissions from '@/hooks/use-permissions';
 import { useSessionContext } from '@/providers/session';
 
-import { recordVisit, useRecentPages } from '../_helpers/recent-pages';
+import {
+  RECENT_SHOWN,
+  recordVisit,
+  useRecentPages,
+} from '../_helpers/recent-pages';
 import {
   SEARCH_ENTRIES,
   indexEntry,
@@ -40,8 +44,6 @@ import {
   searchTargets,
   type IndexedEntry,
 } from '../_helpers/search';
-
-const RECENT_SHOWN = 3;
 
 const SHORTCUTS = [
   { keys: ['↑', '↓'], label: 'navigate' },

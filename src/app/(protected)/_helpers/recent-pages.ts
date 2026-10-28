@@ -1,8 +1,9 @@
 import { useSyncExternalStore } from 'react';
 
 const STORAGE_KEY = 'global-search:recent';
-// One more than shown, so the current page can be skipped and 3 still remain.
-const LIMIT = 4;
+export const RECENT_SHOWN = 3;
+// One more than shown, so the current page can be skipped and RECENT_SHOWN still remain.
+const LIMIT = RECENT_SHOWN + 1;
 const EMPTY: Array<string> = [];
 
 const listeners = new Set<() => void>();
