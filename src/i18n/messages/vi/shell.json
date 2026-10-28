@@ -58,6 +58,21 @@
     "test-types": "Bài kiểm tra",
     "training": "Tập luyện"
   },
+  "search": {
+    "account": "Tài khoản",
+    "close": "để đóng",
+    "empty": "Không có trang nào khớp với “{query}”",
+    "exampleTerm": "nguyen",
+    "hint": "Nhập tên trang để chuyển đến, hoặc bắt đầu bằng tên trang để tìm trong trang đó:",
+    "label": "Tìm trang",
+    "navigate": "để di chuyển",
+    "open": "để mở",
+    "pages": "Trang",
+    "placeholder": "Tìm trang, hoặc nhập từ khóa để tìm trong một trang",
+    "recent": "Gần đây",
+    "searchIn": "Tìm “{term}” trong…",
+    "trigger": "Tìm kiếm..."
+  },
   "sidebar": {
     "collapseMenu": "Thu gọn",
     "expandMenu": "Mở rộng",
