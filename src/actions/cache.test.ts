@@ -29,8 +29,10 @@ describe('revalidate', () => {
       ['assets', '/assets'],
       ['attendances', '/attendance'],
       ['matches', '/matches'],
+      ['reports', '/reports'],
       ['roster', '/roster'],
       ['sessions', '/training'],
+      ['teams', '/teams'],
       ['testResults', '/periodic-testing'],
       ['testTypes', '/periodic-testing/test-types'],
     ] as const)('revalidate %s() correctly', (method, path) => {

@@ -62,10 +62,31 @@ vi.mock('@/components/user/PlayerSelection', () => ({
 }));
 
 vi.mock('@/components/SearchableSelect', () => ({
-  default: ({ onChange }: { onChange: (item: unknown) => void }) => (
-    <button type="button" onClick={() => onChange(MOCK_LEAGUE)}>
-      LeagueSelect
-    </button>
+  default: ({
+    value,
+    itemToString,
+    itemToValue,
+    onChange,
+  }: {
+    value: Nullable<typeof MOCK_LEAGUE>;
+    itemToString: (item: typeof MOCK_LEAGUE) => string;
+    itemToValue: (item: typeof MOCK_LEAGUE) => string;
+    onChange: (item: unknown) => void;
+  }) => (
+    <>
+      <button
+        type="button"
+        data-label={itemToString(MOCK_LEAGUE)}
+        data-value={itemToValue(MOCK_LEAGUE)}
+        onClick={() => onChange(MOCK_LEAGUE)}
+      >
+        LeagueSelect
+      </button>
+      <button type="button" onClick={() => onChange(null)}>
+        ClearLeague
+      </button>
+      <output data-testid="selected-league">{value?.name ?? ''}</output>
+    </>
   ),
 }));
 
@@ -184,6 +205,47 @@ describe('RegistrationPageClient', () => {
     });
   });
 
+  describe('league', () => {
+    test('labels and keys leagues by name and id', () => {
+      setup();
+
+      const select = screen.getByRole('button', { name: 'LeagueSelect' });
+      expect(select).toHaveAttribute('data-label', MOCK_LEAGUE.name);
+      expect(select).toHaveAttribute('data-value', MOCK_LEAGUE.league_id);
+    });
+
+    test('selects and clears the league', async () => {
+      const { user } = setup();
+
+      await user.click(screen.getByRole('button', { name: 'LeagueSelect' }));
+      expect(screen.getByTestId('selected-league')).toHaveTextContent(
+        MOCK_LEAGUE.name,
+      );
+
+      await user.click(screen.getByRole('button', { name: 'ClearLeague' }));
+      expect(screen.getByTestId('selected-league')).toBeEmptyDOMElement();
+    });
+  });
+
+  describe('template upload', () => {
+    test('swaps the dropzone for the uploaded file', async () => {
+      const { user, container } = setup();
+      const template = new File(['pdf'], 'form.pdf', {
+        type: 'application/pdf',
+      });
+
+      expect(screen.getByText('Click to upload PDF')).toBeInTheDocument();
+
+      await user.upload(
+        container.querySelector<HTMLInputElement>('input[type="file"]')!,
+        template,
+      );
+
+      expect(await screen.findByText('form.pdf')).toBeInTheDocument();
+      expect(screen.queryByText('Click to upload PDF')).not.toBeInTheDocument();
+    });
+  });
+
   describe('notes', () => {
     test('tracks the character count', async () => {
       const { user } = setup();
@@ -251,6 +313,22 @@ describe('RegistrationPageClient', () => {
             filename: 'saigon-rovers-summer-league-(2)',
           }),
         );
+      });
+    });
+
+    test('falls back to a generic message for a non-Error failure', async () => {
+      buildPdf.mockRejectedValue('boom');
+
+      const { user } = setup();
+
+      await selectPlayersAndLeague(user);
+      await user.click(screen.getByRole('button', { name: 'SavePreview' }));
+
+      await waitFor(() => {
+        expect(mockToaster.error).toHaveBeenCalledWith({
+          title: 'Could not save registration',
+          description: 'Something went wrong.',
+        });
       });
     });
 

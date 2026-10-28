@@ -34,17 +34,40 @@ vi.mock('@/actions/report', () => ({
 
 vi.mock('@/components/ui/toaster', () => createToasterMock());
 
-// The recipient picker is covered by its own suite; a button selects every
-// member so the submitted emails can be asserted.
+type Recipient = (typeof MOCK_REPORT_RECIPIENTS)[number];
+
+// The recipient picker is covered by its own suite; it renders every member
+// through the given item callbacks, and a button selects all of them so the
+// submitted emails can be asserted.
 vi.mock('@/components/SearchableSelect', () => ({
   default: ({
     onChange,
+    itemToValue,
+    itemToString,
+    renderItem,
   }: {
-    onChange: (items: typeof MOCK_REPORT_RECIPIENTS) => void;
+    onChange: (items: Array<Recipient>) => void;
+    itemToValue: (item: Recipient) => string;
+    itemToString: (item: Recipient) => string;
+    renderItem: (item: Recipient) => React.ReactNode;
   }) => (
-    <button type="button" onClick={() => onChange(MOCK_REPORT_RECIPIENTS)}>
-      Select recipients
-    </button>
+    <>
+      <div role="listbox" aria-label="Recipient options">
+        {MOCK_REPORT_RECIPIENTS.map((item) => (
+          <div
+            role="option"
+            aria-selected={false}
+            key={itemToValue(item)}
+            aria-label={itemToString(item)}
+          >
+            {renderItem(item)}
+          </div>
+        ))}
+      </div>
+      <button type="button" onClick={() => onChange(MOCK_REPORT_RECIPIENTS)}>
+        Select recipients
+      </button>
+    </>
   ),
 }));
 
@@ -163,6 +186,56 @@ describe('UpsertReportSchedule', () => {
       expect(await openReportOptions(user)).toEqual([YEARLY_LABEL]);
     });
 
+    test('shows no selection when every report is already scheduled', async () => {
+      await open('Add', { schedule_id: '' }, [
+        Interval.THIS_MONTH,
+        Interval.LAST_MONTH,
+        Interval.THIS_YEAR,
+        Interval.LAST_YEAR,
+      ]);
+
+      const combobox = await screen.findByRole('combobox');
+
+      expect(
+        within(combobox).queryByText(MONTHLY_LABEL),
+      ).not.toBeInTheDocument();
+      expect(
+        within(combobox).queryByText(YEARLY_LABEL),
+      ).not.toBeInTheDocument();
+    });
+
+    test('switches to another report', async () => {
+      mockUpsert.mockResolvedValue({ success: true, message: 'Saved' });
+
+      const { user } = await open();
+
+      const combobox = await screen.findByRole('combobox');
+      await user.click(combobox);
+      const content = document.getElementById(
+        combobox.getAttribute('aria-controls')!,
+      )!;
+      await user.click(
+        within(content).getByRole('option', {
+          name: YEARLY_LABEL,
+          hidden: true,
+        }),
+      );
+
+      await waitFor(() => {
+        expect(within(combobox).getByText(YEARLY_LABEL)).toBeInTheDocument();
+      });
+
+      await selectRecipients(user);
+      await user.click(screen.getByRole('button', { name: /add/i }));
+
+      await waitFor(() => {
+        expect(mockUpsert).toHaveBeenCalledWith('', {
+          interval: Interval.LAST_YEAR,
+          recipients: [ME.email, COACH.email],
+        });
+      });
+    });
+
     test('keeps its own report available when updating', async () => {
       const { user } = await open(
         'Update',
@@ -205,6 +278,19 @@ describe('UpsertReportSchedule', () => {
       expect(
         screen.queryByRole('button', { name: 'Select recipients' }),
       ).not.toBeInTheDocument();
+    });
+
+    test('offers each member by name and email', async () => {
+      await open();
+
+      const options = await screen.findByRole('listbox', {
+        name: 'Recipient options',
+      });
+
+      MOCK_REPORT_RECIPIENTS.forEach(({ name, email }) => {
+        const option = within(options).getByRole('option', { name });
+        expect(option).toHaveTextContent(`${name} <${email}>`);
+      });
     });
 
     test('lists the selected recipients', async () => {

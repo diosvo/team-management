@@ -111,7 +111,9 @@ describe('LeagueTable', () => {
   test('renders the player count and a capitalized status badge', () => {
     setup({ leagues: [upcomingLeague] });
 
-    expect(screen.getByText(String(upcomingLeague.player_count))).toBeInTheDocument();
+    expect(
+      screen.getByText(String(upcomingLeague.player_count)),
+    ).toBeInTheDocument();
     expect(screen.getByText('Upcoming')).toBeInTheDocument();
   });
 
@@ -144,6 +146,19 @@ describe('LeagueTable', () => {
         'href',
         `/achievements?record=${endedLeague.league_id}`,
       );
+    });
+
+    test('does not open the update dialog when the shortcut is clicked', async () => {
+      // jsdom cannot navigate; cancel the anchor's default action up front.
+      const preventNavigation = (event: MouseEvent) => event.preventDefault();
+      window.addEventListener('click', preventNavigation, true);
+
+      const { user } = setup({ leagues: [endedLeague], can: () => true });
+
+      await user.click(screen.getByRole('link'));
+      window.removeEventListener('click', preventNavigation, true);
+
+      expect(mockOpen).not.toHaveBeenCalled();
     });
 
     test('is hidden when the user cannot create achievements', () => {

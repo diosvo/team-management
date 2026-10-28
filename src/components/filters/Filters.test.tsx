@@ -226,6 +226,23 @@ describe('Filters', () => {
       ).not.toBeInTheDocument();
     });
 
+    test('treats a missing categorical value as an empty selection', async () => {
+      const { user } = setup({ values: {} as never });
+
+      expect(screen.queryByText('1')).not.toBeInTheDocument();
+
+      await user.click(button(/filters/i));
+      await screen.findByText('Advanced Filters');
+
+      expect(activeCheckbox()).not.toBeChecked();
+      expect(inactiveCheckbox()).not.toBeChecked();
+
+      await user.keyboard('{Escape}');
+      await waitFor(() =>
+        expect(screen.queryByText('Advanced Filters')).not.toBeInTheDocument(),
+      );
+    });
+
     test('shows an active-count badge when values differ from defaults', () => {
       setup({ values: { status: ['active'] } });
 

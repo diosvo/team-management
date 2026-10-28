@@ -122,4 +122,42 @@ describe('PersonalInfo', () => {
     );
     expect(mockUpdatePersonalInfo).not.toHaveBeenCalled();
   });
+
+  test('stays in edit mode and shows an error toast when the update fails', async () => {
+    mockUpdatePersonalInfo.mockResolvedValue({
+      success: false,
+      message: 'Something went wrong',
+    });
+
+    const { container, user } = await setup();
+
+    const nameInput = await enterEditMode(user);
+    await user.clear(nameInput);
+    await user.type(nameInput, 'Nhung Vo');
+
+    const submit = container.querySelector(
+      'button[type="submit"]',
+    ) as HTMLButtonElement;
+    await waitFor(() => expect(submit).toBeEnabled());
+    await user.click(submit);
+
+    await waitFor(() => expect(mockUpdatePersonalInfo).toHaveBeenCalled());
+    // Stays in edit mode — the name input is still visible.
+    expect(screen.getByPlaceholderText('Anonymous')).toBeInTheDocument();
+  });
+
+  test('renders dashes for null name and dob fields', async () => {
+    const userNullFields = {
+      ...MOCK_USER,
+      name: null as unknown as string,
+      dob: null,
+    };
+
+    renderWithUI(<PersonalInfo user={userNullFields} viewOnly={false} />);
+
+    await waitForStable();
+
+    // name, dob, phone_number and citizen_identification are all unset.
+    expect(screen.getAllByText('-')).toHaveLength(4);
+  });
 });

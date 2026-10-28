@@ -10,6 +10,14 @@ import {
 
 import ProfileLayout from './ProfileLayout';
 
+// jsdom has no media queries, so drive the breakpoint value directly.
+const mockUseBreakpointValue = vi.hoisted(() => vi.fn());
+
+vi.mock('@chakra-ui/react', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@chakra-ui/react')>()),
+  useBreakpointValue: mockUseBreakpointValue,
+}));
+
 // Isolate the layout from its children; each child has its own test file.
 vi.mock('./AvatarUploader', () => ({
   default: ({ user }: { user: User }) => (
@@ -31,6 +39,10 @@ vi.mock('./TeamInfo', () => ({
 
 describe('ProfileLayout', () => {
   setupTestLifecycle();
+
+  beforeEach(() => {
+    mockUseBreakpointValue.mockReturnValue('horizontal');
+  });
 
   const setup = (viewOnly = false) =>
     renderWithUI(<ProfileLayout user={MOCK_USER} viewOnly={viewOnly} />);
@@ -86,5 +98,33 @@ describe('ProfileLayout', () => {
       'aria-selected',
       'true',
     );
+  });
+
+  test('lays the tabs out horizontally on small screens', async () => {
+    setup();
+
+    await waitFor(() => {
+      expect(screen.getByRole('tablist')).toHaveAttribute(
+        'aria-orientation',
+        'horizontal',
+      );
+    });
+    expect(mockUseBreakpointValue).toHaveBeenCalledWith({
+      base: 'horizontal',
+      md: 'vertical',
+    });
+  });
+
+  test('stacks the tabs vertically from the md breakpoint up', async () => {
+    mockUseBreakpointValue.mockReturnValue('vertical');
+
+    setup();
+
+    await waitFor(() => {
+      expect(screen.getByRole('tablist')).toHaveAttribute(
+        'aria-orientation',
+        'vertical',
+      );
+    });
   });
 });

@@ -131,6 +131,17 @@ describe('SentEmails', () => {
     expect(screen.queryByText(DELIVERED_EMAIL.subject)).not.toBeInTheDocument();
   });
 
+  test('filters by a string recipient (non-array to field)', () => {
+    const stringToEmail = {
+      ...DELIVERED_EMAIL,
+      to: 'single@example.com',
+    } as unknown as ListEmail;
+
+    setup({ emails: [stringToEmail], params: { q: 'single@' } });
+
+    expect(screen.getByText(DELIVERED_EMAIL.subject)).toBeInTheDocument();
+  });
+
   describe('filters', () => {
     test('provides the status filter', () => {
       setup();

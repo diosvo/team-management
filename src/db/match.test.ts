@@ -140,6 +140,22 @@ describe('getMatches', () => {
     });
   });
 
+  test('marks a completed match with an equal score as a draw', async () => {
+    vi.mocked(db.query.MatchTable.findMany).mockResolvedValue([
+      {
+        ...MOCK_MATCH,
+        home_team: MOCK_TEAM.team_id,
+        away_team: MOCK_AWAY_TEAM.team_id,
+        home_team_score: 80,
+        away_team_score: 80,
+      },
+    ]);
+
+    const result = await getMatches(mockParams);
+
+    expect(result.data[0].result).toBe(MatchResult.DRAW);
+  });
+
   test('filters league matches when type is league', async () => {
     vi.mocked(db.query.MatchTable.findMany).mockResolvedValue([]);
 

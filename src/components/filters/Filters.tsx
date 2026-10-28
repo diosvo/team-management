@@ -150,7 +150,7 @@ export default function Filters<T extends Record<string, unknown>>({
                             key={def.key}
                             label={def.label}
                             options={options}
-                            value={draft[def.key] ?? []}
+                            value={draft[def.key]}
                             onChange={(value) => setField(def.key, value)}
                           />
                         );

@@ -16,6 +16,9 @@ import { LOGIN_PATH } from '@/routes';
 import NewPasswordPage from './page';
 
 const mockPush = vi.fn();
+const mockSearchParamsGet = vi.fn((key: string) =>
+  key === 'token' ? 'test-token-123' : null,
+);
 
 vi.mock('next/navigation', async () => {
   const actual = await vi.importActual('next/navigation');
@@ -26,7 +29,7 @@ vi.mock('next/navigation', async () => {
       push: mockPush,
     }),
     useSearchParams: () => ({
-      get: vi.fn((key: string) => (key === 'token' ? 'test-token-123' : null)),
+      get: mockSearchParamsGet,
     }),
   };
 });
@@ -131,6 +134,30 @@ describe('NewPasswordPage', () => {
         expect.any(Object),
       );
     });
+  });
+
+  test('submits an empty token when none is present in the URL', async () => {
+    mockSearchParamsGet.mockImplementation(() => null);
+    mockResetPassword.mockImplementation((_data, options) => {
+      const { onSuccess } = authCallbacks(options);
+      onSuccess?.();
+    });
+
+    const { user } = renderWithUI(<NewPasswordPage />);
+
+    await user.type(screen.getAllByLabelText(/password/i)[0], 'ValidPass123!');
+    await user.click(screen.getByRole('button', { name: /submit/i }));
+
+    await waitFor(() => {
+      expect(mockResetPassword).toHaveBeenCalledWith(
+        expect.objectContaining({ token: '' }),
+        expect.any(Object),
+      );
+    });
+
+    mockSearchParamsGet.mockImplementation((key: string) =>
+      key === 'token' ? 'test-token-123' : null,
+    );
   });
 
   test('displays error message on failed submission', async () => {

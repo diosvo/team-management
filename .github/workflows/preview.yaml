@@ -64,8 +64,7 @@ jobs:
                 .split('\n')
                 .filter((line) =>
                   line.startsWith('- **Test Files**:') ||
-                  line.startsWith('- **Test Results**:') ||
-                  line.startsWith('- **Coverage**:')
+                  line.startsWith('- **Test Results**:')
                 )
                 .join('\n'),
             ) ?? '⚠️ No unit-test summary found.';

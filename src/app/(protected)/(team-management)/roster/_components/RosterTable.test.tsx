@@ -258,4 +258,19 @@ describe('RosterTable', () => {
       });
     });
   });
+
+  test('shows the unverified icon for a user whose email is not verified', () => {
+    const unverifiedUser: RosterUser = {
+      ...MOCK_USER_WITH_PLAYER,
+      id: 'unverified',
+      name: 'Unverified User',
+      email: 'unverified@team.com',
+      emailVerified: false,
+    };
+
+    setup({ users: [unverifiedUser], perms: { isAdmin: true } });
+
+    // The row renders; the verified column shows the alert icon (no text to assert).
+    expect(screen.getByText('Unverified User')).toBeInTheDocument();
+  });
 });

@@ -67,4 +67,12 @@ describe('RichTextViewer', () => {
 
     expect(editor.commands.setContent).not.toHaveBeenCalled();
   });
+
+  test('renders nothing before the editor instance exists', () => {
+    useEditorMock.mockReturnValue(null);
+
+    const { container } = setup();
+
+    expect(container).toBeEmptyDOMElement();
+  });
 });

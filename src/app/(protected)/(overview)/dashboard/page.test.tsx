@@ -5,7 +5,7 @@ import { loadDashboardFilters } from '@/lib/nuqs';
 import type { DateRange } from '@/types/common';
 import { thisYear } from '@/utils/datetime';
 
-import DashboardsPage from './page';
+import DashboardsPage, { generateMetadata } from './page';
 
 vi.mock('@/lib/nuqs', () => ({
   loadDashboardFilters: vi.fn(),
@@ -69,6 +69,12 @@ describe('DashboardsPage', () => {
   };
 
   setupTestLifecycle();
+
+  test('exposes page metadata', async () => {
+    const metadata = await generateMetadata();
+
+    expect(metadata.title).toBe('Dashboard');
+  });
 
   test('renders the analytics page title', async () => {
     await setup();

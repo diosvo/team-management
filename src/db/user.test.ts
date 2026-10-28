@@ -412,6 +412,23 @@ describe('updateUserTeamInfo', () => {
     expect(db.delete).not.toHaveBeenCalled();
   });
 
+  test('removes the coach row when switching away from coach', async () => {
+    const { tx, deleteWhere } = mockTransaction();
+
+    await updateUserTeamInfo(MOCK_USER.id, {
+      user: { role: UserRole.PLAYER },
+      player,
+      remove: { player: false, coach: true },
+    });
+
+    expect(tx.delete).toHaveBeenCalledWith(CoachTable);
+    expect(deleteWhere).toHaveBeenCalledWith({
+      field: CoachTable.id,
+      value: MOCK_USER.id,
+      type: 'eq',
+    });
+  });
+
   test('only upserts and updates when the role is unchanged', async () => {
     const { tx } = mockTransaction();
 

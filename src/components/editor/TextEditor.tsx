@@ -62,18 +62,17 @@ function useEditableContent({
   // Pick up freshly saved content, but never over a draft in progress.
   useEditorContent(editor, content, { paused: isWriting, onLoad: markSaved });
 
-  const cancel = () => {
-    if (!editor) return;
+  // Take the mounted editor: the actions only render once it exists.
+  const cancel = (mounted: Editor) => {
     setIsWriting(false);
-    editor.commands.setContent(content, { emitUpdate: false });
-    markSaved(editor);
+    mounted.commands.setContent(content, { emitUpdate: false });
+    markSaved(mounted);
   };
 
-  const save = () => {
-    if (!editor) return;
+  const save = (mounted: Editor) => {
     startTransition(async () => {
-      if (await onSave(editor.getHTML())) {
-        markSaved(editor);
+      if (await onSave(mounted.getHTML())) {
+        markSaved(mounted);
         setIsWriting(false);
       }
     });
@@ -213,6 +212,9 @@ export default function TextEditor({
 
   if (!editor) return null;
 
+  const saveDraft = () => save(editor);
+  const cancelDraft = () => cancel(editor);
+
   return (
     <>
       <HStack justifyContent="space-between" flexWrap="wrap">
@@ -222,8 +224,8 @@ export default function TextEditor({
             <DraftActions
               label={t('saveChanges')}
               isSaving={isSaving}
-              onSave={save}
-              onCancel={cancel}
+              onSave={saveDraft}
+              onCancel={cancelDraft}
             />
           )}
 
@@ -251,7 +253,11 @@ export default function TextEditor({
 
         {isWriting && (
           <RichTextEditor.Footer justifyContent="flex-end">
-            <DraftActions isSaving={isSaving} onSave={save} onCancel={cancel} />
+            <DraftActions
+              isSaving={isSaving}
+              onSave={saveDraft}
+              onCancel={cancelDraft}
+            />
           </RichTextEditor.Footer>
         )}
       </RichTextEditor.Root>

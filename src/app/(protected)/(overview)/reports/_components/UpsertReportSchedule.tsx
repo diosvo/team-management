@@ -27,7 +27,10 @@ import { Field } from '@/components/ui/field';
 import { toaster } from '@/components/ui/toaster';
 
 import { translateSelection } from '@/i18n/enums';
-import { UpsertReportScheduleSchema } from '@/schemas/report';
+import {
+  UpsertReportScheduleSchema,
+  type UpsertReportScheduleValues,
+} from '@/schemas/report';
 import {
   SCHEDULED_INTERVAL_SELECTION,
   type ScheduledInterval,
@@ -152,9 +155,7 @@ export const UpsertReportSchedule = createOverlay<UpsertProps>(
       [interval, recipients],
     );
 
-    const onSubmit = () => {
-      if (!parsed.success) return;
-
+    const onSubmit = (values: UpsertReportScheduleValues) => {
       const id = toaster.create({
         type: 'loading',
         title: t('saving'),
@@ -163,7 +164,7 @@ export const UpsertReportSchedule = createOverlay<UpsertProps>(
       startTransition(async () => {
         const { success, message } = await upsertReportSchedule(
           item.schedule_id,
-          parsed.data,
+          values,
         );
 
         toaster.update(id, {
@@ -288,7 +289,7 @@ export const UpsertReportSchedule = createOverlay<UpsertProps>(
                   loadingText={t('savingButton')}
                   loading={isPending}
                   disabled={!parsed.success}
-                  onClick={onSubmit}
+                  onClick={() => parsed.success && onSubmit(parsed.data)}
                 >
                   <Save />{' '}
                   {action === 'Update' ? tCommon('update') : tCommon('add')}

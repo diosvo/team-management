@@ -139,6 +139,18 @@ describe('LoginPage', () => {
     expect(await screen.findByText('Invalid credentials')).toBeInTheDocument();
   });
 
+  test('shows an error for a status outside the known mapping', async () => {
+    mockFailure('Something went wrong', Status.INTERNAL_SERVER_ERROR);
+
+    const { submit } = setup();
+
+    await submit({ password: 'wrongpassword' });
+
+    expect(
+      await screen.findByText('Something went wrong'),
+    ).toBeInTheDocument();
+  });
+
   test('disables sign in after a 401 until a credential is edited', async () => {
     mockFailure('Invalid credentials');
 

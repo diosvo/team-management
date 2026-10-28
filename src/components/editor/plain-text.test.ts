@@ -35,6 +35,12 @@ describe('editorToPlainText', () => {
     ).toBe('3. C\n4. D');
   });
 
+  test('numbers an ordered list from 1 when it has no start attribute', () => {
+    expect(fromHTML('<ol><li><p>C</p></li><li><p>D</p></li></ol>')).toBe(
+      '1. C\n2. D',
+    );
+  });
+
   test('indents nested lists under their parent item', () => {
     expect(
       fromHTML(
@@ -77,5 +83,64 @@ describe('editorToPlainText', () => {
 
   test('collapses runs of empty paragraphs', () => {
     expect(fromHTML('<p>One</p><p></p><p></p><p>Two</p>')).toBe('One\n\nTwo');
+  });
+
+  // The real schema always defaults `start`/`isTextblock`, so these two
+  // defensive fallbacks can only be reached with a hand-built fake node.
+  test('numbers from 1 when an ordered list has no start attribute at all', () => {
+    const textNode = {
+      type: { name: 'text' },
+      isTextblock: false,
+      marks: [],
+      textContent: 'C',
+      forEach: (fn: (child: unknown) => void) => fn(textNode),
+    };
+    const paragraph = {
+      type: { name: 'paragraph' },
+      isTextblock: true,
+      content: { content: [textNode] },
+      forEach: (fn: (child: unknown) => void) => fn(textNode),
+      textContent: 'C',
+    };
+    const listItem = {
+      type: { name: 'listItem' },
+      isTextblock: false,
+      content: { content: [paragraph] },
+    };
+    const orderedList = {
+      type: { name: 'orderedList' },
+      isTextblock: false,
+      attrs: {},
+      content: { content: [listItem] },
+    };
+    const doc = { content: { content: [orderedList] } };
+
+    expect(editorToPlainText(doc as never)).toBe('1. C');
+  });
+
+  test('recurses into a non-textblock container with no dedicated case', () => {
+    const textNode = {
+      type: { name: 'text' },
+      isTextblock: false,
+      marks: [],
+      textContent: 'Inner',
+      forEach: (fn: (child: unknown) => void) => fn(textNode),
+    };
+    const paragraph = {
+      type: { name: 'paragraph' },
+      isTextblock: true,
+      content: { content: [textNode] },
+      forEach: (fn: (child: unknown) => void) => fn(textNode),
+      textContent: 'Inner',
+    };
+    // A generic grouping node: not a textblock, not one of the special cases.
+    const container = {
+      type: { name: 'genericContainer' },
+      isTextblock: false,
+      content: { content: [paragraph] },
+    };
+    const doc = { content: { content: [container] } };
+
+    expect(editorToPlainText(doc as never)).toBe('Inner');
   });
 });

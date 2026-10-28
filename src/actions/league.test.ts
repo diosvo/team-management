@@ -234,6 +234,16 @@ describe('League Actions', () => {
         });
       });
 
+      test('skips roster sync entirely when player_ids is omitted', async () => {
+        vi.mocked(updateLeague).mockResolvedValue(updateReturn);
+
+        const result = await upsertLeague(MOCK_LEAGUE.league_id, leagueData);
+
+        expect(addPlayerToLeagueRoster).not.toHaveBeenCalled();
+        expect(removePlayerFromLeagueRoster).not.toHaveBeenCalled();
+        expect(result.success).toBe(true);
+      });
+
       test('returns error when update fails', async () => {
         vi.mocked(updateLeague).mockRejectedValue(new Error(errorMessage));
 

@@ -3,6 +3,7 @@ import {
   createSessionMock,
   createToasterMock,
   expectNoA11yViolations,
+  mockToaster,
   renderWithUI,
   screen,
   waitFor,
@@ -81,5 +82,39 @@ describe('SubmitLeaveRequest', () => {
     expect(mockSubmitLeave).toHaveBeenCalledWith(
       expect.objectContaining({ player_id: MOCK_SESSION_USER.id }),
     );
+    await waitFor(() => expect(mockToaster.update).toHaveBeenCalledWith(
+      'toast-id',
+      expect.objectContaining({ type: 'success', title: 'Submitted' }),
+    ));
+  });
+
+  test('shows an error toast and keeps the form when the request fails', async () => {
+    mockSubmitLeave.mockResolvedValue({ success: false, message: 'Failed' });
+    const { user } = setup();
+
+    await open(user);
+
+    await user.click(screen.getByRole('button', { name: /submit/i }));
+
+    await waitFor(() =>
+      expect(mockToaster.update).toHaveBeenCalledWith(
+        'toast-id',
+        expect.objectContaining({ type: 'error', title: 'Failed' }),
+      ),
+    );
+    expect(mockToaster.remove).toHaveBeenCalledWith('toast-id');
+  });
+
+  test('does nothing when user is not authenticated', async () => {
+    vi.mocked(useSessionContext).mockReturnValue(createSessionMock());
+    const { user } = renderWithUI(
+      <SubmitLeaveRequest trigger={<button>Open</button>} />,
+    );
+
+    await open(user);
+
+    await user.click(screen.getByRole('button', { name: /submit/i }));
+
+    expect(mockSubmitLeave).not.toHaveBeenCalled();
   });
 });

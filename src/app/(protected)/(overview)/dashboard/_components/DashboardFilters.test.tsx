@@ -13,7 +13,11 @@ import { formatDateRange, thisYear } from '@/utils/datetime';
 
 import DashboardFilters from './DashboardFilters';
 
-const LAST_YEAR: DateRange = { from: '2025-01-01', to: '2025-12-31' };
+const currentYear = Number(thisYear().from.slice(0, 4));
+const LAST_YEAR: DateRange = {
+  from: `${currentYear - 1}-01-01`,
+  to: `${currentYear - 1}-12-31`,
+};
 
 // Mirror the payload the component derives from the selected window so the
 // expectations stay correct regardless of the year the suite runs in.
@@ -28,6 +32,13 @@ vi.mock('@/lib/download', () => ({
 }));
 
 vi.mock('@/components/ui/toaster', () => createToasterMock());
+
+// EmailReport is loaded via next/dynamic; stub it so the dialog renders
+// synchronously in tests without triggering the real email-sending logic.
+vi.mock('./EmailReport', () => ({
+  default: ({ open }: { open: boolean }) =>
+    open ? <div role="dialog" aria-label="Email Report" /> : null,
+}));
 
 describe('DashboardFilters', () => {
   const mockSetSearchParams = vi.fn();
@@ -159,6 +170,21 @@ describe('DashboardFilters', () => {
         expect(triggerDownload).toHaveBeenCalled();
       });
       expect(screen.queryByText('Generating...')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('send to', () => {
+    test('opens the email dialog from the actions menu', async () => {
+      const { user } = setup();
+
+      await user.click(screen.getByRole('button', { name: /Export Report/i }));
+      await user.click(
+        await screen.findByRole('menuitem', { name: /Send To/i }),
+      );
+
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+      });
     });
   });
 

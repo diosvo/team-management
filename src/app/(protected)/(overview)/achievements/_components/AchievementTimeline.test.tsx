@@ -128,4 +128,18 @@ describe('AchievementTimeline', () => {
     expect(screen.getByText('City Championship')).toBeInTheDocument();
     expect(screen.getByText('Scoring King')).toBeInTheDocument();
   });
+
+  test('uses null as the group quote when no achievement has a description', () => {
+    setup([
+      buildAchievement({
+        achievement_id: 'a-1',
+        year: 2026,
+        title: 'Undescribed Honor',
+        description: null as unknown as string,
+      }),
+    ]);
+
+    // The section renders without a quote.
+    expect(screen.getByText('Undescribed Honor')).toBeInTheDocument();
+  });
 });

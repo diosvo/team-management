@@ -161,4 +161,14 @@ describe('FeedbackDialog', () => {
     );
     expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
+
+  test('closes the dialog when the close button is clicked', async () => {
+    const { user } = await open();
+
+    await user.click(screen.getByRole('button', { name: /close/i }));
+
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
+    );
+  });
 });

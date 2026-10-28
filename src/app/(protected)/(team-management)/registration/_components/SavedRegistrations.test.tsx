@@ -1,4 +1,5 @@
 import {
+  act,
   createPermissionsMock,
   createToasterMock,
   mockToaster,
@@ -105,7 +106,9 @@ describe('SavedRegistrations', () => {
 
     expect(screen.getByText('No saved registrations yet')).toBeInTheDocument();
     expect(
-      screen.getByText('Click Save in the preview to keep a registration here.'),
+      screen.getByText(
+        'Click Save in the preview to keep a registration here.',
+      ),
     ).toBeInTheDocument();
   });
 
@@ -133,6 +136,46 @@ describe('SavedRegistrations', () => {
       expect(mockToaster.promise).toHaveBeenCalled();
     });
 
+    test('falls back to a default filename when none was stored', async () => {
+      // Entries read back from older localStorage data may lack a filename.
+      const { filename: _filename, ...rest } = SAVED;
+      const unnamed = rest as SavedRegistration;
+      const { user } = setup({ items: [unnamed] });
+
+      const [download] = rowOf(unnamed).getAllByRole('button');
+      await user.click(download);
+
+      await waitFor(() => {
+        expect(mockDownloadPdf).toHaveBeenCalledWith(
+          expect.any(Uint8Array),
+          'registration',
+        );
+      });
+    });
+
+    test('locks the row actions while downloading and unlocks them after', async () => {
+      let settle!: () => void;
+      mockToaster.promise.mockImplementationOnce(
+        async (promise: Promise<unknown>, options: any) => {
+          await promise;
+          await new Promise<void>((resolve) => (settle = resolve));
+          options.finally();
+        },
+      );
+
+      const { user } = setup({ items: [SAVED] });
+
+      const [download, remove] = rowOf(SAVED).getAllByRole('button');
+      await user.click(download);
+
+      await waitFor(() => expect(remove).toBeDisabled());
+
+      await act(async () => settle());
+
+      await waitFor(() => expect(remove).toBeEnabled());
+      expect(download).toBeEnabled();
+    });
+
     test('hides the download action for a registration saved without a PDF', () => {
       setup({ items: [LEGACY_SAVED] });
 
@@ -152,5 +195,45 @@ describe('SavedRegistrations', () => {
 
     await waitFor(() => expect(onRemove).toHaveBeenCalledWith(SAVED.id));
     expect(mockToaster.promise).toHaveBeenCalled();
+  });
+
+  test('reports a failed removal with its message', async () => {
+    onRemove.mockImplementationOnce(() => {
+      throw new Error('Storage is full');
+    });
+
+    let result: any;
+    mockToaster.promise.mockImplementationOnce(
+      async (promise: Promise<unknown>, options: any) => {
+        await promise.catch((error) => {
+          result = options.error(error);
+        });
+      },
+    );
+
+    const { user } = setup({ items: [SAVED] });
+
+    const buttons = rowOf(SAVED).getAllByRole('button');
+    await user.click(buttons[buttons.length - 1]);
+
+    await waitFor(() => {
+      expect(result).toEqual({
+        title: 'Could not remove',
+        description: 'Storage is full',
+      });
+    });
+  });
+
+  test('falls back to a generic message for a non-Error removal failure', async () => {
+    const { user } = setup({ items: [SAVED] });
+
+    const buttons = rowOf(SAVED).getAllByRole('button');
+    await user.click(buttons[buttons.length - 1]);
+
+    const [, options] = mockToaster.promise.mock.calls[0] as Array<any>;
+    expect(options.error('boom')).toEqual({
+      title: 'Could not remove',
+      description: 'Something went wrong.',
+    });
   });
 });

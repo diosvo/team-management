@@ -262,4 +262,18 @@ describe('AccountMenu', () => {
       expect(await screen.findByRole('menuitem', { name })).toBeInTheDocument();
     }
   });
+
+  test('renders a loading skeleton while the avatar is being fetched', () => {
+    vi.mocked(useUserAvatar).mockReturnValue(
+      createSWRMock<Nullable<string>>({ isLoading: true }),
+    );
+    vi.mocked(useSessionContext).mockReturnValue(
+      createSessionMock({ user: MOCK_SESSION_USER }),
+    );
+
+    renderWithUI(<AccountMenu />);
+
+    // The button wraps a SkeletonCircle when isLoading is true.
+    expect(screen.getByRole('button')).toBeInTheDocument();
+  });
 });

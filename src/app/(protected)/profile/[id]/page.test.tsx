@@ -5,7 +5,7 @@ import { renderWithUI, screen, setupTestLifecycle } from '@/test/utilities';
 import { getUserProfile } from '@/actions/user';
 import { formatDatetime } from '@/utils/datetime';
 
-import ProfilePage from './page';
+import ProfilePage, { generateMetadata } from './page';
 
 vi.mock('@/actions/user', () => ({
   getUserProfile: vi.fn(),
@@ -46,6 +46,13 @@ describe('ProfilePage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     propsSpy.layout = undefined;
+  });
+
+  test('exposes page metadata', async () => {
+    const metadata = await generateMetadata();
+
+    expect(metadata.title).toBe('Profile');
+    expect(metadata.description).toBe('View and edit your profile details.');
   });
 
   test('renders the page title and layout', async () => {

@@ -4,6 +4,7 @@ import {
   act,
   createToasterMock,
   expectNoA11yViolations,
+  mockToaster,
   renderWithUI,
   screen,
   setupTestLifecycle,
@@ -131,7 +132,9 @@ describe('UpsertLeague', () => {
         UPCOMING_LEAGUE.league_id,
       );
     });
-    expect(await screen.findByTestId('selected-players')).toHaveTextContent('1');
+    expect(await screen.findByTestId('selected-players')).toHaveTextContent(
+      '1',
+    );
   });
 
   test('does not fetch the league players when adding', async () => {
@@ -165,6 +168,37 @@ describe('UpsertLeague', () => {
     });
   });
 
+  test('keeps the dialog open and resets the selection after adding a league', async () => {
+    mockUpsertLeague.mockResolvedValue({ success: true, message: 'Saved' });
+
+    const { user } = await open('Add', { ...UPCOMING_LEAGUE, league_id: '' });
+
+    const name = await screen.findByPlaceholderText('Basketball League');
+    await user.type(name, ' New');
+    await user.click(screen.getByRole('button', { name: 'PlayerSelection' }));
+    expect(screen.getByTestId('selected-players')).toHaveTextContent('1');
+
+    const submit = await screen.findByRole('button', { name: /add/i });
+    await waitFor(() => expect(submit).toBeEnabled());
+    await user.click(submit);
+
+    await waitFor(() =>
+      expect(mockToaster.update).toHaveBeenCalledWith('toast-id', {
+        type: 'success',
+        title: 'League information saved successfully.',
+      }),
+    );
+    expect(mockUpsertLeague).toHaveBeenCalledWith(
+      '',
+      expect.objectContaining({ name: `${UPCOMING_LEAGUE.name} New` }),
+      [MOCK_USER_WITH_PLAYER.id],
+    );
+    // No league id yet, so there is no players cache to refresh.
+    expect(mockGetPlayersInLeague).not.toHaveBeenCalled();
+    expect(screen.getByText('Add League')).toBeInTheDocument();
+    expect(screen.getByTestId('selected-players')).toHaveTextContent('0');
+  });
+
   describe('readonly mode', () => {
     const ENDED_LEAGUE = { ...UPCOMING_LEAGUE, status: LeagueStatus.ENDED };
 
@@ -172,9 +206,7 @@ describe('UpsertLeague', () => {
       await open('Update', ENDED_LEAGUE);
 
       expect(await screen.findByText('Readonly')).toBeInTheDocument();
-      expect(
-        screen.getByPlaceholderText('Basketball League'),
-      ).toBeDisabled();
+      expect(screen.getByPlaceholderText('Basketball League')).toBeDisabled();
     });
 
     test('hides the submit button in readonly mode', async () => {
@@ -194,5 +226,27 @@ describe('UpsertLeague', () => {
 
       expect(screen.queryByText('Readonly')).not.toBeInTheDocument();
     });
+  });
+
+  test('shows a multi-line error toast when upsertLeague fails with newlines', async () => {
+    mockUpsertLeague.mockResolvedValue({
+      success: false,
+      message: 'Line one\nLine two',
+    });
+
+    const { user } = await open('Update', UPCOMING_LEAGUE);
+
+    const name = await screen.findByPlaceholderText('Basketball League');
+    await user.type(name, ' Updated');
+
+    const submit = await screen.findByRole('button', { name: /update/i });
+    await waitFor(() => expect(submit).toBeEnabled());
+    await user.click(submit);
+
+    await waitFor(() => expect(mockUpsertLeague).toHaveBeenCalled());
+    expect(mockToaster.update).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ type: 'error' }),
+    );
   });
 });

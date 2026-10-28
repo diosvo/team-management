@@ -1,0 +1,4 @@
+# Imported from third-party tools; keep them byte-for-byte as upstream ships them.
+src/components/ui/
+.agents/skills/
+pnpm-*.yaml

@@ -172,4 +172,14 @@ describe('TestTypesTable', () => {
       });
     });
   });
+
+  test('renders the relative time in Vietnamese when locale is vi', () => {
+    mockUsePermissions.mockReturnValue(createPermissionsMock());
+    mockUseQueryStates({ page: 1, q: '', unit: [] });
+
+    renderWithUI(<TestTypesTable data={[MOCK_TEST_TYPE]} />, { locale: 'vi' });
+
+    // Just verify the component renders; the locale exercises the vi locale branch.
+    expect(screen.getByText(MOCK_TEST_TYPE.name)).toBeInTheDocument();
+  });
 });

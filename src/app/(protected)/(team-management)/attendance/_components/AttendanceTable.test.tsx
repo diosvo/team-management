@@ -165,4 +165,21 @@ describe('AttendanceTable', () => {
       }),
     );
   });
+
+  test('shows a warning when some bulk status updates fail', async () => {
+    // First call fails, the rest succeed.
+    mockUpdate
+      .mockResolvedValueOnce({ success: false, message: 'db error' })
+      .mockResolvedValue({ success: true, message: 'ok' });
+
+    const { user } = setup({ isAdmin: true });
+
+    await user.click(screen.getByRole('checkbox', { name: 'Select all rows' }));
+    await screen.findByText('3 selected');
+    await user.click(screen.getByRole('button', { name: 'Late' }));
+
+    await waitFor(() => expect(mockUpdate).toHaveBeenCalledTimes(3));
+    // Selection is NOT cleared and params are NOT updated on partial failure.
+    expect(setSearchParams).not.toHaveBeenCalled();
+  });
 });

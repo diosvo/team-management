@@ -128,6 +128,17 @@ describe('SessionTable', () => {
     expect(screen.getByText('No training sessions found')).toBeInTheDocument();
   });
 
+  test('renders "Unknown" when a session has no location', () => {
+    const noLocationSession: TrainingSessionWithDetails = {
+      ...COMPLETED_SESSION,
+      session_id: 'no-loc',
+      location: null,
+    };
+    setup({ sessions: [noLocationSession] });
+
+    expect(screen.getByText('Unknown')).toBeInTheDocument();
+  });
+
   test('filters the sessions by location', () => {
     setup({ params: { q: 'bien hoa' } });
 
@@ -174,6 +185,19 @@ describe('SessionTable', () => {
 
       await user.click(screen.getByText(OTHER_SESSION.location!.name));
 
+      expect(mockOpen).not.toHaveBeenCalled();
+    });
+
+    test('keeps the date link from opening the dialog', async () => {
+      const { user } = setup({ sessions: [OTHER_SESSION] });
+      // jsdom can't follow the link to another document; cancel the default
+      // action so React handlers still run without the navigation warning.
+      const preventNavigation = (e: MouseEvent) => e.preventDefault();
+      window.addEventListener('click', preventNavigation, true);
+
+      await user.click(screen.getByRole('link', { name: /13\/12\/2026/ }));
+
+      window.removeEventListener('click', preventNavigation, true);
       expect(mockOpen).not.toHaveBeenCalled();
     });
   });
