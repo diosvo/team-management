@@ -1,0 +1,165 @@
+---
+title: Flows
+description: 'Numbered request flows: page navigation, server actions and the report pipeline.'
+---
+
+- Four flows cover almost every request.
+- Sign-in, provisioning and password reset:
+  [Authentication](/docs/user-flows/authentication).
+
+## Page navigation
+
+Three layers gate a page; only the server layer is authoritative.
+
+<Mermaid
+  chart={`
+sequenceDiagram
+    autonumber
+    actor U as Browser
+    participant MW as proxy.ts
+    participant L as (protected)/layout.tsx
+    participant BA as Better Auth
+    U->>MW: GET /roster
+    MW->>MW: getSessionCookie() – presence only, no DB
+    alt no cookie on a protected route
+        MW-->>U: redirect /login
+    else cookie on an auth route
+        MW-->>U: redirect /dashboard
+    else cookie on a protected route
+        MW->>MW: getCookieCache() – signed cache, no DB
+        MW->>MW: can(role, resolveResource(path), 'view')
+        MW-->>U: redirect /login if stale, /forbidden if denied
+        MW->>L: NextResponse.next()
+    end
+    L->>BA: verifySession() – cache(), auth.api.getSession()
+    L-->>U: redirect /login, or render inside SessionProvider(session.user)
+`}
+/>
+
+- Session and signed cookie cache both last **1 hour** (cookie prefix `sgr`).
+- The cookie cache lets the proxy decide without a query.
+- `resolveResource` matches by path prefix: a new route under a resource
+  prefix inherits its gate.
+
+## Server actions
+
+Requests with a `next-action` header skip the proxy; the action authorizes
+itself.
+
+<Mermaid
+  chart={`
+sequenceDiagram
+    autonumber
+    participant C as Client component
+    participant SA as withResource(resource)(actions, fn)
+    participant DB as PostgreSQL
+    C->>SA: POST with next-action header
+    SA->>SA: withAuth → verifySession()
+    alt no session
+        SA-->>C: redirect /login
+    else session
+        SA->>SA: defineAbility(role, is_captain).canAll(actions)
+        alt denied
+            SA-->>C: forbidden() → 403 boundary
+        else allowed
+            SA->>SA: Zod parse, record-level checks
+            SA->>DB: src/db/* through Drizzle
+            SA->>SA: revalidate.<entity>()
+            SA-->>C: ResponseFactory.success / error
+        end
+    end
+`}
+/>
+
+## On-demand dashboard PDF
+
+**Dashboard → Actions → Download** renders the current date range.
+
+<Mermaid
+  chart={`
+sequenceDiagram
+    autonumber
+    actor U as User on /dashboard
+    participant R as POST /api/reports/dashboard
+    participant C as Headless Chromium
+    participant D as /dashboard page
+    U->>R: { from, to, filename }
+    R->>R: verifySession(), build Duration label
+    R->>C: launch, forward session cookies
+    C->>D: open dashboardPath(range)
+    D-->>C: rendered grid
+    C->>C: keep only #reports-dashboard, page.pdf()
+    R-->>U: application/pdf attachment
+`}
+/>
+
+- `Duration:` comes from `formatDateRange` on the server, so it matches the
+  rendered window.
+- Nothing is stored.
+- **Send to...** emails the same PDF through Resend.
+
+## Scheduled report
+
+- A daily cron runs every schedule whose `next_run_at` has passed.
+- Monthly on the 1st, yearly on 1 January, both at 08:00 ICT.
+- "Run now" on `/reports` calls the same `executeSchedule`.
+
+<Mermaid
+  chart={`
+sequenceDiagram
+    autonumber
+    participant V as Vercel Cron
+    participant R as GET /api/reports/schedule
+    participant E as executeSchedule
+    participant DB as PostgreSQL
+    participant C as Chromium
+    participant B as Vercel Blob
+    participant M as Resend
+    V->>R: Bearer CRON_SECRET (01:00 UTC)
+    R->>DB: claimDueSchedules(20)
+    R->>R: getServiceSession()
+    loop each due schedule, 40 s budget
+        R->>E: run occurrence (scheduled_for = next_run_at)
+        E->>DB: insert report_history (unique per occurrence)
+        E->>C: render dashboard PDF
+        E->>B: store PDF (90 days)
+        E->>M: email download link
+        E->>DB: complete run, advance next_run_at
+    end
+    Note over M: status → /api/webhooks/resend
+`}
+/>
+
+## Q&A
+
+The scheduled report run, in more depth.
+
+<Accordions>
+  <Accordion title="Why does it never double-send?">
+
+    - Step 5 inserts `report_history` first, unique on `(schedule_id, scheduled_for)`.
+    - A replayed or overlapping tick hits the unique violation and skips.
+    - A run stuck past `maxDuration` is reclaimed, not skipped.
+    - `scheduled_for` is the planned occurrence, not `now()`: retries match.
+
+  </Accordion>
+  <Accordion title="What happens on failure?">
+
+    - Each step retries in-process; a stored PDF is not re-rendered.
+    - Final failure marks the run failed; the schedule **still advances**.
+    - Coaches and admins get a failure email linking to the history.
+    - Recovery: "Run now".
+
+  </Accordion>
+  <Accordion title="Why only one team per service account?">
+    Chromium renders as `PW_USERNAME`, so it sees only that account's team.
+    Other teams' schedules fail rather than get wrong data.
+  </Accordion>
+  <Accordion title="How are old reports cleaned up?">
+
+    - `GET /api/reports/retention` runs at 02:00 UTC.
+    - Deletes blobs past `expires_at` and marks their rows expired.
+    - Failed deletes retry the next day.
+
+  </Accordion>
+</Accordions>

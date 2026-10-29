@@ -1,0 +1,232 @@
+---
+title: Vai trò & Quyền
+description: Ba lớp kiểm tra quyền, ma trận vai trò × resource sinh từ code, và kiểm tra sở hữu từng bản ghi.
+---
+
+Ai được làm gì, và mỗi quy tắc được kiểm tra ở đâu.
+
+- Mỗi request đi qua ba lớp kiểm tra; chỉ lớp server action là lớp quyết định.
+- Ma trận quyền nằm ngay trong code: `ROLE_CONFIG`, `CAPTAIN_PERMISSIONS` trong
+  `src/utils/permissions.ts`.
+- Bảng bên dưới được render từ chính code đó, nên không bao giờ bị lệch.
+
+## Vai trò
+
+<TypeTable
+  type={{
+    GUEST: {
+      type: 'role',
+      description:
+        'Tập thử hoặc khách. Chỉ xem Bảng tổng quan, Thành tích, Danh sách đội, Trận đấu.',
+      required: true,
+    },
+    PLAYER: {
+      type: 'role',
+      description:
+        'Cầu thủ của đội. Xem được hầu hết các trang, tự gửi đơn xin nghỉ, tự sửa hồ sơ của mình.',
+      required: true,
+    },
+    COACH: {
+      type: 'role',
+      description: (
+        <ul>
+          <li>
+            Ban huấn luyện: tạo và sửa buổi tập, điểm danh, trận đấu, thành
+            tích.
+          </li>
+          <li>Phụ trách toàn bộ kiểm tra định kỳ.</li>
+        </ul>
+      ),
+      required: true,
+    },
+    SUPER_ADMIN: {
+      type: 'role',
+      description:
+        'Mọi hành động trên mọi mục trong RESOURCES (tính ra từ code, không liệt kê tay).',
+      required: true,
+    },
+    Captain: {
+      type: 'flag on PLAYER',
+      description:
+        'Người dùng trong phiên có is_captain (lưu ở bảng player). Chỉ cộng thêm quyền.',
+      required: true,
+    },
+  }}
+/>
+
+## Các lớp kiểm tra
+
+<Tabs items={['1. Proxy', '2. withResource', '3. Client']}>
+<Tab value="1. Proxy">
+
+`src/proxy.ts` chỉ chạy khi chuyển trang.
+
+- **Bỏ qua:** server action (có header `next-action`) đi thẳng qua.
+- **Matcher loại trừ:** `/api`, `/llms*`, file tĩnh.
+- **`/docs/*`:** ai cũng xem được; chỉ được rewrite theo ngôn ngữ.
+
+Các trường hợp chuyển hướng:
+
+- **Không có cookie phiên đăng nhập** (`getSessionCookie`, tiền tố `sgr`) khi
+  vào route cần đăng nhập → `/login`.
+- **Đã có cookie mà vào** `/`, `/login`, `/forgot-password`, `/new-password` →
+  `/dashboard`.
+- **Có cookie nhưng `getCookieCache` rỗng** (cache 1 giờ đã hết hạn) →
+  `/login`.
+- **`can(role, resource, 'view')` không đạt** → `/forbidden`. Resource lấy theo
+  phần đầu đường dẫn (`/periodic-testing/add-result` → `periodic-testing`).
+- Chỉ kiểm tra `view`, và chỉ theo vai trò; đội trưởng (Captain) không được
+  thêm quyền `view` nào.
+
+</Tab>
+<Tab value="2. withResource">
+
+`src/actions/auth.ts`. Lớp duy nhất không thể lách qua.
+
+- **`verifySession()`:** `auth.api.getSession` bọc trong React `cache`; mỗi
+  request chỉ gọi một lần.
+- **`withAuth(fn)`:** chưa đăng nhập → `/login`; truyền `session.user` vào làm
+  đối số đầu tiên. Các hàm đọc dữ liệu dùng thẳng lớp này.
+- **`withResource(resource)(actions, fn)`:** bọc ngoài `withAuth`, tạo
+  `defineAbility(user.role, user.is_captain)`.
+- Gọi `forbidden()` nếu `canAll` không đúng với tất cả hành động được liệt kê.
+
+```ts
+const roster = withResource('roster');
+export const addUser = roster(['create'], async (user, values) => { ... });
+```
+
+Lớp này cấp quyền theo resource, không theo từng bản ghi. Xem [Kiểm tra sở hữu](#kiểm-tra-sở-hữu).
+
+</Tab>
+<Tab value="3. Client">
+
+Chỉ để giao diện dễ dùng hơn; không bao giờ được tin.
+
+- **Phiên đăng nhập:** layout cần đăng nhập chỉ đưa `session.user` vào
+  `SessionProvider`; token không bao giờ xuống tới client.
+- **Luôn mới:** sau đó `authClient.useSession()` giữ thông tin phiên luôn cập
+  nhật.
+- **`usePermissions`:** tính ra cùng một `Ability` từ người dùng đó.
+- **`Authorized`:** chỉ render `children` khi kiểm tra đạt; có slot `fallback`,
+  `loading`, và `mode="all" | "any"`.
+- **`Visibility`:** chỉ ẩn/hiện, bọc quanh React `Activity`; không biết gì về
+  vai trò.
+
+```tsx
+<Authorized resource="roster" action="create">
+  <AddButton />
+</Authorized>
+```
+
+</Tab>
+</Tabs>
+
+## Ma trận phân quyền
+
+<PermissionMatrix />
+
+- `all` = view, create, edit, delete.
+- `documents` chưa có trang (mục trên sidebar đang bị tắt).
+- `emails` và `reports` là trang chỉ admin mới vào được.
+
+## Kiểm tra sở hữu
+
+- Ma trận chỉ chặn theo resource, không bao giờ theo một dòng cụ thể.
+- Khi dòng dữ liệu quan trọng, action sẽ so nó với `user` được truyền vào.
+- Không khớp → `forbidden()`. Các quy tắc đang có trong code:
+
+<TypeTable
+  type={{
+    submitLeave: {
+      type: 'attendance:create',
+      description: (
+        <ul>
+          <li>
+            <code>PLAYER</code> (kể cả đội trưởng): chỉ khi{' '}
+            <code>values.player_id === user.id</code>.
+          </li>
+          <li>
+            <code>COACH</code> và <code>SUPER_ADMIN</code>: gửi cho ai cũng
+            được.
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+    getUserProfile: {
+      type: 'withAuth',
+      description: (
+        <ul>
+          <li>
+            <code>GUEST</code> bị chặn.
+          </li>
+          <li>
+            <code>viewOnly</code>: admin xem hồ sơ của chính mình.
+          </li>
+          <li>
+            <code>viewOnly</code>: cầu thủ/HLV xem hồ sơ người khác.
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+    updatePersonalInfo: {
+      type: 'profile:edit',
+      description: 'Không phải admin: chỉ được sửa user_id của mình.',
+      required: true,
+    },
+    updateTeamInfo: {
+      type: 'profile:edit',
+      description: (
+        <ul>
+          <li>
+            Không phải admin: chỉ <code>user_id</code> của mình.
+          </li>
+          <li>
+            <code>role</code> gửi lên phải trùng vai trò hiện tại của người gọi.
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+    uploadAvatar: {
+      type: 'profile:edit',
+      description: (
+        <ul>
+          <li>
+            Mọi vai trò: chỉ <code>user_id</code> của mình.
+          </li>
+          <li>
+            <code>old_path</code> phải trùng ảnh đang lưu.
+          </li>
+          <li>
+            Chỉ kiểm tra tiền tố <code>users/&lt;id&gt;</code> có thể khớp nhầm
+            người khác (key có hậu tố ngẫu nhiên).
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+    getAvatar: {
+      type: 'profile:view',
+      description:
+        'Đường dẫn phải bắt đầu bằng users/; chặn việc dò các blob riêng tư khác.',
+      required: true,
+    },
+  }}
+/>
+
+Các nguyên tắc dùng chung:
+
+- **Không tin ID trong payload.** `team_id` luôn lấy từ phiên đăng nhập.
+- **`role` là trường nhạy cảm.** Chỉ `SUPER_ADMIN` được đổi.
+- **Tiền tố đường dẫn không chứng minh quyền sở hữu.**
+- **Chỉ đọc đúng cái cần.** `getRoster` chỉ lấy các cột mà bảng hiển thị.
+
+## `usePermissions`
+
+Hook phía client trong `src/hooks/use-permissions.ts`. Trả về `NO_ACCESS` (mọi
+kiểm tra đều false) cho tới khi biết vai trò.
+
+<AutoTypeTable path="src/hooks/use-permissions.ts" name="PermissionsResult" />

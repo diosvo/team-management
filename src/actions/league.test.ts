@@ -1,6 +1,7 @@
 import {
   addPlayerToLeagueRoster,
   deleteLeague,
+  getLeagueById,
   getLeagues as fetchLeagues,
   getPlayersInLeague as fetchPlayersInLeague,
   insertLeague,
@@ -13,6 +14,7 @@ import { getTeamPlayerIds } from '@/db/player';
 
 import { revalidate } from '@/actions/cache';
 import type { UpsertLeagueSchemaValues } from '@/schemas/league';
+import { LeagueStatus } from '@/utils/enum';
 
 import {
   mockWithAuth,
@@ -36,6 +38,7 @@ vi.mock('./auth', () => ({
 }));
 
 vi.mock('@/db/league', () => ({
+  getLeagueById: vi.fn(),
   getLeagues: vi.fn(),
   getPlayersInLeague: vi.fn(),
   insertLeague: vi.fn(),
@@ -188,6 +191,29 @@ describe('League Actions', () => {
     });
 
     describe('update existing league', () => {
+      beforeEach(() => {
+        vi.mocked(getLeagueById).mockResolvedValue({
+          ...MOCK_LEAGUE,
+          status: LeagueStatus.UPCOMING,
+        });
+      });
+
+      test('rejects a league that has already started', async () => {
+        vi.mocked(getLeagueById).mockResolvedValue(MOCK_LEAGUE); // ended
+
+        const result = await upsertLeague(
+          MOCK_LEAGUE.league_id,
+          leagueData,
+          [],
+        );
+
+        expect(updateLeague).not.toHaveBeenCalled();
+        expect(result).toEqual({
+          success: false,
+          message: 'Only upcoming leagues can be changed',
+        });
+      });
+
       test('updates existing league from the submitted fields only', async () => {
         vi.mocked(updateLeague).mockResolvedValue(updateReturn);
 
@@ -319,6 +345,25 @@ describe('League Actions', () => {
   });
 
   describe('removeLeague', () => {
+    beforeEach(() => {
+      vi.mocked(getLeagueById).mockResolvedValue({
+        ...MOCK_LEAGUE,
+        status: LeagueStatus.UPCOMING,
+      });
+    });
+
+    test('rejects a league that has already started', async () => {
+      vi.mocked(getLeagueById).mockResolvedValue(MOCK_LEAGUE); // ended
+
+      const result = await removeLeague(MOCK_LEAGUE.league_id);
+
+      expect(deleteLeague).not.toHaveBeenCalled();
+      expect(result).toEqual({
+        success: false,
+        message: 'Only upcoming leagues can be changed',
+      });
+    });
+
     test('deletes league successfully', async () => {
       vi.mocked(deleteLeague).mockResolvedValue({
         ...mockResult,

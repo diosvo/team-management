@@ -1,14 +1,116 @@
 ---
-title: "Changelog"
-description: "Revision history of the PRD itself."
+title: Changelog
+description: Revision history of the documentation itself, not of the app.
 ---
 
-Revision history of the **documentation itself** (not the app, which is tracked in git history and releases). Add a row for meaningful changes: new/removed specs, scope decisions, status changes. Typo-level edits don't need an entry.
-
-| Date       | Change                                                                                                        |
-| ---------- | ------------------------------------------------------------------------------------------------------------- |
-| 2026-08-30 | Documented three schema changes shipped in migrations `0015`–`0017`: `user_team` membership history with `user.team_id` retained as the pointer to the open stint and `match_player_stats.team_id` for per-match team context (Data Model "Membership over time", Architecture §5); `team.is_external` as the opponent marker replacing `is_default = false` in the team queries; and the `rule` table folded into `team.rule_content` / `rule_updated_at`. Refreshed the migration list, the ERDs, and the remaining items in Architecture §15 and the Roadmap. |
-| 2026-08-23 | Documented the data-model hardening that shipped in migrations `0008`–`0010`: jersey numbers unique per team (action layer, Roster/Data Model/Architecture), attendance keyed per training session with the composite `(session_id, date)` FK and `attendance.team_id` dropped (Attendance), and asset names unique per team plus list ordering and dialog-reset behavior (Assets). Refreshed the migration list and the remaining ⭐ items in Architecture §15 and the Roadmap. |
-| 2026-08-08 | Added ownership checks as `01-roles-permissions` §3 (renumbering the following sections) and documented them per feature: self-only leave (Attendance), self-only profile edits and avatar blob ownership (Profile), the narrowed roster projection that drops personal data from the payload (Roster). Documented per-card streaming and on-demand loading of heavy dependencies (Dashboard, Team Rule, Registration) and the batched result lookup (Periodic Testing). |
-| 2026-07-22 | Restructured PRD: master PRD → `00-overview` (added vision, personas, metrics, non-goals), `pages/` → `features/`, added roadmap + this changelog. |
-| 2026-07-02 | Reorganized PRD by page; added PDF export via GitHub Actions (#216).                                           |
+<TypeTable
+  type={{
+    '2026-10-24': {
+      type: 'docs',
+      description: (
+        <ul>
+          <li>
+            Fumadocs site in English and Vietnamese, with a language switcher.
+          </li>
+          <li>
+            Built from Fumadocs UI, plus a generated{' '}
+            <code>PermissionMatrix</code>.
+          </li>
+          <li>
+            C4 Architecture section replaces the single architecture page.
+          </li>
+          <li>New Sign-in Pages and Emails specs; Reports spec reworked.</li>
+          <li>
+            Every page rewritten as short bullets; Vietnamese reads naturally.
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+    '2026-08-30': {
+      type: 'docs',
+      description: (
+        <ul>
+          <li>
+            Migrations <code>0015</code>–<code>0018</code>.
+          </li>
+          <li>
+            <code>user_team</code> membership history; <code>user.team_id</code>{' '}
+            stays the current team.
+          </li>
+          <li>
+            <code>team.is_external</code> marks opponents.
+          </li>
+          <li>
+            The <code>rule</code> table merged into{' '}
+            <code>team.rule_content</code>.
+          </li>
+          <li>
+            <code>match.status</code>, the no-score-unless-completed check,
+            restrict on home/away team.
+          </li>
+          <li>Refreshed Data Model, migrations and Roadmap.</li>
+        </ul>
+      ),
+      required: true,
+    },
+    '2026-08-23': {
+      type: 'docs',
+      description: (
+        <ul>
+          <li>
+            Migrations <code>0008</code>–<code>0010</code>.
+          </li>
+          <li>Jersey numbers unique per team (Roster, Data Model).</li>
+          <li>
+            Attendance keyed per training session;{' '}
+            <code>attendance.team_id</code> dropped.
+          </li>
+          <li>
+            Asset names unique per team, list order, dialog reset (Assets).
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+    '2026-08-08': {
+      type: 'docs',
+      description: (
+        <ul>
+          <li>
+            Ownership checks: self-only leave, profile edits and avatar blobs.
+          </li>
+          <li>Roster payload no longer carries personal data.</li>
+          <li>
+            Per-card streaming and lazy heavy dependencies (Dashboard, Team
+            Rule, Registration).
+          </li>
+          <li>Batched result lookup (Periodic Testing).</li>
+        </ul>
+      ),
+      required: true,
+    },
+    '2026-07-22': {
+      type: 'docs',
+      description: (
+        <ul>
+          <li>
+            Master PRD split into an overview (vision, personas, metrics,
+            non-goals).
+          </li>
+          <li>
+            <code>pages/</code> renamed to <code>features/</code>.
+          </li>
+          <li>Added the roadmap and this changelog.</li>
+        </ul>
+      ),
+      required: true,
+    },
+    '2026-07-02': {
+      type: 'docs',
+      description:
+        'Reorganized the PRD by page; added PDF export via GitHub Actions (#216).',
+      required: true,
+    },
+  }}
+/>

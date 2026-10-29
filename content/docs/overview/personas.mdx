@@ -1,16 +1,82 @@
 ---
-title: "Personas"
-description: "Target users and what each role needs from the app."
+title: Personas
+description: The four roles and the Captain flag, and what each needs from the app.
 ---
 
-The role model is small and static; users are trusted club members invited by an admin.
+- **Role:** Postgres enum `user_role` on `user.role`.
+- **Captain flag:** `player.is_captain`.
+- Both come from the session; `defineAbility(role, isCaptain)` builds an `Ability`.
+- Each persona maps to one row or column of the
+  [permission matrix](/docs/access/roles-permissions).
 
-| Persona                | Role flag          | What they need from the app                                                                                    |
-| ---------------------- | ------------------ | -------------------------------------------------------------------------------------------------------------- |
-| **Visitor / trialist** | `GUEST`            | Read-only look at the club: dashboard, roster, matches.                                                        |
-| **Player**             | `PLAYER`           | Check training schedule, team rules, own attendance and performance metrics; keep own profile current.         |
-| **Team captain**       | `PLAYER` + Captain | Everything a player has, plus run registration, manage the roster (invite/remove), record matches, edit rules. |
-| **Coach**              | `COACH`            | Plan training sessions, take attendance, record match results, track player testing/performance over time.     |
-| **Club administrator** | `SUPER_ADMIN`      | Configure teams, leagues, locations; manage all people and data; full access everywhere.                       |
+<TypeTable
+  type={{
+    'Visitor / trialist': {
+      type: 'GUEST',
+      description: (
+        <ul>
+          <li>Read-only: dashboard, achievements, roster, matches.</li>
+          <li>No profile, no personal data.</li>
+        </ul>
+      ),
+      required: true,
+    },
+    Player: {
+      type: 'PLAYER',
+      description: (
+        <ul>
+          <li>Training schedule and team rules.</li>
+          <li>Own attendance (submit leave), test results and profile.</li>
+          <li>Views registration and teams.</li>
+        </ul>
+      ),
+      required: true,
+    },
+    'Team captain': {
+      type: 'PLAYER + is_captain',
+      description: (
+        <ul>
+          <li>Everything a player has.</li>
+          <li>Invites/removes members and edits the rules.</li>
+          <li>Records matches, runs registration and testing.</li>
+        </ul>
+      ),
+      required: true,
+    },
+    Coach: {
+      type: 'COACH',
+      description: (
+        <ul>
+          <li>Schedules training and takes attendance.</li>
+          <li>Records matches and achievements; manages periodic testing.</li>
+          <li>Views assets, leagues, locations.</li>
+        </ul>
+      ),
+      required: true,
+    },
+    'Club administrator': {
+      type: 'SUPER_ADMIN',
+      description:
+        'Every action on every resource, including teams, leagues, locations, emails and reports.',
+      required: true,
+    },
+  }}
+/>
 
-Full capability-by-role detail: [Roles & Permissions](/docs/access/roles-permissions).
+## How the roles differ in code
+
+- **Captain is additive.** `can()` checks `ROLE_CONFIG[role]`, then
+  `CAPTAIN_PERMISSIONS` only if `role === PLAYER && isCaptain`.
+- **No other role gains from the flag**, and a captain keeps every PLAYER right.
+- **GUEST has no `profile` permission.** `getUserProfile` calls `forbidden()`
+  before reading any record.
+- **SUPER_ADMIN is computed.** Every `RESOURCES` entry maps to `ALL_ACTIONS`;
+  a new resource is admin-only until granted to another role.
+- **Row ownership is separate from role.** The action checks own attendance and
+  profile against the session user, not the matrix
+  ([ownership checks](/docs/access/roles-permissions#ownership-checks)).
+
+<Callout type="info" title="Trusted but still gated">
+  The UI only hides controls. Every server action re-checks role and, where
+  relevant, ownership.
+</Callout>

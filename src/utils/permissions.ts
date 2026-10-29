@@ -1,12 +1,12 @@
 import { RESOURCES } from '@/routes';
 import { UserRole } from '@/utils/enum';
 
-const ALL_ACTIONS = ['view', 'create', 'edit', 'delete'] as const;
+export const ALL_ACTIONS = ['view', 'create', 'edit', 'delete'] as const;
 
 export type Action = (typeof ALL_ACTIONS)[number];
 export type Resource = (typeof RESOURCES)[number];
 export type Permission = `${Resource}:${Action}`;
-type RoleConfig = Partial<Record<Resource, Array<Action>>>;
+export type RoleConfig = Partial<Record<Resource, Array<Action>>>;
 
 export const ROLE_CONFIG: Record<UserRole, RoleConfig> = {
   [UserRole.SUPER_ADMIN]: Object.fromEntries(
@@ -51,7 +51,7 @@ export const ROLE_CONFIG: Record<UserRole, RoleConfig> = {
   },
 };
 
-const CAPTAIN_PERMISSIONS: RoleConfig = {
+export const CAPTAIN_PERMISSIONS: RoleConfig = {
   'team-rule': ['edit'],
   roster: ['create', 'edit', 'delete'],
   matches: ['create', 'edit'],

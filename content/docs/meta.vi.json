@@ -1,0 +1,19 @@
+{
+  "pages": [
+    "index",
+    "---Tổng quan---",
+    "...overview",
+    "---Tính năng---",
+    "...features",
+    "---Kiến trúc---",
+    "...architecture",
+    "---Phân quyền---",
+    "...access",
+    "---Luồng người dùng---",
+    "...user-flows",
+    "---Chất lượng---",
+    "...quality",
+    "---Dự án---",
+    "...project"
+  ]
+}

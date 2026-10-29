@@ -1,0 +1,192 @@
+---
+title: Buổi tập
+description: Lịch tập của đội, kèm tỉ lệ có mặt từng buổi tính từ dữ liệu điểm danh.
+---
+
+<Callout title="Route /training">
+  Nhóm **Team Management** · Resource `training` · Trạng thái **Đã phát hành**
+</Callout>
+
+## Mục đích
+
+- Trang Buổi tập (**Training**) là lịch tập của đội: tập khi nào, ở sân nào, bao
+  lâu và bao nhiêu người đến.
+- Tỉ lệ có mặt ở mỗi dòng tính từ dữ liệu điểm danh của buổi tập đó.
+- Trang này để xem tổng quan;
+  [Điểm danh](/docs/vi/features/team-management/attendance) là phần chi tiết.
+
+## Quyền truy cập
+
+<PermissionMatrix resource="training" />
+
+- Khách (`GUEST`) không vào được.
+- Huấn luyện viên (`COACH`) tạo và sửa buổi tập; chỉ admin (`SUPER_ADMIN`) được
+  xoá.
+- Đội trưởng không có thêm quyền gì: `CAPTAIN_PERMISSIONS` không có mục
+  `training`.
+
+## Luồng
+
+<Steps>
+  <Step>
+    ### Xem lịch tập
+
+    - Mặc định hiện các buổi tập trong tháng này.
+    - Đổi `interval` hoặc `status` sẽ tải lại dữ liệu từ server (`shallow: false`).
+    - Tìm theo sân tập (`q`) và phân trang được lọc ngay trên trình duyệt.
+    - Các chỉ số:
+      - **Completed Sessions**: số buổi đã tập xong, bấm vào để lọc `completed`.
+      - **Average Attendance**: số lượt điểm danh trung bình mỗi buổi.
+      - **Total Hours**: tổng `end_time - start_time`.
+
+  </Step>
+  <Step>
+    ### Tạo / sửa buổi tập
+
+    - Bấm **New Session** để mở `UpsertSession`; bấm vào một dòng để mở lại với
+      thông tin có sẵn.
+    - Các trường: ngày, giờ bắt đầu, giờ kết thúc, sân tập.
+    - `UpsertSessionSchema`: mặc định 20:00–22:00; kiểm tra `end_time > start_time`.
+    - Không có ô chọn trạng thái: buổi mới là `scheduled`, sửa thì giữ nguyên
+      trạng thái cũ.
+
+  </Step>
+  <Step>
+    ### Mở điểm danh
+
+    Bấm vào ô ngày sẽ mở `/attendance?date=<date>`, trang điểm danh theo ngày của
+    buổi tập đó.
+
+  </Step>
+  <Step>
+    ### Xoá buổi tập
+
+    - Admin chọn nhiều dòng rồi xoá một lần.
+    - Dữ liệu điểm danh của buổi tập cũng bị xoá theo.
+
+  </Step>
+</Steps>
+
+## Quy tắc
+
+- **Đội phải có huấn luyện viên.** `upsertSession` gọi `getTeamHeadCoach` cả khi
+  tạo lẫn khi sửa.
+  - Đội chưa có ai là huấn luyện viên thì báo lỗi "No coach assigned to the
+    team".
+  - Lấy người đầu tiên có `role = coach`; không xét `coach.position`.
+- **Tỉ lệ có mặt** = `(on_time + late) / attendances × 100`, làm tròn một chữ số
+  thập phân; bằng `0` nếu chưa có ai được điểm danh.
+- **`(session_id, date)` không được trùng** (`training_session_id_date_unique`).
+  - Đây là đích của khoá ngoại kép từ `attendance`, nên đổi ngày buổi tập thì
+    dữ liệu điểm danh cũng chuyển theo.
+- **Tham chiếu có thể để trống.** Xoá huấn luyện viên hoặc sân tập thì cột đó
+  thành `NULL`; xoá đội thì buổi tập bị xoá theo.
+- **Khoảng thời gian** lấy từ `TIME_DURATION[interval]`, chỉ tính một lần lúc
+  nạp module.
+
+## Dữ liệu
+
+<Tabs items={['TrainingSession', 'TrainingSessionWithDetails', 'TrainingSessionStats']}>
+  <Tab value="TrainingSession">
+
+    <AutoTypeTable path="src/drizzle/schema/training.ts" name="TrainingSession" />
+
+  </Tab>
+  <Tab value="TrainingSessionWithDetails">
+
+    <AutoTypeTable path="src/types/training-session.d.ts" name="TrainingSessionWithDetails" />
+
+  </Tab>
+  <Tab value="TrainingSessionStats">
+
+    <AutoTypeTable path="src/types/training-session.d.ts" name="TrainingSessionStats" />
+
+  </Tab>
+</Tabs>
+
+### Tham số URL
+
+<TypeTable
+  type={{
+    interval: {
+      type: 'Interval',
+      description: 'Lọc theo khoảng thời gian, xử lý trên server.',
+      default: 'this_month',
+    },
+    status: {
+      type: 'Array<SessionStatus>',
+      description:
+        'Lọc theo trạng thái, xử lý trên server. Để trống là lấy tất cả.',
+    },
+    q: {
+      type: 'string',
+      description: 'Tìm theo tên sân tập, trên trình duyệt.',
+    },
+    page: { type: 'number', description: 'Trang hiện tại.', default: '1' },
+  }}
+/>
+
+## API
+
+- Server action trong `src/actions/training-session.ts`.
+- Đọc dùng `withAuth`; ghi dùng `withResource('training')`.
+
+<TypeTable
+  type={{
+    'getSessions(params)': {
+      type: 'DataWithStats<TrainingSessionWithDetails, TrainingSessionStats>',
+      required: true,
+      description: (
+        <ul>
+          <li>
+            Các buổi tập của đội bạn trong khoảng thời gian, mới nhất trước.
+          </li>
+          <li>Kèm số liệu từng buổi và chỉ số tổng.</li>
+        </ul>
+      ),
+    },
+    'getCoach()': {
+      type: 'Nullable<{ id, name }>',
+      required: true,
+      description: 'Huấn luyện viên (COACH) đầu tiên của đội bạn.',
+    },
+    'upsertSession(id, values)': {
+      type: 'Response',
+      required: true,
+      description: (
+        <ul>
+          <li>Tạo (id rỗng) hoặc cập nhật một buổi tập.</li>
+          <li>
+            Gán <code>coach_id</code> khi tạo.
+          </li>
+          <li>Báo lỗi nếu đội chưa có huấn luyện viên.</li>
+        </ul>
+      ),
+    },
+    'removeSession(id)': {
+      type: 'Response',
+      required: true,
+      description: 'Xoá một buổi tập; dữ liệu điểm danh cũng bị xoá theo.',
+    },
+  }}
+/>
+
+## Tiêu chí chấp nhận
+
+<Accordions>
+  <Accordion title="Cầu thủ chỉ xem lịch">
+    Cầu thủ, dù có là đội trưởng hay không, thấy bảng và chỉ số nhưng không có
+    nút **New Session** hay ô chọn dòng.
+  </Accordion>
+  <Accordion title="Chưa có HLV thì chưa tạo được buổi tập">
+    Đội chưa có huấn luyện viên thì tạo hoặc sửa buổi tập đều báo "No coach
+    assigned to the team".
+  </Accordion>
+  <Accordion title="Giờ kết thúc phải sau giờ bắt đầu">
+    Giờ kết thúc bằng hoặc sớm hơn giờ bắt đầu sẽ bị chặn ngay trên form: "End
+    time must be after start time".
+  </Accordion>
+  <Accordion title="Bấm ngày là mở điểm danh">
+    Bấm vào ngày sẽ mở `/attendance?date=<date>`, không mở hộp thoại sửa.
+  </Accordion>
+</Accordions>

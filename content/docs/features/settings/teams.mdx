@@ -1,111 +1,161 @@
 ---
-title: "Teams"
+title: Teams
+description: The directory of opponent teams used as home and away sides in Matches, with private logo storage.
 ---
 
-> Route: `/teams` · Nav group: **Settings** · Status: **Draft**
+<Callout title="Route /teams">
+  Nav group **Settings** · Resource `teams` · Status **Shipped**
+</Callout>
 
-## 1. Summary
+## Purpose
 
-- **Teams** manages the directory of **opponent** teams used across the app (primarily as home/away teams in Matches).
-- Each entry captures a name, optional contact email, establishment year, and an optional logo uploaded as an image.
-- The app's own **default team** is hidden here and cannot be edited or deleted from this page.
+- Reference list of opponents (`is_external = true`): name, contact email,
+  founding year, logo.
+- Picked as the home or away side when a match is recorded.
+- The club's own team (`is_default = true`) is never external, so it never
+  shows here and can't be edited here.
 
-## 2. Goals / metrics
+## Access
 
-### Goals
+<PermissionMatrix resource="teams" />
 
-- Give admins a single place to register and maintain opponent teams.
-- Provide a clean team reference for Matches (home / away selection).
+- PLAYER, COACH and SUPER_ADMIN view.
+- Only SUPER_ADMIN creates, edits, uploads logos or deletes.
+- Row click is bound to `can('teams', 'edit')`; viewers never open the dialog.
+- GUEST has no `view`; redirected to `/forbidden`.
 
-## 3. Users and permissions
+## Flows
 
-| Role             | View | Add | Edit | Delete |
-| ---------------- | ---- | --- | ---- | ------ |
-| GUEST            | No   | No  | No   | No     |
-| PLAYER           | Yes  | No  | No   | No     |
-| COACH            | Yes  | No  | No   | No     |
-| SUPER_ADMIN      | Yes  | Yes | Yes  | Yes    |
-| PLAYER (Captain) | Yes  | No  | No   | No     |
+<Steps>
+  <Step>
+    ### Browse
 
-> PLAYER, Captain, and COACH have read-only access. SUPER_ADMIN has full control.
+    - Sorted by name; `q` searches name and email.
+    - The name cell shows the logo as a rounded avatar, initials as fallback.
+    - `useTeamLogo` fetches via `getLogo`; SWR-cached by storage path.
 
-## 4. UX / flows
+  </Step>
+  <Step>
+    ### Add or update
 
-### Entry point
+    - **+ Add** and row click open the same dialog: name, email, establish year.
+    - **Add** stays open and resets the form; **Update** closes it.
+    - Saving revalidates `/teams` and the `opponents` SWR key (match form).
 
-- Sidebar → **Teams**.
+  </Step>
+  <Step>
+    ### Upload a logo
 
-### View
+    - Only in **Update**, because the blob path is `teams/{team_id}`.
+    - A PNG or JPEG under 100 KB calls `uploadLogo` at once, apart from Save.
+    - Other files are rejected client-side with a toast.
 
-- Table lists opponent teams with name, email, established year, and last updated.
-- The name cell shows the team **logo** as a rounded avatar (initials fallback while loading or when no logo is set); logos are fetched on demand and cached client-side.
-- Filter by free-text search over name or email (search box).
-- Rows are sorted alphabetically by name.
+  </Step>
+  <Step>
+    ### Delete
 
-### Create / edit
+    - Select rows and delete.
+    - `removeTeam` runs per id; the toast lists any failure message.
 
-- SUPER_ADMIN sees **+ Add**; clicking it opens a dialog.
-- SUPER_ADMIN can click a row to open the same dialog pre-filled for editing.
-- Fields: **Name** (required), **Email** (optional), **Establish Year** (defaults to the current year).
-- **Logo** is uploaded as an image, not entered as a URL. The uploader is shown **only when editing** an existing team (a team must exist before a logo can be attached to it).
-  - Click the avatar to pick a file; accepted formats are **PNG or JPEG**, up to **100 KB**. Rejected files raise an error toast (too large, or unsupported type).
-  - Uploading a new logo replaces the previous one; the old image is removed from storage.
-  - The logo saves immediately on selection (separate from the Save action for the other fields).
+  </Step>
+</Steps>
 
-### Delete
+## Rules
 
-- SUPER_ADMIN can select one or more teams and delete them (bulk supported).
-- A summary toast reports how many were deleted and surfaces any failures.
+- **The default team is untouchable.**
+  - `insertTeam` forces `is_default: false` and `is_external: true`.
+  - `updateTeam` / `deleteTeam` add `is_external = true` to `WHERE`; a forged
+    `team_id` is a no-op.
+  - Partial unique index `default_team` allows one default row.
+  - Check `default_team_not_external` forbids a team being both.
+- **Validation** (`UpsertTeamSchema`):
+  - Name 3–128 characters.
+  - Email optional, valid, ≤ 128 characters, unique across teams (DB).
+  - Establish year: integer 2000 to current year (default), also a `CHECK`.
+- **Logos are private blobs.**
+  - `uploadFile` calls `@vercel/blob` `put` with `access: 'private'`,
+    `addRandomSuffix: true`.
+  - The row stores the returned `pathname` in `image`.
+  - `getLogo` reads it server-side as a base64 data URL; no public URL.
+  - The previous blob is deleted after the row updates.
+- **Teams in a match cannot be deleted.**
+  - `match.home_team` / `away_team` are `ON DELETE restrict`.
+  - `removeTeam` counts those matches first and returns a plain message: "This
+    team appears in N match(es). Delete those matches first, or keep the team
+    to preserve the record."
+- **Cascades.** League entries of a deleted team go with it; external teams
+  carry no members.
 
-## 5. Functional requirements
+## Data
 
-- **FR-1:** PLAYER, COACH, and SUPER_ADMIN can view teams; the list excludes the default team.
-- **FR-2:** Filter by name or email; search state stored in the URL (`q`).
-- **FR-3:** SUPER_ADMIN can create and edit teams.
-- **FR-4:** Name is 3–128 characters. Email, when provided, must be a valid address (max 128 chars) and is unique across teams. Establish year is between 2000 and the current year (defaults to the current year).
-- **FR-5:** SUPER_ADMIN can upload a team logo when editing a team. The file must be PNG or JPEG and no larger than 100 KB; the image is stored in blob storage and the team record keeps its storage path. Replacing a logo deletes the previously stored image.
-- **FR-6:** SUPER_ADMIN can delete teams, including bulk delete.
-- **FR-7:** The default team cannot be updated or deleted from this page.
-- **FR-8:** Changes show a success or error toast; bulk delete reports partial failures.
-
-## 6. Acceptance criteria (Given/When/Then)
-
-- **AC-1:** Given I am a COACH, when I open Teams, then I see the list but no add, edit, or delete controls.
-- **AC-2:** Given I am SUPER_ADMIN, when I add a team with an email already used by another team, then the action is rejected with an error toast.
-- **AC-3:** Given I am SUPER_ADMIN, when I select multiple teams and delete them, then a toast reports how many were deleted and any failures.
-- **AC-4:** Given I am a GUEST, when I navigate to `/teams`, then I am redirected to `/forbidden`.
-- **AC-5:** Given I am SUPER_ADMIN editing a team, when I upload a PNG or JPEG under 100 KB, then the logo is saved and shown as the team's avatar; when I upload a larger or unsupported file, then it is rejected with an error toast and the existing logo is unchanged.
-
-## 7. Technical appendix
-
-### Data model (logical)
-
-Team:
-
-- `team_id`: uuid (PK)
-- `is_default`: boolean (the app's own team; hidden from this page)
-- `is_external`: boolean (an opponent; this page lists exactly these rows, and
-  a check constraint forbids a team being both default and external)
-- `name`: string (3–128)
-- `email`: string (unique, optional)
-- `establish_year`: integer (2000 to current year, default current year)
-- `image`: text (optional; blob storage path to the uploaded logo, replacing the former `logo_url` column)
-- `updated_at`: timestamp
+<AutoTypeTable path="src/drizzle/schema/team.ts" name="Team" />
 
 ### Query params
 
-- `q` (string): name or email search
-- `page` (number): pagination
+<TypeTable
+  type={{
+    q: { type: 'string', description: 'Name or email search.' },
+    page: { type: 'number', description: 'Current page.', default: '1' },
+  }}
+/>
 
-### API
+## API
 
-- `getTeams()`: fetch all opponent teams (excludes the default team)
-- `upsertTeam(team_id?, data)`: create or update a team (name, email, establish year)
-- `uploadLogo(team_id, old_path?, file)`: store the logo image in blob storage, save its path on the team, and delete the previously stored image
-- `getLogo(image?)`: resolve a team's logo image from its storage path (cached client-side via `useTeamLogo`)
-- `removeTeam(team_id)`: delete a team
+- Server actions in `src/actions/team.ts`, gated by `withResource('teams')`.
+- Blob helpers in `src/lib/blob.ts`.
 
-### Media / storage
+<TypeTable
+  type={{
+    'getTeams()': {
+      type: 'Array<Team>',
+      description: 'Opponent teams (is_external = true) by name. Auth only.',
+      required: true,
+    },
+    'upsertTeam(team_id, values)': {
+      type: 'Response',
+      description:
+        'Inserts an external team when team_id is empty, otherwise updates one.',
+      required: true,
+    },
+    'uploadLogo(team_id, old_path, file)': {
+      type: 'Response<{ image }>',
+      description:
+        'Stores the file under teams/{team_id}, saves its path, deletes old_path.',
+      required: true,
+    },
+    'getLogo(image)': {
+      type: 'string | null',
+      description:
+        'Base64 data URL of the private blob at that path. Requires view.',
+      required: true,
+    },
+    'removeTeam(team_id)': {
+      type: 'Response',
+      description:
+        'Deletes an external team; returns the match count as an error while matches reference it.',
+      required: true,
+    },
+  }}
+/>
 
-- Logo images are stored in blob storage under `teams/{team_id}`.
-- Accepted upload types: `image/png`, `image/jpeg`. Max size: 100 KB (`MAX_FILE_SIZE`).
+## Acceptance
+
+<Accordions>
+  <Accordion title="Viewers see the list without controls">
+    A PLAYER or COACH sees every opponent; no **+ Add**, no checkboxes, rows
+    do nothing on click.
+  </Accordion>
+  <Accordion title="A duplicate email is rejected">
+    An email already used by another team fails with an error toast.
+  </Accordion>
+  <Accordion title="A team with matches is kept">
+    Deleting a team that played a recorded match shows the match count in an
+    error toast; the team stays.
+  </Accordion>
+  <Accordion title="Logo upload is validated">
+
+    - PNG/JPEG under 100 KB replaces the avatar and removes the old blob.
+    - A larger or non-image file shows an error toast; the logo is unchanged.
+
+  </Accordion>
+</Accordions>

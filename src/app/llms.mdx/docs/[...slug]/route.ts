@@ -1,13 +1,16 @@
 import { Status } from '@/utils/response';
 
+import { i18n, isLanguage } from '@/app/docs/_lib/i18n';
 import { getLLMText, getPageMarkdownUrl, source } from '@/app/docs/_lib/source';
 
 export const dynamic = 'force-static';
 
 export function generateStaticParams() {
-  return source.getPages().map((page) => ({
-    slug: getPageMarkdownUrl(page).segments,
-  }));
+  return source
+    .getLanguages()
+    .flatMap(({ pages }) =>
+      pages.map((page) => ({ slug: getPageMarkdownUrl(page).segments })),
+    );
 }
 
 export async function GET(
@@ -18,7 +21,13 @@ export async function GET(
   if (slug.at(-1) !== 'content.md') {
     return new Response('not found', { status: Status.NOT_FOUND });
   }
-  const page = source.getPage(slug.slice(0, -1));
+
+  // `/llms.mdx/docs/vi/<slug>/content.md` mirrors the public URL: a leading
+  // language segment selects the translation, otherwise the default applies.
+  const [first, ...rest] = slug.slice(0, -1);
+  const lang = isLanguage(first) ? first : i18n.defaultLanguage;
+  const slugs = isLanguage(first) ? rest : slug.slice(0, -1);
+  const page = source.getPage(slugs, lang);
 
   if (!page) {
     return new Response('not found', { status: Status.NOT_FOUND });

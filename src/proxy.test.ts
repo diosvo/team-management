@@ -39,6 +39,12 @@ function redirectPath(response: NextResponse) {
   return location ? new URL(location).pathname : null;
 }
 
+/** Internal rewrite target → pathname, or `null` when nothing was rewritten. */
+function rewritePath(response: NextResponse) {
+  const target = response.headers.get('x-middleware-rewrite');
+  return target ? new URL(target).pathname : null;
+}
+
 /** Simulate a present (`token`) or absent (`null`) `sgr.session_token` cookie. */
 function withSessionToken(present: boolean) {
   mockGetSessionCookie.mockReturnValue(present ? 'signed-token' : null);
@@ -79,6 +85,48 @@ describe('proxy middleware', () => {
     // Returns before reading any cookie.
     expect(mockGetSessionCookie).not.toHaveBeenCalled();
     expect(mockGetCookieCache).not.toHaveBeenCalled();
+  });
+
+  describe('public docs (language rewrite, no auth)', () => {
+    test('rewrites the unprefixed docs root to the default language', async () => {
+      const response = await proxy(buildRequest('/docs'));
+
+      expect(rewritePath(response)).toBe('/docs/en');
+      expect(redirectPath(response)).toBeNull();
+      expect(mockGetSessionCookie).not.toHaveBeenCalled();
+    });
+
+    test('rewrites an unprefixed docs page to the default language', async () => {
+      const response = await proxy(
+        buildRequest('/docs/features/team-management/roster'),
+      );
+
+      expect(rewritePath(response)).toBe(
+        '/docs/en/features/team-management/roster',
+      );
+    });
+
+    test('serves a prefixed non-default language as-is', async () => {
+      const response = await proxy(buildRequest('/docs/vi/features'));
+
+      expect(rewritePath(response)).toBeNull();
+      expect(redirectPath(response)).toBeNull();
+    });
+
+    test('redirects an explicit default-language prefix to the canonical URL', async () => {
+      const response = await proxy(buildRequest('/docs/en/features'));
+
+      expect(redirectPath(response)).toBe('/docs/features');
+      expect(response.status).toBe(308);
+    });
+
+    test('does not treat a docs-like prefix as docs', async () => {
+      const response = await proxy(buildRequest('/documents'));
+
+      // `/documents` is a protected resource, not the docs.
+      expect(rewritePath(response)).toBeNull();
+      expect(redirectPath(response)).toBe(LOGIN_PATH);
+    });
   });
 
   describe('unauthenticated (no session_token)', () => {

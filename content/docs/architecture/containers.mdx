@@ -1,0 +1,138 @@
+---
+title: Containers
+description: C4 level 2. The runtime pieces of the portal, what they are built with and how they talk.
+---
+
+- A container runs or stores data on its own.
+- UI, server actions, API routes and docs are one Next.js deployable.
+- The real split: browser, server, headless Chromium and two data stores.
+
+## Container diagram
+
+<Mermaid
+  chart={`
+C4Container
+  title Container diagram for the Team Management Portal
+
+Person(user, "Signed-in user", "Any role")
+System_Ext(cron, "Vercel Cron", "Daily jobs")
+
+System_Boundary(portal, "Team Management Portal") {
+Container(client, "Client islands", "React 19, Chakra UI", "Forms, tables, charts")
+Container(server, "Next.js server", "Next.js 16, Node", "Pages, actions, API routes")
+Container(chromium, "Headless Chromium", "puppeteer-core", "Dashboard to PDF")
+ContainerDb(db, "PostgreSQL", "Neon, Drizzle", "22 tables")
+ContainerDb(blob, "Vercel Blob", "Private store", "Avatars, logos, PDFs")
+}
+
+Boundary(ext, "External systems", "") {
+System_Ext(resend, "Resend", "Email")
+System_Ext(github, "GitHub", "Issues API")
+}
+
+Rel(user, client, "Uses")
+Rel(client, server, "Server actions, RSC")
+Rel(cron, server, "GET /api/reports/\*")
+Rel(server, chromium, "Renders /dashboard")
+Rel(server, db, "SQL")
+Rel(server, blob, "Files")
+Rel(server, resend, "Email")
+Rel(server, github, "Issues")
+
+UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")
+`}
+/>
+
+<Callout type="info" title="Chromium renders the real page">
+  Chromium screenshots `/dashboard` from the app's own origin with a forwarded
+  session cookie, so a report always matches what users see.
+</Callout>
+
+## Containers
+
+<TypeTable
+  type={{
+    'Client islands': {
+      type: 'React 19 · Chakra UI 3 · Recharts · TipTap · react-hook-form · nuqs',
+      description:
+        "'use client' components in each route's _components; URL state in src/lib/nuqs.ts.",
+      required: true,
+    },
+    'Next.js server': {
+      type: 'Next.js 16.2 · Better Auth 1.6 · Drizzle 0.45 · Zod 4',
+      description:
+        'src/proxy.ts, RSC pages, src/actions, src/app/api. See Components.',
+      required: true,
+    },
+    'Headless Chromium': {
+      type: 'puppeteer-core 25 · @sparticuz/chromium-min',
+      description:
+        'src/lib/puppeteer.ts. Prod: CHROMIUM_PACK_URL binary; dev: local Chrome.',
+      required: true,
+    },
+    PostgreSQL: {
+      type: 'pg 8 · Pool({ max: 1 })',
+      description:
+        'Local Postgres in dev, Neon in prod, same migrations. See Data model.',
+      required: true,
+    },
+    'Vercel Blob': {
+      type: '@vercel/blob 2',
+      description:
+        'Private: users/<id>, teams/<team_id>, reports. Reports expire in 90 days (RETENTION_DAYS).',
+      required: true,
+    },
+  }}
+/>
+
+**Exception:** the registration PDF is built in the browser with `pdf-lib`,
+loaded by `await import()` only on export.
+
+## API surface
+
+- Server actions handle every user write.
+- Route handlers only where an action can't: third parties, binary, cron.
+
+<TypeTable
+  type={{
+    '/api/auth/[...all]': {
+      type: 'Better Auth',
+      description:
+        'Sign-in, sign-out, password reset. Credential routes: 3/min per IP.',
+      required: true,
+    },
+    'POST /api/reports/dashboard': {
+      type: 'session',
+      description:
+        'On-demand dashboard PDF for { from, to, filename }. maxDuration 30 s.',
+      required: true,
+    },
+    'GET /api/reports/download': {
+      type: 'session + team',
+      description:
+        'Streams a stored PDF from Blob; 403 for other teams unless SUPER_ADMIN.',
+      required: true,
+    },
+    'GET /api/reports/schedule': {
+      type: 'CRON_SECRET',
+      description: 'Claims due schedules and runs them. maxDuration 60 s.',
+      required: true,
+    },
+    'GET /api/reports/retention': {
+      type: 'CRON_SECRET',
+      description: 'Deletes expired report blobs and marks their rows expired.',
+      required: true,
+    },
+    'POST /api/webhooks/resend': {
+      type: 'Svix signature',
+      description:
+        'Records delivered / bounced / complained on the run. Rejects events > 5 min old.',
+      required: true,
+    },
+    '/api/search': {
+      type: 'public',
+      description: 'Static search index for these docs.',
+      required: true,
+    },
+  }}
+/>

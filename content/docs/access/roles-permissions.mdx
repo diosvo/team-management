@@ -1,128 +1,227 @@
 ---
-title: 'Roles & Permissions'
-description: 'Auth layers, role definitions, the permission matrix, and ownership checks.'
+title: Roles & Permissions
+description: The three auth layers, the generated role × resource matrix, and the per-record ownership checks.
 ---
 
-Who can do what in the app, and where each rule is enforced. Three layers gate every request: the proxy on page navigation, `withResource` inside server actions, and the client session for UI affordances. Only the server-action layer is authoritative; §2 is the reference matrix of role by resource, and §3 covers the per-record checks the matrix cannot express.
+Who can do what, and where each rule is enforced.
+
+- Three layers gate a request; only the server-action layer is authoritative.
+- The matrix is code: `ROLE_CONFIG`, `CAPTAIN_PERMISSIONS` in
+  `src/utils/permissions.ts`.
+- The table below is rendered from it, so it cannot drift.
+
+## Roles
+
+<TypeTable
+  type={{
+    GUEST: {
+      type: 'role',
+      description:
+        'Trialist or visitor. Read-only on dashboard, achievements, roster, matches.',
+      required: true,
+    },
+    PLAYER: {
+      type: 'role',
+      description:
+        'Team member. Views most pages, submits own leave requests, edits own profile.',
+      required: true,
+    },
+    COACH: {
+      type: 'role',
+      description: (
+        <ul>
+          <li>
+            Staff: creates and edits training, attendance, matches,
+            achievements.
+          </li>
+          <li>Owns periodic testing.</li>
+        </ul>
+      ),
+      required: true,
+    },
+    SUPER_ADMIN: {
+      type: 'role',
+      description:
+        'Every action on every entry of RESOURCES (computed, not listed).',
+      required: true,
+    },
+    Captain: {
+      type: 'flag on PLAYER',
+      description:
+        'The session user has is_captain (persisted on player). Additive grants only.',
+      required: true,
+    },
+  }}
+/>
 
 ## Auth layers
 
-### Layer 1: Proxy (`proxy.ts`)
+<Tabs items={['1. Proxy', '2. withResource', '3. Client']}>
+<Tab value="1. Proxy">
 
-Runs on every page navigation (not server actions).
+`src/proxy.ts` runs on page navigations only.
 
-- Checks for a session cookie; if missing, redirects to `/login`.
-- If a session cookie is present but the cache is expired, redirects to `/login`.
-- Resolves the current pathname to a `Resource` and calls `can(role, resource, 'view')`; if denied, redirects to `/forbidden`.
-- **Does not run** for server action requests (`next-action` header), because server actions enforce their own auth.
+- **Skipped:** server actions (`next-action` header) pass through.
+- **Excluded by matcher:** `/api`, `/llms*`, static assets.
+- **`/docs/*`:** public; only gets the language rewrite.
 
-### Layer 2: `withAuth` / `withResource` (`src/actions/auth.ts`)
+Redirects:
 
-The only layer that cannot be bypassed. Runs inside every server action.
+- **No session cookie** (`getSessionCookie`, prefix `sgr`) on a protected
+  route → `/login`.
+- **Cookie on** `/`, `/login`, `/forgot-password`, `/new-password` →
+  `/dashboard`.
+- **Cookie but `getCookieCache` empty** (1-hour cache expired) → `/login`.
+- **`can(role, resource, 'view')` fails** → `/forbidden`. Resource comes from
+  the path prefix (`/periodic-testing/add-result` → `periodic-testing`).
+- Only `view` is checked, by role only; Captain adds no `view` grant.
 
-- `withAuth`: verifies the session and injects the `user` context into the action.
-- `withResource(resource)(actions, fn)`: calls `withAuth`, then checks that the user's ability includes **all** listed actions on the resource via `defineAbility`. Returns `forbidden()` if not.
+</Tab>
+<Tab value="2. withResource">
 
-This layer authorizes a resource, not a record. Where an action also has to be right about _which_ record it touches, the action body re-checks the target against the injected `user`. See §3.
+`src/actions/auth.ts`. The only layer that cannot be bypassed.
 
-### Layer 3: Layout / client (`authClient.useSession`)
-
-Proactive client-side UX. Reads the session client-side and controls which UI elements are rendered. Does not enforce security; the server is the source of truth.
-
-The protected layout resolves the session server-side and passes only `session.user` into `SessionProvider`. The session record itself, token included, is never serialized into the client payload. Client code reads role and captain flag off that user object; `usePermissions` derives them from it rather than from a session object.
-
-## 1. Roles
-
-| Role          | Description                                                                                      |
-| ------------- | ------------------------------------------------------------------------------------------------ |
-| `GUEST`       | Read-only access to public team data (dashboard, roster, matches).                               |
-| `PLAYER`      | Standard team member. Can view most pages and submit attendance leave requests.                  |
-| `COACH`       | Coaching staff. Can manage training sessions, attendance, and matches.                           |
-| `SUPER_ADMIN` | Full access to all resources and actions.                                                        |
-| Captain       | A `PLAYER` with `is_captain = true`. Inherits PLAYER permissions plus elevated actions (see §2). |
-
-## 2. Permission matrix
-
-Mirrors `ROLE_CONFIG` and `CAPTAIN_PERMISSIONS` in `src/utils/permissions.ts`.
-
-| Resource           | GUEST | PLAYER           | COACH              | SUPER_ADMIN | Captain (extra)      |
-| ------------------ | ----- | ---------------- | ------------------ | ----------- | -------------------- |
-| `dashboard`        | view  | view             | view               | all         | —                    |
-| `team-rule`        | —     | view             | view               | all         | edit                 |
-| `roster`           | view  | view             | view               | all         | create, edit, delete |
-| `training`         | —     | view             | view, create, edit | all         | —                    |
-| `attendance`       | —     | view, create     | view, create, edit | all         | —                    |
-| `registration`     | —     | view             | view               | all         | create, edit         |
-| `matches`          | view  | view             | view, create, edit | all         | create, edit         |
-| `periodic-testing` | —     | view             | all                | all         | all                  |
-| `assets`           | —     | —                | view               | all         | —                    |
-| `teams`            | —     | view             | view               | all         | —                    |
-| `leagues`          | —     | —                | view               | all         | —                    |
-| `locations`        | —     | —                | view               | all         | —                    |
-| `profile`          | —     | view, edit (own) | view, edit (own)   | all         | —                    |
-
-> `all` = view, create, edit, delete. Captain permissions are **additive** on top of PLAYER.
-
-## 3. Ownership checks
-
-The matrix decides whether a role may perform an action on a resource. It decides nothing about _which_ record. Where the answer differs per row, such as my profile versus yours or my leave versus yours, `withResource` is necessary but not sufficient: it accepts a PLAYER's `profile:edit` request even when that request names someone else's `user_id`.
-
-Actions on those resources therefore re-check the target against the session user and call `forbidden()` on a mismatch. The rules today:
-
-| Action               | Ownership rule                                                                                                  |
-| -------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `submitLeave`        | A PLAYER (captain included) may only file for their own `player_id`. COACH and SUPER_ADMIN may file for anyone. |
-| `updatePersonalInfo` | Non-admins: own `user_id` only.                                                                                 |
-| `updateTeamInfo`     | Non-admins: own `user_id` only, and the submitted `role` must equal the caller's current role.                  |
-| `uploadAvatar`       | Own `user_id` only, for every role. The `old_path` to delete must equal the record's stored `image`.            |
-| `getAvatar`          | The blob path must start with `users/`.                                                                         |
-
-Three patterns generalize from these:
-
-- **Never trust an identifier in the payload**: a `player_id`, `user_id`, or `team_id` in the arguments is client-supplied. Where the record is the caller's own, read it from the session (`user.id`, `user.team_id`) instead of the payload; where the payload has to name a target, compare it to the session.
-- **Role is a privileged field**: a form that submits the whole record submits `role` too, so a self-edit is an escalation vector unless the value is pinned. Only SUPER_ADMIN may change it.
-- **Prefixes are not ownership**: blob keys get a random suffix, so a `users/<user_id>` prefix test also matches another user's key (`users/1` matches `users/12-abc`). Compare against the path stored on the record.
-
-Reads get the same treatment when a row belongs to one member. List reads narrow their projection instead: `getRoster` selects only the columns the table renders, so personal data it never displays never leaves the database (see [Roster](/docs/features/team-management/roster)).
-
-## 4. Client-side enforcement
-
-### `usePermissions` hook
-
-Returns the current user's permissions for use in React components:
+- **`verifySession()`:** React-`cache`d `auth.api.getSession`; once per
+  request.
+- **`withAuth(fn)`:** no session → `/login`; injects `session.user` as first
+  arg. Reads use it directly.
+- **`withResource(resource)(actions, fn)`:** wraps `withAuth`, builds
+  `defineAbility(user.role, user.is_captain)`.
+- Calls `forbidden()` unless `canAll` holds for every listed action.
 
 ```ts
-const {
-  isAdmin,
-  isPlayer,
-  isCoach,
-  isGuest,
-  isCaptain,
-  can, // (resource, action) => boolean
-  canAll, // (Permission[]) => boolean
-  canAny, // (Permission[]) => boolean
-} = usePermissions();
+const roster = withResource('roster');
+export const addUser = roster(['create'], async (user, values) => { ... });
 ```
 
-### `Authorized` component
+This authorizes a resource, not a record. See [Ownership checks](#ownership-checks).
 
-Renders `children` only when `can(resource, action)` is true. Use this to conditionally show action controls (Add, Edit, Delete buttons).
+</Tab>
+<Tab value="3. Client">
+
+UX only; never trusted.
+
+- **Session:** the protected layout passes only `session.user` to
+  `SessionProvider`; the token never reaches the client.
+- **Freshness:** `authClient.useSession()` keeps it fresh afterwards.
+- **`usePermissions`:** derives the same `Ability` from that user.
+- **`Authorized`:** renders `children` only when the check passes; `fallback`,
+  `loading` slots, `mode="all" | "any"`.
+- **`Visibility`:** plain show/hide around React `Activity`; knows no roles.
 
 ```tsx
 <Authorized resource="roster" action="create">
-  <AddUserButton />
+  <AddButton />
 </Authorized>
 ```
 
-### `Visibility` component
+</Tab>
+</Tabs>
 
-Renders children visibly or hidden based on any boolean condition (not permission-aware). Use for layout-level show/hide where the check is already done elsewhere.
+## Permission matrix
 
-## 5. Glossary
+<PermissionMatrix />
 
-- **RBAC:** Role-Based Access Control
-- **`withResource`:** server-side HOF that enforces `resource:action` permission before executing a server action
-- **`withAuth`:** server-side HOF that verifies the session and provides user context
-- **Ownership check:** an in-action comparison of the target record against the session user, for resources where permission alone doesn't decide access (see §3)
-- **Captain flag:** `is_captain` field on the user record; grants additional permissions on top of the PLAYER role
-- **Query params:** URL parameters (e.g. `?q=ball&condition=good`) used to persist filter state
+- `all` = view, create, edit, delete.
+- `documents` has no page yet (sidebar entry disabled).
+- `emails` and `reports` are admin-only pages.
+
+## Ownership checks
+
+- The matrix gates a resource, never a specific row.
+- Where the row matters, the action compares it with the injected `user`.
+- Mismatch → `forbidden()`. Rules in code today:
+
+<TypeTable
+  type={{
+    submitLeave: {
+      type: 'attendance:create',
+      description: (
+        <ul>
+          <li>
+            <code>PLAYER</code> (captain included): only{' '}
+            <code>values.player_id === user.id</code>.
+          </li>
+          <li>
+            <code>COACH</code> and <code>SUPER_ADMIN</code>: anyone.
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+    getUserProfile: {
+      type: 'withAuth',
+      description: (
+        <ul>
+          <li>
+            <code>GUEST</code> forbidden.
+          </li>
+          <li>
+            <code>viewOnly</code>: an admin viewing themself.
+          </li>
+          <li>
+            <code>viewOnly</code>: a player/coach viewing someone else.
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+    updatePersonalInfo: {
+      type: 'profile:edit',
+      description: 'Non-admins: own user_id only.',
+      required: true,
+    },
+    updateTeamInfo: {
+      type: 'profile:edit',
+      description: (
+        <ul>
+          <li>
+            Non-admins: own <code>user_id</code> only.
+          </li>
+          <li>
+            Submitted <code>role</code> must equal the caller’s current role.
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+    uploadAvatar: {
+      type: 'profile:edit',
+      description: (
+        <ul>
+          <li>
+            Own <code>user_id</code> for every role.
+          </li>
+          <li>
+            <code>old_path</code> must equal the stored image.
+          </li>
+          <li>
+            A <code>users/&lt;id&gt;</code> prefix test could match another user
+            (random key suffix).
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+    getAvatar: {
+      type: 'profile:view',
+      description:
+        'Path must start with users/; rejects probes for other private blobs.',
+      required: true,
+    },
+  }}
+/>
+
+Patterns that generalise:
+
+- **Never trust payload identifiers.** `team_id` always comes from the session.
+- **`role` is privileged.** Only SUPER_ADMIN may change it.
+- **Prefixes are not ownership.**
+- **Narrow reads.** `getRoster` selects only the columns the table shows.
+
+## `usePermissions`
+
+Client hook in `src/hooks/use-permissions.ts`. Returns `NO_ACCESS` (every
+check false) until a role is known.
+
+<AutoTypeTable path="src/hooks/use-permissions.ts" name="PermissionsResult" />

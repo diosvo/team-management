@@ -1,0 +1,142 @@
+---
+title: Trang đăng nhập
+description: Ba trang ai cũng mở được, để đăng nhập, xin link đặt lại mật khẩu và tạo mật khẩu mới.
+---
+
+<Callout title="Route /login · /forgot-password · /new-password">
+  Công khai (`AUTH_ROUTES` trong `src/routes.ts`) · Layout `src/app/(auth)` ·
+  Trạng thái **Đã phát hành**
+</Callout>
+
+## Mục đích
+
+- Trang đăng nhập (**Sign-in Pages**) là những trang duy nhất bạn mở được khi
+  chưa đăng nhập.
+- Không có trang đăng ký: tài khoản được tạo từ Danh sách đội (**Roster**), sau
+  đó bạn kích hoạt qua `/new-password`.
+- Trang này nói về các màn hình; toàn bộ luồng từ đầu tới cuối nằm ở
+  [Đăng nhập & tài khoản](/docs/vi/user-flows/authentication).
+
+## Quyền truy cập
+
+- Không kiểm tra resource hay quyền; cả ba đều nằm trong `PUBLIC_ROUTES`.
+- **Đã đăng nhập:** mở bất kỳ auth route nào, hoặc `/`, bạn sẽ được chuyển tới
+  `/dashboard`.
+- **Chưa đăng nhập:** mở route nào khác cũng bị chuyển về `/login`.
+
+## Luồng
+
+<Steps>
+  <Step>
+    ### Đăng nhập (`/login`)
+
+    - Nhập email + mật khẩu, kiểm tra bằng `LoginSchema`.
+    - Nút **Sign In** bị khóa cho tới khi bạn đã nhập và dữ liệu hợp lệ.
+    - Gọi `authClient.signIn.email` với `callbackURL: '/dashboard'`.
+    - **Forgot your password?** dẫn tới `/forgot-password`.
+
+  </Step>
+  <Step>
+    ### Xin link đặt lại mật khẩu (`/forgot-password`)
+
+    - Chỉ một ô email (`ForgotPasswordSchema`).
+    - Gọi `authClient.requestPasswordReset` với `redirectTo: '/new-password'`.
+    - Gửi được thì form được xóa trắng và bạn sẽ thấy "Password reset
+      instructions have been sent to your email."
+
+  </Step>
+  <Step>
+    ### Tạo mật khẩu mới (`/new-password`)
+
+    - Lấy `token` từ URL; link trong email đặt lại mật khẩu dẫn về đây.
+    - Mỗi quy tắc mật khẩu đạt thì dòng tương ứng trong danh sách chuyển xanh.
+    - Nút **Submit** bị khóa cho tới khi đạt đủ cả bốn quy tắc.
+    - Thành công: hiện toast, rồi `router.push('/login')`.
+
+  </Step>
+</Steps>
+
+## Quy tắc
+
+- **Quy tắc mật khẩu** (chỉ áp dụng ở `/new-password`):
+  - 8–128 ký tự.
+  - Có ít nhất một chữ cái, một chữ số và một ký tự đặc biệt.
+- **Kiểm tra khi đăng nhập.** `LoginSchema` chỉ kiểm tra email và mật khẩu dài
+  8–128 ký tự, không kiểm tra các quy tắc về ký tự.
+- **Giới hạn số lần gửi.** Đăng nhập, xin link đặt lại và đặt lại mật khẩu đều
+  tối đa 3 request/phút cho mỗi IP (`STRICT_RATE_LIMIT` trong
+  `src/lib/auth.ts`).
+- **Thông báo lỗi** lấy từ `authErrorMessage` (`src/utils/rate-limit.ts`):
+  - `429` → `Rate limit exceeded. Retry at <time>`, dựa vào `Retry-After`.
+  - Lỗi khác → thông báo của Better Auth, hoặc "Something went wrong."
+- **Sai email hoặc mật khẩu** (`401`) thì **Sign In** bị khóa cho tới khi bạn
+  sửa email hoặc mật khẩu.
+- **Mất mạng** khi đăng nhập sẽ hiện "Unable to reach the server. Please try
+  again."
+- **Đang đăng nhập thì không đặt lại mật khẩu được.** `/new-password` là auth
+  route, nên mở link đặt lại khi đang đăng nhập sẽ đưa bạn về `/dashboard`.
+
+## Dữ liệu
+
+Zod schema trong `src/schemas/auth.ts`:
+
+<TypeTable
+  type={{
+    LoginSchema: {
+      type: '{ email, password }',
+      description: 'Dùng chung quy tắc email của user; mật khẩu 8–128 ký tự.',
+      required: true,
+    },
+    ForgotPasswordSchema: {
+      type: '{ email }',
+      description: 'Dùng chung quy tắc email của user.',
+      required: true,
+    },
+  }}
+/>
+
+## API
+
+Các lệnh gọi client Better Auth (`src/lib/auth-client.ts`), do
+`/api/auth/[...all]` xử lý:
+
+<TypeTable
+  type={{
+    'authClient.signIn.email': {
+      type: '/sign-in/email',
+      description:
+        'Tạo phiên đăng nhập; đặt cookie sgr và bản cache đã ký của nó.',
+      required: true,
+    },
+    'authClient.requestPasswordReset': {
+      type: '/request-password-reset',
+      description:
+        'Gửi email chứa link "Create a new password" qua Resend (template ResetPassword).',
+      required: true,
+    },
+    'authClient.resetPassword': {
+      type: '/reset-password',
+      description: 'Đặt mật khẩu mới cho token lấy từ link.',
+      required: true,
+    },
+  }}
+/>
+
+## Tiêu chí chấp nhận
+
+<Accordions>
+  <Accordion title="Sai mật khẩu thì phải sửa mới thử lại được">
+    Đăng nhập bị từ chối thì **Sign In** bị khóa cho tới khi bạn sửa một ô.
+  </Accordion>
+  <Accordion title="Lần thứ tư trong một phút bị chặn">
+    Thông báo lỗi cho biết mấy giờ thì bạn được thử lại.
+  </Accordion>
+  <Accordion title="Mật khẩu yếu thì không gửi được">
+    Với `abcdefgh`, quy tắc chữ số và ký tự đặc biệt chưa được tích, nút
+    **Submit** vẫn bị khóa.
+  </Accordion>
+  <Accordion title="Đã đăng nhập thì không vào trang đăng nhập nữa">
+    Mở `/login` khi phiên đăng nhập còn hiệu lực sẽ được chuyển tới
+    `/dashboard`.
+  </Accordion>
+</Accordions>

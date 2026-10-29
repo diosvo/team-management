@@ -7,7 +7,6 @@ export const UpsertLeagueSchema = z
     name: z.string().min(3).max(64),
     start_date: z.iso.date().default(CURRENT_DATE),
     end_date: z.iso.date().default(CURRENT_DATE),
-    location_id: z.uuid().optional(),
     description: z.string().max(128).nullable(),
   })
   .refine(

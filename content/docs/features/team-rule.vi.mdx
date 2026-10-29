@@ -1,0 +1,103 @@
+---
+title: Nội quy đội
+description: Mỗi đội có một trang nội quy, admin sửa ngay trên trang.
+---
+
+<Callout title="Route /team-rule">
+  Nhóm **Overview** · Resource `team-rule` · Trạng thái **Đã phát hành**
+</Callout>
+
+## Mục đích
+
+- Nơi duy nhất ghi nội quy của đội (trang **Team Rule** trong app).
+- Cả đội cùng đọc; admin sửa ngay trên trang, không cần gửi file qua lại.
+- Nội dung lưu dạng HTML từ trình soạn thảo TipTap, ngay trên dòng dữ liệu của đội.
+
+## Quyền truy cập
+
+<PermissionMatrix resource="team-rule" />
+
+Khách (`GUEST`) không có quyền `view`, nên khi mở `/team-rule` bạn sẽ được
+chuyển tới `/forbidden`.
+
+<Callout type="info" title="Vì sao chỉ cần quyền sửa">
+
+- Nội quy là hai cột trên dòng dữ liệu của đội, mà dòng này luôn có sẵn.
+- Nên `upsertRule` chỉ là một lần cập nhật, chỉ cần `team-rule:edit`.
+- Nếu đòi thêm `create`, đội trưởng sẽ không sửa được.
+
+</Callout>
+
+## Luồng
+
+<Steps>
+  <Step>
+    ### Xem nội quy
+
+    - `getRule` đọc `rule_content` và `rule_updated_at` từ dòng dữ liệu của đội bạn.
+    - Chưa có nội dung thì bạn sẽ thấy "Please wait for admin to set up the rule."
+    - Bấm **Copy** để chép nội dung (HTML + chữ thường), kèm dòng cập nhật lần cuối.
+
+  </Step>
+  <Step>
+    ### Sửa nội quy
+
+    - **Edit** / **Preview** chuyển qua lại trên cùng một trình soạn thảo, không tải lại.
+    - Có thay đổi chưa lưu, nút **Save changes?** sẽ hiện ra và gọi `upsertRule(html)`.
+    - Lưu xong, toast báo "Added rule successfully" ở lần đầu và "Updated rule
+      successfully" ở các lần sau.
+
+  </Step>
+</Steps>
+
+## Quy tắc
+
+- **Mỗi đội một bản nội quy.** Lưu ở `team.rule_content` (null cho tới lần
+  lưu đầu tiên); không còn bảng `rule` riêng, nên xóa đội là nội quy đi theo.
+- **Trình soạn thảo chỉ chạy trên trình duyệt.** `next/dynamic` với
+  `ssr: false`; TipTap dùng `immediatelyRender: false`.
+- **Làm mới trang.** Lưu xong sẽ gọi `revalidatePath('/team-rule')`.
+- **Thời gian cập nhật.** `rule_updated_at` hiện thành "Last updated on …".
+  - Chỉ `upsertRule` ghi cột này, nên đổi tên đội hay đổi logo không bị tính
+    là sửa nội quy.
+
+## Dữ liệu
+
+<AutoTypeTable path="src/drizzle/schema/team.ts" name="TeamRule" />
+
+## API
+
+Server action trong `src/actions/rule.ts`.
+
+<TypeTable
+  type={{
+    'getRule()': {
+      type: 'NullishTeamRule',
+      description:
+        'withAuth; rule_content và rule_updated_at của đội bạn, hoặc null.',
+      required: true,
+    },
+    'upsertRule(content)': {
+      type: 'Response',
+      description:
+        'withResource(team-rule) với edit; cập nhật dòng của đội và ghi rule_updated_at.',
+      required: true,
+    },
+  }}
+/>
+
+## Tiêu chí chấp nhận
+
+<Accordions>
+  <Accordion title="Khách không vào được">
+    Khách mở `/team-rule` sẽ được chuyển tới `/forbidden`.
+  </Accordion>
+  <Accordion title="Cầu thủ và HLV chỉ đọc">
+    Cầu thủ hoặc huấn luyện viên thấy nội dung và nút **Copy**, nhưng không có
+    nút **Edit**.
+  </Accordion>
+  <Accordion title="Admin lưu là cả đội thấy">
+    Sau khi admin lưu, ai có quyền xem cũng thấy nội dung và thời gian cập nhật
+    mới ở lần mở trang tiếp theo.
+  </Accordion>
+</Accordions>

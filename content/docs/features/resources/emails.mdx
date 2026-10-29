@@ -1,0 +1,123 @@
+---
+title: Emails
+description: Admin view of recently sent emails from Resend and previews of the email templates.
+---
+
+<Callout title="Route /emails">
+  Nav group **Resources** · Resource `emails` · Status **Shipped**
+</Callout>
+
+## Purpose
+
+- Check what the portal has sent and whether it arrived.
+- Preview the email templates without sending anything.
+- Read-only: nothing on this page sends or changes data.
+
+## Access
+
+<PermissionMatrix resource="emails" />
+
+- Only SUPER_ADMIN holds `emails:view`.
+- Every other role, captains included, is redirected to `/forbidden`.
+
+## Flows
+
+<Steps>
+  <Step>
+    ### Browse sent emails
+
+    - The page calls `resend.emails.list()` on the server.
+    - The table shows **To**, **Subject**, **Status** and **Created At**.
+    - Status is Resend's `last_event`, shown as a colored badge.
+    - A Resend error replaces the table with the error message.
+
+  </Step>
+  <Step>
+    ### Search and filter
+
+    - Search matches recipients and subject.
+    - **Status** filter: a checkbox group of the 12 Resend events.
+    - Filtering and paging run client-side; state lives in the URL.
+
+  </Step>
+  <Step>
+    ### Preview templates
+
+    - Expand an item to see the rendered HTML with sample data.
+    - **Reset password:** `ResetPassword` (`src/app/(auth)/_components`).
+    - **Analytics Report:** `AnalyticsReport` (`reports/_components`).
+
+  </Step>
+</Steps>
+
+## Rules
+
+- **Not team-scoped.** The list comes from the Resend account behind
+  `RESEND_API_KEY`, so it includes every team's emails.
+- **One page from Resend.** No `limit` is passed, so only Resend's default
+  page of recent emails is listed.
+- **No local log.** Emails are not stored in the database; report runs keep
+  their own delivery status in `report_history`.
+- **Not every email has a preview.** The "Scheduled Report Failed" notice is
+  inline HTML in `src/lib/report-schedule.ts`.
+- **Subject prefix.** `sendEmail` prefixes every subject with `SGR - `.
+
+## Data
+
+Rows are Resend's `ListEmail` type; the page has no table of its own.
+
+### Query params
+
+<TypeTable
+  type={{
+    q: { type: 'string', description: 'Recipient or subject search.' },
+    status: {
+      type: 'Array<EmailStatus>',
+      description: (
+        <ul>
+          <li>
+            Resend's <code>last_event</code> values; pick any number.
+          </li>
+          <li>
+            All 12 are listed in <code>EMAIL_STATUS_SELECTION</code> (
+            <code>src/utils/constants/email.ts</code>).
+          </li>
+          <li>
+            For example <code>sent</code>, <code>delivered</code>,{' '}
+            <code>bounced</code>, <code>failed</code>.
+          </li>
+        </ul>
+      ),
+    },
+    page: { type: 'number', description: 'Current page.', default: '1' },
+  }}
+/>
+
+## API
+
+No server actions; the page reads Resend directly.
+
+<TypeTable
+  type={{
+    'resend.emails.list()': {
+      type: '{ data, error }',
+      description:
+        'Called in page.tsx with the shared client from src/lib/resend.ts.',
+      required: true,
+    },
+  }}
+/>
+
+## Acceptance
+
+<Accordions>
+  <Accordion title="Only admins can open the page">
+    A COACH, PLAYER, GUEST or captain opening `/emails` lands on `/forbidden`.
+  </Accordion>
+  <Accordion title="Filters are reflected in the URL">
+    Searching "report" and ticking Bounced gives `?q=report&status=bounced`.
+  </Accordion>
+  <Accordion title="Previews render without sending">
+    Expanding **Reset password** shows the template; no email is sent.
+  </Accordion>
+</Accordions>

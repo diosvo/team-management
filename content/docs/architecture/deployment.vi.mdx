@@ -1,0 +1,200 @@
+---
+title: Triển khai
+description: Mỗi container chạy ở đâu trên production, cùng job theo lịch, biến môi trường và CI/CD.
+---
+
+## Sơ đồ triển khai
+
+<Mermaid
+  chart={`
+C4Deployment
+  title Sơ đồ triển khai production
+
+Deployment_Node(browser, "Trình duyệt", "Chrome, Safari, di động") {
+Container(client, "Client island", "React 19", "Giao diện app")
+}
+
+Deployment_Node(vercel, "Vercel", "Dự án production") {
+Deployment_Node(fn, "Serverless function", "Node.js") {
+Container(server, "Server Next.js", "Next.js 16", "Trang, action, API route")
+Container(chromium, "Chromium headless", "chromium-min pack", "Render báo cáo")
+}
+Deployment_Node(cron, "Vercel Cron", "vercel.json") {
+Container(jobs, "Job báo cáo", "2 lịch hằng ngày", "schedule, retention")
+}
+Deployment_Node(store, "Vercel Blob", "Kho riêng tư") {
+ContainerDb(blob, "Blob", "@vercel/blob", "Ảnh đại diện, logo, PDF")
+}
+}
+
+Deployment_Node(neon, "Neon", "Serverless Postgres") {
+ContainerDb(db, "PostgreSQL", "Drizzle migrations", "Dữ liệu app")
+}
+
+Rel(client, server, "HTTPS")
+Rel(jobs, server, "GET /api/reports/\*")
+Rel(server, db, "SQL, Pool max 1")
+Rel(server, blob, "Đọc, ghi")
+Rel(server, chromium, "Chạy cho mỗi PDF")
+
+UpdateLayoutConfig($c4ShapeInRow="2", $c4BoundaryInRow="2")
+`}
+/>
+
+**Khi dev:** `pnpm dev`, Postgres trên máy, dùng Chrome có sẵn trên máy thay cho
+gói Chromium.
+
+## Job chạy theo lịch
+
+<TypeTable
+  type={{
+    '/api/reports/schedule': {
+      type: '0 1 * * * (08:00 ICT)',
+      description:
+        'Chạy lịch gửi đến hạn. maxDuration 60 s (gói Hobby); dừng ở 40 s, phần còn lại chờ lượt sau.',
+      required: true,
+    },
+    '/api/reports/retention': {
+      type: '0 2 * * * (09:00 ICT)',
+      description: 'Xóa các PDF báo cáo cũ hơn 90 ngày.',
+      required: true,
+    },
+  }}
+/>
+
+- Cả hai đều cần `Authorization: Bearer $CRON_SECRET`; Vercel tự gắn header
+  này khi gọi cron.
+- Nếu `CRON_SECRET` để trống thì mọi request đều bị từ chối.
+
+## Biến môi trường
+
+- `env.config.ts` parse `process.env` bằng Zod; import qua `@env`.
+- Biến nào cũng có giá trị mặc định: build không bao giờ lỗi, thiếu biến thì
+  tính năng đó lỗi khi chạy.
+- Better Auth đọc thẳng `BETTER_AUTH_URL` và `BETTER_AUTH_SECRET`.
+
+<TypeTable
+  type={{
+    DATABASE_URL: {
+      type: 'string',
+      description: 'Chuỗi kết nối Postgres.',
+      required: true,
+    },
+    DEV_URL: {
+      type: 'url',
+      description: 'URL gốc khi dev, trusted origin, baseURL của Playwright.',
+      default: 'http://localhost:3000',
+    },
+    PRODUCTION_URL: {
+      type: 'url',
+      description: 'URL gốc trên production và trusted origin.',
+      default: 'http://localhost:3000',
+    },
+    CRON_SECRET: {
+      type: 'string',
+      description: 'Bearer token cho các route cron.',
+    },
+    RESEND_API_KEY: {
+      type: 'string',
+      description: 'API key cho client Resend.',
+    },
+    RESEND_WEBHOOK_SECRET: {
+      type: 'whsec_…',
+      description: 'Xác minh webhook báo trạng thái gửi email từ Resend.',
+    },
+    BLOB_READ_WRITE_TOKEN: {
+      type: 'string',
+      description: 'Token Vercel Blob; cần có để lưu báo cáo và hình ảnh.',
+    },
+    CHROMIUM_PACK_URL: {
+      type: 'url',
+      description:
+        'Gói nén Brotli của binary Chromium, chỉ dùng trên production.',
+    },
+    GITHUB_TOKEN: {
+      type: 'string',
+      description: 'Quyền ghi Issues trên repo nhận Góp ý (Feedback).',
+    },
+    'PW_USERNAME / PW_PASSWORD': {
+      type: 'string',
+      description:
+        'Tài khoản admin để Playwright đăng nhập; cũng là service account của cron báo cáo.',
+    },
+    'NODE_ENV / CI': {
+      type: 'enum / boolean',
+      description:
+        'Đường dẫn khởi chạy Chromium, độ chi tiết của lỗi; CI đổi kiểu reporter của Playwright.',
+      default: 'development / false',
+    },
+  }}
+/>
+
+## CI/CD
+
+<Mermaid
+  chart={`
+flowchart LR
+    pr["Pull request → main"] --> preview["preview.yaml"]
+    preview --> tad["test-and-deploy.yaml<br/>test:coverage · typecheck · audit"]
+    tad --> vp["Vercel preview<br/>+ bình luận PR"]
+    push["Push → main"] --> prod["production.yaml"]
+    prod --> tad2["test-and-deploy.yaml<br/>run-unit-test: false"]
+    tad2 --> vprod["vercel build --prod<br/>deploy --prod"]
+    pr -.-> e2e["playwright.yaml<br/>đang tắt (if: false)"]
+`}
+/>
+
+<TypeTable
+  type={{
+    'dev · build · analyze': {
+      type: 'next',
+      description: 'Dev server, build production, phân tích kích thước bundle.',
+      required: true,
+    },
+    typecheck: {
+      type: 'next typegen && tsc --noEmit',
+      description: 'Bước duy nhất có kiểm tra type cho các file test.',
+      required: true,
+    },
+    'db:generate · db:migrate · db:reset': {
+      type: 'drizzle-kit · tsx',
+      description:
+        'Tạo migration từ thay đổi schema, migrate, reset (src/drizzle/scripts).',
+      required: true,
+    },
+    'test · e2e': {
+      type: 'vitest · playwright',
+      description:
+        'Unit test chạy trên jsdom; E2E chạy với pnpm dev. Xem Kiểm thử E2E.',
+      required: true,
+    },
+  }}
+/>
+
+## Những điểm còn thiếu
+
+<Accordions>
+  <Accordion title="Deploy production không chạy test">
+    `production.yaml` đặt `run-unit-test: false`; push thẳng vào `main` là bỏ
+    qua luôn bước kiểm tra của PR.
+  </Accordion>
+  <Accordion title="E2E đang tắt trên CI">
+    `playwright.yaml` tạm bỏ qua cho tới khi CI có database test riêng.
+  </Accordion>
+  <Accordion title="Email vẫn gửi từ địa chỉ sandbox">
+    `EMAIL_FROM` là `Acme <onboarding@resend.dev>` (sandbox của Resend), chưa
+    phải tên miền đã xác minh của câu lạc bộ.
+  </Accordion>
+  <Accordion title="Báo cáo chỉ gửi được cho một đội">
+    Cron render bằng một service account duy nhất; chỉ đội của tài khoản đó
+    nhận được báo cáo theo lịch.
+  </Accordion>
+  <Accordion title="Enum asset_catogory bị sai chính tả">
+    `asset_catogory` nằm trong `src/drizzle/schema/asset.ts`; muốn đổi tên phải
+    có migration.
+  </Accordion>
+  <Accordion title="Resource documents mới chỉ có khung">
+    `documents` đã có trong `RESOURCES` và sidebar (`disabled: true`) nhưng
+    chưa có route hay bảng nào.
+  </Accordion>
+</Accordions>

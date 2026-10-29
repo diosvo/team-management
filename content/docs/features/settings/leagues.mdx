@@ -1,101 +1,148 @@
 ---
-title: "Leagues"
+title: Leagues
+description: Competitions the club enters, each with its own player roster and a status derived from its dates.
 ---
 
-> Route: `/leagues` · Nav group: **Settings** · Status: **Draft**
+<Callout title="Route /leagues">
+  Nav group **Settings** · Resource `leagues` · Status **Shipped**
+</Callout>
 
-## 1. Summary
+## Purpose
 
-- **Leagues** manages tournament and competition entries, including the player roster for each.
-- Status (Upcoming / Ongoing / Ended) is stored on the league row and set from its start and end dates.
+- Registers the competitions the club enters and each one's player roster.
+- Matches and achievements reference a league.
+- The roster decides who counts as a participant.
 
-## 2. Goals / metrics
+## Access
 
-### Goals
+<PermissionMatrix resource="leagues" />
 
-- Let admins register and track the team's league and tournament participations.
-- Provide a clean league reference for Matches.
+- COACH views; SUPER_ADMIN holds every action.
+- PLAYER, GUEST and captains have no `view`; redirected to `/forbidden`.
 
-## 3. Users and permissions
+## Flows
 
-| Role             | View | Add | Edit | Delete |
-| ---------------- | ---- | --- | ---- | ------ |
-| GUEST            | No   | No  | No   | No     |
-| PLAYER           | No   | No  | No   | No     |
-| COACH            | Yes  | No  | No   | No     |
-| SUPER_ADMIN      | Yes  | Yes | Yes  | Yes\*  |
-| PLAYER (Captain) | No   | No  | No   | No     |
+<Steps>
+  <Step>
+    ### Browse
 
-\*Delete is restricted to leagues with status **Upcoming**.
+    - Columns: name, player count, dates, status badge; end date descending.
+    - Search by name (`q`), filter by status.
+    - Ended league with an achievement: icon to
+      `/achievements?record=<league_id>` (needs `achievements:create`).
 
-## 4. UX / flows
+  </Step>
+  <Step>
+    ### Add or update
 
-### Entry point
+    - **+ Add** and row click open the same dialog.
+    - Fields: name, start and end date, description, player picker.
+    - League and roster are saved in one `upsertLeague` call.
+    - `ongoing` / `ended` leagues are read-only: disabled fields, no picker,
+      players cannot be removed, no Save.
 
-- Sidebar → **Leagues**.
+  </Step>
+  <Step>
+    ### Delete
 
-### View
+    - Only `upcoming` rows are selectable (`isSelectable`).
+    - `removeLeague` runs per id; a summary toast reports the outcome.
 
-- Table lists leagues with name, dates, status, and player count.
-- Filter by name or status (Upcoming / Ongoing / Ended).
+  </Step>
+</Steps>
 
-### Create / edit
+## Rules
 
-- SUPER_ADMIN sees **+ Add**; clicking it opens a dialog.
-- Clicking a row opens the same dialog pre-filled.
-- The dialog includes a player multi-select to manage the league roster.
-- Ongoing and Ended leagues are read-only: the fields are disabled, and the selected-players list stops responding to clicks, so you can review an existing roster but not change it. A read-only empty list also omits the “Select players from the list above” hint, which would otherwise point at a control that does nothing.
+- **Status is derived, not stored.** No status column; `getLeagues` and
+  `getLeagueById` use `deriveDateStatus`:
+  - `upcoming` while `start_date` is in the future.
+  - `ended` once `end_date` is past; otherwise `ongoing`.
+- **Read-only after kick-off, on both sides.**
+  - Client: the dialog and row selection disable ongoing and ended leagues.
+  - Server: `upsertLeague` (update) and `removeLeague` re-derive the status,
+    else “Only upcoming leagues can be changed”.
+- **Validation** (`UpsertLeagueSchema`): name 3–64 characters, unique (DB);
+  `end_date` after `start_date`; description ≤ 128 characters.
+- **Roster sync** in `upsertLeague`:
+  - Enters the caller's team in `league_team` (`onConflictDoNothing`); roster
+    rows have a composite FK to that pair.
+  - Diffs submitted `player_ids` against the stored roster.
+  - Drops ids not on the caller's team via `getTeamPlayerIds` (`player`
+    inherits its team from `user`).
+  - Runs adds and removes with `Promise.allSettled`; one line per failure.
+- **Partial roster failure is not rolled back.**
+  - The league row and successful roster changes stand.
+  - The response lists failed players; `/leagues` is not revalidated.
+- **Deleting cascades** to `league_team`, `league_team_roster` and the
+  league's matches.
 
-### Delete
+## Data
 
-- Only leagues with status **Upcoming** can be deleted.
+`League` is the row plus the derived status (`src/drizzle/schema/league.ts`):
 
-## 5. Functional requirements
-
-- **FR-1:** COACH and SUPER_ADMIN can view leagues.
-- **FR-2:** Filter by name and status; filter state stored in URL.
-- **FR-3:** SUPER_ADMIN can create and edit leagues.
-- **FR-4:** Status follows the dates: `upcoming` before the start date, `ongoing` between the dates, `ended` after the end date.
-- **FR-5:** The league dialog includes a player picker to sync the roster.
-- **FR-6:** Ongoing and Ended leagues cannot be edited or deleted. Read-only also covers the roster list: clicking a selected player does not remove them.
-- **FR-7:** Deleting an Upcoming league also removes its player associations.
-- **FR-8:** Changes show a success or error toast.
-
-## 6. Acceptance criteria (Given/When/Then)
-
-- **AC-1:** Given I am a COACH, when I open Leagues, then I see the list but no add, edit, or delete controls.
-- **AC-2:** Given a league is Ongoing, when SUPER_ADMIN tries to delete it, then the action is rejected.
-- **AC-3:** Given I create a league with a start date in the future, then its status is Upcoming.
-- **AC-4:** Given an Ongoing league is open in the dialog, when I click one of its selected players, then the player stays in the roster.
-- **AC-5:** Given I save a roster where some players cannot be added, then the successful changes still apply and the response names each failed player.
-
-## 7. Technical appendix
-
-### Data model (logical)
-
-League:
-
-- `name`: string
-- `start_date`: date
-- `end_date`: date
-- `status`: enum [`upcoming`, `ongoing`, `ended`]
-- `players`: many-to-many FK → player, via `league_team_roster`
-
-> `status` is a stored column, not a computed one, so it can drift from the dates unless something keeps it current. Whether to compute it at read time instead is an open decision in [TODO.md](https://github.com/diosvo/team-management/blob/main/TODO.md) §2.
+<AutoTypeTable path="src/drizzle/schema/league.ts" name="League" />
 
 ### Query params
 
-- `q` (string): name search
-- `status` (string): status filter
+<TypeTable
+  type={{
+    q: { type: 'string', description: 'Name search.' },
+    status: {
+      type: 'Array<LeagueStatus>',
+      description: 'upcoming, ongoing, ended.',
+    },
+    page: { type: 'number', description: 'Current page.', default: '1' },
+  }}
+/>
 
-### Roster sync
+## API
 
-`upsertLeague` diffs the submitted `player_ids` against the stored roster, then applies the adds and removes. Each one targets a distinct `league_team_roster` row, so the action issues the whole batch together and collects it with `Promise.allSettled` instead of awaiting one player at a time. A 20-player league then costs one round trip of latency rather than 20.
+Server actions in `src/actions/league.ts`, gated by `withResource('leagues')`.
 
-Partial failure is expected and non-fatal. `Promise.allSettled` preserves order, so each rejection still maps back to the player that caused it and produces a per-player message (`"<db message> (id: <short id>)"`). Successful adds and removes stand.
+<TypeTable
+  type={{
+    'getLeagues()': {
+      type: 'Array<League & { player_count, achievement_type }>',
+      description:
+        'All leagues by end date, with roster size and achievement types. Auth only.',
+      required: true,
+    },
+    'getPlayersInLeague(league_id)': {
+      type: 'Array<User>',
+      description: 'The caller’s team roster for one league. Auth only.',
+      required: true,
+    },
+    'upsertLeague(league_id, values, player_ids?)': {
+      type: 'Response',
+      description: (
+        <ul>
+          <li>Creates or updates the league and registers the team.</li>
+          <li>Syncs the roster.</li>
+          <li>Requires create and edit.</li>
+        </ul>
+      ),
+      required: true,
+    },
+    'removeLeague(league_id)': {
+      type: 'Response',
+      description: 'Deletes a league and its cascades. Requires delete.',
+      required: true,
+    },
+  }}
+/>
 
-### API
+## Acceptance
 
-- `getLeagues()`: fetch all leagues
-- `upsertLeague(id?, data, player_ids)`: create or update + sync roster (parallel, per-player errors)
-- `removeLeague(id)`: delete (Upcoming only)
+<Accordions>
+  <Accordion title="Status follows the dates">
+    Future start shows `upcoming`, then `ongoing` between the dates, then
+    `ended`, with no write.
+  </Accordion>
+  <Accordion title="An ongoing league is read-only">
+    Readonly badge, disabled fields, no Save; clicking a selected player keeps
+    them in the roster.
+  </Accordion>
+  <Accordion title="Roster errors are reported per player">
+    Other changes apply; the error toast names the player that failed.
+  </Accordion>
+</Accordions>

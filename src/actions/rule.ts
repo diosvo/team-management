@@ -14,8 +14,11 @@ export const getRule = withAuth(
   async ({ team_id }) => await getAction(team_id),
 );
 
+// The rule is a per-team singleton that is created lazily, so maintaining it
+// is one `edit` right; requiring `create` too would lock out Captains, who
+// only hold `team-rule:edit`.
 export const upsertRule = teamRule(
-  ['create', 'edit'],
+  ['edit'],
   async function upsert({ team_id }, content: string) {
     const t = await getTranslations('actions.rule');
     try {

@@ -9,8 +9,11 @@ export function Mermaid({ chart }: { chart: string }) {
     const container = containerRef.current;
     if (!container) return;
 
-    void (async () => {
+    let cancelled = false;
+
+    const render = async () => {
       const { default: mermaid } = await import('mermaid');
+      if (cancelled) return;
 
       try {
         mermaid.initialize({
@@ -29,13 +32,28 @@ export function Mermaid({ chart }: { chart: string }) {
           `mermaid-${id.replace(/[^a-zA-Z0-9-]/g, '')}`,
           chart.replaceAll('\\n', '\n'),
         );
+        if (cancelled) return;
         container.innerHTML = svg;
         bindFunctions?.(container);
       } catch (error) {
         console.error('Error while rendering mermaid', error);
         container.textContent = '⚠ Failed to render diagram (see console).';
       }
-    })();
+    };
+
+    // Mermaid measures text while laying out, so a diagram rendered inside a
+    // hidden tab or accordion comes out blank. Wait until it is on screen.
+    const observer = new IntersectionObserver((entries) => {
+      if (!entries.some((entry) => entry.isIntersecting)) return;
+      observer.disconnect();
+      void render();
+    });
+    observer.observe(container);
+
+    return () => {
+      cancelled = true;
+      observer.disconnect();
+    };
   }, [chart, id]);
 
   return <div ref={containerRef} />;

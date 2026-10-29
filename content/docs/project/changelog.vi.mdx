@@ -1,0 +1,117 @@
+---
+title: Nhật ký thay đổi
+description: Lịch sử chỉnh sửa của bộ tài liệu này, không phải của app.
+---
+
+<TypeTable
+  type={{
+    '2026-10-24': {
+      type: 'docs',
+      description: (
+        <ul>
+          <li>Site Fumadocs song ngữ Anh – Việt, có nút chuyển ngôn ngữ.</li>
+          <li>
+            Dựng từ Fumadocs UI, thêm <code>PermissionMatrix</code> sinh tự
+            động.
+          </li>
+          <li>Mục Kiến trúc theo C4 thay cho trang kiến trúc cũ.</li>
+          <li>
+            Thêm đặc tả Trang đăng nhập và Email; viết lại đặc tả Báo cáo.
+          </li>
+          <li>
+            Mọi trang viết lại thành gạch đầu dòng ngắn; tiếng Việt đọc tự nhiên
+            hơn.
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+    '2026-08-30': {
+      type: 'docs',
+      description: (
+        <ul>
+          <li>
+            Migration <code>0015</code>–<code>0018</code>.
+          </li>
+          <li>
+            Lịch sử thành viên <code>user_team</code>; <code>user.team_id</code>{' '}
+            vẫn là đội hiện tại.
+          </li>
+          <li>
+            <code>team.is_external</code> đánh dấu đội đối thủ.
+          </li>
+          <li>
+            Gộp bảng <code>rule</code> vào <code>team.rule_content</code>.
+          </li>
+          <li>
+            <code>match.status</code>, ràng buộc chỉ có tỉ số khi trận đã xong,
+            restrict cho đội nhà/đội khách.
+          </li>
+          <li>Cập nhật Mô hình dữ liệu, migration và Lộ trình.</li>
+        </ul>
+      ),
+      required: true,
+    },
+    '2026-08-23': {
+      type: 'docs',
+      description: (
+        <ul>
+          <li>
+            Migration <code>0008</code>–<code>0010</code>.
+          </li>
+          <li>
+            Số áo không trùng trong mỗi đội (Danh sách đội, Mô hình dữ liệu).
+          </li>
+          <li>
+            Điểm danh theo từng buổi tập; bỏ <code>attendance.team_id</code>.
+          </li>
+          <li>
+            Tên dụng cụ không trùng trong mỗi đội, thứ tự danh sách, reset hộp
+            thoại (Dụng cụ của đội).
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+    '2026-08-08': {
+      type: 'docs',
+      description: (
+        <ul>
+          <li>
+            Kiểm tra sở hữu: chỉ tự xin nghỉ, sửa hồ sơ và blob ảnh đại diện của
+            mình.
+          </li>
+          <li>Payload danh sách đội không còn dữ liệu cá nhân.</li>
+          <li>
+            Streaming theo từng thẻ và lazy load thư viện nặng (Bảng tổng quan,
+            Nội quy đội, Đăng ký giải).
+          </li>
+          <li>Tra cứu kết quả theo lô (Kiểm tra định kỳ).</li>
+        </ul>
+      ),
+      required: true,
+    },
+    '2026-07-22': {
+      type: 'docs',
+      description: (
+        <ul>
+          <li>
+            Tách PRD gốc thành trang tổng quan (tầm nhìn, chân dung người dùng,
+            chỉ số, ngoài phạm vi).
+          </li>
+          <li>
+            Đổi <code>pages/</code> thành <code>features/</code>.
+          </li>
+          <li>Thêm lộ trình và nhật ký này.</li>
+        </ul>
+      ),
+      required: true,
+    },
+    '2026-07-02': {
+      type: 'docs',
+      description:
+        'Sắp xếp lại PRD theo trang; thêm xuất PDF qua GitHub Actions (#216).',
+      required: true,
+    },
+  }}
+/>

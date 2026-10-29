@@ -1,0 +1,208 @@
+---
+title: Kiểm tra định kỳ
+description: Điểm thể lực theo bài kiểm tra và ngày, nhập theo lô, sửa ngay trên bảng cầu thủ × bài kiểm tra.
+---
+
+<Callout title="Route /periodic-testing">
+  Nhóm **Performance** · Resource `periodic-testing` · Trạng thái **Đã phát
+  hành** · Route con `/periodic-testing/add-result`,
+  `/periodic-testing/test-types`
+</Callout>
+
+## Mục đích
+
+- Kiểm tra thể lực định kỳ (**Periodic Testing**) ghi điểm của từng cầu thủ ở các bài kiểm tra riêng của CLB (chạy nước rút, bật nhảy, …) theo ngày.
+- Trang chính: bảng kết quả của một ngày kiểm tra, mỗi dòng một cầu thủ, mỗi cột một bài kiểm tra.
+- Route con: nhập kết quả cả buổi một lần; quản lý danh sách bài kiểm tra.
+
+## Quyền truy cập
+
+<PermissionMatrix resource="periodic-testing" />
+
+- Cầu thủ (`PLAYER`) chỉ được xem.
+- Huấn luyện viên (`COACH`), admin (`SUPER_ADMIN`) và đội trưởng làm được mọi
+  thao tác: **Add Result**, **Manage Types**, sửa ô ngay trên bảng, chọn dòng ở
+  trang bài kiểm tra.
+- Ô có sửa được hay không dựa vào `can('periodic-testing', 'edit')`, giống hệt
+  cách server kiểm tra.
+
+## Luồng
+
+<Tabs items={['Bảng kết quả', 'Thêm kết quả', 'Bài kiểm tra']}>
+  <Tab value="Bảng kết quả">
+
+    - Mỗi dòng là một cầu thủ; mỗi cột là một bài kiểm tra có kết quả trong
+      ngày, tiêu đề dạng `Tên (đơn vị)`.
+    - Ô chọn ngày lấy danh sách từ `getTestDates()`; chưa chọn ngày thì bảng trống.
+    - Chỉ khi đổi ngày trang mới tải lại từ server (`shallow: false`); lúc đó
+      `type` và `page` được đặt lại.
+    - `q`, `type` và `page` chỉ xử lý trên trình duyệt. Mỗi trang 10 cầu thủ.
+    - Mỗi ô là một ô nhập số `Editable` của Chakra:
+      - Ô đang trống → `createTestResult` với một dòng.
+      - Ô đã có điểm → `updateTestResultById`; xóa trắng → `deleteTestResultById`.
+      - Giữ nguyên giá trị, hoặc xóa trắng một ô vốn đã trống, thì không ghi gì.
+      - Lưu không thành công thì ô quay về giá trị cũ.
+
+  </Tab>
+  <Tab value="Thêm kết quả">
+
+    - Server chặn bằng `canCreateTestResult()`; không đủ quyền → `forbidden()`.
+    - Bước 1: chọn cầu thủ đang hoạt động, tối đa năm bài kiểm tra và ngày (mặc
+      định hôm nay).
+    - Bước 2: bạn nhập điểm vào lưới cầu thủ × bài kiểm tra.
+    - Bấm vào tiêu đề cột hoặc tên cầu thủ để bỏ mục đó khỏi lựa chọn.
+    - Ô để trống sẽ được gửi là `0`.
+    - Lưu xong, bạn được chuyển về `/periodic-testing?date=<date>`.
+
+  </Tab>
+  <Tab value="Bài kiểm tra">
+
+    - `/test-types` liệt kê các bài kiểm tra của đội, có ô tìm kiếm và lọc theo
+      đơn vị.
+    - Bấm **+ Add** hoặc bấm vào một dòng đều mở cùng một hộp thoại: tên + một
+      đơn vị.
+    - Đơn vị: `meters`, `percent`, `points`, `reps`, `seconds`, `times`.
+    - Form mặc định là `seconds`; cột trong DB mặc định là `times`.
+    - Có thể chọn nhiều dòng để xóa cùng lúc; bài kiểm tra còn kết quả thì không
+      xóa được.
+
+  </Tab>
+</Tabs>
+
+## Quy tắc
+
+- **Mỗi cầu thủ, mỗi bài kiểm tra, mỗi ngày chỉ có một kết quả.**
+  `createTestResult` upsert theo bộ ba đó:
+  - `getExistingTestResults` tra cả lô bằng một truy vấn lọc `IN`.
+  - Từng dòng được đối chiếu lại với các khóa đã gửi (vì bộ lọc tạo ra mọi tổ
+    hợp).
+  - Một lệnh insert cho ô mới, một lượt update cho ô đã có.
+  - Toast: `{N} created, {M} updated`.
+- **Tên bài kiểm tra không trùng trong đội.** Unique index `team_test_type_name`
+  trên `(team_id, name)`; dài 3–64 ký tự.
+- **Bài kiểm tra đang dùng thì không xóa được.** `test_result.type_id` đặt
+  `onDelete: 'restrict'`; `removeTestType` đổi lỗi
+  `test_result_type_id_test_type_type_id_fk` thành “Type is being in use.”
+- **Làm mới trang.** Lưu kết quả → `/periodic-testing`; lưu bài kiểm tra →
+  `/periodic-testing/test-types`.
+
+## Dữ liệu
+
+Các bảng trong `src/drizzle/schema/periodic-testing.ts`:
+
+<AutoTypeTable path="src/drizzle/schema/periodic-testing.ts" name="TestType" />
+<AutoTypeTable
+  path="src/drizzle/schema/periodic-testing.ts"
+  name="TestResult"
+/>
+
+Dữ liệu bảng kết quả mà `getTestResult` trả về (`src/types/periodic-testing.d.ts`):
+
+- `tests` dùng tên bài kiểm tra làm khóa.
+- Mỗi ô có `result_id` riêng.
+
+<AutoTypeTable path="src/types/periodic-testing.d.ts" name="TestResult" />
+<AutoTypeTable path="src/types/periodic-testing.d.ts" name="PlayerTestResult" />
+
+### Tham số URL
+
+<TypeTable
+  type={{
+    date: {
+      type: 'string',
+      description: 'Ngày kiểm tra (dạng ISO). Để trống thì bảng trống.',
+      default: "''",
+    },
+    q: { type: 'string', description: 'Tìm theo tên cầu thủ.' },
+    page: {
+      type: 'number',
+      description: 'Trang của bảng kết quả, mỗi trang 10 cầu thủ.',
+      default: '1',
+    },
+    type: {
+      type: 'Array<string>',
+      description: (
+        <ul>
+          <li>Tên các bài kiểm tra hiện thành cột; trống là tất cả.</li>
+          <li>Giao diện không có chỗ chỉnh; chỉ đọc từ URL.</li>
+        </ul>
+      ),
+    },
+  }}
+/>
+
+## API
+
+- Server action trong `src/actions/test-result.ts` và `src/actions/test-type.ts`.
+- Hàm ghi dùng `withResource('periodic-testing')`; hàm đọc chỉ dùng `withAuth`.
+
+<TypeTable
+  type={{
+    'getTestDates()': {
+      type: 'Array<string>',
+      description: 'Các ngày có kết quả (không trùng), mới nhất trước.',
+      required: true,
+    },
+    'getTestResult(date)': {
+      type: 'TestResult',
+      description:
+        'Tiêu đề cột và danh sách cầu thủ của một ngày; trống nếu date rỗng.',
+      required: true,
+    },
+    'createTestResult(results)': {
+      type: 'Response',
+      description:
+        'Upsert cả lô theo cầu thủ, bài kiểm tra và ngày. Cần quyền create.',
+      required: true,
+    },
+    'updateTestResultById({ result_id, result })': {
+      type: 'Response',
+      description: 'Sửa một điểm ngay trên bảng. Cần quyền edit.',
+      required: true,
+    },
+    'deleteTestResultById(result_id)': {
+      type: 'Response',
+      description: 'Xóa một điểm (khi ô bị xóa trắng). Cần quyền delete.',
+      required: true,
+    },
+    'canCreateTestResult()': {
+      type: 'boolean',
+      description:
+        'Chặn trang /add-result; thiếu quyền create thì forbidden().',
+      required: true,
+    },
+    'getTestTypes()': {
+      type: 'Array<TestType>',
+      description: 'Tất cả bài kiểm tra, xếp theo tên.',
+      required: true,
+    },
+    'upsertTestType(type_id, data)': {
+      type: 'Response',
+      description:
+        'Có type_id thì cập nhật, chưa có thì tạo mới cho đội của bạn.',
+      required: true,
+    },
+    'removeTestType(type_id)': {
+      type: 'Response',
+      description: 'Xóa một bài kiểm tra; không xóa được khi còn kết quả.',
+      required: true,
+    },
+  }}
+/>
+
+## Tiêu chí chấp nhận
+
+<Accordions>
+  <Accordion title="Cầu thủ chỉ xem bảng, không chỉnh sửa">
+    Cầu thủ không phải đội trưởng chỉ thấy bảng kết quả, thống kê và ô chọn
+    ngày. Không có **Add Result** / **Manage Types**; bấm vào ô cũng không mở ô
+    nhập.
+  </Accordion>
+  <Accordion title="Gửi lại cả buổi chỉ cập nhật, không tạo trùng">
+    Gửi lại y hệt lần thứ hai sẽ báo `0 created, N updated`; mỗi ô vẫn chỉ có
+    một giá trị.
+  </Accordion>
+  <Accordion title="Bài kiểm tra còn kết quả thì không xóa được">
+    Báo lỗi “Type is being in use.”; bài kiểm tra vẫn nằm trong danh sách.
+  </Accordion>
+</Accordions>

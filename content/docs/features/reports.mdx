@@ -1,71 +1,108 @@
 ---
-title: 'Reports'
+title: Reports
+description: Scheduled monthly and yearly analytics reports, emailed as a link, with a history of every run.
 ---
 
-> Route: `/reports` · Nav group: **Overview** · Status: **Draft**
+<Callout title="Route /reports">
+  Nav group **Overview** · Resource `reports` · Status **Shipped**
+</Callout>
 
-Companion to the [Dashboard](/docs/features/dashboard) spec. The Dashboard
-renders analytics and produces PDFs on demand; this page covers **scheduling**
-those reports and the **history** of what was generated.
+## Purpose
 
-## 1. Summary
+- Companion to the [Dashboard](/docs/features/dashboard), which exports a PDF
+  on demand.
+- This page **schedules** that PDF and keeps the **history** of every run.
+- A team can schedule two reports, each sent once its period has closed:
 
-- Two reports can be scheduled per team, each emailed once its period closes:
+<TypeTable
+  type={{
+    last_month: {
+      type: 'Monthly · last month, on the 1st',
+      description: 'Covers the previous month; sent on the 1st of every month.',
+      required: true,
+    },
+    last_year: {
+      type: 'Yearly · last year, on 1 January',
+      description: 'Covers the previous year; sent on 1 January.',
+      required: true,
+    },
+  }}
+/>
 
-  | Report         | Data window        | Sent on                |
-  | -------------- | ------------------ | ---------------------- |
-  | **Last month** | The previous month | The 1st of every month |
-  | **Last year**  | The previous year  | 1 January              |
+- Both go out around **08:00 ICT** (`SEND_HOUR_LOCAL` in `DEFAULT_TIMEZONE`,
+  `Asia/Ho_Chi_Minh`).
+- No time or day picker: the window implies the cadence.
 
-- Both go out around **08:00 ICT**. There is no per-schedule time or day picker.
-- A daily cron renders due reports with the same engine as the Dashboard
-  download, stores each PDF, and emails the schedule's recipients a download
-  link.
+## Access
 
-## 2. Permissions
+<PermissionMatrix resource="reports" />
 
-Access is governed by the `reports` resource.
+- SUPER_ADMIN and captains hold every action; COACH and PLAYER only view.
+- GUEST has no `view`, so the proxy redirects `/reports` to `/forbidden`.
 
-| Action            | Capability                                   |
-| ----------------- | -------------------------------------------- |
-| `view`            | See schedules and generation history         |
-| `create`          | Add a schedule                               |
-| `edit`            | Update a schedule or enable/disable it       |
-| `create` / `edit` | Run a schedule now (either action is enough) |
-| `delete`          | Remove schedules                             |
+<Callout type="info" title="Not every endpoint checks the resource">
 
-Super admins and team captains have every action; coaches and players can
-only `view`. Guests have no access.
+- **Cron routes:** `CRON_SECRET` Bearer token, not a user session.
+- **`/api/reports/download`:** a session on the report's team (or
+  SUPER_ADMIN).
+- **Dashboard ad-hoc email actions:** plain `withAuth`.
 
-> The cron endpoint is not user-facing: it is authorized by a `CRON_SECRET`
-> Bearer token, and reports render under a service-account session. That
-> session only sees its own team's analytics, so a schedule belonging to any
-> other team fails instead of being rendered with the wrong team's data.
+</Callout>
 
-## 3. UX
+## Flows
 
-- **Schedules** — one row per report with recipient count, next run, last run,
-  and an enable/disable toggle. A paused schedule shows no next run. Rows open
-  an editor (report + recipients); when adding, only reports that are not
-  scheduled yet are offered, and **New Schedule** is disabled once both are.
-- **Recipients** — any member of the team, at least one per schedule. Only the
-  selected recipients receive the report.
-- **Run now** — generates the report immediately under the current user's
-  session (disabled while the schedule is paused). It is also the recovery path
-  after a failed scheduled run.
-- **History** — every generated report, 10 per page, with period, interval,
-  status (with the attempt count, and the error on hover for a failed run),
-  delivery status, and trigger. **Download** is available only for a successful
-  run whose PDF is still stored.
+<Steps>
+  <Step>
+    ### Schedules
 
-## 4. Scheduled report flow
+    - One row per report: recipient count, next run, last run, enable switch
+      (`edit`).
+    - A paused schedule shows `-` as its next run.
+    - Row click opens `UpsertReportSchedule` (`edit`).
+    - **New Schedule** (`create`) offers only unscheduled reports; disabled
+      once both exist.
+    - `delete` lets users select and remove rows.
+
+  </Step>
+  <Step>
+    ### Recipients
+
+    - Picked from `getReportRecipients` (every team member); emails stored.
+    - At least one required (`Add at least one recipient.`).
+    - Only selected recipients receive the report.
+
+  </Step>
+  <Step>
+    ### Run now
+
+    - Generates now under the user's session, `scheduled_for = now()`, so it
+      never collides with the planned occurrence.
+    - Disabled while the schedule is paused.
+    - Recovery path after a failed scheduled run.
+    - Failure shows a toast, not an email.
+
+  </Step>
+  <Step>
+    ### History
+
+    - Every report, newest first, 10 per page.
+    - Columns: period, time duration, status, delivery status, trigger,
+      generation time.
+    - Status shows the attempt count when above 1, and the error on hover.
+    - **Download** only for a `success` run whose PDF is still stored.
+
+  </Step>
+</Steps>
+
+## Scheduled run
 
 <Mermaid
   chart={`
 flowchart TD
-    cron([Vercel Cron · daily 08:00 ICT]) -->|Bearer CRON_SECRET| claim[Claim schedules where<br/>next_run_at ≤ now]
+    cron([Vercel Cron · daily 08:00 ICT]) -->|Bearer CRON_SECRET| claim[Claim enabled schedules<br/>where next_run_at ≤ now]
     claim -->|none| idle[Done · nothing due]
-    claim -->|due| run[Insert history row · pending<br/>unique schedule + occurrence]
+    claim -->|due| session[Sign in as the service account]
+    session --> run[Insert history row · pending<br/>unique schedule + occurrence]
     run -->|duplicate, still running| skip[Skip · already ran]
     run -->|duplicate, pending over 10 min| reclaim[Take over the stale run]
     reclaim --> pdf
@@ -77,54 +114,156 @@ flowchart TD
 `}
 />
 
-How it stays correct:
+## Rules
 
-- **`next_run_at` is precomputed** on every create, edit, and enable: the 1st
-  of the next period at 08:00 ICT. The cron only polls for overdue rows, so
-  most days it does nothing.
-- **One run per occurrence.** The history row is inserted first under a
-  unique `(schedule_id, scheduled_for)` key, so overlapping or replayed cron
-  hits can never double-send. "Run now" uses `now()` as its occurrence.
-- **A crashed run cannot block its schedule.** If a run is still `pending`
-  10 minutes after it started, its function was killed (timeout, out of
-  memory), so the next tick takes it over, reusing the stored PDF if one
-  exists.
-- **Retries happen in-process** (3 attempts). The PDF is kept between
-  attempts, so an email failure does not re-render it.
-- **A final failure still advances `next_run_at`** — the next occurrence is a
-  month or a year away, so a human recovers with "Run now". For scheduled runs,
-  the team's coaches, super admins, and captain get a failure email; a failed
-  "Run now" reports the error in the UI instead.
-- **Every stored PDF expires** after `RETENTION_DAYS` (90 days), including the
-  PDF of a run that failed after rendering.
+- **Precomputed `next_run_at`.** `computeNextRun` sets it on save and
+  re-enable: 1st of the next period, 08:00 ICT.
+- **No backlog.** Re-enabling computes from now, so a paused schedule never
+  catches up.
+- **Cheap polling.** Cron reads only overdue rows (partial index on enabled
+  rows).
+- **One run per occurrence.** History row inserted first under unique
+  `(schedule_id, scheduled_for)`; replayed ticks can't double-send.
+- **Locked claims.** Claims use `FOR UPDATE SKIP LOCKED`.
+- **Crashed runs don't wedge.** A run `pending` over 10 minutes is taken over
+  atomically by the next tick, reusing any stored PDF.
+- **In-process retries.** Up to 3 attempts, 5 s then 20 s apart; the PDF is
+  kept, so an email failure doesn't re-render.
+- **Final failure still advances `next_run_at`.** Recover with **Run now**.
+- **Failure alert.** A failed scheduled run emails the team's coaches, super
+  admins and captain.
+- **Atomic success.** `completeReportRun` closes the run and advances the
+  schedule in one transaction.
+- **Window resolved in ICT.** `intervalRange` uses `scheduled_for` in
+  `DEFAULT_TIMEZONE`; 08:00 on the 1st (previous day in UTC) gets the right
+  month.
+- **One team per service account.** Cron renders as `PW_USERNAME` /
+  `PW_PASSWORD`.
+- **Other teams fail.** "Report session does not belong to the schedule team",
+  instead of rendering wrong data.
+- **Stored PDFs expire** after `RETENTION_DAYS` (90), including PDFs of runs
+  that failed after rendering.
 
-## 5. Technical appendix
+## Data
 
-| Endpoint                     | Purpose                                                                                |
-| ---------------------------- | -------------------------------------------------------------------------------------- |
-| `GET /api/reports/schedule`  | Cron tick (`0 1 * * *` UTC). Claims due rows with `FOR UPDATE SKIP LOCKED`, runs each. |
-| `GET /api/reports/retention` | Cron (`0 2 * * *` UTC). Deletes Blobs past `RETENTION_DAYS` and marks rows `expired`.  |
-| `GET /api/reports/download`  | Streams a stored PDF to a signed-in member of the report's team (or a super admin).    |
-| `POST /api/webhooks/resend`  | Svix-verified delivery events; stamps `delivered` / `bounced` / … onto the run.        |
+<AutoTypeTable path="src/drizzle/schema/report.ts" name="ReportSchedule" />
+<AutoTypeTable path="src/drizzle/schema/report.ts" name="ReportHistory" />
 
-### Data model
+- `report_schedule` is unique on `(team_id, interval)`.
+- `report_history.status`: `pending`, `success`, `failed`, `expired`.
+- `report_history.trigger`: `manual` or `scheduled`.
+- `delivery_status` comes from the Resend webhook.
+- Stored files: `analytics-<interval>-<digits of period>.pdf`.
 
-**`report_schedule`** — one row per team per report.
+## API
 
-- `interval`: `last_month` \| `last_year` (data window; the cadence follows
-  from it). Unique with `team_id`.
-- `recipients`: string[]
-- `enabled`: boolean
-- `next_run_at`: timestamp (UTC, precomputed; partial-indexed for the tick)
-- `last_run_at`: timestamp (nullable)
+- Server actions in `src/actions/report.ts`, scoped to the caller's `team_id`.
+- Gated by `withResource('reports')`; an array requires every listed action.
 
-**`report_history`** — one row per generated report, scheduled or manual.
+<TypeTable
+  type={{
+    'getReportSchedules() / getReportHistory()': {
+      type: 'Array<ReportSchedule> / Array<ReportHistory>',
+      description: 'Needs view. Newest first.',
+      required: true,
+    },
+    'upsertReportSchedule(schedule_id, values)': {
+      type: 'Response',
+      description:
+        'Needs create and edit. Insert if schedule_id is empty, else update; recomputes next_run_at.',
+      required: true,
+    },
+    'toggleReportSchedule(schedule_id, enabled)': {
+      type: 'Response',
+      description: 'Needs edit. Enabling recomputes next_run_at from now.',
+      required: true,
+    },
+    'removeReportSchedules(schedule_ids)': {
+      type: 'Response',
+      description: 'Needs delete. History rows keep a null schedule_id.',
+      required: true,
+    },
+    'runReportNow(schedule_id)': {
+      type: 'Response',
+      description:
+        'Needs create and edit. Runs executeSchedule (trigger manual) with the caller’s cookies.',
+      required: true,
+    },
+  }}
+/>
 
-- `schedule_id` + `scheduled_for`: the occurrence (unique — the idempotency
-  gate; null for on-demand emails)
-- `interval`, `period`: what was rendered
-- `trigger`: `manual` \| `scheduled`
-- `status`: `pending` \| `success` \| `failed` \| `expired`
-- `attempts`, `error`: retry outcome, surfaced in the UI
-- `pathname`, `filename`, `expires_at`: Blob location, download name, retention
-- `resend_email_id`, `delivery_status`: from the Resend webhook
+Route handlers:
+
+<TypeTable
+  type={{
+    'GET /api/reports/schedule': {
+      type: 'cron 0 1 * * * (UTC)',
+      description:
+        'Claims up to 20 due schedules; runs them in turn within a 40 s budget (maxDuration 60).',
+      required: true,
+    },
+    'GET /api/reports/retention': {
+      type: 'cron 0 2 * * * (UTC)',
+      description:
+        'Deletes Blobs past expires_at and marks their rows expired; failed deletes retry next run.',
+      required: true,
+    },
+    'GET /api/reports/download?id=': {
+      type: 'application/pdf',
+      description: (
+        <ul>
+          <li>Streams a stored PDF.</li>
+          <li>401 without a session.</li>
+          <li>
+            403 for another team, unless <code>SUPER_ADMIN</code>.
+          </li>
+          <li>404 when expired or missing.</li>
+        </ul>
+      ),
+      required: true,
+    },
+    'POST /api/webhooks/resend': {
+      type: '{ received: true }',
+      description: (
+        <ul>
+          <li>
+            Svix-signed with <code>RESEND_WEBHOOK_SECRET</code>, 5 min
+            tolerance.
+          </li>
+          <li>
+            Stamps <code>delivered</code>, <code>delivery_delayed</code>,{' '}
+            <code>bounced</code>, <code>complained</code> or <code>failed</code>{' '}
+            onto the run.
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+  }}
+/>
+
+## Acceptance
+
+<Accordions>
+  <Accordion title="A replayed tick does not double-send">
+
+    - Two cron calls for one due occurrence: one history row, one email.
+    - The second call reports `skipped_duplicate`.
+
+  </Accordion>
+  <Accordion title="Only unscheduled reports can be added">
+
+    - Monthly exists: the editor offers only yearly.
+    - Both exist: New Schedule is disabled.
+
+  </Accordion>
+  <Accordion title="Readers cannot change schedules">
+
+    - COACH or PLAYER sees both tables.
+    - No New Schedule or Run now; switch disabled; rows don't open the editor.
+
+  </Accordion>
+  <Accordion title="Expired reports cannot be downloaded">
+    Once marked expired: Download is disabled and the URL returns 404.
+  </Accordion>
+</Accordions>

@@ -1,44 +1,202 @@
 ---
-title: "Feature Catalog"
-description: "Every page in the app with its route, status, and spec."
+title: Feature Catalog
+description: Every page in the app with its route, resource key and spec.
 ---
 
-Specs are organized **by page**, mirroring the app's sidebar navigation (`SIDEBAR_GROUP` in `src/app/(protected)/_helpers/utils.ts`). Each page has one spec; its individual functionalities are sections **inside** that spec (§5 Functional Requirements).
+- Specs are organized **by page**, mirroring the sidebar (`SIDEBAR_GROUP` in
+  `src/app/(protected)/_helpers/utils.ts`).
+- Route = resource key with a leading slash.
+- The proxy maps the route back to the resource and checks `view` before render.
+- Table relations: [Data Model](/docs/overview/data-model).
 
-Each spec follows the same template:
+<TypeTable
+  type={{
+    Dashboard: {
+      type: '/dashboard',
+      description: (
+        <>
+          Overview · <code>dashboard</code> ·{' '}
+          <a href="/docs/features/dashboard">spec</a>
+        </>
+      ),
+      required: true,
+    },
+    Achievements: {
+      type: '/achievements',
+      description: (
+        <>
+          Overview · <code>achievements</code> ·{' '}
+          <a href="/docs/features/achievements">spec</a>
+        </>
+      ),
+      required: true,
+    },
+    Reports: {
+      type: '/reports',
+      description: (
+        <>
+          Overview · <code>reports</code> ·{' '}
+          <a href="/docs/features/reports">spec</a>
+        </>
+      ),
+      required: true,
+    },
+    'Team Rule': {
+      type: '/team-rule',
+      description: (
+        <>
+          Overview · <code>team-rule</code> ·{' '}
+          <a href="/docs/features/team-rule">spec</a>
+        </>
+      ),
+      required: true,
+    },
+    Roster: {
+      type: '/roster',
+      description: (
+        <>
+          Team Management · <code>roster</code> ·{' '}
+          <a href="/docs/features/team-management/roster">spec</a>
+        </>
+      ),
+      required: true,
+    },
+    Training: {
+      type: '/training',
+      description: (
+        <>
+          Team Management · <code>training</code> ·{' '}
+          <a href="/docs/features/team-management/training">spec</a>
+        </>
+      ),
+      required: true,
+    },
+    Attendance: {
+      type: '/attendance',
+      description: (
+        <>
+          Team Management · <code>attendance</code> ·{' '}
+          <a href="/docs/features/team-management/attendance">spec</a>
+        </>
+      ),
+      required: true,
+    },
+    Registration: {
+      type: '/registration',
+      description: (
+        <>
+          Team Management · <code>registration</code> ·{' '}
+          <a href="/docs/features/team-management/registration">spec</a>
+        </>
+      ),
+      required: true,
+    },
+    Matches: {
+      type: '/matches',
+      description: (
+        <>
+          Team Management · <code>matches</code> ·{' '}
+          <a href="/docs/features/team-management/matches">spec</a>
+        </>
+      ),
+      required: true,
+    },
+    'Periodic Testing': {
+      type: '/periodic-testing',
+      description: (
+        <>
+          Performance · <code>periodic-testing</code> ·{' '}
+          <a href="/docs/features/performance/periodic-testing">spec</a>
+        </>
+      ),
+      required: true,
+    },
+    Assets: {
+      type: '/assets',
+      description: (
+        <>
+          Resources · <code>assets</code> ·{' '}
+          <a href="/docs/features/resources/assets">spec</a>
+        </>
+      ),
+      required: true,
+    },
+    Emails: {
+      type: '/emails',
+      description: (
+        <>
+          Resources · <code>emails</code> ·{' '}
+          <a href="/docs/features/resources/emails">spec</a>
+        </>
+      ),
+      required: true,
+    },
+    Documents: {
+      type: '/documents',
+      description: (
+        <>
+          Resources · <code>documents</code> · Planned, no route or table yet
+        </>
+      ),
+    },
+    Teams: {
+      type: '/teams',
+      description: (
+        <>
+          Settings · <code>teams</code> ·{' '}
+          <a href="/docs/features/settings/teams">spec</a>
+        </>
+      ),
+      required: true,
+    },
+    Leagues: {
+      type: '/leagues',
+      description: (
+        <>
+          Settings · <code>leagues</code> ·{' '}
+          <a href="/docs/features/settings/leagues">spec</a>
+        </>
+      ),
+      required: true,
+    },
+    Locations: {
+      type: '/locations',
+      description: (
+        <>
+          Settings · <code>locations</code> ·{' '}
+          <a href="/docs/features/settings/locations">spec</a>
+        </>
+      ),
+      required: true,
+    },
+    Profile: {
+      type: '/profile/[id]',
+      description: (
+        <>
+          Account menu · <code>profile</code> ·{' '}
+          <a href="/docs/features/profile">spec</a>
+        </>
+      ),
+      required: true,
+    },
+    'Sign-in Pages': {
+      type: '/login · /forgot-password · /new-password',
+      description: (
+        <>
+          Public · no resource · <a href="/docs/features/sign-in">spec</a>
+        </>
+      ),
+      required: true,
+    },
+  }}
+/>
 
-- Status line (`> Route · Nav group · Status`): keep it current
-- User-facing behavior (readable by end users)
-- Requirements + Acceptance Criteria (for engineering/QA)
-- Technical appendix (data/API/permissions) if possible
+<Callout type="info" title="Sub-routes">
 
-How the underlying database entities relate to each other is documented in the [Data Model](/docs/overview/data-model).
+- **Profile:** from the account menu and Roster rows, not the sidebar.
+- **Periodic Testing:** also owns `/periodic-testing/test-types` and
+  `/periodic-testing/add-result`.
+- **Dashboard:** covers the PDF API `/api/reports/dashboard`.
+- **Reports:** covers the cron, download and Resend webhook routes.
 
-## Feature catalog
-
-| Nav group           | Page             | Route               | Status | Spec                                                  |
-| ------------------- | ---------------- | ------------------- | ------ | ----------------------------------------------------- |
-| **Overview**        | Dashboard        | `/dashboard`        | Draft  | [dashboard](/docs/features/dashboard)                  |
-| **Overview**        | Achievements     | `/achievements`     | Draft  | [achievements](/docs/features/achievements)            |
-| **Overview**        | Team Rule        | `/team-rule`        | Draft  | [team-rule](/docs/features/team-rule)                  |
-| **Team Management** | Roster           | `/roster`           | Draft  | [roster](/docs/features/team-management/roster)                 |
-| **Team Management** | Training         | `/training`         | Draft  | [training](/docs/features/team-management/training)             |
-| **Team Management** | Attendance       | `/attendance`       | Draft  | [attendance](/docs/features/team-management/attendance)         |
-| **Team Management** | Registration     | `/registration`     | Draft  | [registration](/docs/features/team-management/registration)     |
-| **Team Management** | Matches          | `/matches`          | Draft  | [matches](/docs/features/team-management/matches)               |
-| **Performance**     | Periodic Testing | `/periodic-testing` | Draft  | [periodic-testing](/docs/features/performance/periodic-testing) |
-| **Resources**       | Assets           | `/assets`           | Draft  | [assets](/docs/features/resources/assets)                       |
-| **Settings**        | Teams            | `/teams`            | Draft  | [teams](/docs/features/settings/teams)                          |
-| **Settings**        | Leagues          | `/leagues`          | Draft  | [leagues](/docs/features/settings/leagues)                      |
-| **Settings**        | Locations        | `/locations`        | Draft  | [locations](/docs/features/settings/locations)                  |
-| **Account**         | Profile          | `/profile/[id]`     | Draft  | [profile](/docs/features/profile)                               |
-
-> **Dashboard** includes the **PDF Reports** capability (formerly the standalone “Analytics Reports” spec) as a functionality under §5.
->
-> **Periodic Testing** also owns the sub-routes `/periodic-testing/test-types` and `/periodic-testing/add-result`, documented inside its spec.
-
-### Not yet documented
-
-- Auth pages: `/login`, `/forgot-password`, `/new-password`
-- Resources → **Emails** (`/emails`)
-- Resources → **Documents** (`/documents`, disabled in the sidebar)
+</Callout>

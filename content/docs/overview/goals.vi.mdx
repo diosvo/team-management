@@ -1,0 +1,81 @@
+---
+title: Mục tiêu
+description: Thế nào là thành công và các yêu cầu phi chức năng trang nào cũng phải đạt.
+---
+
+## Mục tiêu
+
+<TypeTable
+  type={{
+    'Bỏ bảng tính và nhóm chat': {
+      type: 'chỉ trong app',
+      description:
+        'Danh sách đội, lịch tập và dữ liệu trận đấu chỉ nằm trong app.',
+      required: true,
+    },
+    'Lịch sử điểm danh đáng tin': {
+      type: '≥ 90% buổi tập',
+      description: 'Ít nhất 90% buổi tập có điểm danh.',
+      required: true,
+    },
+    'Tự tìm được câu trả lời': {
+      type: 'không cần hỏi trong chat',
+      description:
+        'Thành viên tự xem lịch tập, danh sách đội và nội quy, không phải hỏi trong nhóm chat.',
+      required: true,
+    },
+    'Giao việc an toàn': {
+      type: 'không cần admin',
+      description:
+        'Đội trưởng và HLV tự lo phần việc của mình, không cần nhờ admin.',
+      required: true,
+    },
+  }}
+/>
+
+<Callout type="warn" title="Các chỉ số mới là đề xuất">
+  Chưa có chỉ số nào được đo. Hãy chọn hai hoặc ba chỉ số quan trọng nhất trước
+  khi thêm telemetry.
+</Callout>
+
+## Yêu cầu phi chức năng
+
+<Tabs items={['Hiệu năng', 'Khả năng tiếp cận', 'Độ tin cậy']}>
+  <Tab value="Hiệu năng">
+
+    Các trang hay dùng hiện ra trong vòng 2 giây, với quy mô đội nêu ở phần
+    [ràng buộc](/docs/vi/overview/vision#ràng-buộc).
+
+    - **Streaming.** Mỗi khu vực trên trang có `Suspense` và skeleton riêng;
+      không phải chờ mọi truy vấn xong.
+    - **Đọc dữ liệu.** Nằm trong `src/db`, được bọc bằng `withAuth` trong
+      `src/actions`; không bao giờ gọi thẳng từ component.
+    - **Tải khi cần.** Biểu đồ, trình soạn thảo và engine PDF
+      (`src/lib/puppeteer.ts`) tải khi dùng tới, không có trong JS lần đầu.
+
+  </Tab>
+  <Tab value="Khả năng tiếp cận">
+
+    - Bảng, menu và hộp thoại đều dùng được bằng bàn phím (Chakra UI).
+    - Hộp thoại và drawer giữ focus bên trong, đóng lại thì trả focus về chỗ cũ.
+    - Nút thao tác nào cũng có nhãn chữ hoặc `aria-label`.
+
+  </Tab>
+  <Tab value="Độ tin cậy">
+
+    - **Phản hồi.** Thao tác ghi trả về `Response` của `ResponseFactory`
+      (`success`, `message`, `data` nếu có), hiện bằng toast.
+    - **Không ghi trùng.** Nút gửi bị khoá trong lúc đang xử lý.
+    - **Chỉ mục duy nhất.** `unique_player_per_session`, `team_asset_name`, ...
+      chặn phần còn lại; `getDbErrorMessage` đổi lỗi thành câu dễ hiểu.
+    - **Giới hạn số lần gọi.** Better Auth: mỗi IP tối đa 3 yêu cầu/phút cho
+      đăng nhập và đặt lại mật khẩu.
+
+  </Tab>
+</Tabs>
+
+## Câu hỏi còn bỏ ngỏ
+
+- Mình cam kết hai hoặc ba chỉ số thành công nào, và đo bằng cách nào?
+- Có tính năng nào cần nhật ký kiểm toán không, hay `created_at` / `updated_at`
+  là đủ?

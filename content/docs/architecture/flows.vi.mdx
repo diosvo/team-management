@@ -1,0 +1,166 @@
+---
+title: Luồng xử lý
+description: 'Các luồng request theo từng bước: chuyển trang, server action và quy trình báo cáo.'
+---
+
+- Bốn luồng dưới đây gần như gói gọn mọi request.
+- Đăng nhập, tạo tài khoản và đặt lại mật khẩu xem ở
+  [Đăng nhập & tài khoản](/docs/vi/user-flows/authentication).
+
+## Chuyển trang
+
+Mỗi trang có ba lớp kiểm tra; chỉ lớp trên server mới có tiếng nói cuối cùng.
+
+<Mermaid
+  chart={`
+sequenceDiagram
+    autonumber
+    actor U as Trình duyệt
+    participant MW as proxy.ts
+    participant L as (protected)/layout.tsx
+    participant BA as Better Auth
+    U->>MW: GET /roster
+    MW->>MW: getSessionCookie() – chỉ xem có hay không, không gọi DB
+    alt không có cookie trên route bảo vệ
+        MW-->>U: redirect /login
+    else có cookie trên route xác thực
+        MW-->>U: redirect /dashboard
+    else có cookie trên route bảo vệ
+        MW->>MW: getCookieCache() – cache có ký, không gọi DB
+        MW->>MW: can(role, resolveResource(path), 'view')
+        MW-->>U: /login nếu hết hạn, /forbidden nếu bị từ chối
+        MW->>L: NextResponse.next()
+    end
+    L->>BA: verifySession() – cache(), auth.api.getSession()
+    L-->>U: redirect /login, hoặc render trong SessionProvider(session.user)
+`}
+/>
+
+- Phiên đăng nhập và cookie cache có ký đều sống **1 giờ** (tiền tố cookie
+  `sgr`).
+- Nhờ cookie cache, proxy quyết định được mà không cần query database.
+- `resolveResource` so theo tiền tố đường dẫn: route mới nằm dưới tiền tố của
+  một resource sẽ tự áp dụng luôn kiểm tra của resource đó.
+
+## Server action
+
+Request có header `next-action` không đi qua proxy; action tự kiểm tra quyền.
+
+<Mermaid
+  chart={`
+sequenceDiagram
+    autonumber
+    participant C as Client component
+    participant SA as withResource(resource)(actions, fn)
+    participant DB as PostgreSQL
+    C->>SA: POST kèm header next-action
+    SA->>SA: withAuth → verifySession()
+    alt không có phiên
+        SA-->>C: redirect /login
+    else có phiên
+        SA->>SA: defineAbility(role, is_captain).canAll(actions)
+        alt bị từ chối
+            SA-->>C: forbidden() → trang 403
+        else được phép
+            SA->>SA: parse Zod, kiểm tra từng dòng
+            SA->>DB: src/db/* qua Drizzle
+            SA->>SA: revalidate.<entity>()
+            SA-->>C: ResponseFactory.success / error
+        end
+    end
+`}
+/>
+
+## Tải PDF Bảng tổng quan
+
+Bấm **Dashboard → Actions → Download** để xuất đúng khoảng ngày đang xem.
+
+<Mermaid
+  chart={`
+sequenceDiagram
+    autonumber
+    actor U as Người dùng trên /dashboard
+    participant R as POST /api/reports/dashboard
+    participant C as Chromium headless
+    participant D as Trang /dashboard
+    U->>R: { from, to, filename }
+    R->>R: verifySession(), tạo nhãn Duration
+    R->>C: khởi chạy, gửi kèm cookie phiên
+    C->>D: mở dashboardPath(range)
+    D-->>C: lưới đã render
+    C->>C: chỉ giữ #reports-dashboard, page.pdf()
+    R-->>U: file đính kèm application/pdf
+`}
+/>
+
+- `Duration:` được tính bằng `formatDateRange` trên server, nên luôn khớp
+  khoảng ngày đã render.
+- Không lưu lại gì cả.
+- **Send to...** gửi chính file PDF đó qua email bằng Resend.
+
+## Báo cáo theo lịch
+
+- Mỗi ngày một cron chạy tất cả lịch gửi có `next_run_at` đã tới.
+- Báo cáo tháng gửi ngày 1 hằng tháng, báo cáo năm gửi ngày 1/1, đều lúc
+  08:00 ICT.
+- Nút "Run now" ở `/reports` cũng gọi chính `executeSchedule`.
+
+<Mermaid
+  chart={`
+sequenceDiagram
+    autonumber
+    participant V as Vercel Cron
+    participant R as GET /api/reports/schedule
+    participant E as executeSchedule
+    participant DB as PostgreSQL
+    participant C as Chromium
+    participant B as Vercel Blob
+    participant M as Resend
+    V->>R: Bearer CRON_SECRET (01:00 UTC)
+    R->>DB: claimDueSchedules(20)
+    R->>R: getServiceSession()
+    loop mỗi lịch đến hạn, tối đa 40 s
+        R->>E: chạy lượt (scheduled_for = next_run_at)
+        E->>DB: chèn report_history (mỗi lượt một dòng)
+        E->>C: render PDF Dashboard
+        E->>B: lưu PDF (90 ngày)
+        E->>M: gửi email link tải
+        E->>DB: xong lượt, dời next_run_at
+    end
+    Note over M: trạng thái → /api/webhooks/resend
+`}
+/>
+
+## Hỏi đáp
+
+Chi tiết hơn về lần chạy báo cáo theo lịch.
+
+<Accordions>
+  <Accordion title="Vì sao không bao giờ gửi trùng?">
+
+    - Bước 5 chèn `report_history` trước tiên, unique theo `(schedule_id, scheduled_for)`.
+    - Cron chạy lại hoặc chạy chồng lên nhau sẽ dính lỗi unique và bỏ qua.
+    - Lần chạy bị treo quá `maxDuration` sẽ được nhận lại, không bị bỏ qua.
+    - `scheduled_for` là lượt theo lịch, không phải `now()`: chạy lại vẫn khớp đúng lượt.
+
+  </Accordion>
+  <Accordion title="Nếu bị lỗi thì sao?">
+
+    - Mỗi bước tự thử lại ngay trong tiến trình; PDF đã lưu thì không render lại.
+    - Thử hết vẫn lỗi thì lần chạy bị đánh dấu failed; lịch gửi **vẫn dời sang kỳ sau**.
+    - Huấn luyện viên và admin nhận email báo lỗi, kèm link tới lịch sử gửi.
+    - Cách xử lý: bấm "Run now".
+
+  </Accordion>
+  <Accordion title="Vì sao mỗi service account chỉ dùng cho một đội?">
+    Chromium render bằng tài khoản `PW_USERNAME`, nên chỉ thấy đội của tài khoản
+    đó. Lịch gửi của đội khác sẽ báo lỗi, thay vì gửi nhầm dữ liệu.
+  </Accordion>
+  <Accordion title="Báo cáo cũ được dọn thế nào?">
+
+    - `GET /api/reports/retention` chạy lúc 02:00 UTC.
+    - Xóa các blob đã quá `expires_at` và đánh dấu dòng tương ứng là expired.
+    - Xóa không được thì hôm sau thử lại.
+
+  </Accordion>
+</Accordions>

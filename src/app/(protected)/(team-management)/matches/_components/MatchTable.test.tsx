@@ -56,13 +56,15 @@ describe('MatchTable', () => {
   const setup = ({
     matches = [LOSS_MATCH, AWAY_MATCH],
     can = () => false,
+    isGuest = false,
     params = {},
   }: Partial<{
     matches: Array<MatchWithTeams>;
     can: PermissionsResult['can'];
+    isGuest: boolean;
     params: Record<string, unknown>;
   }> = {}) => {
-    mockUsePermissions.mockReturnValue(createPermissionsMock({ can }));
+    mockUsePermissions.mockReturnValue(createPermissionsMock({ can, isGuest }));
     mockUseQueryStates({ page: 1, q: '', ...params });
 
     return renderWithUI(<MatchTable matches={matches} />);
@@ -154,6 +156,14 @@ describe('MatchTable', () => {
       action: 'Update',
       item: { ...AWAY_MATCH, away_team: AWAY_MATCH.away_team.team_id },
     });
+  });
+
+  test('does not open the dialog for a guest', async () => {
+    const { user } = setup({ isGuest: true });
+
+    await user.click(screen.getByText(AWAY_MATCH.away_team.name));
+
+    expect(mockOpen).not.toHaveBeenCalled();
   });
 
   describe('selection', () => {

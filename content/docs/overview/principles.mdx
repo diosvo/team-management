@@ -1,42 +1,69 @@
 ---
-title: "Principles"
-description: "Shared UX expectations and cross-feature requirements."
+title: Principles
+description: Cross-feature rules every page follows, and where each is enforced.
 ---
 
-## Product principles (shared UX expectations)
+- **UX principles (4):** what a reviewer checks against.
+- **Technical contracts (3):** the code that makes them true.
 
-- **Role clarity:** users should never wonder why they can/can't do something.
-- **Fast search:** lists must support filtering.
-- **Safe destructive actions:** deletions require confirmation + clear feedback.
-- **Deep-linkable state:** filters should be reflected in the URL where reasonable.
+## UX principles
 
-## Shared requirements (cross-feature)
+- **Role clarity.** `Authorized` hides what the role cannot do; the proxy
+  sends the rest to `/forbidden`.
+- **Fast search.** Every list filters by `q` and by its categorical columns.
+- **Safe destructive actions.** Deletes confirm first and report through a toast.
+- **Deep-linkable state.** Filters, search and page live in the URL.
 
-### Authorization
+## Authorization is server-side
 
-- UI may hide controls, but **server must enforce** permissions.
-- A permission grant covers a role and a resource, not a row. Where access depends on _which_ record (my profile, my leave request, my avatar), the action also checks the target against the session user. Full rules in [Roles & Permissions](/docs/access/roles-permissions).
-- Send the client only what it renders. Server Components narrow their reads to the displayed columns rather than passing whole rows across the boundary, so unused personal data never leaves the server.
+- **Writes.** `withResource` in every server action is the only check that
+  can't be bypassed; the UI just hides controls.
+- **Reads.** `withAuth` redirects to `/login` when there is no session.
+- **Grants are role + resource, not row.** For own records (profile, leave,
+  avatar) the action compares with session `user`; mismatch → `forbidden()`.
+- **Never trust payload IDs.** `team_id` comes from the session; a submitted
+  `user_id` or `player_id` is checked against it.
 
-### Filtering and search state
+Full matrix and rules: [Roles & Permissions](/docs/access/roles-permissions).
 
-The **URL is the single source of truth** for search (`q`), pagination (`page`), and filters. Any UI holding local state (the search box, the Advanced Filters drawer draft) is only a _mirror_ of the URL and must follow one two-way contract:
+## Send the client only what it renders
 
-- **Local → URL** on commit (Apply / debounced typing / stat card click).
-- **URL → Local** whenever the URL changes from _outside_ that component (card click, back button, reset, deep link), so mirrors never drift or clobber the URL.
+- Server Components read only the displayed columns, never whole rows.
+- `getRoster` returns `RosterUser`: name, email, role, state, jersey number.
+- Date of birth, phone and citizen ID stay on the server, except on the
+  profile page (own ownership rule).
+- The protected layout passes only `session.user` to `SessionProvider`,
+  never the session token.
 
-The `URL → Local` resync is centralized in the `useSyncedState` hook; every filter mirror reuses it rather than re-implementing sync.
+## The URL owns filter state
+
+- `q`, `page` and filters are parsed by `nuqs` (parsers in `src/lib/nuqs.ts`).
+- Local state (search box, Advanced Filters drawer draft in
+  `src/components/filters/Filters.tsx`) only mirrors the URL.
+
+Two-way contract:
+
+- **Local to URL** on commit: Apply, debounced typing, stat-card click.
+- **URL to local** on any external change: card click, back, reset, deep link.
+
+`useSyncedState` (`src/hooks`) owns the resync:
+
+- Adjusts state during render.
+- Compares by value, so rebuilt array params don't trigger a false resync.
+- Never writes back to the URL.
 
 <Mermaid
   chart={`
 flowchart LR
-    L["LOCAL MIRROR<br/>draft, search box"] -- "commit: Apply / debounce / card click" --> U["URL<br/>single source of truth"]
-    U -- "resync: useSyncedState,<br/>on external change" --> L
+    L["Local mirror<br/>search box, drawer draft"] -- "commit: Apply / debounce / card click" --> U["URL<br/>single source of truth"]
+    U -- "resync via useSyncedState<br/>on external change" --> L
 `}
 />
 
-Cases the contract guarantees:
+Guarantees this buys:
 
-- **Search box**: a card click that sets `q=''` clears the input; stale text can't be pushed back into the URL.
-- **Advanced Filters drawer**: draft opens from the URL, diverges only locally while editing; Apply commits, interact-outside reverts, external URL changes resync the draft.
-- **Card click / back button / deep link**: one URL write fans out to every mirror (search box + drawer) so the whole page reflects it.
+- A stat-card click setting `q=''` clears the search box; stale text can't
+  return to the URL.
+- The drawer draft opens from the URL, diverges while editing, commits on
+  Apply, reverts on interact-outside.
+- One URL write (back button, deep link) fans out to every mirror at once.

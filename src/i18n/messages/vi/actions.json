@@ -26,8 +26,9 @@
   },
   "league": {
     "added": "Đã thêm giải đấu",
-    "deleted": "Đã xóa giải đấu",
     "deleteFailed": "Không thể xóa giải đấu",
+    "deleted": "Đã xóa giải đấu",
+    "notUpcoming": "Chỉ có thể sửa giải đấu sắp diễn ra",
     "playerNotOnTeam": "Cầu thủ (id: {id}) không thuộc đội này",
     "removePlayerFailed": "Không thể xóa cầu thủ (id: {id}) - {message}",
     "updated": "Đã cập nhật giải đấu"

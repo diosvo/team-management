@@ -1,0 +1,71 @@
+---
+title: Giới thiệu
+description: Tài liệu kỹ thuật cho cổng thông tin CLB bóng rổ Saigon Rovers.
+---
+
+- Cổng nội bộ phân quyền theo vai trò cho một CLB bóng rổ, trong một app Next.js.
+- Gồm danh sách đội, buổi tập, điểm danh, trận đấu, thể lực, dụng cụ và thống kê.
+- Tài liệu này ghi lại **vì sao có từng trang** và **trang đó được làm ra sao**.
+- Bạn dùng nó để so mỗi thay đổi với ý định ban đầu và với code thực tế.
+
+<Cards>
+  <Card
+    href="/docs/vi/overview"
+    title="Tổng quan"
+    description="Tầm nhìn, mục tiêu, chân dung người dùng, nguyên tắc và mô hình dữ liệu."
+  />
+  <Card
+    href="/docs/vi/features"
+    title="Tính năng"
+    description="Mỗi trang một đặc tả: mục đích, quyền truy cập, luồng, quy tắc, dữ liệu và API."
+  />
+  <Card
+    href="/docs/vi/access/roles-permissions"
+    title="Vai trò & Quyền"
+    description="Ba lớp kiểm tra quyền và bảng phân quyền, sinh thẳng từ code."
+  />
+  <Card
+    href="/docs/vi/architecture"
+    title="Kiến trúc"
+    description="Sơ đồ C4: ngữ cảnh, container, thành phần, luồng xử lý và deploy."
+  />
+</Cards>
+
+## Một đặc tả gồm những gì
+
+Trang tính năng nào cũng có chung các mục dưới đây, để bạn biết cần tìm ở đâu:
+
+<TypeTable
+  type={{
+    'Mục đích': {
+      type: 'văn bản',
+      description: 'Trang này có để làm gì và dành cho ai.',
+      required: true,
+    },
+    'Quyền truy cập': {
+      type: 'PermissionMatrix',
+      description: 'Quyền theo vai trò × hành động, sinh từ ROLE_CONFIG.',
+      required: true,
+    },
+    Luồng: {
+      type: 'Steps',
+      description: 'Bạn vào trang từ đâu và các thao tác chính.',
+      required: true,
+    },
+    'Quy tắc': {
+      type: 'danh sách',
+      description: 'Những điều luôn đúng, server bắt buộc tuân theo.',
+      required: true,
+    },
+    'Dữ liệu / API': {
+      type: 'AutoTypeTable · TypeTable',
+      description: 'Bảng, tham số URL và server action, lấy kiểu từ code.',
+      required: true,
+    },
+  }}
+/>
+
+<Callout type="info" title="Đâu là bản chuẩn">
+  Các bảng tự sinh đọc code TypeScript lúc build. Phần còn lại do người rà lại:
+  có thay đổi đáng kể thì ghi vào [changelog](/docs/vi/project/changelog).
+</Callout>

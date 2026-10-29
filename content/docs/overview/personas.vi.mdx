@@ -1,0 +1,87 @@
+---
+title: Chân dung người dùng
+description: Bốn vai trò cùng cờ đội trưởng, và mỗi người cần gì từ app.
+---
+
+- **Vai trò:** enum Postgres `user_role` trên `user.role`.
+- **Cờ đội trưởng:** `player.is_captain`.
+- Cả hai lấy từ phiên đăng nhập; `defineAbility(role, isCaptain)` tạo ra một
+  `Ability`.
+- Mỗi chân dung ứng với một hàng hoặc một cột trong
+  [bảng phân quyền](/docs/vi/access/roles-permissions).
+
+<TypeTable
+  type={{
+    'Khách / người tập thử': {
+      type: 'GUEST',
+      description: (
+        <ul>
+          <li>Chỉ xem: bảng tổng quan, thành tích, danh sách đội, trận đấu.</li>
+          <li>Không có hồ sơ cá nhân, không thấy dữ liệu cá nhân.</li>
+        </ul>
+      ),
+      required: true,
+    },
+    'Cầu thủ': {
+      type: 'PLAYER',
+      description: (
+        <ul>
+          <li>Lịch tập và nội quy đội.</li>
+          <li>
+            Điểm danh (gửi đơn xin nghỉ), kết quả kiểm tra và hồ sơ của mình.
+          </li>
+          <li>Xem đăng ký giải và đội bóng.</li>
+        </ul>
+      ),
+      required: true,
+    },
+    'Đội trưởng': {
+      type: 'PLAYER + is_captain',
+      description: (
+        <ul>
+          <li>Có mọi quyền của cầu thủ.</li>
+          <li>Mời/xoá thành viên và sửa nội quy.</li>
+          <li>Ghi kết quả trận, lo đăng ký giải và kiểm tra thể lực.</li>
+        </ul>
+      ),
+      required: true,
+    },
+    'Huấn luyện viên': {
+      type: 'COACH',
+      description: (
+        <ul>
+          <li>Lên lịch buổi tập và điểm danh.</li>
+          <li>Ghi kết quả trận và thành tích; quản lý kiểm tra định kỳ.</li>
+          <li>Xem dụng cụ của đội, giải đấu, sân tập.</li>
+        </ul>
+      ),
+      required: true,
+    },
+    'Admin CLB': {
+      type: 'SUPER_ADMIN',
+      description:
+        'Làm được mọi thao tác trên mọi resource, kể cả đội bóng, giải đấu, sân tập, email và báo cáo.',
+      required: true,
+    },
+  }}
+/>
+
+## Các vai trò khác nhau thế nào trong code
+
+- **Đội trưởng là quyền cộng thêm.** `can()` kiểm tra `ROLE_CONFIG[role]`, rồi
+  chỉ xét `CAPTAIN_PERMISSIONS` khi `role === PLAYER && isCaptain`.
+- **Cờ này không thêm quyền cho vai trò nào khác**, và đội trưởng vẫn giữ mọi
+  quyền của `PLAYER`.
+- **Khách (`GUEST`) không có quyền `profile`.** `getUserProfile` gọi
+  `forbidden()` trước khi đọc bất kỳ dữ liệu nào.
+- **Quyền của `SUPER_ADMIN` được tính tự động.** Mỗi mục trong `RESOURCES` đều
+  gán `ALL_ACTIONS`; resource mới chỉ admin dùng được cho tới khi cấp cho vai
+  trò khác.
+- **Quyền với dữ liệu "của mình" tách khỏi vai trò.** Action so điểm danh, hồ
+  sơ với người dùng trong phiên, không dựa vào bảng phân quyền
+  ([kiểm tra sở hữu](/docs/vi/access/roles-permissions#kiểm-tra-sở-hữu)).
+
+<Callout type="info" title="Tin nhau nhưng vẫn kiểm tra">
+  Giao diện chỉ ẩn nút. Server action nào cũng kiểm tra lại vai trò và, khi cần,
+  cả quyền sở hữu.
+</Callout>

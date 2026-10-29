@@ -14,11 +14,14 @@ import SubmitLeaveRequest from './SubmitLeaveRequest';
 
 export default function AttendanceHeader() {
   const t = useTranslations('attendance');
-  const { isAdmin, isPlayer } = usePermissions();
+  const { can, isPlayer } = usePermissions();
+  // Mirrors the server: `submitLeave` for other members needs `attendance:edit`,
+  // which COACH and SUPER_ADMIN hold.
+  const canMark = can('attendance', 'edit');
 
   return (
     <PageHeader title={t('title')}>
-      <Visibility isVisible={isAdmin}>
+      <Visibility isVisible={canMark}>
         <BulkAttendanceManager
           trigger={
             <Button colorPalette="green" variant="outline">

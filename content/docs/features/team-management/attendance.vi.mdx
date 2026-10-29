@@ -1,0 +1,187 @@
+---
+title: Điểm danh
+description: Điểm danh từng cầu thủ theo ngày; cầu thủ tự xin nghỉ, admin và HLV điểm danh cả đội.
+---
+
+<Callout title="Route /attendance">
+  Nhóm **Team Management** · Resource `attendance` · Trạng thái **Đã phát hành**
+</Callout>
+
+## Mục đích
+
+- Trang Điểm danh (**Attendance**) ghi lại ai đúng giờ, đi trễ hay vắng trong
+  một ngày.
+- Cầu thủ gửi đơn xin nghỉ trước; admin và HLV điểm danh cả buổi tập trong một hộp
+  thoại.
+- Số liệu ở đây dùng để tính tỉ lệ có mặt từng buổi trên
+  [Buổi tập](/docs/vi/features/team-management/training) và Bảng tổng quan.
+
+## Quyền truy cập
+
+<PermissionMatrix resource="attendance" />
+
+- Quyền `create` của cầu thủ (`PLAYER`) chỉ là gửi đơn xin nghỉ cho chính mình
+  (xem Quy tắc).
+- Nút **Mark Attendance** và ô chọn dòng chỉ hiện khi có
+  `can('attendance', 'edit')`.
+- Huấn luyện viên (`COACH`) và admin (`SUPER_ADMIN`) thấy các nút này, khớp với
+  kiểm tra trên server. Đội trưởng không có thêm quyền gì.
+
+## Luồng
+
+<Steps>
+  <Step>
+    ### Chọn ngày
+
+    - `date` mặc định là hôm nay và là tham số duy nhất server đọc.
+    - `getAttendanceByDate` join với `user` để chỉ lấy người trong đội; trả về
+      dữ liệu điểm danh + chỉ số.
+    - `q` (tên cầu thủ) và `status` được lọc ngay trên trình duyệt.
+    - Bấm vào một ô chỉ số để lọc theo trạng thái đó.
+
+  </Step>
+  <Step>
+    ### Gửi đơn xin nghỉ (cầu thủ)
+
+    - Bấm **Submit Leave Request**, chọn ngày và ghi lý do (tối đa 128 ký tự).
+    - `UpsertAttendanceSchema` mặc định `status` là `absent`.
+    - `player_id` là người đang đăng nhập; server sẽ kiểm tra lại lần nữa.
+
+  </Step>
+  <Step>
+    ### Điểm danh (admin, HLV)
+
+    - Bấm **Mark Attendance** để mở hộp thoại điểm danh nhiều người: chọn ngày
+      và cầu thủ.
+    - Tick **Absent** nếu vắng, bỏ trống thì ghi là `late`; lý do có thể bỏ qua.
+    - Khi gửi, `submitLeave` được gọi một lần cho mỗi cầu thủ đã chọn.
+    - Không chọn ai thì mọi cầu thủ đang hoạt động được ghi là `on_time`.
+
+  </Step>
+  <Step>
+    ### Sửa / xoá
+
+    - Chọn các dòng, rồi bấm **On Time**, **Late** hoặc **Absent** → `updateStatus`.
+    - Bấm **Delete** → `removeAttendance`.
+    - Xong, một toast tổng kết sẽ báo kết quả.
+
+  </Step>
+</Steps>
+
+## Quy tắc
+
+- **Chỉ xin nghỉ cho mình.** Cầu thủ (kể cả đội trưởng) gửi
+  `values.player_id !== user.id` nhận `forbidden()`. HLV và admin ghi thay được.
+- **Mỗi cầu thủ một bản ghi cho mỗi buổi tập hoặc mỗi ngày.** Có hai unique
+  index từng phần:
+  - `unique_player_per_session` trên `(player_id, session_id)`, khi có buổi tập.
+  - `unique_player_per_date` trên `(player_id, date)`, khi `session_id IS NULL`.
+  - Hiện chưa có màn hình nào đặt `session_id`, nên index theo ngày là cái thực
+    sự được dùng.
+  - Trùng ở index nào cũng hiện "`<id>`: Already submitted".
+- **Ngày phải khớp với buổi tập.** Khoá ngoại kép `(session_id, date)` →
+  `training_session` (cascade); `session_id` là `NULL` thì bỏ qua.
+- **Không có cột `team_id`.** Biết thuộc đội nào qua `player → user.team_id`.
+- **Mỗi tầng một giá trị mặc định.** Cột: `on_time`; form xin nghỉ: `absent`.
+- **Tỉ lệ có mặt** = `(on_time + late) / total × 100`, làm tròn hai chữ số thập
+  phân.
+
+## Dữ liệu
+
+<Tabs items={['Attendance', 'AttendanceStats']}>
+  <Tab value="Attendance">
+
+    <AutoTypeTable path="src/drizzle/schema/attendance.ts" name="Attendance" />
+
+  </Tab>
+  <Tab value="AttendanceStats">
+
+    <AutoTypeTable path="src/types/attendance.d.ts" name="AttendanceStats" />
+
+  </Tab>
+</Tabs>
+
+### Tham số URL
+
+<TypeTable
+  type={{
+    date: {
+      type: 'string',
+      description: 'Ngày dạng ISO, xử lý trên server.',
+      default: 'hôm nay',
+    },
+    q: {
+      type: 'string',
+      description: 'Tìm theo tên cầu thủ, trên trình duyệt.',
+    },
+    status: {
+      type: 'Array<AttendanceStatus>',
+      description:
+        'Lọc theo trạng thái, trên trình duyệt. Để trống là lấy tất cả.',
+    },
+    page: { type: 'number', description: 'Trang hiện tại.', default: '1' },
+  }}
+/>
+
+## API
+
+- Server action trong `src/actions/attendance.ts`.
+- Đọc dùng `withAuth`; ghi dùng `withResource('attendance')`.
+
+<TypeTable
+  type={{
+    'getAttendanceByDate(date)': {
+      type: 'DataWithStats<AttendanceWithPlayer, AttendanceStats>',
+      required: true,
+      description:
+        'Điểm danh của đội bạn trong một ngày, kèm số lượng từng trạng thái và tỉ lệ có mặt.',
+    },
+    'submitLeave(values)': {
+      type: 'Response',
+      required: true,
+      description: (
+        <ul>
+          <li>Thêm một bản ghi.</li>
+          <li>
+            Người gọi là <code>PLAYER</code> phải trùng{' '}
+            <code>values.player_id</code>.
+          </li>
+          <li>Gửi trùng sẽ báo "Already submitted".</li>
+        </ul>
+      ),
+    },
+    'updateStatus(id, status)': {
+      type: 'Response',
+      required: true,
+      description: 'Đổi trạng thái của một bản ghi.',
+    },
+    'removeAttendance(id)': {
+      type: 'Response',
+      required: true,
+      description: 'Xoá một bản ghi.',
+    },
+  }}
+/>
+
+## Tiêu chí chấp nhận
+
+<Accordions>
+  <Accordion title="Đơn xin nghỉ được ghi là vắng">
+    Cầu thủ gửi đơn xin nghỉ sẽ tạo một dòng `absent` cho ngày đó, kèm lý do và
+    `player_id` của chính họ.
+  </Accordion>
+  <Accordion title="Không được xin nghỉ hộ người khác">
+    Cầu thủ gọi `submitLeave` với `player_id` của người khác sẽ bị chặn
+    (forbidden); không có dòng nào được tạo.
+  </Accordion>
+  <Accordion title="Không cho trùng, theo buổi tập hoặc theo ngày">
+
+    - Gửi thêm một bản ghi không gắn buổi tập, cùng cầu thủ và cùng ngày: "Already submitted".
+    - Cùng ngày nhưng khác `session_id`: cả hai đều được nhận.
+
+  </Accordion>
+  <Accordion title="Điểm danh nhanh cho cả ngày">
+    Gửi điểm danh mà không chọn cầu thủ nào sẽ tạo dòng `on_time` cho mọi cầu
+    thủ đang hoạt động trong ngày đó.
+  </Accordion>
+</Accordions>

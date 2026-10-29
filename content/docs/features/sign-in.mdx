@@ -1,0 +1,138 @@
+---
+title: Sign-in Pages
+description: The three public pages for signing in, requesting a reset link and setting a new password.
+---
+
+<Callout title="Routes /login · /forgot-password · /new-password">
+  Public (`AUTH_ROUTES` in `src/routes.ts`) · Layout `src/app/(auth)` · Status
+  **Shipped**
+</Callout>
+
+## Purpose
+
+- The only pages reachable without a session.
+- No sign-up: accounts are created from Roster, then activated via
+  `/new-password`.
+- This page covers the screens; the end-to-end flow is in
+  [Authentication](/docs/user-flows/authentication).
+
+## Access
+
+- No resource or permission check; all three are in `PUBLIC_ROUTES`.
+- **Signed in:** the proxy redirects any auth route, and `/`, to `/dashboard`.
+- **Signed out:** every other route redirects to `/login`.
+
+## Flows
+
+<Steps>
+  <Step>
+    ### Sign in (`/login`)
+
+    - Email + password, validated by `LoginSchema`.
+    - **Sign In** stays disabled until the form is dirty and valid.
+    - Calls `authClient.signIn.email` with `callbackURL: '/dashboard'`.
+    - **Forgot your password?** links to `/forgot-password`.
+
+  </Step>
+  <Step>
+    ### Request a reset link (`/forgot-password`)
+
+    - One email field (`ForgotPasswordSchema`).
+    - Calls `authClient.requestPasswordReset` with `redirectTo: '/new-password'`.
+    - Success: clears the form and shows "Password reset instructions have been
+      sent to your email."
+
+  </Step>
+  <Step>
+    ### Set a new password (`/new-password`)
+
+    - Reads `token` from the URL; the reset email links here.
+    - A checklist turns green as each password rule passes.
+    - **Submit** stays disabled until all four rules pass.
+    - Success: toast, then `router.push('/login')`.
+
+  </Step>
+</Steps>
+
+## Rules
+
+- **Password rules** (`/new-password` only):
+  - 8–128 characters.
+  - At least one letter, one number and one special character.
+- **Login validation.** `LoginSchema` checks the email and an 8–128 character
+  password, not the character rules.
+- **Rate limit.** Sign-in, reset request and reset are each capped at 3
+  requests/min per IP (`STRICT_RATE_LIMIT` in `src/lib/auth.ts`).
+- **Error messages** come from `authErrorMessage` (`src/utils/rate-limit.ts`):
+  - `429` → `Rate limit exceeded. Retry at <time>`, from `Retry-After`.
+  - Anything else → Better Auth's message, or "Something went wrong."
+- **Rejected credentials** (`401`) keep **Sign In** disabled until the email
+  or password is edited.
+- **Network failure** on login shows "Unable to reach the server. Please try
+  again."
+- **Signed-in users can't reset.** `/new-password` is an auth route, so a
+  reset link opened while signed in lands on `/dashboard`.
+
+## Data
+
+Zod schemas in `src/schemas/auth.ts`:
+
+<TypeTable
+  type={{
+    LoginSchema: {
+      type: '{ email, password }',
+      description: 'Shared user email rule; password 8–128 characters.',
+      required: true,
+    },
+    ForgotPasswordSchema: {
+      type: '{ email }',
+      description: 'Shared user email rule.',
+      required: true,
+    },
+  }}
+/>
+
+## API
+
+Better Auth client calls (`src/lib/auth-client.ts`), served by
+`/api/auth/[...all]`:
+
+<TypeTable
+  type={{
+    'authClient.signIn.email': {
+      type: '/sign-in/email',
+      description:
+        'Creates the session; sets the sgr cookie and its signed cache.',
+      required: true,
+    },
+    'authClient.requestPasswordReset': {
+      type: '/request-password-reset',
+      description:
+        'Emails the "Create a new password" link via Resend (ResetPassword template).',
+      required: true,
+    },
+    'authClient.resetPassword': {
+      type: '/reset-password',
+      description: 'Sets the new password for the token from the link.',
+      required: true,
+    },
+  }}
+/>
+
+## Acceptance
+
+<Accordions>
+  <Accordion title="Wrong password blocks retry until edited">
+    After a rejected sign-in, **Sign In** stays disabled until a field changes.
+  </Accordion>
+  <Accordion title="Fourth attempt in a minute is rate-limited">
+    The error shows the time at which a retry is allowed.
+  </Accordion>
+  <Accordion title="Weak password cannot be submitted">
+    `abcdefgh` leaves the number and special-character rules unticked and
+    **Submit** disabled.
+  </Accordion>
+  <Accordion title="Signed-in users skip the auth pages">
+    Opening `/login` with a valid session redirects to `/dashboard`.
+  </Accordion>
+</Accordions>

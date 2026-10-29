@@ -1,3 +1,4 @@
+import { useSearchParams } from 'next/navigation';
 
 import usePermissions from '@/hooks/use-permissions';
 
@@ -15,6 +16,13 @@ vi.mock('@/hooks/use-permissions', () => ({
   default: vi.fn(),
 }));
 
+vi.mock('next/navigation', async () => ({
+  ...(await vi.importActual<typeof import('next/navigation')>(
+    'next/navigation',
+  )),
+  useSearchParams: vi.fn(() => new URLSearchParams()),
+}));
+
 // The dialog is exercised by its own test; stub the overlay controller so we
 // can assert the header opens it in "Add" mode.
 vi.mock('./UpsertAchievement', () => ({
@@ -25,10 +33,15 @@ describe('AchievementHeader', () => {
   const mockUsePermissions = vi.mocked(usePermissions);
   const mockOpen = vi.mocked(UpsertAchievement.open);
 
-  const setup = ({ canCreate = false } = {}) => {
-    mockUsePermissions.mockReturnValue(createPermissionsMock({
-      can: vi.fn(() => canCreate),
-    }));
+  const setup = ({ canCreate = false, record = '' } = {}) => {
+    mockUsePermissions.mockReturnValue(
+      createPermissionsMock({
+        can: vi.fn(() => canCreate),
+      }),
+    );
+    vi.mocked(useSearchParams).mockReturnValue(
+      new URLSearchParams(record ? { record } : {}) as never,
+    );
 
     return renderWithUI(<AchievementHeader />);
   };
@@ -58,6 +71,21 @@ describe('AchievementHeader', () => {
       action: 'Add',
       item: { achievement_id: '' },
     });
+  });
+
+  test('pre-fills the league from the record query param', () => {
+    setup({ canCreate: true, record: 'league-123' });
+
+    expect(mockOpen).toHaveBeenCalledWith('add-achievement', {
+      action: 'Add',
+      item: { achievement_id: '', league_id: 'league-123' },
+    });
+  });
+
+  test('ignores the record query param when the user cannot create', () => {
+    setup({ record: 'league-123' });
+
+    expect(mockOpen).not.toHaveBeenCalled();
   });
 
   test('does not open the dialog until the record button is clicked', () => {

@@ -1,0 +1,279 @@
+---
+title: Báo cáo
+description: Báo cáo thống kê theo lịch hằng tháng, hằng năm, gửi email kèm link tải, có lịch sử mọi lần chạy.
+---
+
+<Callout title="Route /reports">
+  Nhóm **Overview** · Resource `reports` · Trạng thái **Đã phát hành**
+</Callout>
+
+## Mục đích
+
+- Báo cáo (**Reports**) đi cặp với [Bảng tổng quan](/docs/vi/features/dashboard),
+  nơi bạn xuất PDF bất cứ lúc nào.
+- Trang này **lên lịch gửi** chính file PDF đó và giữ **lịch sử** của mọi lần
+  chạy.
+- Mỗi đội lên lịch được hai báo cáo, mỗi báo cáo gửi đi khi kỳ đó đã kết thúc:
+
+<TypeTable
+  type={{
+    last_month: {
+      type: 'Monthly · last month, on the 1st',
+      description: 'Số liệu của tháng trước; gửi vào ngày 1 mỗi tháng.',
+      required: true,
+    },
+    last_year: {
+      type: 'Yearly · last year, on 1 January',
+      description: 'Số liệu của năm trước; gửi vào ngày 1 tháng 1.',
+      required: true,
+    },
+  }}
+/>
+
+- Cả hai đều gửi khoảng **08:00 giờ Việt Nam (ICT)** (`SEND_HOUR_LOCAL` theo
+  `DEFAULT_TIMEZONE`, `Asia/Ho_Chi_Minh`).
+- Không cần chọn giờ hay ngày: chọn kỳ báo cáo là đã biết khi nào gửi.
+
+## Quyền truy cập
+
+<PermissionMatrix resource="reports" />
+
+- Admin (`SUPER_ADMIN`) và đội trưởng làm được mọi thao tác; huấn luyện viên
+  (`COACH`) và cầu thủ (`PLAYER`) chỉ xem.
+- Khách (`GUEST`) không có quyền `view`, nên khi mở `/reports` bạn sẽ được
+  chuyển tới `/forbidden`.
+
+<Callout type="info" title="Không phải endpoint nào cũng kiểm tra resource">
+
+- **Route cron:** dùng Bearer token `CRON_SECRET`, không phải phiên đăng nhập
+  của người dùng.
+- **`/api/reports/download`:** cần phiên đăng nhập thuộc đội của báo cáo (hoặc
+  admin).
+- **Action gửi email tay trên Bảng tổng quan:** chỉ bọc `withAuth`.
+
+</Callout>
+
+## Luồng
+
+<Steps>
+  <Step>
+    ### Lịch gửi
+
+    - Mỗi báo cáo một dòng: số người nhận, lần chạy tới, lần chạy gần nhất, công
+      tắc bật/tắt (`edit`).
+    - Lịch đang tạm dừng thì cột lần chạy tới hiện `-`.
+    - Bấm vào dòng để mở `UpsertReportSchedule` (`edit`).
+    - **New Schedule** (`create`) chỉ cho chọn báo cáo chưa có lịch; đủ cả hai
+      rồi thì nút bị khóa.
+    - Có quyền `delete` thì bạn chọn được nhiều dòng để xóa.
+
+  </Step>
+  <Step>
+    ### Người nhận
+
+    - Chọn từ `getReportRecipients` (mọi thành viên trong đội); app lưu lại
+      email.
+    - Phải có ít nhất một người (`Add at least one recipient.`).
+    - Chỉ những người được chọn mới nhận báo cáo.
+
+  </Step>
+  <Step>
+    ### Chạy ngay (Run now)
+
+    - Tạo báo cáo ngay bằng phiên đăng nhập của bạn, `scheduled_for = now()`,
+      nên không bao giờ đụng lần chạy theo lịch.
+    - Nút bị khóa khi lịch đang tạm dừng.
+    - Dùng để chạy lại khi lần chạy theo lịch bị lỗi.
+    - Lỗi thì hiện toast, không gửi email.
+
+  </Step>
+  <Step>
+    ### Lịch sử
+
+    - Mọi báo cáo, mới nhất ở trên, 10 dòng mỗi trang.
+    - Các cột: kỳ báo cáo, khoảng thời gian, trạng thái, tình trạng gửi, cách
+      chạy (tay hay theo lịch), thời điểm tạo.
+    - Trạng thái hiện số lần thử nếu nhiều hơn 1; rê chuột vào để xem lỗi.
+    - **Download** chỉ có với lần chạy `success` mà PDF vẫn còn lưu.
+
+  </Step>
+</Steps>
+
+## Lần chạy theo lịch
+
+<Mermaid
+  chart={`
+flowchart TD
+    cron([Vercel Cron · mỗi ngày 08:00 ICT]) -->|Bearer CRON_SECRET| claim[Nhận các lịch đang bật<br/>có next_run_at ≤ now]
+    claim -->|không có| idle[Xong · chưa tới hạn]
+    claim -->|tới hạn| session[Đăng nhập bằng tài khoản dịch vụ]
+    session --> run[Thêm dòng lịch sử · pending<br/>không trùng lịch + lần chạy]
+    run -->|trùng, đang chạy| skip[Bỏ qua · đã chạy rồi]
+    run -->|trùng, pending quá 10 phút| reclaim[Nhận lại lần chạy bị treo]
+    reclaim --> pdf
+    run --> pdf[Xuất Bảng tổng quan ra PDF<br/>lưu vào Blob]
+    pdf --> mail[Gửi email cho người nhận<br/>kèm link tải]
+    mail --> ok[Đánh dấu success<br/>dời next_run_at]
+    pdf -. 3 lần thử đều lỗi .-> fail[Đánh dấu failed<br/>dời next_run_at<br/>báo HLV, admin, đội trưởng]
+    mail -. 3 lần thử đều lỗi .-> fail
+`}
+/>
+
+## Quy tắc
+
+- **`next_run_at` được tính sẵn.** `computeNextRun` đặt giá trị này khi lưu và
+  khi bật lại: ngày 1 của kỳ tiếp theo, 08:00 ICT.
+- **Không chạy bù.** Bật lại thì tính từ bây giờ, nên lịch đã tạm dừng không
+  gửi bù các kỳ đã lỡ.
+- **Quét nhẹ nhàng.** Cron chỉ đọc các dòng đã quá hạn (partial index trên các
+  dòng đang bật).
+- **Mỗi kỳ chỉ chạy một lần.** Dòng lịch sử được thêm trước, với khóa duy nhất
+  `(schedule_id, scheduled_for)`; cron có gọi lại cũng không gửi trùng.
+- **Nhận lịch có khóa.** Dùng `FOR UPDATE SKIP LOCKED`.
+- **Lần chạy bị sập không làm kẹt lịch.** Lần chạy `pending` quá 10 phút sẽ được
+  lần cron kế tiếp nhận lại trọn vẹn trong một thao tác, dùng lại PDF đã lưu
+  nếu có.
+- **Tự thử lại ngay trong lần chạy.** Tối đa 3 lần, cách nhau 5 giây rồi 20
+  giây; PDF được giữ lại, nên lỗi gửi email không phải tạo lại PDF.
+- **Lỗi hẳn vẫn dời `next_run_at`.** Muốn gửi lại, bạn bấm **Run now**.
+- **Báo lỗi.** Lần chạy theo lịch bị lỗi sẽ gửi email cho các HLV, admin và đội
+  trưởng của đội.
+- **Thành công là xong trọn gói.** `completeReportRun` đóng lần chạy và dời
+  lịch trong cùng một transaction.
+- **Kỳ báo cáo tính theo giờ Việt Nam.** `intervalRange` dùng `scheduled_for`
+  theo `DEFAULT_TIMEZONE`; 08:00 ngày 1 (vẫn là hôm trước theo UTC) vẫn lấy
+  đúng tháng.
+- **Mỗi tài khoản dịch vụ chỉ cho một đội.** Cron xuất PDF bằng `PW_USERNAME` /
+  `PW_PASSWORD`.
+- **Đội khác thì báo lỗi.** "Report session does not belong to the schedule
+  team", chứ không xuất ra số liệu sai.
+- **PDF đã lưu sẽ hết hạn** sau `RETENTION_DAYS` (90 ngày), kể cả PDF của
+  những lần chạy bị lỗi sau khi đã tạo PDF.
+
+## Dữ liệu
+
+<AutoTypeTable path="src/drizzle/schema/report.ts" name="ReportSchedule" />
+<AutoTypeTable path="src/drizzle/schema/report.ts" name="ReportHistory" />
+
+- `report_schedule` không trùng theo `(team_id, interval)`.
+- `report_history.status`: `pending`, `success`, `failed`, `expired`.
+- `report_history.trigger`: `manual` hoặc `scheduled`.
+- `delivery_status` lấy từ webhook Resend.
+- File được lưu: `analytics-<interval>-<chữ số của period>.pdf`.
+
+## API
+
+- Server action trong `src/actions/report.ts`, chỉ lấy dữ liệu theo `team_id`
+  của bạn.
+- Kiểm tra bằng `withResource('reports')`; truyền mảng nghĩa là phải có đủ mọi
+  quyền trong đó.
+
+<TypeTable
+  type={{
+    'getReportSchedules() / getReportHistory()': {
+      type: 'Array<ReportSchedule> / Array<ReportHistory>',
+      description: 'Cần view. Mới nhất ở trên.',
+      required: true,
+    },
+    'upsertReportSchedule(schedule_id, values)': {
+      type: 'Response',
+      description:
+        'Cần create và edit. schedule_id rỗng thì tạo mới, có rồi thì cập nhật; tính lại next_run_at.',
+      required: true,
+    },
+    'toggleReportSchedule(schedule_id, enabled)': {
+      type: 'Response',
+      description: 'Cần edit. Bật lại thì tính next_run_at từ bây giờ.',
+      required: true,
+    },
+    'removeReportSchedules(schedule_ids)': {
+      type: 'Response',
+      description:
+        'Cần delete. Các dòng lịch sử vẫn giữ, schedule_id thành null.',
+      required: true,
+    },
+    'runReportNow(schedule_id)': {
+      type: 'Response',
+      description:
+        'Cần create và edit. Gọi executeSchedule với trigger manual, dùng cookie của bạn.',
+      required: true,
+    },
+  }}
+/>
+
+Route handler:
+
+<TypeTable
+  type={{
+    'GET /api/reports/schedule': {
+      type: 'cron 0 1 * * * (UTC)',
+      description:
+        'Nhận tối đa 20 lịch tới hạn và chạy lần lượt trong giới hạn 40 giây (maxDuration 60).',
+      required: true,
+    },
+    'GET /api/reports/retention': {
+      type: 'cron 0 2 * * * (UTC)',
+      description:
+        'Xóa Blob đã quá expires_at, đánh dấu dòng đó là expired; xóa lỗi thì lần sau thử lại.',
+      required: true,
+    },
+    'GET /api/reports/download?id=': {
+      type: 'application/pdf',
+      description: (
+        <ul>
+          <li>Trả về PDF đã lưu.</li>
+          <li>401 nếu chưa đăng nhập.</li>
+          <li>
+            403 nếu là đội khác, trừ <code>SUPER_ADMIN</code>.
+          </li>
+          <li>404 nếu đã hết hạn hoặc không có.</li>
+        </ul>
+      ),
+      required: true,
+    },
+    'POST /api/webhooks/resend': {
+      type: '{ received: true }',
+      description: (
+        <ul>
+          <li>
+            Ký bằng Svix với <code>RESEND_WEBHOOK_SECRET</code>, lệch tối đa 5
+            phút.
+          </li>
+          <li>
+            Ghi <code>delivered</code>, <code>delivery_delayed</code>,{' '}
+            <code>bounced</code>, <code>complained</code> hoặc{' '}
+            <code>failed</code> vào lần chạy.
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+  }}
+/>
+
+## Tiêu chí chấp nhận
+
+<Accordions>
+  <Accordion title="Cron gọi lại không gửi trùng">
+
+    - Hai lần gọi cron cho cùng một kỳ tới hạn: chỉ một dòng lịch sử, một email.
+    - Lần gọi thứ hai trả về `skipped_duplicate`.
+
+  </Accordion>
+  <Accordion title="Chỉ thêm được báo cáo chưa có lịch">
+
+    - Đã có báo cáo tháng: hộp thoại chỉ cho chọn báo cáo năm.
+    - Đã có cả hai: nút **New Schedule** bị khóa.
+
+  </Accordion>
+  <Accordion title="HLV và cầu thủ không đổi được lịch">
+
+    - Huấn luyện viên hoặc cầu thủ vẫn thấy cả hai bảng.
+    - Không có **New Schedule** hay **Run now**; công tắc bị khóa; bấm vào dòng
+      không mở hộp thoại.
+
+  </Accordion>
+  <Accordion title="Báo cáo hết hạn thì không tải được">
+    Khi đã hết hạn (expired): nút **Download** bị khóa và link tải trả về 404.
+  </Accordion>
+</Accordions>

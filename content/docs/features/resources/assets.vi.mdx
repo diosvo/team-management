@@ -1,0 +1,147 @@
+---
+title: Dụng cụ của đội
+description: Danh sách dụng cụ của đội, kèm số liệu về tình trạng; chỉ admin được chỉnh sửa.
+---
+
+<Callout title="Route /assets">
+  Nhóm **Resources** · Resource `assets` · Trạng thái **Đã phát hành**
+</Callout>
+
+## Mục đích
+
+- Dụng cụ của đội (**Assets**) liệt kê những gì CLB đang có: bóng, cọc tiêu, áo đấu, …
+- Theo dõi số lượng, tình trạng và cầu thủ đang giữ từng món.
+- Huấn luyện viên xem để nắm tình hình; admin cập nhật ngay trong một hộp thoại.
+
+## Quyền truy cập
+
+<PermissionMatrix resource="assets" />
+
+- Huấn luyện viên (`COACH`) chỉ xem; admin (`SUPER_ADMIN`) làm được mọi thao tác.
+- Cầu thủ (`PLAYER`), khách (`GUEST`) và đội trưởng không có quyền `view`; mở
+  trang này bạn sẽ được chuyển tới `/forbidden`.
+- Huấn luyện viên vẫn mở được hộp thoại khi bấm vào một dòng, nhưng
+  `upsertAsset` cần cả `create` và `edit`, nên server trả về `forbidden()`.
+
+## Luồng
+
+<Steps>
+  <Step>
+    ### Xem số liệu
+
+    Ba ô thống kê lấy từ `getAssets().stats`:
+
+    - **Total Quantity**: tổng `quantity`; bấm vào sẽ xóa hết bộ lọc.
+    - **Need Replacement** (cần thay): `condition = poor`.
+    - **Outdated** (đã cũ, không dùng nữa): `condition = obsolete`.
+    - Bấm vào ô tình trạng sẽ lọc theo `condition` tương ứng.
+
+  </Step>
+  <Step>
+    ### Lọc
+
+    - Tìm theo tên; lọc thêm bằng các checkbox loại dụng cụ và tình trạng.
+    - Bộ lọc được lưu trên URL: `q`, `category`, `condition`, `page`.
+    - Lọc và phân trang chạy trên trình duyệt, trên toàn bộ danh sách của đội.
+
+  </Step>
+  <Step>
+    ### Thêm hoặc cập nhật
+
+    - Bấm **+ Add** hoặc bấm vào một dòng đều mở cùng một hộp thoại.
+    - Các trường: tên, số lượng, ngày nhận, người giữ (`assigned_to`, một cầu
+      thủ), loại, tình trạng, ghi chú (có định dạng).
+    - **Add** giữ hộp thoại mở và xóa form để bạn nhập món tiếp theo.
+    - **Update** thì đóng hộp thoại. Lưu không thành công thì dữ liệu bạn đã
+      nhập vẫn còn nguyên.
+
+  </Step>
+  <Step>
+    ### Xóa
+
+    - Admin chọn các dòng cần xóa rồi bấm xóa.
+    - `removeAsset` chạy một lần cho mỗi id; một toast tổng kết báo số món đã
+      xóa được.
+
+  </Step>
+</Steps>
+
+## Quy tắc
+
+- **Chỉ trong đội của bạn.** `getAssets` lọc theo `team_id`; `upsertAsset`
+  luôn ghi `team_id` là đội của người đang thao tác.
+- **Tên không trùng trong đội.** Unique index `team_asset_name` trên
+  `(team_id, name)`; hai đội khác nhau vẫn có thể cùng có một “Ball pump”.
+- **Kiểm tra dữ liệu** (`UpsertAssetSchema`):
+  - Tên 3–64 ký tự; số lượng 1–100 (mặc định 1); ghi chú tối đa 128 ký tự.
+  - Mặc định: loại `equipment`, tình trạng `good`, ngày nhận là hôm nay.
+  - Khi thêm mới không có lựa chọn `obsolete`; muốn đặt thì phải sửa sau.
+- **Thứ tự.** Ngày nhận mới nhất trước, rồi theo tên. Với `DESC`, `NULL` xếp
+  trước, nên dụng cụ chưa có ngày nằm trên cùng.
+- **Người giữ có thể để trống.** `assigned_to` đặt `onDelete: 'set null'`; xóa
+  người dùng thì dụng cụ vẫn còn. Xóa đội thì dụng cụ bị xóa theo (cascade).
+
+## Dữ liệu
+
+`Asset` là một dòng `asset` cộng thêm tên người giữ (`src/drizzle/schema/asset.ts`):
+
+<AutoTypeTable path="src/drizzle/schema/asset.ts" name="Asset" />
+
+### Tham số URL
+
+<TypeTable
+  type={{
+    q: { type: 'string', description: 'Tìm theo tên.' },
+    category: {
+      type: 'Array<AssetCategory>',
+      description: 'equipment, training, others.',
+    },
+    condition: {
+      type: 'Array<AssetCondition>',
+      description: 'poor, fair, good, obsolete.',
+    },
+    page: { type: 'number', description: 'Trang hiện tại.', default: '1' },
+  }}
+/>
+
+## API
+
+Server action trong `src/actions/asset.ts`, được kiểm tra quyền bằng `withResource('assets')`.
+
+<TypeTable
+  type={{
+    'getAssets()': {
+      type: '{ stats, data: Array<Asset> }',
+      description:
+        'Dụng cụ của đội bạn, kèm số liệu ba ô thống kê. Chỉ cần đăng nhập; proxy kiểm tra view.',
+      required: true,
+    },
+    'upsertAsset(asset_id, values)': {
+      type: 'Response',
+      description:
+        'asset_id rỗng thì tạo mới, có rồi thì cập nhật. Cần quyền create và edit.',
+      required: true,
+    },
+    'removeAsset(asset_id)': {
+      type: 'Response',
+      description: 'Xóa một dụng cụ. Cần quyền delete.',
+      required: true,
+    },
+  }}
+/>
+
+## Tiêu chí chấp nhận
+
+<Accordions>
+  <Accordion title="HLV chỉ xem, không chỉnh sửa">
+    Huấn luyện viên thấy số liệu và danh sách; không có nút **+ Add**, không có
+    checkbox chọn dòng.
+  </Accordion>
+  <Accordion title="Bộ lọc hiện trên URL">
+    Tìm “net” + Equipment + Good sẽ ra
+    `?q=net&category=equipment&condition=good`.
+  </Accordion>
+  <Accordion title="Không thêm được tên trùng trong cùng đội">
+    Thêm “Ball pump” lần thứ hai sẽ báo lỗi bằng toast; đội khác vẫn thêm được.
+  </Accordion>
+</Accordions>

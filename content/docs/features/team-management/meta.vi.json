@@ -1,0 +1,4 @@
+{
+  "title": "Quản lý đội",
+  "pages": ["roster", "training", "attendance", "registration", "matches"]
+}

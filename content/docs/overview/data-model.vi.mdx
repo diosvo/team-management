@@ -1,0 +1,421 @@
+---
+title: Mô hình dữ liệu
+description: Thực thể, quan hệ và chuyện gì xảy ra khi xoá, theo đúng src/drizzle/schema.
+---
+
+<Callout type="info" title="Đâu là bản chuẩn">
+
+- `src/drizzle/schema/`: 14 module, 22 bảng.
+- Mọi bảng có `created_at` / `updated_at` (không liệt kê bên dưới);
+  `report_history` chỉ có `created_at`.
+- Kiểu của từng cột được hiện trên từng trang tính năng qua `AutoTypeTable`.
+
+</Callout>
+
+## Quan hệ thực thể
+
+Mỗi nhóm một sơ đồ; `team` và `player` lặp lại ở chỗ nối giữa các nhóm.
+
+<Tabs items={['Người & đội', 'Tập luyện & kiểm tra', 'Thi đấu', 'Danh hiệu & báo cáo']}>
+
+<Tab value="Người & đội">
+
+<Mermaid
+  chart={`
+erDiagram
+    user ||--o{ session : "đăng nhập"
+    user ||--o{ account : "thông tin xác thực"
+    user ||--o| player : "mở rộng"
+    user ||--o| coach : "mở rộng"
+    team ||--o{ user : "đội hiện tại"
+    team ||--o{ user_team : "các giai đoạn"
+    user ||--o{ user_team : "vào / rời đội"
+    team ||--o{ asset : "sở hữu"
+    user |o--o{ asset : "assigned_to"
+`}
+/>
+
+</Tab>
+
+<Tab value="Tập luyện & kiểm tra">
+
+<Mermaid
+  chart={`
+erDiagram
+    team ||--o{ training_session : "lên lịch"
+    coach |o--o{ training_session : "dẫn dắt"
+    location |o--o{ training_session : "tổ chức tại"
+    training_session |o--o{ attendance : "được điểm danh"
+    player ||--o{ attendance : "mỗi buổi một dòng"
+    team ||--o{ test_type : "định nghĩa"
+    test_type ||--o{ test_result : "có kết quả"
+    player ||--o{ test_result : "ghi nhận"
+`}
+/>
+
+</Tab>
+
+<Tab value="Thi đấu">
+
+<Mermaid
+  chart={`
+erDiagram
+    league ||--o{ league_team : "ghi danh"
+    team ||--o{ league_team : "tham gia"
+    league_team ||--o{ league_team_roster : "đăng ký"
+    player ||--o{ league_team_roster : "thi đấu trong"
+    league |o--o{ match : "giao hữu nếu trống"
+    location |o--o{ match : "thi đấu tại"
+    team ||--o{ match : "home_team / away_team"
+    match ||--o{ match_player_stats : "thống kê trận"
+    player ||--o{ match_player_stats : "theo cầu thủ"
+    team ||--o{ match_player_stats : "thi đấu cho đội"
+`}
+/>
+
+</Tab>
+
+<Tab value="Danh hiệu & báo cáo">
+
+<Mermaid
+  chart={`
+erDiagram
+    league |o--o{ achievement : "trao tại"
+    player |o--o{ achievement : "trao cho"
+    team ||--o{ report_schedule : "một lịch mỗi interval"
+    team ||--o{ report_history : "tạo ra"
+    report_schedule |o--o{ report_history : "chạy"
+`}
+/>
+
+</Tab>
+
+</Tabs>
+
+`verification` (token đặt lại mật khẩu của Better Auth) không có khoá ngoại nên
+không có trong sơ đồ.
+
+## Thực thể theo nhóm
+
+<TypeTable
+  type={{
+    user: {
+      type: 'Danh tính',
+      description: (
+        <ul>
+          <li>
+            Mọi thành viên: <code>role</code>, <code>state</code>.
+          </li>
+          <li>
+            <code>team_id</code> bắt buộc, trỏ tới đội hiện tại.
+          </li>
+          <li>
+            <code>email</code> là duy nhất.
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+    user_team: {
+      type: 'Danh tính',
+      description: (
+        <ul>
+          <li>
+            Mỗi giai đoạn ở một đội một dòng: <code>join_date</code>,{' '}
+            <code>leave_date</code>.
+          </li>
+          <li>
+            Mỗi user tối đa một giai đoạn đang mở (
+            <code>user_current_team</code>).
+          </li>
+          <li>
+            <code>(user_id, team_id, join_date)</code> là duy nhất (
+            <code>user_team_stint</code>).
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+    'session, account, verification': {
+      type: 'Danh tính',
+      description:
+        'Các bảng của Better Auth. session.token là duy nhất; verification không có khoá ngoại.',
+      required: true,
+    },
+    'player, coach': {
+      type: 'Danh tính',
+      description: (
+        <ul>
+          <li>
+            Bảng mở rộng dùng chung <code>user.id</code>.
+          </li>
+          <li>
+            Số áo <code>jersey_number</code> 0–99, không trùng trong đội (tầng
+            action).
+          </li>
+          <li>
+            Chiều cao <code>height</code> ≤ 200, cân nặng <code>weight</code> ≤
+            100.
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+    team: {
+      type: 'Đội',
+      description: (
+        <ul>
+          <li>
+            CLB và các đội bóng đối thủ; <code>email</code> là duy nhất.
+          </li>
+          <li>
+            Partial unique index: luôn có đúng một <code>is_default</code>.
+          </li>
+          <li>
+            <code>is_external</code> đánh dấu đối thủ; check: không vừa cả hai.
+          </li>
+          <li>
+            Chứa nội quy đội: <code>rule_content</code>,{' '}
+            <code>rule_updated_at</code>.
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+    asset: {
+      type: 'Đội',
+      description:
+        'Dụng cụ của đội; tên không trùng trong đội (team_asset_name); assigned_to trỏ tới user.',
+      required: true,
+    },
+    'test_type, test_result': {
+      type: 'Thể lực',
+      description: (
+        <ul>
+          <li>Bài kiểm tra của từng đội; tên không trùng trong đội.</li>
+          <li>Kết quả dạng decimal theo cầu thủ và ngày.</li>
+        </ul>
+      ),
+      required: true,
+    },
+    training_session: {
+      type: 'Buổi tập',
+      description: (
+        <ul>
+          <li>HLV và sân tập không bắt buộc.</li>
+          <li>
+            <code>(session_id, date)</code> là duy nhất, để khoá ngoại của
+            attendance trỏ vào.
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+    attendance: {
+      type: 'Buổi tập',
+      description: (
+        <ul>
+          <li>
+            Khoá ngoại tổ hợp <code>(session_id, date)</code>, on update
+            cascade.
+          </li>
+          <li>
+            Mỗi <code>(player, session)</code> chỉ một dòng.
+          </li>
+          <li>
+            Đơn xin nghỉ (<code>session_id</code> null): mỗi{' '}
+            <code>(player, date)</code> một dòng.
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+    league: {
+      type: 'Thi đấu',
+      description:
+        'Tên là duy nhất; status được tính từ ngày lúc đọc, không lưu vào DB.',
+      required: true,
+    },
+    'league_team, league_team_roster': {
+      type: 'Thi đấu',
+      description: (
+        <ul>
+          <li>Bảng nối có khoá chính tổ hợp.</li>
+          <li>
+            Dòng roster còn trỏ tới cặp <code>(league, team)</code>.
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+    'match, match_player_stats': {
+      type: 'Thi đấu',
+      description: (
+        <ul>
+          <li>
+            Hai khoá ngoại tới team (restrict); check{' '}
+            <code>home_team != away_team</code>.
+          </li>
+          <li>
+            Không có <code>league_id</code> là trận giao hữu.
+          </li>
+          <li>
+            <code>status</code>: scheduled / completed / cancelled; check{' '}
+            <code>unplayed_match_has_no_score</code>.
+          </li>
+          <li>
+            Thống kê theo <code>(match, player)</code>; <code>team_id</code> là
+            đội lúc thi đấu.
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+    location: {
+      type: 'Thi đấu',
+      description: 'Sân (địa điểm) dùng chung cho buổi tập và trận đấu.',
+      required: true,
+    },
+    achievement: {
+      type: 'Danh hiệu',
+      description:
+        'Mỗi (league, type) chỉ một danh hiệu, trừ custom; league_id và player_id không bắt buộc.',
+      required: true,
+    },
+    report_schedule: {
+      type: 'Báo cáo',
+      description: (
+        <ul>
+          <li>
+            Báo cáo định kỳ; <code>(team_id, interval)</code> là duy nhất.
+          </li>
+          <li>
+            <code>interval</code> quyết định khoảng dữ liệu và lịch gửi.
+          </li>
+          <li>
+            <code>next_run_at</code> tính sẵn; partial index trên các dòng
+            enabled.
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+    report_history: {
+      type: 'Báo cáo',
+      description: (
+        <ul>
+          <li>
+            Mỗi báo cáo một dòng: <code>status</code>, <code>trigger</code>{' '}
+            (manual / scheduled), <code>attempts</code>.
+          </li>
+          <li>
+            File PDF, trạng thái gửi, <code>expires_at</code>.
+          </li>
+          <li>
+            <code>(schedule_id, scheduled_for)</code> là duy nhất.
+          </li>
+          <li>
+            <code>schedule_id</code> null với lần gửi lẻ, không theo lịch.
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+  }}
+/>
+
+## Thành viên qua thời gian
+
+- `user_team` lưu mỗi giai đoạn ở một đội một dòng, nên chuyển đội hay quay lại
+  đội cũ đều giữ được lịch sử.
+- `user.team_id` trỏ tới giai đoạn đang mở; `transferMembership` đóng giai đoạn
+  cũ và dời con trỏ trong cùng một transaction.
+- `user_current_team` cho mỗi user tối đa một giai đoạn đang mở;
+  `user_team_stint` cho phép quay lại đội cũ, nhưng không tạo trùng một giai đoạn.
+- `match_player_stats.team_id` giữ thống kê trận cũ ở đúng đội cầu thủ đã thi đấu cho.
+- Số áo vẫn không trùng trong đội nhờ kiểm tra ở tầng action, không phải ở database.
+
+## Khi xoá dữ liệu
+
+<TypeTable
+  type={{
+    'Xoá team': {
+      type: 'cascade / restrict',
+      description: (
+        <ul>
+          <li>
+            Xoá luôn user, lịch sử thành viên, dụng cụ, bài kiểm tra, buổi tập.
+          </li>
+          <li>Cả bảng nối giải đấu, lịch gửi và lịch sử báo cáo.</li>
+          <li>
+            Bị chặn nếu còn trận nhận đội là <code>home_team</code> /{' '}
+            <code>away_team</code>.
+          </li>
+          <li>
+            <code>onDelete</code> restrict, <code>removeTeam</code> cũng kiểm
+            tra.
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+    'Xoá user': {
+      type: 'cascade',
+      description: (
+        <ul>
+          <li>
+            Xoá luôn session, account, lịch sử thành viên, player / coach.
+          </li>
+          <li>
+            Từ player: điểm danh, dòng roster, thống kê và kết quả kiểm tra.
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+    'Xoá league': {
+      type: 'cascade',
+      description: (
+        <ul>
+          <li>
+            Xoá luôn <code>league_team</code>, <code>league_team_roster</code>{' '}
+            và các trận của giải.
+          </li>
+          <li>
+            <code>achievement.league_id</code> được đặt về null.
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+    'Xoá training_session': {
+      type: 'cascade',
+      description:
+        'Xoá luôn điểm danh của buổi tập đó; dời lịch (đổi date) thì attendance.date cũng đổi theo.',
+      required: true,
+    },
+    'Xoá test_type': {
+      type: 'restrict',
+      description:
+        'Không xoá được khi còn kết quả (onDelete restrict, removeTestType cũng kiểm tra).',
+      required: true,
+    },
+    'Xoá location hoặc coach': {
+      type: 'set null',
+      description:
+        'Buổi tập và trận đấu liên quan vẫn còn, chỉ cột đó bị để trống.',
+      required: true,
+    },
+    'Xoá report_schedule': {
+      type: 'set null',
+      description:
+        'Các lần chạy cũ vẫn còn trong report_history, schedule_id bị để trống.',
+      required: true,
+    },
+    'Xoá user đang giữ dụng cụ': {
+      type: 'set null',
+      description: 'asset.assigned_to bị để trống; dụng cụ vẫn còn trong kho.',
+      required: true,
+    },
+  }}
+/>

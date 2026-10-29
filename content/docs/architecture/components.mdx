@@ -1,0 +1,224 @@
+---
+title: Components
+description: C4 level 3. The Next.js server's building blocks and where each lives in the source tree.
+---
+
+- Every request passes through the same small set of components.
+- Pages read, actions write; both reach the database only through `src/db`.
+
+## Component diagram
+
+<Mermaid
+  chart={`
+C4Component
+  title Component diagram for the Next.js server
+
+Container(client, "Client islands", "React 19", "Browser UI")
+System_Ext(cron, "Vercel Cron", "Daily jobs")
+
+Container_Boundary(server, "Next.js server") {
+Component(proxy, "Proxy", "src/proxy.ts", "Cookie + view gate")
+Component(pages, "Pages", "RSC", "Read, render")
+Component(actions, "Server actions", "src/actions", "Validate, write")
+Component(routes, "Route handlers", "src/app/api", "PDF, cron, webhook")
+Component(authz, "Auth + permissions", "Better Auth, can()", "verifySession, withResource")
+Component(dal, "Data access", "src/db, Drizzle", "Queries per domain")
+Component(integrations, "Integrations", "src/lib", "Blob, Resend, Puppeteer, GitHub")
+}
+
+Boundary(data, "Data", "") {
+ContainerDb(db, "PostgreSQL", "Neon", "App data")
+}
+
+Rel(client, proxy, "Navigates")
+Rel(client, actions, "Calls")
+Rel(cron, routes, "Triggers")
+Rel(proxy, pages, "Forwards")
+Rel(proxy, authz, "view")
+Rel(actions, authz, "create/edit/delete")
+Rel(pages, dal, "Reads")
+Rel(actions, dal, "Writes")
+Rel(routes, dal, "Records runs")
+Rel(routes, integrations, "Render, store")
+Rel(dal, db, "SQL")
+
+UpdateLayoutConfig($c4ShapeInRow="4", $c4BoundaryInRow="1")
+`}
+/>
+
+## Components
+
+<TypeTable
+  type={{
+    Proxy: {
+      type: 'src/proxy.ts',
+      description: (
+        <ul>
+          <li>
+            Skips actions and <code>/api</code>.
+          </li>
+          <li>Missing or stale cookie redirects.</li>
+          <li>
+            Then <code>can(role, resolveResource(path), 'view')</code>; no DB
+            hit.
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+    Pages: {
+      type: 'src/app/(protected)/**/page.tsx',
+      description: (
+        <ul>
+          <li>RSC, one route group per nav group.</li>
+          <li>
+            <code>(overview)</code>, <code>(team-management)</code>,{' '}
+            <code>(performance)</code>, <code>(resources)</code>,{' '}
+            <code>(settings)</code>.
+          </li>
+          <li>
+            Layout passes the <code>verifySession()</code> user to{' '}
+            <code>SessionProvider</code>.
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+    'Server actions': {
+      type: "src/actions/*.ts · 'use server'",
+      description:
+        'One file per domain. withResource injects user, checks ability, calls src/db.',
+      required: true,
+    },
+    'Route handlers': {
+      type: 'src/app/api/**/route.ts',
+      description: 'Non-UI callers and binary responses. Listed on Containers.',
+      required: true,
+    },
+    Auth: {
+      type: 'src/lib/auth.ts · src/actions/auth.ts',
+      description:
+        'Better Auth + Drizzle adapter. verifySession() runs once per request (cache()).',
+      required: true,
+    },
+    Permissions: {
+      type: 'src/utils/permissions.ts',
+      description:
+        'ROLE_CONFIG + CAPTAIN_PERMISSIONS feed can(). Client uses usePermissions().',
+      required: true,
+    },
+    'Data access': {
+      type: 'src/db/*.ts',
+      description:
+        'Drizzle queries per domain. pg-error.ts maps SQLSTATE to readable messages.',
+      required: true,
+    },
+    Integrations: {
+      type: 'src/lib/*.ts',
+      description:
+        'blob, resend, puppeteer, github, report, report-schedule. Only third-party callers.',
+      required: true,
+    },
+  }}
+/>
+
+## Key functions
+
+<TypeTable
+  type={{
+    'withResource(resource)': {
+      type: '(actions, fn) => action',
+      description: (
+        <ul>
+          <li>
+            <code>withAuth</code> + <code>forbidden()</code> unless{' '}
+            <code>canAll(actions)</code>.
+          </li>
+          <li>Checks per resource, not per row.</li>
+          <li>Personal-data actions re-check the user.</li>
+        </ul>
+      ),
+      required: true,
+    },
+    'withAuth(fn)': {
+      type: '(...args) => fn(user, ...args)',
+      description:
+        'Redirects to /login without a session. For any-user actions, e.g. submitFeedback.',
+      required: true,
+    },
+    'verifySession()': {
+      type: 'cache(() => Session | null)',
+      description: 'auth.api.getSession() deduplicated per request.',
+      required: true,
+    },
+    'can(role, resource, action, isCaptain?)': {
+      type: 'boolean',
+      description: 'The single permission decision. See the matrix.',
+      required: true,
+    },
+    ResponseFactory: {
+      type: '{ success, message, data? }',
+      description: (
+        <ul>
+          <li>
+            Every action's return envelope (<code>src/utils/response.ts</code>).
+          </li>
+          <li>
+            Other exits: <code>redirect()</code>, <code>forbidden()</code>.
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+    'revalidate.<entity>()': {
+      type: 'src/actions/cache.ts',
+      description:
+        'revalidatePath() for pages showing an entity, after each write.',
+      required: true,
+    },
+    'executeSchedule(options)': {
+      type: 'src/lib/report-schedule.ts',
+      description:
+        'One report run: record, render, store, email, advance. Cron + "Run now".',
+      required: true,
+    },
+  }}
+/>
+
+Full permission table: [Roles & Permissions](/docs/access/roles-permissions).
+
+## Conventions
+
+- **Validation.** `src/schemas` Zod drives react-hook-form; actions re-parse.
+  `getDefaults()` / `getMaxLength()` (`src/lib/zod.ts`) keep them in sync.
+- **Scope from the session.** `team_id` and actor come from the injected
+  `user`, never from arguments.
+- **Request dedup.** Shared reads use React `cache()`, keyed on primitives.
+- **Streaming.** One `<Suspense>` per dashboard section; Recharts, TipTap,
+  `pdf-lib` and role-gated dialogs load lazily.
+
+## Source map
+
+Route groups add no URL segment: `(protected)/(team-management)/roster` serves
+`/roster`.
+
+<Files>
+  <Folder name="src" defaultOpen>
+    <Folder name="app" defaultOpen>
+      <File name="(auth) — login · forgot-password · new-password" />
+      <File name="(protected) — layout.tsx, feature pages, AppShell + FeedbackDialog" />
+      <File name="(system)/forbidden — 403 boundary" />
+      <File name="api — auth · reports/{dashboard,download,schedule,retention} · webhooks/resend · search" />
+      <File name="docs/[lang] — these docs" />
+    </Folder>
+    <File name="proxy.ts · routes.ts (RESOURCES, AUTH_ROUTES)" />
+    <File name="actions — server actions + auth.ts (withAuth, withResource) + cache.ts" />
+    <File name="db — data access per domain + pg-error.ts" />
+    <File name="drizzle — schema · migrations · scripts · index.ts (Pool)" />
+    <File name="lib — auth · blob · resend · puppeteer · github · report · report-schedule · nuqs · zod" />
+    <File name="schemas — Zod inputs per domain" />
+    <File name="components · hooks (usePermissions) · providers (Chakra, Session) · utils" />
+  </Folder>
+  <File name="content/docs — *.mdx (en) · *.vi.mdx (vi)" />
+  <File name="e2e · test — Playwright specs, Vitest setup" />
+</Files>

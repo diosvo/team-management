@@ -1,0 +1,214 @@
+---
+title: Trận đấu
+description: Lịch thi đấu và kết quả, có trạng thái từng trận; thống kê mùa chỉ tính trận đã kết thúc.
+---
+
+<Callout title="Route /matches">
+  Nhóm **Team Management** · Resource `matches` · Trạng thái **Đã phát hành**
+</Callout>
+
+## Mục đích
+
+- Trang Trận đấu (**Matches**) ghi mỗi trận một dòng: đấu giải hay giao hữu,
+  5x5 hay 3x3.
+- Mỗi trận là `scheduled`, `completed` hoặc `cancelled`; chỉ trận đã kết thúc
+  mới có tỉ số và kết quả.
+- Thống kê mùa giải (chuỗi thắng, tỉ lệ thắng, điểm trung bình mỗi trận) đều
+  tính từ tỉ số các trận đã kết thúc, nên số liệu trong bảng luôn khớp nhau.
+
+## Quyền truy cập
+
+<PermissionMatrix resource="matches" />
+
+- Khách (`GUEST`) cũng xem được, giống trang Danh sách đội.
+- Huấn luyện viên (`COACH`) và đội trưởng tạo và sửa trận; chỉ admin
+  (`SUPER_ADMIN`) được xoá.
+
+## Luồng
+
+<Steps>
+  <Step>
+    ### Xem các trận
+
+    - Mặc định hiện các trận trong năm nay (`from` / `to` được điền mỗi lần
+      đọc).
+    - Đổi **Time**, **Game Type**, **Match Type**, **Status** sẽ tải lại dữ
+      liệu từ server (`shallow: false`).
+    - Tìm theo đối thủ (`q`) và phân trang được lọc ngay trên trình duyệt.
+    - Các chỉ số: **Total Matches**, **Played**, **Win Streak**, **Avg Win
+      Rate**, **Avg Points/Game**.
+    - Tỉ số và kết quả hiện `-` cho tới khi trận đã kết thúc.
+
+  </Step>
+  <Step>
+    ### Thêm / sửa trận
+
+    - Bấm **Add** để mở `UpsertMatch`; bấm vào một dòng để mở lại với thông tin
+      có sẵn.
+    - Khách bấm vào dòng sẽ không mở gì (`onRowClick` là `undefined`).
+    - Công tắc: **5x5**; bật **League Match** thì hiện ô chọn giải đấu.
+    - Đối thủ: chỉ các đội bên ngoài (`is_external`).
+    - Ngày, giờ (mặc định 19:30), sân, trạng thái (mặc định **Scheduled**).
+    - Ô **Our Score** / **Their Score** chỉ hiện khi trạng thái là
+      **Completed**.
+    - Chuyển khỏi **Completed** thì cả hai tỉ số về 0.
+    - Không có ô chọn đội sân nhà.
+
+  </Step>
+  <Step>
+    ### Xoá trận
+
+    - Admin chọn nhiều dòng rồi xoá một lần.
+    - Các dòng `match_player_stats` cũng bị xoá theo.
+    - Không xoá được đội bóng đã có trận (xem Quy tắc).
+
+  </Step>
+</Steps>
+
+## Quy tắc
+
+- **Sân nhà luôn là đội mình.** `upsertMatch` gán `home_team` bằng `team_id` của
+  bạn; `getMatches` lọc theo cột này.
+  - `diff_team` (`home_team != away_team`) không cho chọn chính đội mình làm
+    đối thủ.
+- **Trạng thái được lưu, kết quả được tính.** `status` là enum `match_status`
+  (`scheduled` | `completed` | `cancelled`), mặc định `scheduled`.
+  - `getMatches` đổi `home_team_score - away_team_score` thành `MatchResult`
+    (`win`, `loss`, `draw`) cho trận đã kết thúc; trận khác là `null`.
+  - `unplayed_match_has_no_score`: trận chưa kết thúc phải là 0–0, nên 0–0 đã
+    lưu luôn là trận hoà thật.
+  - `UpsertMatchSchema` báo lỗi tương tự ngay trên form.
+- **Giao hữu nghĩa là `league_id IS NULL`.** Tắt **League Match** thì
+  `league_id` thành null.
+- **Xoá giải đấu thì trận cũng bị xoá theo**, xoá sân thì cột đó thành `NULL`.
+- **Không xoá được đội bóng đã có trận.** `home_team` / `away_team` là
+  `ON DELETE restrict`; `removeTeam` từ chối và báo số trận đang chặn.
+- **Điểm từ 0 đến 100**, được `UpsertMatchSchema` chuyển thành số.
+- **Chỉ tính trận đã kết thúc.** **Played**, chuỗi thắng, tỉ lệ thắng và điểm
+  trung bình chỉ đếm trận đã kết thúc; **Total Matches** đếm mọi dòng đã lọc.
+- **Chuỗi thắng** = số trận thắng liên tiếp dài nhất trong các trận đó.
+- **Điểm trung bình mỗi trận** = trung bình `home_team_score`.
+- **`match_player_stats`** đã có trong schema, nhưng chưa có màn hình nào ghi
+  vào.
+  - PK `(match_id, player_id)`: điểm, rebound, kiến tạo, cướp bóng, chắn bóng,
+    mất bóng, phạm lỗi, số phút thi đấu.
+  - `team_id` = đội mà cầu thủ thi đấu cho ở thời điểm diễn ra trận.
+
+## Dữ liệu
+
+<Tabs items={['Match', 'MatchWithTeams', 'MatchStats']}>
+  <Tab value="Match">
+
+    <AutoTypeTable path="src/drizzle/schema/match.ts" name="Match" />
+
+  </Tab>
+  <Tab value="MatchWithTeams">
+
+    <AutoTypeTable path="src/types/match.d.ts" name="MatchWithTeams" />
+
+  </Tab>
+  <Tab value="MatchStats">
+
+    <AutoTypeTable path="src/types/match.d.ts" name="MatchStats" />
+
+  </Tab>
+</Tabs>
+
+### Tham số URL
+
+<TypeTable
+  type={{
+    from: {
+      type: 'string',
+      description: 'Ngày bắt đầu (ISO, tính cả ngày đó), xử lý trên server.',
+      default: '1/1 năm nay',
+    },
+    to: {
+      type: 'string',
+      description: 'Ngày kết thúc (ISO, tính cả ngày đó), xử lý trên server.',
+      default: '31/12 năm nay',
+    },
+    game_type: {
+      type: "Array<'true' | 'false'>",
+      description:
+        "Lọc theo is_5x5, xử lý trên server; 'true' = 5x5. Để trống hoặc chọn cả hai là lấy tất cả.",
+    },
+    match_type: {
+      type: 'Array<MatchType>',
+      description:
+        'league (có league_id) hoặc friendly (league_id null), xử lý trên server.',
+    },
+    status: {
+      type: 'Array<MatchStatus>',
+      description:
+        'scheduled, completed hoặc cancelled, xử lý trên server. Để trống là lấy tất cả.',
+    },
+    q: {
+      type: 'string',
+      description: 'Tìm theo tên đối thủ, trên trình duyệt.',
+    },
+    page: { type: 'number', description: 'Trang hiện tại.', default: '1' },
+  }}
+/>
+
+## API
+
+- Server action trong `src/actions/match.ts`.
+- Đọc dùng `withAuth`; ghi dùng `withResource('matches')`.
+
+<TypeTable
+  type={{
+    'getMatches(params)': {
+      type: 'DataWithStats<MatchWithTeams, MatchStats>',
+      required: true,
+      description: (
+        <ul>
+          <li>Các trận sân nhà của đội bạn theo bộ lọc.</li>
+          <li>Mới nhất trước.</li>
+          <li>
+            Trận đã kết thúc kèm kết quả đã tính, trận khác là <code>null</code>
+            .
+          </li>
+        </ul>
+      ),
+    },
+    'upsertMatch(id, values)': {
+      type: 'Response',
+      required: true,
+      description:
+        'Tạo (id rỗng, home_team luôn là đội của bạn) hoặc cập nhật một trận.',
+    },
+    'removeMatch(id)': {
+      type: 'Response',
+      required: true,
+      description: 'Xoá một trận; thống kê cầu thủ cũng bị xoá theo.',
+    },
+  }}
+/>
+
+## Tiêu chí chấp nhận
+
+<Accordions>
+  <Accordion title="Khách chỉ xem kết quả">
+
+    - Thấy danh sách và chỉ số; không có nút **Add**, ô chọn dòng hay hộp thoại khi bấm vào dòng.
+    - Mọi lần lưu đều bị `withResource('matches')` chặn.
+
+  </Accordion>
+  <Accordion title="Kết quả theo đúng tỉ số">
+    Trận đã kết thúc lưu 78–65 sẽ hiện nhãn `win`; 60–60 hiện `draw`.
+  </Accordion>
+  <Accordion title="Trận chưa đá không vào thống kê">
+    Trận đã lên lịch hoặc đã huỷ hiện `-` ở tỉ số và kết quả, và không làm đổi
+    tỉ lệ thắng.
+  </Accordion>
+  <Accordion title="Không xoá được đội bóng đã có trận">
+    Xoá đội đó trong Settings → Teams sẽ bị từ chối, kèm số trận đang chặn.
+  </Accordion>
+  <Accordion title="Cầu thủ không sửa được">
+    Cầu thủ không phải đội trưởng gọi thẳng `upsertMatch` sẽ bị chặn.
+  </Accordion>
+  <Accordion title="Không được tự đá với chính mình">
+    `away_team` trùng với đội của bạn sẽ không qua được kiểm tra `diff_team`.
+  </Accordion>
+</Accordions>

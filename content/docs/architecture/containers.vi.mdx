@@ -1,0 +1,142 @@
+---
+title: Container
+description: C4 cấp 2. Portal gồm những phần nào khi chạy, dùng công nghệ gì và giao tiếp ra sao.
+---
+
+- Container là phần tự chạy riêng hoặc tự lưu dữ liệu riêng.
+- Giao diện, server action, API route và docs được deploy chung thành một app
+  Next.js.
+- Thật ra hệ thống chia thành: trình duyệt, server, Chromium headless và hai
+  nơi lưu dữ liệu.
+
+## Sơ đồ container
+
+<Mermaid
+  chart={`
+C4Container
+  title Sơ đồ container của Team Management Portal
+
+Person(user, "Người dùng đã đăng nhập", "Mọi vai trò")
+System_Ext(cron, "Vercel Cron", "Job hằng ngày")
+
+System_Boundary(portal, "Team Management Portal") {
+Container(client, "Client island", "React 19, Chakra UI", "Form, bảng, biểu đồ")
+Container(server, "Server Next.js", "Next.js 16, Node", "Trang, action, API route")
+Container(chromium, "Chromium headless", "puppeteer-core", "Xuất Dashboard ra PDF")
+ContainerDb(db, "PostgreSQL", "Neon, Drizzle", "22 bảng")
+ContainerDb(blob, "Vercel Blob", "Kho riêng tư", "Ảnh đại diện, logo, PDF")
+}
+
+Boundary(ext, "Hệ thống ngoài", "") {
+System_Ext(resend, "Resend", "Email")
+System_Ext(github, "GitHub", "Issues API")
+}
+
+Rel(user, client, "Dùng")
+Rel(client, server, "Server action, RSC")
+Rel(cron, server, "GET /api/reports/\*")
+Rel(server, chromium, "Render /dashboard")
+Rel(server, db, "SQL")
+Rel(server, blob, "Tệp")
+Rel(server, resend, "Email")
+Rel(server, github, "Issue")
+
+UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")
+`}
+/>
+
+<Callout type="info" title="Chromium chụp đúng trang thật">
+  Chromium mở `/dashboard` trên origin của app với cookie phiên được chuyển
+  tiếp, nên báo cáo luôn giống hệt những gì người dùng thấy.
+</Callout>
+
+## Các container
+
+<TypeTable
+  type={{
+    'Client islands': {
+      type: 'React 19 · Chakra UI 3 · Recharts · TipTap · react-hook-form · nuqs',
+      description:
+        "Component 'use client' trong _components của từng route; state URL ở src/lib/nuqs.ts.",
+      required: true,
+    },
+    'Next.js server': {
+      type: 'Next.js 16.2 · Better Auth 1.6 · Drizzle 0.45 · Zod 4',
+      description:
+        'src/proxy.ts, trang RSC, src/actions, src/app/api. Xem Component.',
+      required: true,
+    },
+    'Headless Chromium': {
+      type: 'puppeteer-core 25 · @sparticuz/chromium-min',
+      description:
+        'src/lib/puppeteer.ts. Prod: tải binary từ CHROMIUM_PACK_URL; dev: dùng Chrome trên máy.',
+      required: true,
+    },
+    PostgreSQL: {
+      type: 'pg 8 · Pool({ max: 1 })',
+      description:
+        'Dev dùng Postgres trên máy, prod dùng Neon, chung một bộ migration. Xem Mô hình dữ liệu.',
+      required: true,
+    },
+    'Vercel Blob': {
+      type: '@vercel/blob 2',
+      description:
+        'Private: users/<id>, teams/<team_id>, reports. Báo cáo hết hạn sau 90 ngày (RETENTION_DAYS).',
+      required: true,
+    },
+  }}
+/>
+
+**Ngoại lệ:** PDF đăng ký giải được tạo ngay trên trình duyệt bằng `pdf-lib`,
+chỉ tải qua `await import()` khi bạn bấm xuất.
+
+## Các API
+
+- Mọi thao tác ghi của người dùng đều đi qua server action.
+- Chỉ dùng route handler khi action không làm được: dịch vụ bên ngoài, dữ liệu
+  binary, cron.
+
+<TypeTable
+  type={{
+    '/api/auth/[...all]': {
+      type: 'Better Auth',
+      description:
+        'Đăng nhập, đăng xuất, đặt lại mật khẩu. Các route nhận mật khẩu: tối đa 3 lần/phút mỗi IP.',
+      required: true,
+    },
+    'POST /api/reports/dashboard': {
+      type: 'session',
+      description:
+        'Xuất PDF Bảng tổng quan ngay khi cần, theo { from, to, filename }. maxDuration 30 s.',
+      required: true,
+    },
+    'GET /api/reports/download': {
+      type: 'session + team',
+      description:
+        'Stream PDF đã lưu từ Blob; trả 403 nếu là đội khác, trừ SUPER_ADMIN.',
+      required: true,
+    },
+    'GET /api/reports/schedule': {
+      type: 'CRON_SECRET',
+      description: 'Nhận các lịch gửi đã đến hạn rồi chạy. maxDuration 60 s.',
+      required: true,
+    },
+    'GET /api/reports/retention': {
+      type: 'CRON_SECRET',
+      description:
+        'Xóa blob báo cáo đã hết hạn và đánh dấu dòng tương ứng là expired.',
+      required: true,
+    },
+    'POST /api/webhooks/resend': {
+      type: 'Svix signature',
+      description:
+        'Ghi delivered / bounced / complained vào lần chạy. Bỏ qua sự kiện cũ hơn 5 phút.',
+      required: true,
+    },
+    '/api/search': {
+      type: 'public',
+      description: 'Chỉ mục tìm kiếm tĩnh cho bộ docs này.',
+      required: true,
+    },
+  }}
+/>

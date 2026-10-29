@@ -1,39 +1,43 @@
 ---
-title: "Vision"
-description: "The problem, the product vision, non-goals, and constraints."
+title: Vision
+description: The problem the portal replaces, the vision, and what is deliberately out of scope.
 ---
 
-## Vision and problem
+## Problem
 
-Team Management is a web app for managing a basketball club's teams, people,
-and operations (rosters, schedules, assets) with role-based access.
+Club operations lived in spreadsheets and group chats:
 
-### Problem
+- **Stale information.** No single up-to-date copy.
+- **Unclear ownership.** No one clearly owned each workflow.
+- **No cross-role visibility.** Coaches couldn't see who had excused
+  themselves; players had to ask for the next session.
 
-Club operations are tracked in spreadsheets and group chats, which causes:
+## Vision
 
-- stale information
-- unclear ownership
-- poor visibility across roles
+One private, role-based hub: the club's single source of truth.
 
-### Vision
+- Any member answers "who, when, where" in seconds.
+- Each workflow owner (attendance, registration, testing) runs it end to end
+  without leaving the app.
 
-One private, role-based hub that is the club's single source of truth: any
-member can answer “who, when, where” in seconds, and the people responsible
-for a workflow (attendance, registration, testing) can run it end-to-end
-without leaving the app.
+## Non-goals
 
-## Non-goals (out of scope)
+Not planned without a new product signal; the code assumes one trusted club.
 
-Explicitly not planned without a new product signal. The app targets a trusted, small, single-club portal:
+- **Multi-club or public product.** One `team` row is `is_default`; opponents
+  are lightweight `team` records, not tenants.
+- **Self-service sign-up.** No register page. Admins or captains add accounts
+  from Roster (`addUser`); a password-reset email activates them.
+- **Injury tracking, payments, audit logs.** Only on real demand.
+- **Native mobile apps.** Responsive web only.
 
-- **Injury/medical tracking, payments/fees, audit logs**: revisit only on real demand.
-- **Multi-club / public-facing product**: one club, private portal; opponents are lightweight records, not tenants.
-- **Native mobile apps**: responsive web only.
-- **Self-service sign-up**: membership is invite-only by design.
+## Constraints
 
-## Assumptions and constraints
-
-- Application is a private team portal; users are trusted team members (invited via email by admin).
-- The role set is small and static (`GUEST`, `PLAYER`, `COACH`, `SUPER_ADMIN`, plus the Captain flag).
-- Single club with team sizes in the tens of users, not thousands, which informs performance targets.
+- **Trusted members.** All invited; the server still enforces every
+  permission (see [Principles](/docs/overview/principles)).
+- **Small, static role set.** `UserRole`: `GUEST`, `PLAYER`, `COACH`,
+  `SUPER_ADMIN`, plus `player.is_captain`. Permissions are code (`ROLE_CONFIG`).
+- **Tens of users, not thousands.** One club, one default team; performance
+  and pagination are sized for that.
+- **Better Auth sessions.** Email + password only; 1-hour session, signed
+  cookie cache; no OAuth.

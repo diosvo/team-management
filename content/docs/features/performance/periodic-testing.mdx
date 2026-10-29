@@ -1,157 +1,199 @@
 ---
-title: "Periodic Testing"
+title: Periodic Testing
+description: Player fitness scores per test and date, batch-entered and edited inline in a player × test matrix.
 ---
 
-> Route: `/periodic-testing` · Nav group: **Performance** · Status: **Draft**
-> Sub-routes: `/periodic-testing/test-types`, `/periodic-testing/add-result`
+<Callout title="Route /periodic-testing">
+  Nav group **Performance** · Resource `periodic-testing` · Status **Shipped** ·
+  Sub-routes `/periodic-testing/add-result`, `/periodic-testing/test-types`
+</Callout>
 
-## 1. Summary
+## Purpose
 
-- **Periodic Testing** tracks player performance scores across configurable test types (e.g. sprint time, vertical jump) recorded on specific dates.
-- Results are shown as a player × test-type matrix for a selected date.
-- SUPER_ADMIN, COACH, and Captains can add results in batch, edit/delete scores inline, and manage test types; PLAYER and GUEST can only view.
+- Records each player's score on the club's own tests (sprint, jump, …) by date.
+- Main page: one testing day as a player × test-type matrix.
+- Sub-routes: enter a whole session at once; maintain the test-type catalogue.
 
-## 2. Goals / metrics
+## Access
 
-### Goals
+<PermissionMatrix resource="periodic-testing" />
 
-- Give coaches a structured way to track player fitness and performance over time.
-- Allow flexible test type configuration to match the team's training program.
+- PLAYER only views.
+- COACH, SUPER_ADMIN and captains hold every action: **Add Result**, **Manage
+  Types**, inline cell edits, row selection on test types.
+- Cell editability uses `can('periodic-testing', 'edit')`, as the server does.
 
-### Metrics
+## Flows
 
-- Number of players in the matrix and number of test types recorded per date.
+<Tabs items={['Matrix', 'Add result', 'Test types']}>
+  <Tab value="Matrix">
 
-## 3. Users and permissions
+    - Rows are players; columns are test types with a result that day, headed
+      `Name (unit)`.
+    - The date select lists `getTestDates()`; no date gives an empty matrix.
+    - Only a date change reloads the server (`shallow: false`); it resets
+      `type` and `page`.
+    - `q`, `type` and `page` are client-only. 10 players per page.
+    - Each cell is a Chakra `Editable` number input:
+      - Empty cell → `createTestResult` with one row.
+      - Filled cell → `updateTestResultById`; cleared → `deleteTestResultById`.
+      - Unchanged value or clearing an empty cell writes nothing.
+      - A failed write reverts the draft.
 
-Permissions come from `ROLE_CONFIG` / `CAPTAIN_PERMISSIONS` in `src/utils/permissions.ts`. SUPER_ADMIN, COACH, and Captains hold the full `view` / `create` / `edit` / `delete` set on the `periodic-testing` resource.
+  </Tab>
+  <Tab value="Add result">
 
-| Role             | View results | Add result | Manage test types | Edit / delete inline |
-| ---------------- | ------------ | ---------- | ----------------- | -------------------- |
-| GUEST            | No           | No         | No                | No                   |
-| PLAYER           | Yes          | No         | No                | No                   |
-| COACH            | Yes          | Yes        | Yes               | Yes                  |
-| SUPER_ADMIN      | Yes          | Yes        | Yes               | Yes                  |
-| PLAYER (Captain) | Yes          | Yes        | Yes               | Yes                  |
+    - Guarded by `canCreateTestResult()` on the server; fails → `forbidden()`.
+    - Step 1: active players, up to five test types, a date (default today).
+    - Step 2: a players × types grid of number inputs.
+    - Clicking a column header or player name drops it from the selection.
+    - Blank cells submit as `0`.
+    - On success, redirects to `/periodic-testing?date=<date>`.
 
-The matrix drives cell editability off the actual ability (`can('periodic-testing', 'edit')`), so the UI affordance and the server actions stay in sync for every role.
+  </Tab>
+  <Tab value="Test types">
 
-## 4. UX / flows
+    - `/test-types` lists the team's types with search and a unit filter.
+    - **+ Add** and row click open the same dialog: name + one unit.
+    - Units: `meters`, `percent`, `points`, `reps`, `seconds`, `times`.
+    - Form defaults to `seconds`; the column defaults to `times`.
+    - Selected rows delete in bulk; a type that still has results is refused.
 
-### Entry point
+  </Tab>
+</Tabs>
 
-- Sidebar → **Periodic Testing**.
-- Editors (SUPER_ADMIN, COACH, Captain) see an **Actions** menu in the header with **Add Result** and **Manage Test Types** links (gated by `periodic-testing:create`).
+## Rules
 
-### View results
+- **One result per player, test type and date.** `createTestResult` upserts
+  on that triple:
+  - `getExistingTestResults` resolves the batch in one `IN`-filtered query.
+  - Rows are re-checked against the submitted keys (the filters cross-product).
+  - One insert for new cells, one update pass for existing ones.
+  - Toast: `{N} created, {M} updated`.
+- **Unique type names per team.** Unique index `team_test_type_name` on
+  `(team_id, name)`; 3–64 characters.
+- **A type in use cannot be deleted.** `test_result.type_id` is
+  `onDelete: 'restrict'`; `removeTestType` maps
+  `test_result_type_id_test_type_type_id_fk` to “Type is being in use.”
+- **Revalidation.** Results → `/periodic-testing`; types →
+  `/periodic-testing/test-types`.
 
-- Results are displayed in a matrix table: rows = players, columns = test types. Each column header shows the test-type name plus its unit, e.g. `Sprint (seconds)`.
-- A **date selector** filters results by testing date; the available dates come from `getTestDates()`. With **no date selected the matrix is empty** (`getTestResult` short-circuits to empty headers/players).
-- Changing the date **resets the test-type column filter and pagination**.
-- A **player name search** (`q`) filters rows, with matched text highlighted.
-- The matrix is **paginated at 10 players per page**.
-- Stats section shows two tiles:
-  - **Players Joined**: number of players in the matrix.
-  - **Completed Tests**: number of test-type columns present for the selected date (turns green when > 0). This is a count of recorded test types, not a completed-vs-expected ratio.
+## Data
 
-### Add result (`/add-result`)
+Tables in `src/drizzle/schema/periodic-testing.ts`:
 
-- Editors (SUPER_ADMIN, COACH, Captain) can reach `/periodic-testing/add-result` (via the Actions menu); access is enforced server-side by `canCreateTestResult()`.
-- A batch form allows entering scores for multiple players in one submission.
-- Submission is an **upsert**: each `{player, test type, date}` is created if new or updated if it already exists; the toast reports `"{N} created, {M} updated"`.
+<AutoTypeTable path="src/drizzle/schema/periodic-testing.ts" name="TestType" />
+<AutoTypeTable
+  path="src/drizzle/schema/periodic-testing.ts"
+  name="TestResult"
+/>
 
-### Edit / delete inline
+Matrix payload of `getTestResult` (`src/types/periodic-testing.d.ts`):
 
-- Editors modify a score with an **inline click-to-edit field** (Chakra `Editable`, not a popover). Clicking a cell reveals a numeric input.
-- Committing a value on an **empty cell creates** a result (via `createTestResult`); on a populated cell it **updates** it (via `updateTestResultById`).
-- **Clearing a populated cell deletes** that result (via `deleteTestResultById`); clearing an already-empty cell, or committing an unchanged value, reverts without a write.
-- Saving/deleting shows a loading toast that resolves to success or error; a failed operation reverts the draft value.
+- `tests` is keyed by test-type name.
+- Each cell carries its own `result_id`.
 
-### Test types (`/test-types`)
-
-- Editors can create, rename, and delete test types.
-- Each test type has a name (unique within the team) and a unit.
-- Deleting a test type that still has results is **blocked** (see FR-11).
-
-## 5. Functional requirements
-
-### Results view
-
-- **FR-1:** PLAYER, COACH, SUPER_ADMIN, and Captain can view the results matrix.
-- **FR-2:** A player name search filters rows; a date selector filters by session date.
-- **FR-3:** Stats show the player count and the number of recorded test types for the date.
-
-### Add result
-
-- **FR-4:** Only editors (SUPER_ADMIN, COACH, Captain) can access `/add-result`.
-- **FR-5:** The batch form upserts all submitted scores in one operation (create new, update existing).
-- **FR-12:** A cell's identity is the triple `{player, test type, date}`. Resolving which submitted cells already exist takes one query regardless of batch size, followed by one insert for the new cells and one update pass for the existing ones.
-
-### Inline edit / delete
-
-- **FR-6:** Editors can create or update an individual score via the inline editable cell.
-- **FR-7:** Clearing a populated cell deletes that result.
-- **FR-8:** Saving/deleting shows a loading → success/error toast; failures revert the cell.
-
-### Test types
-
-- **FR-9:** Only editors can manage test types.
-- **FR-10:** Each test type has a name and a unit from a fixed set (`meters`, `percent`, `points`, `reps`, `seconds`, `times`).
-- **FR-11:** Deleting a test type that still has results is **blocked**. The `test_result.type_id` FK uses `onDelete: 'restrict'`, so the delete raises a foreign key violation; `removeTestType` catches constraint `test_result_type_id_test_type_type_id_fk` and returns “Type is being in use.”
-
-## 6. Acceptance criteria (Given/When/Then)
-
-- **AC-1:** Given I am a PLAYER (non-captain), when I open Periodic Testing, then I see the results matrix but no add or edit controls.
-- **AC-2:** Given I am an editor (SUPER_ADMIN/COACH/Captain), when I submit a batch result, then scores are upserted and visible in the matrix.
-- **AC-3:** Given I am an editor, when I clear a populated score cell, then that result is deleted.
-- **AC-4:** Given I am an editor, when I try to delete a test type that still has results, then the action is rejected with “Type is being in use.”
-
-## 7. Technical appendix
-
-### Data model (`src/drizzle/schema/periodic-testing.ts`)
-
-TestType (`test_type`):
-
-- `type_id`: uuid PK
-- `team_id`: FK → team (cascade on team delete)
-- `name`: varchar(64), unique per team
-- `unit`: enum `test_type_unit` (`meters` | `percent` | `points` | `reps` | `seconds` | `times`), default `times`
-- `created_at`, `updated_at`
-
-TestResult (`test_result`):
-
-- `result_id`: uuid PK
-- `player_id`: FK → player (cascade)
-- `type_id`: FK → test_type (**restrict**, which blocks deleting a type in use)
-- `result`: decimal(10, 3)
-- `date`: date
-- `created_at`, `updated_at`
+<AutoTypeTable path="src/types/periodic-testing.d.ts" name="TestResult" />
+<AutoTypeTable path="src/types/periodic-testing.d.ts" name="PlayerTestResult" />
 
 ### Query params
 
-- `date` (string): ISO date for the selected testing session
-- `q` (string): player-name search
-- `page` (number): matrix pagination
-- `type` (string[]): test-type names to show as columns (empty = all). The matrix still honors this param, but no control in the filters row sets it, so it is reachable only by editing the URL.
+<TypeTable
+  type={{
+    date: {
+      type: 'string',
+      description:
+        'ISO date of the testing session. Empty renders an empty matrix.',
+      default: "''",
+    },
+    q: { type: 'string', description: 'Player name search.' },
+    page: {
+      type: 'number',
+      description: 'Matrix page, 10 players each.',
+      default: '1',
+    },
+    type: {
+      type: 'Array<string>',
+      description: (
+        <ul>
+          <li>Test-type names shown as columns; empty means all.</li>
+          <li>No control sets it; only read from the URL.</li>
+        </ul>
+      ),
+    },
+  }}
+/>
 
-### Batch upsert
+## API
 
-The add-result form submits a players × test-types grid, so the cell count multiplies out: a 15-player, 6-type session is 90 rows in one call. Deciding create-versus-update per cell used to mean one `findFirst` per cell, all issued at once against a pool capped at a single connection (`Pool({ max: 1 })`, see [ARCHITECTURE §12](https://github.com/diosvo/team-management/blob/main/ARCHITECTURE.md#12-known-gaps--risks)).
+- Server actions in `src/actions/test-result.ts` and `src/actions/test-type.ts`.
+- Writes use `withResource('periodic-testing')`; reads use `withAuth` only.
 
-`getExistingTestResults(results)` replaces that with one query:
+<TypeTable
+  type={{
+    'getTestDates()': {
+      type: 'Array<string>',
+      description: 'Distinct dates with results, newest first.',
+      required: true,
+    },
+    'getTestResult(date)': {
+      type: 'TestResult',
+      description:
+        'Headers and players for one date; empty when date is blank.',
+      required: true,
+    },
+    'createTestResult(results)': {
+      type: 'Response',
+      description:
+        'Batch upsert keyed by player, type and date. Requires create.',
+      required: true,
+    },
+    'updateTestResultById({ result_id, result })': {
+      type: 'Response',
+      description: 'Inline edit of one score. Requires edit.',
+      required: true,
+    },
+    'deleteTestResultById(result_id)': {
+      type: 'Response',
+      description: 'Removes one score (a cleared cell). Requires delete.',
+      required: true,
+    },
+    'canCreateTestResult()': {
+      type: 'boolean',
+      description: 'Page guard for /add-result; forbidden() without create.',
+      required: true,
+    },
+    'getTestTypes()': {
+      type: 'Array<TestType>',
+      description: 'All test types, by name.',
+      required: true,
+    },
+    'upsertTestType(type_id, data)': {
+      type: 'Response',
+      description:
+        'Updates when type_id exists, otherwise inserts for the caller’s team.',
+      required: true,
+    },
+    'removeTestType(type_id)': {
+      type: 'Response',
+      description: 'Deletes a type; refused while results reference it.',
+      required: true,
+    },
+  }}
+/>
 
-1. Collect the distinct `player_id`s, `type_id`s and `date`s in the batch and filter with `IN` on each. `date` is required by the current schema, so there is no separate null-date branch.
-2. Those filters return the cross product of the three lists, a superset of what was submitted that can include a row for a player/type pair nobody submitted. The function therefore re-checks each returned row against the exact set of submitted keys before counting it as existing.
-3. The result is a `Map` from `testResultKey(result)` (`date|player_id|type_id`) to the existing `result_id`. The action uses that map to split the batch into inserts and updates.
+## Acceptance
 
-A failed lookup now propagates instead of resolving to `null`, so a database error reaches the user as an error toast. The old per-cell lookup reported the same failure as “no existing results”, which made the action retry every cell as an insert.
-
-### API (`src/actions/test-result.ts`, `src/actions/test-type.ts`)
-
-- `getTestDates()`: fetch the list of dates that have results (populates the selector)
-- `getTestResult(date)`: fetch matrix (`{ headers, players }`) by date; empty when no date
-- `createTestResult(values[])`: batch upsert (create or update per player/type/date), splitting the batch with `getExistingTestResults`
-- `updateTestResultById({ result_id, result })`: single inline update
-- `deleteTestResultById(result_id)`: single inline delete (clearing a cell)
-- `canCreateTestResult()`: permission-check helper
-- `getTestTypes()`, `upsertTestType(type_id, data)`, `removeTestType(type_id)`: test type management
+<Accordions>
+  <Accordion title="A player sees the matrix without controls">
+    A non-captain PLAYER sees the matrix, stats and date select only. No **Add
+    Result** / **Manage Types**; cells do not open an input.
+  </Accordion>
+  <Accordion title="Re-submitting a session updates rather than duplicates">
+    A second identical submit reports `0 created, N updated`; one value per
+    cell.
+  </Accordion>
+  <Accordion title="A type with results cannot be deleted">
+    Fails with “Type is being in use.”; the type stays listed.
+  </Accordion>
+</Accordions>

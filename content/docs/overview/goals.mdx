@@ -1,31 +1,79 @@
 ---
-title: "Goals"
-description: "Goals, success metrics, and non-functional requirements."
+title: Goals
+description: What success looks like and the non-functional requirements every page is held to.
 ---
 
-## Goals and success metrics
+## Goals
 
-> Metrics below are proposals. Confirm and prune to the 2–3 that matter (see [Open questions](#open-questions)).
+<TypeTable
+  type={{
+    'Replace spreadsheets and chat': {
+      type: 'in-app only',
+      description: 'Roster, schedule and match data live only in the app.',
+      required: true,
+    },
+    'Reliable attendance history': {
+      type: '≥ 90% of sessions',
+      description:
+        'Attendance is recorded for at least 90% of training sessions.',
+      required: true,
+    },
+    'Self-service answers': {
+      type: 'no chat lookups',
+      description:
+        'Members find schedule, roster and rules without asking in chat.',
+      required: true,
+    },
+    'Safe delegation': {
+      type: 'no admin in the loop',
+      description: 'Captains and coaches run their workflows without an admin.',
+      required: true,
+    },
+  }}
+/>
 
-| Goal                                             | Signal of success (proposed)                                   |
-| ------------------------------------------------ | -------------------------------------------------------------- |
-| Replace spreadsheets/chat as the operational hub | Roster, schedule, and match data maintained in-app only        |
-| Reliable attendance & performance history        | Attendance recorded for ≥ 90% of training sessions             |
-| Self-service answers                             | Members find schedule/roster/rules without asking in chat      |
-| Safe delegation                                  | Captains/coaches run their workflows without admin involvement |
+<Callout type="warn" title="Metrics are proposals">
+  None is instrumented yet. Pick the two or three that matter before adding
+  telemetry.
+</Callout>
 
 ## Non-functional requirements
 
-- **Performance:** common pages render within 2 seconds at the team sizes in
-  the [assumptions](/docs/overview/vision#assumptions-and-constraints). Two
-  conventions serve this. A page gives each section its own loading boundary
-  instead of awaiting every query before it responds. A dependency that only
-  some users can trigger (chart library, rich-text editor, PDF engine) loads
-  on demand rather than in the route's first-load JavaScript.
-- **Accessibility:** keyboard navigation and accessible dialogs.
-- **Reliability:** clear loading/error states; avoid duplicate submits.
+<Tabs items={['Performance', 'Accessibility', 'Reliability']}>
+  <Tab value="Performance">
+
+    Common pages render within 2 s at the team sizes in the
+    [constraints](/docs/overview/vision#constraints).
+
+    - **Streaming.** Each page section has its own `Suspense` boundary and
+      skeleton; no waiting on every query.
+    - **Reads.** Live in `src/db`, wrapped by `withAuth` in `src/actions`;
+      never called from components.
+    - **Lazy deps.** Charts, rich-text editor and PDF engine
+      (`src/lib/puppeteer.ts`) load on demand, not in first-load JS.
+
+  </Tab>
+  <Tab value="Accessibility">
+
+    - Keyboard navigation for tables, menus and dialogs (Chakra UI primitives).
+    - Dialogs and drawers trap focus and restore it on close.
+    - Every action control has a text label or `aria-label`.
+
+  </Tab>
+  <Tab value="Reliability">
+
+    - **Responses.** Mutations return a `ResponseFactory` `Response`
+      (`success`, `message`, optional `data`), shown as a toast.
+    - **No duplicate writes.** Submit buttons disable while pending.
+    - **Unique indexes.** `unique_player_per_session`, `team_asset_name`, ...
+      catch the rest; `getDbErrorMessage` translates them.
+    - **Rate limits.** Better Auth: 3 requests/min per IP on sign-in and
+      password reset.
+
+  </Tab>
+</Tabs>
 
 ## Open questions
 
-- Which 2–3 success metrics above are the ones we actually commit to (and how do we measure them)?
-- Which features require audit logs vs. basic activity logging? (Currently a non-goal, see [Non-goals](/docs/overview/vision#non-goals-out-of-scope).)
+- Which two or three success metrics do we commit to, and how are they measured?
+- Does any feature need an audit log, or is `created_at` / `updated_at` enough?

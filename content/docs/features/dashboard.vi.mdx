@@ -1,0 +1,257 @@
+---
+title: Bảng tổng quan
+description: 'Trang chủ sau khi đăng nhập: số liệu của đội theo khoảng ngày, xuất PDF hoặc gửi email cho cả đội.'
+---
+
+<Callout title="Route /dashboard">
+  Nhóm **Overview** · Resource `dashboard` · Trạng thái **Đã phát hành** (thống
+  kê, tải PDF, gửi email). Báo cáo gửi theo lịch: [Báo
+  cáo](/docs/vi/features/reports).
+</Callout>
+
+## Mục đích
+
+- Bảng tổng quan (**Dashboard**) là trang bạn được đưa tới ngay sau khi đăng
+  nhập (`DEFAULT_LOGIN_REDIRECT`).
+- Nhìn một màn hình là biết tình hình đội, ai cũng xem được: buổi tập và trận
+  đấu sắp tới, tỷ lệ thắng năm nay.
+- Bốn biểu đồ về điểm danh và trận đấu theo khoảng ngày (`?from=&to=`).
+- File PDF chụp lại đúng phần lưới biểu đồ này; không có trang in riêng.
+
+## Quyền truy cập
+
+<PermissionMatrix resource="dashboard" />
+
+- Vai trò nào cũng xem được.
+- Xuất PDF và gửi email **không** kiểm tra resource `reports`:
+  - `POST /api/reports/dashboard` chỉ cần bạn đang đăng nhập (`verifySession`).
+  - `getReportRecipients` / `sendReportEmail` chỉ là action bọc `withAuth`.
+- Vì vậy, ai xem được Bảng tổng quan cũng xuất hoặc gửi email được.
+
+## Bố cục
+
+<TypeTable
+  type={{
+    Overview: {
+      type: 'getOverviewStats',
+      description: (
+        <ul>
+          <li>Số ngày tới trận đã lên lịch kế tiếp.</li>
+          <li>Số cầu thủ đang hoạt động.</li>
+          <li>Tỷ lệ thắng: năm nay, các trận 5x5 đã kết thúc.</li>
+          <li>Số danh hiệu.</li>
+        </ul>
+      ),
+      required: true,
+    },
+    'Quick Actions': {
+      type: 'client only',
+      description: (
+        <ul>
+          <li>Mọi người: Schedule, Matches.</li>
+          <li>
+            Cầu thủ (<code>PLAYER</code>): My Stats, Submit Leave.
+          </li>
+          <li>
+            Admin (<code>SUPER_ADMIN</code>): Mark Attendance.
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+    'Upcoming Sessions / Matches': {
+      type: 'getUpcomingSessions / getUpcomingMatches',
+      description:
+        '3 buổi tập đã lên lịch gần nhất; 3 trận sân nhà đã lên lịch gần nhất, tính từ hôm nay.',
+      required: true,
+    },
+    'Analytics grid (#reports-dashboard)': {
+      type: 'getMatchesRate, getAttendanceHistory, getAttendanceSummary, getMostAbsenceReasons',
+      description: 'Lọc theo khoảng from/to; đây là phần được chụp vào PDF.',
+      required: true,
+    },
+  }}
+/>
+
+## Luồng
+
+<Steps>
+  <Step>
+    ### Chọn khoảng ngày
+
+    - `DateRangePicker` (nhãn "Time", chọn sớm nhất tới `ESTABLISHED_DATE`).
+    - Ghi `from` / `to` dạng ngày ISO qua `useDashboardFilters`; đưa `page` về
+      1; `shallow: false` để Server Component render lại.
+    - Chọn nhanh: tuần, tháng, năm này hoặc trước.
+    - Không có tham số thì `loadDashboardFilters` lấy mặc định `thisYear()`.
+
+  </Step>
+  <Step>
+    ### Tải PDF
+
+    - Bấm **Actions → Download**, app gửi `{ from, to, filename }` tới
+      `POST /api/reports/dashboard`.
+    - File lưu tên `sgr-report-<period>.pdf`: các chữ số của `formatDateRange`
+      nối bằng dấu gạch ngang (ví dụ `sgr-report-01-01-2026-31-12-2026.pdf`).
+    - Lỗi thì hiện toast; không lưu gì cả.
+
+  </Step>
+  <Step>
+    ### Gửi email (Send to...)
+
+    - Hộp thoại `EmailReport` chỉ được tải khi bạn mở nó.
+    - Danh sách người nhận lấy từ `getReportRecipients`.
+    - Gửi `{ from, to, filename }` tới cùng route đó; PDF được mã hóa base64.
+    - `sendReportEmail` gửi PDF làm file đính kèm qua Resend, nội dung email là
+      HTML `AnalyticsReport`.
+
+  </Step>
+</Steps>
+
+## Quy tắc
+
+- **Mỗi thẻ có Suspense riêng.** Mỗi thẻ là một async Server Component
+  (`_components/AnalyticsSections.tsx`); truy vấn nào chậm thì chỉ thẻ đó chờ.
+- **Mỗi request chỉ đọc một lần.** `fetchGameMatches` / `getUpcomingMatches`
+  dùng React `cache()` theo khóa nguyên thủy (`team_id`, thêm `from`, `to` cho
+  `fetchGameMatches`).
+- **Mặc định dùng chung truy vấn.** Khi chọn năm nay, ô tỷ lệ thắng và biểu đồ
+  trận đấu dùng chung một truy vấn.
+- **Chỉ tính trận đã kết thúc.** Ô tỷ lệ thắng và biểu đồ trận đấu đọc các trận
+  5x5 qua `getMatches`, nên trận đã lên lịch hoặc đã huỷ không có kết quả và
+  không được đếm.
+- **Biểu đồ chỉ chạy trên trình duyệt.** Mỗi biểu đồ Recharts dùng
+  `next/dynamic` với `ssr: false` (`LazyCharts.tsx`).
+- **Hộp thoại chỉ tải khi cần.** Hai hộp thoại Quick Actions (mỗi cái cho một
+  vai trò, không ai thấy cả hai) cũng chỉ tải khi mở.
+- **Không có dữ liệu thì để trống.** Hiện `EmptyState`; biểu đồ xu hướng điểm
+  danh bỏ đường trung bình chứ không hiện `0.0%`.
+
+## Báo cáo PDF
+
+<Mermaid
+  chart={`
+flowchart LR
+    A["Download / Send to..."] --> B["POST /api/reports/dashboard<br/>{ from, to, filename }"]
+    B --> C["verifySession"]
+    C --> D["Chromium qua puppeteer-core<br/>chuyển tiếp cookie, viewport 1200px"]
+    D --> E["goto dashboardPath(range)<br/>/dashboard?from=…&to=…<br/>chờ #reports-dashboard, hết skeleton"]
+    E --> F["Thay body bằng tiêu đề + thông tin + lưới<br/>ép 2 cột"]
+    F --> G["page.pdf → trả về dạng file đính kèm"]
+`}
+/>
+
+- **Trình duyệt.** `getBrowser()`: dùng Chrome trên máy khi dev;
+  `@sparticuz/chromium-min` khi production, binary lấy từ `CHROMIUM_PACK_URL`.
+- **Thời gian chạy.** Route có `maxDuration` 30 giây; trình duyệt luôn được
+  đóng trong `finally`.
+- **Chờ trang.** `#reports-dashboard` phải hiện ra trong vòng 3 giây.
+- **Skeleton.** Chờ `.chakra-skeleton` biến mất, không bắt buộc (5 giây, hết
+  giờ thì bỏ qua); bảng trống hiện trạng thái trống, không phải skeleton.
+- **Khổ trang.** Rộng 210 mm, cao bằng nội dung, có `printBackground`.
+- **Phản hồi.** `application/pdf` với
+  `Content-Disposition: attachment; filename=...`.
+
+<Callout type="info" title="Khoảng ngày được gửi kèm request">
+
+- Mở `dashboardPath(range)` (`/dashboard?from=…&to=…`, `src/lib/report.ts`),
+  nên biểu đồ trong PDF khớp với khoảng ngày bạn chọn.
+- Dòng `Duration:` do server tính bằng `formatDateRange`, không bao giờ lấy từ
+  trình duyệt.
+
+</Callout>
+
+## Dữ liệu
+
+Sinh tự động từ `src/types/analytics.d.ts`:
+
+<AutoTypeTable path="src/types/analytics.d.ts" name="AttendanceHistoryRecord" />
+<AutoTypeTable path="src/types/analytics.d.ts" name="MatchesRateRecord" />
+
+## API
+
+Server action trong `src/actions/analytics.ts` và `src/actions/report.ts`, đều
+bọc `withAuth` và chỉ lấy dữ liệu theo `team_id` của bạn.
+
+<TypeTable
+  type={{
+    'getOverviewStats()': {
+      type: '{ active_players, next_game, win_rate, achievements }',
+      description:
+        'Chạy song song bốn truy vấn; tỷ lệ thắng luôn tính theo năm nay.',
+      required: true,
+    },
+    'getMatchesRate({ from, to })': {
+      type: 'Array<MatchesRateRecord>',
+      description:
+        'Số trận 5x5 đã kết thúc thắng/hòa/thua, tách riêng trận giải và giao hữu.',
+      required: true,
+    },
+    'getAttendanceHistory({ from, to })': {
+      type: 'Array<AttendanceHistoryRecord>',
+      description:
+        'Tổng số theo từng ngày và tỷ lệ có mặt, ngày mới nhất trước.',
+      required: true,
+    },
+    'getAttendanceSummary({ from, to })': {
+      type: '{ top_performers, need_attention }',
+      description:
+        '3 người đi tập đều nhất (từ 80 % trở lên) và 3 người ít nhất (dưới 50 %).',
+      required: true,
+    },
+    'getMostAbsenceReasons({ from, to })': {
+      type: 'Array<AbsenceReason>',
+      description: '5 lý do vắng hoặc đi trễ nhiều nhất, kèm tỷ lệ.',
+      required: true,
+    },
+    'getReportRecipients() / sendReportEmail(payload)': {
+      type: 'Array<{ id, name, email, role }> / void',
+      description:
+        'Thành viên trong đội của bạn (rỗng nếu chưa có đội); bọc mỏng quanh sendEmail của Resend.',
+      required: true,
+    },
+    'POST /api/reports/dashboard': {
+      type: 'application/pdf',
+      description: (
+        <ul>
+          <li>
+            Body <code>{'{ from, to, filename }'}</code>.
+          </li>
+          <li>401 nếu chưa đăng nhập.</li>
+          <li>500 kèm thông báo chung khi không ở môi trường development.</li>
+        </ul>
+      ),
+      required: true,
+    },
+  }}
+/>
+
+<Callout type="info" title="Xuất tay thì không lưu lại">
+  Download và Send to... không bao giờ ghi vào Blob hay `report_history`. PDF
+  được lưu, lịch gửi và tình trạng gửi: xem [Báo
+  cáo](/docs/vi/features/reports).
+</Callout>
+
+## Tiêu chí chấp nhận
+
+<Accordions>
+  <Accordion title="Thẻ nào xong trước hiện trước">
+    Nếu một truy vấn chậm, các thẻ khác vẫn hiện bình thường, thẻ chậm chỉ hiện
+    skeleton của riêng nó.
+  </Accordion>
+  <Accordion title="Khoảng ngày được lưu trên URL">
+
+    - Chọn khoảng ngày là `?from=&to=` đổi theo và lưới biểu đồ render lại.
+    - Tải lại trang hay gửi link cho người khác vẫn giữ nguyên khoảng ngày.
+    - PDF xuất ra từ đó cũng đúng những ngày ấy.
+
+  </Accordion>
+  <Accordion title="Tải về là có PDF hoàn chỉnh">
+
+    - PDF có tiêu đề Analytics Overview Report, biểu đồ đã vẽ xong, không còn
+      skeleton.
+    - Route lỗi thì hiện toast và không lưu gì.
+    - Nút **Generate and Email** bị khóa cho tới khi bạn chọn người nhận.
+
+  </Accordion>
+</Accordions>

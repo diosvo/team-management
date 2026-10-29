@@ -1,10 +1,13 @@
+import { GithubInfo } from 'fumadocs-ui/components/github-info';
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
 
+import { docsUrl } from './i18n';
 import { appName, gitConfig } from './shared';
 
-export function baseOptions(): BaseLayoutProps {
+export function baseOptions(lang?: string): BaseLayoutProps {
   return {
     nav: {
+      url: docsUrl([], lang),
       title: (
         <>
           <img src="/docs/logo.webp" alt={appName} className="h-8 w-auto" />
@@ -14,7 +17,18 @@ export function baseOptions(): BaseLayoutProps {
         </>
       ),
     },
-    githubUrl: `https://github.com/${gitConfig.user}/${gitConfig.repo}`,
+    links: [
+      {
+        type: 'custom',
+        children: (
+          <GithubInfo
+            owner={gitConfig.user}
+            repo={gitConfig.repo}
+            token={process.env.GITHUB_TOKEN}
+          />
+        ),
+      },
+    ],
     // The main app is light-only; docs follow it (see RootProvider in the
     // docs layout), so there is no theme to switch.
     themeSwitch: { enabled: false },
