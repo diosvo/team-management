@@ -33,6 +33,13 @@ vi.mock('@/lib/download', () => ({
 
 vi.mock('@/components/ui/toaster', () => createToasterMock());
 
+// EmailReport is loaded via next/dynamic; stub it so the dialog renders
+// synchronously in tests without triggering the real email-sending logic.
+vi.mock('./EmailReport', () => ({
+  default: ({ open }: { open: boolean }) =>
+    open ? <div role="dialog" aria-label="Email Report" /> : null,
+}));
+
 describe('DashboardFilters', () => {
   const mockSetSearchParams = vi.fn();
   const mockFetch = vi.fn();

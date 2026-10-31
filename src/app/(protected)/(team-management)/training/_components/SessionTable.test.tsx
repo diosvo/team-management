@@ -128,6 +128,17 @@ describe('SessionTable', () => {
     expect(screen.getByText('No training sessions found')).toBeInTheDocument();
   });
 
+  test('renders "Unknown" when a session has no location', () => {
+    const noLocationSession: TrainingSessionWithDetails = {
+      ...COMPLETED_SESSION,
+      session_id: 'no-loc',
+      location: null,
+    };
+    setup({ sessions: [noLocationSession] });
+
+    expect(screen.getByText('Unknown')).toBeInTheDocument();
+  });
+
   test('filters the sessions by location', () => {
     setup({ params: { q: 'bien hoa' } });
 
@@ -173,6 +184,14 @@ describe('SessionTable', () => {
       const { user } = setup();
 
       await user.click(screen.getByText(OTHER_SESSION.location!.name));
+
+      expect(mockOpen).not.toHaveBeenCalled();
+    });
+
+    test('keeps the date link from opening the dialog', async () => {
+      const { user } = setup({ sessions: [OTHER_SESSION] });
+
+      await user.click(screen.getByRole('link', { name: /13\/12\/2026/ }));
 
       expect(mockOpen).not.toHaveBeenCalled();
     });

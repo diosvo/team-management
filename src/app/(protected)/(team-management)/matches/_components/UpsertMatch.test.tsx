@@ -1,8 +1,11 @@
+import type React from 'react';
+
 import {
   act,
   createPermissionsMock,
   createToasterMock,
   expectNoA11yViolations,
+  fireEvent,
   mockToaster,
   renderWithUI,
   screen,
@@ -36,11 +39,34 @@ vi.mock('@/actions/team', () => ({
 vi.mock('@/components/ui/toaster', () => createToasterMock());
 
 // The pickers fetch their own options and are covered by their own tests; the
-// form keeps the ids it was opened with.
+// form keeps the ids it was opened with. Invoke the render/string/value
+// callbacks with a sample item so their inline definitions are exercised.
 vi.mock('@/components/SearchableSelect', () => ({
-  SearchableSelectField: ({ name }: { name: string }) => (
-    <div data-testid={`select-${name}`} />
-  ),
+  SearchableSelectField: ({
+    name,
+    renderItem,
+    itemToString,
+    itemToValue,
+  }: {
+    name: string;
+    renderItem?: (item: Record<string, unknown>) => React.ReactNode;
+    itemToString?: (item: Record<string, unknown>) => string;
+    itemToValue?: (item: Record<string, unknown>) => string;
+  }) => {
+    const sample = {
+      name: 'Sample',
+      league_id: 'l1',
+      team_id: 't1',
+      status: 'ongoing',
+    };
+    return (
+      <div data-testid={`select-${name}`}>
+        {renderItem?.(sample)}
+        {itemToString?.(sample)}
+        {itemToValue?.(sample)}
+      </div>
+    );
+  },
 }));
 
 vi.mock('@/components/common/LocationSelection', () => ({
@@ -317,5 +343,26 @@ describe('UpsertMatch', () => {
         }),
       );
     });
+  });
+
+  test('shows the translated status error when scores exist on a non-completed match', async () => {
+    await open('Update', {
+      ...EXISTING_MATCH,
+      status: MatchStatus.SCHEDULED,
+      home_team_score: 10,
+      away_team_score: 5,
+    });
+
+    await screen.findByText('Update match');
+
+    // The submit button is disabled when the form is initially invalid, so
+    // submit the form element directly to trigger react-hook-form validation.
+    act(() => {
+      fireEvent.submit(document.querySelector('form')!);
+    });
+
+    expect(
+      await screen.findByText('Only a completed match can carry a score'),
+    ).toBeInTheDocument();
   });
 });
