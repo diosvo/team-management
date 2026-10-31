@@ -161,6 +161,47 @@ describe('UpsertAsset', () => {
     });
   });
 
+  test('resets the form after adding a new asset', async () => {
+    mockUpsertAsset.mockResolvedValue({ success: true, message: 'Added' });
+
+    const { user } = await open('Add');
+
+    const name = await screen.findByPlaceholderText('Ball #');
+    await user.type(name, 'New Ball');
+    // The note field has no default value, so it must be touched once to
+    // satisfy the schema (a real editor fires this on mount; the test double
+    // doesn't).
+    await user.type(screen.getByLabelText('Note editor'), 'note');
+
+    const submit = await screen.findByRole('button', { name: /^add$/i });
+    await waitFor(() => expect(submit).toBeEnabled());
+    await user.click(submit);
+
+    await waitFor(() => expect(mockUpsertAsset).toHaveBeenCalled());
+    await waitFor(() => expect(name).toHaveValue(''));
+  });
+
+  test('submits an edited quantity', async () => {
+    mockUpsertAsset.mockResolvedValue({ success: true, message: 'Saved' });
+
+    const { user } = await open('Update', EXISTING_ASSET);
+
+    const quantity = await screen.findByRole('spinbutton');
+    await user.clear(quantity);
+    await user.type(quantity, '7');
+
+    const submit = await screen.findByRole('button', { name: /update/i });
+    await waitFor(() => expect(submit).toBeEnabled());
+    await user.click(submit);
+
+    await waitFor(() => {
+      expect(mockUpsertAsset).toHaveBeenCalledWith(
+        MOCK_ASSET.asset_id,
+        expect.objectContaining({ quantity: 7 }),
+      );
+    });
+  });
+
   test('submits the note written in the rich text editor', async () => {
     mockUpsertAsset.mockResolvedValue({ success: true, message: 'Saved' });
 

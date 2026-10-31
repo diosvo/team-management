@@ -3,6 +3,7 @@ import {
   getPlayersAttendanceSummary,
   getTeamAttendanceHistory,
   getUpcomingMatches,
+  getUpcomingSessions,
 } from '@/db/analytics';
 import { getMatches } from '@/db/match';
 
@@ -26,6 +27,8 @@ import {
   getMatchesRate,
   getMostAbsenceReasons,
   getOverviewStats,
+  getUpcomingMatches as getUpcomingMatchesAction,
+  getUpcomingSessions as getUpcomingSessionsAction,
 } from './analytics';
 import { getActivePlayers } from './user';
 
@@ -255,6 +258,35 @@ describe('Analytics Actions', () => {
         achievements: 1,
       });
       expect(getMatches).toHaveBeenCalledWith(gameMatchesQuery(thisYear()));
+    });
+
+    test('reports days until the next game when one is upcoming', async () => {
+      vi.mocked(getActivePlayers).mockResolvedValue([]);
+      vi.mocked(getUpcomingMatches).mockResolvedValue([MOCK_MATCH] as never);
+      vi.mocked(getAchievements).mockResolvedValue([]);
+      vi.mocked(getMatches).mockResolvedValue(matchesResponse([], 0));
+
+      const { next_game } = await getOverviewStats();
+
+      expect(typeof next_game).toBe('number');
+    });
+  });
+
+  describe('getUpcomingMatches', () => {
+    test('fetches upcoming matches scoped to the team', async () => {
+      vi.mocked(getUpcomingMatches).mockResolvedValue([MOCK_MATCH] as never);
+
+      await expect(getUpcomingMatchesAction()).resolves.toEqual([MOCK_MATCH]);
+      expect(getUpcomingMatches).toHaveBeenCalledWith(MOCK_TEAM.team_id);
+    });
+  });
+
+  describe('getUpcomingSessions', () => {
+    test('fetches upcoming sessions scoped to the team', async () => {
+      vi.mocked(getUpcomingSessions).mockResolvedValue([]);
+
+      await expect(getUpcomingSessionsAction()).resolves.toEqual([]);
+      expect(getUpcomingSessions).toHaveBeenCalledWith(MOCK_TEAM.team_id);
     });
   });
 });

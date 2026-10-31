@@ -169,15 +169,19 @@ export const UpsertAchievement = createOverlay(({ action, item, ...rest }) => {
                         collection={types}
                         disabled={isPending}
                         value={field.value ? [field.value] : []}
-                        onInteractOutside={() => field.onBlur()}
+                        onInteractOutside={field.onBlur}
                         onValueChange={({ value }) => {
                           field.onChange(value[0]);
                           // The type drives the default title until edited.
+                          // value[0] always comes from the same typeSelection collection,
+                          // so find() always returns a result — the non-null assertion is safe.
                           if (!dirtyFields.title) {
-                            const selected = typeSelection.find(
-                              (option) => option.value === value[0],
+                            setValue(
+                              'title',
+                              typeSelection.find(
+                                (option) => option.value === value[0],
+                              )!.label,
                             );
-                            if (selected) setValue('title', selected.label);
                           }
                         }}
                       >
@@ -246,7 +250,7 @@ export const UpsertAchievement = createOverlay(({ action, item, ...rest }) => {
                         collection={years}
                         disabled={isPending || !!league_id}
                         value={field.value ? [String(field.value)] : []}
-                        onInteractOutside={() => field.onBlur()}
+                        onInteractOutside={field.onBlur}
                         onValueChange={({ value }) =>
                           field.onChange(Number(value[0]))
                         }

@@ -113,6 +113,22 @@ describe('getAttendances', () => {
     );
   });
 
+  test('returns a zero present rate when there are no records', async () => {
+    mockSelectSuccess([]);
+
+    const result = await getAttendances(MOCK_TEAM.team_id, RANGE);
+
+    expect(result).toEqual({
+      stats: {
+        on_time_count: 0,
+        late_count: 0,
+        absent_count: 0,
+        present_rate: 0,
+      },
+      data: [],
+    });
+  });
+
   test.each([
     {
       description: 'fails',

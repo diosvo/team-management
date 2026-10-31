@@ -38,4 +38,11 @@ describe('StepIndicator', () => {
       unmount();
     });
   });
+
+  test('renders a checkmark instead of the step number when done', () => {
+    renderWithUI(<StepIndicator step={1} done />);
+
+    expect(screen.queryByText('1')).not.toBeInTheDocument();
+    expect(document.querySelector('svg')).toBeInTheDocument();
+  });
 });

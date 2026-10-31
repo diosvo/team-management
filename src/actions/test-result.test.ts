@@ -25,6 +25,7 @@ import {
 } from '@/test/mocks/periodic-testing';
 
 import {
+  canCreateTestResult,
   createTestResult,
   deleteTestResultById,
   getTestDates,
@@ -92,6 +93,12 @@ describe('Test Result Actions', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  describe('canCreateTestResult', () => {
+    test('returns true for an authorized user', async () => {
+      await expect(canCreateTestResult()).resolves.toBe(true);
+    });
   });
 
   describe('getTestDates', () => {

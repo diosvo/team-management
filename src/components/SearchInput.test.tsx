@@ -4,6 +4,7 @@ import {
   renderWithUI,
   screen,
   setupTestLifecycle,
+  waitFor,
 } from '@/test/utilities';
 import SearchInput from './SearchInput';
 
@@ -25,7 +26,7 @@ describe('SearchInput', () => {
   setupTestLifecycle();
 
   afterEach(() => {
-    vi.clearAllTimers();
+    vi.useRealTimers();
   });
 
   test('should be accessible', async () => {
@@ -90,6 +91,30 @@ describe('SearchInput', () => {
 
     expect(input.value).toBe('');
     expect(input).toHaveFocus();
+  });
+
+  test('writes the debounced search to the URL, resetting to page 1', async () => {
+    const { user, input } = setup();
+
+    await user.type(input, 'test');
+
+    await waitFor(
+      () =>
+        expect(mockSetSearchParams).toHaveBeenCalledWith({
+          q: 'test',
+          page: 1,
+        }),
+      { timeout: 1000 },
+    );
+  });
+
+  test('does not update the URL when the debounced value matches it', async () => {
+    vi.useFakeTimers();
+    setup({ q: 'same' });
+
+    vi.advanceTimersByTime(350);
+
+    expect(mockSetSearchParams).not.toHaveBeenCalled();
   });
 
   test('resyncs the input when the URL query changes externally', async () => {

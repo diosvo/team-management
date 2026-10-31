@@ -7,6 +7,8 @@ import {
 } from '@/drizzle/schema/periodic-testing';
 
 import {
+  mockDeleteFailure,
+  mockDeleteSuccess,
   mockInsertFailure,
   mockInsertSuccess,
   mockSelectDistinctFailure,
@@ -23,6 +25,7 @@ import {
 } from '@/test/mocks/periodic-testing';
 
 import {
+  deleteTestResultById,
   getDates,
   getExistingTestResults,
   getTestResultByDate,
@@ -48,6 +51,9 @@ vi.mock('@/drizzle', () => ({
       set: vi.fn(() => ({
         where: vi.fn(),
       })),
+    })),
+    delete: vi.fn(() => ({
+      where: vi.fn(),
     })),
   },
 }));
@@ -229,6 +235,16 @@ describe('getExistingTestResults', () => {
     expect(result.size).toBe(0);
   });
 
+  test('matches a submitted cell with no date against a row with no date', async () => {
+    const row = { ...MOCK_TEST_RESULT, date: null as never };
+    mockSelect([row]);
+
+    const submitted = { ...MOCK_TEST_RESULT_INPUT, date: null as never };
+    const result = await getExistingTestResults([submitted]);
+
+    expect(result.get(key(submitted))).toBe(row.result_id);
+  });
+
   test('uses the required date value when resolving existing rows', async () => {
     mockSelect([MOCK_TEST_RESULT]);
 
@@ -338,6 +354,34 @@ describe('updateTestResults', () => {
       updateTestResults([
         { ...MOCK_TEST_RESULT_INPUT, result_id: MOCK_TEST_RESULT.result_id },
       ]),
+    ).rejects.toThrow(message);
+  });
+});
+
+describe('deleteTestResultById', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  test('deletes the test result', async () => {
+    const mockWhere = mockDeleteSuccess(undefined);
+
+    await deleteTestResultById(MOCK_TEST_RESULT.result_id);
+
+    expect(db.delete).toHaveBeenCalledWith(TestResultTable);
+    expect(mockWhere).toHaveBeenCalledWith({
+      field: TestResultTable.result_id,
+      value: MOCK_TEST_RESULT.result_id,
+      type: 'eq',
+    });
+  });
+
+  test('throws error when delete fails', async () => {
+    const message = 'Delete failed';
+    mockDeleteFailure(message);
+
+    await expect(
+      deleteTestResultById(MOCK_TEST_RESULT.result_id),
     ).rejects.toThrow(message);
   });
 });

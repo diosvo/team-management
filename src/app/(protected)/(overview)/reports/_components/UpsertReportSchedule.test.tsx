@@ -163,6 +163,20 @@ describe('UpsertReportSchedule', () => {
       expect(await openReportOptions(user)).toEqual([YEARLY_LABEL]);
     });
 
+    test('shows no selection when every report is already scheduled', async () => {
+      await open('Add', { schedule_id: '' }, [
+        Interval.THIS_MONTH,
+        Interval.LAST_MONTH,
+        Interval.THIS_YEAR,
+        Interval.LAST_YEAR,
+      ]);
+
+      const combobox = await screen.findByRole('combobox');
+
+      expect(within(combobox).queryByText(MONTHLY_LABEL)).not.toBeInTheDocument();
+      expect(within(combobox).queryByText(YEARLY_LABEL)).not.toBeInTheDocument();
+    });
+
     test('keeps its own report available when updating', async () => {
       const { user } = await open(
         'Update',

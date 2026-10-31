@@ -15,6 +15,12 @@ export default defineConfig({
     coverage: {
       // Count files no test imports as 0%
       include: ['src/**/*.{ts,tsx}'],
+      thresholds: {
+        statements: 98.5,
+        branches: 94,
+        functions: 97,
+        lines: 98.5,
+      },
       // `json-summary` writes coverage/coverage-summary.json, which CI reads
       // to post the percentage on the PR.
       reporter: ['text', 'html', 'json-summary'],
@@ -39,6 +45,14 @@ export default defineConfig({
         // App wiring & config
         '**/routes.ts',
         '**/providers/**',
+        // Fumadocs-powered docs site: generated/wired content, not app logic
+        'src/app/docs/**',
+        'src/app/llms.txt/**',
+        'src/app/llms-full.txt/**',
+        'src/app/llms.mdx/**',
+        'src/app/api/search/**',
+        // Thin re-export wiring a third-party lib's handler (no logic of ours)
+        'src/app/api/auth/**',
       ],
     },
   },

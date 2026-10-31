@@ -15,6 +15,28 @@ import type { AbsenceReason } from '@/types/analytics';
 const CHART_COLORS = ['#8884D8', '#83A6ED', '#8DD1E1', '#82CA9D', '#A4DE6C'];
 const UNKNOWN_COLOR = '#D2D4D7';
 
+/** Pie slice label: "name: value", with "Unknown" localized. */
+export function formatSliceLabel(
+  name: string,
+  value: number,
+  unknownLabel: string,
+): string {
+  return `${name === 'Unknown' ? unknownLabel : name}: ${value}`;
+}
+
+/** Pie slice shape, colored from the enriched reason's own `color`. */
+export function ReasonSector(props: PieSectorShapeProps) {
+  return <Sector {...props} fill={props.payload.color} />;
+}
+
+function toLabelName(name: unknown): string {
+  return typeof name === 'string' ? name : '';
+}
+
+function toLabelValue(value: unknown): number {
+  return typeof value === 'number' ? value : 0;
+}
+
 export default function AbsenceReasonsBreakdown({
   reasons,
 }: {
@@ -49,11 +71,13 @@ export default function AbsenceReasonsBreakdown({
               isAnimationActive={false}
               dataKey={chart.key('count')}
               label={({ name, value }) =>
-                `${name === 'Unknown' ? t('unknown') : name}: ${value}`
+                formatSliceLabel(
+                  toLabelName(name),
+                  toLabelValue(value),
+                  t('unknown'),
+                )
               }
-              shape={(props: PieSectorShapeProps) => (
-                <Sector {...props} fill={props.payload.color} />
-              )}
+              shape={ReasonSector}
             />
           </PieChart>
         </Chart.Root>

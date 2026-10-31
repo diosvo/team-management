@@ -139,6 +139,40 @@ describe('SearchableSelect', () => {
 
         expect(await screen.findByText('Custom: Item 1')).toBeInTheDocument();
       });
+
+      test('treats an undefined value as no selection', async () => {
+        setup({ value: undefined });
+
+        await waitFor(() => expect(mockAction).toHaveBeenCalled());
+      });
+
+      test('keeps a selected item visible even when it is not in the loaded list', async () => {
+        const { user } = setup({
+          value: [{ id: '9', name: 'Not in the list' }],
+        });
+
+        await waitFor(() => expect(mockAction).toHaveBeenCalled());
+        await user.click(screen.getByPlaceholderText('Type to search'));
+
+        expect(await screen.findByText('Not in the list')).toBeInTheDocument();
+      });
+
+      test('shows the SWR error when the action rejects', async () => {
+        const failingAction = vi.fn().mockRejectedValue(new Error('boom'));
+        const { user } = setup({ action: failingAction });
+
+        await waitFor(() => expect(failingAction).toHaveBeenCalled());
+        await user.click(screen.getByPlaceholderText('Type to search'));
+
+        expect(await screen.findByText('Error: boom')).toBeInTheDocument();
+      });
+
+      test('uses the localized noun for a known entity label', async () => {
+        setup({ label: 'players', action: mockAction });
+
+        await waitFor(() => expect(mockAction).toHaveBeenCalled());
+        expect(screen.getByText('Select players')).toBeInTheDocument();
+      });
     });
 
     describe('single', () => {
@@ -200,6 +234,26 @@ describe('SearchableSelect', () => {
         await user.click(await screen.findByText('Item 1'));
 
         expect(onChange).toHaveBeenCalledWith(mockItems[0]);
+      });
+
+      test('pre-fills the input from a given value', async () => {
+        setup({ value: mockItems[0] });
+
+        await waitFor(() => expect(mockAction).toHaveBeenCalled());
+
+        expect(
+          screen.getByDisplayValue(mockItems[0].name),
+        ).toBeInTheDocument();
+      });
+
+      test('calls onChange with null when the selection is cleared', async () => {
+        const { user } = setup({ value: mockItems[0] });
+
+        await waitFor(() => expect(mockAction).toHaveBeenCalled());
+
+        await user.click(screen.getByRole('button', { name: /clear/i }));
+
+        expect(onChange).toHaveBeenCalledWith(null);
       });
     });
   });
@@ -271,6 +325,26 @@ describe('SearchableSelect', () => {
         await user.click(await screen.findByText('Item 1'));
 
         expect(screen.getByTestId('form-value')).toHaveTextContent('["1"]');
+      });
+
+      test('treats an undefined field value as no selection', async () => {
+        const ControlledMultipleUndefined = () => {
+          const { control } = useForm<FormValues>({
+            defaultValues: { field: undefined },
+          });
+          return (
+            <SearchableSelectField
+              {...baseProps}
+              multiple={true}
+              control={control}
+              name="field"
+            />
+          );
+        };
+
+        renderWithUI(withFreshSWR(<ControlledMultipleUndefined />));
+
+        await waitFor(() => expect(mockAction).toHaveBeenCalled());
       });
 
       test('shows field validation error', async () => {
@@ -375,6 +449,36 @@ describe('SearchableSelect', () => {
         await user.click(await screen.findByText('Item 1'));
 
         expect(screen.getByTestId('form-value')).toHaveTextContent('"1"');
+      });
+
+      test('clears the field to null when the selection is removed', async () => {
+        const ControlledSingleWithDisplay = () => {
+          const { control, watch } = useForm<FormValues>({
+            defaultValues: { field: '1' },
+          });
+          const value = watch('field');
+          return (
+            <>
+              <SearchableSelectField
+                {...baseProps}
+                multiple={false}
+                control={control}
+                name="field"
+              />
+              <div data-testid="form-value">{JSON.stringify(value)}</div>
+            </>
+          );
+        };
+
+        const { user } = renderWithUI(
+          withFreshSWR(<ControlledSingleWithDisplay />),
+        );
+
+        await waitFor(() => expect(mockAction).toHaveBeenCalled());
+
+        await user.click(screen.getByRole('button', { name: /clear/i }));
+
+        expect(screen.getByTestId('form-value')).toHaveTextContent('null');
       });
 
       test('shows field validation error', async () => {

@@ -7,10 +7,19 @@ import {
 
 import BackgroundLayer from '@/assets/images/bg-layer.webp';
 
-import AuthLayout from './layout';
+import AuthLayout, { generateMetadata } from './layout';
 
 describe('AuthLayout', () => {
   setupTestLifecycle();
+
+  test('exposes page metadata', async () => {
+    const metadata = await generateMetadata();
+
+    expect(metadata).toEqual({
+      title: 'Auth',
+      description: 'Authentication',
+    });
+  });
 
   const setup = async (children = <div>Test Content</div>) => {
     return renderWithUI(await AuthLayout({ children }));

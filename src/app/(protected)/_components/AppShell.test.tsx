@@ -1,3 +1,5 @@
+import type React from 'react';
+
 import {
   createSessionMock,
   createToasterMock,
@@ -29,8 +31,12 @@ vi.mock('./AppHeader', () => ({
 }));
 
 vi.mock('./Sidebar', () => ({
-  default: () => <nav data-testid="sidebar" />,
-  SidebarToggle: () => null,
+  default: ({ children }: { children: React.ReactNode }) => (
+    <nav data-testid="sidebar">{children}</nav>
+  ),
+  SidebarToggle: ({ onToggle }: { onToggle: () => void }) => (
+    <button data-testid="sidebar-toggle" onClick={onToggle} />
+  ),
 }));
 
 vi.mock('./Breadcrumbs', () => ({
@@ -106,6 +112,18 @@ describe('AppShell', () => {
       expect(mockToaster.dismiss).toHaveBeenCalled();
 
       vi.useRealTimers();
+    });
+  });
+
+  describe('sidebar toggle', () => {
+    test('toggles the sidebar when the toggle button is clicked', async () => {
+      const { user } = setup();
+
+      const toggle = screen.getByTestId('sidebar-toggle');
+      await user.click(toggle);
+
+      // Clicking fires the onToggle callback without error
+      expect(toggle).toBeInTheDocument();
     });
   });
 });

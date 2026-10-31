@@ -1,6 +1,7 @@
 import {
   asEditor,
   createMockEditor,
+  editorOptions,
   emitUpdate,
   useEditorMock,
   type MockEditor,
@@ -70,6 +71,14 @@ describe('TextEditor', () => {
     await expectNoA11yViolations(container);
   });
 
+  test('renders nothing before the editor instance exists', () => {
+    useEditorMock.mockReturnValue(null);
+
+    const { container } = setup();
+
+    expect(container).toBeEmptyDOMElement();
+  });
+
   test('renders the header next to the actions', () => {
     setup({ header: <h1>Team Rule</h1> });
     expect(
@@ -118,6 +127,19 @@ describe('TextEditor', () => {
       // Recreating the editor on `content` destroys the instance the copy
       // button is still reading from ("Cannot read properties of null").
       expect(useEditorMock.mock.calls[0]).toHaveLength(1);
+    });
+
+    test('marks the editor clean as soon as it is created', () => {
+      setup();
+
+      act(() => {
+        editorOptions()?.onCreate?.({ editor } as never);
+      });
+      // onCreate snapshots the current HTML as "saved", so an update back to
+      // that same HTML should not flag a draft as dirty.
+      emitUpdate(editor);
+
+      expect(saveChangesPrompt()).not.toBeInTheDocument();
     });
 
     test('loads new saved content into the editor while previewing', () => {
@@ -237,6 +259,24 @@ describe('TextEditor', () => {
       await waitFor(async () =>
         expect(await navigator.clipboard.readText()).toBe(PLAIN_TEXT),
       );
+    });
+
+    test('leaves the button unchanged when no clipboard fallback is available', async () => {
+      vi.stubGlobal('ClipboardItem', class {});
+      const { user } = setup();
+      vi.spyOn(navigator.clipboard, 'write').mockRejectedValue(
+        new Error('denied'),
+      );
+      vi.stubGlobal('navigator', {
+        ...navigator,
+        clipboard: { write: navigator.clipboard.write },
+      });
+
+      await clickButton(user, 'Copy');
+
+      expect(
+        screen.queryByRole('button', { name: 'Copied' }),
+      ).not.toBeInTheDocument();
     });
 
     test('falls back to plain text when the rich write is refused', async () => {

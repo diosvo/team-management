@@ -1,7 +1,7 @@
 import { del, get, put } from '@vercel/blob';
 import { fromUint8Array } from 'js-base64';
 
-import { deleteFile, getFile, uploadFile } from './blob';
+import { deleteFile, getFile, getFileBytes, uploadFile } from './blob';
 
 vi.mock('@vercel/blob', () => ({
   del: vi.fn(),
@@ -56,6 +56,34 @@ describe('getFile', () => {
     vi.mocked(get).mockRejectedValue(error);
 
     await expect(getFile('users/1/avatar.png')).rejects.toThrow(error);
+  });
+});
+
+describe('getFileBytes', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  test('returns the raw bytes of the fetched file', async () => {
+    vi.mocked(get).mockResolvedValue({
+      stream: 'hello',
+      blob: { contentType: 'application/pdf' },
+    } as unknown as Awaited<ReturnType<typeof get>>);
+
+    const result = await getFileBytes('reports/1.pdf');
+
+    expect(get).toHaveBeenCalledWith('reports/1.pdf', { access: 'private' });
+    expect(Array.from(result!)).toEqual(
+      Array.from(new TextEncoder().encode('hello')),
+    );
+  });
+
+  test('returns null when the result has no stream', async () => {
+    vi.mocked(get).mockResolvedValue(
+      null as unknown as Awaited<ReturnType<typeof get>>,
+    );
+
+    expect(await getFileBytes('reports/1.pdf')).toBeNull();
   });
 });
 

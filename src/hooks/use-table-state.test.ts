@@ -215,6 +215,28 @@ describe('useTableState', () => {
       expect(onDeleted).toHaveBeenCalled();
     });
 
+    test('uses the localized plural for a multi-word known noun', async () => {
+      const remove = vi.fn().mockResolvedValue({ success: true, message: '' });
+      const result = setup();
+
+      act(() => result.current.setSelection(['1', '2']));
+      act(() => result.current.removeSelected(remove, 'test type'));
+
+      expect(mockToaster.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: 'Deleting 2 test types...',
+        }),
+      );
+
+      await waitFor(() => expect(result.current.selection).toEqual([]));
+      expect(mockToaster.update).toHaveBeenCalledWith(
+        'toast-id',
+        expect.objectContaining({
+          title: 'Successfully deleted 2 test types.',
+        }),
+      );
+    });
+
     test('warns with the failure reasons on partial failure', async () => {
       const remove = vi
         .fn()

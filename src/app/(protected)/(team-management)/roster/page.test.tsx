@@ -4,7 +4,7 @@ import { renderWithUI, screen, setupTestLifecycle } from '@/test/utilities';
 
 import { getRoster } from '@/actions/user';
 
-import RosterPage from './page';
+import RosterPage, { generateMetadata } from './page';
 
 vi.mock('@/actions/user', () => ({
   getRoster: vi.fn(),
@@ -39,6 +39,12 @@ describe('RosterPage', () => {
   };
 
   setupTestLifecycle();
+
+  test('exposes page metadata', async () => {
+    const metadata = await generateMetadata();
+
+    expect(metadata.title).toBe('Roster');
+  });
 
   test('renders all roster sections', async () => {
     await setup();
