@@ -15,6 +15,12 @@ export default defineConfig({
     coverage: {
       // Count files no test imports as 0%
       include: ['src/**/*.{ts,tsx}'],
+      thresholds: {
+        statements: 98.5,
+        branches: 94,
+        functions: 97,
+        lines: 98.5,
+      },
       // `json-summary` writes coverage/coverage-summary.json, which CI reads
       // to post the percentage on the PR.
       reporter: ['text', 'html', 'json-summary'],

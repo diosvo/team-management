@@ -75,6 +75,9 @@ jobs:
       - name: 🚚 Setup
         uses: ./.github/actions/setup
 
+      - name: 🔎 Lint
+        run: pnpm lint
+
       - name: 🧪 Unit Tests
         run: |
           pnpm test:coverage || status=$?
