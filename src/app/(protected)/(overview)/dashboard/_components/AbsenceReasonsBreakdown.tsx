@@ -29,6 +29,14 @@ export function ReasonSector(props: PieSectorShapeProps) {
   return <Sector {...props} fill={props.payload.color} />;
 }
 
+function toLabelName(name: unknown): string {
+  return typeof name === 'string' ? name : '';
+}
+
+function toLabelValue(value: unknown): number {
+  return typeof value === 'number' ? value : 0;
+}
+
 export default function AbsenceReasonsBreakdown({
   reasons,
 }: {
@@ -63,7 +71,11 @@ export default function AbsenceReasonsBreakdown({
               isAnimationActive={false}
               dataKey={chart.key('count')}
               label={({ name, value }) =>
-                formatSliceLabel(name, value, t('unknown'))
+                formatSliceLabel(
+                  toLabelName(name),
+                  toLabelValue(value),
+                  t('unknown'),
+                )
               }
               shape={ReasonSector}
             />

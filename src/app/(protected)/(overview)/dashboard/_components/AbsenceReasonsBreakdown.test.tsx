@@ -1,5 +1,6 @@
 import { MOCK_ABSENCE_REASONS } from '@/test/mocks/analytics';
 import { renderWithUI, screen } from '@/test/utilities';
+import type { PieSectorShapeProps } from 'recharts';
 
 import type { AbsenceReason } from '@/types/analytics';
 import AbsenceReasonsBreakdown, {
@@ -49,17 +50,19 @@ describe('formatSliceLabel', () => {
 
 describe('ReasonSector', () => {
   test('fills the slice with the reason’s own color', () => {
+    const props = {
+      cx: 50,
+      cy: 50,
+      innerRadius: 10,
+      outerRadius: 40,
+      startAngle: 0,
+      endAngle: 180,
+      payload: { color: '#123456' },
+    } as PieSectorShapeProps;
+
     const { container } = renderWithUI(
       <svg>
-        <ReasonSector
-          cx={50}
-          cy={50}
-          innerRadius={10}
-          outerRadius={40}
-          startAngle={0}
-          endAngle={180}
-          payload={{ color: '#123456' }}
-        />
+        <ReasonSector {...props} />
       </svg>,
     );
 
