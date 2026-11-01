@@ -84,4 +84,43 @@ describe('UpsertTestType', () => {
       );
     });
   });
+
+  test('shows an error toast when upsertTestType fails', async () => {
+    mockUpsertTestType.mockResolvedValue({
+      success: false,
+      message: 'Name taken',
+    });
+
+    const view = await open('Update', { type_id: 'type-123', name: 'Sprint' });
+    const { user } = view;
+
+    const submit = await screen.findByRole('button', { name: /update/i });
+    await waitFor(() => expect(submit).toBeEnabled());
+    await user.click(submit);
+
+    await waitFor(() => expect(mockUpsertTestType).toHaveBeenCalled());
+  });
+
+  test('adds a new test type and resets the form on success', async () => {
+    mockUpsertTestType.mockResolvedValue({ success: true, message: 'Saved' });
+
+    const view = await open('Add');
+    const { user } = view;
+
+    // Find the name input by its label.
+    const name = await screen.findByRole('textbox');
+    await user.type(name, 'New Type');
+
+    const submit = await screen.findByRole('button', { name: /add/i });
+    await waitFor(() => expect(submit).toBeEnabled());
+    await user.click(submit);
+
+    await waitFor(() =>
+      expect(mockUpsertTestType).toHaveBeenCalledWith(
+        '',
+        expect.objectContaining({ name: 'New Type' }),
+      ),
+    );
+    await waitFor(() => expect(name).toHaveValue(''));
+  });
 });

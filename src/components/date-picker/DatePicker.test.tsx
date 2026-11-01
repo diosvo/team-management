@@ -86,6 +86,18 @@ describe('DatePicker', () => {
     expect(input).toHaveAttribute('aria-invalid', 'true');
   });
 
+  test('treats an undefined field value as an empty string', () => {
+    const Form = () => {
+      const { control } = useForm<{ date?: string }>({
+        defaultValues: { date: undefined },
+      });
+      return <DatePickerField label="Date" control={control} name="date" />;
+    };
+    renderWithUI(<Form />);
+
+    expect(getInput().value).toBe('');
+  });
+
   test('carries the disabled state of a react-hook-form field', () => {
     const Form = () => {
       const { control } = useForm({
@@ -107,6 +119,14 @@ describe('DatePicker', () => {
     await user.tab();
 
     await waitFor(() => expect(onChange).toHaveBeenCalledWith('2026-06-01'));
+  });
+
+  test('emits an empty string when the value is cleared', async () => {
+    const { user } = setup();
+
+    await user.click(screen.getByRole('button', { name: /clear/i }));
+
+    expect(onChange).toHaveBeenCalledWith('');
   });
 
   test('emits an ISO day string when a preset is picked', async () => {

@@ -4,7 +4,7 @@ import { renderWithUI, screen, setupTestLifecycle } from '@/test/utilities';
 
 import { getTeams } from '@/actions/team';
 
-import TeamsPage from './page';
+import TeamsPage, { generateMetadata } from './page';
 
 vi.mock('@/actions/team', () => ({
   getTeams: vi.fn(),
@@ -37,6 +37,12 @@ describe('TeamsPage', () => {
   };
 
   setupTestLifecycle();
+
+  test('exposes page metadata', async () => {
+    const metadata = await generateMetadata();
+
+    expect(metadata.title).toBe('Teams');
+  });
 
   test('renders all team sections', async () => {
     await setup();

@@ -31,8 +31,23 @@ vi.mock('@/components/user/PlayerSelection', () => ({
 }));
 
 vi.mock('@/components/SearchableSelect', () => ({
-  default: ({ onChange }: { onChange: (types: Array<unknown>) => void }) => (
-    <button onClick={() => onChange([MOCK_TEST_TYPE])}>select types</button>
+  default: ({
+    onChange,
+    renderItem,
+    itemToString,
+    itemToValue,
+  }: {
+    onChange: (types: Array<unknown>) => void;
+    renderItem: (item: typeof MOCK_TEST_TYPE) => React.ReactNode;
+    itemToString: (item: typeof MOCK_TEST_TYPE) => string;
+    itemToValue: (item: typeof MOCK_TEST_TYPE) => string;
+  }) => (
+    <>
+      {renderItem(MOCK_TEST_TYPE)}
+      {itemToString(MOCK_TEST_TYPE)}
+      {itemToValue(MOCK_TEST_TYPE)}
+      <button onClick={() => onChange([MOCK_TEST_TYPE])}>select types</button>
+    </>
   ),
 }));
 

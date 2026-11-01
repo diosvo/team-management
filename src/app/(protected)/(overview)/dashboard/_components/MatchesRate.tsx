@@ -23,6 +23,11 @@ import { enumLabel } from '@/i18n/enums';
 
 import type { MatchesRateRecord } from '@/types/analytics';
 
+/** Analytics returns `lose`; the enum key is `loss`. */
+export function toMatchResultKey(outcome: string): string {
+  return outcome === 'lose' ? 'loss' : outcome;
+}
+
 export default function MatchesRate({
   records,
 }: {
@@ -75,13 +80,8 @@ export default function MatchesRate({
               axisLine={false}
               tickLine={false}
               dataKey={chart.key('outcome')}
-              // Analytics returns `lose`; the enum key is `loss`
               tickFormatter={(outcome: string) =>
-                enumLabel(
-                  tEnums,
-                  'matchResult',
-                  outcome === 'lose' ? 'loss' : outcome,
-                )
+                enumLabel(tEnums, 'matchResult', toMatchResultKey(outcome))
               }
             />
             <Tooltip

@@ -140,6 +140,20 @@ describe('ReportSchedules', () => {
     expect(within(row).getAllByText('-')).toHaveLength(2);
   });
 
+  test('lists every schedule on a single page', async () => {
+    const schedules = Array.from({ length: 6 }, (_, index) =>
+      buildSchedule({ schedule_id: `schedule-${index}` }),
+    );
+    const { user } = setup({ schedules });
+
+    expect(screen.getByText('1 - 5 of 6')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /next/i }));
+
+    // The page is fixed, so paging is a no-op.
+    expect(screen.getByText('1 - 5 of 6')).toBeInTheDocument();
+  });
+
   test('shows the empty state when there are no schedules', () => {
     setup({ schedules: [] });
 
@@ -226,6 +240,19 @@ describe('ReportSchedules', () => {
       expect(mockToaster.create).toHaveBeenCalledWith({
         type: 'success',
         title: 'Paused',
+      });
+      expect(mockOpen).not.toHaveBeenCalled();
+    });
+
+    test('clicking the switch does not open the dialog', async () => {
+      mockToggle.mockResolvedValue({ success: true, message: 'Paused' });
+
+      const { user } = setup({ actions: ['edit'] });
+
+      await user.click(screen.getByText('Enable schedule'));
+
+      await waitFor(() => {
+        expect(mockToggle).toHaveBeenCalledWith(monthly.schedule_id, false);
       });
       expect(mockOpen).not.toHaveBeenCalled();
     });

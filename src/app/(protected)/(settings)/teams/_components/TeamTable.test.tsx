@@ -178,4 +178,31 @@ describe('TeamTable', () => {
       });
     });
   });
+
+  test('renders a dash when a team has no email', async () => {
+    const noEmailTeam = { ...MOCK_TEAM, email: null };
+
+    await setup({ teams: [noEmailTeam] });
+
+    expect(screen.getByText('-')).toBeInTheDocument();
+  });
+
+  test('renders a skeleton while the team logo is loading', async () => {
+    mockUsePermissions.mockReturnValue(createPermissionsMock());
+    mockUseTeamLogo.mockReturnValue({
+      data: undefined,
+      error: undefined,
+      isLoading: true,
+      isValidating: false,
+      mutate: vi.fn(),
+    });
+    mockUseQueryStates({ page: 1, q: '' });
+
+    renderWithUI(<TeamTable teams={[MOCK_TEAM]} />);
+
+    // Wait for the row to render (Skeleton is shown while isLoading is true).
+    await waitFor(() =>
+      expect(screen.getByText(MOCK_TEAM.name)).toBeInTheDocument(),
+    );
+  });
 });

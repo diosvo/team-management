@@ -1,3 +1,5 @@
+import { useForm } from 'react-hook-form';
+
 import { MOCK_PLAYER, MOCK_USER_WITH_PLAYER } from '@/test/mocks/user';
 import {
   expectNoA11yViolations,
@@ -10,7 +12,12 @@ import {
 
 import { getActivePlayers } from '@/actions/user';
 import type { User } from '@/drizzle/schema/user';
-import { PlayerSelection, SelectedPlayers } from './PlayerSelection';
+import {
+  OnePlayerSelection,
+  PlayerSelection,
+  PlayerSelectionWithActions,
+  SelectedPlayers,
+} from './PlayerSelection';
 
 vi.mock('@/actions/user', () => ({
   getActivePlayers: vi.fn(),
@@ -168,5 +175,124 @@ describe('SelectedPlayers', () => {
     await user.click(playerItem);
 
     expect(onSelectionChange).not.toHaveBeenCalled();
+  });
+});
+
+describe('PlayerSelectionWithActions', () => {
+  const onSelectionChange = vi.fn();
+  const mockGetActivePlayers = vi.mocked(getActivePlayers);
+  const ACTIVE_PLAYERS = [MOCK_USER_WITH_PLAYER];
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockGetActivePlayers.mockResolvedValue(ACTIVE_PLAYERS);
+  });
+
+  const setup = (selection: Array<User> = [], disabled = false) =>
+    renderWithUI(
+      withFreshSWR(
+        <PlayerSelectionWithActions
+          disabled={disabled}
+          selection={selection}
+          onSelectionChange={onSelectionChange}
+        />,
+      ),
+    );
+
+  test('should be accessible', async () => {
+    const { container } = setup();
+    await waitFor(() => expect(mockGetActivePlayers).toHaveBeenCalled());
+
+    await expectNoA11yViolations(container);
+  });
+
+  test('selects every active player on "select all"', async () => {
+    const { user } = setup([]);
+
+    const selectAll = await screen.findByRole('button', {
+      name: /select all/i,
+    });
+    await waitFor(() => expect(selectAll).toBeEnabled());
+    await user.click(selectAll);
+
+    expect(onSelectionChange).toHaveBeenCalledWith(ACTIVE_PLAYERS);
+  });
+
+  test('disables "select all" once every active player is selected', async () => {
+    setup(ACTIVE_PLAYERS);
+
+    const selectAll = await screen.findByRole('button', {
+      name: /select all/i,
+    });
+
+    await waitFor(() => expect(selectAll).toBeDisabled());
+  });
+
+  test('disables "select all" when there are no active players', async () => {
+    mockGetActivePlayers.mockResolvedValue([]);
+    setup([]);
+
+    const selectAll = await screen.findByRole('button', {
+      name: /select all/i,
+    });
+
+    await waitFor(() => expect(selectAll).toBeDisabled());
+  });
+
+  test('clears the selection on "clear"', async () => {
+    const { user } = setup(ACTIVE_PLAYERS);
+
+    const clear = screen.getByRole('button', { name: 'Clear' });
+    await waitFor(() => expect(clear).toBeEnabled());
+    await user.click(clear);
+
+    expect(onSelectionChange).toHaveBeenCalledWith([]);
+  });
+
+  test('disables "clear" when nothing is selected', () => {
+    setup([]);
+
+    expect(screen.getByRole('button', { name: 'Clear' })).toBeDisabled();
+  });
+
+  test('disables both actions when disabled', async () => {
+    setup(ACTIVE_PLAYERS, true);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /select all/i })).toBeDisabled();
+      expect(screen.getByRole('button', { name: 'Clear' })).toBeDisabled();
+    });
+  });
+});
+
+describe('OnePlayerSelection', () => {
+  const mockGetActivePlayers = vi.mocked(getActivePlayers);
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockGetActivePlayers.mockResolvedValue([MOCK_USER_WITH_PLAYER]);
+  });
+
+  type FormValues = { player_id: string };
+
+  function TestForm() {
+    const { control } = useForm<FormValues>({
+      defaultValues: { player_id: '' },
+    });
+
+    return <OnePlayerSelection control={control} name="player_id" />;
+  }
+
+  test('renders with the default label and lets a player be picked', async () => {
+    const { user } = renderWithUI(withFreshSWR(<TestForm />));
+
+    expect(screen.getByText('player', { exact: false })).toBeInTheDocument();
+
+    const combobox = screen.getByPlaceholderText('Type to search');
+    await user.click(combobox);
+
+    expect(
+      await screen.findByText(MOCK_USER_WITH_PLAYER.name),
+    ).toBeInTheDocument();
   });
 });

@@ -12,6 +12,7 @@ import {
   createPermissionsMock,
   createToasterMock,
   expectNoA11yViolations,
+  mockToaster,
   mockUseQueryStates,
   renderWithUI,
   screen,
@@ -61,9 +62,11 @@ describe('PlayerPerformanceMatrix', () => {
     canEdit?: boolean;
     params?: Record<string, unknown>;
   } = {}) => {
-    mockUsePermissions.mockReturnValue(createPermissionsMock({
-      can: () => canEdit,
-    }));
+    mockUsePermissions.mockReturnValue(
+      createPermissionsMock({
+        can: () => canEdit,
+      }),
+    );
     mockUseQueryStates({
       page: 1,
       q: '',
@@ -178,6 +181,45 @@ describe('PlayerPerformanceMatrix', () => {
     expect(mockUpdate).not.toHaveBeenCalled();
   });
 
+  test('reverts the draft and shows an error toast when a save fails', async () => {
+    mockUpdate.mockResolvedValue({ success: false, message: 'Save failed' });
+
+    const { user } = setup();
+
+    await user.click(screen.getByText(FIRST_RESULT));
+    const input = await screen.findByRole('spinbutton');
+    await user.clear(input);
+    await user.type(input, '5{Enter}');
+
+    await waitFor(() => {
+      expect(mockToaster.update).toHaveBeenCalledWith('toast-id', {
+        type: 'error',
+        title: 'Save failed',
+      });
+    });
+    expect(await screen.findByText(FIRST_RESULT)).toBeInTheDocument();
+    expect(screen.queryByText('5')).not.toBeInTheDocument();
+  });
+
+  test('restores the score and shows an error toast when a delete fails', async () => {
+    mockDelete.mockResolvedValue({ success: false, message: 'Delete failed' });
+
+    const { user } = setup();
+
+    await user.click(screen.getByText(FIRST_RESULT));
+    const input = await screen.findByRole('spinbutton');
+    await user.clear(input);
+    await user.type(input, '{Enter}');
+
+    await waitFor(() => {
+      expect(mockToaster.update).toHaveBeenCalledWith('toast-id', {
+        type: 'error',
+        title: 'Delete failed',
+      });
+    });
+    expect(await screen.findByText(FIRST_RESULT)).toBeInTheDocument();
+  });
+
   test('reverts and does nothing when an empty cell is left empty', async () => {
     const { user } = setup();
 
@@ -193,11 +235,69 @@ describe('PlayerPerformanceMatrix', () => {
     expect(mockDelete).not.toHaveBeenCalled();
   });
 
+  test('adopts a revalidated server value for an uncommitted cell', () => {
+    const { rerender } = setup();
+
+    expect(screen.getByText(FIRST_RESULT)).toBeInTheDocument();
+
+    const updatedResult: TestResult = {
+      ...MOCK_TEST_RESULT_RESPONSE,
+      players: [
+        {
+          ...MOCK_TEST_RESULT_RESPONSE.players[0],
+          tests: {
+            [MOCK_TEST_TYPE.name]: {
+              result_id: MOCK_TEST_RESULT.result_id,
+              result: '9.900',
+            },
+          },
+        },
+        MOCK_TEST_RESULT_RESPONSE.players[1],
+      ],
+    };
+
+    rerender(<PlayerPerformanceMatrix result={updatedResult} />);
+
+    expect(screen.getByText('9.900')).toBeInTheDocument();
+    expect(screen.queryByText(FIRST_RESULT)).not.toBeInTheDocument();
+  });
+
   test('does not allow editing without the edit permission', async () => {
     const { user } = setup({ canEdit: false });
 
     await user.click(screen.getByText(FIRST_RESULT));
 
     expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument();
+  });
+
+  test('reverts when a cell has a value but no resultId and is cleared', async () => {
+    // A cell where result is provided but result_id is absent: a defensive path
+    // that cannot arise from normal data but is guarded in the component.
+    const resultWithValueNoId: TestResult = {
+      ...MOCK_TEST_RESULT_RESPONSE,
+      players: [
+        {
+          ...MOCK_TEST_RESULT_RESPONSE.players[0],
+          tests: {
+            [MOCK_TEST_TYPE.name]: {
+              result_id: undefined as unknown as string,
+              result: '4.500',
+            },
+          },
+        },
+        MOCK_TEST_RESULT_RESPONSE.players[1],
+      ],
+    };
+
+    const { user } = setup({ result: resultWithValueNoId });
+
+    await user.click(screen.getByText('4.500'));
+    const input = await screen.findByRole('spinbutton');
+    await user.clear(input);
+    await user.keyboard('{Enter}');
+
+    // Should not call delete (no resultId) and not call create (value is empty).
+    await waitFor(() => expect(mockDelete).not.toHaveBeenCalled());
+    expect(mockCreate).not.toHaveBeenCalled();
   });
 });

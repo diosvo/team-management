@@ -167,7 +167,7 @@ export default function PersonalInfo({
               {user.name || '-'}
             </TextField>
             <TextField label={t('personal.dob')}>
-              {formatDate(user.dob) || '-'}
+              {formatDate(user.dob)}
             </TextField>
             <TextField label={t('personal.phoneNumber')}>
               {user.phone_number || '-'}

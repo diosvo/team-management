@@ -21,7 +21,9 @@ import type { AttendanceHistoryRecord } from '@/types/analytics';
 
 const TARGET_RATE = 80 as const;
 
-function CustomTooltip(props: Partial<TooltipContentProps<string, string>>) {
+export function CustomTooltip(
+  props: Partial<TooltipContentProps<string, string>>,
+) {
   const { active, payload } = props;
   const t = useTranslations('dashboard.attendanceTrend');
   if (!active || !payload || payload.length === 0) return null;

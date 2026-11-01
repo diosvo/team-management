@@ -75,13 +75,12 @@ jobs:
       - name: 🚚 Setup
         uses: ./.github/actions/setup
 
+      - name: 🔎 Lint
+        run: pnpm lint
+
       - name: 🧪 Unit Tests
         run: |
           pnpm test:coverage || status=$?
-
-          jq -r '.total | "- **Coverage**: \(.lines.pct)% lines · \(.branches.pct)% branches · \(.functions.pct)% functions · \(.statements.pct)% statements"' \
-            coverage/coverage-summary.json >> "$GITHUB_STEP_SUMMARY" ||
-            echo "::warning::No coverage summary to capture"
 
           cp "$GITHUB_STEP_SUMMARY" "${{ inputs.test-summary-file }}" ||
             echo "::warning::No step summary to capture for ${{ inputs.test-summary-file }}"

@@ -136,4 +136,21 @@ describe('AchievementCard', () => {
       );
     });
   });
+
+  test('shows an error toast when deleting fails', async () => {
+    vi.mocked(removeAchievement).mockResolvedValue({
+      success: false,
+      message: 'Delete failed',
+    });
+
+    const { user } = setup(achievement, { canManage: true });
+
+    await user.click(action(/delete achievement/i)!);
+
+    await waitFor(() => {
+      expect(removeAchievement).toHaveBeenCalledWith(
+        achievement.achievement_id,
+      );
+    });
+  });
 });

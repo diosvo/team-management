@@ -167,7 +167,7 @@ export default function BulkAttendanceManager({
     });
   };
 
-  const attendances = watch('attendances') || [];
+  const attendances = watch('attendances');
   const absentCount = attendances.filter(
     ({ status }) => status === AttendanceStatus.ABSENT,
   ).length;

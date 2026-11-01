@@ -6,6 +6,8 @@ import {
   setupTestLifecycle,
 } from '@/test/utilities';
 
+import { formatDate } from '@/utils/datetime';
+
 import TestingFilters from './TestingFilters';
 
 // The generic Filters component is covered by its own tests; capture the props
@@ -79,5 +81,21 @@ describe('TestingFilters', () => {
     setup();
 
     expect(propsSpy.disabled).toBe(false);
+  });
+
+  test('writes the picked date, resets the page and clears the type filter', async () => {
+    const { user } = setup({ params: { type: ['Sprint 30m'] } });
+
+    await user.click(screen.getByRole('combobox'));
+    await user.click(
+      await screen.findByRole('option', {
+        name: formatDate(MOCK_TEST_RESULT_DATE),
+      }),
+    );
+
+    expect(mockSetSearchParams).toHaveBeenCalledWith(
+      { date: MOCK_TEST_RESULT_DATE, type: [], page: 1 },
+      { shallow: false },
+    );
   });
 });

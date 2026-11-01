@@ -24,6 +24,7 @@ vi.mock('drizzle-orm', () => ({
   isNull: vi.fn((field) => ({ field, type: 'isNull' })),
   isNotNull: vi.fn((field) => ({ field, type: 'isNotNull' })),
   gte: vi.fn((field, value) => ({ field, value, type: 'gte' })),
+  lt: vi.fn((field, value) => ({ field, value, type: 'lt' })),
   lte: vi.fn((field, value) => ({ field, value, type: 'lte' })),
   ne: vi.fn((field, value) => ({ field, value, type: 'ne' })),
   or: vi.fn((...args) => args),

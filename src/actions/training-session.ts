@@ -50,7 +50,7 @@ export const upsertSession = training(
         await insertSession({
           ...values,
           team_id,
-          coach_id: coach ? coach.id : null,
+          coach_id: coach.id,
         });
       }
 

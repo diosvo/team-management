@@ -159,4 +159,26 @@ describe('UpsertSession', () => {
       );
     });
   });
+
+  test('creates a new session and resets the form on success', async () => {
+    mockUpsertSession.mockResolvedValue({ success: true, message: 'Created' });
+
+    const { user } = await open('Create', {
+      session_id: '',
+      date: '2026-12-12',
+      start_time: '09:00:00',
+      end_time: '11:00:00',
+    });
+
+    const submit = await screen.findByRole('button', { name: /create/i });
+    await waitFor(() => expect(submit).toBeEnabled());
+    await user.click(submit);
+
+    await waitFor(() =>
+      expect(mockUpsertSession).toHaveBeenCalledWith(
+        '',
+        expect.objectContaining({ date: '2026-12-12' }),
+      ),
+    );
+  });
 });

@@ -124,6 +124,14 @@ describe('can', () => {
       isCaptain: false,
       expected: false,
     },
+    // A captain has no extra grant on a resource outside CAPTAIN_PERMISSIONS
+    {
+      role: UserRole.PLAYER,
+      resource: 'assets',
+      action: 'create',
+      isCaptain: true,
+      expected: false,
+    },
   ] as const;
 
   test.each(cases)(

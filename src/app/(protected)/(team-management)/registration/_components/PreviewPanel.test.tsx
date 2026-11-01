@@ -1,6 +1,7 @@
 import { MOCK_LEAGUE } from '@/test/mocks/league';
 import { MOCK_USER, MOCK_USER_WITH_PLAYER } from '@/test/mocks/user';
 import {
+  act,
   createPermissionsMock,
   createToasterMock,
   expectNoA11yViolations,
@@ -142,6 +143,26 @@ describe('PreviewPanel', () => {
       expect(screen.getByText('2')).toBeInTheDocument();
     });
 
+    test('pages through a roster longer than one page', async () => {
+      const roster = Array.from(
+        { length: 11 },
+        (_, i) =>
+          ({ ...MOCK_USER, id: `user-${i}`, name: `Player ${i}` }) as User,
+      );
+
+      const { user } = setup({ players: roster });
+
+      expect(screen.getByText('Player 0')).toBeInTheDocument();
+      expect(screen.queryByText('Player 10')).not.toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: /next/i }));
+
+      expect(await screen.findByText('Player 10')).toBeInTheDocument();
+      // Numbering continues from the previous page.
+      expect(screen.getByText('11')).toBeInTheDocument();
+      expect(screen.queryByText('Player 0')).not.toBeInTheDocument();
+    });
+
     test('notes that no template was uploaded', () => {
       setup();
 
@@ -202,6 +223,83 @@ describe('PreviewPanel', () => {
       });
     });
 
+    test('reports a CSV export failure with its message', async () => {
+      mockDownloadCsv.mockImplementationOnce(() => {
+        throw new Error('Disk full');
+      });
+
+      let result: any;
+      mockToaster.promise.mockImplementationOnce(
+        async (promise: Promise<unknown>, options: any) => {
+          await promise.catch((error) => {
+            result = options.error(error);
+          });
+        },
+      );
+
+      const { user } = setup();
+
+      await user.click(screen.getByRole('button', { name: /csv/i }));
+
+      await waitFor(() => {
+        expect(result).toEqual({
+          title: 'Could not download CSV',
+          description: 'Disk full',
+        });
+      });
+    });
+
+    test('falls back to a generic message for a non-Error CSV failure', async () => {
+      const { user } = setup();
+
+      await user.click(screen.getByRole('button', { name: /csv/i }));
+
+      const [, options] = mockToaster.promise.mock.calls[0] as Array<any>;
+      expect(options.error('boom')).toEqual({
+        title: 'Could not download CSV',
+        description: 'Something went wrong.',
+      });
+    });
+
+    test('reports a PDF build failure and clears the busy state', async () => {
+      buildPdf.mockRejectedValue(new Error('Encrypted PDF'));
+
+      let result: any;
+      mockToaster.promise.mockImplementationOnce(
+        async (promise: Promise<unknown>, options: any) => {
+          await promise.catch((error) => {
+            result = options.error(error);
+          });
+          options.finally();
+        },
+      );
+
+      const { user } = setup();
+      const pdfButton = screen.getByRole('button', { name: /pdf/i });
+
+      await user.click(pdfButton);
+
+      await waitFor(() => {
+        expect(result).toEqual({
+          title: 'Could not generate PDF',
+          description: 'Encrypted PDF',
+        });
+      });
+      await waitFor(() => expect(pdfButton).toBeEnabled());
+    });
+
+    test('falls back to a generic message for a non-Error PDF failure', async () => {
+      const { user } = setup();
+
+      await user.click(screen.getByRole('button', { name: /pdf/i }));
+
+      const [, options] = mockToaster.promise.mock.calls[0] as Array<any>;
+      expect(options.error('boom')).toEqual({
+        title: 'Could not generate PDF',
+        description: 'Something went wrong.',
+      });
+    });
+
     test('warns when an uploaded template matched no player fields', async () => {
       buildPdf.mockResolvedValue({
         bytes: new Uint8Array([1]),
@@ -252,6 +350,47 @@ describe('PreviewPanel', () => {
       expect(
         await screen.findByTitle('Registration preview'),
       ).toBeInTheDocument();
+    });
+
+    test('ignores a preview that finishes after unmounting', async () => {
+      const createObjectURL = vi.spyOn(URL, 'createObjectURL');
+      let resolve!: (value: unknown) => void;
+      buildPdf.mockReturnValue(new Promise((r) => (resolve = r)));
+
+      const { unmount } = setup({ template });
+      await waitFor(() => expect(buildPdf).toHaveBeenCalled());
+      unmount();
+
+      await act(async () => {
+        resolve({ bytes: new Uint8Array([1]) });
+      });
+
+      expect(createObjectURL).not.toHaveBeenCalled();
+      createObjectURL.mockRestore();
+    });
+
+    test('ignores a preview that fails after unmounting', async () => {
+      let reject!: (reason: unknown) => void;
+      buildPdf.mockReturnValue(new Promise((_, r) => (reject = r)));
+
+      const { unmount } = setup({ template });
+      await waitFor(() => expect(buildPdf).toHaveBeenCalled());
+      unmount();
+
+      // Would warn about an update on an unmounted component if it landed.
+      await act(async () => {
+        reject(new Error('Encrypted PDF'));
+      });
+
+      expect(screen.queryByText('Encrypted PDF')).not.toBeInTheDocument();
+    });
+
+    test('falls back to a generic message for a non-Error preview failure', async () => {
+      buildPdf.mockRejectedValue('boom');
+
+      setup({ template });
+
+      expect(await screen.findByText('Preview failed.')).toBeInTheDocument();
     });
 
     test('reports a failure to build the preview', async () => {

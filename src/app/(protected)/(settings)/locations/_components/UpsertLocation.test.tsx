@@ -137,4 +137,28 @@ describe('UpsertLocation', () => {
       );
     });
   });
+
+  test('adds a new location and resets the form on success', async () => {
+    mockUpsertLocation.mockResolvedValue({ success: true, message: 'Saved' });
+
+    const { user } = await open('Add');
+
+    const name = await screen.findByPlaceholderText('Headquarters');
+    await user.type(name, 'New Location');
+    const address = screen.getByPlaceholderText('123 Main St, City, Country');
+    await user.type(address, '456 Park Ave');
+
+    const submit = await screen.findByRole('button', { name: /add/i });
+    await waitFor(() => expect(submit).toBeEnabled());
+    await user.click(submit);
+
+    await waitFor(() =>
+      expect(mockUpsertLocation).toHaveBeenCalledWith('', {
+        name: 'New Location',
+        address: '456 Park Ave',
+      }),
+    );
+    await waitFor(() => expect(name).toHaveValue(''));
+    expect(address).toHaveValue('');
+  });
 });

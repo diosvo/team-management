@@ -1,5 +1,6 @@
 import { buildIssueBody } from '@/lib/feedback';
 import { createIssue } from '@/lib/github';
+import { SubmitFeedbackSchema } from '@/schemas/feedback';
 
 import { mockWithAuth } from '@/test/mocks/auth';
 import { MOCK_USER } from '@/test/mocks/user';
@@ -68,6 +69,37 @@ describe('submitFeedback', () => {
     expect(createIssue).not.toHaveBeenCalled();
   });
 
+  test('falls back to the raw message when it is not a translation key', async () => {
+    const result = await submitFeedback({
+      ...VALUES,
+      page: 'not-a-path',
+    });
+
+    expect(result.success).toBe(false);
+    expect(createIssue).not.toHaveBeenCalled();
+  });
+
+  test('translates the message when the schema reports a validation key', async () => {
+    // Every real failure here localizes to a final string already, so a
+    // spy is the only way to exercise this (defensive) translation-key path.
+    const safeParseSpy = vi
+      .spyOn(SubmitFeedbackSchema, 'safeParse')
+      .mockReturnValue({
+        success: false,
+        error: { issues: [{ message: 'required' }] },
+      } as never);
+
+    const result = await submitFeedback(VALUES);
+
+    expect(result).toEqual({
+      success: false,
+      message: 'This field is required.',
+    });
+    expect(createIssue).not.toHaveBeenCalled();
+
+    safeParseSpy.mockRestore();
+  });
+
   test('hides the GitHub error from the reporter', async () => {
     vi.mocked(createIssue).mockRejectedValue(
       new Error('GITHUB_TOKEN is not configured'),
@@ -80,5 +112,25 @@ describe('submitFeedback', () => {
       message:
         'Unable to send your feedback right now. Please try again later.',
     });
+  });
+
+  test('surfaces the raw error message in development', async () => {
+    vi.doMock('@env', () => ({ default: { NODE_ENV: 'development' } }));
+    vi.resetModules();
+    const { submitFeedback: submitFeedbackDev } = await import('./feedback');
+    const { createIssue: createIssueDev } = await import('@/lib/github');
+    vi.mocked(createIssueDev).mockRejectedValue(
+      new Error('GITHUB_TOKEN is not configured'),
+    );
+
+    const result = await submitFeedbackDev(VALUES);
+
+    expect(result).toEqual({
+      success: false,
+      message: 'GITHUB_TOKEN is not configured',
+    });
+
+    vi.doUnmock('@env');
+    vi.resetModules();
   });
 });

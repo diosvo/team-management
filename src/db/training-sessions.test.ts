@@ -132,6 +132,21 @@ describe('getSessions', () => {
     );
   });
 
+  test('reports a zero present rate for a session with no attendance records', async () => {
+    vi.mocked(db.query.TrainingSessionTable.findMany).mockResolvedValue([
+      {
+        ...MOCK_TRAINING_SESSION,
+        location: { name: 'Court A' },
+        coach: { id: 'coach-1' },
+        attendances: [],
+      },
+    ] as never);
+
+    const result = await getSessions(MOCK_TEAM.team_id, mockParams);
+
+    expect(result.data[0].analytics.present_rate).toBe(0);
+  });
+
   test('returns empty stats when no sessions exist', async () => {
     vi.mocked(db.query.TrainingSessionTable.findMany).mockResolvedValue([]);
 

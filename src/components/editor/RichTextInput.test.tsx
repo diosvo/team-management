@@ -15,7 +15,12 @@ import {
   setupTestLifecycle,
 } from '@/test/utilities';
 
-import RichTextInput, { DEFAULT_CHARACTER_LIMIT } from './RichTextInput';
+import { RichTextEditor } from '@/components/ui/rich-text-editor';
+
+import RichTextInput, {
+  DEFAULT_CHARACTER_LIMIT,
+  EditorToolbar,
+} from './RichTextInput';
 
 vi.mock('@tiptap/react', async () =>
   (await import('@/test/mocks/tiptap')).tiptapReact(),
@@ -93,6 +98,17 @@ describe('RichTextInput', () => {
 
   describe('toolbar', () => {
     afterEach(() => vi.restoreAllMocks());
+
+    test('renders nothing until the editor exists', () => {
+      renderWithUI(
+        <RichTextEditor.Root editor={null} data-testid="root">
+          <EditorToolbar />
+        </RichTextEditor.Root>,
+      );
+
+      expect(screen.getByTestId('root')).toBeEmptyDOMElement();
+      expect(screen.queryByLabelText('Bold')).not.toBeInTheDocument();
+    });
 
     test.each([
       ['full', FULL_CONTROLS],

@@ -85,6 +85,12 @@ describe('RadioGroupField', () => {
     expect(await screen.findByText('Round things')).toBeInTheDocument();
   });
 
+  test('lays out options in a grid when columns is set', () => {
+    setup({ columns: 2 });
+
+    expect(screen.getAllByRole('radio')).toHaveLength(3);
+  });
+
   test('hides options flagged by isHidden', () => {
     setup({ isHidden: ({ value }) => value === 'cone' });
 

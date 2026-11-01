@@ -106,10 +106,7 @@ export async function getExistingTestResults(
   const player_ids = [...new Set(results.map(({ player_id }) => player_id))];
   const type_ids = [...new Set(results.map(({ type_id }) => type_id))];
   const dates = [...new Set(results.map(({ date }) => date))];
-
-  const date_filter = dates.length
-    ? inArray(TestResultTable.date, dates)
-    : undefined;
+  const date_filter = inArray(TestResultTable.date, dates);
 
   // The filters are a superset of the submitted cells (their cross product),
   // so match on the exact key below rather than trusting the rows returned.

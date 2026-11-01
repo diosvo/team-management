@@ -72,6 +72,17 @@ describe('AssetStats', () => {
     });
   });
 
+  test('filters by obsolete condition when outdated is clicked', async () => {
+    const { user } = setup({ ...MOCK_ASSET_STATS, obsolete_count: 3 });
+
+    await user.click(screen.getByText('Outdated'));
+
+    expect(setSearchParams).toHaveBeenCalledWith({
+      condition: [AssetCondition.OBSOLETE],
+      page: 1,
+    });
+  });
+
   test('does not filter when a stat card with a value of 0 is clicked', async () => {
     const { user } = setup({ ...MOCK_ASSET_STATS, obsolete_count: 0 });
 
