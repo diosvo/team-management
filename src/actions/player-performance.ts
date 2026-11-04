@@ -1,5 +1,6 @@
 'use server';
 
+import { pick } from 'es-toolkit';
 import { forbidden, notFound } from 'next/navigation';
 import { cache } from 'react';
 
@@ -14,9 +15,10 @@ import { hasPermissions } from '@/utils/permissions';
 import {
   getPlayerActivity as fetchActivity,
   getPlayerAttendanceOverview as fetchAttendance,
-  getPlayerHonors as fetchHonors,
+  getPlayerHonorSummary as fetchHonorSummary,
   getPlayerMatchesOverview as fetchMatches,
   getPlayerTestingOverview as fetchTesting,
+  getPlayerTestingSummary as fetchTestingSummary,
 } from '@/db/player-performance';
 import { getUserById } from '@/db/user';
 import type { User } from '@/drizzle/schema/user';
@@ -60,61 +62,41 @@ export const getPerformanceIdentity = performance(
   },
 );
 
-export const getPerformanceSummary = performance(
-  ['view'],
-  async (
-    user,
-    target_id: string,
-    range: DateRange,
-  ): Promise<PerformanceSummary> => {
+/** Wraps a db read so it runs on the resolved target and their team. */
+function forTarget<T extends Array<unknown>, R>(
+  read: (player_id: string, team_id: string, ...args: T) => Promise<R>,
+) {
+  return performance(['view'], async (user, target_id: string, ...args: T) => {
     const { id, team_id } = await resolveTarget(user, target_id);
+    return await read(id, team_id, ...args);
+  });
+}
 
+/** The stat row: attendance shares its cached read with the default tab. */
+export const getPerformanceSummary = forTarget(
+  async (id, team_id, range: DateRange): Promise<PerformanceSummary> => {
     const [attendance, testing, honors] = await Promise.all([
       fetchAttendance(id, team_id, range),
-      fetchTesting(id, team_id),
-      fetchHonors(id),
+      fetchTestingSummary(id),
+      fetchHonorSummary(id),
     ]);
 
-    const { rate, total, on_time, late, current_streak, best_streak } =
-      attendance;
-
     return {
-      attendance: { rate, total, on_time, late, current_streak, best_streak },
-      tests_taken: testing.tests_taken,
-      last_tested: testing.last_tested,
+      attendance: pick(attendance, [
+        'rate',
+        'total',
+        'on_time',
+        'late',
+        'current_streak',
+        'best_streak',
+      ]),
+      ...testing,
       honors,
     };
   },
 );
 
-export const getPlayerAttendance = performance(
-  ['view'],
-  async (user, target_id: string, range: DateRange) => {
-    const { id, team_id } = await resolveTarget(user, target_id);
-    return await fetchAttendance(id, team_id, range);
-  },
-);
-
-export const getPlayerTesting = performance(
-  ['view'],
-  async (user, target_id: string) => {
-    const { id, team_id } = await resolveTarget(user, target_id);
-    return await fetchTesting(id, team_id);
-  },
-);
-
-export const getPlayerActivity = performance(
-  ['view'],
-  async (user, target_id: string, range: DateRange) => {
-    const { id, team_id } = await resolveTarget(user, target_id);
-    return await fetchActivity(id, team_id, range);
-  },
-);
-
-export const getPlayerMatches = performance(
-  ['view'],
-  async (user, target_id: string, range: DateRange) => {
-    const { id, team_id } = await resolveTarget(user, target_id);
-    return await fetchMatches(id, team_id, range);
-  },
-);
+export const getPlayerAttendance = forTarget(fetchAttendance);
+export const getPlayerTesting = forTarget(fetchTesting);
+export const getPlayerActivity = forTarget(fetchActivity);
+export const getPlayerMatches = forTarget(fetchMatches);

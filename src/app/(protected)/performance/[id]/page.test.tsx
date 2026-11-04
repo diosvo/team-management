@@ -1,5 +1,10 @@
 import type { ReactElement, ReactNode } from 'react';
 
+import {
+  MOCK_PERFORMANCE_IDENTITY,
+  MOCK_PERFORMANCE_RANGE,
+  MOCK_PERFORMANCE_TARGET_ID,
+} from '@/test/mocks/performance';
 import { renderWithUI, screen, setupTestLifecycle } from '@/test/utilities';
 
 import { verifySession } from '@/actions/auth';
@@ -23,15 +28,19 @@ vi.mock('../_components/PerformanceHeader', () => ({
   ),
 }));
 vi.mock('../_components/PerformanceSkeleton', () => ({
-  ActivitySkeleton: () => <div>ActivitySkeleton</div>,
-  AttendanceSkeleton: () => <div>AttendanceSkeleton</div>,
-  BodySkeleton: ({ tab }: { tab: string }) => <div>BodySkeleton {tab}</div>,
   HeaderSkeleton: ({ title }: { title: string }) => (
     <div>HeaderSkeleton {title}</div>
   ),
-  MatchesSkeleton: () => <div>MatchesSkeleton</div>,
+  SECTION_SKELETONS: {
+    attendance: () => <div>AttendanceSkeleton</div>,
+    testing: () => <div>TestingSkeleton</div>,
+    activity: () => <div>ActivitySkeleton</div>,
+    matches: () => <div>MatchesSkeleton</div>,
+  },
   StatsSkeleton: () => <div>StatsSkeleton</div>,
-  TestingSkeleton: () => <div>TestingSkeleton</div>,
+}));
+vi.mock('../_components/PerformanceLoading', () => ({
+  BodySkeleton: () => <div>BodySkeleton</div>,
 }));
 vi.mock('../_components/PerformanceStats', () => ({
   default: ({ target_id }: { target_id: string }) => (
@@ -39,14 +48,10 @@ vi.mock('../_components/PerformanceStats', () => ({
   ),
 }));
 vi.mock('../_components/PerformanceTabs', () => ({
-  default: (sections: Record<string, ReactNode>) => (
-    <div data-testid="tabs">
-      {Object.entries(sections).map(([tab, section]) => (
-        <section key={tab} aria-label={tab}>
-          {section}
-        </section>
-      ))}
-    </div>
+  default: ({ active, children }: { active: string; children: ReactNode }) => (
+    <section data-testid="tabs" aria-label={active}>
+      {children}
+    </section>
   ),
 }));
 vi.mock('../_components/Sections', () => ({
@@ -64,17 +69,10 @@ vi.mock('../_components/Sections', () => ({
   ),
 }));
 
-const PLAYER_ID = 'player-1';
-const RANGE = { from: '2026-01-01', to: '2026-12-31' };
-
 const IDENTITY: PerformanceIdentity = {
-  id: PLAYER_ID,
-  name: 'Jane Doe',
+  ...MOCK_PERFORMANCE_IDENTITY,
   is_own: false,
-  is_player: true,
   is_captain: false,
-  jersey_number: 7,
-  position: 'center',
 };
 
 type Element = ReactElement<{
@@ -100,7 +98,7 @@ describe('PerformancePage', () => {
 
   const setup = async () => {
     const page = (await PerformancePage({
-      params: Promise.resolve({ id: PLAYER_ID }),
+      params: Promise.resolve({ id: MOCK_PERFORMANCE_TARGET_ID }),
       searchParams: Promise.resolve({}),
     } as never)) as Element;
     const [header, body] = page.props.children as [Element, Element];
@@ -110,7 +108,7 @@ describe('PerformancePage', () => {
 
   beforeEach(() => {
     mockLoadFilters.mockResolvedValue({
-      ...RANGE,
+      ...MOCK_PERFORMANCE_RANGE,
       tab: 'testing',
     } as never);
     mockVerifySession.mockResolvedValue({ user: { id: 'admin-1' } } as never);
@@ -138,11 +136,13 @@ describe('PerformancePage', () => {
       );
 
       expect(screen.getByText('HeaderSkeleton Performance')).toBeVisible();
-      expect(screen.getByText('BodySkeleton testing')).toBeVisible();
+      expect(screen.getByText('BodySkeleton')).toBeVisible();
     });
 
     test('titles the header skeleton for your own page', async () => {
-      mockVerifySession.mockResolvedValue({ user: { id: PLAYER_ID } } as never);
+      mockVerifySession.mockResolvedValue({
+        user: { id: MOCK_PERFORMANCE_TARGET_ID },
+      } as never);
       const { header } = await setup();
 
       renderWithUI(<>{header.props.fallback}</>);
@@ -165,31 +165,40 @@ describe('PerformancePage', () => {
 
     await resolve(header);
 
-    expect(mockGetIdentity).toHaveBeenCalledWith(PLAYER_ID);
+    expect(mockGetIdentity).toHaveBeenCalledWith(MOCK_PERFORMANCE_TARGET_ID);
     expect(screen.getByTestId('header')).toHaveTextContent('Jane Doe');
   });
 
   describe('body', () => {
-    test('renders the stats and every tab section for a player', async () => {
+    test('renders the stats and only the open tab section', async () => {
       const { body } = await setup();
 
       await resolve(body);
 
-      expect(screen.getByText(`PerformanceStats ${PLAYER_ID}`)).toBeVisible();
-      expect(screen.getByText('AttendanceSection Jane Doe')).toBeVisible();
+      expect(
+        screen.getByText(`PerformanceStats ${MOCK_PERFORMANCE_TARGET_ID}`),
+      ).toBeVisible();
+      expect(screen.getByTestId('tabs')).toHaveAccessibleName('testing');
       expect(screen.getByText('TestingSection Jane Doe')).toBeVisible();
-      expect(screen.getByText(`ActivitySection ${PLAYER_ID}`)).toBeVisible();
-      expect(screen.getByText(`MatchesSection ${PLAYER_ID}`)).toBeVisible();
+      expect(screen.queryByText(/AttendanceSection/)).not.toBeInTheDocument();
     });
 
-    test('calls the player "You" on your own page', async () => {
+    test.each([
+      ['attendance', 'AttendanceSection You'],
+      ['testing', 'TestingSection You'],
+      ['activity', `ActivitySection ${MOCK_PERFORMANCE_TARGET_ID}`],
+      ['matches', `MatchesSection ${MOCK_PERFORMANCE_TARGET_ID}`],
+    ])('renders the %s section on your own page', async (tab, text) => {
+      mockLoadFilters.mockResolvedValue({
+        ...MOCK_PERFORMANCE_RANGE,
+        tab,
+      } as never);
       mockGetIdentity.mockResolvedValue({ ...IDENTITY, is_own: true });
       const { body } = await setup();
 
       await resolve(body);
 
-      expect(screen.getByText('AttendanceSection You')).toBeVisible();
-      expect(screen.getByText('TestingSection You')).toBeVisible();
+      expect(screen.getByText(text)).toBeVisible();
     });
 
     test('explains another user is not a player', async () => {

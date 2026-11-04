@@ -1,5 +1,6 @@
+import { MOCK_PERFORMANCE_RANGE } from '@/test/mocks/performance';
+
 import db from '@/drizzle';
-import type { DateRange } from '@/types/common';
 import {
   AchievementType,
   ActivityKind,
@@ -11,19 +12,15 @@ import {
 import {
   getPlayerActivity,
   getPlayerAttendanceOverview,
-  getPlayerHonors,
+  getPlayerHonorSummary,
   getPlayerMatchesOverview,
   getPlayerTestingOverview,
+  getPlayerTestingSummary,
 } from './player-performance';
 
 vi.mock('@/drizzle', () => ({
   default: {
     select: vi.fn(),
-    query: {
-      AchievementTable: {
-        findMany: vi.fn(),
-      },
-    },
   },
 }));
 
@@ -58,7 +55,6 @@ function queueSelects(...results: Array<unknown>) {
 
 const PLAYER_ID = 'player-1';
 const TEAM_ID = 'team-1';
-const RANGE: DateRange = { from: '2026-01-01', to: '2026-12-31' };
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -92,7 +88,11 @@ describe('getPlayerAttendanceOverview', () => {
       ],
     );
 
-    const result = await getPlayerAttendanceOverview(PLAYER_ID, TEAM_ID, RANGE);
+    const result = await getPlayerAttendanceOverview(
+      PLAYER_ID,
+      TEAM_ID,
+      MOCK_PERFORMANCE_RANGE,
+    );
 
     expect(db.select).toHaveBeenCalledTimes(3);
     expect(result).toEqual({
@@ -121,7 +121,11 @@ describe('getPlayerAttendanceOverview', () => {
   test('returns zeroed rates and no trend without any rows', async () => {
     queueSelects([], [], []);
 
-    const result = await getPlayerAttendanceOverview(PLAYER_ID, TEAM_ID, RANGE);
+    const result = await getPlayerAttendanceOverview(
+      PLAYER_ID,
+      TEAM_ID,
+      MOCK_PERFORMANCE_RANGE,
+    );
 
     expect(result).toEqual({
       total: 0,
@@ -145,7 +149,11 @@ describe('getPlayerAttendanceOverview', () => {
       [{ date: '2026-06-20', status: AttendanceStatus.ON_TIME }],
     );
 
-    const result = await getPlayerAttendanceOverview(PLAYER_ID, TEAM_ID, RANGE);
+    const result = await getPlayerAttendanceOverview(
+      PLAYER_ID,
+      TEAM_ID,
+      MOCK_PERFORMANCE_RANGE,
+    );
 
     expect(result.trend).toBeNull();
   });
@@ -153,7 +161,11 @@ describe('getPlayerAttendanceOverview', () => {
   test('falls back to the empty overview on a database error', async () => {
     queueSelects(new Error('boom'), [], []);
 
-    const result = await getPlayerAttendanceOverview(PLAYER_ID, TEAM_ID, RANGE);
+    const result = await getPlayerAttendanceOverview(
+      PLAYER_ID,
+      TEAM_ID,
+      MOCK_PERFORMANCE_RANGE,
+    );
 
     expect(result).toMatchObject({ total: 0, trend: null, monthly: [] });
   });
@@ -272,11 +284,9 @@ describe('getPlayerTestingOverview', () => {
       latest: {
         date: '2026-03-10',
         result: 2,
-        previous: null,
         improvement_pct: null,
         team_avg: 1.8,
         percentile: 100,
-        team_size: 2,
       },
       series: [{ date: '2026-03-10', result: 2, team_avg: 1.8 }],
     });
@@ -289,11 +299,9 @@ describe('getPlayerTestingOverview', () => {
       latest: {
         date: '2026-03-10',
         result: 4.5,
-        previous: 5,
         improvement_pct: 10,
         team_avg: 4.5,
         percentile: 50,
-        team_size: 3,
       },
       series: [
         { date: '2026-01-10', result: 5, team_avg: 5.5 },
@@ -305,11 +313,9 @@ describe('getPlayerTestingOverview', () => {
     expect(zero.latest).toEqual({
       date: '2026-03-10',
       result: 5,
-      previous: 0,
       improvement_pct: null,
       team_avg: null,
       percentile: null,
-      team_size: 1,
     });
   });
 
@@ -336,7 +342,6 @@ const MATCH_ROWS = [
     blocks: null,
     turnovers: null,
     fouls: null,
-    minutes_played: null,
   },
   {
     match_id: 'm2',
@@ -351,7 +356,6 @@ const MATCH_ROWS = [
     blocks: 1,
     turnovers: 3,
     fouls: 4,
-    minutes_played: 30,
   },
   {
     match_id: 'm3',
@@ -366,7 +370,6 @@ const MATCH_ROWS = [
     blocks: 0,
     turnovers: 1,
     fouls: 2,
-    minutes_played: 20,
   },
 ];
 
@@ -374,7 +377,11 @@ describe('getPlayerMatchesOverview', () => {
   test('maps results and averages the box scores', async () => {
     queueSelects(MATCH_ROWS);
 
-    const result = await getPlayerMatchesOverview(PLAYER_ID, TEAM_ID, RANGE);
+    const result = await getPlayerMatchesOverview(
+      PLAYER_ID,
+      TEAM_ID,
+      MOCK_PERFORMANCE_RANGE,
+    );
 
     expect(result.records).toEqual([
       expect.objectContaining({
@@ -385,14 +392,12 @@ describe('getPlayerMatchesOverview', () => {
         blocks: 0,
         turnovers: 0,
         fouls: 0,
-        minutes_played: 0,
       }),
       expect.objectContaining({
         match_id: 'm2',
         score: '30 - 40',
         result: MatchResult.LOSS,
         steals: 2,
-        minutes_played: 30,
       }),
       expect.objectContaining({
         match_id: 'm3',
@@ -408,7 +413,6 @@ describe('getPlayerMatchesOverview', () => {
       steals: 1,
       blocks: 0.3,
       turnovers: 1.3,
-      minutes_played: 16.7,
     });
   });
 
@@ -418,7 +422,11 @@ describe('getPlayerMatchesOverview', () => {
   ])('returns the empty overview when %s', async (_, rows) => {
     queueSelects(rows);
 
-    const result = await getPlayerMatchesOverview(PLAYER_ID, TEAM_ID, RANGE);
+    const result = await getPlayerMatchesOverview(
+      PLAYER_ID,
+      TEAM_ID,
+      MOCK_PERFORMANCE_RANGE,
+    );
 
     expect(result).toEqual({
       records: [],
@@ -429,7 +437,6 @@ describe('getPlayerMatchesOverview', () => {
         steals: 0,
         blocks: 0,
         turnovers: 0,
-        minutes_played: 0,
       },
     });
   });
@@ -475,7 +482,11 @@ describe('getPlayerActivity', () => {
       [MATCH_ROWS[0]],
     );
 
-    const result = await getPlayerActivity(PLAYER_ID, TEAM_ID, RANGE);
+    const result = await getPlayerActivity(
+      PLAYER_ID,
+      TEAM_ID,
+      MOCK_PERFORMANCE_RANGE,
+    );
 
     expect(result).toEqual(
       [
@@ -550,40 +561,58 @@ describe('getPlayerActivity', () => {
   test('returns an empty log on a database error', async () => {
     queueSelects(new Error('boom'), [], []);
 
-    const result = await getPlayerActivity(PLAYER_ID, TEAM_ID, RANGE);
+    const result = await getPlayerActivity(
+      PLAYER_ID,
+      TEAM_ID,
+      MOCK_PERFORMANCE_RANGE,
+    );
 
     expect(result).toEqual([]);
   });
 });
 
-describe('getPlayerHonors', () => {
-  test("returns the player's achievements", async () => {
-    const honors = [
-      {
-        achievement_id: 'a1',
-        type: AchievementType.MVP,
-        title: 'MVP',
-        year: 2026,
-        league: { name: 'City League' },
-      },
-    ];
-    vi.mocked(db.query.AchievementTable.findMany).mockResolvedValue(
-      honors as never,
-    );
+describe('getPlayerHonorSummary', () => {
+  test('counts the honors and keeps the newest', async () => {
+    queueSelects([{ type: AchievementType.MVP, year: 2026, count: 3 }]);
 
-    await expect(getPlayerHonors(PLAYER_ID)).resolves.toEqual(honors);
-    expect(db.query.AchievementTable.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        columns: { achievement_id: true, type: true, title: true, year: true },
-      }),
-    );
+    await expect(getPlayerHonorSummary(PLAYER_ID)).resolves.toEqual({
+      count: 3,
+      latest: { type: AchievementType.MVP, year: 2026 },
+    });
   });
 
-  test('returns an empty list on a database error', async () => {
-    vi.mocked(db.query.AchievementTable.findMany).mockRejectedValue(
-      new Error('boom'),
-    );
+  test.each([
+    ['the player has no honors', []],
+    ['the query fails', new Error('boom')],
+  ])('returns no honors when %s', async (_, rows) => {
+    queueSelects(rows);
 
-    await expect(getPlayerHonors(PLAYER_ID)).resolves.toEqual([]);
+    await expect(getPlayerHonorSummary(PLAYER_ID)).resolves.toEqual({
+      count: 0,
+      latest: null,
+    });
+  });
+});
+
+describe('getPlayerTestingSummary', () => {
+  test('counts the distinct testing days', async () => {
+    queueSelects([{ tests_taken: 2, last_tested: '2026-03-10' }]);
+
+    await expect(getPlayerTestingSummary(PLAYER_ID)).resolves.toEqual({
+      tests_taken: 2,
+      last_tested: '2026-03-10',
+    });
+  });
+
+  test.each([
+    ['no row comes back', []],
+    ['the query fails', new Error('boom')],
+  ])('returns no tests when %s', async (_, rows) => {
+    queueSelects(rows);
+
+    await expect(getPlayerTestingSummary(PLAYER_ID)).resolves.toEqual({
+      tests_taken: 0,
+      last_tested: null,
+    });
   });
 });

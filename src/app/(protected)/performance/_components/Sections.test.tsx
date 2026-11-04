@@ -1,4 +1,8 @@
 import { renderWithUI, screen, setupTestLifecycle } from '@/test/utilities';
+import {
+  MOCK_PERFORMANCE_RANGE,
+  MOCK_PERFORMANCE_TARGET_ID,
+} from '@/test/mocks/performance';
 
 import {
   getPlayerActivity,
@@ -55,9 +59,6 @@ vi.mock('./testing/TestingOverview', () => ({
   },
 }));
 
-const TARGET_ID = 'player-1';
-const RANGE = { from: '2026-01-01', to: '2026-12-31' };
-
 describe('Sections', () => {
   setupTestLifecycle();
 
@@ -67,13 +68,16 @@ describe('Sections', () => {
 
     renderWithUI(
       await AttendanceSection({
-        target_id: TARGET_ID,
-        range: RANGE,
+        target_id: MOCK_PERFORMANCE_TARGET_ID,
+        range: MOCK_PERFORMANCE_RANGE,
         subject: 'You',
       }),
     );
 
-    expect(getPlayerAttendance).toHaveBeenCalledWith(TARGET_ID, RANGE);
+    expect(getPlayerAttendance).toHaveBeenCalledWith(
+      MOCK_PERFORMANCE_TARGET_ID,
+      MOCK_PERFORMANCE_RANGE,
+    );
     expect(screen.getByText('AttendanceOverview')).toBeInTheDocument();
     expect(propsSpy.attendance).toEqual({ data, subject: 'You' });
   });
@@ -83,10 +87,13 @@ describe('Sections', () => {
     vi.mocked(getPlayerTesting).mockResolvedValue(data as never);
 
     renderWithUI(
-      await TestingSection({ target_id: TARGET_ID, subject: 'Jane' }),
+      await TestingSection({
+        target_id: MOCK_PERFORMANCE_TARGET_ID,
+        subject: 'Jane',
+      }),
     );
 
-    expect(getPlayerTesting).toHaveBeenCalledWith(TARGET_ID);
+    expect(getPlayerTesting).toHaveBeenCalledWith(MOCK_PERFORMANCE_TARGET_ID);
     expect(screen.getByText('TestingOverview')).toBeInTheDocument();
     expect(propsSpy.testing).toEqual({ data, subject: 'Jane' });
   });
@@ -95,9 +102,17 @@ describe('Sections', () => {
     const records = [{ id: '1' }];
     vi.mocked(getPlayerActivity).mockResolvedValue(records as never);
 
-    renderWithUI(await ActivitySection({ target_id: TARGET_ID, range: RANGE }));
+    renderWithUI(
+      await ActivitySection({
+        target_id: MOCK_PERFORMANCE_TARGET_ID,
+        range: MOCK_PERFORMANCE_RANGE,
+      }),
+    );
 
-    expect(getPlayerActivity).toHaveBeenCalledWith(TARGET_ID, RANGE);
+    expect(getPlayerActivity).toHaveBeenCalledWith(
+      MOCK_PERFORMANCE_TARGET_ID,
+      MOCK_PERFORMANCE_RANGE,
+    );
     expect(screen.getByText('ActivityTable')).toBeInTheDocument();
     expect(propsSpy.activity).toEqual({ records });
   });
@@ -106,9 +121,17 @@ describe('Sections', () => {
     const data = { records: [] };
     vi.mocked(getPlayerMatches).mockResolvedValue(data as never);
 
-    renderWithUI(await MatchesSection({ target_id: TARGET_ID, range: RANGE }));
+    renderWithUI(
+      await MatchesSection({
+        target_id: MOCK_PERFORMANCE_TARGET_ID,
+        range: MOCK_PERFORMANCE_RANGE,
+      }),
+    );
 
-    expect(getPlayerMatches).toHaveBeenCalledWith(TARGET_ID, RANGE);
+    expect(getPlayerMatches).toHaveBeenCalledWith(
+      MOCK_PERFORMANCE_TARGET_ID,
+      MOCK_PERFORMANCE_RANGE,
+    );
     expect(screen.getByText('MatchPerformance')).toBeInTheDocument();
     expect(propsSpy.matches).toEqual({ data });
   });

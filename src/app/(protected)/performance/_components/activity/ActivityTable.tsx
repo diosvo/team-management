@@ -10,9 +10,10 @@ import {
   GamepadDirectional,
   type LucideIcon,
 } from 'lucide-react';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 
 import DataTable, { type Column } from '@/components/DataTable';
+import Weekday from '@/components/Weekday';
 import { Card } from '@/components/ui/card';
 import { Tooltip } from '@/components/ui/tooltip';
 
@@ -22,11 +23,9 @@ import { enumLabel } from '@/i18n/enums';
 import { usePerformanceFilters } from '@/lib/nuqs';
 import type { ActivityRecord } from '@/types/performance';
 import { ACTIVITY_KIND_SELECTION, ALL } from '@/utils/constants';
-import { formatDate, formatDay } from '@/utils/datetime';
+import { formatDate } from '@/utils/datetime';
 import { ActivityKind, TestTypeUnit } from '@/utils/enum';
 import { getColor } from '@/utils/helper';
-
-const PAGE_SIZE = 10;
 
 const KIND_STYLE: Record<
   ActivityKind,
@@ -58,7 +57,6 @@ export default function ActivityTable({
 }) {
   const t = useTranslations('performance.activity');
   const te = useTranslations('enums');
-  const locale = useLocale();
   const [{ kind, page }, setSearchParams] = usePerformanceFilters();
 
   const kindItems = [
@@ -78,9 +76,7 @@ export default function ActivityTable({
     (record: ActivityRecord) => kind.length === 0 || kind.includes(record.kind),
     [kind],
   );
-  const { currentData, totalCount } = useTableState(records, predicate, page, {
-    pageSize: PAGE_SIZE,
-  });
+  const { currentData, totalCount } = useTableState(records, predicate, page);
 
   const details = (item: ActivityRecord) => {
     switch (item.kind) {
@@ -125,7 +121,7 @@ export default function ActivityTable({
       header: t('columns.date'),
       cell: (item) => (
         <HStack gap={1} whiteSpace="nowrap">
-          <Span fontSize="sm">{formatDay(item.date, undefined, locale)}</Span>
+          <Weekday date={item.date} fontSize="sm" />
           <Span color="gray.400">&bull;</Span>
           <Span fontSize="sm">{formatDate(item.date)}</Span>
         </HStack>
@@ -229,7 +225,6 @@ export default function ActivityTable({
         currentData={currentData}
         totalCount={totalCount}
         page={page}
-        pageSize={PAGE_SIZE}
         onPageChange={setSearchParams}
         empty={{
           title: t('emptyTitle'),

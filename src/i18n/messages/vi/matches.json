@@ -7,7 +7,7 @@
     "emptyTitle": "Chưa có cầu thủ nào trong bảng",
     "match": "Trận đấu",
     "matchAndPlayers": "Trận đấu & cầu thủ",
-    "matchLabel": "{date} · gặp {opponent} ({score})",
+    "matchLabel": "{date} · {opponent}",
     "matchPlaceholder": "Chọn một trận đã thi đấu",
     "metadata": {
       "description": "Ghi lại thống kê của từng cầu thủ trong trận đấu.",
@@ -48,10 +48,6 @@
       "fouls": {
         "label": "Lỗi cá nhân",
         "short": "PF"
-      },
-      "minutes_played": {
-        "label": "Số phút thi đấu",
-        "short": "MIN"
       }
     },
     "title": "Thống kê trận"

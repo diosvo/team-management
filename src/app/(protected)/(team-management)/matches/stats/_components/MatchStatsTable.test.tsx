@@ -48,7 +48,7 @@ describe('MatchStatsTable', () => {
       'Personal fouls',
     );
     expect(
-      screen.getByRole('spinbutton', { name: 'Minutes played for Jane Doe' }),
+      screen.getByRole('spinbutton', { name: 'Points for Jane Doe' }),
     ).toBeInTheDocument();
   });
 

@@ -1,16 +1,5 @@
 import { subDays } from 'date-fns';
-import {
-  and,
-  asc,
-  desc,
-  eq,
-  gte,
-  inArray,
-  isNotNull,
-  lte,
-  ne,
-  sql,
-} from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, isNotNull, ne, sql } from 'drizzle-orm';
 import { cache } from 'react';
 
 import type { DateRange } from '@/types/common';
@@ -19,12 +8,16 @@ import type {
   AttendanceOverview,
   MatchesOverview,
   MatchPerformanceRecord,
-  PlayerHonor,
+  PerformanceSummary,
   TestingOverview,
   TestTypeProgress,
 } from '@/types/performance';
 
-import { TREND_WINDOW_DAYS } from '@/utils/constants';
+import {
+  MATCH_AVERAGE_FIELDS,
+  type MatchAverageField,
+  TREND_WINDOW_DAYS,
+} from '@/utils/constants';
 import { toIsoDay } from '@/utils/datetime';
 import {
   ActivityKind,
@@ -33,7 +26,7 @@ import {
   MatchStatus,
   SessionStatus,
 } from '@/utils/enum';
-import { isLowerBetter } from '@/utils/helper';
+import { isLowerBetter, matchResult } from '@/utils/helper';
 
 import db from '@/drizzle';
 import { AchievementTable } from '@/drizzle/schema/achievement';
@@ -48,7 +41,14 @@ import { TeamTable } from '@/drizzle/schema/team';
 import { TrainingSessionTable } from '@/drizzle/schema/training';
 import { UserTable } from '@/drizzle/schema/user';
 
-import { calculatePercentage, countWhen } from './utils';
+import {
+  attendanceDate,
+  attendedCountSql,
+  isAttended,
+  teamAttendanceIn,
+  totalCountSql,
+} from './attendance-utils';
+import { calculatePercentage, withinRange } from './utils';
 
 /*
  * Every read here is scoped to one player. Callers pass the id from the
@@ -75,44 +75,45 @@ const EMPTY_TESTING: TestingOverview = {
   last_tested: null,
 };
 
+const averagesOf = (
+  value: (key: MatchAverageField) => number,
+): MatchesOverview['averages'] =>
+  Object.fromEntries(
+    MATCH_AVERAGE_FIELDS.map(({ key }) => [key, value(key)]),
+  ) as MatchesOverview['averages'];
+
+const EMPTY_HONORS: PerformanceSummary['honors'] = { count: 0, latest: null };
+
 const EMPTY_MATCHES: MatchesOverview = {
   records: [],
-  averages: {
-    points_scored: 0,
-    rebounds: 0,
-    assists: 0,
-    steals: 0,
-    blocks: 0,
-    turnovers: 0,
-    minutes_played: 0,
-  },
+  averages: averagesOf(() => 0),
 };
 
 //#region Attendance
 
-export const getPlayerAttendanceOverview = cache(
+/**
+ * React `cache` compares arguments by identity, so the cached reads take the
+ * range as two strings: a fresh `{ from, to }` object would never hit.
+ */
+export const getPlayerAttendanceOverview = (
+  player_id: string,
+  team_id: string,
+  { from, to }: DateRange,
+) => fetchAttendanceOverview(player_id, team_id, from, to);
+
+const fetchAttendanceOverview = cache(
   async (
     player_id: string,
     team_id: string,
-    range: DateRange,
+    start: string,
+    end: string,
   ): Promise<AttendanceOverview> => {
-    const { from: start, to: end } = range;
+    const range = { from: start, to: end };
     const today = toIsoDay(new Date());
     const trendStart = toIsoDay(subDays(new Date(), TREND_WINDOW_DAYS * 2));
-    const monthSql = sql<string>`TO_CHAR(${AttendanceTable.date}, 'YYYY-MM')`;
-    const totalSql = countWhen(
-      inArray(AttendanceTable.status, [
-        AttendanceStatus.ON_TIME,
-        AttendanceStatus.LATE,
-        AttendanceStatus.ABSENT,
-      ]),
-    );
-    const attendedSql = countWhen(
-      inArray(AttendanceTable.status, [
-        AttendanceStatus.ON_TIME,
-        AttendanceStatus.LATE,
-      ]),
-    );
+    const monthSql = attendanceDate('YYYY-MM');
+    const totalSql = totalCountSql();
+    const attendedSql = attendedCountSql();
 
     try {
       const [rows, teamMonthly, trendRows] = await Promise.all([
@@ -128,8 +129,7 @@ export const getPlayerAttendanceOverview = cache(
             and(
               eq(AttendanceTable.player_id, player_id),
               isNotNull(AttendanceTable.session_id),
-              gte(AttendanceTable.date, start),
-              lte(AttendanceTable.date, end),
+              withinRange(AttendanceTable.date, range),
             ),
           )
           .orderBy(asc(AttendanceTable.date)),
@@ -144,10 +144,8 @@ export const getPlayerAttendanceOverview = cache(
           .innerJoin(UserTable, eq(UserTable.id, AttendanceTable.player_id))
           .where(
             and(
-              eq(UserTable.team_id, team_id),
+              teamAttendanceIn(team_id, range),
               isNotNull(AttendanceTable.session_id),
-              gte(AttendanceTable.date, start),
-              lte(AttendanceTable.date, end),
             ),
           )
           .groupBy(monthSql),
@@ -162,8 +160,10 @@ export const getPlayerAttendanceOverview = cache(
             and(
               eq(AttendanceTable.player_id, player_id),
               isNotNull(AttendanceTable.session_id),
-              gte(AttendanceTable.date, trendStart),
-              lte(AttendanceTable.date, today),
+              withinRange(AttendanceTable.date, {
+                from: trendStart,
+                to: today,
+              }),
             ),
           ),
       ]);
@@ -185,7 +185,7 @@ export const getPlayerAttendanceOverview = cache(
         const key = date.slice(0, 7);
         const bucket = byMonth.get(key) ?? { total: 0, attended: 0 };
         bucket.total += 1;
-        if (_isAttended(status)) bucket.attended += 1;
+        if (isAttended(status)) bucket.attended += 1;
         byMonth.set(key, bucket);
       });
       const months = [
@@ -236,6 +236,29 @@ export const getPlayerAttendanceOverview = cache(
 //#endregion
 
 //#region Testing
+
+/** Distinct testing days and the latest one, without the per-type detail. */
+export async function getPlayerTestingSummary(
+  player_id: string,
+): Promise<Pick<TestingOverview, 'tests_taken' | 'last_tested'>> {
+  try {
+    const [row] = await db
+      .select({
+        tests_taken:
+          sql<number>`COUNT(DISTINCT ${TestResultTable.date})`.mapWith(Number),
+        last_tested: sql<Nullable<string>>`MAX(${TestResultTable.date})`,
+      })
+      .from(TestResultTable)
+      .where(eq(TestResultTable.player_id, player_id));
+
+    return {
+      tests_taken: row?.tests_taken ?? 0,
+      last_tested: row?.last_tested ?? null,
+    };
+  } catch {
+    return { tests_taken: 0, last_tested: null };
+  }
+}
 
 /** All-time: tests are sparse, so a date-range filter would usually be empty. */
 export const getPlayerTestingOverview = cache(
@@ -314,7 +337,7 @@ export const getPlayerTestingOverview = cache(
           });
 
           const latest = series[series.length - 1];
-          const previous = series.length > 1 ? series[series.length - 2] : null;
+          const previous = series.at(-2);
           const others = (
             teamByKey.get(`${type_id}|${latest.date}`) ?? []
           ).filter((p) => p.player_id !== player_id);
@@ -332,7 +355,6 @@ export const getPlayerTestingOverview = cache(
             latest: {
               date: latest.date,
               result: latest.result,
-              previous: previous?.result ?? null,
               improvement_pct: previous
                 ? _improvement(latest.result, previous.result, lower_is_better)
                 : null,
@@ -340,7 +362,6 @@ export const getPlayerTestingOverview = cache(
               percentile: others.length
                 ? Math.round((beaten / others.length) * 100)
                 : null,
-              team_size: others.length + 1,
             },
             series,
           };
@@ -364,13 +385,20 @@ export const getPlayerTestingOverview = cache(
 
 //#region Matches
 
-const fetchPlayerMatchRows = cache(
+const fetchPlayerMatchRows = (
+  player_id: string,
+  team_id: string,
+  { from, to }: DateRange,
+) => fetchMatchRows(player_id, team_id, from, to);
+
+const fetchMatchRows = cache(
   async (
     player_id: string,
     team_id: string,
-    range: DateRange,
+    start: string,
+    end: string,
   ): Promise<Array<MatchPerformanceRecord>> => {
-    const { from: start, to: end } = range;
+    const range = { from: start, to: end };
 
     const rows = await db
       .select({
@@ -386,7 +414,6 @@ const fetchPlayerMatchRows = cache(
         blocks: MatchPlayerStatsTable.blocks,
         turnovers: MatchPlayerStatsTable.turnovers,
         fouls: MatchPlayerStatsTable.fouls,
-        minutes_played: MatchPlayerStatsTable.minutes_played,
       })
       .from(MatchPlayerStatsTable)
       .innerJoin(
@@ -401,8 +428,7 @@ const fetchPlayerMatchRows = cache(
           eq(MatchPlayerStatsTable.team_id, team_id),
           eq(MatchTable.home_team, team_id),
           eq(MatchTable.status, MatchStatus.COMPLETED),
-          gte(MatchTable.date, start),
-          lte(MatchTable.date, end),
+          withinRange(MatchTable.date, range),
         ),
       )
       .orderBy(asc(MatchTable.date), asc(MatchTable.time));
@@ -413,14 +439,8 @@ const fetchPlayerMatchRows = cache(
       blocks: row.blocks ?? 0,
       turnovers: row.turnovers ?? 0,
       fouls: row.fouls ?? 0,
-      minutes_played: row.minutes_played ?? 0,
       score: `${home_team_score} - ${away_team_score}`,
-      result:
-        home_team_score > away_team_score
-          ? MatchResult.WIN
-          : home_team_score < away_team_score
-            ? MatchResult.LOSS
-            : MatchResult.DRAW,
+      result: matchResult(home_team_score, away_team_score),
     }));
   },
 );
@@ -434,20 +454,9 @@ export async function getPlayerMatchesOverview(
     const records = await fetchPlayerMatchRows(player_id, team_id, range);
     if (records.length === 0) return EMPTY_MATCHES;
 
-    const mean = (key: keyof MatchesOverview['averages']) =>
-      _round(_avg(records.map((r) => r[key])));
-
     return {
       records,
-      averages: {
-        points_scored: mean('points_scored'),
-        rebounds: mean('rebounds'),
-        assists: mean('assists'),
-        steals: mean('steals'),
-        blocks: mean('blocks'),
-        turnovers: mean('turnovers'),
-        minutes_played: mean('minutes_played'),
-      },
+      averages: averagesOf((key) => _round(_avg(records.map((r) => r[key])))),
     };
   } catch {
     return EMPTY_MATCHES;
@@ -496,8 +505,7 @@ export async function getPlayerActivity(
           and(
             eq(TrainingSessionTable.team_id, team_id),
             ne(TrainingSessionTable.status, SessionStatus.CANCELLED),
-            gte(TrainingSessionTable.date, start),
-            lte(TrainingSessionTable.date, until),
+            withinRange(TrainingSessionTable.date, { from: start, to: until }),
           ),
         ),
       db
@@ -515,8 +523,7 @@ export async function getPlayerActivity(
         .where(
           and(
             eq(TestResultTable.player_id, player_id),
-            gte(TestResultTable.date, start),
-            lte(TestResultTable.date, end),
+            withinRange(TestResultTable.date, range),
           ),
         )
         .orderBy(asc(TestTypeTable.name)),
@@ -576,30 +583,36 @@ export async function getPlayerActivity(
 
 //#region Honors
 
-export async function getPlayerHonors(
+/** How many honors the player holds, and the most recent one. */
+export async function getPlayerHonorSummary(
   player_id: string,
-): Promise<Array<PlayerHonor>> {
+): Promise<PerformanceSummary['honors']> {
   try {
-    return await db.query.AchievementTable.findMany({
-      columns: { achievement_id: true, type: true, title: true, year: true },
-      where: eq(AchievementTable.player_id, player_id),
-      with: { league: { columns: { name: true } } },
-      orderBy: [desc(AchievementTable.year), desc(AchievementTable.created_at)],
-    });
+    const [latest] = await db
+      .select({
+        type: AchievementTable.type,
+        year: AchievementTable.year,
+        count: sql<number>`COUNT(*) OVER ()`.mapWith(Number),
+      })
+      .from(AchievementTable)
+      .where(eq(AchievementTable.player_id, player_id))
+      .orderBy(desc(AchievementTable.year), desc(AchievementTable.created_at))
+      .limit(1);
+
+    return latest
+      ? {
+          count: latest.count,
+          latest: { type: latest.type, year: latest.year },
+        }
+      : EMPTY_HONORS;
   } catch {
-    return [];
+    return EMPTY_HONORS;
   }
 }
 
 //#endregion
 
 //#region Helpers
-
-function _isAttended(status: AttendanceStatus) {
-  return (
-    status === AttendanceStatus.ON_TIME || status === AttendanceStatus.LATE
-  );
-}
 
 function _rate(attended: number, total: number) {
   return total ? _round((attended / total) * 100) : 0;
@@ -618,7 +631,7 @@ function _streaks(statuses: Array<AttendanceStatus>) {
   let current = 0;
   let best = 0;
   statuses.forEach((status) => {
-    current = _isAttended(status) ? current + 1 : 0;
+    current = isAttended(status) ? current + 1 : 0;
     best = Math.max(best, current);
   });
   return { current_streak: current, best_streak: best };
@@ -631,7 +644,7 @@ function _trend(rows: Array<{ date: string; status: AttendanceStatus }>) {
   if (recent.length === 0 || previous.length === 0) return null;
 
   const rateOf = (list: typeof rows) =>
-    _rate(list.filter(({ status }) => _isAttended(status)).length, list.length);
+    _rate(list.filter(({ status }) => isAttended(status)).length, list.length);
   const r = rateOf(recent);
   const p = rateOf(previous);
   return { recent: r, previous: p, delta: _round(r - p) };

@@ -1,4 +1,5 @@
 import type { Achievement } from '@/drizzle/schema/achievement';
+import type { MatchAverageField } from '@/utils/constants';
 import type { ActivityKind, AttendanceStatus, MatchResult } from '@/utils/enum';
 
 /** Rolling comparison of the last N days against the N days before them. */
@@ -45,13 +46,11 @@ export interface TestTypeProgress {
   latest: {
     date: string;
     result: number;
-    previous: Nullable<number>;
     /** Signed so that positive always means "better", whatever the unit. */
     improvement_pct: Nullable<number>;
     team_avg: Nullable<number>;
     /** Share of teammates tested the same day that this result beats. */
     percentile: Nullable<number>;
-    team_size: number;
   };
   series: Array<TestPoint>;
 }
@@ -115,16 +114,8 @@ export interface MatchPerformanceRecord {
 
 export interface MatchesOverview {
   records: Array<MatchPerformanceRecord>;
-  averages: Pick<
-    MatchPerformanceRecord,
-    'points_scored' | 'rebounds' | 'assists' | 'steals' | 'blocks' | 'turnovers'
-  >;
+  averages: Record<MatchAverageField, number>;
 }
-
-export type PlayerHonor = Pick<
-  Achievement,
-  'achievement_id' | 'type' | 'title' | 'year'
-> & { league: Nullable<{ name: string }> };
 
 export interface PerformanceSummary {
   attendance: Pick<
@@ -133,7 +124,11 @@ export interface PerformanceSummary {
   >;
   tests_taken: number;
   last_tested: Nullable<string>;
-  honors: Array<PlayerHonor>;
+  honors: {
+    count: number;
+    /** Newest first by year; `null` without any honor. */
+    latest: Nullable<Pick<Achievement, 'type' | 'year'>>;
+  };
 }
 
 export interface PerformanceIdentity {

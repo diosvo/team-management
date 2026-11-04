@@ -5,28 +5,27 @@ import {
   screen,
   setupTestLifecycle,
 } from '@/test/utilities';
+import { MOCK_PERFORMANCE_RANGE } from '@/test/mocks/performance';
 
 import type { PerformanceTab } from '@/utils/constants';
 
 import PerformanceTabs from './PerformanceTabs';
-
-const RANGE = { from: '2026-01-01', to: '2026-12-31' };
 
 describe('PerformanceTabs', () => {
   const mockSetSearchParams = vi.fn();
 
   setupTestLifecycle();
 
-  const setup = (tab: PerformanceTab = 'attendance') => {
-    mockUseQueryStates({ ...RANGE, tab }, mockSetSearchParams);
+  const setup = (
+    tab: PerformanceTab = 'attendance',
+    active: PerformanceTab = tab,
+  ) => {
+    mockUseQueryStates({ ...MOCK_PERFORMANCE_RANGE, tab }, mockSetSearchParams);
 
     return renderWithUI(
-      <PerformanceTabs
-        attendance={<div>Attendance panel</div>}
-        testing={<div>Testing panel</div>}
-        activity={<div>Activity panel</div>}
-        matches={<div>Matches panel</div>}
-      />,
+      <PerformanceTabs active={active}>
+        <div>{active} panel</div>
+      </PerformanceTabs>,
     );
   };
 
@@ -44,15 +43,28 @@ describe('PerformanceTabs', () => {
     }
   });
 
-  test('mounts only the active panel', () => {
+  test('shows the section the server rendered for the open tab', () => {
     setup('activity');
 
     expect(screen.getByRole('tab', { name: 'Activity' })).toHaveAttribute(
       'aria-selected',
       'true',
     );
-    expect(screen.getByText('Activity panel')).toBeVisible();
-    expect(screen.queryByText('Attendance panel')).not.toBeInTheDocument();
+    expect(screen.getByText('activity panel')).toBeVisible();
+  });
+
+  test('shows the skeleton while a newly picked tab loads', () => {
+    setup('matches', 'activity');
+
+    expect(screen.queryByText('activity panel')).not.toBeInTheDocument();
+    expect(screen.getByText('Box Scores')).toBeInTheDocument();
+  });
+
+  test('shows the URL tab skeleton without a section', () => {
+    mockUseQueryStates({ ...MOCK_PERFORMANCE_RANGE, tab: 'testing' });
+    renderWithUI(<PerformanceTabs />);
+
+    expect(screen.getByText('Latest Results')).toBeInTheDocument();
   });
 
   test('writes the picked tab to the URL and resets the page', async () => {
@@ -60,9 +72,9 @@ describe('PerformanceTabs', () => {
 
     await user.click(screen.getByRole('tab', { name: 'Matches' }));
 
-    expect(mockSetSearchParams).toHaveBeenCalledWith({
-      tab: 'matches',
-      page: 1,
-    });
+    expect(mockSetSearchParams).toHaveBeenCalledWith(
+      { tab: 'matches', page: 1 },
+      { shallow: false },
+    );
   });
 });

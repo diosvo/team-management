@@ -75,3 +75,12 @@ export const MATCH_STAT_FIELDS = [
   { key: 'fouls', label: 'Personal fouls', short: 'PF', max: 10 },
 ] as const;
 export type MatchStatField = (typeof MATCH_STAT_FIELDS)[number]['key'];
+
+/** Stats averaged per match on the performance page: fouls aren't a skill. */
+export const MATCH_AVERAGE_FIELDS = MATCH_STAT_FIELDS.filter(
+  (
+    field,
+  ): field is Exclude<(typeof MATCH_STAT_FIELDS)[number], { key: 'fouls' }> =>
+    field.key !== 'fouls',
+);
+export type MatchAverageField = (typeof MATCH_AVERAGE_FIELDS)[number]['key'];

@@ -5,6 +5,7 @@ import {
   screen,
   setupTestLifecycle,
 } from '@/test/utilities';
+import { createTestType } from '@/test/mocks/performance';
 
 import type {
   TestingOverview as TestingOverviewData,
@@ -36,29 +37,6 @@ vi.mock('../LazyCharts', () => ({
   ),
 }));
 
-const createType = (
-  name: string,
-  latest: Partial<TestTypeProgress['latest']> = {},
-  overrides: Partial<TestTypeProgress> = {},
-): TestTypeProgress => ({
-  type_id: `type-${name}`,
-  name,
-  unit: 'seconds',
-  lower_is_better: false,
-  latest: {
-    date: '2026-08-08',
-    result: 10,
-    previous: 9,
-    improvement_pct: 5,
-    team_avg: 9.5,
-    percentile: 50,
-    team_size: 4,
-    ...latest,
-  },
-  series: [],
-  ...overrides,
-});
-
 describe('TestingOverview', () => {
   setupTestLifecycle();
 
@@ -84,8 +62,8 @@ describe('TestingOverview', () => {
     setup(
       {
         types: [
-          createType('Sprint', {}, { lower_is_better: true }),
-          createType('Jump'),
+          createTestType('Sprint', {}, { lower_is_better: true }),
+          createTestType('Jump'),
         ],
         last_tested: '2026-08-08',
       },
@@ -113,7 +91,7 @@ describe('TestingOverview', () => {
 
   test('charts the test from the URL and selects another on click', async () => {
     const { setParams, user } = setup(
-      { types: [createType('Sprint'), createType('Jump')] },
+      { types: [createTestType('Sprint'), createTestType('Jump')] },
       'Jump',
     );
 
@@ -129,10 +107,10 @@ describe('TestingOverview', () => {
   test('shows each improvement badge and team comparison', () => {
     setup({
       types: [
-        createType('Up', { improvement_pct: 5 }),
-        createType('Down', { improvement_pct: -3 }),
-        createType('Flat', { improvement_pct: 0 }),
-        createType('New', {
+        createTestType('Up', { improvement_pct: 5 }),
+        createTestType('Down', { improvement_pct: -3 }),
+        createTestType('Flat', { improvement_pct: 0 }),
+        createTestType('New', {
           improvement_pct: null,
           team_avg: null,
           percentile: null,
@@ -153,10 +131,10 @@ describe('TestingOverview', () => {
   test('draws the radar once three tests have a percentile', () => {
     setup({
       types: [
-        createType('Sprint'),
-        createType('Jump'),
-        createType('Plank'),
-        createType('Solo', { percentile: null }),
+        createTestType('Sprint'),
+        createTestType('Jump'),
+        createTestType('Plank'),
+        createTestType('Solo', { percentile: null }),
       ],
     });
 
@@ -167,7 +145,10 @@ describe('TestingOverview', () => {
 
   test('falls back to progress bars below three comparable tests', () => {
     setup({
-      types: [createType('Sprint', { percentile: 70 }), createType('Jump')],
+      types: [
+        createTestType('Sprint', { percentile: 70 }),
+        createTestType('Jump'),
+      ],
     });
 
     expect(screen.queryByTestId('radar-chart')).not.toBeInTheDocument();
@@ -176,7 +157,7 @@ describe('TestingOverview', () => {
   });
 
   test('shows the no-comparison state when no test has a percentile', () => {
-    setup({ types: [createType('Sprint', { percentile: null })] });
+    setup({ types: [createTestType('Sprint', { percentile: null })] });
 
     expect(screen.getByText('No comparison yet')).toBeInTheDocument();
   });

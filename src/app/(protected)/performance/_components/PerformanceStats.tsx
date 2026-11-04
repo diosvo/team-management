@@ -24,7 +24,6 @@ export default async function PerformanceStats({
       getTranslations('enums'),
     ]);
   const attended = attendance.on_time + attendance.late;
-  const latestHonor = honors[0];
 
   return (
     <StatGroup columns={PERFORMANCE_STAT_COLUMNS}>
@@ -58,12 +57,12 @@ export default async function PerformanceStats({
       />
       <Stat
         label={t('honors')}
-        value={honors.length}
+        value={honors.count}
         unit={t('honorUnit')}
-        color={honors.length > 0 ? 'purple' : 'black'}
+        color={honors.count > 0 ? 'purple' : 'black'}
         helpText={
-          latestHonor
-            ? `${enumLabel(te, 'achievementType', latestHonor.type)} · ${latestHonor.year}`
+          honors.latest
+            ? `${enumLabel(te, 'achievementType', honors.latest.type)} · ${honors.latest.year}`
             : t('honorsHint')
         }
       />

@@ -22,7 +22,7 @@ type PaginationProps = {
 export default function Pagination({
   count,
   page,
-  pageSize = 5,
+  pageSize = 10,
   onPageChange,
 }: PaginationProps) {
   const t = useTranslations('components.pagination');

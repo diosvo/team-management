@@ -16,17 +16,12 @@ import type {
   MatchesOverview,
   MatchPerformanceRecord,
 } from '@/types/performance';
-import { MATCH_STAT_FIELDS } from '@/utils/constants';
+import { MATCH_AVERAGE_FIELDS, MATCH_STAT_FIELDS } from '@/utils/constants';
 import { formatDate } from '@/utils/datetime';
+import { paginateData } from '@/utils/filters';
 import { getColor } from '@/utils/helper';
 
 import { MatchStatsChart } from '../LazyCharts';
-
-const PAGE_SIZE = 10;
-
-const AVERAGE_FIELDS = MATCH_STAT_FIELDS.filter(
-  ({ key }) => key !== 'fouls',
-) as Array<{ key: keyof MatchesOverview['averages'] }>;
 
 export default function MatchPerformance({ data }: { data: MatchesOverview }) {
   const t = useTranslations('performance.matches');
@@ -48,8 +43,7 @@ export default function MatchPerformance({ data }: { data: MatchesOverview }) {
 
   // Newest first in the table; the chart keeps chronological order.
   const records = [...data.records].reverse();
-  const start = (page - 1) * PAGE_SIZE;
-  const currentData = records.slice(start, start + PAGE_SIZE);
+  const currentData = paginateData(records, page);
 
   const columns: Array<Column<MatchPerformanceRecord>> = [
     { header: t('columns.date'), cell: (item) => formatDate(item.date) },
@@ -88,11 +82,11 @@ export default function MatchPerformance({ data }: { data: MatchesOverview }) {
         <MatchStatsChart records={data.records} />
 
         <SimpleGrid
-          columns={{ base: 2, md: 4, lg: 6 }}
+          columns={{ base: 2, md: 4, lg: MATCH_AVERAGE_FIELDS.length }}
           gap={{ base: 2, lg: 3 }}
           marginTop={4}
         >
-          {AVERAGE_FIELDS.map(({ key }) => (
+          {MATCH_AVERAGE_FIELDS.map(({ key }) => (
             <Stat
               key={key}
               size="sm"
@@ -112,7 +106,6 @@ export default function MatchPerformance({ data }: { data: MatchesOverview }) {
           currentData={currentData}
           totalCount={records.length}
           page={page}
-          pageSize={PAGE_SIZE}
           onPageChange={setSearchParams}
           empty={{ title: t('noBoxScores') }}
         />

@@ -7,14 +7,13 @@ import {
   setupTestLifecycle,
   within,
 } from '@/test/utilities';
+import { MOCK_PERFORMANCE_RANGE } from '@/test/mocks/performance';
 
 import type { ActivityRecord } from '@/types/performance';
 import { formatDate, formatDay } from '@/utils/datetime';
 import { ActivityKind } from '@/utils/enum';
 
 import ActivityTable from './ActivityTable';
-
-const RANGE = { from: '2026-01-01', to: '2026-12-31' };
 
 const RECORDS: Array<ActivityRecord> = [
   {
@@ -77,7 +76,10 @@ describe('ActivityTable', () => {
     kind: Array<ActivityKind> = [],
     records: Array<ActivityRecord> = RECORDS,
   ) => {
-    mockUseQueryStates({ ...RANGE, kind, page: 1 }, mockSetSearchParams);
+    mockUseQueryStates(
+      { ...MOCK_PERFORMANCE_RANGE, kind, page: 1 },
+      mockSetSearchParams,
+    );
 
     return renderWithUI(<ActivityTable records={records} />);
   };

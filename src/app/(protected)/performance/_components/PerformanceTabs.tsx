@@ -11,14 +11,26 @@ import {
   type PerformanceTab,
 } from '@/utils/constants';
 
-type PerformanceTabsProps = Record<PerformanceTab, ReactNode>;
+import { SECTION_SKELETONS } from './PerformanceSkeleton';
+
+type PerformanceTabsProps = {
+  /** The tab the server rendered `children` for. */
+  active?: PerformanceTab;
+  children?: ReactNode;
+};
 
 /**
- * Tab shell for server-rendered sections. Keeps the active tab in the URL.
+ * Tab bar over the one section the server rendered. Picking a tab navigates,
+ * so only that tab's data is fetched; its skeleton shows until it arrives.
+ * Without `children` this is the loading state for the tab in the URL.
  */
-export default function PerformanceTabs(sections: PerformanceTabsProps) {
+export default function PerformanceTabs({
+  active,
+  children,
+}: PerformanceTabsProps) {
   const t = useTranslations('performance.tabs');
   const [{ tab }, setSearchParams] = usePerformanceFilters();
+  const SectionSkeleton = SECTION_SKELETONS[tab];
 
   return (
     <Tabs.Root
@@ -26,10 +38,11 @@ export default function PerformanceTabs(sections: PerformanceTabsProps) {
       variant="enclosed"
       size={{ base: 'sm', md: 'md' }}
       fitted
-      lazyMount
-      unmountOnExit
       onValueChange={({ value }) =>
-        setSearchParams({ tab: value as PerformanceTab, page: 1 })
+        setSearchParams(
+          { tab: value as PerformanceTab, page: 1 },
+          { shallow: false },
+        )
       }
     >
       <Tabs.List>
@@ -40,11 +53,9 @@ export default function PerformanceTabs(sections: PerformanceTabsProps) {
         ))}
       </Tabs.List>
 
-      {PERFORMANCE_TAB_SELECTION.map(({ value }) => (
-        <Tabs.Content key={value} value={value}>
-          {sections[value]}
-        </Tabs.Content>
-      ))}
+      <Tabs.Content value={tab}>
+        {tab === active && children ? children : <SectionSkeleton />}
+      </Tabs.Content>
     </Tabs.Root>
   );
 }

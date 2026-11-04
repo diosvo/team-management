@@ -2,7 +2,7 @@ import { renderWithUI, screen } from '@/test/utilities';
 
 import Loading from './loading';
 
-vi.mock('../_components/PerformanceSkeleton', () => ({
+vi.mock('../_components/PerformanceLoading', () => ({
   default: () => <div data-testid="performance-skeleton" />,
 }));
 

@@ -4,10 +4,11 @@ import { useCallback } from 'react';
 
 import { Badge, HStack, Span } from '@chakra-ui/react';
 import { ClipboardList } from 'lucide-react';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 
 import { LeagueLink } from '@/components/common/LeagueSelection';
 import { LocationLink } from '@/components/common/LocationSelection';
+import Weekday from '@/components/Weekday';
 import DataTable, { RowAction, type Column } from '@/components/DataTable';
 import HighlightText from '@/components/HighlightText';
 
@@ -17,7 +18,7 @@ import useTableState from '@/hooks/use-table-state';
 import { enumLabel } from '@/i18n/enums';
 import { useMatchFilters } from '@/lib/nuqs';
 import type { MatchWithTeams } from '@/types/match';
-import { formatDate, formatDayPadded } from '@/utils/datetime';
+import { formatDate } from '@/utils/datetime';
 import { MatchStatus } from '@/utils/enum';
 import { getColor } from '@/utils/helper';
 
@@ -32,7 +33,6 @@ export default function MatchTable({
   const t = useTranslations('matches.table');
   const tc = useTranslations('common');
   const te = useTranslations('enums');
-  const locale = useLocale();
   const { can, isGuest } = usePermissions();
   const [{ q, page }, setSearchParams] = useMatchFilters();
 
@@ -104,9 +104,7 @@ export default function MatchTable({
       header: tc('date'),
       cell: (item) => (
         <HStack gap={1}>
-          <Span fontSize="sm" whiteSpace="pre">
-            {formatDayPadded(item.date, locale)}
-          </Span>
+          <Weekday date={item.date} fontSize="sm" />
           <Span color="gray.400">&bull;</Span>
           <Span fontSize="sm">{formatDate(item.date)}</Span>
           <Span color="gray.400">&bull;</Span>

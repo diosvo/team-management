@@ -21,17 +21,16 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function MatchStatsPage(
   props: PageProps<'/matches/stats'>,
 ) {
-  const isAllowed = await canEditMatchStats();
-  if (!isAllowed) forbidden();
-
-  const { match } = await props.searchParams;
-  const matchId = typeof match === 'string' ? match : '';
-
-  const [matches, activePlayers, t] = await Promise.all([
+  const [isAllowed, { match }, matches, activePlayers, t] = await Promise.all([
+    canEditMatchStats(),
+    props.searchParams,
     getPlayedMatches(),
     getActivePlayers(),
     getTranslations('matches.boxScore'),
   ]);
+  if (!isAllowed) forbidden();
+
+  const matchId = typeof match === 'string' ? match : '';
   const initialMatch =
     matches.find(({ match_id }) => match_id === matchId) ?? null;
   const initialStats = initialMatch

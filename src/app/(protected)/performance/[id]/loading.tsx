@@ -1,5 +1,5 @@
-import PerformanceSkeleton from '../_components/PerformanceSkeleton';
+import PerformanceLoading from '../_components/PerformanceLoading';
 
 export default function Loading() {
-  return <PerformanceSkeleton />;
+  return <PerformanceLoading />;
 }

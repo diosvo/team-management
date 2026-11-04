@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import { Suspense } from 'react';
+import { type ReactNode, Suspense } from 'react';
 
 import { UserRoundX } from 'lucide-react';
 
@@ -11,16 +11,14 @@ import { verifySession } from '@/actions/auth';
 import { getPerformanceIdentity } from '@/actions/player-performance';
 import { loadPerformanceFilters } from '@/lib/nuqs';
 import type { DateRange } from '@/types/common';
+import type { PerformanceTab } from '@/utils/constants';
 
 import PerformanceHeader from '../_components/PerformanceHeader';
+import { BodySkeleton } from '../_components/PerformanceLoading';
 import {
-  ActivitySkeleton,
-  AttendanceSkeleton,
-  BodySkeleton,
   HeaderSkeleton,
-  MatchesSkeleton,
+  SECTION_SKELETONS,
   StatsSkeleton,
-  TestingSkeleton,
 } from '../_components/PerformanceSkeleton';
 import PerformanceStats from '../_components/PerformanceStats';
 import PerformanceTabs from '../_components/PerformanceTabs';
@@ -59,8 +57,8 @@ export default async function PerformancePage({
       <Suspense fallback={<HeaderSkeleton title={title} />}>
         <HeaderSection id={id} />
       </Suspense>
-      <Suspense fallback={<BodySkeleton tab={tab} />}>
-        <BodySection id={id} range={{ from, to }} />
+      <Suspense fallback={<BodySkeleton />}>
+        <BodySection id={id} range={{ from, to }} tab={tab} />
       </Suspense>
     </>
   );
@@ -71,7 +69,15 @@ async function HeaderSection({ id }: { id: string }) {
   return <PerformanceHeader identity={identity} />;
 }
 
-async function BodySection({ id, range }: { id: string; range: DateRange }) {
+async function BodySection({
+  id,
+  range,
+  tab,
+}: {
+  id: string;
+  range: DateRange;
+  tab: PerformanceTab;
+}) {
   const [identity, t] = await Promise.all([
     getPerformanceIdentity(id),
     getTranslations('performance.page'),
@@ -95,6 +101,15 @@ async function BodySection({ id, range }: { id: string; range: DateRange }) {
 
   // Who the charts compare against: "You" on your own page, otherwise the player's name.
   const subject = identity.is_own ? t('you') : identity.name;
+  const SectionSkeleton = SECTION_SKELETONS[tab];
+  const sections: Record<PerformanceTab, () => ReactNode> = {
+    attendance: () => (
+      <AttendanceSection target_id={id} range={range} subject={subject} />
+    ),
+    testing: () => <TestingSection target_id={id} subject={subject} />,
+    activity: () => <ActivitySection target_id={id} range={range} />,
+    matches: () => <MatchesSection target_id={id} range={range} />,
+  };
 
   return (
     <>
@@ -102,28 +117,12 @@ async function BodySection({ id, range }: { id: string; range: DateRange }) {
         <PerformanceStats target_id={id} range={range} />
       </Suspense>
 
-      <PerformanceTabs
-        attendance={
-          <Suspense fallback={<AttendanceSkeleton />}>
-            <AttendanceSection target_id={id} range={range} subject={subject} />
-          </Suspense>
-        }
-        testing={
-          <Suspense fallback={<TestingSkeleton />}>
-            <TestingSection target_id={id} subject={subject} />
-          </Suspense>
-        }
-        activity={
-          <Suspense fallback={<ActivitySkeleton />}>
-            <ActivitySection target_id={id} range={range} />
-          </Suspense>
-        }
-        matches={
-          <Suspense fallback={<MatchesSkeleton />}>
-            <MatchesSection target_id={id} range={range} />
-          </Suspense>
-        }
-      />
+      {/* Only the open tab is fetched; switching tabs navigates. */}
+      <PerformanceTabs active={tab}>
+        <Suspense key={tab} fallback={<SectionSkeleton />}>
+          {sections[tab]()}
+        </Suspense>
+      </PerformanceTabs>
     </>
   );
 }

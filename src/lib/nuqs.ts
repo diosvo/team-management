@@ -240,8 +240,9 @@ export const useDashboardFilters = createRangeFilters(dashboardFilters, {
   shallow: false,
 });
 export const useEmailFilters = createFilters(emailSearchParams);
-// Client-only by default: tab, chart selection and activity filter never hit
-// the server. Only the date range opts into `{ shallow: false }` at the call site.
+// Client-only by default: chart selection and activity filter never hit the
+// server. The date range and the tab (only the open tab is fetched) opt into
+// `{ shallow: false }` at their call sites.
 export const usePerformanceFilters = createRangeFilters(performanceFilters);
 
 /* ================== 🌩️ Server-Side Loaders 🌩️ ================== */
@@ -265,9 +266,6 @@ export type TrainingSearchParams = Awaited<
 export type TrainingSearchParamsKeys = keyof typeof trainingSearchParams;
 export type AttendanceSearchParams = Awaited<
   ReturnType<typeof loadAttendanceFilters>
->;
-export type PerformanceSearchParams = Awaited<
-  ReturnType<typeof loadPerformanceFilters>
 >;
 
 export function getDefaults<T extends UseQueryStatesKeysMap>(

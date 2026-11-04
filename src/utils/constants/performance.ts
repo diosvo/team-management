@@ -25,7 +25,7 @@ export const ACTIVITY_KIND_SELECTION: Selection<ActivityKind> = [
   { label: 'Matches', value: ActivityKind.MATCH },
 ];
 
-/** Team attendance target shared with the dashboard trend chart. */
+/** Team attendance target, drawn on the dashboard and performance trend charts. */
 export const ATTENDANCE_TARGET_RATE = 80 as const;
 
 /** Rolling window (in days) for the "recent trend" comparison. */

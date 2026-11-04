@@ -6,7 +6,6 @@ import {
   formatDateRange,
   formatDatetime,
   formatDay,
-  formatDayPadded,
   formatTime,
   formatDayHint,
   getDayPresets,
@@ -47,13 +46,6 @@ describe('formatting', () => {
     expect(formatDay(DATETIME, undefined, 'vi')).toBe('Chủ Nhật');
     expect(formatDay(DATETIME, 'd MMM', 'vi')).toBe('12 thg 12');
     expect(formatDay(DATETIME, undefined, 'en')).toBe('Sunday');
-  });
-
-  test('formatDayPadded pads the weekday to the longest name', () => {
-    // "Wednesday" is the longest English weekday.
-    expect(formatDayPadded(DATETIME)).toBe('Sunday   ');
-    expect(formatDayPadded(DATETIME, 'en')).toBe('Sunday   ');
-    expect(formatDayPadded(null)).toBe('-');
   });
 
   test('formatDate uses the locale day-first format', () => {

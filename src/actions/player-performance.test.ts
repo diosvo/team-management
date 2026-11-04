@@ -3,12 +3,13 @@ import { forbidden, notFound } from 'next/navigation';
 import {
   getPlayerActivity as fetchActivity,
   getPlayerAttendanceOverview as fetchAttendance,
-  getPlayerHonors as fetchHonors,
+  getPlayerHonorSummary as fetchHonorSummary,
   getPlayerMatchesOverview as fetchMatches,
   getPlayerTestingOverview as fetchTesting,
+  getPlayerTestingSummary as fetchTestingSummary,
 } from '@/db/player-performance';
 import { getUserById } from '@/db/user';
-import type { AttendanceOverview, TestingOverview } from '@/types/performance';
+import type { AttendanceOverview } from '@/types/performance';
 import { UserRole } from '@/utils/enum';
 
 import {
@@ -40,9 +41,10 @@ vi.mock('@/db/user', () => ({
 vi.mock('@/db/player-performance', () => ({
   getPlayerActivity: vi.fn(),
   getPlayerAttendanceOverview: vi.fn(),
-  getPlayerHonors: vi.fn(),
+  getPlayerHonorSummary: vi.fn(),
   getPlayerMatchesOverview: vi.fn(),
   getPlayerTestingOverview: vi.fn(),
+  getPlayerTestingSummary: vi.fn(),
 }));
 
 const OTHER_ID = 'user-456';
@@ -153,12 +155,12 @@ describe('Player Performance Actions', () => {
         monthly: [],
         reasons: [],
       } satisfies AttendanceOverview);
-      vi.mocked(fetchTesting).mockResolvedValue({
-        types: [],
+      vi.mocked(fetchTestingSummary).mockResolvedValue({
         tests_taken: 4,
         last_tested: '2026-03-10',
-      } satisfies TestingOverview);
-      vi.mocked(fetchHonors).mockResolvedValue([]);
+      });
+      const honors = { count: 1, latest: { type: 'mvp', year: 2026 } } as const;
+      vi.mocked(fetchHonorSummary).mockResolvedValue(honors);
 
       const result = await getPerformanceSummary(MOCK_USER.id, MOCK_DATE_RANGE);
 
@@ -167,11 +169,8 @@ describe('Player Performance Actions', () => {
         MOCK_USER.team_id,
         MOCK_DATE_RANGE,
       );
-      expect(fetchTesting).toHaveBeenCalledWith(
-        MOCK_USER.id,
-        MOCK_USER.team_id,
-      );
-      expect(fetchHonors).toHaveBeenCalledWith(MOCK_USER.id);
+      expect(fetchTestingSummary).toHaveBeenCalledWith(MOCK_USER.id);
+      expect(fetchHonorSummary).toHaveBeenCalledWith(MOCK_USER.id);
       expect(result).toEqual({
         attendance: {
           rate: 90,
@@ -183,7 +182,7 @@ describe('Player Performance Actions', () => {
         },
         tests_taken: 4,
         last_tested: '2026-03-10',
-        honors: [],
+        honors,
       });
     });
   });

@@ -30,6 +30,7 @@ import type {
   UpsertMatchSchemaValues,
 } from '@/schemas/match';
 import { MATCH_STAT_FIELDS } from '@/utils/constants';
+import { matchResult } from '@/utils/helper';
 import { withinRange } from './utils';
 
 export async function getMatches(
@@ -68,13 +69,9 @@ export async function getMatches(
       // Only a played match has an outcome: a scheduled or cancelled fixture
       // sits at 0-0 by definition and would otherwise read as a draw.
       result:
-        match.status !== MatchStatus.COMPLETED
-          ? null
-          : match.home_team_score - match.away_team_score > 0
-            ? MatchResult.WIN
-            : match.home_team_score - match.away_team_score < 0
-              ? MatchResult.LOSS
-              : MatchResult.DRAW,
+        match.status === MatchStatus.COMPLETED
+          ? matchResult(match.home_team_score, match.away_team_score)
+          : null,
     }));
 
     // Every stat below is a record of matches actually played.

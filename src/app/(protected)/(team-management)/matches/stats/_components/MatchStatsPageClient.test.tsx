@@ -16,13 +16,6 @@ import type { User } from '@/drizzle/schema';
 import MatchStatsPageClient from './MatchStatsPageClient';
 import type { GridPlayer, StatDraft } from './MatchStatsTable';
 
-const { mockReplace } = vi.hoisted(() => ({ mockReplace: vi.fn() }));
-
-vi.mock('next/navigation', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('next/navigation')>()),
-  useRouter: () => ({ replace: mockReplace }),
-}));
-
 vi.mock('@/actions/match', () => ({
   getMatchPlayerStats: vi.fn(),
   saveMatchPlayerStats: vi.fn(),
@@ -107,7 +100,6 @@ const statRow = (
     blocks: 0,
     turnovers: 0,
     fouls: 0,
-    minutes_played: 0,
     ...overrides,
   }) as MatchPlayerStatsWithName;
 
@@ -156,12 +148,13 @@ describe('MatchStatsPageClient', () => {
 
     const content = await openOptions(user);
 
-    expect(within(content).getAllByText(/vs Tigers \(80-70\)/)).toHaveLength(2);
+    expect(within(content).getAllByText(/· Tigers$/)).toHaveLength(2);
     expect(within(content).getByText('2 recorded')).toBeInTheDocument();
-    expect(within(content).getByText('No box score')).toBeInTheDocument();
+    expect(within(content).getByText('Not recorded')).toBeInTheDocument();
   });
 
   test('loads the box score of a picked match and updates the URL', async () => {
+    const replaceState = vi.spyOn(window.history, 'replaceState');
     mockGetStats.mockResolvedValue([statRow({ player_id: 'p2' })]);
     const { user } = setup();
 
@@ -171,7 +164,7 @@ describe('MatchStatsPageClient', () => {
     );
 
     await waitFor(() =>
-      expect(mockReplace).toHaveBeenCalledWith('/matches/stats?match=m2'),
+      expect(replaceState).toHaveBeenCalledWith(null, '', '?match=m2'),
     );
     expect(mockGetStats).toHaveBeenCalledWith('m2');
     expect(screen.getByTestId('row-p2')).toHaveTextContent('Jane#-:10');
@@ -188,7 +181,7 @@ describe('MatchStatsPageClient', () => {
     expect(mockGetStats).not.toHaveBeenCalled();
   });
 
-  test('seeds the grid from the initial stats', () => {
+  test('seeds the grid from the initial stats with roster jersey numbers', () => {
     setup({
       initialMatch: match(),
       initialStats: [
@@ -198,7 +191,7 @@ describe('MatchStatsPageClient', () => {
       ],
     });
 
-    expect(screen.getByTestId('row-p1')).toHaveTextContent('Jane#-:10');
+    expect(screen.getByTestId('row-p1')).toHaveTextContent('Jane#7:10');
     expect(screen.getByTestId('row-gone')).toHaveTextContent(':0');
     // Only active players reach the picker.
     expect(screen.getByTestId('selection')).toHaveTextContent(/^p1/);
@@ -215,7 +208,7 @@ describe('MatchStatsPageClient', () => {
 
     await user.click(screen.getByRole('button', { name: 'Select all' }));
 
-    expect(screen.getByTestId('row-p1')).toHaveTextContent('Jane#-:10');
+    expect(screen.getByTestId('row-p1')).toHaveTextContent('Jane#7:10');
     expect(screen.getByTestId('row-p2')).toHaveTextContent('Kim#-:0');
 
     await user.click(screen.getByRole('button', { name: 'Clear' }));

@@ -1,4 +1,8 @@
 import { renderWithUI, screen, setupTestLifecycle } from '@/test/utilities';
+import {
+  MOCK_PERFORMANCE_RANGE,
+  MOCK_PERFORMANCE_TARGET_ID,
+} from '@/test/mocks/performance';
 
 import { getPerformanceSummary } from '@/actions/player-performance';
 import type { PerformanceSummary } from '@/types/performance';
@@ -9,9 +13,6 @@ import PerformanceStats from './PerformanceStats';
 vi.mock('@/actions/player-performance', () => ({
   getPerformanceSummary: vi.fn(),
 }));
-
-const TARGET_ID = 'player-1';
-const RANGE = { from: '2026-01-01', to: '2026-12-31' };
 
 const SUMMARY: PerformanceSummary = {
   attendance: {
@@ -24,15 +25,7 @@ const SUMMARY: PerformanceSummary = {
   },
   tests_taken: 2,
   last_tested: '2026-03-15',
-  honors: [
-    {
-      achievement_id: 'a-1',
-      type: 'mvp',
-      title: 'MVP',
-      year: 2026,
-      league: null,
-    },
-  ],
+  honors: { count: 1, latest: { type: 'mvp', year: 2026 } },
 };
 
 describe('PerformanceStats', () => {
@@ -44,14 +37,20 @@ describe('PerformanceStats', () => {
     mockGetSummary.mockResolvedValue(summary);
 
     return renderWithUI(
-      await PerformanceStats({ target_id: TARGET_ID, range: RANGE }),
+      await PerformanceStats({
+        target_id: MOCK_PERFORMANCE_TARGET_ID,
+        range: MOCK_PERFORMANCE_RANGE,
+      }),
     );
   };
 
   test('fetches the summary for the player and period', async () => {
     await setup();
 
-    expect(mockGetSummary).toHaveBeenCalledWith(TARGET_ID, RANGE);
+    expect(mockGetSummary).toHaveBeenCalledWith(
+      MOCK_PERFORMANCE_TARGET_ID,
+      MOCK_PERFORMANCE_RANGE,
+    );
   });
 
   test('renders every stat with its details', async () => {
@@ -81,7 +80,7 @@ describe('PerformanceStats', () => {
       },
       tests_taken: 0,
       last_tested: null,
-      honors: [],
+      honors: { count: 0, latest: null },
     });
 
     expect(screen.getByText('No sessions recorded')).toBeInTheDocument();

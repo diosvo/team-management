@@ -20,8 +20,6 @@ import { paginateData } from '@/utils/filters';
 
 import type { TestConfigurationSelection } from '@/types/periodic-testing';
 
-const PAGE_SIZE = 10;
-
 const removalStyle = {
   cursor: 'pointer',
   textDecoration: 'line-through',
@@ -79,7 +77,7 @@ export default function TestResultTable({
   const [{ page }, setSearchParams] = useCommonParams();
 
   const hasData = players.length > 0 && types.length > 0;
-  const currentData = paginateData(players, page, PAGE_SIZE);
+  const currentData = paginateData(players, page);
 
   const handleChange = useCallback(
     (key: string, value: string) =>
@@ -189,7 +187,6 @@ export default function TestResultTable({
       <Pagination
         count={players.length}
         page={page}
-        pageSize={PAGE_SIZE}
         onPageChange={setSearchParams}
       />
     </>

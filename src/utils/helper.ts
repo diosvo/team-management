@@ -102,3 +102,11 @@ export function plainTextLength(html: string): number {
   return unescape(html.replace(/<[^>]*>/g, '').replaceAll('&nbsp;', ' '))
     .length;
 }
+
+/** Outcome from the home team's side of the score. */
+export const matchResult = (home: number, away: number): MatchResult =>
+  home > away
+    ? MatchResult.WIN
+    : home < away
+      ? MatchResult.LOSS
+      : MatchResult.DRAW;

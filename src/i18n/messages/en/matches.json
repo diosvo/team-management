@@ -13,7 +13,7 @@
       "description": "Record per-player statistics for a match.",
       "title": "Box Score"
     },
-    "noBoxScore": "No recorded",
+    "noBoxScore": "Not recorded",
     "player": "Player",
     "recorded": "{count, plural, one {# recorded} other {# recorded}}",
     "remove": "Remove \"{name}\"?",
@@ -32,10 +32,6 @@
       "fouls": {
         "label": "Personal fouls",
         "short": "PF"
-      },
-      "minutes_played": {
-        "label": "Minutes played",
-        "short": "MIN"
       },
       "points_scored": {
         "label": "Points",

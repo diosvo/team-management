@@ -15,6 +15,7 @@ import {
   deriveDateStatus,
   getColor,
   isLowerBetter,
+  matchResult,
   plainTextLength,
 } from './helper';
 
@@ -71,6 +72,16 @@ describe('colorRank', () => {
 
   test.each(cases)('returns $expected for $value', ({ value, expected }) => {
     expect(colorRank(value as number)).toBe(expected);
+  });
+});
+
+describe('matchResult', () => {
+  test.each([
+    [2, 1, MatchResult.WIN],
+    [1, 2, MatchResult.LOSS],
+    [1, 1, MatchResult.DRAW],
+  ])('%d - %d is a %s', (home, away, expected) => {
+    expect(matchResult(home, away)).toBe(expected);
   });
 });
 

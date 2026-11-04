@@ -5,6 +5,10 @@ import {
   screen,
   setupTestLifecycle,
 } from '@/test/utilities';
+import {
+  MOCK_MATCH_AVERAGES,
+  createMatchRecord,
+} from '@/test/mocks/performance';
 
 import type {
   MatchesOverview,
@@ -25,39 +29,13 @@ vi.mock('../LazyCharts', () => ({
   ),
 }));
 
-const createRecord = (index: number): MatchPerformanceRecord => ({
-  match_id: `match-${index}`,
-  date: `2026-08-${String(index).padStart(2, '0')}`,
-  opponent: `Opponent ${index}`,
-  result: 'win',
-  score: `${80 + index} - 70`,
-  points_scored: index,
-  rebounds: 5,
-  assists: 3,
-  steals: 1,
-  blocks: 0,
-  turnovers: 2,
-  fouls: 3,
-  minutes_played: 25,
-});
-
-const AVERAGES: MatchesOverview['averages'] = {
-  points_scored: 12.5,
-  rebounds: 5,
-  assists: 3,
-  steals: 1,
-  blocks: 0,
-  turnovers: 2,
-  minutes_played: 25,
-};
-
 describe('MatchPerformance', () => {
   setupTestLifecycle();
 
   const setup = (records: Array<MatchPerformanceRecord>, page = 1) => {
     const setParams = mockUseQueryStates({ page });
     const result = renderWithUI(
-      <MatchPerformance data={{ records, averages: AVERAGES }} />,
+      <MatchPerformance data={{ records, averages: MOCK_MATCH_AVERAGES }} />,
     );
     return { ...result, setParams };
   };
@@ -71,7 +49,7 @@ describe('MatchPerformance', () => {
   });
 
   test('renders the chart in chronological order with the averages', () => {
-    setup([createRecord(1), createRecord(2)]);
+    setup([createMatchRecord(1), createMatchRecord(2)]);
 
     expect(screen.getByText('Recent Match Statistics')).toBeInTheDocument();
     expect(screen.getByTestId('match-stats-chart')).toHaveTextContent(
@@ -84,7 +62,7 @@ describe('MatchPerformance', () => {
   });
 
   test('lists box scores newest first with the result badge', () => {
-    setup([createRecord(1), createRecord(2)]);
+    setup([createMatchRecord(1), createMatchRecord(2)]);
 
     const rows = screen.getAllByRole('row');
     expect(rows[1]).toHaveTextContent('Opponent 2');
@@ -95,7 +73,7 @@ describe('MatchPerformance', () => {
 
   test('shows the requested page and pages through the box scores', async () => {
     const records = Array.from({ length: 12 }, (_, index) =>
-      createRecord(index + 1),
+      createMatchRecord(index + 1),
     );
     const { setParams, user } = setup(records, 2);
 

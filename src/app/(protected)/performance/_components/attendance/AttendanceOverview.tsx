@@ -10,7 +10,7 @@ import {
   Text,
   VStack,
 } from '@chakra-ui/react';
-import { CalendarCheck, Minus, TrendingDown, TrendingUp } from 'lucide-react';
+import { CalendarCheck } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { Card } from '@/components/ui/card';
@@ -27,19 +27,7 @@ import { AttendanceStatus } from '@/utils/enum';
 import { colorRank } from '@/utils/helper';
 
 import { AttendanceTrendChart } from '../LazyCharts';
-
-function DeltaBadge({ delta }: { delta: number }) {
-  const palette = delta > 0 ? 'green' : delta < 0 ? 'red' : 'gray';
-  const Icon = delta > 0 ? TrendingUp : delta < 0 ? TrendingDown : Minus;
-
-  return (
-    <Badge variant="surface" borderRadius="full" colorPalette={palette}>
-      <Icon size={12} />
-      {delta > 0 ? '+' : ''}
-      {delta}%
-    </Badge>
-  );
-}
+import TrendBadge from '../TrendBadge';
 
 function TrendLine({ trend }: { trend: AttendanceTrend | null }) {
   const t = useTranslations('performance.attendance');
@@ -64,7 +52,7 @@ function TrendLine({ trend }: { trend: AttendanceTrend | null }) {
           })}
         </Text>
       </VStack>
-      <DeltaBadge delta={trend.delta} />
+      <TrendBadge value={trend.delta} />
     </HStack>
   );
 }

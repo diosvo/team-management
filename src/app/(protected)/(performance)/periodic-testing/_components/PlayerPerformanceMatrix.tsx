@@ -23,8 +23,6 @@ import { enumLabel } from '@/i18n/enums';
 import { usePeriodicTestingFilters } from '@/lib/nuqs';
 import type { PlayerTestResult, TestResult } from '@/types/periodic-testing';
 
-const PAGE_SIZE = 10;
-
 const stickyColumn = {
   position: 'sticky',
   left: 0,
@@ -154,7 +152,6 @@ function PlayerPerformanceMatrix({ result }: { result: TestResult }) {
     result.players,
     predicate,
     page,
-    { pageSize: PAGE_SIZE },
   );
 
   // Restrict columns to the selected test types (empty = show all).
@@ -235,7 +232,6 @@ function PlayerPerformanceMatrix({ result }: { result: TestResult }) {
       <Pagination
         count={totalCount}
         page={page}
-        pageSize={PAGE_SIZE}
         onPageChange={setSearchParams}
       />
     </>

@@ -4,6 +4,7 @@ import {
   screen,
   setupTestLifecycle,
 } from '@/test/utilities';
+import { MOCK_PERFORMANCE_IDENTITY } from '@/test/mocks/performance';
 
 import { useSelection } from '@/i18n/enums';
 import type { PerformanceIdentity } from '@/types/performance';
@@ -20,21 +21,15 @@ vi.mock('./PerformanceFilters', () => ({
   default: () => <div data-testid="filters" />,
 }));
 
-const IDENTITY: PerformanceIdentity = {
-  id: 'player-1',
-  name: 'Jane Doe',
-  is_own: true,
-  is_player: true,
-  is_captain: true,
-  jersey_number: 7,
-  position: PlayerPosition.CENTER,
-};
-
 describe('PerformanceHeader', () => {
   setupTestLifecycle();
 
   const setup = (identity: Partial<PerformanceIdentity> = {}) =>
-    renderWithUI(<PerformanceHeader identity={{ ...IDENTITY, ...identity }} />);
+    renderWithUI(
+      <PerformanceHeader
+        identity={{ ...MOCK_PERFORMANCE_IDENTITY, ...identity }}
+      />,
+    );
 
   test('should be accessible', async () => {
     const { container } = setup();

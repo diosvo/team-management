@@ -107,8 +107,17 @@ export const saveMatchPlayerStats = matches(
 
     const { match_id, rows, removed_player_ids } = parsed.data;
 
+    const submitted = [
+      ...new Set([
+        ...rows.map(({ player_id }) => player_id),
+        ...removed_player_ids,
+      ]),
+    ];
     // The match and every player must belong to the caller's team.
-    const match = await getMatchOwnership(match_id);
+    const [match, allowedIds] = await Promise.all([
+      getMatchOwnership(match_id),
+      getTeamPlayerIds(team_id, submitted),
+    ]);
     if (match?.home_team !== team_id) forbidden();
 
     // An unplayed or cancelled fixture has no box score to record.
@@ -116,13 +125,7 @@ export const saveMatchPlayerStats = matches(
       return ResponseFactory.error(t('boxScoreNotCompleted'));
     }
 
-    const submitted = [
-      ...new Set([
-        ...rows.map(({ player_id }) => player_id),
-        ...removed_player_ids,
-      ]),
-    ];
-    const allowed = new Set(await getTeamPlayerIds(team_id, submitted));
+    const allowed = new Set(allowedIds);
     if (submitted.some((id) => !allowed.has(id))) forbidden();
 
     try {

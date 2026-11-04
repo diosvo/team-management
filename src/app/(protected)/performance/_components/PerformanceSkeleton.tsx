@@ -5,7 +5,6 @@ import {
   SimpleGrid,
   Skeleton,
   SkeletonText,
-  Tabs,
   Text,
   VStack,
 } from '@chakra-ui/react';
@@ -19,7 +18,8 @@ import { Stat, StatGroup } from '@/components/ui/stat';
 
 import { enumLabel } from '@/i18n/enums';
 import {
-  PERFORMANCE_TAB_SELECTION,
+  MATCH_AVERAGE_FIELDS,
+  MATCH_STAT_FIELDS,
   type PerformanceTab,
 } from '@/utils/constants';
 import { AttendanceStatus, Interval } from '@/utils/enum';
@@ -197,7 +197,8 @@ export function ActivitySkeleton() {
       description={t('description')}
       action={<Skeleton height={8} width={72} />}
     >
-      <TableSkeleton columns={5} rows={8} />
+      {/* Date, type, details, outcome. */}
+      <TableSkeleton columns={4} rows={8} />
     </CardSkeleton>
   );
 }
@@ -213,12 +214,12 @@ export function MatchesSkeleton() {
       >
         <ChartSkeleton />
         <SimpleGrid
-          columns={{ base: 2, md: 4, lg: 7 }}
+          columns={{ base: 2, md: 4, lg: MATCH_AVERAGE_FIELDS.length }}
           gap={{ base: 2, lg: 3 }}
           marginTop={4}
         >
-          {Array.from({ length: 7 }, (_, index) => (
-            <Skeleton key={index}>
+          {MATCH_AVERAGE_FIELDS.map(({ key }) => (
+            <Skeleton key={key}>
               <Stat size="sm" label={t('skeleton.average')} value={0} />
             </Skeleton>
           ))}
@@ -228,7 +229,8 @@ export function MatchesSkeleton() {
         title={t('matches.boxScoresTitle')}
         description={t('matches.boxScoresDescription')}
       >
-        <TableSkeleton columns={11} />
+        {/* Date, opponent and score, then one column per stat. */}
+        <TableSkeleton columns={3 + MATCH_STAT_FIELDS.length} />
       </CardSkeleton>
     </VStack>
   );
@@ -241,53 +243,3 @@ export const SECTION_SKELETONS: Record<PerformanceTab, () => React.ReactNode> =
     activity: ActivitySkeleton,
     matches: MatchesSkeleton,
   };
-
-/**
- * The tab bar exactly as `PerformanceTabs` draws it, showing `tab`, with the
- * matching section placeholder. Static: no handlers, so it can render on the
- * server before the real (URL-driven) tabs hydrate.
- */
-export function TabsSkeleton({ tab }: { tab: PerformanceTab }) {
-  const t = useTranslations('performance.tabs');
-  const Section = SECTION_SKELETONS[tab];
-
-  return (
-    <Tabs.Root
-      value={tab}
-      variant="enclosed"
-      size={{ base: 'sm', md: 'md' }}
-      fitted
-    >
-      <Tabs.List>
-        {PERFORMANCE_TAB_SELECTION.map(({ value }) => (
-          <Tabs.Trigger key={value} value={value}>
-            {t(value)}
-          </Tabs.Trigger>
-        ))}
-      </Tabs.List>
-      <Tabs.Content value={tab} paddingInline={0}>
-        <Section />
-      </Tabs.Content>
-    </Tabs.Root>
-  );
-}
-
-/** Everything below the header, for one tab. */
-export function BodySkeleton({ tab }: { tab: PerformanceTab }) {
-  return (
-    <>
-      <StatsSkeleton />
-      <TabsSkeleton tab={tab} />
-    </>
-  );
-}
-
-/** Whole-page placeholder for `loading.tsx`, before params are known. */
-export default function PerformanceSkeleton() {
-  return (
-    <>
-      <HeaderSkeleton />
-      <BodySkeleton tab="attendance" />
-    </>
-  );
-}

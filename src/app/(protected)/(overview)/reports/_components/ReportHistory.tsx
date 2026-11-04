@@ -13,11 +13,10 @@ import { enumLabel } from '@/i18n/enums';
 import { reportDownloadUrl } from '@/utils/constants';
 import { ReportStatus } from '@/utils/enum';
 import { formatDatetime } from '@/utils/datetime';
+import { paginateData } from '@/utils/filters';
 import { getColor } from '@/utils/helper';
 
 import { ReportHistory as ReportHistoryRow } from '@/drizzle/schema';
-
-const PAGE_SIZE = 10;
 
 type Translator = ReturnType<typeof useTranslations<'reports.history'>>;
 type CommonTranslator = ReturnType<typeof useTranslations<'common'>>;
@@ -118,8 +117,7 @@ export default function ReportHistory({
   );
   const [page, setPage] = useState(1);
 
-  const start = (page - 1) * PAGE_SIZE;
-  const currentData = history.slice(start, start + PAGE_SIZE);
+  const currentData = paginateData(history, page);
 
   return (
     <>
@@ -130,7 +128,6 @@ export default function ReportHistory({
         currentData={currentData}
         totalCount={history.length}
         page={page}
-        pageSize={PAGE_SIZE}
         onPageChange={({ page }) => setPage(page)}
         empty={{
           title: t('emptyTitle'),

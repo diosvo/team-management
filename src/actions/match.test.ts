@@ -424,7 +424,7 @@ describe('Match Actions', () => {
 
       const result = await saveMatchPlayerStats(values);
 
-      expect(getTeamPlayerIds).not.toHaveBeenCalled();
+      expect(saveDbMatchPlayerStats).not.toHaveBeenCalled();
       expect(result).toEqual({
         success: false,
         message: 'Only a completed match can have a box score.',

@@ -9,7 +9,7 @@ import {
   Text,
   VStack,
 } from '@chakra-ui/react';
-import { FlaskConical, Minus, TrendingDown, TrendingUp } from 'lucide-react';
+import { FlaskConical } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { Card } from '@/components/ui/card';
@@ -24,16 +24,16 @@ import type {
 import { formatDate } from '@/utils/datetime';
 
 import { TestProgressChart, TestRadarChart } from '../LazyCharts';
+import TrendBadge from '../TrendBadge';
 
 /** A radar needs at least three axes to read as a shape. */
 const RADAR_MIN_TYPES = 3;
 
-/** Rows shown in "Latest results" before the list scrolls. */
-const VISIBLE_RESULTS = 4;
-/** Rough height for one result row. */
-const RESULT_ROW_HEIGHT = 'calc(5.75rem + 2px)';
-/** VStack gap between rows. */
-const RESULT_ROW_GAP = '0.5rem';
+/**
+ * "Latest results" shows four rows, then scrolls: 4 rows (5.75rem + 2px
+ * border each), 3 gaps (0.5rem) and the list's own padding (2 × 0.25rem).
+ */
+const RESULTS_MAX_HEIGHT = 'calc(4 * (5.75rem + 2px) + 3 * 0.5rem + 0.5rem)';
 
 function ImprovementBadge({ value }: { value: number | null }) {
   const t = useTranslations('performance.testing');
@@ -46,16 +46,7 @@ function ImprovementBadge({ value }: { value: number | null }) {
     );
   }
 
-  const palette = value > 0 ? 'green' : value < 0 ? 'red' : 'gray';
-  const Icon = value > 0 ? TrendingUp : value < 0 ? TrendingDown : Minus;
-
-  return (
-    <Badge variant="surface" borderRadius="full" colorPalette={palette}>
-      <Icon size={12} />
-      {value > 0 ? '+' : ''}
-      {value}%
-    </Badge>
-  );
+  return <TrendBadge value={value} />;
 }
 
 function ResultRow({
@@ -156,13 +147,11 @@ export default function TestingOverview({
       >
         <VStack
           alignItems="stretch"
-          gap={RESULT_ROW_GAP}
-          maxHeight={`calc(${VISIBLE_RESULTS} * ${RESULT_ROW_HEIGHT} + ${VISIBLE_RESULTS - 1} * ${RESULT_ROW_GAP} + 2px)`}
+          maxHeight={RESULTS_MAX_HEIGHT}
           overflowY="auto"
           overscrollBehavior="contain"
-          // Room for the focus ring and scrollbar so neither clips the rows.
+          // Room for the focus ring so the scroll box doesn't clip it.
           padding={1}
-          paddingRight={data.types.length > VISIBLE_RESULTS ? 2 : '1px'}
         >
           {data.types.map((type) => (
             <ResultRow
