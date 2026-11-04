@@ -1,4 +1,57 @@
 {
+  "boxScore": {
+    "activeOnly": "Only active players can be added; existing lines for other players are kept.",
+    "activeQuery": "active",
+    "cellLabel": "{stat} for {name}",
+    "emptyDescription": "Pick a match, then add the players who took the court.",
+    "emptyTitle": "No players on the sheet",
+    "match": "Match",
+    "matchAndPlayers": "Match & Players",
+    "matchLabel": "{date} · {opponent}",
+    "matchPlaceholder": "Pick a played match",
+    "metadata": {
+      "description": "Record per-player statistics for a match.",
+      "title": "Box Score"
+    },
+    "noBoxScore": "Not recorded",
+    "player": "Player",
+    "recorded": "{count, plural, one {# recorded} other {# recorded}}",
+    "remove": "Remove \"{name}\"?",
+    "removeHint": "Click a player's name to take them off the sheet.",
+    "saving": "Saving box score...",
+    "savingButton": "Saving...",
+    "stats": {
+      "assists": {
+        "label": "Assists",
+        "short": "AST"
+      },
+      "blocks": {
+        "label": "Blocks",
+        "short": "BLK"
+      },
+      "fouls": {
+        "label": "Personal fouls",
+        "short": "PF"
+      },
+      "points_scored": {
+        "label": "Points",
+        "short": "PTS"
+      },
+      "rebounds": {
+        "label": "Rebounds",
+        "short": "REB"
+      },
+      "steals": {
+        "label": "Steals",
+        "short": "STL"
+      },
+      "turnovers": {
+        "label": "Turnovers",
+        "short": "TOV"
+      }
+    },
+    "title": "Box Score"
+  },
   "filters": {
     "gameType": "Game Type",
     "matchType": "Match Type",
@@ -6,6 +59,7 @@
     "time": "Time"
   },
   "header": {
+    "boxScore": "Box Score",
     "title": "Matches"
   },
   "metadata": {
@@ -22,6 +76,7 @@
     "winStreak": "Win Streak"
   },
   "table": {
+    "boxScore": "Box Score",
     "deletePartial": "Deleted {count} match(es), but some operations failed.",
     "deleteSuccess": "Successfully deleted {count} match(es).",
     "deleting": "Deleting matches...",
@@ -29,6 +84,7 @@
     "league": "League",
     "location": "Location",
     "opponent": "Opponent",
+    "recordBoxScore": "Record box score",
     "result": "Result",
     "score": "Score"
   },

@@ -18,8 +18,7 @@ import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 
 import type { AttendanceHistoryRecord } from '@/types/analytics';
-
-const TARGET_RATE = 80 as const;
+import { ATTENDANCE_TARGET_RATE } from '@/utils/constants';
 
 export function CustomTooltip(
   props: Partial<TooltipContentProps<string, string>>,
@@ -33,7 +32,9 @@ export function CustomTooltip(
   return (
     <Box backgroundColor="white" padding={2} borderRadius="sm" boxShadow="sm">
       <Text
-        color={Number(entry.present_rate) >= TARGET_RATE ? 'green' : 'red'}
+        color={
+          Number(entry.present_rate) >= ATTENDANCE_TARGET_RATE ? 'green' : 'red'
+        }
         marginBottom={2}
       >
         {entry.present_rate}%
@@ -71,7 +72,11 @@ export default function AttendanceTrend({
           {avgRate > 0 ? (
             <>
               :&nbsp;
-              <Span color={avgRate >= TARGET_RATE ? 'green.600' : 'red.600'}>
+              <Span
+                color={
+                  avgRate >= ATTENDANCE_TARGET_RATE ? 'green.600' : 'red.600'
+                }
+              >
                 {avgRate.toFixed(1)}%
               </Span>
             </>
@@ -96,11 +101,11 @@ export default function AttendanceTrend({
             />
             <Tooltip content={<CustomTooltip />} />
             <ReferenceLine
-              y={TARGET_RATE}
+              y={ATTENDANCE_TARGET_RATE}
               stroke="orange"
               strokeDasharray="2 2"
               label={{
-                value: t('target', { rate: TARGET_RATE }),
+                value: t('target', { rate: ATTENDANCE_TARGET_RATE }),
                 position: 'top',
               }}
             />

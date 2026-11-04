@@ -1,19 +1,78 @@
 'use client';
 
+import NextLink, { type LinkProps, useLinkStatus } from 'next/link';
+
 import {
+  IconButton,
+  Spinner,
   Table,
   type TableCellProps,
   type TableColumnHeaderProps,
   type TableRootProps,
 } from '@chakra-ui/react';
+import type { LucideIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import Pagination from '@/components/Pagination';
 import SelectionActionBar from '@/components/SelectionActionBar';
 import { Checkbox } from '@/components/ui/checkbox';
 import { EmptyState } from '@/components/ui/empty-state';
+import { Tooltip } from '@/components/ui/tooltip';
 
 import { toggleSelection } from '@/hooks/use-table-state';
+
+/**
+ * Hidden until hovered or focused; always visible on touch devices. Hovered
+ * rows use a subtle palette, so the action stays slightly stronger to remain
+ * readable.
+ */
+const ROW_ACTION_CSS = {
+  opacity: 0,
+  transition: 'opacity 0.15s ease-in-out',
+  // A clicked action stays visible while its route loads.
+  'tr:hover &, tr:focus-within &, &:has([data-pending])': { opacity: 1 },
+  '@media (hover: none)': { opacity: 1 },
+} as const;
+
+/**
+ * Shows a spinner while the route is pending; must render inside the `Link`.
+ */
+function RowActionIcon({ icon: Icon }: { icon: LucideIcon }) {
+  const { pending } = useLinkStatus();
+
+  return pending ? (
+    <Spinner size="xs" borderWidth={1.5} data-pending="" />
+  ) : (
+    <Icon size={14} />
+  );
+}
+
+type RowActionProps = {
+  label: string;
+  href: LinkProps['href'];
+  icon: LucideIcon;
+};
+
+/** Per-row icon link for a `DataTable` column; swallows the row click. */
+export function RowAction({ label, href, icon }: RowActionProps) {
+  return (
+    <Tooltip content={label}>
+      <IconButton
+        size="xs"
+        variant="ghost"
+        aria-label={label}
+        css={ROW_ACTION_CSS}
+        _hover={{ backgroundColor: 'gray.muted' }}
+        asChild
+        onClick={(event) => event.stopPropagation()}
+      >
+        <NextLink href={href}>
+          <RowActionIcon icon={icon} />
+        </NextLink>
+      </IconButton>
+    </Tooltip>
+  );
+}
 
 export type Column<T> = Required<{
   header: React.ReactNode;

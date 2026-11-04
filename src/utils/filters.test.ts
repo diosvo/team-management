@@ -8,26 +8,9 @@ describe('paginateData', () => {
     name: `Item ${i + 1}`,
   }));
 
-  test('returns first page with default page size', () => {
-    const result = paginateData(mockData, 1);
-
-    expect(result).toEqual([
-      { id: 1, name: 'Item 1' },
-      { id: 2, name: 'Item 2' },
-      { id: 3, name: 'Item 3' },
-      { id: 4, name: 'Item 4' },
-      { id: 5, name: 'Item 5' },
-    ]);
-  });
-
-  test('returns second page with default page size', () => {
-    const result = paginateData(mockData, 2);
-
-    expect(result).toEqual([
-      { id: 6, name: 'Item 6' },
-      { id: 7, name: 'Item 7' },
-      { id: 8, name: 'Item 8' },
-    ]);
+  test('fits up to 10 items on the first page by default', () => {
+    expect(paginateData(mockData, 1)).toEqual(mockData);
+    expect(paginateData(mockData, 2)).toEqual([]);
   });
 
   test('returns first page with custom page size', () => {
@@ -102,14 +85,18 @@ describe('buildPredicate', () => {
 
   test('searches across fields (case-insensitive, OR)', () => {
     const result = rows.filter(
-      buildPredicate<Row>({ search: { query: 'ALICE', fields: ['name', 'email'] } }),
+      buildPredicate<Row>({
+        search: { query: 'ALICE', fields: ['name', 'email'] },
+      }),
     );
     expect(result.map((r) => r.name)).toEqual(['Alice']);
   });
 
   test('ignores blank/whitespace query', () => {
     expect(
-      rows.filter(buildPredicate<Row>({ search: { query: '   ', fields: ['name'] } })),
+      rows.filter(
+        buildPredicate<Row>({ search: { query: '   ', fields: ['name'] } }),
+      ),
     ).toEqual(rows);
   });
 

@@ -19,8 +19,8 @@ import {
 } from '@chakra-ui/react';
 import {
   BookMarked,
+  ChartSpline,
   ChevronRight,
-  GamepadDirectional,
   Globe,
   Languages,
   LogOut,
@@ -36,6 +36,7 @@ import { useSessionContext } from '@/providers/session';
 import { LOGIN_PATH } from '@/routes';
 
 import { TEAM_ID } from '@/utils/constants';
+import { UserRole } from '@/utils/enum';
 import { getColor } from '@/utils/helper';
 
 import FeedbackDialog from './FeedbackDialog';
@@ -85,11 +86,10 @@ export default function AccountMenu() {
       icon: UserRound,
       href: '/profile',
     },
-    {
-      title: t('performance'),
-      icon: GamepadDirectional,
-      href: '/performance',
-    },
+    // Players have performance data; admins access player pages via roster actions.
+    ...(user.role === UserRole.PLAYER
+      ? [{ title: t('performance'), icon: ChartSpline, href: '/performance' }]
+      : []),
   ];
 
   return (

@@ -1,12 +1,22 @@
 import { revalidate } from '@/actions/cache';
+import { forbidden } from 'next/navigation';
+
 import {
   deleteMatch,
   getMatches as getDbMatches,
+  getMatchOwnership,
+  getMatchPlayerStats as getDbMatchPlayerStats,
+  getPlayedMatches as getDbPlayedMatches,
   insertMatch as insertDbMatch,
+  saveMatchPlayerStats as saveDbMatchPlayerStats,
   updateMatch as updateDbMatch,
 } from '@/db/match';
 import { getDbErrorMessage } from '@/db/pg-error';
-import type { UpsertMatchSchemaValues } from '@/schemas/match';
+import { getTeamPlayerIds } from '@/db/player';
+import type {
+  SaveMatchPlayerStatsValues,
+  UpsertMatchSchemaValues,
+} from '@/schemas/match';
 
 import {
   mockWithAuth,
@@ -20,7 +30,15 @@ import { MOCK_USER } from '@/test/mocks/user';
 import type { MatchSearchParams } from '@/lib/nuqs';
 import { MatchStatus } from '@/utils/enum';
 
-import { getMatches, removeMatch, upsertMatch } from './match';
+import {
+  canEditMatchStats,
+  getMatches,
+  getMatchPlayerStats,
+  getPlayedMatches,
+  removeMatch,
+  saveMatchPlayerStats,
+  upsertMatch,
+} from './match';
 
 vi.mock('./auth', () => ({
   withAuth: mockWithAuth,
@@ -32,11 +50,20 @@ vi.mock('@/db/match', () => ({
   insertMatch: vi.fn(),
   updateMatch: vi.fn(),
   deleteMatch: vi.fn(),
+  getPlayedMatches: vi.fn(),
+  getMatchOwnership: vi.fn(),
+  getMatchPlayerStats: vi.fn(),
+  saveMatchPlayerStats: vi.fn(),
+}));
+
+vi.mock('@/db/player', () => ({
+  getTeamPlayerIds: vi.fn(),
 }));
 
 vi.mock('@/actions/cache', () => ({
   revalidate: {
     matches: vi.fn(),
+    matchStats: vi.fn(),
   },
 }));
 
@@ -267,6 +294,161 @@ describe('Match Actions', () => {
         success: false,
         message: 'Failed to delete match',
       });
+    });
+  });
+
+  describe('canEditMatchStats', () => {
+    test('returns true for an authorized user', async () => {
+      await expect(canEditMatchStats()).resolves.toBe(true);
+    });
+  });
+
+  describe('getPlayedMatches', () => {
+    test("reads the caller's team completed matches", async () => {
+      vi.mocked(getDbPlayedMatches).mockResolvedValue([]);
+
+      await expect(getPlayedMatches()).resolves.toEqual([]);
+      expect(getDbPlayedMatches).toHaveBeenCalledWith(MOCK_USER.team_id);
+    });
+  });
+
+  describe('getMatchPlayerStats', () => {
+    test('reads the box score of an own match', async () => {
+      vi.mocked(getMatchOwnership).mockResolvedValue({
+        home_team: MOCK_USER.team_id,
+        status: MatchStatus.COMPLETED,
+      });
+      vi.mocked(getDbMatchPlayerStats).mockResolvedValue([]);
+
+      await expect(getMatchPlayerStats(MOCK_MATCH_ID)).resolves.toEqual([]);
+      expect(getDbMatchPlayerStats).toHaveBeenCalledWith(
+        MOCK_MATCH_ID,
+        MOCK_USER.team_id,
+      );
+    });
+
+    test.each([
+      [
+        'another team',
+        { home_team: 'team-other', status: MatchStatus.COMPLETED },
+      ],
+      ['an unknown match', null],
+    ])('forbids reading %s', async (_, ownership) => {
+      vi.mocked(getMatchOwnership).mockResolvedValue(ownership as never);
+
+      await expect(getMatchPlayerStats(MOCK_MATCH_ID)).rejects.toThrow(
+        'FORBIDDEN',
+      );
+      expect(forbidden).toHaveBeenCalled();
+      expect(getDbMatchPlayerStats).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('saveMatchPlayerStats', () => {
+    const MATCH_UUID = '3f1c7a52-8f4e-4d6b-9a2c-1e5b7d9f0a11';
+    const values = {
+      match_id: MATCH_UUID,
+      rows: [
+        { player_id: 'player-1', points_scored: 12, rebounds: 4 },
+        { player_id: 'player-2', assists: 6 },
+      ],
+      removed_player_ids: ['player-3', 'player-1'],
+    } as unknown as SaveMatchPlayerStatsValues;
+
+    beforeEach(() => {
+      vi.mocked(getMatchOwnership).mockResolvedValue({
+        home_team: MOCK_USER.team_id,
+        status: MatchStatus.COMPLETED,
+      });
+      vi.mocked(getTeamPlayerIds).mockResolvedValue([
+        'player-1',
+        'player-2',
+        'player-3',
+      ]);
+    });
+
+    test('saves the box score and revalidates', async () => {
+      const result = await saveMatchPlayerStats(values);
+
+      expect(getTeamPlayerIds).toHaveBeenCalledWith(MOCK_USER.team_id, [
+        'player-1',
+        'player-2',
+        'player-3',
+      ]);
+      expect(saveDbMatchPlayerStats).toHaveBeenCalledWith(
+        MATCH_UUID,
+        MOCK_USER.team_id,
+        [
+          expect.objectContaining({
+            player_id: 'player-1',
+            points_scored: 12,
+            rebounds: 4,
+            assists: 0,
+          }),
+          expect.objectContaining({ player_id: 'player-2', assists: 6 }),
+        ],
+        ['player-3', 'player-1'],
+      );
+      expect(revalidate.matchStats).toHaveBeenCalled();
+      expect(result).toEqual({
+        success: true,
+        message: 'Saved box score for 2 players',
+      });
+    });
+
+    test('rejects values that fail validation', async () => {
+      const result = await saveMatchPlayerStats({
+        ...values,
+        match_id: 'not-a-uuid',
+      });
+
+      expect(getMatchOwnership).not.toHaveBeenCalled();
+      expect(result).toEqual({
+        success: false,
+        message: 'Invalid box score. Check the values.',
+      });
+    });
+
+    test("forbids saving another team's match", async () => {
+      vi.mocked(getMatchOwnership).mockResolvedValue(null as never);
+
+      await expect(saveMatchPlayerStats(values)).rejects.toThrow('FORBIDDEN');
+      expect(saveDbMatchPlayerStats).not.toHaveBeenCalled();
+    });
+
+    test('refuses a match that is not completed', async () => {
+      vi.mocked(getMatchOwnership).mockResolvedValue({
+        home_team: MOCK_USER.team_id,
+        status: MatchStatus.SCHEDULED,
+      });
+
+      const result = await saveMatchPlayerStats(values);
+
+      expect(saveDbMatchPlayerStats).not.toHaveBeenCalled();
+      expect(result).toEqual({
+        success: false,
+        message: 'Only a completed match can have a box score.',
+      });
+    });
+
+    test('forbids players outside the team', async () => {
+      vi.mocked(getTeamPlayerIds).mockResolvedValue(['player-1']);
+
+      await expect(saveMatchPlayerStats(values)).rejects.toThrow('FORBIDDEN');
+      expect(saveDbMatchPlayerStats).not.toHaveBeenCalled();
+    });
+
+    test('returns the database error when saving fails', async () => {
+      vi.mocked(saveDbMatchPlayerStats).mockRejectedValue(new Error('boom'));
+      vi.mocked(getDbErrorMessage).mockReturnValue({
+        message: 'Database error',
+        constraint: null,
+      });
+
+      const result = await saveMatchPlayerStats(values);
+
+      expect(revalidate.matchStats).not.toHaveBeenCalled();
+      expect(result).toEqual({ success: false, message: 'Database error' });
     });
   });
 });

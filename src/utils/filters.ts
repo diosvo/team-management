@@ -92,7 +92,7 @@ export function buildPredicate<T>({
 export function paginateData<T>(
   data: Array<T>,
   page: number,
-  pageSize: number = 5,
+  pageSize: number = 10,
 ): Array<T> {
   const start = (page - 1) * pageSize;
   const end = Math.min(start + pageSize, data.length);

@@ -22,6 +22,12 @@ import db from '@/drizzle';
 import { MatchTable, TrainingSessionTable, UserTable } from '@/drizzle/schema';
 import { AttendanceTable } from '@/drizzle/schema/attendance';
 
+import {
+  attendanceDate,
+  attendedCountSql,
+  teamAttendanceIn,
+  totalCountSql,
+} from './attendance-utils';
 import { calculatePercentage, countWhen, fromNow, withinRange } from './utils';
 
 // Request-scoped: the overview stats and the upcoming-matches card both ask
@@ -97,24 +103,24 @@ export async function getTeamAttendanceHistory(
   range: DateRange,
 ) {
   try {
-    const totalCountSql = _getTotalCountSql();
-    const attendedCountSql = _getAttendedCountSql();
+    const totalSql = totalCountSql();
+    const attendedSql = attendedCountSql();
 
     return await db
       .select({
-        date: _toChar(LOCALE_DATE_FORMAT),
-        short_date: _toChar('Mon DD'),
-        day: _toChar('FMDay'),
-        total: totalCountSql,
+        date: attendanceDate(LOCALE_DATE_FORMAT),
+        short_date: attendanceDate('Mon DD'),
+        day: attendanceDate('FMDay'),
+        total: totalSql,
         on_time: _countStatus(AttendanceStatus.ON_TIME),
         late: _countStatus(AttendanceStatus.LATE),
         absent: _countStatus(AttendanceStatus.ABSENT),
-        attended: attendedCountSql,
-        present_rate: calculatePercentage(attendedCountSql, totalCountSql),
+        attended: attendedSql,
+        present_rate: calculatePercentage(attendedSql, totalSql),
       })
       .from(AttendanceTable)
       .innerJoin(UserTable, eq(UserTable.id, AttendanceTable.player_id))
-      .where(_getDateRangeFilter(team_id, range))
+      .where(teamAttendanceIn(team_id, range))
       .groupBy(AttendanceTable.date)
       .orderBy(desc(AttendanceTable.date));
   } catch {
@@ -127,17 +133,14 @@ export async function getPlayersAttendanceSummary(
   range: DateRange,
 ) {
   try {
-    const totalCountSql = _getTotalCountSql();
-    const attendedCountSql = _getAttendedCountSql();
-    const attendanceRateSql = calculatePercentage(
-      attendedCountSql,
-      totalCountSql,
-    );
+    const totalSql = totalCountSql();
+    const attendedSql = attendedCountSql();
+    const attendanceRateSql = calculatePercentage(attendedSql, totalSql);
 
     const baseSelect = {
       player_name: UserTable.name,
-      attended: attendedCountSql,
-      total_sessions: totalCountSql,
+      attended: attendedSql,
+      total_sessions: totalSql,
       attendance_rate: attendanceRateSql,
     };
 
@@ -149,7 +152,7 @@ export async function getPlayersAttendanceSummary(
         .select(baseSelect)
         .from(AttendanceTable)
         .innerJoin(UserTable, eq(UserTable.id, AttendanceTable.player_id))
-        .where(_getDateRangeFilter(team_id, range))
+        .where(teamAttendanceIn(team_id, range))
         .groupBy(AttendanceTable.player_id, UserTable.name)
         .having(having)
         .orderBy(order)
@@ -196,7 +199,7 @@ export async function getMostCommonAbsenceReasons(
       .innerJoin(UserTable, eq(UserTable.id, AttendanceTable.player_id))
       .where(
         and(
-          _getDateRangeFilter(team_id, range),
+          teamAttendanceIn(team_id, range),
           inArray(AttendanceTable.status, [
             AttendanceStatus.ABSENT,
             AttendanceStatus.LATE,
@@ -213,38 +216,8 @@ export async function getMostCommonAbsenceReasons(
 
 //#region  Helper functions
 
-function _toChar(format: string) {
-  return sql<string>`TO_CHAR(${AttendanceTable.date}, ${format})`;
-}
-
 function _countStatus(status: AttendanceStatusValues) {
   return countWhen(eq(AttendanceTable.status, status as AttendanceStatus));
-}
-
-function _getDateRangeFilter(team_id: string, range: DateRange) {
-  return and(
-    eq(UserTable.team_id, team_id),
-    withinRange(AttendanceTable.date, range),
-  );
-}
-
-function _getTotalCountSql() {
-  return countWhen(
-    inArray(AttendanceTable.status, [
-      AttendanceStatus.ON_TIME,
-      AttendanceStatus.LATE,
-      AttendanceStatus.ABSENT,
-    ]),
-  );
-}
-
-function _getAttendedCountSql() {
-  return countWhen(
-    inArray(AttendanceTable.status, [
-      AttendanceStatus.ON_TIME,
-      AttendanceStatus.LATE,
-    ]),
-  );
 }
 
 //#endregion

@@ -163,21 +163,17 @@ export default function PreviewPanel({
   );
 }
 
-const PAGE_SIZE = 10;
-
 function TablePreview({ players }: { players: Array<User> }) {
   const t = useTranslations('registration.preview');
   const [page, setPage] = useState(1);
 
   const predicate = useCallback(() => true, []);
-  const { currentData, totalCount } = useTableState(players, predicate, page, {
-    pageSize: PAGE_SIZE,
-  });
+  const { currentData, totalCount } = useTableState(players, predicate, page);
 
   const columns: Array<Column<User>> = [
     {
       header: '#',
-      cell: (_player, index) => (page - 1) * PAGE_SIZE + index + 1,
+      cell: (player) => players.indexOf(player) + 1,
       cellProps: { color: 'fg.muted' },
     },
     ...COLUMNS.map((column): Column<User> => ({
@@ -192,7 +188,6 @@ function TablePreview({ players }: { players: Array<User> }) {
       columns={columns}
       rowId={(player) => player.id}
       page={page}
-      pageSize={PAGE_SIZE}
       totalCount={totalCount}
       currentData={currentData}
       onPageChange={({ page }) => setPage(page)}

@@ -1,0 +1,132 @@
+{
+  "activity": {
+    "columns": {
+      "date": "Date",
+      "details": "Details",
+      "outcome": "Outcome",
+      "type": "Type"
+    },
+    "description": "Every session, test and match in this period",
+    "emptyDescription": "Try another time range or activity type.",
+    "emptyTitle": "No activity in this period",
+    "filters": {
+      "match": "Matches",
+      "test": "Fitness tests",
+      "training": "Training"
+    },
+    "hours": "{hours}h",
+    "kinds": {
+      "match": "Match",
+      "test": "Fitness test",
+      "training": "Training"
+    },
+    "matchLine": "{points} PTS · {rebounds} REB · {assists} AST",
+    "notRecorded": "Not recorded",
+    "testCount": "{count, plural, one {# test type} other {# test types}}",
+    "title": "Activity Log",
+    "versus": "vs {opponent}"
+  },
+  "attendance": {
+    "againstTeam": "Against the team",
+    "breakdownDescription": "Sessions in the selected period",
+    "breakdownTitle": "Breakdown",
+    "comparison": "{subject} {rate}% · Team {teamRate}%",
+    "emptyDescription": "No sessions were recorded in this period.",
+    "emptyTitle": "No attendance records",
+    "lastWeeks": "Last {weeks} weeks",
+    "notEnough": "Not enough sessions in the last {weeks} weeks to compare.",
+    "pointsDiff": "{diff} pts",
+    "reasonsTitle": "Reasons for absences and late arrivals",
+    "target": "Target {rate}%",
+    "team": "Team",
+    "trendCompare": "{recent}% vs {previous}% before",
+    "trendDescription": "Monthly attendance against the team",
+    "trendTitle": "Attendance Rate Trend",
+    "unknownReason": "Unknown"
+  },
+  "header": {
+    "captain": "Captain",
+    "playerName": "Player name"
+  },
+  "matches": {
+    "average": "Avg {stat}",
+    "boxScoresDescription": "One line per recorded match",
+    "boxScoresTitle": "Box Scores",
+    "chartDescription": "Points, rebounds and assists per match in the selected period",
+    "chartTitle": "Recent Match Statistics",
+    "columns": {
+      "date": "Date",
+      "opponent": "Opponent",
+      "score": "Score"
+    },
+    "emptyDescription": "Points, rebounds and assists appear here once a coach records the box score for a match the player played.",
+    "emptyTitle": "No box scores yet",
+    "noBoxScores": "No box scores",
+    "title": "Match Statistics"
+  },
+  "metadata": {
+    "title": "Performance",
+    "description": "Attendance, test results and match statistics for a player"
+  },
+  "notFound": {
+    "description": "The player you are looking for does not exist or has been removed.",
+    "title": "Player not found"
+  },
+  "page": {
+    "notPlayer": {
+      "description": "Attendance, test results and box scores are recorded for players only.",
+      "own": "No performance data for this account",
+      "other": "{name} is not a player",
+      "title": "Players only"
+    },
+    "ownTitle": "My Performance",
+    "title": "Performance",
+    "you": "You"
+  },
+  "skeleton": {
+    "average": "Average",
+    "description": "Loading description text",
+    "helpText": "Help text",
+    "statLabel": "Label"
+  },
+  "stats": {
+    "allTime": "All time",
+    "attendanceRate": "Attendance Rate",
+    "attended": "{attended}/{total, plural, one {# session} other {# sessions}}",
+    "bestRun": "Best run: {count}",
+    "currentStreak": "Current Streak",
+    "honorUnit": "honor",
+    "honors": "Individual Honors",
+    "honorsHint": "MVP, top scorer, ...",
+    "lastTested": "Last tested {date}",
+    "noSessions": "No sessions recorded",
+    "sessionUnit": "session",
+    "testUnit": "test",
+    "testsTaken": "Tests Taken"
+  },
+  "tabs": {
+    "activity": "Activity",
+    "attendance": "Attendance",
+    "matches": "Matches",
+    "testing": "Testing"
+  },
+  "testing": {
+    "betterThan": "Better than {percentile}% of teammates",
+    "emptyDescription": "Results appear here once a coach records a periodic test.",
+    "emptyTitle": "No test results yet",
+    "firstResult": "First result",
+    "latestDescription": "Last tested {date} · pick a test to chart it",
+    "latestTitle": "Latest Results",
+    "noComparisonDescription": "No teammates were tested on the latest date.",
+    "noComparisonTitle": "No comparison yet",
+    "noTeammates": "No teammates tested",
+    "percentile": "Percentile",
+    "progressDescription": "{name} ({unit}) · {direction, select, lower {lower is better} other {higher is better}} · dashed line is the team average on the same day",
+    "progressTitle": "Progress Over Time",
+    "standingDescription": "Share of teammates beaten on the latest testing date, per test",
+    "standingTitle": "Team Standing",
+    "teamAverage": "Team average",
+    "teamAvg": "Team avg {value}",
+    "title": "Fitness Tests"
+  }
+}

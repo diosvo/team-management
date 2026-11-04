@@ -41,8 +41,11 @@
   },
   "match": {
     "added": "Added match successfully",
-    "deleted": "Deleted match successfully",
+    "boxScoreInvalid": "Invalid box score. Check the values.",
+    "boxScoreNotCompleted": "Only a completed match can have a box score.",
+    "boxScoreSaved": "Saved box score for {count, plural, one {# player} other {# players}}",
     "deleteFailed": "Failed to delete match",
+    "deleted": "Deleted match successfully",
     "updated": "Updated match successfully"
   },
   "report": {

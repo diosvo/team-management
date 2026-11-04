@@ -11,6 +11,7 @@ import {
   MatchResult,
   ReportStatus,
   SessionStatus,
+  TestTypeUnit,
   UserState,
 } from './enum';
 
@@ -74,6 +75,14 @@ export function getColor(value: Nullish<string>): ColorPalette {
   return COLOR_LOOKUP.get(value) ?? 'black';
 }
 
+/**
+ * Whether a lower score is better, based on the unit.
+ * Timed tests (seconds) improve downward.
+ */
+export function isLowerBetter(unit: string): boolean {
+  return unit === TestTypeUnit.SECONDS;
+}
+
 export function colorRank(rate: number): ColorPalette {
   if (rate >= 80) return 'green';
   if (rate >= 50) return 'orange';
@@ -93,3 +102,11 @@ export function plainTextLength(html: string): number {
   return unescape(html.replace(/<[^>]*>/g, '').replaceAll('&nbsp;', ' '))
     .length;
 }
+
+/** Outcome from the home team's side of the score. */
+export const matchResult = (home: number, away: number): MatchResult =>
+  home > away
+    ? MatchResult.WIN
+    : home < away
+      ? MatchResult.LOSS
+      : MatchResult.DRAW;

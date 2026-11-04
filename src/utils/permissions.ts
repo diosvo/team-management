@@ -38,6 +38,7 @@ export const ROLE_CONFIG: Record<UserRole, RoleConfig> = {
     training: ['view'],
     attendance: ['view', 'create'],
     matches: ['view'],
+    performance: ['view'],
     'periodic-testing': ['view'],
     profile: ['view', 'edit'],
     registration: ['view'],

@@ -131,6 +131,22 @@ describe('MatchTable', () => {
     expect(screen.getAllByText('-')).toHaveLength(2);
   });
 
+  test('links completed matches to their box score for editors', () => {
+    setup({
+      can: () => true,
+      matches: [
+        LOSS_MATCH,
+        { ...AWAY_MATCH, status: MatchStatus.SCHEDULED, result: null },
+      ],
+    });
+
+    expect(screen.getByText('Box Score')).toBeInTheDocument();
+    // Only the played match can carry a box score.
+    expect(
+      screen.getAllByRole('link', { name: 'Record box score' }),
+    ).toHaveLength(1);
+  });
+
   test('shows the empty state when there are no matches', () => {
     setup({ matches: [] });
 

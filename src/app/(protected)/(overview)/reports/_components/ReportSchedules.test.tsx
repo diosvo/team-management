@@ -141,17 +141,17 @@ describe('ReportSchedules', () => {
   });
 
   test('lists every schedule on a single page', async () => {
-    const schedules = Array.from({ length: 6 }, (_, index) =>
+    const schedules = Array.from({ length: 11 }, (_, index) =>
       buildSchedule({ schedule_id: `schedule-${index}` }),
     );
     const { user } = setup({ schedules });
 
-    expect(screen.getByText('1 - 5 of 6')).toBeInTheDocument();
+    expect(screen.getByText('1 - 10 of 11')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /next/i }));
 
     // The page is fixed, so paging is a no-op.
-    expect(screen.getByText('1 - 5 of 6')).toBeInTheDocument();
+    expect(screen.getByText('1 - 10 of 11')).toBeInTheDocument();
   });
 
   test('shows the empty state when there are no schedules', () => {

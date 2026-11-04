@@ -11,9 +11,10 @@ import {
   Span,
 } from '@chakra-ui/react';
 import { CirclePile } from 'lucide-react';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 
 import { LocationLink } from '@/components/common/LocationSelection';
+import Weekday from '@/components/Weekday';
 import DataTable, { type Column } from '@/components/DataTable';
 import HighlightText from '@/components/HighlightText';
 import { Tooltip } from '@/components/ui/tooltip';
@@ -26,7 +27,7 @@ import type { TrainingSessionWithDetails } from '@/types/training-session';
 import { enumLabel } from '@/i18n/enums';
 
 import { useTrainingFilters } from '@/lib/nuqs';
-import { formatDate, formatDay } from '@/utils/datetime';
+import { formatDate } from '@/utils/datetime';
 import { getColor } from '@/utils/helper';
 
 import { removeSession } from '@/actions/training-session';
@@ -40,7 +41,6 @@ export default function SessionTable({
   const t = useTranslations('training.table');
   const tc = useTranslations('common');
   const te = useTranslations('enums');
-  const locale = useLocale();
   const { can, isGuest } = usePermissions();
   const [{ q, page }, setSearchParams] = useTrainingFilters();
 
@@ -72,7 +72,7 @@ export default function SessionTable({
             onClick={(e) => e.stopPropagation()}
           >
             <HStack>
-              <Span>{formatDay(item.date, undefined, locale)}</Span>
+              <Weekday date={item.date} />
               <Span color="gray.400">&bull;</Span>
               <Span>{formatDate(item.date)}</Span>
             </HStack>

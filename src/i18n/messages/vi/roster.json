@@ -18,6 +18,7 @@
     "title": "Đội hình"
   },
   "table": {
+    "actions": "Thao tác",
     "deletePartial": "Đã xóa {count} thành viên, nhưng một số thao tác bị lỗi.",
     "deleteSuccess": "Đã xóa {count} thành viên.",
     "email": "Email",
@@ -27,7 +28,9 @@
     "position": "Vị trí",
     "roles": "Vai trò",
     "state": "Trạng thái",
-    "verified": "Đã xác minh"
+    "verified": "Đã xác minh",
+    "viewPerformance": "Xem phong độ",
+    "viewProfile": "Xem hồ sơ cá nhân"
   },
   "title": "Đội hình"
 }

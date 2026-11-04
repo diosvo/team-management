@@ -10,6 +10,7 @@ import achievements from './achievements.json';
 import teamRule from './teamRule.json';
 import reports from './reports.json';
 import roster from './roster.json';
+import performance from './performance.json';
 import registration from './registration.json';
 import attendance from './attendance.json';
 import training from './training.json';
@@ -35,6 +36,7 @@ const messages = {
   teamRule,
   reports,
   roster,
+  performance,
   registration,
   attendance,
   training,

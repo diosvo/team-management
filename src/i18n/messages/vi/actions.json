@@ -41,8 +41,11 @@
   },
   "match": {
     "added": "Đã thêm trận đấu",
-    "deleted": "Đã xóa trận đấu",
+    "boxScoreInvalid": "Thống kê trận không hợp lệ. Vui lòng kiểm tra lại.",
+    "boxScoreNotCompleted": "Chỉ trận đã kết thúc mới có thống kê trận.",
+    "boxScoreSaved": "Đã lưu thống kê trận cho {count, plural, other {# cầu thủ}}",
     "deleteFailed": "Không thể xóa trận đấu",
+    "deleted": "Đã xóa trận đấu",
     "updated": "Đã cập nhật trận đấu"
   },
   "report": {

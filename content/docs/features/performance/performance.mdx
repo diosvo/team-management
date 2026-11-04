@@ -1,0 +1,137 @@
+---
+title: "Performance"
+---
+
+> Route: `/performance/[id]` · Nav group: **Account** (avatar menu) · Status: **Draft**
+
+## 1. Summary
+
+- **Performance** is a player's view of their own data: training attendance, periodic test results, an activity log, and per-match box scores. Players open it as **My Performance** from the avatar menu.
+- SUPER_ADMIN can open the same page for any player from the **Actions** column on Roster. Nobody else can look at another member's page.
+- Nothing is edited here. The page only aggregates records created elsewhere.
+
+## 2. Goals / metrics
+
+### Goals
+
+- Give players a reason to check the app: see how consistent they are and whether they are improving.
+- Put individual numbers next to the team's, so a result has context.
+- Reuse the data the club already records; no new tracking burden on coaches beyond the optional box score.
+
+### Metrics
+
+- Attendance rate, current and best streak, tests taken, individual honors (stat row).
+- Monthly attendance rate against the team, on-time / late / absent split, rolling 4-week trend, absence reasons.
+- Per test type: latest result, change since the previous test, team average on the same day, percentile among teammates.
+- Per match: points, rebounds, assists, steals, blocks, turnovers, fouls, minutes; averages over the selected period.
+
+## 3. Users and permissions
+
+Permissions come from `ROLE_CONFIG` in `src/utils/permissions.ts` (resource `performance`).
+
+| Role             | Own page | Another player's page       |
+| ---------------- | -------- | --------------------------- |
+| GUEST            | No       | No                          |
+| PLAYER           | Yes      | No (`forbidden()`)          |
+| PLAYER (Captain) | Yes      | No (`forbidden()`)          |
+| COACH            | No       | No                          |
+| SUPER_ADMIN      | n/a      | Yes, via Roster → Actions   |
+
+The `[id]` in the URL is client-supplied, so every action in `src/actions/player-performance.ts` runs `resolveTarget` first: non-admins must match the session user (`forbidden()` otherwise), and an unknown id is `notFound()`. Only then are reads issued, keyed on the target's id and team id.
+
+## 4. UX / flows
+
+### Entry points
+
+- Players: avatar menu → **My Performance** (`/performance/<own id>`). The item is hidden for every other role.
+- SUPER_ADMIN: Roster → **Actions** column → performance icon on a player row (`/performance/<player id>`). The icons appear on row hover or focus; a coach or guest row only offers the profile icon.
+
+### Header
+
+- Page title reads **My Performance** on your own page and **Performance** when an admin opens a player. Below it: the player's name with jersey number, position and a Captain badge when relevant.
+- A **date range** picker (`from` / `to`, defaulting to this calendar year) like Dashboard and Matches. It scopes attendance, activity and matches. Test results are always all-time because tests are sparse.
+
+### Stat row
+
+- **Attendance Rate**: attended (on time + late) over recorded sessions in the period, coloured against the 80% target used on the dashboard.
+- **Current Streak**: consecutive attended sessions up to the latest recorded one, with the best run as help text.
+- **Tests Taken**: distinct testing dates, all-time, with the last date.
+- **Individual Honors**: MVP / Top Scorer / custom achievements awarded to this player.
+
+### Tabs
+
+The active tab is stored in the URL (`tab`), so a refresh keeps the view. Only the active tab is mounted.
+
+**Attendance**
+
+- Line chart of the player's monthly attendance rate against the team's for the same months, with the 80% target line.
+- Comparisons and chart legends say **You** on your own page and the player's name when an admin is viewing someone else.
+- Breakdown card: on time / late / absent counts, gap to the team rate, the rolling comparison of the last 4 weeks against the 4 before, and the player's own late / absence reasons.
+
+**Testing**
+
+- **Latest Results**: one row per test type with the latest value, the change since the previous test (signed so that positive is always an improvement), the team average that day and the share of teammates beaten. Clicking a row selects it for the chart.
+- **Progress Over Time**: the selected test type only, one axis, with the team average as a dashed line. Types are never mixed on one axis because their units differ.
+- **Team Standing**: a radar of the player's percentile per test type on their latest testing date. With fewer than three comparable types it falls back to progress bars; with none, to an empty state.
+- Direction is derived from the unit: `seconds` means lower is better, every other unit means higher is better. No schema change was needed for this.
+
+**Activity**
+
+- One table of every training session (with the player's attendance status and reason), testing date and recorded match in the period, newest first, paginated at 10.
+- A segmented control filters by kind: all, training, fitness tests, matches (`kind` param).
+- Sessions with no attendance row read "Not recorded" rather than absent.
+
+**Matches**
+
+- Bar chart of points, rebounds and assists per match, then average tiles, then the full box-score table.
+- Data comes from `match_player_stats`, which coaches fill in on [Matches → Box Score](/docs/features/team-management/matches#box-score). Only completed matches count, and only lines recorded for the player's current team. Until a box score exists the tab shows an empty state explaining that.
+
+## 5. Functional requirements
+
+- **FR-1:** Only PLAYER (captain included) and SUPER_ADMIN hold `performance:view`; the proxy redirects other roles to `/forbidden`.
+- **FR-2:** Every action resolves the `[id]` against the session first: a non-admin asking for anyone but themselves is rejected with `forbidden()`; an unknown id is `notFound()`. Reads are then keyed on the resolved target's id and team id.
+- **FR-3:** Attendance metrics only count session-backed rows (`session_id IS NOT NULL`); leave requests are excluded.
+- **FR-4:** Attendance rate, streaks, monthly series and reasons respect the `from` / `to` range. The 4-week trend does not; it is always relative to today.
+- **FR-5:** Test metrics are all-time. Improvement is computed against the previous result of the same type and sign-flipped for lower-is-better units.
+- **FR-6:** The percentile compares only teammates tested for the same type on the same date; a player tested alone gets no percentile.
+- **FR-7:** The activity log excludes cancelled and future sessions.
+- **FR-8:** Every card has an empty state; a new player with no history sees a complete, readable page.
+- **FR-9:** A non-player target (e.g. a coach opened by an admin) shows the header and a "players only" notice instead of the stats and tabs.
+- **FR-10:** The avatar-menu entry is rendered only for PLAYER accounts; the Roster **Actions** column only for SUPER_ADMIN.
+
+## 6. Acceptance criteria (Given/When/Then)
+
+- **AC-1:** Given I am a PLAYER with 22 attended out of 24 recorded sessions this year, when I open My Performance, then the Attendance Rate tile reads 91.7% in green and the help text reads 22/24 sessions.
+- **AC-2:** Given my last two beep test results are 10.8 then 11.5, when I open the Testing tab, then the row shows +6.5% in green; given a sprint went from 5.0s to 5.2s, then it shows -4% in red.
+- **AC-3:** Given no coach has recorded a box score for any of my matches, when I open the Matches tab, then I see an empty state, not zeros.
+- **AC-4:** Given I am a COACH, when I navigate to `/performance/<any id>`, then I am redirected to `/forbidden`.
+- **AC-5:** Given I am a PLAYER, when I change the id in the URL to a teammate's, then the page responds with `forbidden()`.
+- **AC-6:** Given I am SUPER_ADMIN, when I click the performance icon on a player's Roster row, then I land on that player's page titled **Performance**.
+
+## 7. Technical appendix
+
+### Data sources
+
+No new tables. The page reads `attendance`, `training_session`, `test_result` + `test_type`, `match` + `match_player_stats`, and `achievement` (`player_id`).
+
+### Query params (`src/lib/nuqs.ts`, `performanceSearchParams`)
+
+- `from` / `to` (ISO days, default this calendar year): the only params the server reads; changing them navigates.
+- `tab` (enum `attendance | testing | activity | matches`, default `attendance`): client-only.
+- `test` (string): selected test type name for the progress chart; empty means the first type.
+- `kind` (string[]): activity kinds to show; empty means all.
+- `page` (number): activity and box-score table pagination.
+
+### API (`src/actions/player-performance.ts`)
+
+All wrapped in `withResource('performance')('view', …)` and all taking the target `id` first, checked by `resolveTarget` (see §3):
+
+- `getPerformanceIdentity(id)`: name, jersey, position, captain flag, whether the target is a player, and whether it is the caller's own page.
+- `getPerformanceSummary(id, range)`: stat row.
+- `getPlayerAttendance(id, range)`, `getPlayerTesting(id)`, `getPlayerActivity(id, range)`, `getPlayerMatches(id, range)`: one per tab.
+
+Aggregation lives in `src/db/player-performance.ts`. The target lookup and the attendance and testing reads are wrapped in React `cache` so the stat row and the tab share one query per request.
+
+### Rendering
+
+Server components per section stream into their own `<Suspense>` boundary, mirroring the dashboard. Charts load in client-only chunks (`LazyCharts.tsx`) so recharts stays out of the route's first-load JS.

@@ -82,15 +82,15 @@ describe('useTableState', () => {
   });
 
   describe('pagination', () => {
-    test('returns first page of items using default page size (5)', () => {
+    test('fits every item on the first page by default (10)', () => {
       const result = setup();
 
-      expect(result.current.currentData).toHaveLength(5);
+      expect(result.current.currentData).toHaveLength(6);
       expect(result.current.currentData[0].name).toBe('Alice');
     });
 
-    test('returns second page of items', () => {
-      const result = setup(matchAll, 2);
+    test('returns the second page of items', () => {
+      const result = setup(matchAll, 2, 5);
 
       expect(result.current.currentData).toHaveLength(1);
       expect(result.current.currentData[0].name).toBe('Frank');

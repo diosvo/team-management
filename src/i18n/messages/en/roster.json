@@ -18,6 +18,7 @@
     "title": "Roster"
   },
   "table": {
+    "actions": "Actions",
     "deletePartial": "Deleted {count, plural, one {# user} other {# users}}, but some operations failed.",
     "deleteSuccess": "Successfully deleted {count, plural, one {# user} other {# users}}.",
     "email": "Email",
@@ -27,7 +28,9 @@
     "position": "Position",
     "roles": "Roles",
     "state": "State",
-    "verified": "Verified"
+    "verified": "Verified",
+    "viewPerformance": "View performance",
+    "viewProfile": "View profile"
   },
   "title": "Team Roster"
 }

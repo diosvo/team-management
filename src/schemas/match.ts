@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { MATCH_STAT_FIELDS } from '@/utils/constants';
 import { MatchStatus } from '@/utils/enum';
 
 export const UpsertMatchSchema = z
@@ -14,8 +15,7 @@ export const UpsertMatchSchema = z
     home_team_score: z.coerce.number().min(0).max(100).default(0),
     away_team_score: z.coerce.number().min(0).max(100).default(0),
   })
-  // Mirrors the `unplayed_match_has_no_score` check constraint, so the form
-  // reports it as a field error instead of the database rejecting the write.
+  // Mirrors DB score validation so the form shows a field error.
   .refine(
     ({ status, home_team_score, away_team_score }) =>
       status === MatchStatus.COMPLETED ||
@@ -27,3 +27,33 @@ export const UpsertMatchSchema = z
   );
 
 export type UpsertMatchSchemaValues = z.infer<typeof UpsertMatchSchema>;
+
+const statColumns = Object.fromEntries(
+  MATCH_STAT_FIELDS.map(({ key, max }) => [
+    key,
+    z.coerce.number().int().min(0).max(max).default(0),
+  ]),
+) as Record<
+  (typeof MATCH_STAT_FIELDS)[number]['key'],
+  z.ZodDefault<z.ZodCoercedNumber<unknown>>
+>;
+
+export const MatchPlayerStatsRowSchema = z.object({
+  player_id: z.string().min(1),
+  ...statColumns,
+});
+
+/**
+ * One save of the box-score grid. `removed_player_ids` are players that had a
+ * row when the grid loaded and were taken off it, so their stats get deleted.
+ */
+export const SaveMatchPlayerStatsSchema = z.object({
+  match_id: z.uuid(),
+  rows: z.array(MatchPlayerStatsRowSchema),
+  removed_player_ids: z.array(z.string()).default([]),
+});
+
+export type MatchPlayerStatsRow = z.infer<typeof MatchPlayerStatsRowSchema>;
+export type SaveMatchPlayerStatsValues = z.infer<
+  typeof SaveMatchPlayerStatsSchema
+>;

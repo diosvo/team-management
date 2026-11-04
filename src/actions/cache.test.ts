@@ -42,6 +42,15 @@ describe('revalidate', () => {
       expect(revalidateTag).not.toHaveBeenCalled();
     });
 
+    test('matchStats() revalidates every page showing a box score', () => {
+      revalidate.matchStats();
+
+      expect(revalidatePath).toHaveBeenCalledWith('/matches');
+      expect(revalidatePath).toHaveBeenCalledWith('/matches/stats');
+      expect(revalidatePath).toHaveBeenCalledWith('/performance/[id]', 'page');
+      expect(revalidateTag).not.toHaveBeenCalled();
+    });
+
     test('user() calls revalidatePath with the correct profile path', () => {
       revalidate.user(MOCK_USER.id);
 

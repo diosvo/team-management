@@ -125,6 +125,8 @@ vi.mock('next/link', () => ({
       props.children,
     );
   },
+  // Links in specs never navigate, so they are never pending.
+  useLinkStatus: () => ({ pending: false }),
 }));
 
 vi.mock('next/cache', () => ({

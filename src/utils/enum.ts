@@ -164,3 +164,7 @@ export const EmailStatus = createEnum([
   'suppressed',
 ] as const);
 export type EmailStatus = enumUnion<typeof EmailStatus>;
+
+/** Kinds of rows in the activity log. */
+export const ActivityKind = createEnum(['training', 'test', 'match'] as const);
+export type ActivityKind = enumUnion<typeof ActivityKind>;

@@ -37,6 +37,7 @@ export const RESOURCES = [
   'leagues',
   'locations',
   'matches',
+  'performance',
   'periodic-testing',
   'profile',
   'registration',
