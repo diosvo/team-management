@@ -108,6 +108,12 @@
     "friendly": "Giao hữu",
     "league": "Giải đấu"
   },
+  "performanceBand": {
+    "below_target": "Dưới mục tiêu",
+    "elite": "Xuất sắc",
+    "needs_work": "Cần cải thiện",
+    "on_target": "Đạt mục tiêu"
+  },
   "playerPosition": {
     "center": "C",
     "point_guard": "PG",
@@ -122,6 +128,13 @@
     "power_forward": "Tiền phong chính",
     "shooting_guard": "Hậu vệ ghi điểm",
     "small_forward": "Tiền phong phụ"
+  },
+  "progressStatus": {
+    "improving": "Tiến bộ",
+    "insufficient": "Chưa đủ dữ liệu",
+    "plateauing": "Chững lại",
+    "regressing": "Sa sút",
+    "stable": "Ổn định"
   },
   "reportStatus": {
     "expired": "Hết hạn",
@@ -142,6 +155,10 @@
     "cancelled": "Đã hủy",
     "completed": "Đã hoàn thành",
     "scheduled": "Đã lên lịch"
+  },
+  "testDirection": {
+    "higher": "Càng cao càng tốt",
+    "lower": "Càng thấp càng tốt"
   },
   "testTypeUnit": {
     "meters": "Mét",

@@ -1,8 +1,8 @@
 import Link from 'next/link';
 
 import { Button } from '@chakra-ui/react';
+import { Plus, Settings2, TrendingUp } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { Plus, Settings2 } from 'lucide-react';
 
 import Authorized from '@/components/Authorized';
 import PageHeader from '@/components/PageHeader';
@@ -12,6 +12,12 @@ export default function TestingHeader() {
 
   return (
     <PageHeader title={t('title')}>
+      <Button variant="outline" colorPalette="blue" asChild>
+        <Link href="/periodic-testing/progression">
+          <TrendingUp size={14} />
+          {t('progression')}
+        </Link>
+      </Button>
       <Authorized resource="periodic-testing" action="create">
         <Button variant="surface" asChild>
           <Link href="/periodic-testing/test-types">

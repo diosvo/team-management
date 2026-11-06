@@ -30,11 +30,18 @@ export const upsertTestType = periodicTesting(
     try {
       const existingTestType = await getTestTypeById(type_id);
 
+      const { direction, target, ...rest } = data;
+      const values = {
+        ...rest,
+        higher_is_better: direction === 'higher',
+        target: target === '' ? null : target,
+      };
+
       if (existingTestType) {
-        await updateTestType(existingTestType.type_id, data);
+        await updateTestType(existingTestType.type_id, values);
       } else {
         await insertTestType({
-          ...data,
+          ...values,
           team_id,
         });
       }

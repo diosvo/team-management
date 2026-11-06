@@ -3,8 +3,6 @@ import { asc, eq } from 'drizzle-orm';
 import db from '@/drizzle';
 import { type InsertTestType, TestTypeTable } from '@/drizzle/schema';
 
-import type { UpsertTestTypeSchemaValues } from '@/schemas/periodic-testing';
-
 import {
   mockDeleteFailure,
   mockDeleteSuccess,
@@ -162,7 +160,7 @@ describe('updateTestType', () => {
 
   test('updates test type successfully', async () => {
     const { mockWhere, mockSet } = mockUpdateSuccess(MOCK_TEST_TYPE);
-    const updateData: UpsertTestTypeSchemaValues = {
+    const updateData: Partial<InsertTestType> = {
       name: 'Updated Sprint',
       unit: MOCK_TEST_TYPE.unit,
     };
@@ -188,7 +186,7 @@ describe('updateTestType', () => {
     mockUpdateFailure(message);
 
     await expect(
-      updateTestType(MOCK_TEST_TYPE.type_id, {} as UpsertTestTypeSchemaValues),
+      updateTestType(MOCK_TEST_TYPE.type_id, {} as Partial<InsertTestType>),
     ).rejects.toThrow(message);
   });
 });

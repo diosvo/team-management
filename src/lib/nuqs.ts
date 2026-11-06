@@ -22,6 +22,8 @@ import {
   SELECTABLE_LEAGUE_STATUS,
   SELECTABLE_MATCH_STATUS,
   SELECTABLE_MATCH_TYPES,
+  SELECTABLE_PERFORMANCE_BANDS,
+  SELECTABLE_PROGRESS_STATUS,
   SELECTABLE_SESSION_STATUS,
   SELECTABLE_TEST_TYPES,
   SELECTABLE_USER_ROLES,
@@ -64,6 +66,18 @@ const periodicTestingSearchParams = {
   // Test type names to display as columns (empty = show all). Dynamic per date,
   // so parsed as free-form strings rather than a fixed enum.
   type: parseAsArrayOf(parseAsString).withDefault([]),
+};
+
+const progressionSearchParams = {
+  ...commonParams,
+  // Selected test type id; empty falls back to the first type with results.
+  type: parseAsString.withDefault(''),
+  status: parseAsArrayOf(
+    parseAsStringEnum([...SELECTABLE_PROGRESS_STATUS]),
+  ).withDefault([]),
+  band: parseAsArrayOf(
+    parseAsStringEnum([...SELECTABLE_PERFORMANCE_BANDS]),
+  ).withDefault([]),
 };
 
 const testTypeSearchParams = {
@@ -228,6 +242,8 @@ export const useTestTypeFilters = createFilters(testTypeSearchParams);
 export const usePeriodicTestingFilters = createFilters(
   periodicTestingSearchParams,
 );
+// Only the type change hits the server (`{ shallow: false }` at the call site).
+export const useProgressionFilters = createFilters(progressionSearchParams);
 export const useLeagueFilters = createFilters(leagueSearchParams);
 export const useMatchFilters = createRangeFilters(matchFilters);
 export const useAttendanceFilters = createRangeFilters(attendanceFilters, {
@@ -250,6 +266,7 @@ export const usePerformanceFilters = createRangeFilters(performanceFilters);
 export const loadPeriodicTestingFilters = createLoader(
   periodicTestingSearchParams,
 );
+export const loadProgressionFilters = createLoader(progressionSearchParams);
 export const loadMatchFilters = createRangeLoader(matchFilters);
 export const loadAttendanceFilters = createRangeLoader(attendanceFilters);
 export const loadDashboardFilters = createRangeLoader(dashboardFilters);

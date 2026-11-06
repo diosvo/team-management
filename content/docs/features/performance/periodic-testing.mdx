@@ -5,14 +5,16 @@ description: Player fitness scores per test and date, batch-entered and edited i
 
 <Callout title="Route /periodic-testing">
   Nav group **Performance** · Resource `periodic-testing` · Status **Shipped** ·
-  Sub-routes `/periodic-testing/add-result`, `/periodic-testing/test-types`
+  Sub-routes `/periodic-testing/add-result`, `/periodic-testing/test-types`,
+  `/periodic-testing/progression`, `/periodic-testing/progression/[id]`
 </Callout>
 
 ## Purpose
 
 - Records each player's score on the club's own tests (sprint, jump, …) by date.
 - Main page: one testing day as a player × test-type matrix.
-- Sub-routes: enter a whole session at once; maintain the test-type catalogue.
+- Sub-routes: enter a whole session at once; maintain the test-type catalogue;
+  track progression per team and per player, with coach notes and goals.
 
 ## Access
 
@@ -54,13 +56,65 @@ description: Player fitness scores per test and date, batch-entered and edited i
   <Tab value="Test types">
 
     - `/test-types` lists the team's types with search and a unit filter.
-    - **+ Add** and row click open the same dialog: name + one unit.
+    - **+ Add** and row click open the same dialog: name, one unit,
+      direction (higher or lower is better) and an optional target.
     - Units: `meters`, `percent`, `points`, `reps`, `seconds`, `times`.
     - Form defaults to `seconds`; the column defaults to `times`.
     - Selected rows delete in bulk; a type that still has results is refused.
 
   </Tab>
 </Tabs>
+
+## Progression
+
+<Tabs items={['Team', 'Player', 'Notes & goals']}>
+  <Tab value="Team">
+
+    - `/periodic-testing/progression`, linked from the testing header.
+    - One test type at a time; `type` empty → first type with results.
+    - Stats: team average and best (from each player's latest result) and
+      players who missed the latest test.
+    - Table per player: baseline, latest, best, change, status, band.
+    - Filters: `status` and `band` (client-only); only a `type` change
+      reloads the server.
+
+  </Tab>
+  <Tab value="Player">
+
+    - `/periodic-testing/progression/[id]`, opened from a player name in the
+      matrix.
+    - Stats: tests tracked, improving, regressing, on target (elite or on
+      target).
+    - One card per tested type with a chart against the team average, then
+      test history and notes.
+
+  </Tab>
+  <Tab value="Notes & goals">
+
+    - A note is a coach's observation, optionally tied to a test type (its
+      focus area), with an optional `goal` for the next test.
+    - One note per player and type: saving a typed note updates the existing
+      one. General notes (no type) can be many.
+    - A goal is judged by the first result after the note: **met**,
+      **missed**, or **pending** until the player is tested again.
+    - Edit and delete buttons follow `can('periodic-testing', 'edit' |
+      'delete')`.
+
+  </Tab>
+</Tabs>
+
+### Status and band
+
+- **Change** is baseline → latest, signed so positive always means better
+  (a faster sprint is positive).
+- **Status** compares the last tests with a 2% noise threshold:
+  - `improving` / `regressing`: the latest test moved past it.
+  - `plateauing`: neither of the last two tests moved past it.
+  - `stable`: only the latest held steady.
+  - `insufficient`: fewer than two results.
+- **Band** places the latest result against the type's `target` with a 10%
+  margin: `elite`, `on_target`, `below_target`, `needs_work`. No target → no
+  band.
 
 ## Rules
 
@@ -75,8 +129,13 @@ description: Player fitness scores per test and date, batch-entered and edited i
 - **A type in use cannot be deleted.** `test_result.type_id` is
   `onDelete: 'restrict'`; `removeTestType` maps
   `test_result_type_id_test_type_type_id_fk` to “Type is being in use.”
+- **Notes stay inside the team.** `test_note` has no `team_id`; every note
+  write checks the player is on the team or was tested by it, and updates and
+  deletes are scoped by `player_id` as well as `note_id`.
+- **A deleted type keeps its notes.** `test_note.type_id` is
+  `onDelete: 'set null'`, so the note becomes a general note.
 - **Revalidation.** Results → `/periodic-testing`; types →
-  `/periodic-testing/test-types`.
+  `/periodic-testing/test-types`; notes → the player's progression page.
 
 ## Data
 
@@ -87,6 +146,7 @@ Tables in `src/drizzle/schema/periodic-testing.ts`:
   path="src/drizzle/schema/periodic-testing.ts"
   name="TestResult"
 />
+<AutoTypeTable path="src/drizzle/schema/periodic-testing.ts" name="TestNote" />
 
 Matrix payload of `getTestResult` (`src/types/periodic-testing.d.ts`):
 
@@ -182,6 +242,63 @@ Matrix payload of `getTestResult` (`src/types/periodic-testing.d.ts`):
   }}
 />
 
+### Progression
+
+- Server actions in `src/actions/progression.ts`, all behind
+  `withResource('periodic-testing')`.
+- `test_note` has no `team_id`, so note writes call
+  `isPlayerInTeamScope(team_id, player_id)` first: the player is on the
+  caller's team now, or the team has a result for them. Otherwise the action
+  returns “Note not found”.
+
+<TypeTable
+  type={{
+    'getProgression(type_id)': {
+      type: '{ types, progression }',
+      description:
+        'Team progression for one type; falls back to the first type with results. Requires view.',
+      required: true,
+    },
+    'getPlayerProgressionById(player_id)': {
+      type: 'PlayerProgressionDetail',
+      description:
+        'One player across every type, plus notes. notFound() outside the team scope. Requires view.',
+      required: true,
+    },
+    'saveTestNote(player_id, data, note_id?)': {
+      type: 'Response',
+      description: (
+        <ul>
+          <li>Requires create or edit; player must be in team scope.</li>
+          <li>
+            Updates <code>note_id</code>, else the player's note for the same
+            type, else inserts.
+          </li>
+          <li>
+            Updates are scoped by <code>note_id</code> and{' '}
+            <code>player_id</code>.
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+    'removeTestNote(note_id)': {
+      type: 'Response',
+      description: (
+        <ul>
+          <li>Requires delete.</li>
+          <li>
+            Reads the note's player on the server, checks team scope, then
+            deletes by <code>note_id</code> and <code>player_id</code>.
+          </li>
+          <li>The client never supplies the player.</li>
+        </ul>
+      ),
+      required: true,
+    },
+  }}
+/>
+
 ## Acceptance
 
 <Accordions>
@@ -195,5 +312,13 @@ Matrix payload of `getTestResult` (`src/types/periodic-testing.d.ts`):
   </Accordion>
   <Accordion title="A type with results cannot be deleted">
     Fails with “Type is being in use.”; the type stays listed.
+  </Accordion>
+  <Accordion title="A typed note is one per focus area">
+    Saving a second note for the same player and type updates the first; toast
+    “Note updated successfully”.
+  </Accordion>
+  <Accordion title="Notes cannot reach another team's players">
+    `saveTestNote` or `removeTestNote` for a player outside the caller's team
+    fails with “Note not found” and writes nothing.
   </Accordion>
 </Accordions>

@@ -31,7 +31,10 @@ export const revalidate = {
   roster: () => revalidatePath('/roster'),
   sessions: () => revalidatePath('/training'),
   teams: () => revalidatePath('/teams'),
-  testResults: () => revalidatePath('/periodic-testing'),
-  testTypes: () => revalidatePath('/periodic-testing/test-types'),
+  // Layout scope so the progression pages, built from the same results, refresh too.
+  testResults: () => revalidatePath('/periodic-testing', 'layout'),
+  testTypes: () => revalidatePath('/periodic-testing', 'layout'),
+  testNotes: (playerId: string) =>
+    revalidatePath(`/periodic-testing/progression/${playerId}`),
   user: (userId: string) => revalidatePath(`/profile/${userId}`),
 } as const;

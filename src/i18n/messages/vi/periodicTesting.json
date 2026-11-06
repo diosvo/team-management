@@ -23,6 +23,7 @@
   "header": {
     "addResult": "Thêm kết quả",
     "manageTypes": "Quản lý bài kiểm tra",
+    "progression": "Tiến bộ",
     "title": "Kiểm tra định kỳ"
   },
   "matrix": {
@@ -34,6 +35,88 @@
   "metadata": {
     "description": "Kiểm tra và phân tích phong độ của cầu thủ",
     "title": "Kiểm tra định kỳ"
+  },
+  "playerProgression": {
+    "addNote": "Thêm ghi chú",
+    "addNoteDialog": {
+      "editTitle": "Sửa ghi chú",
+      "focusArea": "Nội dung tập trung",
+      "general": "Chung",
+      "goal": "Mục tiêu cho lần kiểm tra tới",
+      "observation": "Nhận xét",
+      "saving": "Đang lưu...",
+      "title": "Thêm ghi chú"
+    },
+    "back": "Tiến bộ",
+    "best": "Tốt nhất {result} ngày {date}",
+    "chartGoal": "Mục tiêu HLV ({value})",
+    "chartPlayer": "Cầu thủ: {value}",
+    "chartTarget": "Mục tiêu ({value})",
+    "chartTeamAverage": "TB đội: {value}",
+    "direction": "({direction, select, higher {càng cao} other {càng thấp}} càng tốt)",
+    "emptyDescription": "Kết quả sẽ hiển thị khi cầu thủ này được kiểm tra",
+    "emptyTitle": "Chưa có kết quả kiểm tra",
+    "history": {
+      "date": "Ngày",
+      "result": "Kết quả",
+      "teamAverage": "TB đội",
+      "test": "Bài kiểm tra",
+      "title": "Lịch sử kiểm tra",
+      "vsAverage": "So với TB"
+    },
+    "improving": "Tiến bộ",
+    "metadata": {
+      "description": "Tiến bộ kiểm tra định kỳ và ghi chú huấn luyện của cầu thủ",
+      "title": "Tiến bộ của cầu thủ"
+    },
+    "notes": {
+      "description": "Nhận xét phát triển và mục tiêu cho lần kiểm tra tới",
+      "edit": "Sửa ghi chú",
+      "emptyDescription": "HLV có thể thêm nhận xét sau mỗi đợt kiểm tra",
+      "emptyTitle": "Chưa có ghi chú",
+      "general": "Chung",
+      "goal": "Mục tiêu: {value}",
+      "outcome": {
+        "met": "Đạt mục tiêu",
+        "missed": "Chưa đạt mục tiêu",
+        "pending": "Chờ lần kiểm tra tới"
+      },
+      "remove": "Xóa ghi chú",
+      "removing": "Đang xóa ghi chú...",
+      "title": "Ghi chú huấn luyện",
+      "unknownAuthor": "Không rõ"
+    },
+    "onTarget": "Đạt mục tiêu",
+    "regressing": "Sa sút",
+    "since": "từ {date}",
+    "testCount": "{count} bài",
+    "testsTracked": "Bài đang theo dõi"
+  },
+  "progression": {
+    "baseline": "Ban đầu",
+    "belowTarget": "Dưới mục tiêu",
+    "best": "Tốt nhất",
+    "change": "Thay đổi",
+    "empty": "Không có dữ liệu tiến bộ",
+    "improving": "Tiến bộ",
+    "lastTested": "Kiểm tra lần cuối",
+    "latest": "Gần nhất",
+    "manageTypes": "Quản lý bài kiểm tra",
+    "metadata": {
+      "description": "Theo dõi sự tiến bộ của từng cầu thủ qua các lần kiểm tra định kỳ",
+      "title": "Tiến bộ thành tích"
+    },
+    "missedLatest": "Vắng lần gần nhất",
+    "missedLatestTest": "Vắng lần kiểm tra gần nhất",
+    "player": "Cầu thủ",
+    "regressing": "Sa sút",
+    "results": "Kết quả",
+    "target": "Mục tiêu",
+    "teamAverage": "Trung bình đội",
+    "teamBest": "Tốt nhất đội",
+    "testType": "Bài kiểm tra",
+    "title": "Tiến bộ thành tích",
+    "trend": "Xu hướng"
   },
   "stats": {
     "completedTests": "Bài đã kiểm tra",
@@ -50,13 +133,18 @@
       "description": "Quản lý và thiết lập các bài kiểm tra định kỳ",
       "title": "Bài kiểm tra"
     },
+    "progress": "Xu hướng",
     "relativeTime": "Thời gian tương đối",
+    "target": "Mục tiêu",
     "title": "Bài kiểm tra",
     "unit": "Đơn vị"
   },
   "upsertTestType": {
     "addTitle": "Thêm bài kiểm tra",
+    "progress": "Xu hướng",
     "saving": "Đang lưu...",
+    "target": "Mục tiêu",
+    "targetHelper": "Mốc chuẩn dùng để xếp mức thành tích. Để trống nếu không có.",
     "unit": "Đơn vị",
     "updateTitle": "Sửa bài kiểm tra"
   }

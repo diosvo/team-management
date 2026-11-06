@@ -35,6 +35,8 @@ export const MOCK_TEST_TYPE_2: TestType = {
   team_id: MOCK_TEAM.team_id,
   name: 'Push-ups',
   unit: TestTypeUnit.REPS,
+  higher_is_better: true,
+  target: null,
   created_at: new Date('2026-01-01'),
   updated_at: new Date('2026-01-01'),
 };

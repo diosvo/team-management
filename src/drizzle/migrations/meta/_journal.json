@@ -134,6 +134,13 @@
       "when": 1792517225737,
       "tag": "0018_match_lifecycle",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1792859557646,
+      "tag": "0019_performance_progression",
+      "breakpoints": true
     }
   ]
 }

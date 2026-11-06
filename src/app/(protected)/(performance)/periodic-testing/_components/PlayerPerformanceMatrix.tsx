@@ -2,7 +2,9 @@
 
 import { memo, useCallback, useMemo, useState, useTransition } from 'react';
 
-import { Editable, Table, Text } from '@chakra-ui/react';
+import NextLink from 'next/link';
+
+import { Editable, Link, Table, Text } from '@chakra-ui/react';
 import { FileUser } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
@@ -200,7 +202,13 @@ function PlayerPerformanceMatrix({ result }: { result: TestResult }) {
               currentData.map(({ player_id, player_name, tests }) => (
                 <Table.Row key={player_id}>
                   <Table.Cell {...stickyColumn}>
-                    <HighlightText query={q}>{player_name}</HighlightText>
+                    <Link asChild>
+                      <NextLink
+                        href={`/periodic-testing/progression/${player_id}`}
+                      >
+                        <HighlightText query={q}>{player_name}</HighlightText>
+                      </NextLink>
+                    </Link>
                   </Table.Cell>
                   {headers.map(({ name, type_id }) => {
                     const cell = tests[name];

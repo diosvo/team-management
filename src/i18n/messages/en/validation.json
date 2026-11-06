@@ -13,6 +13,7 @@
   "minItems": "Select at least {min, plural, one {# item} other {# items}}.",
   "minLength": "Be at least {min} characters long.",
   "minValue": "Must be at least {min}.",
+  "nonNegative": "Be a positive number.",
   "noteTooLarge": "Note is too large.",
   "notInFuture": "Not be in the future.",
   "recipientsRequired": "Add at least one recipient.",

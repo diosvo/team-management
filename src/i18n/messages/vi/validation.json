@@ -13,6 +13,7 @@
   "minItems": "Chọn ít nhất {min} mục.",
   "minLength": "Tối thiểu {min} ký tự.",
   "minValue": "Tối thiểu là {min}.",
+  "nonNegative": "Phải là số dương.",
   "noteTooLarge": "Ghi chú quá dài.",
   "notInFuture": "Không được ở tương lai.",
   "recipientsRequired": "Thêm ít nhất một người nhận.",
