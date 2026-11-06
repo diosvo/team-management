@@ -5,9 +5,14 @@ import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 
 import { getDbErrorMessage } from '@/db/pg-error';
-import { getPlayerProgression, getTeamProgression } from '@/db/progression';
+import {
+  getPlayerProgression,
+  getTeamProgression,
+  isPlayerInTeamScope,
+} from '@/db/progression';
 import {
   deleteTestNote,
+  findTestNote,
   findTypeNote,
   insertTestNote,
   updateTestNote,
@@ -38,9 +43,8 @@ export const getPlayerProgressionById = periodicTesting(
 );
 
 /**
- * Adds a note, or updates one: the note being edited (`note_id`), else the
- * player's existing note for the same test type, since each focus area keeps
- * a single note. General notes (no type) can be many.
+ * Adds or updates a note. Uses `note_id` when editing; otherwise updates the
+ * player's note for the same test type. General notes can be multiple.
  */
 export const saveTestNote = periodicTesting(
   ['create', 'edit'],
@@ -52,6 +56,11 @@ export const saveTestNote = periodicTesting(
   ) {
     const t = await getTranslations('actions.testNote');
     try {
+      // test_note has no team_id: only annotate players this team can see.
+      if (!(await isPlayerInTeamScope(user.team_id, player_id))) {
+        return ResponseFactory.error(t('notFound'));
+      }
+
       const values = {
         author_id: user.id,
         content: data.content,
@@ -82,10 +91,15 @@ export const saveTestNote = periodicTesting(
 
 export const removeTestNote = periodicTesting(
   ['delete'],
-  async function remove(_, note_id: string) {
+  async function remove({ team_id }, note_id: string) {
     const t = await getTranslations('actions.testNote');
     try {
-      const [deleted] = await deleteTestNote(note_id);
+      const note = await findTestNote(note_id);
+      if (!note || !(await isPlayerInTeamScope(team_id, note.player_id))) {
+        return ResponseFactory.error(t('notFound'));
+      }
+
+      const [deleted] = await deleteTestNote(note_id, note.player_id);
       if (deleted) revalidate.testNotes(deleted.player_id);
 
       return ResponseFactory.success(t('removed'));

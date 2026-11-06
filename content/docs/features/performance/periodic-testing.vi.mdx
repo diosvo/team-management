@@ -6,14 +6,17 @@ description: Điểm thể lực theo bài kiểm tra và ngày, nhập theo lô
 <Callout title="Route /periodic-testing">
   Nhóm **Performance** · Resource `periodic-testing` · Trạng thái **Đã phát
   hành** · Route con `/periodic-testing/add-result`,
-  `/periodic-testing/test-types`
+  `/periodic-testing/test-types`, `/periodic-testing/progression`,
+  `/periodic-testing/progression/[id]`
 </Callout>
 
 ## Mục đích
 
 - Kiểm tra thể lực định kỳ (**Periodic Testing**) ghi điểm của từng cầu thủ ở các bài kiểm tra riêng của CLB (chạy nước rút, bật nhảy, …) theo ngày.
 - Trang chính: bảng kết quả của một ngày kiểm tra, mỗi dòng một cầu thủ, mỗi cột một bài kiểm tra.
-- Route con: nhập kết quả cả buổi một lần; quản lý danh sách bài kiểm tra.
+- Route con: nhập kết quả cả buổi một lần; quản lý danh sách bài kiểm tra;
+  theo dõi tiến bộ của đội và từng cầu thủ, kèm ghi chú và mục tiêu của huấn
+  luyện viên.
 
 ## Quyền truy cập
 
@@ -59,8 +62,9 @@ description: Điểm thể lực theo bài kiểm tra và ngày, nhập theo lô
 
     - `/test-types` liệt kê các bài kiểm tra của đội, có ô tìm kiếm và lọc theo
       đơn vị.
-    - Bấm **+ Add** hoặc bấm vào một dòng đều mở cùng một hộp thoại: tên + một
-      đơn vị.
+    - Bấm **+ Add** hoặc bấm vào một dòng đều mở cùng một hộp thoại: tên, một
+      đơn vị, chiều cải thiện (càng cao hoặc càng thấp càng tốt) và target tùy
+      chọn.
     - Đơn vị: `meters`, `percent`, `points`, `reps`, `seconds`, `times`.
     - Form mặc định là `seconds`; cột trong DB mặc định là `times`.
     - Có thể chọn nhiều dòng để xóa cùng lúc; bài kiểm tra còn kết quả thì không
@@ -68,6 +72,59 @@ description: Điểm thể lực theo bài kiểm tra và ngày, nhập theo lô
 
   </Tab>
 </Tabs>
+
+## Tiến bộ
+
+<Tabs items={['Cả đội', 'Cầu thủ', 'Ghi chú & mục tiêu']}>
+  <Tab value="Cả đội">
+
+    - Trang Tiến bộ (**Progression**) ở `/periodic-testing/progression`, mở
+      từ phần đầu trang kiểm tra.
+    - Xem từng bài kiểm tra một; `type` trống → bài đầu tiên có kết quả.
+    - Thống kê: trung bình và tốt nhất của đội (theo kết quả gần nhất của mỗi
+      cầu thủ), số cầu thủ vắng lần kiểm tra gần nhất.
+    - Bảng theo cầu thủ: ban đầu, gần nhất, tốt nhất, thay đổi, trạng thái,
+      mức.
+    - Bộ lọc `status` và `band` chỉ xử lý trên trình duyệt; chỉ đổi `type` mới
+      tải lại từ server.
+
+  </Tab>
+  <Tab value="Cầu thủ">
+
+    - `/periodic-testing/progression/[id]`, mở khi bấm tên cầu thủ trên bảng
+      kết quả.
+    - Thống kê: số bài theo dõi, đang tiến bộ, đang giảm sút, đạt mục tiêu
+      (xuất sắc hoặc đạt).
+    - Mỗi bài kiểm tra một thẻ có biểu đồ so với trung bình đội, sau đó là
+      lịch sử kiểm tra và ghi chú.
+
+  </Tab>
+  <Tab value="Ghi chú & mục tiêu">
+
+    - Ghi chú là nhận xét của huấn luyện viên, có thể gắn với một bài kiểm tra
+      (trọng tâm), kèm `goal` tùy chọn cho lần kiểm tra sau.
+    - Mỗi cầu thủ chỉ có một ghi chú cho mỗi bài kiểm tra: lưu ghi chú có bài
+      kiểm tra sẽ cập nhật ghi chú cũ. Ghi chú chung (không gắn bài) thì không
+      giới hạn.
+    - Mục tiêu được đánh giá bằng kết quả đầu tiên sau khi viết ghi chú:
+      **đạt**, **không đạt**, hoặc **chờ** đến lần kiểm tra sau.
+    - Nút sửa và xóa theo `can('periodic-testing', 'edit' | 'delete')`.
+
+  </Tab>
+</Tabs>
+
+### Trạng thái và mức
+
+- **Thay đổi** tính từ kết quả ban đầu → gần nhất, luôn dương khi tốt hơn
+  (chạy nhanh hơn là dương).
+- **Trạng thái** so các lần kiểm tra cuối với ngưỡng nhiễu 2%:
+  - `improving` / `regressing`: lần gần nhất vượt ngưỡng.
+  - `plateauing`: hai lần cuối đều không vượt ngưỡng.
+  - `stable`: chỉ lần gần nhất giữ nguyên.
+  - `insufficient`: ít hơn hai kết quả.
+- **Mức** so kết quả gần nhất với `target` của bài kiểm tra, biên 10%:
+  `elite`, `on_target`, `below_target`, `needs_work`. Không có target thì
+  không có mức.
 
 ## Quy tắc
 
@@ -83,8 +140,13 @@ description: Điểm thể lực theo bài kiểm tra và ngày, nhập theo lô
 - **Bài kiểm tra đang dùng thì không xóa được.** `test_result.type_id` đặt
   `onDelete: 'restrict'`; `removeTestType` đổi lỗi
   `test_result_type_id_test_type_type_id_fk` thành “Type is being in use.”
+- **Ghi chú không ra khỏi đội.** `test_note` không có `team_id`; mọi thao
+  tác ghi ghi chú đều kiểm tra cầu thủ đang ở đội hoặc đã được đội kiểm tra,
+  và sửa, xóa đều lọc theo cả `player_id` lẫn `note_id`.
+- **Xóa bài kiểm tra vẫn giữ ghi chú.** `test_note.type_id` là
+  `onDelete: 'set null'`, ghi chú trở thành ghi chú chung.
 - **Làm mới trang.** Lưu kết quả → `/periodic-testing`; lưu bài kiểm tra →
-  `/periodic-testing/test-types`.
+  `/periodic-testing/test-types`; ghi chú → trang tiến bộ của cầu thủ.
 
 ## Dữ liệu
 
@@ -95,6 +157,7 @@ Các bảng trong `src/drizzle/schema/periodic-testing.ts`:
   path="src/drizzle/schema/periodic-testing.ts"
   name="TestResult"
 />
+<AutoTypeTable path="src/drizzle/schema/periodic-testing.ts" name="TestNote" />
 
 Dữ liệu bảng kết quả mà `getTestResult` trả về (`src/types/periodic-testing.d.ts`):
 
@@ -190,6 +253,62 @@ Dữ liệu bảng kết quả mà `getTestResult` trả về (`src/types/period
   }}
 />
 
+### Tiến bộ
+
+- Server action nằm trong `src/actions/progression.ts`, đều qua
+  `withResource('periodic-testing')`.
+- Bảng `test_note` không có `team_id`, nên mọi thao tác ghi ghi chú đều gọi
+  `isPlayerInTeamScope(team_id, player_id)` trước: cầu thủ phải đang ở đội của
+  bạn, hoặc đội đã có kết quả kiểm tra của cầu thủ đó. Nếu không, action trả
+  về “Không tìm thấy ghi chú”.
+
+<TypeTable
+  type={{
+    'getProgression(type_id)': {
+      type: '{ types, progression }',
+      description:
+        'Tiến bộ của cả đội ở một bài kiểm tra; nếu trống thì lấy bài đầu tiên có kết quả. Cần quyền view.',
+      required: true,
+    },
+    'getPlayerProgressionById(player_id)': {
+      type: 'PlayerProgressionDetail',
+      description:
+        'Một cầu thủ ở mọi bài kiểm tra, kèm ghi chú. Ngoài phạm vi đội thì notFound(). Cần quyền view.',
+      required: true,
+    },
+    'saveTestNote(player_id, data, note_id?)': {
+      type: 'Response',
+      description: (
+        <ul>
+          <li>Cần quyền create hoặc edit; cầu thủ phải thuộc phạm vi đội.</li>
+          <li>
+            Cập nhật <code>note_id</code>, nếu không thì ghi chú cùng bài kiểm
+            tra của cầu thủ, nếu không nữa thì thêm mới.
+          </li>
+          <li>
+            Cập nhật lọc theo cả <code>note_id</code> và <code>player_id</code>.
+          </li>
+        </ul>
+      ),
+      required: true,
+    },
+    'removeTestNote(note_id)': {
+      type: 'Response',
+      description: (
+        <ul>
+          <li>Cần quyền delete.</li>
+          <li>
+            Server tự đọc cầu thủ của ghi chú, kiểm tra phạm vi đội, rồi xóa
+            theo <code>note_id</code> và <code>player_id</code>.
+          </li>
+          <li>Trình duyệt không bao giờ gửi cầu thủ lên.</li>
+        </ul>
+      ),
+      required: true,
+    },
+  }}
+/>
+
 ## Tiêu chí chấp nhận
 
 <Accordions>
@@ -204,5 +323,13 @@ Dữ liệu bảng kết quả mà `getTestResult` trả về (`src/types/period
   </Accordion>
   <Accordion title="Bài kiểm tra còn kết quả thì không xóa được">
     Báo lỗi “Type is being in use.”; bài kiểm tra vẫn nằm trong danh sách.
+  </Accordion>
+  <Accordion title="Mỗi bài kiểm tra chỉ một ghi chú">
+    Lưu ghi chú thứ hai cho cùng cầu thủ và bài kiểm tra sẽ cập nhật ghi chú
+    đầu; thông báo “Đã cập nhật ghi chú”.
+  </Accordion>
+  <Accordion title="Ghi chú không chạm tới cầu thủ đội khác">
+    `saveTestNote` hoặc `removeTestNote` cho cầu thủ ngoài đội của bạn báo
+    “Không tìm thấy ghi chú” và không ghi gì.
   </Accordion>
 </Accordions>

@@ -1,4 +1,4 @@
-import { asc, eq } from 'drizzle-orm';
+import { and, asc, eq } from 'drizzle-orm';
 import { groupBy } from 'es-toolkit/array';
 
 import db from '@/drizzle';
@@ -156,7 +156,32 @@ async function getPlayerNotes(player_id: string): Promise<Array<TestNoteItem>> {
   );
 }
 
-/** A player's timeline per test type, with the team average on each test date. */
+/** Whether a team may view or annotate a player. */
+export async function isPlayerInTeamScope(team_id: string, player_id: string) {
+  const user = await db.query.UserTable.findFirst({
+    columns: { team_id: true },
+    where: eq(UserTable.id, player_id),
+  });
+  if (!user) return false;
+  if (user.team_id === team_id) return true;
+
+  const [tested] = await db
+    .select({ player_id: TestResultTable.player_id })
+    .from(TestResultTable)
+    .innerJoin(
+      TestTypeTable,
+      eq(TestTypeTable.type_id, TestResultTable.type_id),
+    )
+    .where(
+      and(
+        eq(TestTypeTable.team_id, team_id),
+        eq(TestResultTable.player_id, player_id),
+      ),
+    )
+    .limit(1);
+  return Boolean(tested);
+}
+
 export async function getPlayerProgression(
   team_id: string,
   player_id: string,

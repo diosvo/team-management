@@ -53,13 +53,17 @@ test('insertTestNote inserts the note', async () => {
   expect(values).toHaveBeenCalledWith(note);
 });
 
-test('deleteTestNote deletes by id and returns the player', async () => {
+test('deleteTestNote deletes by id and player and returns the player', async () => {
   returning.mockResolvedValue([{ player_id: 'p1' }]);
 
-  await expect(deleteTestNote('n1')).resolves.toEqual([{ player_id: 'p1' }]);
+  await expect(deleteTestNote('n1', 'p1')).resolves.toEqual([
+    { player_id: 'p1' },
+  ]);
 
   expect(db.delete).toHaveBeenCalledWith(TestNoteTable);
-  expect(where).toHaveBeenCalledWith(eq(TestNoteTable.note_id, 'n1'));
+  expect(where).toHaveBeenCalledWith(
+    and(eq(TestNoteTable.note_id, 'n1'), eq(TestNoteTable.player_id, 'p1')),
+  );
   expect(returning).toHaveBeenCalledWith({ player_id: 'player_id' });
 });
 

@@ -35,9 +35,21 @@ export async function updateTestNote(
     );
 }
 
-export async function deleteTestNote(note_id: string) {
+export async function findTestNote(note_id: string) {
+  return await db.query.TestNoteTable.findFirst({
+    columns: { note_id: true, player_id: true },
+    where: eq(TestNoteTable.note_id, note_id),
+  });
+}
+
+export async function deleteTestNote(note_id: string, player_id: string) {
   return await db
     .delete(TestNoteTable)
-    .where(eq(TestNoteTable.note_id, note_id))
+    .where(
+      and(
+        eq(TestNoteTable.note_id, note_id),
+        eq(TestNoteTable.player_id, player_id),
+      ),
+    )
     .returning({ player_id: TestNoteTable.player_id });
 }

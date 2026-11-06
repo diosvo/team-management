@@ -2,9 +2,14 @@ import { notFound } from 'next/navigation';
 
 import { revalidate } from '@/actions/cache';
 import { getDbErrorMessage } from '@/db/pg-error';
-import { getPlayerProgression, getTeamProgression } from '@/db/progression';
+import {
+  getPlayerProgression,
+  getTeamProgression,
+  isPlayerInTeamScope,
+} from '@/db/progression';
 import {
   deleteTestNote,
+  findTestNote,
   findTypeNote,
   insertTestNote,
   updateTestNote,
@@ -26,11 +31,13 @@ vi.mock('./auth', () => ({ withResource: mockWithResource }));
 vi.mock('@/db/progression', () => ({
   getTeamProgression: vi.fn(),
   getPlayerProgression: vi.fn(),
+  isPlayerInTeamScope: vi.fn(),
 }));
 
 vi.mock('@/db/test-note', () => ({
   insertTestNote: vi.fn(),
   deleteTestNote: vi.fn(),
+  findTestNote: vi.fn(),
   findTypeNote: vi.fn(),
   updateTestNote: vi.fn(),
 }));
@@ -43,6 +50,11 @@ const dbError = () => {
     constraint: null,
   });
 };
+
+beforeEach(() => {
+  vi.mocked(isPlayerInTeamScope).mockResolvedValue(true);
+  vi.mocked(findTestNote).mockResolvedValue({ note_id: 'n1', player_id: 'p1' });
+});
 
 afterEach(() => {
   vi.clearAllMocks();
@@ -179,6 +191,21 @@ describe('saveTestNote', () => {
     expect(result.message).toBe('Note updated successfully');
   });
 
+  test('rejects a player outside the team', async () => {
+    vi.mocked(isPlayerInTeamScope).mockResolvedValueOnce(false);
+
+    const result = await saveTestNote('p9', {
+      type_id: '',
+      content: 'Good',
+      goal: '',
+    });
+
+    expect(isPlayerInTeamScope).toHaveBeenCalledWith(MOCK_TEAM.team_id, 'p9');
+    expect(insertTestNote).not.toHaveBeenCalled();
+    expect(updateTestNote).not.toHaveBeenCalled();
+    expect(result).toEqual({ success: false, message: 'Note not found' });
+  });
+
   test('returns the DB error', async () => {
     vi.mocked(insertTestNote).mockRejectedValue(new Error('boom'));
     dbError();
@@ -200,12 +227,26 @@ describe('removeTestNote', () => {
 
     const result = await removeTestNote('n1');
 
-    expect(deleteTestNote).toHaveBeenCalledWith('n1');
+    expect(findTestNote).toHaveBeenCalledWith('n1');
+    expect(isPlayerInTeamScope).toHaveBeenCalledWith(MOCK_TEAM.team_id, 'p1');
+    expect(deleteTestNote).toHaveBeenCalledWith('n1', 'p1');
     expect(revalidate.testNotes).toHaveBeenCalledWith('p1');
     expect(result).toEqual({
       success: true,
       message: 'Note removed successfully',
     });
+  });
+
+  test.each([
+    ['the note does not exist', () => findTestNote, undefined],
+    ['the player is outside the team', () => isPlayerInTeamScope, false],
+  ])('rejects when %s', async (_, fn, value) => {
+    vi.mocked(fn()).mockResolvedValueOnce(value as never);
+
+    const result = await removeTestNote('n1');
+
+    expect(deleteTestNote).not.toHaveBeenCalled();
+    expect(result).toEqual({ success: false, message: 'Note not found' });
   });
 
   test('skips revalidation when nothing was deleted', async () => {
