@@ -5,6 +5,7 @@ import { TestNoteTable } from '@/drizzle/schema';
 
 import {
   deleteTestNote,
+  findTestNote,
   findTypeNote,
   insertTestNote,
   updateTestNote,
@@ -99,4 +100,17 @@ test('updateTestNote updates the note scoped to its player', async () => {
   expect(updateWhere).toHaveBeenCalledWith(
     and(eq(TestNoteTable.note_id, 'n1'), eq(TestNoteTable.player_id, 'p1')),
   );
+});
+
+test('findTestNote looks up a note with its player', async () => {
+  findFirst.mockResolvedValue({ note_id: 'n1', player_id: 'p1' });
+
+  await expect(findTestNote('n1')).resolves.toEqual({
+    note_id: 'n1',
+    player_id: 'p1',
+  });
+  expect(findFirst).toHaveBeenCalledWith({
+    columns: { note_id: true, player_id: true },
+    where: eq(TestNoteTable.note_id, 'n1'),
+  });
 });

@@ -7,9 +7,14 @@ import {
 } from '@/test/mocks/periodic-testing';
 import { ProgressStatus } from '@/utils/enum';
 
-import { getPlayerProgression, getTeamProgression } from './progression';
+import {
+  getPlayerProgression,
+  getTeamProgression,
+  isPlayerInTeamScope,
+} from './progression';
 
 const orderBy = vi.fn();
+const limit = vi.fn();
 
 vi.mock('@/drizzle', () => {
   const chain = {
@@ -17,6 +22,7 @@ vi.mock('@/drizzle', () => {
     innerJoin: vi.fn(() => chain),
     where: vi.fn(() => chain),
     orderBy: (...args: Array<unknown>) => orderBy(...args),
+    limit: (...args: Array<unknown>) => limit(...args),
   };
   return {
     default: {
@@ -305,5 +311,41 @@ describe('getPlayerProgression', () => {
 
     expect(detail?.notes.map(({ outcome }) => outcome)).toEqual([null, null]);
     expect(detail?.types[0].goal).toBeNull();
+  });
+});
+
+describe('isPlayerInTeamScope', () => {
+  const mockUser = (team_id: Nullable<string>) =>
+    vi
+      .mocked(db.query.UserTable.findFirst)
+      .mockResolvedValue((team_id === null ? undefined : { team_id }) as never);
+
+  test('rejects an unknown player', async () => {
+    mockUser(null);
+
+    await expect(isPlayerInTeamScope(TEAM, 'p9')).resolves.toBe(false);
+    expect(db.select).not.toHaveBeenCalled();
+  });
+
+  test('accepts a player on the team without querying results', async () => {
+    mockUser(TEAM);
+
+    await expect(isPlayerInTeamScope(TEAM, 'p1')).resolves.toBe(true);
+    expect(db.select).not.toHaveBeenCalled();
+  });
+
+  test('accepts a former player the team has tested', async () => {
+    mockUser('team-2');
+    limit.mockResolvedValue([{ player_id: 'p1' }]);
+
+    await expect(isPlayerInTeamScope(TEAM, 'p1')).resolves.toBe(true);
+    expect(limit).toHaveBeenCalledWith(1);
+  });
+
+  test('rejects a player from another team never tested', async () => {
+    mockUser('team-2');
+    limit.mockResolvedValue([]);
+
+    await expect(isPlayerInTeamScope(TEAM, 'p1')).resolves.toBe(false);
   });
 });
