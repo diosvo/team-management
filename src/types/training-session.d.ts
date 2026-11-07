@@ -1,6 +1,6 @@
-import { Attendance, Coach } from '@/drizzle/schema';
-import { Location } from '@/drizzle/schema/location';
-import { TrainingSession } from '@/drizzle/schema/training';
+import type { Attendance, Coach } from '@/drizzle/schema';
+import type { Location } from '@/drizzle/schema/location';
+import type { TrainingSession } from '@/drizzle/schema/training';
 
 export interface TrainingSessionWithDetails extends TrainingSession {
   location: Pick<Location, 'name'> | null;

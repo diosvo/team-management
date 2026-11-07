@@ -13,7 +13,7 @@ import {
 } from 'drizzle-orm/pg-core';
 
 import {
-  EmailStatus,
+  type EmailStatus,
   Interval,
   ReportStatus,
   ReportTrigger,

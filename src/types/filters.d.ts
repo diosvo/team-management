@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 
 import type { DateBounds } from '@/types/common';
 import type { DateSelection } from '@/utils/datetime';
-import { Option } from '@/utils/type';
+import type { Option } from '@/utils/type';
 
 export type FilterControl =
   // Renders inline and reads/writes the `from`/`to` params

@@ -28,7 +28,7 @@ import { Tooltip } from '@/components/ui/tooltip';
 import { submitFeedback } from '@/actions/feedback';
 import {
   FeedbackFormSchema,
-  FeedbackFormSchemaValues,
+  type FeedbackFormSchemaValues,
 } from '@/schemas/feedback';
 import {
   FEEDBACK_DESCRIPTION_LIMIT,

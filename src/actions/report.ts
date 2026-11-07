@@ -13,7 +13,7 @@ import {
   updateReportSchedule,
 } from '@/db/report';
 import { getDbErrorMessage } from '@/db/pg-error';
-import { UpsertReportScheduleValues } from '@/schemas/report';
+import type { UpsertReportScheduleValues } from '@/schemas/report';
 import { computeNextRun, executeSchedule } from '@/lib/report-schedule';
 import { requestOrigin } from '@/lib/request';
 import { sendEmail, type EmailProps } from '@/lib/resend';

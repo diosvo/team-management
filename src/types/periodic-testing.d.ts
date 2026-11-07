@@ -1,4 +1,4 @@
-import { TestType, User } from '@/drizzle/schema';
+import type { TestType, User } from '@/drizzle/schema';
 import type { PerformanceBand, ProgressStatus } from '@/utils/enum';
 import type { GoalOutcome } from '@/utils/progression';
 

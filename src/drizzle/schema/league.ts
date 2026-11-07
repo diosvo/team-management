@@ -9,7 +9,7 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core';
 
-import { LeagueStatus } from '@/utils/enum';
+import type { LeagueStatus } from '@/utils/enum';
 import { created_at, updated_at } from '../helpers';
 
 import { AchievementTable } from './achievement';

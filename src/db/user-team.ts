@@ -2,7 +2,7 @@ import { and, desc, eq, isNull } from 'drizzle-orm';
 
 import db from '@/drizzle';
 import { UserTable } from '@/drizzle/schema/user';
-import { UserTeam, UserTeamTable } from '@/drizzle/schema/user-team';
+import { type UserTeam, UserTeamTable } from '@/drizzle/schema/user-team';
 
 /** Every stint the user has had, most recent first. */
 export async function getMemberships(

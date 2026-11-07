@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 
 import { fetchExpiredReports, markReportsExpired } from '@/db/report';
 import { deleteFile } from '@/lib/blob';

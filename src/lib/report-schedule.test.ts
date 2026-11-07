@@ -6,7 +6,7 @@ import {
   reclaimStaleReportRun,
   updateReportHistory,
 } from '@/db/report';
-import { ReportSchedule } from '@/drizzle/schema';
+import type { ReportSchedule } from '@/drizzle/schema';
 import { Interval, ReportStatus, ReportTrigger } from '@/utils/enum';
 
 import {
@@ -18,7 +18,7 @@ import {
 import {
   computeNextRun,
   executeSchedule,
-  ExecuteScheduleOptions,
+  type ExecuteScheduleOptions,
 } from './report-schedule';
 import { sendEmail } from './resend';
 

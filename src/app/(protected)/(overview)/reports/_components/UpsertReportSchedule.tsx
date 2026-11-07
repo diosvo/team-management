@@ -11,7 +11,7 @@ import {
   HStack,
   IconButton,
   List,
-  ListCollection,
+  type ListCollection,
   Portal,
   Select,
   Span,
@@ -35,11 +35,11 @@ import {
   SCHEDULED_INTERVAL_SELECTION,
   type ScheduledInterval,
 } from '@/utils/constants';
-import { Option } from '@/utils/type';
+import type { Option } from '@/utils/type';
 
 import { getReportRecipients, upsertReportSchedule } from '@/actions/report';
 
-import { ReportSchedule } from '@/drizzle/schema';
+import type { ReportSchedule } from '@/drizzle/schema';
 
 export const UPSERT_SCHEDULE_ID = 'upsert-schedule';
 

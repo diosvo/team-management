@@ -1,5 +1,5 @@
 import type { ColorPalette } from '@chakra-ui/react';
-import { type LucideIcon } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 
 export type AchievementStyle = {
   label: string;

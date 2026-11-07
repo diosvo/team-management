@@ -17,7 +17,7 @@ import { enumLabel } from '@/i18n/enums';
 import { useLeagueFilters } from '@/lib/nuqs';
 import { ACHIEVEMENT_STYLE } from '@/utils/constants/achievement';
 import { formatDate } from '@/utils/datetime';
-import { AchievementType, LeagueStatus } from '@/utils/enum';
+import { type AchievementType, LeagueStatus } from '@/utils/enum';
 import { buildPredicate } from '@/utils/filters';
 import { getColor } from '@/utils/helper';
 

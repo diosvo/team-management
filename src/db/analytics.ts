@@ -7,7 +7,7 @@ import {
   gte,
   inArray,
   lt,
-  SQL,
+  type SQL,
   sql,
 } from 'drizzle-orm';
 import { cache } from 'react';

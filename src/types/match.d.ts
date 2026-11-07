@@ -1,5 +1,5 @@
-import { Match, Team } from '@/drizzle/schema';
-import { MatchResult } from '@/utils/enum';
+import type { Match, Team } from '@/drizzle/schema';
+import type { MatchResult } from '@/utils/enum';
 
 export interface MatchWithTeams extends Match {
   home_team: Pick<Team, 'name' | 'team_id'>;
