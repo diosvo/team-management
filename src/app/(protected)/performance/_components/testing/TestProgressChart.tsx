@@ -1,9 +1,8 @@
 'use client';
 
 import { useMemo } from 'react';
-
-import { Chart, useChart } from '@chakra-ui/charts';
 import { useLocale, useTranslations } from 'next-intl';
+import { Chart, useChart } from '@chakra-ui/charts';
 import {
   CartesianGrid,
   Legend,
@@ -14,9 +13,10 @@ import {
   YAxis,
 } from 'recharts';
 
+import { formatDayHint } from '@/utils/datetime';
+
 import { enumLabel } from '@/i18n/enums';
 import type { TestTypeProgress } from '@/types/performance';
-import { formatDayHint } from '@/utils/datetime';
 
 export default function TestProgressChart({
   type,

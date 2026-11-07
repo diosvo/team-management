@@ -1,5 +1,12 @@
+import type { League } from '@/drizzle/schema';
+import type { User } from '@/drizzle/schema/user';
+import usePermissions from '@/hooks/use-permissions';
 import { MOCK_LEAGUE } from '@/test/mocks/league';
-import { MOCK_USER, MOCK_USER_WITH_PLAYER } from '@/test/mocks/user';
+import {
+  MOCK_ALICE,
+  MOCK_USER,
+  MOCK_USER_WITH_PLAYER,
+} from '@/test/mocks/user';
 import {
   act,
   createPermissionsMock,
@@ -12,13 +19,9 @@ import {
   waitFor,
 } from '@/test/utilities';
 
-import usePermissions from '@/hooks/use-permissions';
-
-import type { League } from '@/drizzle/schema';
-import type { User } from '@/drizzle/schema/user';
+import PreviewPanel from './PreviewPanel';
 
 import { downloadCsv, downloadPdf } from '../_helpers/roster';
-import PreviewPanel from './PreviewPanel';
 
 // Reached indirectly through useTableState.
 vi.mock('@/hooks/use-permissions', () => ({
@@ -131,11 +134,7 @@ describe('PreviewPanel', () => {
 
     test('renders a numbered row per player', () => {
       // The table keys rows by user id, so the second player needs its own.
-      const second = {
-        ...MOCK_USER,
-        id: 'user-456',
-        name: 'Second Player',
-      } as User;
+      const second = MOCK_ALICE as User;
 
       setup({ players: [MOCK_USER_WITH_PLAYER as User, second] });
 

@@ -1,5 +1,5 @@
-import { Center, Skeleton, Stack } from '@chakra-ui/react';
 import { getTranslations } from 'next-intl/server';
+import { Center, Skeleton, Stack } from '@chakra-ui/react';
 
 import PageTitle from '@/components/PageTitle';
 

@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import useSWRImmutable from 'swr/immutable';
-
+import { useFieldArray, useForm } from 'react-hook-form';
+import { useTranslations } from 'next-intl';
 import {
   Button,
   CloseButton,
@@ -18,9 +18,15 @@ import {
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SaveAll } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useFieldArray, useForm } from 'react-hook-form';
+import useSWRImmutable from 'swr/immutable';
 
+import { CACHE_KEY, CURRENT_DATE, ESTABLISHED_DATE } from '@/utils/constants';
+import { AttendanceStatus } from '@/utils/enum';
+
+import { useAttendanceFilters } from '@/lib/nuqs';
+
+import { submitLeave } from '@/actions/attendance';
+import { getActivePlayers } from '@/actions/user';
 import { DatePickerField } from '@/components/date-picker/DatePicker';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Field } from '@/components/ui/field';
@@ -28,15 +34,7 @@ import { toaster } from '@/components/ui/toaster';
 import { Tooltip } from '@/components/ui/tooltip';
 import { PlayerSelection } from '@/components/user/PlayerSelection';
 import Visibility from '@/components/Visibility';
-
-import { useAttendanceFilters } from '@/lib/nuqs';
-import { CACHE_KEY, CURRENT_DATE, ESTABLISHED_DATE } from '@/utils/constants';
-import { AttendanceStatus } from '@/utils/enum';
-
-import type { User } from '@/drizzle/schema';
-
-import { submitLeave } from '@/actions/attendance';
-import { getActivePlayers } from '@/actions/user';
+import type { PlayerOption } from '@/db/user';
 import {
   BulkAttendanceSchema,
   type BulkAttendanceSchemaValues,
@@ -49,11 +47,11 @@ export default function BulkAttendanceManager({
 }) {
   const t = useTranslations('attendance.bulk');
   const [, setSearchParams] = useAttendanceFilters();
-  const { data: activePlayers = [] } = useSWRImmutable<Array<User>>(
+  const { data: activePlayers = [] } = useSWRImmutable<Array<PlayerOption>>(
     CACHE_KEY.PLAYERS,
     getActivePlayers,
   );
-  const [selection, setSelection] = useState<Array<User>>([]);
+  const [selection, setSelection] = useState<Array<PlayerOption>>([]);
 
   const [open, setOpen] = useState<boolean>(false);
   const [isPending, startTransition] = useTransition();
@@ -88,7 +86,7 @@ export default function BulkAttendanceManager({
     }
   };
 
-  const handlePlayersChange = (players: Array<User>) => {
+  const handlePlayersChange = (players: Array<PlayerOption>) => {
     setSelection(players);
     const currentPlayerIds = fields.map(({ player_id }) => player_id);
     const selectedPlayerIds = players.map(({ id }) => id);

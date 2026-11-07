@@ -1,11 +1,11 @@
 import { asc, desc, eq } from 'drizzle-orm';
 
+import { AssetCondition } from '@/utils/enum';
+
 import db from '@/drizzle';
 import { AssetTable, type InsertAsset } from '@/drizzle/schema/asset';
 
-import { AssetCondition } from '@/utils/enum';
-
-export async function getAssets(team_id: string) {
+export async function selectAssets(team_id: string) {
   try {
     const assets = await db.query.AssetTable.findMany({
       where: eq(AssetTable.team_id, team_id),

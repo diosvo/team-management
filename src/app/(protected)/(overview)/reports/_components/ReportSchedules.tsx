@@ -1,19 +1,10 @@
 'use client';
 
 import { useMemo, useState, useTransition } from 'react';
-
+import { useTranslations } from 'next-intl';
 import { Box, Button, HStack, VisuallyHidden } from '@chakra-ui/react';
 import { CalendarClock, CalendarSync, Play } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 
-import Authorized from '@/components/Authorized';
-import DataTable, { type Column } from '@/components/DataTable';
-import PageTitle from '@/components/PageTitle';
-import { Switch } from '@/components/ui/switch';
-import { toaster } from '@/components/ui/toaster';
-
-import usePermissions from '@/hooks/use-permissions';
-import { enumLabel } from '@/i18n/enums';
 import { SCHEDULED_INTERVALS } from '@/utils/constants';
 import { formatDatetime } from '@/utils/datetime';
 
@@ -22,7 +13,14 @@ import {
   runReportNow,
   toggleReportSchedule,
 } from '@/actions/report';
+import Authorized from '@/components/Authorized';
+import DataTable, { type Column } from '@/components/DataTable';
+import PageTitle from '@/components/PageTitle';
+import { Switch } from '@/components/ui/switch';
+import { toaster } from '@/components/ui/toaster';
 import type { ReportSchedule } from '@/drizzle/schema';
+import usePermissions from '@/hooks/use-permissions';
+import { enumLabel } from '@/i18n/enums';
 
 import {
   UPSERT_SCHEDULE_ID,

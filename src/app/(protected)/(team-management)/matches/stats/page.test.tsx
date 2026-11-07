@@ -1,11 +1,10 @@
-import { renderWithUI, screen, setupTestLifecycle } from '@/test/utilities';
-
 import {
   canEditMatchStats,
   getMatchPlayerStats,
   getPlayedMatches,
 } from '@/actions/match';
 import { getActivePlayers } from '@/actions/user';
+import { renderWithUI, screen, setupTestLifecycle } from '@/test/utilities';
 
 import MatchStatsPage, { generateMetadata } from './page';
 

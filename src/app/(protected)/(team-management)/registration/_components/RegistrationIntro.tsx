@@ -1,5 +1,5 @@
-import { Span } from '@chakra-ui/react';
 import { useTranslations } from 'next-intl';
+import { Span } from '@chakra-ui/react';
 
 import PageTitle from '@/components/PageTitle';
 

@@ -1,3 +1,5 @@
+import { thisYear } from '@/utils/datetime';
+
 import {
   expectNoA11yViolations,
   mockUseQueryStates,
@@ -6,8 +8,6 @@ import {
   setupTestLifecycle,
   waitFor,
 } from '@/test/utilities';
-
-import { thisYear } from '@/utils/datetime';
 
 import PerformanceFilters from './PerformanceFilters';
 

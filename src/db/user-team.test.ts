@@ -3,7 +3,6 @@ import { and, desc, eq, isNull } from 'drizzle-orm';
 import db from '@/drizzle';
 import { UserTable } from '@/drizzle/schema/user';
 import { UserTeamTable } from '@/drizzle/schema/user-team';
-
 import {
   mockInsertReturningFailure,
   mockInsertReturningSuccess,
@@ -14,11 +13,11 @@ import { MOCK_TEAM } from '@/test/mocks/team';
 import { MOCK_USER, MOCK_USER_TEAM } from '@/test/mocks/user';
 
 import {
-  getCurrentMembership,
-  getMemberships,
   insertMembership,
-  transferMembership,
+  selectCurrentMembership,
+  selectMemberships,
   updateCurrentMembership,
+  upsertMembership,
 } from './user-team';
 
 vi.mock('@/drizzle', () => ({
@@ -56,13 +55,13 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-describe('getMemberships', () => {
+describe('selectMemberships', () => {
   test('returns every stint, most recent first', async () => {
     vi.mocked(db.query.UserTeamTable.findMany).mockResolvedValue([
       MOCK_USER_TEAM,
     ]);
 
-    const result = await getMemberships(MOCK_USER.id);
+    const result = await selectMemberships(MOCK_USER.id);
 
     expect(result).toEqual([MOCK_USER_TEAM]);
     expect(db.query.UserTeamTable.findMany).toHaveBeenCalledWith({
@@ -76,17 +75,17 @@ describe('getMemberships', () => {
       new Error('Database error'),
     );
 
-    expect(await getMemberships(MOCK_USER.id)).toEqual([]);
+    expect(await selectMemberships(MOCK_USER.id)).toEqual([]);
   });
 });
 
-describe('getCurrentMembership', () => {
+describe('selectCurrentMembership', () => {
   test('narrows to the stint without a leave date', async () => {
     vi.mocked(db.query.UserTeamTable.findFirst).mockResolvedValue(
       MOCK_USER_TEAM,
     );
 
-    const result = await getCurrentMembership(MOCK_USER.id);
+    const result = await selectCurrentMembership(MOCK_USER.id);
 
     expect(result).toEqual(MOCK_USER_TEAM);
     expect(db.query.UserTeamTable.findFirst).toHaveBeenCalledWith({
@@ -102,7 +101,7 @@ describe('getCurrentMembership', () => {
       new Error('Database error'),
     );
 
-    expect(await getCurrentMembership(MOCK_USER.id)).toBeNull();
+    expect(await selectCurrentMembership(MOCK_USER.id)).toBeNull();
   });
 });
 
@@ -141,7 +140,7 @@ describe('insertMembership', () => {
   });
 });
 
-describe('transferMembership', () => {
+describe('upsertMembership', () => {
   const NEW_TEAM = 'team-456';
   const JOIN_DATE = '2026-08-30';
 
@@ -173,7 +172,7 @@ describe('transferMembership', () => {
   test('closes the open stint, opens the new one, and repoints the user', async () => {
     const { update, insert, values, closeSet, pointerSet } = mockTransaction();
 
-    const result = await transferMembership(MOCK_USER.id, NEW_TEAM, JOIN_DATE);
+    const result = await upsertMembership(MOCK_USER.id, NEW_TEAM, JOIN_DATE);
 
     expect(result).toEqual({ user_team_id: 'user-team-456' });
 
@@ -198,7 +197,7 @@ describe('transferMembership', () => {
     vi.mocked(db.transaction).mockRejectedValue(new Error('Transfer failed'));
 
     await expect(
-      transferMembership(MOCK_USER.id, NEW_TEAM, JOIN_DATE),
+      upsertMembership(MOCK_USER.id, NEW_TEAM, JOIN_DATE),
     ).rejects.toThrow('Transfer failed');
   });
 });

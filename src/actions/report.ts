@@ -1,24 +1,26 @@
 'use server';
 
-import { getTranslations } from 'next-intl/server';
 import { cookies, headers } from 'next/headers';
+import { getTranslations } from 'next-intl/server';
 
-import {
-  deleteReportSchedules,
-  fetchReportHistory,
-  fetchReportRecipients,
-  fetchReportSchedules,
-  getReportSchedule,
-  insertReportSchedule,
-  updateReportSchedule,
-} from '@/db/report';
-import { getDbErrorMessage } from '@/db/pg-error';
-import type { UpsertReportScheduleValues } from '@/schemas/report';
-import { computeNextRun, executeSchedule } from '@/lib/report-schedule';
-import { requestOrigin } from '@/lib/request';
-import { sendEmail, type EmailProps } from '@/lib/resend';
 import { ReportTrigger } from '@/utils/enum';
 import { ResponseFactory } from '@/utils/response';
+
+import { computeNextRun, executeSchedule } from '@/lib/report-schedule';
+import { requestOrigin } from '@/lib/request';
+import { type EmailProps, sendEmail } from '@/lib/resend';
+
+import { getDbErrorMessage } from '@/db/pg-error';
+import {
+  deleteReportSchedules,
+  insertReportSchedule,
+  selectReportHistory,
+  selectReportRecipients,
+  selectReportSchedule,
+  selectReportSchedules,
+  updateReportSchedule,
+} from '@/db/report';
+import type { UpsertReportScheduleValues } from '@/schemas/report';
 
 import { withAuth, withResource } from './auth';
 import { revalidate } from './cache';
@@ -27,7 +29,7 @@ const reports = withResource('reports');
 
 export const getReportRecipients = withAuth(async ({ team_id }) => {
   if (!team_id) return [];
-  return await fetchReportRecipients(team_id);
+  return await selectReportRecipients(team_id);
 });
 
 export const sendReportEmail = withAuth(
@@ -36,12 +38,12 @@ export const sendReportEmail = withAuth(
 
 export const getReportSchedules = reports(
   'view',
-  async (user) => await fetchReportSchedules(user.team_id),
+  async (user) => await selectReportSchedules(user.team_id),
 );
 
 export const getReportHistory = reports(
   'view',
-  async (user) => await fetchReportHistory(user.team_id),
+  async (user) => await selectReportHistory(user.team_id),
 );
 
 export const upsertReportSchedule = reports(
@@ -88,7 +90,7 @@ export const toggleReportSchedule = reports(
       // paused past its occurrence never fires a backlog of missed runs.
       let next_run_at: Date | undefined;
       if (enabled) {
-        const schedule = await getReportSchedule(user.team_id, schedule_id);
+        const schedule = await selectReportSchedule(user.team_id, schedule_id);
         if (schedule)
           next_run_at = computeNextRun(schedule.interval, new Date());
       }
@@ -137,7 +139,7 @@ export const runReportNow = reports(
   ['create', 'edit'],
   async function run(user, schedule_id: string) {
     const t = await getTranslations('actions.report');
-    const schedule = await getReportSchedule(user.team_id, schedule_id);
+    const schedule = await selectReportSchedule(user.team_id, schedule_id);
 
     if (!schedule) {
       return ResponseFactory.error(t('scheduleNotFound'));

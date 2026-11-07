@@ -1,5 +1,12 @@
 import type React from 'react';
+import { head, pick } from 'es-toolkit';
+import { nth } from 'es-toolkit/compat';
 
+import { MatchStatus } from '@/utils/enum';
+
+import { upsertMatch } from '@/actions/match';
+import usePermissions from '@/hooks/use-permissions';
+import { MOCK_MATCH } from '@/test/mocks/match';
 import {
   act,
   createPermissionsMock,
@@ -12,11 +19,6 @@ import {
   setupTestLifecycle,
   waitFor,
 } from '@/test/utilities';
-
-import usePermissions from '@/hooks/use-permissions';
-import { MatchStatus } from '@/utils/enum';
-
-import { upsertMatch } from '@/actions/match';
 
 import { UpsertMatch } from './UpsertMatch';
 
@@ -82,16 +84,19 @@ describe('UpsertMatch', () => {
   const LEAGUE_ID = '22222222-2222-4222-8222-222222222222';
 
   const EXISTING_MATCH = {
-    match_id: 'match-123',
+    ...pick(MOCK_MATCH, [
+      'match_id',
+      'date',
+      'status',
+      'home_team_score',
+      'away_team_score',
+      'is_5x5',
+    ]),
     away_team: AWAY_TEAM_ID,
     league_id: LEAGUE_ID,
     location_id: null,
-    date: '2026-01-15',
-    time: '19:00:00',
-    status: MatchStatus.COMPLETED,
-    home_team_score: 40,
-    away_team_score: 35,
-    is_5x5: true,
+    // The time input round-trips seconds.
+    time: `${MOCK_MATCH.time}:00`,
   };
 
   const open = async (
@@ -164,7 +169,9 @@ describe('UpsertMatch', () => {
 
     await user.click(await screen.findByText('Completed'));
 
-    const [ours, theirs] = screen.getAllByRole('spinbutton');
+    const spinbuttons = screen.getAllByRole('spinbutton');
+    const ours = head(spinbuttons)!;
+    const theirs = nth(spinbuttons, 1)!;
     await user.clear(ours);
     await user.type(ours, '72');
     await user.clear(theirs);

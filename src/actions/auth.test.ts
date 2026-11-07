@@ -1,11 +1,12 @@
 import { headers } from 'next/headers';
 import { forbidden, redirect, RedirectType } from 'next/navigation';
 
+import { UserRole } from '@/utils/enum';
+
 import auth from '@/lib/auth';
+
 import { LOGIN_PATH } from '@/routes';
 import { MOCK_PLAYER, MOCK_USER } from '@/test/mocks/user';
-
-import { UserRole } from '@/utils/enum';
 
 import { verifySession, withAuth, withResource } from './auth';
 
@@ -195,9 +196,7 @@ describe('Auth Actions', () => {
 
       const result = await action();
 
-      expect(mockServerAction).toHaveBeenCalledWith(
-        mockSession.user,
-      );
+      expect(mockServerAction).toHaveBeenCalledWith(mockSession.user);
       expect(result).toBe('ok');
       expect(forbidden).not.toHaveBeenCalled();
     });

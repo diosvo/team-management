@@ -1,7 +1,8 @@
 'use client';
 
 import { useTransition } from 'react';
-
+import { useForm } from 'react-hook-form';
+import { useLocale, useTranslations } from 'next-intl';
 import {
   Button,
   CloseButton,
@@ -14,19 +15,17 @@ import {
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Save } from 'lucide-react';
-import { useLocale, useTranslations } from 'next-intl';
-import { useForm } from 'react-hook-form';
 
+import { ESTABLISHED_DATE } from '@/utils/constants';
+import { formatDatetime, formatDay } from '@/utils/datetime';
+
+import { getDefaults } from '@/lib/zod';
+
+import { upsertSession } from '@/actions/training-session';
 import LocationSelection from '@/components/common/LocationSelection';
 import { DatePickerField } from '@/components/date-picker/DatePicker';
 import { Field } from '@/components/ui/field';
 import { toaster } from '@/components/ui/toaster';
-
-import { getDefaults } from '@/lib/zod';
-import { ESTABLISHED_DATE } from '@/utils/constants';
-import { formatDatetime, formatDay } from '@/utils/datetime';
-
-import { upsertSession } from '@/actions/training-session';
 import {
   UpsertSessionSchema,
   type UpsertSessionSchemaValues,

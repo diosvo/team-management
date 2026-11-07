@@ -1,6 +1,5 @@
-import { createPermissionsMock, render, screen } from '@/test/utilities';
-
 import usePermissions from '@/hooks/use-permissions';
+import { createPermissionsMock, render, screen } from '@/test/utilities';
 
 import Authorized from './Authorized';
 

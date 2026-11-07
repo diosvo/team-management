@@ -2,8 +2,6 @@ import { renderHook } from '@testing-library/react';
 import * as nuqs from 'nuqs';
 import type { Mock } from 'vitest';
 
-import { MOCK_ATTENDANCE_DATE } from '@/test/mocks/attendance';
-
 import { ALL, SESSION_STATUS_VALUES } from '@/utils/constants';
 import { thisDay, thisMonth, thisYear } from '@/utils/datetime';
 import {
@@ -12,6 +10,8 @@ import {
   MatchType,
   SessionStatus,
 } from '@/utils/enum';
+
+import { MOCK_ATTENDANCE_DATE } from '@/test/mocks/attendance';
 
 import {
   getDefaults,

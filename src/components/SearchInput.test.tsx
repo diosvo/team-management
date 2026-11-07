@@ -6,6 +6,7 @@ import {
   setupTestLifecycle,
   waitFor,
 } from '@/test/utilities';
+
 import SearchInput from './SearchInput';
 
 describe('SearchInput', () => {

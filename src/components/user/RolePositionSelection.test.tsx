@@ -1,4 +1,8 @@
 import { useForm } from 'react-hook-form';
+import { head } from 'es-toolkit';
+import { nth } from 'es-toolkit/compat';
+
+import { PlayerPosition, UserRole } from '@/utils/enum';
 
 import {
   act,
@@ -10,7 +14,6 @@ import {
   waitFor,
 } from '@/test/utilities';
 
-import { PlayerPosition, UserRole } from '@/utils/enum';
 import { RolePositionSelection, RoleSelection } from './RolePositionSelection';
 
 // Unmount before the global rAF mock drops pending frames: zag clears a closed
@@ -153,7 +156,9 @@ describe('RolePositionSelection', () => {
     props: React.ComponentProps<typeof TestRolePositionForm> = {},
   ) => {
     const component = renderWithUI(<TestRolePositionForm {...props} />);
-    const [roleTrigger, positionTrigger] = screen.getAllByRole('combobox');
+    const triggers = screen.getAllByRole('combobox');
+    const roleTrigger = head(triggers)!;
+    const positionTrigger = nth(triggers, 1)!;
 
     return { roleTrigger, positionTrigger, ...component };
   };
@@ -188,7 +193,7 @@ describe('RolePositionSelection', () => {
       await waitFor(() => {
         expect(screen.getByTestId('position-value')).toHaveTextContent('');
 
-        const [, positionTrigger] = screen.getAllByRole('combobox');
+        const positionTrigger = nth(screen.getAllByRole('combobox'), 1)!;
         expect(positionTrigger).toBeDisabled();
       });
     });
@@ -201,11 +206,11 @@ describe('RolePositionSelection', () => {
     await user.click(await screen.findByRole('option', { name: 'Player' }));
 
     await waitFor(() => {
-      const [, positionTrigger] = screen.getAllByRole('combobox');
+      const positionTrigger = nth(screen.getAllByRole('combobox'), 1)!;
       expect(positionTrigger).not.toBeDisabled();
     });
 
-    const [, positionTrigger] = screen.getAllByRole('combobox');
+    const positionTrigger = nth(screen.getAllByRole('combobox'), 1)!;
     await user.click(positionTrigger);
 
     expect(
@@ -220,11 +225,11 @@ describe('RolePositionSelection', () => {
     await user.click(await screen.findByRole('option', { name: 'Coach' }));
 
     await waitFor(() => {
-      const [, positionTrigger] = screen.getAllByRole('combobox');
+      const positionTrigger = nth(screen.getAllByRole('combobox'), 1)!;
       expect(positionTrigger).not.toBeDisabled();
     });
 
-    const [, positionTrigger] = screen.getAllByRole('combobox');
+    const positionTrigger = nth(screen.getAllByRole('combobox'), 1)!;
     await user.click(positionTrigger);
 
     expect(
@@ -323,11 +328,11 @@ describe('RolePositionSelection', () => {
     await user.click(await screen.findByRole('option', { name: 'Player' }));
 
     await waitFor(() => {
-      const [, positionTrigger] = screen.getAllByRole('combobox');
+      const positionTrigger = nth(screen.getAllByRole('combobox'), 1)!;
       expect(positionTrigger).not.toBeDisabled();
     });
 
-    const [, positionTrigger] = screen.getAllByRole('combobox');
+    const positionTrigger = nth(screen.getAllByRole('combobox'), 1)!;
     await user.click(positionTrigger);
     const sgOption = await screen.findByRole('option', {
       name: /Shooting Guard/,
@@ -363,7 +368,7 @@ describe('RolePositionSelection', () => {
       defaultValues: { role: UserRole.PLAYER },
     });
 
-    const [, positionTrigger] = screen.getAllByRole('combobox');
+    const positionTrigger = nth(screen.getAllByRole('combobox'), 1)!;
     await user.click(positionTrigger);
     expect(
       await screen.findByRole('option', { name: /Point Guard/ }),

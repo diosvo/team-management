@@ -7,11 +7,11 @@ import {
   waitFor,
 } from '@/test/utilities';
 
-import { toaster } from '@/components/ui/toaster';
-
 import ImageUploader, { notifyRejection } from './ImageUploader';
 
 vi.mock('@/components/ui/toaster', () => createToasterMock());
+
+import { toaster } from '@/components/ui/toaster';
 
 describe('ImageUploader', () => {
   setupTestLifecycle();

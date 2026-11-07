@@ -1,3 +1,11 @@
+import { UserRole } from '@/utils/enum';
+
+import authClient from '@/lib/auth-client';
+
+import { setLocale } from '@/actions/locale';
+import { useUserAvatar } from '@/hooks/use-image';
+import { type SessionUser, useSessionContext } from '@/providers/session';
+import { LOGIN_PATH } from '@/routes';
 import { MOCK_SESSION_USER } from '@/test/mocks/user';
 import {
   authCallbacks,
@@ -9,13 +17,6 @@ import {
   setupTestLifecycle,
   waitFor,
 } from '@/test/utilities';
-
-import { setLocale } from '@/actions/locale';
-import { useUserAvatar } from '@/hooks/use-image';
-import authClient from '@/lib/auth-client';
-import { useSessionContext, type SessionUser } from '@/providers/session';
-import { LOGIN_PATH } from '@/routes';
-import { UserRole } from '@/utils/enum';
 
 import AccountMenu, { SOCIAL_LINKS } from './AccountMenu';
 

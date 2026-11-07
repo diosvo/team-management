@@ -11,11 +11,12 @@ import {
 
 import { enumValues, SessionStatus } from '@/utils/enum';
 
-import { created_at, updated_at } from '../helpers';
 import { AttendanceTable } from './attendance';
 import { CoachTable } from './coach';
 import { LocationTable } from './location';
 import { TeamTable } from './team';
+
+import { created_at, updated_at } from '../helpers';
 
 export const sessionStatusEnum = pgEnum(
   'session_status',

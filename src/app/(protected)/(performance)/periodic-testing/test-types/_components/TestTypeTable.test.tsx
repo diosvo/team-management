@@ -1,3 +1,8 @@
+import { TestTypeUnit } from '@/utils/enum';
+
+import { removeTestType } from '@/actions/test-type';
+import type { TestType } from '@/drizzle/schema';
+import usePermissions from '@/hooks/use-permissions';
 import {
   MOCK_TEST_TYPE,
   MOCK_TEST_TYPE_2,
@@ -15,13 +20,7 @@ import {
   waitFor,
 } from '@/test/utilities';
 
-import usePermissions from '@/hooks/use-permissions';
-import { TestTypeUnit } from '@/utils/enum';
-
-import { removeTestType } from '@/actions/test-type';
-import type { TestType } from '@/drizzle/schema';
-
-import TestTypesTable from './TestTypesTable';
+import TestTypeTable from './TestTypeTable';
 import { UpsertTestType } from './UpsertTestType';
 
 vi.mock('@/hooks/use-permissions', () => ({
@@ -39,7 +38,7 @@ vi.mock('./UpsertTestType', () => ({
   UpsertTestType: { open: vi.fn(), Viewport: () => null },
 }));
 
-describe('TestTypesTable', () => {
+describe('TestTypeTable', () => {
   const mockUsePermissions = vi.mocked(usePermissions);
   const mockRemoveTestType = vi.mocked(removeTestType);
   const mockOpen = vi.mocked(UpsertTestType.open);
@@ -63,7 +62,7 @@ describe('TestTypesTable', () => {
     );
     mockUseQueryStates({ page: 1, q: '', unit: [], ...params });
 
-    return renderWithUI(<TestTypesTable data={data} />);
+    return renderWithUI(<TestTypeTable data={data} />);
   };
 
   setupTestLifecycle();
@@ -77,8 +76,8 @@ describe('TestTypesTable', () => {
   test('renders a row for each test type', () => {
     setup();
 
-    expect(screen.getByText('Sprint 30m')).toBeInTheDocument();
-    expect(screen.getByText('Push-ups')).toBeInTheDocument();
+    expect(screen.getByText(MOCK_TEST_TYPE.name)).toBeInTheDocument();
+    expect(screen.getByText(MOCK_TEST_TYPE_2.name)).toBeInTheDocument();
   });
 
   test('renders the column headers', () => {
@@ -117,20 +116,20 @@ describe('TestTypesTable', () => {
 
     // HighlightText splits the matched substring into its own node.
     expect(screen.getByText('Sprint')).toBeInTheDocument();
-    expect(screen.queryByText('Push-ups')).not.toBeInTheDocument();
+    expect(screen.queryByText(MOCK_TEST_TYPE_2.name)).not.toBeInTheDocument();
   });
 
   test('filters the types by unit', () => {
     setup({ params: { unit: [TestTypeUnit.REPS] } });
 
-    expect(screen.getByText('Push-ups')).toBeInTheDocument();
-    expect(screen.queryByText('Sprint 30m')).not.toBeInTheDocument();
+    expect(screen.getByText(MOCK_TEST_TYPE_2.name)).toBeInTheDocument();
+    expect(screen.queryByText(MOCK_TEST_TYPE.name)).not.toBeInTheDocument();
   });
 
   test('opens the dialog in update mode when a row is clicked', async () => {
     const { user } = setup();
 
-    await user.click(screen.getByText('Sprint 30m'));
+    await user.click(screen.getByText(MOCK_TEST_TYPE.name));
 
     expect(mockOpen).toHaveBeenCalledWith('update-test-type', {
       action: 'Update',
@@ -141,7 +140,7 @@ describe('TestTypesTable', () => {
   test('does not open the dialog when a guest clicks a row', async () => {
     const { user } = setup({ perms: { isGuest: true } });
 
-    await user.click(screen.getByText('Sprint 30m'));
+    await user.click(screen.getByText(MOCK_TEST_TYPE.name));
 
     expect(mockOpen).not.toHaveBeenCalled();
   });
@@ -161,7 +160,12 @@ describe('TestTypesTable', () => {
 
       await waitFor(() => {
         const ids = mockRemoveTestType.mock.calls.map(([id]) => id);
-        expect(ids).toEqual(expect.arrayContaining(['type-123', 'type-456']));
+        expect(ids).toEqual(
+          expect.arrayContaining([
+            MOCK_TEST_TYPE.type_id,
+            MOCK_TEST_TYPE_2.type_id,
+          ]),
+        );
       });
 
       expect(mockToaster.update).toHaveBeenCalledWith(
@@ -195,7 +199,7 @@ describe('TestTypesTable', () => {
     mockUsePermissions.mockReturnValue(createPermissionsMock());
     mockUseQueryStates({ page: 1, q: '', unit: [] });
 
-    renderWithUI(<TestTypesTable data={[MOCK_TEST_TYPE]} />, { locale: 'vi' });
+    renderWithUI(<TestTypeTable data={[MOCK_TEST_TYPE]} />, { locale: 'vi' });
 
     // Just verify the component renders; the locale exercises the vi locale branch.
     expect(screen.getByText(MOCK_TEST_TYPE.name)).toBeInTheDocument();

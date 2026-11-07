@@ -3,9 +3,9 @@ import { getTranslations } from 'next-intl/server';
 
 import { getTestTypes } from '@/actions/test-type';
 
-import TestTypesFilters from './_components/TestTypesFilters';
-import TestTypesHeader from './_components/TestTypesHeader';
-import TestTypesTable from './_components/TestTypesTable';
+import TestTypeFilters from './_components/TestTypeFilters';
+import TestTypeHeader from './_components/TestTypeHeader';
+import TestTypeTable from './_components/TestTypeTable';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('periodicTesting.testTypes.metadata');
@@ -17,9 +17,9 @@ export default async function TestTypesPage() {
 
   return (
     <>
-      <TestTypesHeader />
-      <TestTypesFilters />
-      <TestTypesTable data={data} />
+      <TestTypeHeader />
+      <TestTypeFilters />
+      <TestTypeTable data={data} />
     </>
   );
 }

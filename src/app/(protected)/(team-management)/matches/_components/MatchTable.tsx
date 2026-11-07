@@ -1,28 +1,27 @@
 'use client';
 
 import { useCallback } from 'react';
-
+import { useTranslations } from 'next-intl';
 import { Badge, HStack, Span } from '@chakra-ui/react';
 import { ClipboardList } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 
-import { LeagueLink } from '@/components/common/LeagueSelection';
-import { LocationLink } from '@/components/common/LocationSelection';
-import Weekday from '@/components/Weekday';
-import DataTable, { RowAction, type Column } from '@/components/DataTable';
-import HighlightText from '@/components/HighlightText';
-
-import usePermissions from '@/hooks/use-permissions';
-import useTableState from '@/hooks/use-table-state';
-
-import { enumLabel } from '@/i18n/enums';
-import { useMatchFilters } from '@/lib/nuqs';
-import type { MatchWithTeams } from '@/types/match';
 import { formatDate } from '@/utils/datetime';
 import { MatchStatus } from '@/utils/enum';
 import { getColor } from '@/utils/helper';
 
+import { useMatchFilters } from '@/lib/nuqs';
+
 import { removeMatch } from '@/actions/match';
+import { LeagueLink } from '@/components/common/LeagueSelection';
+import { LocationLink } from '@/components/common/LocationSelection';
+import DataTable, { type Column, RowAction } from '@/components/DataTable';
+import HighlightText from '@/components/HighlightText';
+import Weekday from '@/components/Weekday';
+import usePermissions from '@/hooks/use-permissions';
+import useTableState from '@/hooks/use-table-state';
+import { enumLabel } from '@/i18n/enums';
+import type { MatchWithTeams } from '@/types/match';
+
 import { UpsertMatch } from './UpsertMatch';
 
 export default function MatchTable({

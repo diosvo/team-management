@@ -132,7 +132,7 @@ flowchart TD
 - **Final failure still advances `next_run_at`.** Recover with **Run now**.
 - **Failure alert.** A failed scheduled run emails the team's coaches, super
   admins and captain.
-- **Atomic success.** `completeReportRun` closes the run and advances the
+- **Atomic success.** `updateCompletedReportRun` closes the run and advances the
   schedule in one transaction.
 - **Window resolved in ICT.** `intervalRange` uses `scheduled_for` in
   `DEFAULT_TIMEZONE`; 08:00 on the 1st (previous day in UTC) gets the right

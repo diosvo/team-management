@@ -4,7 +4,7 @@ import db from '@/drizzle';
 import { type InsertTeam, type Team, TeamTable } from '@/drizzle/schema/team';
 
 /** Opponents only — the club's own team is managed elsewhere. */
-export async function getTeams() {
+export async function selectTeams() {
   try {
     return await db.query.TeamTable.findMany({
       where: eq(TeamTable.is_external, true),
@@ -15,7 +15,7 @@ export async function getTeams() {
   }
 }
 
-export async function getTeam(team_id: string) {
+export async function selectTeam(team_id: string) {
   return await db.query.TeamTable.findFirst({
     where: eq(TeamTable.team_id, team_id),
   });

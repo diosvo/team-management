@@ -12,12 +12,13 @@ import {
 
 import { enumValues, UserRole, UserState } from '@/utils/enum';
 
-import { created_at, expires_at, updated_at } from '../helpers';
 import { AssetTable } from './asset';
 import { type Coach, CoachTable } from './coach';
 import { type Player, PlayerTable } from './player';
 import { TeamTable } from './team';
 import { UserTeamTable } from './user-team';
+
+import { created_at, expires_at, updated_at } from '../helpers';
 
 export const userRoleEnum = pgEnum('user_role', enumValues(UserRole));
 export const userStateEnum = pgEnum('user_state', enumValues(UserState));

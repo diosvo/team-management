@@ -1,6 +1,5 @@
-import { renderWithUI, screen, setupTestLifecycle } from '@/test/utilities';
-
 import { canCreateTestResult } from '@/actions/test-result';
+import { renderWithUI, screen, setupTestLifecycle } from '@/test/utilities';
 
 import AddTestResultPage, { generateMetadata } from './page';
 

@@ -1,3 +1,5 @@
+import { upsertTestType } from '@/actions/test-type';
+import { MOCK_TEST_TYPE } from '@/test/mocks/periodic-testing';
 import {
   act,
   createToasterMock,
@@ -7,8 +9,6 @@ import {
   setupTestLifecycle,
   waitFor,
 } from '@/test/utilities';
-
-import { upsertTestType } from '@/actions/test-type';
 
 import { UpsertTestType } from './UpsertTestType';
 
@@ -70,7 +70,7 @@ describe('UpsertTestType', () => {
   test('submits the entered values through upsertTestType', async () => {
     mockUpsertTestType.mockResolvedValue({ success: true, message: 'Saved' });
 
-    const view = await open('Update', { type_id: 'type-123', name: 'Sprint' });
+    const view = await open('Update', MOCK_TEST_TYPE);
     const { user } = view;
 
     const submit = await screen.findByRole('button', { name: /update/i });
@@ -79,8 +79,8 @@ describe('UpsertTestType', () => {
 
     await waitFor(() => {
       expect(mockUpsertTestType).toHaveBeenCalledWith(
-        'type-123',
-        expect.objectContaining({ name: 'Sprint' }),
+        MOCK_TEST_TYPE.type_id,
+        expect.objectContaining({ name: MOCK_TEST_TYPE.name }),
       );
     });
   });
@@ -91,7 +91,7 @@ describe('UpsertTestType', () => {
       message: 'Name taken',
     });
 
-    const view = await open('Update', { type_id: 'type-123', name: 'Sprint' });
+    const view = await open('Update', MOCK_TEST_TYPE);
     const { user } = view;
 
     const submit = await screen.findByRole('button', { name: /update/i });
@@ -133,9 +133,7 @@ describe('UpsertTestType', () => {
       mockUpsertTestType.mockResolvedValue({ success: true, message: 'Saved' });
 
       const { user } = await open('Update', {
-        type_id: 'type-123',
-        name: 'Sprint',
-        unit: 'seconds',
+        ...MOCK_TEST_TYPE,
         ...fields,
       });
 
@@ -149,7 +147,7 @@ describe('UpsertTestType', () => {
 
       await waitFor(() =>
         expect(mockUpsertTestType).toHaveBeenCalledWith(
-          'type-123',
+          MOCK_TEST_TYPE.type_id,
           expect.objectContaining({ direction, target }),
         ),
       );

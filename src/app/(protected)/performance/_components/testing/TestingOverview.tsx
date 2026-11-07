@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import {
   Badge,
   chakra,
@@ -10,18 +11,18 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { FlaskConical } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+
+import { formatDate } from '@/utils/datetime';
+
+import { usePerformanceFilters } from '@/lib/nuqs';
 
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
-
 import { enumLabel } from '@/i18n/enums';
-import { usePerformanceFilters } from '@/lib/nuqs';
 import type {
   TestingOverview as TestingOverviewData,
   TestTypeProgress,
 } from '@/types/performance';
-import { formatDate } from '@/utils/datetime';
 
 import { TestProgressChart, TestRadarChart } from '../LazyCharts';
 import TrendBadge from '../TrendBadge';
@@ -117,7 +118,8 @@ export default function TestingOverview({
   const te = useTranslations('enums');
   const [{ test }, setSearchParams] = usePerformanceFilters();
 
-  if (data.types.length === 0) {
+  const [firstType] = data.types;
+  if (!firstType) {
     return (
       <Card title={t('title')}>
         <EmptyState
@@ -129,8 +131,7 @@ export default function TestingOverview({
     );
   }
 
-  const selected =
-    data.types.find(({ name }) => name === test) ?? data.types[0];
+  const selected = data.types.find(({ name }) => name === test) ?? firstType;
   const radarPoints = data.types.flatMap(({ name, latest }) =>
     latest.percentile == null ? [] : [{ name, percentile: latest.percentile }],
   );

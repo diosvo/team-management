@@ -1,10 +1,10 @@
 import { and, eq, inArray, sql } from 'drizzle-orm';
 
-import type { DateRange } from '@/types/common';
 import { AttendanceStatus } from '@/utils/enum';
 
 import { AttendanceTable } from '@/drizzle/schema/attendance';
 import { UserTable } from '@/drizzle/schema/user';
+import type { DateRange } from '@/types/common';
 
 import { countWhen, withinRange } from './utils';
 

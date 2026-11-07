@@ -83,6 +83,10 @@ describe('summarize', () => {
     { date: '2026-03-01', result: 12 },
   ];
 
+  test('throws a clear error on an empty history', () => {
+    expect(() => summarize([], true, 12)).toThrow('summarize: empty history');
+  });
+
   test('summarises a higher-is-better series', () => {
     expect(summarize(history, true, 12)).toEqual({
       baseline: history[0],

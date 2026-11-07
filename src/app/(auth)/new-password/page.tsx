@@ -1,27 +1,26 @@
 'use client';
 
+import { useState } from 'react';
 import NextLink from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState } from 'react';
-
+import { useTranslations } from 'next-intl';
 import {
   Button,
-  Link as ChakraLink,
   Heading,
+  Link as ChakraLink,
   List,
   VStack,
 } from '@chakra-ui/react';
 import { CircleCheck, CircleDashed } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+
+import { authErrorMessage } from '@/utils/rate-limit';
+
+import authClient from '@/lib/auth-client';
 
 import { Alert } from '@/components/ui/alert';
 import { Field } from '@/components/ui/field';
 import { PasswordInput } from '@/components/ui/password-input';
 import { toaster } from '@/components/ui/toaster';
-
-import authClient from '@/lib/auth-client';
-import { authErrorMessage } from '@/utils/rate-limit';
-
 import { LOGIN_PATH } from '@/routes';
 
 const PASSWORD_RULES = [

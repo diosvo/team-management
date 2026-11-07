@@ -1,7 +1,7 @@
 'use client';
 
 import NextLink, { type LinkProps, useLinkStatus } from 'next/link';
-
+import { useTranslations } from 'next-intl';
 import {
   IconButton,
   Spinner,
@@ -11,14 +11,12 @@ import {
   type TableRootProps,
 } from '@chakra-ui/react';
 import type { LucideIcon } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 
 import Pagination from '@/components/Pagination';
 import SelectionActionBar from '@/components/SelectionActionBar';
 import { Checkbox } from '@/components/ui/checkbox';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Tooltip } from '@/components/ui/tooltip';
-
 import { toggleSelection } from '@/hooks/use-table-state';
 
 /**

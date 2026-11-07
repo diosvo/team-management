@@ -1,8 +1,9 @@
 # Issues found during the docs refactor (2026-09-30)
 
 Each issue below was found while verifying the docs against the source code.
-Issues 1–6 are fixed on branch `docs/fumadocs-refactor-i18n`, one commit each;
-the matching docs page describes the fixed behaviour. Issues 7–11 are open.
+Issues 1–6 were fixed on branch `docs/fumadocs-refactor-i18n`, one commit each;
+issues 7–11 on branch `fix/open-issues`. The matching docs page describes the
+fixed behaviour. No issues are open.
 
 ## Fixed
 
@@ -65,34 +66,47 @@ Fix: mirror the `isGuest ? undefined : …` guard.
 Files: `src/app/(protected)/(team-management)/matches/_components/MatchTable.tsx` (+ test).
 Docs: `content/docs/features/team-management/matches(.vi).mdx` acceptance accordion.
 
-## Open, not fixed
+### 7. `getActivePlayers` ships personal data to every member — fixed
 
-### 7. `getActivePlayers` ships personal data to every member
+Registration loaded full `User` rows (date of birth, phone, citizen ID) for any
+signed-in member.
+Fix: `fetchActivePlayers` returns a narrow `PlayerOption` (id, name, image,
+player). Registration fetches PII via `getRegistrationPlayers(ids)`
+(`registration:create`, selected active players of the caller's team only).
+Files: `src/db/user.ts`, `src/actions/user.ts`, registration `main.tsx`,
+`PlayerSelection.tsx` and pickers typed to `PlayerOption` (+ tests).
+Docs: `content/docs/features/team-management/registration(.vi).mdx` Access.
 
-Registration loads full `User` rows (date of birth, phone, citizen ID) for any
-signed-in member, unlike Roster's narrowed `RosterUser` projection.
-Suggested: a narrow projection for the registration picker; PDF export can
-fetch the full fields server-side for the selected players only.
+### 8. `getAchievements` has no team scoping — fixed
 
-### 8. `getAchievements` has no team scoping
+`achievement` had no `team_id`, so the action returned every row.
+Fix: migration `0020_scope_achievements_to_team` adds `team_id` (backfilled to
+the default team, FK cascade) and makes the unique index per team; reads,
+updates and deletes filter on the session team; inserts stamp it.
+Files: `src/drizzle/schema/achievement.ts`, `src/db/achievement.ts`,
+`src/actions/achievement.ts` (+ tests), `test/mocks/achievement.ts`.
+Docs: `content/docs/features/achievements(.vi).mdx` Rules.
 
-`achievement` has no `team_id`, so the action returns every row. Fine for a
-single-club deployment; revisit if opponents ever become tenants.
+### 9. Test-type unit default differs by layer — fixed
 
-### 9. Test-type unit default differs by layer
+Fix: `UpsertTestTypeSchema` defaults `unit` to `times`, matching the column
+(and the default `higher` direction).
+Files: `src/schemas/periodic-testing.ts`.
+Docs: `content/docs/features/performance/periodic-testing(.vi).mdx`.
 
-The form defaults `unit` to `seconds`, the `test_type.unit` column defaults to
-`times`.
+### 10. Playwright workflow uploads the wrong folder — fixed
 
-### 10. Playwright workflow uploads the wrong folder
+Fix: the upload step reads `playwright/report/`. The job stays `if: false`.
+Files: `.github/workflows/playwright.yaml`.
+Docs: `content/docs/quality/e2e-testing(.vi).mdx` CI status.
 
-`.github/workflows/playwright.yaml` uploads `playwright-report/` while
-`playwright.config.ts` writes `playwright/report`. The job is currently
-disabled (`if: false`), so this only matters once it is re-enabled.
+### 11. `is_captain` never reached the session — fixed
 
-### 11. `is_captain` source of truth
-
-`src/lib/auth.ts` declares `is_captain` as a Better Auth `user` additional
-field and `withResource` / `usePermissions` read it from the session user, but
-the only `is_captain` column is on `player`. Confirm how the session flag is
-populated before relying on it in new code.
+`is_captain` was declared as a Better Auth `user` additional field with no
+column behind it, so the session flag was always unset and
+`CAPTAIN_PERMISSIONS` never applied.
+Fix: drop the additional field; a `customSession` plugin reads
+`player.is_captain` (`isCaptain` in `src/db/player.ts`) onto `session.user`;
+the client adds `customSessionClient`.
+Files: `src/lib/auth.ts`, `src/lib/auth-client.ts`, `src/db/player.ts` (+ tests).
+Docs: `content/docs/access/roles-permissions(.vi).mdx` Server tab.

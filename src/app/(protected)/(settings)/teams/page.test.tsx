@@ -1,8 +1,6 @@
-
+import { getTeams } from '@/actions/team';
 import { MOCK_TEAM } from '@/test/mocks/team';
 import { renderWithUI, screen, setupTestLifecycle } from '@/test/utilities';
-
-import { getTeams } from '@/actions/team';
 
 import TeamsPage, { generateMetadata } from './page';
 

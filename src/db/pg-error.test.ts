@@ -4,7 +4,7 @@ vi.unmock('drizzle-orm');
 import { DrizzleError, DrizzleQueryError } from 'drizzle-orm';
 import { DatabaseError } from 'pg';
 
-import { PgErrorCode, getDbErrorMessage, isUniqueViolation } from './pg-error';
+import { getDbErrorMessage, isUniqueViolation, PgErrorCode } from './pg-error';
 
 type Options = Partial<{
   constraint: string;
@@ -355,9 +355,7 @@ describe('isUniqueViolation', () => {
       constraint: 'reports_schedule_id_run_idx',
     });
 
-    expect(
-      isUniqueViolation(error, 'reports_schedule_id_run_idx'),
-    ).toBe(true);
+    expect(isUniqueViolation(error, 'reports_schedule_id_run_idx')).toBe(true);
   });
 
   test('returns false when the constraint does not match the given filter', () => {
@@ -365,8 +363,6 @@ describe('isUniqueViolation', () => {
       constraint: 'other_constraint',
     });
 
-    expect(
-      isUniqueViolation(error, 'reports_schedule_id_run_idx'),
-    ).toBe(false);
+    expect(isUniqueViolation(error, 'reports_schedule_id_run_idx')).toBe(false);
   });
 });

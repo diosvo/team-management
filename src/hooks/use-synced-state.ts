@@ -1,5 +1,5 @@
+import { type Dispatch, type SetStateAction, useRef, useState } from 'react';
 import { isEqual } from 'es-toolkit/predicate';
-import { useRef, useState, type Dispatch, type SetStateAction } from 'react';
 
 /**
  * Local state that mirrors an external source of truth (typically a URL param).

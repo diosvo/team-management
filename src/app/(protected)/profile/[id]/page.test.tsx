@@ -1,9 +1,8 @@
-
-import { MOCK_USER } from '@/test/mocks/user';
-import { renderWithUI, screen, setupTestLifecycle } from '@/test/utilities';
+import { formatDatetime } from '@/utils/datetime';
 
 import { getUserProfile } from '@/actions/user';
-import { formatDatetime } from '@/utils/datetime';
+import { MOCK_USER } from '@/test/mocks/user';
+import { renderWithUI, screen } from '@/test/utilities';
 
 import ProfilePage, { generateMetadata } from './page';
 
@@ -38,9 +37,7 @@ describe('ProfilePage', () => {
   } = {}) => {
     mockGetUserProfile.mockResolvedValue({ targetUser, viewOnly });
 
-    return renderWithUI(
-      await ProfilePage({ params: Promise.resolve({ id }) }),
-    );
+    return renderWithUI(await ProfilePage({ params: Promise.resolve({ id }) }));
   };
 
   beforeEach(() => {
@@ -78,7 +75,9 @@ describe('ProfilePage', () => {
     await setup();
 
     expect(
-      screen.getByText(`Last updated on ${formatDatetime(MOCK_USER.updatedAt)}`),
+      screen.getByText(
+        `Last updated on ${formatDatetime(MOCK_USER.updatedAt)}`,
+      ),
     ).toBeInTheDocument();
   });
 });

@@ -1,14 +1,14 @@
 import { and, desc, eq, inArray } from 'drizzle-orm';
 
+import { SessionStatus } from '@/utils/enum';
+
+import type { TrainingSearchParams } from '@/lib/nuqs';
+
 import db from '@/drizzle';
 import {
   type InsertTrainingSession,
   TrainingSessionTable,
 } from '@/drizzle/schema';
-
-import { SessionStatus } from '@/utils/enum';
-import type { TrainingSearchParams } from '@/lib/nuqs';
-
 import {
   mockDeleteReturningFailure,
   mockDeleteReturningSuccess,
@@ -28,8 +28,8 @@ import {
 
 import {
   deleteSession,
-  getSessions,
   insertSession,
+  selectSessions,
   updateSession,
 } from './training-session';
 import { withinRange } from './utils';
@@ -71,7 +71,7 @@ vi.mock('@/drizzle/schema', () => ({
   },
 }));
 
-describe('getSessions', () => {
+describe('selectSessions', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -88,7 +88,7 @@ describe('getSessions', () => {
       MOCK_SESSIONS_DB_RESULT,
     );
 
-    const result = await getSessions(MOCK_TEAM.team_id, mockParams);
+    const result = await selectSessions(MOCK_TEAM.team_id, mockParams);
 
     expect(result).toEqual(MOCK_TRAINING_SESSION_RESPONSE);
     // Verify query construction
@@ -119,7 +119,7 @@ describe('getSessions', () => {
       status: [SessionStatus.COMPLETED],
     };
 
-    await getSessions(MOCK_TEAM.team_id, paramsWithStatus);
+    await selectSessions(MOCK_TEAM.team_id, paramsWithStatus);
 
     expect(db.query.TrainingSessionTable.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -142,15 +142,15 @@ describe('getSessions', () => {
       },
     ] as never);
 
-    const result = await getSessions(MOCK_TEAM.team_id, mockParams);
+    const result = await selectSessions(MOCK_TEAM.team_id, mockParams);
 
-    expect(result.data[0].analytics.present_rate).toBe(0);
+    expect(result.data[0]?.analytics.present_rate).toBe(0);
   });
 
   test('returns empty stats when no sessions exist', async () => {
     vi.mocked(db.query.TrainingSessionTable.findMany).mockResolvedValue([]);
 
-    const result = await getSessions(MOCK_TEAM.team_id, mockParams);
+    const result = await selectSessions(MOCK_TEAM.team_id, mockParams);
 
     expect(result).toEqual({
       data: [],
@@ -181,7 +181,7 @@ describe('getSessions', () => {
         mockError,
       );
 
-      const result = await getSessions(MOCK_TEAM.team_id, mockParams);
+      const result = await selectSessions(MOCK_TEAM.team_id, mockParams);
 
       expect(result).toEqual({
         data: [],

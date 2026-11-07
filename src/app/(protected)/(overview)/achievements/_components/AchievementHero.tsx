@@ -1,6 +1,6 @@
 import { Anton } from 'next/font/google';
 import NextImage from 'next/image';
-
+import { useLocale, useTranslations } from 'next-intl';
 import {
   Box,
   Center,
@@ -10,7 +10,6 @@ import {
   Text,
   VStack,
 } from '@chakra-ui/react';
-import { useLocale, useTranslations } from 'next-intl';
 
 import { getYearsActive } from '@/app/(protected)/_helpers/utils';
 import BackgroundLayer from '@/assets/images/bg-layer.webp';

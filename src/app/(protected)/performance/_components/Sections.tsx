@@ -1,11 +1,10 @@
-import type { DateRange } from '@/types/common';
-
 import {
   getPlayerActivity,
   getPlayerAttendance,
   getPlayerMatches,
   getPlayerTesting,
 } from '@/actions/player-performance';
+import type { DateRange } from '@/types/common';
 
 import ActivityTable from './activity/ActivityTable';
 import AttendanceOverview from './attendance/AttendanceOverview';

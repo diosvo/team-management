@@ -1,7 +1,7 @@
 'use server';
 
-import { getTranslations } from 'next-intl/server';
 import { forbidden } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 
 import type { AttendanceStatus } from '@/utils/enum';
 import { hasPermissions } from '@/utils/permissions';
@@ -9,8 +9,8 @@ import { ResponseFactory } from '@/utils/response';
 
 import {
   deleteAttendance,
-  getAttendances as fetchAttendances,
   insertAttendance,
+  selectAttendances,
   updateAttendance,
 } from '@/db/attendance';
 import { getDbErrorMessage } from '@/db/pg-error';
@@ -24,7 +24,7 @@ const attendance = withResource('attendance');
 
 export const getAttendances = withAuth(
   async ({ team_id }, range: DateRange) =>
-    await fetchAttendances(team_id, range),
+    await selectAttendances(team_id, range),
 );
 
 export const submitLeave = attendance(

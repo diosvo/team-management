@@ -1,3 +1,10 @@
+import { head } from 'es-toolkit';
+
+import { Status } from '@/utils/response';
+
+import authClient from '@/lib/auth-client';
+
+import { LOGIN_PATH } from '@/routes';
 import {
   authCallbacks,
   createToasterMock,
@@ -8,10 +15,6 @@ import {
   setupTestLifecycle,
   waitFor,
 } from '@/test/utilities';
-
-import authClient from '@/lib/auth-client';
-import { Status } from '@/utils/response';
-import { LOGIN_PATH } from '@/routes';
 
 import NewPasswordPage from './page';
 
@@ -59,7 +62,7 @@ describe('NewPasswordPage', () => {
     expect(
       screen.getByRole('heading', { name: /create a new password/i }),
     ).toBeInTheDocument();
-    expect(screen.getAllByLabelText(/password/i)[0]).toBeInTheDocument();
+    expect(head(screen.getAllByLabelText(/password/i))!).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /submit/i })).toBeInTheDocument();
   });
 
@@ -94,7 +97,7 @@ describe('NewPasswordPage', () => {
   test('validates password strength and enables submit button', async () => {
     const { user } = renderWithUI(<NewPasswordPage />);
 
-    const passwordInput = screen.getAllByLabelText(/password/i)[0];
+    const passwordInput = head(screen.getAllByLabelText(/password/i))!;
     const submitButton = screen.getByRole('button', { name: /submit/i });
 
     // Initially disabled
@@ -122,7 +125,10 @@ describe('NewPasswordPage', () => {
 
     const { user } = renderWithUI(<NewPasswordPage />);
 
-    await user.type(screen.getAllByLabelText(/password/i)[0], 'ValidPass123!');
+    await user.type(
+      head(screen.getAllByLabelText(/password/i))!,
+      'ValidPass123!',
+    );
     await user.click(screen.getByRole('button', { name: /submit/i }));
 
     await waitFor(() => {
@@ -145,7 +151,10 @@ describe('NewPasswordPage', () => {
 
     const { user } = renderWithUI(<NewPasswordPage />);
 
-    await user.type(screen.getAllByLabelText(/password/i)[0], 'ValidPass123!');
+    await user.type(
+      head(screen.getAllByLabelText(/password/i))!,
+      'ValidPass123!',
+    );
     await user.click(screen.getByRole('button', { name: /submit/i }));
 
     await waitFor(() => {
@@ -174,7 +183,10 @@ describe('NewPasswordPage', () => {
 
     const { user } = renderWithUI(<NewPasswordPage />);
 
-    await user.type(screen.getAllByLabelText(/password/i)[0], 'ValidPass123!');
+    await user.type(
+      head(screen.getAllByLabelText(/password/i))!,
+      'ValidPass123!',
+    );
     await user.click(screen.getByRole('button', { name: /submit/i }));
 
     await waitFor(() => {
@@ -197,7 +209,10 @@ describe('NewPasswordPage', () => {
 
     const { user } = renderWithUI(<NewPasswordPage />);
 
-    await user.type(screen.getAllByLabelText(/password/i)[0], 'ValidPass123!');
+    await user.type(
+      head(screen.getAllByLabelText(/password/i))!,
+      'ValidPass123!',
+    );
     await user.click(screen.getByRole('button', { name: /submit/i }));
 
     expect(
@@ -218,7 +233,10 @@ describe('NewPasswordPage', () => {
 
     const { user } = renderWithUI(<NewPasswordPage />);
 
-    await user.type(screen.getAllByLabelText(/password/i)[0], 'ValidPass123!');
+    await user.type(
+      head(screen.getAllByLabelText(/password/i))!,
+      'ValidPass123!',
+    );
     await user.click(screen.getByRole('button', { name: /submit/i }));
 
     await waitFor(() => {
@@ -235,11 +253,14 @@ describe('NewPasswordPage', () => {
 
     const { user } = renderWithUI(<NewPasswordPage />);
 
-    await user.type(screen.getAllByLabelText(/password/i)[0], 'ValidPass123!');
+    await user.type(
+      head(screen.getAllByLabelText(/password/i))!,
+      'ValidPass123!',
+    );
     await user.click(screen.getByRole('button', { name: /submit/i }));
 
     await waitFor(() => {
-      expect(screen.getAllByLabelText(/password/i)[0]).toBeDisabled();
+      expect(head(screen.getAllByLabelText(/password/i))!).toBeDisabled();
       expect(screen.getByRole('button', { name: /submit/i })).toBeDisabled();
     });
   });
@@ -247,7 +268,7 @@ describe('NewPasswordPage', () => {
   test('validates each password rule independently', async () => {
     const { user } = renderWithUI(<NewPasswordPage />);
 
-    const passwordInput = screen.getAllByLabelText(/password/i)[0];
+    const passwordInput = head(screen.getAllByLabelText(/password/i))!;
 
     // Test: too short
     await user.type(passwordInput, 'Ab1!');

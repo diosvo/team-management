@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback } from 'react';
-
+import { useTranslations } from 'next-intl';
 import { Badge, HStack, SegmentGroup, Span, Text } from '@chakra-ui/react';
 import {
   CalendarDays,
@@ -10,22 +10,21 @@ import {
   GamepadDirectional,
   type LucideIcon,
 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 
-import DataTable, { type Column } from '@/components/DataTable';
-import Weekday from '@/components/Weekday';
-import { Card } from '@/components/ui/card';
-import { Tooltip } from '@/components/ui/tooltip';
-
-import useTableState from '@/hooks/use-table-state';
-
-import { enumLabel } from '@/i18n/enums';
-import { usePerformanceFilters } from '@/lib/nuqs';
-import type { ActivityRecord } from '@/types/performance';
 import { ACTIVITY_KIND_SELECTION, ALL } from '@/utils/constants';
 import { formatDate } from '@/utils/datetime';
 import { ActivityKind, TestTypeUnit } from '@/utils/enum';
 import { getColor } from '@/utils/helper';
+
+import { usePerformanceFilters } from '@/lib/nuqs';
+
+import DataTable, { type Column } from '@/components/DataTable';
+import { Card } from '@/components/ui/card';
+import { Tooltip } from '@/components/ui/tooltip';
+import Weekday from '@/components/Weekday';
+import useTableState from '@/hooks/use-table-state';
+import { enumLabel } from '@/i18n/enums';
+import type { ActivityRecord } from '@/types/performance';
 
 const KIND_STYLE: Record<
   ActivityKind,

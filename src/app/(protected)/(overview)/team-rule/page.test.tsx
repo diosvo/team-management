@@ -1,6 +1,5 @@
-import { renderWithUI, screen } from '@/test/utilities';
-
 import { getRule } from '@/actions/rule';
+import { renderWithUI, screen } from '@/test/utilities';
 
 import TeamRulePage, { generateMetadata } from './page';
 

@@ -1,6 +1,8 @@
-import { renderWithUI, screen } from '@/test/utilities';
+import { head } from 'es-toolkit';
 
+import { renderWithUI, screen } from '@/test/utilities';
 import type { MatchesRateRecord } from '@/types/analytics';
+
 import MatchesRate, { toMatchResultKey } from './MatchesRate';
 
 // Recharts renders chart props as config objects in tests, so stub callbacks
@@ -10,9 +12,12 @@ vi.mock('recharts', async (importOriginal) => {
   return {
     ...actual,
     // Plain wrapper so React renders the child components normally.
-    BarChart: ({ children }: { children?: React.ReactNode; [key: string]: unknown }) => (
-      <div data-testid="bar-chart">{children}</div>
-    ),
+    BarChart: ({
+      children,
+    }: {
+      children?: React.ReactNode;
+      [key: string]: unknown;
+    }) => <div data-testid="bar-chart">{children}</div>,
     CartesianGrid: () => null,
     Tooltip: () => null,
     Legend: () => null,
@@ -86,7 +91,7 @@ describe('MatchesRate', () => {
     expect(bars.length).toBeGreaterThan(0);
 
     // Clicking calls onClick → router.push(`/matches?match_type=...`).
-    await user.click(bars[0]);
+    await user.click(head(bars)!);
 
     // Component should still be intact after navigation.
     expect(screen.getByText('Matches Record')).toBeInTheDocument();

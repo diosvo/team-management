@@ -1,25 +1,26 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Badge, HStack, SimpleGrid, Span, VStack } from '@chakra-ui/react';
 import { GamepadDirectional } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+
+import { MATCH_AVERAGE_FIELDS, MATCH_STAT_FIELDS } from '@/utils/constants';
+import { formatDate } from '@/utils/datetime';
+import { paginateData } from '@/utils/filters';
+import { getColor } from '@/utils/helper';
+
+import { usePerformanceFilters } from '@/lib/nuqs';
 
 import DataTable, { type Column } from '@/components/DataTable';
 import StatAbbr from '@/components/StatAbbr';
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Stat } from '@/components/ui/stat';
-
 import { enumLabel } from '@/i18n/enums';
-import { usePerformanceFilters } from '@/lib/nuqs';
 import type {
   MatchesOverview,
   MatchPerformanceRecord,
 } from '@/types/performance';
-import { MATCH_AVERAGE_FIELDS, MATCH_STAT_FIELDS } from '@/utils/constants';
-import { formatDate } from '@/utils/datetime';
-import { paginateData } from '@/utils/filters';
-import { getColor } from '@/utils/helper';
 
 import { MatchStatsChart } from '../LazyCharts';
 

@@ -2,10 +2,11 @@
 
 import { useTranslations } from 'next-intl';
 
-import { Stat, StatGroup } from '@/components/ui/stat';
+import { AssetCondition } from '@/utils/enum';
 
 import { useAssetFilters } from '@/lib/nuqs';
-import { AssetCondition } from '@/utils/enum';
+
+import { Stat, StatGroup } from '@/components/ui/stat';
 
 type AssetStatsProps = {
   stats: {

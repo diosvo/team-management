@@ -11,6 +11,8 @@ import {
   or,
 } from 'drizzle-orm';
 
+import { type EmailStatus, ReportStatus, UserRole } from '@/utils/enum';
+
 import db from '@/drizzle';
 import {
   type InsertReportHistory,
@@ -21,15 +23,13 @@ import {
   UserTable,
 } from '@/drizzle/schema';
 
-import { type EmailStatus, ReportStatus, UserRole } from '@/utils/enum';
-
 /** Roles that always receive scheduled reports and are not user-selectable. */
 const DEFAULT_REPORT_ROLES = [UserRole.COACH, UserRole.SUPER_ADMIN];
 
 /**
  * @description Team members a user can pick as report recipients.
  */
-export async function fetchReportRecipients(team_id: string) {
+export async function selectReportRecipients(team_id: string) {
   try {
     return await db.query.UserTable.findMany({
       where: and(eq(UserTable.team_id, team_id)),
@@ -49,7 +49,7 @@ export async function fetchReportRecipients(team_id: string) {
  * @description Emails that always receive a report.
  * @default Coach, Super Admin and team captain
  */
-export async function fetchDefaultRecipientEmails(
+export async function selectDefaultRecipientEmails(
   team_id: string,
 ): Promise<Array<string>> {
   try {
@@ -79,7 +79,7 @@ export async function fetchDefaultRecipientEmails(
 /**
  * @description All report schedules for a team, newest first.
  */
-export async function fetchReportSchedules(team_id: string) {
+export async function selectReportSchedules(team_id: string) {
   try {
     return await db.query.ReportScheduleTable.findMany({
       where: eq(ReportScheduleTable.team_id, team_id),
@@ -96,7 +96,7 @@ export async function fetchReportSchedules(team_id: string) {
  * invocations from grabbing the same rows; the unique run occurrence index is
  * the second line of defense.
  */
-export async function claimDueSchedules(limit: number) {
+export async function selectDueSchedulesForUpdate(limit: number) {
   try {
     return await db.transaction(async (tx) =>
       tx
@@ -120,7 +120,10 @@ export async function claimDueSchedules(limit: number) {
 // Schedule accessors are team-scoped so tenancy is enforced once, here, and
 // no caller can reach another team's schedule by guessing an id.
 
-export async function getReportSchedule(team_id: string, schedule_id: string) {
+export async function selectReportSchedule(
+  team_id: string,
+  schedule_id: string,
+) {
   return await db.query.ReportScheduleTable.findFirst({
     where: and(
       eq(ReportScheduleTable.team_id, team_id),
@@ -173,7 +176,7 @@ export async function deleteReportSchedules(
 /**
  * @description Generated reports for a team, newest first.
  */
-export async function fetchReportHistory(team_id: string) {
+export async function selectReportHistory(team_id: string) {
   try {
     return await db.query.ReportHistoryTable.findMany({
       where: eq(ReportHistoryTable.team_id, team_id),
@@ -184,7 +187,7 @@ export async function fetchReportHistory(team_id: string) {
   }
 }
 
-export async function getReportById(report_id: string) {
+export async function selectReportById(report_id: string) {
   return await db.query.ReportHistoryTable.findFirst({
     where: eq(ReportHistoryTable.report_id, report_id),
   });
@@ -214,7 +217,7 @@ export async function updateReportHistory(
  * conditional update makes the takeover atomic, so overlapping ticks can never
  * both reclaim it. Returns nothing when the run is live or already closed.
  */
-export async function reclaimStaleReportRun(
+export async function updateStaleReportRun(
   schedule_id: string,
   scheduled_for: Date,
   stale_before: Date,
@@ -242,7 +245,7 @@ export async function reclaimStaleReportRun(
  * crash between the two writes can never leave a sent report with a stale
  * `next_run_at` (which would double-send on the next tick).
  */
-export async function completeReportRun(
+export async function updateCompletedReportRun(
   report_id: string,
   report: Partial<InsertReportHistory>,
   schedule_id: string,
@@ -278,7 +281,7 @@ export async function updateDeliveryStatus(
  * @description Stored reports whose blob is past its expiry and not yet
  * cleaned up — targeted by the retention job.
  */
-export async function fetchExpiredReports(now: Date) {
+export async function selectExpiredReports(now: Date) {
   try {
     return await db.query.ReportHistoryTable.findMany({
       where: and(
@@ -296,7 +299,7 @@ export async function fetchExpiredReports(now: Date) {
 /**
  * @description Mark reports expired and drop their blob references.
  */
-export async function markReportsExpired(report_ids: Array<string>) {
+export async function updateExpiredReports(report_ids: Array<string>) {
   return await db
     .update(ReportHistoryTable)
     .set({ status: ReportStatus.EXPIRED, pathname: null })

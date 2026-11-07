@@ -1,14 +1,15 @@
 import type { NextRequest } from 'next/server';
 
-import { fetchExpiredReports, markReportsExpired } from '@/db/report';
 import { deleteFile } from '@/lib/blob';
 import { isAuthorizedCron } from '@/lib/request';
+
+import { selectExpiredReports, updateExpiredReports } from '@/db/report';
 
 import { GET } from './route';
 
 vi.mock('@/db/report', () => ({
-  fetchExpiredReports: vi.fn(),
-  markReportsExpired: vi.fn(),
+  selectExpiredReports: vi.fn(),
+  updateExpiredReports: vi.fn(),
 }));
 vi.mock('@/lib/blob', () => ({ deleteFile: vi.fn() }));
 vi.mock('@/lib/request', () => ({ isAuthorizedCron: vi.fn() }));
@@ -18,9 +19,9 @@ const createRequest = (): NextRequest =>
 
 describe('GET /api/reports/retention', () => {
   const mockIsAuthorizedCron = vi.mocked(isAuthorizedCron);
-  const mockFetchExpired = vi.mocked(fetchExpiredReports);
+  const mockFetchExpired = vi.mocked(selectExpiredReports);
   const mockDeleteFile = vi.mocked(deleteFile);
-  const mockMarkExpired = vi.mocked(markReportsExpired);
+  const mockMarkExpired = vi.mocked(updateExpiredReports);
 
   beforeEach(() => {
     vi.clearAllMocks();

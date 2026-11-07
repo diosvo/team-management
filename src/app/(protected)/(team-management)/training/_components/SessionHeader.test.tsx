@@ -1,11 +1,10 @@
+import usePermissions from '@/hooks/use-permissions';
 import {
   createPermissionsMock,
   renderWithUI,
   screen,
   setupTestLifecycle,
 } from '@/test/utilities';
-
-import usePermissions from '@/hooks/use-permissions';
 
 import SessionHeader from './SessionHeader';
 import { UpsertSession } from './UpsertSession';

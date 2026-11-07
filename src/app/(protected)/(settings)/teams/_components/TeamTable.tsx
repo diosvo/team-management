@@ -1,26 +1,25 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useSWRConfig } from 'swr';
-
+import { useTranslations } from 'next-intl';
 import { Avatar, HStack, Skeleton, Text } from '@chakra-ui/react';
 import { UsersRound } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useSWRConfig } from 'swr';
 
-import DataTable, { type Column } from '@/components/DataTable';
-import HighlightText from '@/components/HighlightText';
-
-import usePermissions from '@/hooks/use-permissions';
-import useTableState from '@/hooks/use-table-state';
-import { useCommonParams } from '@/lib/nuqs';
 import { CACHE_KEY } from '@/utils/constants';
 import { formatDatetime } from '@/utils/datetime';
 import { buildPredicate } from '@/utils/filters';
 
-import { removeTeam } from '@/actions/team';
-import type { Team } from '@/drizzle/schema';
+import { useCommonParams } from '@/lib/nuqs';
 
+import { removeTeam } from '@/actions/team';
+import DataTable, { type Column } from '@/components/DataTable';
+import HighlightText from '@/components/HighlightText';
+import type { Team } from '@/drizzle/schema';
 import { useTeamLogo } from '@/hooks/use-image';
+import usePermissions from '@/hooks/use-permissions';
+import useTableState from '@/hooks/use-table-state';
+
 import { UpsertTeam } from './UpsertTeam';
 
 export default function TeamTable({ teams }: { teams: Array<Team> }) {

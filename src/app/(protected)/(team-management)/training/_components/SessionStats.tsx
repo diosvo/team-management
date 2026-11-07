@@ -2,11 +2,11 @@
 
 import { useTranslations } from 'next-intl';
 
-import { Stat, StatGroup } from '@/components/ui/stat';
-
-import { useTrainingFilters } from '@/lib/nuqs';
 import { SessionStatus } from '@/utils/enum';
 
+import { useTrainingFilters } from '@/lib/nuqs';
+
+import { Stat, StatGroup } from '@/components/ui/stat';
 import type { TrainingSessionStats } from '@/types/training-session';
 
 export default function SessionStats({

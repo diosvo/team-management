@@ -5,7 +5,7 @@ import { UserTable } from '@/drizzle/schema/user';
 import { type UserTeam, UserTeamTable } from '@/drizzle/schema/user-team';
 
 /** Every stint the user has had, most recent first. */
-export async function getMemberships(
+export async function selectMemberships(
   user_id: string,
 ): Promise<Array<UserTeam>> {
   try {
@@ -19,7 +19,7 @@ export async function getMemberships(
 }
 
 /** The open stint — the one without a `leave_date`. */
-export async function getCurrentMembership(
+export async function selectCurrentMembership(
   user_id: string,
 ): Promise<Nullish<UserTeam>> {
   try {
@@ -51,7 +51,7 @@ export async function insertMembership(
  * open stint the day the new one starts and repoints `user.team_id`, so the
  * pointer and the history can never disagree.
  */
-export async function transferMembership(
+export async function upsertMembership(
   user_id: string,
   team_id: string,
   join_date: string,

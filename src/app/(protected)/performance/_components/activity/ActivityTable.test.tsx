@@ -1,3 +1,10 @@
+import { formatDate, formatDay } from '@/utils/datetime';
+import { ActivityKind } from '@/utils/enum';
+
+import {
+  MOCK_ACTIVITY_RECORDS,
+  MOCK_PERFORMANCE_RANGE,
+} from '@/test/mocks/performance';
 import {
   enumText,
   expectNoA11yViolations,
@@ -7,65 +14,9 @@ import {
   setupTestLifecycle,
   within,
 } from '@/test/utilities';
-import { MOCK_PERFORMANCE_RANGE } from '@/test/mocks/performance';
-
 import type { ActivityRecord } from '@/types/performance';
-import { formatDate, formatDay } from '@/utils/datetime';
-import { ActivityKind } from '@/utils/enum';
 
 import ActivityTable from './ActivityTable';
-
-const RECORDS: Array<ActivityRecord> = [
-  {
-    id: 'training-1',
-    kind: ActivityKind.TRAINING,
-    date: '2026-03-02',
-    location: 'Main Gym',
-    duration_hours: 2,
-    status: 'late',
-    reason: 'Traffic',
-  },
-  {
-    id: 'training-2',
-    kind: ActivityKind.TRAINING,
-    date: '2026-03-04',
-    location: null,
-    duration_hours: null,
-    status: 'on_time',
-    reason: null,
-  },
-  {
-    id: 'training-3',
-    kind: ActivityKind.TRAINING,
-    date: '2026-03-06',
-    location: 'Court B',
-    duration_hours: null,
-    status: null,
-    reason: null,
-  },
-  {
-    id: 'test-1',
-    kind: ActivityKind.TEST,
-    date: '2026-03-08',
-    results: [
-      { name: 'Sprint', result: 12.3, unit: 'seconds' },
-      { name: 'Shooting', result: 85, unit: 'percent' },
-      { name: 'Jump', result: 4.2, unit: 'meters' },
-      { name: 'Push-ups', result: 30, unit: 'reps' },
-    ],
-  },
-  {
-    id: 'match-1',
-    kind: ActivityKind.MATCH,
-    date: '2026-03-10',
-    opponent: 'Tigers',
-    result: 'win',
-    score: '80-72',
-    points_scored: 18,
-    rebounds: 6,
-    assists: 4,
-  },
-];
 
 describe('ActivityTable', () => {
   const mockSetSearchParams = vi.fn();
@@ -74,7 +25,7 @@ describe('ActivityTable', () => {
 
   const setup = (
     kind: Array<ActivityKind> = [],
-    records: Array<ActivityRecord> = RECORDS,
+    records: Array<ActivityRecord> = MOCK_ACTIVITY_RECORDS,
   ) => {
     mockUseQueryStates(
       { ...MOCK_PERFORMANCE_RANGE, kind, page: 1 },

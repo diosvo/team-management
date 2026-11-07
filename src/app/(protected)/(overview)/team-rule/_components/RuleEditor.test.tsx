@@ -1,5 +1,9 @@
 import type { ComponentProps } from 'react';
 
+import { upsertRule } from '@/actions/rule';
+import type TextEditor from '@/components/editor/TextEditor';
+import type { NullishTeamRule } from '@/drizzle/schema/team';
+import usePermissions from '@/hooks/use-permissions';
 import { MOCK_RULE } from '@/test/mocks/rule';
 import {
   createPermissionsMock,
@@ -9,13 +13,6 @@ import {
   screen,
   setupTestLifecycle,
 } from '@/test/utilities';
-
-import { upsertRule } from '@/actions/rule';
-import usePermissions from '@/hooks/use-permissions';
-
-import type { NullishTeamRule } from '@/drizzle/schema/team';
-
-import type TextEditor from '@/components/editor/TextEditor';
 
 import RuleEditor from './RuleEditor';
 

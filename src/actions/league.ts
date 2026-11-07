@@ -1,23 +1,25 @@
 'use server';
 
 import { getTranslations } from 'next-intl/server';
+import { head } from 'es-toolkit';
+
+import { LeagueStatus } from '@/utils/enum';
 import { ResponseFactory } from '@/utils/response';
 
 import {
-  addPlayerToLeagueRoster,
   deleteLeague,
-  getLeagueById,
-  getLeagues as fetchLeagues,
-  getPlayersInLeague as fetchPlayersInLeague,
+  deleteLeagueRosterPlayer,
   insertLeague,
-  registerTeamInLeague,
-  removePlayerFromLeagueRoster,
+  insertLeagueRosterPlayer,
+  insertLeagueTeam,
+  selectLeagueById,
+  selectLeagues,
+  selectPlayersInLeague,
   updateLeague,
 } from '@/db/league';
 import { getDbErrorMessage } from '@/db/pg-error';
-import { getTeamPlayerIds } from '@/db/player';
+import { selectTeamPlayerIds } from '@/db/player';
 import type { UpsertLeagueSchemaValues } from '@/schemas/league';
-import { LeagueStatus } from '@/utils/enum';
 
 import { withAuth, withResource } from './auth';
 import { revalidate } from './cache';
@@ -29,16 +31,16 @@ const leagues = withResource('leagues');
  * server has to agree, otherwise a crafted request could rewrite results.
  */
 async function assertUpcoming(league_id: string) {
-  const league = await getLeagueById(league_id);
+  const league = await selectLeagueById(league_id);
 
   return league?.status === LeagueStatus.UPCOMING;
 }
 
-export const getLeagues = withAuth(fetchLeagues);
+export const getLeagues = withAuth(selectLeagues);
 
 export const getPlayersInLeague = withAuth(
   async (user, league_id: string) =>
-    await fetchPlayersInLeague(user.team_id, league_id),
+    await selectPlayersInLeague(user.team_id, league_id),
 );
 
 export const upsertLeague = leagues(
@@ -61,13 +63,12 @@ export const upsertLeague = leagues(
         }
         await updateLeague(league_id, league);
       } else {
-        const [result] = await insertLeague(league);
-        leagueId = result.league_id;
+        leagueId = head(await insertLeague(league))!.league_id;
       }
 
       // Roster rows point at a (league, team) pair in `league_team`, so the
       // team has to be entered into the league before any player is added.
-      await registerTeamInLeague(leagueId, user.team_id);
+      await insertLeagueTeam(leagueId, user.team_id);
 
       const rosterErrors = await syncLeagueRoster(
         user.team_id,
@@ -122,7 +123,7 @@ async function syncLeagueRoster(
 
   // Get current players only for existing leagues
   const currentPlayers = isUpdate
-    ? await fetchPlayersInLeague(team_id, league_id)
+    ? await selectPlayersInLeague(team_id, league_id)
     : [];
   const currentPlayerIds = currentPlayers.map((p) => p.id);
 
@@ -134,7 +135,7 @@ async function syncLeagueRoster(
 
   // A roster row names a team, but `player` carries no team of its own, so the
   // database cannot stop someone else's player being registered under ours.
-  const eligible = new Set(await getTeamPlayerIds(team_id, requestedToAdd));
+  const eligible = new Set(await selectTeamPlayerIds(team_id, requestedToAdd));
   const toAdd = requestedToAdd.filter((id) => eligible.has(id));
   const rejected = requestedToAdd
     .filter((id) => !eligible.has(id))
@@ -144,12 +145,12 @@ async function syncLeagueRoster(
   // parallel and keep the per-player error messages via allSettled
   const tasks = [
     ...toAdd.map((player_id) => ({
-      run: () => addPlayerToLeagueRoster(team_id, league_id, player_id),
+      run: () => insertLeagueRosterPlayer(team_id, league_id, player_id),
       describe: (message: string) =>
         `${message} (id: ${player_id.slice(0, 8)})`,
     })),
     ...toRemove.map((player_id) => ({
-      run: () => removePlayerFromLeagueRoster(team_id, league_id, player_id),
+      run: () => deleteLeagueRosterPlayer(team_id, league_id, player_id),
       describe: (message: string) =>
         t('removePlayerFailed', { id: player_id.slice(0, 8), message }),
     })),
@@ -160,10 +161,11 @@ async function syncLeagueRoster(
   return [
     ...rejected,
     ...settled.flatMap((result, index) => {
-      if (result.status === 'fulfilled') return [];
+      const task = tasks[index];
+      if (result.status === 'fulfilled' || !task) return [];
 
       const { message } = getDbErrorMessage(result.reason);
-      return [tasks[index].describe(message)];
+      return [task.describe(message)];
     }),
   ];
 }

@@ -8,7 +8,7 @@ const PASSWORD_RULES = [
   'Contain at least one letter',
   'Contain at least one number',
   'Contain at least one special character',
-];
+] as const;
 
 test.describe('New Password Page', () => {
   test.describe('Page Load', () => {

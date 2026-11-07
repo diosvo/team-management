@@ -1,6 +1,7 @@
+import { ALL } from './app';
+
 import { MatchStatus, MatchType } from '../enum';
 import type { Selection } from '../type';
-import { ALL } from './app';
 
 export const GAME_TYPE_SELECTION: Selection<string> = [
   {

@@ -1,9 +1,8 @@
 'use client';
 
 import NextImage from 'next/image';
-
-import { HStack, Image, Stack } from '@chakra-ui/react';
 import { useTranslations } from 'next-intl';
+import { HStack, Image, Stack } from '@chakra-ui/react';
 
 import HeaderLogo from '@/assets/images/header-logo.webp';
 

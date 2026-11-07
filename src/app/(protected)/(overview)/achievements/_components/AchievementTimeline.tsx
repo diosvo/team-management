@@ -1,5 +1,5 @@
 import { Bebas_Neue } from 'next/font/google';
-
+import { useTranslations } from 'next-intl';
 import {
   Box,
   Circle,
@@ -11,26 +11,26 @@ import {
   Text,
   VStack,
 } from '@chakra-ui/react';
+import { head } from 'es-toolkit';
+import { nth } from 'es-toolkit/compat';
 import { Quote, Trophy } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 
-import { EmptyState } from '@/components/ui/empty-state';
-
-import { enumLabel } from '@/i18n/enums';
 import { FOUNDING_STYLE } from '@/utils/constants/achievement';
 import { ESTABLISHED_DATE, FOUNDING_YEAR } from '@/utils/constants/app';
 import { formatDate } from '@/utils/datetime';
 
+import { EmptyState } from '@/components/ui/empty-state';
 import type { AchievementWithRelations } from '@/db/achievement';
+import { enumLabel } from '@/i18n/enums';
 
 import AchievementCard from './AchievementCard';
 
 const neuse = Bebas_Neue({ subsets: ['latin'], weight: '400' });
 function getYearTagline(taglines: Array<string>, index: number): string {
-  if (index <= 0) return taglines[0];
-
-  const [, ...rest] = taglines;
-  return rest[(index - 1) % rest.length];
+  // The first tagline is reserved for the founding year; the rest cycle.
+  if (index <= 0) return head(taglines)!;
+  const rest = taglines.slice(1);
+  return nth(rest, (index - 1) % rest.length)!;
 }
 
 /**

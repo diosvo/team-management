@@ -3,8 +3,8 @@ import {
   MOCK_PLAYER_RECORDS_TOP_PERFORMERS,
 } from '@/test/mocks/analytics';
 import { expectNoA11yViolations, renderWithUI, screen } from '@/test/utilities';
-
 import type { PlayerSessionSummary } from '@/types/analytics';
+
 import PlayerAttendanceRanking from './PlayerAttendanceRanking';
 
 describe('PlayerAttendanceRanking', () => {

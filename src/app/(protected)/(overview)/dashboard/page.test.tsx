@@ -1,9 +1,9 @@
-
-import { renderWithUI, screen, setupTestLifecycle } from '@/test/utilities';
+import { thisYear } from '@/utils/datetime';
 
 import { loadDashboardFilters } from '@/lib/nuqs';
+
+import { renderWithUI, screen, setupTestLifecycle } from '@/test/utilities';
 import type { DateRange } from '@/types/common';
-import { thisYear } from '@/utils/datetime';
 
 import DashboardsPage, { generateMetadata } from './page';
 

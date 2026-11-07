@@ -1,27 +1,25 @@
 import { isPast } from 'date-fns';
 
+import { revalidate } from '@/actions/cache';
 import {
   deleteAchievement,
-  getAchievements as fetchAchievements,
-  getPlayerLeagueStatSuggestions as fetchPlayerLeagueStatSuggestions,
   insertAchievement,
+  selectAchievements,
+  selectPlayerLeagueStatSuggestions,
   updateAchievement,
 } from '@/db/achievement';
-import { getLeagueById } from '@/db/league';
+import { selectLeagueById } from '@/db/league';
 import { getDbErrorMessage } from '@/db/pg-error';
-
-import { revalidate } from '@/actions/cache';
 import type { UpsertAchievementSchemaValues } from '@/schemas/achievement';
-
+import {
+  MOCK_ACHIEVEMENT,
+  MOCK_ACHIEVEMENT_INPUT,
+} from '@/test/mocks/achievement';
 import {
   mockWithAuth,
   mockWithResource,
   mockWithResourceAction,
 } from '@/test/mocks/auth';
-import {
-  MOCK_ACHIEVEMENT,
-  MOCK_ACHIEVEMENT_INPUT,
-} from '@/test/mocks/achievement';
 import { MOCK_LEAGUE } from '@/test/mocks/league';
 
 import {
@@ -37,15 +35,15 @@ vi.mock('./auth', () => ({
 }));
 
 vi.mock('@/db/achievement', () => ({
-  getAchievements: vi.fn(),
-  getPlayerLeagueStatSuggestions: vi.fn(),
+  selectAchievements: vi.fn(),
+  selectPlayerLeagueStatSuggestions: vi.fn(),
   insertAchievement: vi.fn(),
   updateAchievement: vi.fn(),
   deleteAchievement: vi.fn(),
 }));
 
 vi.mock('@/db/league', () => ({
-  getLeagueById: vi.fn(),
+  selectLeagueById: vi.fn(),
 }));
 
 vi.mock('@/db/pg-error', () => ({
@@ -84,7 +82,8 @@ describe('permissions', () => {
 
 describe('Achievement Actions', () => {
   const errorMessage = 'An error occurred';
-  const achievementData = MOCK_ACHIEVEMENT_INPUT as UpsertAchievementSchemaValues;
+  const achievementData =
+    MOCK_ACHIEVEMENT_INPUT as UpsertAchievementSchemaValues;
   const mockResult = {
     rows: [],
     rowCount: 1,
@@ -107,11 +106,11 @@ describe('Achievement Actions', () => {
         league: null,
         player: null,
       };
-      vi.mocked(fetchAchievements).mockResolvedValue([achievementDetails]);
+      vi.mocked(selectAchievements).mockResolvedValue([achievementDetails]);
 
       const result = await getAchievements();
 
-      expect(fetchAchievements).toHaveBeenCalled();
+      expect(selectAchievements).toHaveBeenCalledWith('sgr');
       expect(result).toEqual([achievementDetails]);
     });
   });
@@ -126,7 +125,7 @@ describe('Achievement Actions', () => {
           avg_points: 18.2,
         },
       ];
-      vi.mocked(fetchPlayerLeagueStatSuggestions).mockResolvedValue(
+      vi.mocked(selectPlayerLeagueStatSuggestions).mockResolvedValue(
         suggestions,
       );
 
@@ -134,7 +133,7 @@ describe('Achievement Actions', () => {
         MOCK_LEAGUE.league_id,
       );
 
-      expect(fetchPlayerLeagueStatSuggestions).toHaveBeenCalledWith(
+      expect(selectPlayerLeagueStatSuggestions).toHaveBeenCalledWith(
         MOCK_LEAGUE.league_id,
       );
       expect(result).toEqual(suggestions);
@@ -144,11 +143,13 @@ describe('Achievement Actions', () => {
   describe('upsertAchievement', () => {
     describe('ended-league enforcement', () => {
       test('returns error when the league does not exist', async () => {
-        vi.mocked(getLeagueById).mockResolvedValue(undefined);
+        vi.mocked(selectLeagueById).mockResolvedValue(undefined);
 
         const result = await upsertAchievement('', achievementData);
 
-        expect(getLeagueById).toHaveBeenCalledWith(achievementData.league_id);
+        expect(selectLeagueById).toHaveBeenCalledWith(
+          achievementData.league_id,
+        );
         expect(insertAchievement).not.toHaveBeenCalled();
         expect(result).toEqual({
           success: false,
@@ -157,7 +158,7 @@ describe('Achievement Actions', () => {
       });
 
       test('returns error when the league has not ended yet', async () => {
-        vi.mocked(getLeagueById).mockResolvedValue(MOCK_LEAGUE);
+        vi.mocked(selectLeagueById).mockResolvedValue(MOCK_LEAGUE);
         vi.mocked(isPast).mockReturnValue(false);
 
         const result = await upsertAchievement('', achievementData);
@@ -171,7 +172,7 @@ describe('Achievement Actions', () => {
       });
 
       test('accepts a league whose end date has passed', async () => {
-        vi.mocked(getLeagueById).mockResolvedValue(MOCK_LEAGUE);
+        vi.mocked(selectLeagueById).mockResolvedValue(MOCK_LEAGUE);
         vi.mocked(isPast).mockReturnValue(true);
         vi.mocked(insertAchievement).mockResolvedValue([
           { achievement_id: MOCK_ACHIEVEMENT.achievement_id },
@@ -179,7 +180,10 @@ describe('Achievement Actions', () => {
 
         const result = await upsertAchievement('', achievementData);
 
-        expect(insertAchievement).toHaveBeenCalledWith(achievementData);
+        expect(insertAchievement).toHaveBeenCalledWith({
+          ...achievementData,
+          team_id: 'sgr',
+        });
         expect(revalidate.achievements).toHaveBeenCalled();
         expect(result).toEqual({
           success: true,
@@ -195,8 +199,11 @@ describe('Achievement Actions', () => {
 
         const result = await upsertAchievement('', standalone);
 
-        expect(getLeagueById).not.toHaveBeenCalled();
-        expect(insertAchievement).toHaveBeenCalledWith(standalone);
+        expect(selectLeagueById).not.toHaveBeenCalled();
+        expect(insertAchievement).toHaveBeenCalledWith({
+          ...standalone,
+          team_id: 'sgr',
+        });
         expect(result).toEqual({
           success: true,
           message: 'Recorded achievement successfully',
@@ -205,7 +212,7 @@ describe('Achievement Actions', () => {
     });
 
     test('updates an existing achievement', async () => {
-      vi.mocked(getLeagueById).mockResolvedValue(MOCK_LEAGUE);
+      vi.mocked(selectLeagueById).mockResolvedValue(MOCK_LEAGUE);
       vi.mocked(isPast).mockReturnValue(true);
       vi.mocked(updateAchievement).mockResolvedValue({
         ...mockResult,
@@ -218,6 +225,7 @@ describe('Achievement Actions', () => {
       );
 
       expect(updateAchievement).toHaveBeenCalledWith(
+        'sgr',
         MOCK_ACHIEVEMENT.achievement_id,
         achievementData,
       );
@@ -229,7 +237,7 @@ describe('Achievement Actions', () => {
     });
 
     test('returns error when insert fails', async () => {
-      vi.mocked(getLeagueById).mockResolvedValue(MOCK_LEAGUE);
+      vi.mocked(selectLeagueById).mockResolvedValue(MOCK_LEAGUE);
       vi.mocked(isPast).mockReturnValue(true);
       vi.mocked(insertAchievement).mockRejectedValue(new Error(errorMessage));
 
@@ -254,6 +262,7 @@ describe('Achievement Actions', () => {
       const result = await removeAchievement(MOCK_ACHIEVEMENT.achievement_id);
 
       expect(deleteAchievement).toHaveBeenCalledWith(
+        'sgr',
         MOCK_ACHIEVEMENT.achievement_id,
       );
       expect(revalidate.achievements).toHaveBeenCalled();

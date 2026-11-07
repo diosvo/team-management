@@ -63,7 +63,7 @@ description: The practice schedule, with a per-session present rate derived from
 
 ## Rules
 
-- **A coach is required.** `upsertSession` calls `getTeamHeadCoach` on insert
+- **A coach is required.** `upsertSession` calls `selectTeamHeadCoach` on insert
   and update.
   - No COACH user: fails with "No coach assigned to the team".
   - Picks the first `role = coach` user; `coach.position` is not checked.

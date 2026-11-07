@@ -1,21 +1,20 @@
+import { LeagueStatus } from '@/utils/enum';
+
+import { revalidate } from '@/actions/cache';
 import {
-  addPlayerToLeagueRoster,
   deleteLeague,
-  getLeagueById,
-  getLeagues as fetchLeagues,
-  getPlayersInLeague as fetchPlayersInLeague,
+  deleteLeagueRosterPlayer,
   insertLeague,
-  registerTeamInLeague,
-  removePlayerFromLeagueRoster,
+  insertLeagueRosterPlayer,
+  insertLeagueTeam,
+  selectLeagueById,
+  selectLeagues,
+  selectPlayersInLeague,
   updateLeague,
 } from '@/db/league';
 import { getDbErrorMessage } from '@/db/pg-error';
-import { getTeamPlayerIds } from '@/db/player';
-
-import { revalidate } from '@/actions/cache';
+import { selectTeamPlayerIds } from '@/db/player';
 import type { UpsertLeagueSchemaValues } from '@/schemas/league';
-import { LeagueStatus } from '@/utils/enum';
-
 import {
   mockWithAuth,
   mockWithResource,
@@ -38,19 +37,19 @@ vi.mock('./auth', () => ({
 }));
 
 vi.mock('@/db/league', () => ({
-  getLeagueById: vi.fn(),
-  getLeagues: vi.fn(),
-  getPlayersInLeague: vi.fn(),
+  selectLeagueById: vi.fn(),
+  selectLeagues: vi.fn(),
+  selectPlayersInLeague: vi.fn(),
   insertLeague: vi.fn(),
   updateLeague: vi.fn(),
   deleteLeague: vi.fn(),
-  registerTeamInLeague: vi.fn(),
-  addPlayerToLeagueRoster: vi.fn(),
-  removePlayerFromLeagueRoster: vi.fn(),
+  insertLeagueTeam: vi.fn(),
+  insertLeagueRosterPlayer: vi.fn(),
+  deleteLeagueRosterPlayer: vi.fn(),
 }));
 
 vi.mock('@/db/player', () => ({
-  getTeamPlayerIds: vi.fn(),
+  selectTeamPlayerIds: vi.fn(),
 }));
 
 vi.mock('@/db/pg-error', () => ({
@@ -104,21 +103,21 @@ describe('League Actions', () => {
       constraint: null,
     });
     // By default every requested player is on the acting user's team.
-    vi.mocked(getTeamPlayerIds).mockImplementation(async (_, ids) => ids);
+    vi.mocked(selectTeamPlayerIds).mockImplementation(async (_, ids) => ids);
   });
 
   describe('getLeagues', () => {
     test('fetches leagues successfully', async () => {
-      vi.mocked(fetchLeagues).mockResolvedValue([leagueDetails]);
+      vi.mocked(selectLeagues).mockResolvedValue([leagueDetails]);
 
       const result = await getLeagues();
 
-      expect(fetchLeagues).toHaveBeenCalled();
+      expect(selectLeagues).toHaveBeenCalled();
       expect(result).toEqual([leagueDetails]);
     });
 
-    test('returns empty array when fetchLeagues returns empty array', async () => {
-      vi.mocked(fetchLeagues).mockResolvedValue([]);
+    test('returns empty array when selectLeagues returns empty array', async () => {
+      vi.mocked(selectLeagues).mockResolvedValue([]);
 
       const result = await getLeagues();
       expect(result).toEqual([]);
@@ -126,12 +125,12 @@ describe('League Actions', () => {
   });
 
   describe('getPlayersInLeague', () => {
-    test('calls fetchPlayersInLeague with team_id and league_id', async () => {
-      vi.mocked(fetchPlayersInLeague).mockResolvedValue([MOCK_USER]);
+    test('calls selectPlayersInLeague with team_id and league_id', async () => {
+      vi.mocked(selectPlayersInLeague).mockResolvedValue([MOCK_USER]);
 
       const result = await getPlayersInLeague(MOCK_LEAGUE.league_id);
 
-      expect(fetchPlayersInLeague).toHaveBeenCalledWith(
+      expect(selectPlayersInLeague).toHaveBeenCalledWith(
         MOCK_TEAM.team_id,
         MOCK_LEAGUE.league_id,
       );
@@ -139,7 +138,7 @@ describe('League Actions', () => {
     });
 
     test('returns empty array when no players found', async () => {
-      vi.mocked(fetchPlayersInLeague).mockResolvedValue([]);
+      vi.mocked(selectPlayersInLeague).mockResolvedValue([]);
 
       const result = await getPlayersInLeague(MOCK_LEAGUE.league_id);
       expect(result).toEqual([]);
@@ -170,7 +169,7 @@ describe('League Actions', () => {
 
         await upsertLeague('', leagueData, []);
 
-        expect(registerTeamInLeague).toHaveBeenCalledWith(
+        expect(insertLeagueTeam).toHaveBeenCalledWith(
           MOCK_LEAGUE.league_id,
           MOCK_TEAM.team_id,
         );
@@ -192,14 +191,14 @@ describe('League Actions', () => {
 
     describe('update existing league', () => {
       beforeEach(() => {
-        vi.mocked(getLeagueById).mockResolvedValue({
+        vi.mocked(selectLeagueById).mockResolvedValue({
           ...MOCK_LEAGUE,
           status: LeagueStatus.UPCOMING,
         });
       });
 
       test('rejects a league that has already started', async () => {
-        vi.mocked(getLeagueById).mockResolvedValue(MOCK_LEAGUE); // ended
+        vi.mocked(selectLeagueById).mockResolvedValue(MOCK_LEAGUE); // ended
 
         const result = await upsertLeague(
           MOCK_LEAGUE.league_id,
@@ -239,8 +238,8 @@ describe('League Actions', () => {
 
         const result = await upsertLeague(MOCK_LEAGUE.league_id, leagueData);
 
-        expect(addPlayerToLeagueRoster).not.toHaveBeenCalled();
-        expect(removePlayerFromLeagueRoster).not.toHaveBeenCalled();
+        expect(insertLeagueRosterPlayer).not.toHaveBeenCalled();
+        expect(deleteLeagueRosterPlayer).not.toHaveBeenCalled();
         expect(result.success).toBe(true);
       });
 
@@ -263,7 +262,7 @@ describe('League Actions', () => {
 
       test('syncs roster by adding and removing players on update', async () => {
         vi.mocked(updateLeague).mockResolvedValue(updateReturn);
-        vi.mocked(fetchPlayersInLeague).mockResolvedValue([
+        vi.mocked(selectPlayersInLeague).mockResolvedValue([
           { ...MOCK_USER, id: 'player-old' },
           { ...MOCK_USER, id: 'player-keep' },
         ]);
@@ -273,16 +272,16 @@ describe('League Actions', () => {
           'player-new',
         ]);
 
-        expect(fetchPlayersInLeague).toHaveBeenCalledWith(
+        expect(selectPlayersInLeague).toHaveBeenCalledWith(
           MOCK_TEAM.team_id,
           MOCK_LEAGUE.league_id,
         );
-        expect(addPlayerToLeagueRoster).toHaveBeenCalledWith(
+        expect(insertLeagueRosterPlayer).toHaveBeenCalledWith(
           MOCK_TEAM.team_id,
           MOCK_LEAGUE.league_id,
           'player-new',
         );
-        expect(removePlayerFromLeagueRoster).toHaveBeenCalledWith(
+        expect(deleteLeagueRosterPlayer).toHaveBeenCalledWith(
           MOCK_TEAM.team_id,
           MOCK_LEAGUE.league_id,
           'player-old',
@@ -295,19 +294,19 @@ describe('League Actions', () => {
 
       test('rejects players who are not on the acting team', async () => {
         vi.mocked(updateLeague).mockResolvedValue(updateReturn);
-        vi.mocked(fetchPlayersInLeague).mockResolvedValue([]);
-        vi.mocked(getTeamPlayerIds).mockResolvedValue(['player-ours-123']);
+        vi.mocked(selectPlayersInLeague).mockResolvedValue([]);
+        vi.mocked(selectTeamPlayerIds).mockResolvedValue(['player-ours-123']);
 
         const result = await upsertLeague(MOCK_LEAGUE.league_id, leagueData, [
           'player-ours-123',
           'player-theirs-456',
         ]);
 
-        expect(getTeamPlayerIds).toHaveBeenCalledWith(MOCK_TEAM.team_id, [
+        expect(selectTeamPlayerIds).toHaveBeenCalledWith(MOCK_TEAM.team_id, [
           'player-ours-123',
           'player-theirs-456',
         ]);
-        expect(addPlayerToLeagueRoster).toHaveBeenCalledExactlyOnceWith(
+        expect(insertLeagueRosterPlayer).toHaveBeenCalledExactlyOnceWith(
           MOCK_TEAM.team_id,
           MOCK_LEAGUE.league_id,
           'player-ours-123',
@@ -321,13 +320,13 @@ describe('League Actions', () => {
 
       test('returns roster sync error message when add/remove operations fail', async () => {
         vi.mocked(updateLeague).mockResolvedValue(updateReturn);
-        vi.mocked(fetchPlayersInLeague).mockResolvedValue([
+        vi.mocked(selectPlayersInLeague).mockResolvedValue([
           { ...MOCK_USER, id: 'player-old-id-123' },
         ]);
-        vi.mocked(addPlayerToLeagueRoster).mockRejectedValueOnce(
+        vi.mocked(insertLeagueRosterPlayer).mockRejectedValueOnce(
           new Error('add failed'),
         );
-        vi.mocked(removePlayerFromLeagueRoster).mockRejectedValueOnce(
+        vi.mocked(deleteLeagueRosterPlayer).mockRejectedValueOnce(
           new Error('remove failed'),
         );
         vi.mocked(getDbErrorMessage)
@@ -356,14 +355,14 @@ describe('League Actions', () => {
 
   describe('removeLeague', () => {
     beforeEach(() => {
-      vi.mocked(getLeagueById).mockResolvedValue({
+      vi.mocked(selectLeagueById).mockResolvedValue({
         ...MOCK_LEAGUE,
         status: LeagueStatus.UPCOMING,
       });
     });
 
     test('rejects a league that has already started', async () => {
-      vi.mocked(getLeagueById).mockResolvedValue(MOCK_LEAGUE); // ended
+      vi.mocked(selectLeagueById).mockResolvedValue(MOCK_LEAGUE); // ended
 
       const result = await removeLeague(MOCK_LEAGUE.league_id);
 

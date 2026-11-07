@@ -1,27 +1,26 @@
 'use client';
 
-import NextLink from 'next/link';
 import { useState } from 'react';
-
+import { useForm } from 'react-hook-form';
+import NextLink from 'next/link';
+import { useTranslations } from 'next-intl';
 import {
   Button,
-  Link as ChakraLink,
   Heading,
   Input,
+  Link as ChakraLink,
   VStack,
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useTranslations } from 'next-intl';
-import { useForm } from 'react-hook-form';
+
+import { authErrorMessage } from '@/utils/rate-limit';
+import { ERROR_TYPE_BY_STATUS } from '@/utils/response';
+
+import authClient from '@/lib/auth-client';
 
 import { Alert } from '@/components/ui/alert';
 import { Field } from '@/components/ui/field';
 import { PasswordInput } from '@/components/ui/password-input';
-
-import authClient from '@/lib/auth-client';
-import { authErrorMessage } from '@/utils/rate-limit';
-import { ERROR_TYPE_BY_STATUS } from '@/utils/response';
-
 import { DEFAULT_LOGIN_REDIRECT } from '@/routes';
 import { LoginSchema, type LoginValues } from '@/schemas/auth';
 

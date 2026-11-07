@@ -1,11 +1,10 @@
 'use client';
 
+import { Fragment } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Fragment } from 'react';
-
-import { Breadcrumb } from '@chakra-ui/react';
 import { useTranslations } from 'next-intl';
+import { Breadcrumb } from '@chakra-ui/react';
 
 import { navLabel } from '../_helpers/utils';
 

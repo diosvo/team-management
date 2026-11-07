@@ -160,7 +160,7 @@ pnpm exec playwright test -c playwright.visual.config.ts --update-snapshots
 
 - `.github/workflows/playwright.yaml` runs on PRs to `main`, but `if: false`
   always skips it.
-- Upload step reads `playwright-report/`, config writes `playwright/report`.
-- Fix both when enabling; until then broken E2E flows don't fail a PR.
+- The upload step reads `playwright/report/`, the folder the config writes.
+- Remove `if: false` to enable; until then broken E2E flows don't fail a PR.
 
 </Callout>

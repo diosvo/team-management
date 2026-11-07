@@ -1,11 +1,10 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
-
 import { type NextRequest, NextResponse } from 'next/server';
 
 import env from '@env';
+import { EmailStatus } from '@/utils/enum';
 
 import { updateDeliveryStatus } from '@/db/report';
-import { EmailStatus } from '@/utils/enum';
 
 /** Reject events whose timestamp drifted more than this from now (replay). */
 const TOLERANCE_MS = 5 * 60 * 1000;

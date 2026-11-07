@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-
+import { useTranslations } from 'next-intl';
 import { Badge, Button } from '@chakra-ui/react';
 import {
   ClockAlert,
@@ -9,24 +9,22 @@ import {
   PanelLeftClose,
   UsersRound,
 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 
-import DataTable, { type Column } from '@/components/DataTable';
-import HighlightText from '@/components/HighlightText';
-import { toaster } from '@/components/ui/toaster';
-import Visibility from '@/components/Visibility';
-
-import usePermissions from '@/hooks/use-permissions';
-import useTableState from '@/hooks/use-table-state';
-
-import { enumLabel } from '@/i18n/enums';
-import { useAttendanceFilters } from '@/lib/nuqs';
 import { formatDate, formatDatetime } from '@/utils/datetime';
 import { AttendanceStatus } from '@/utils/enum';
 import { buildPredicate } from '@/utils/filters';
 import { getColor } from '@/utils/helper';
 
+import { useAttendanceFilters } from '@/lib/nuqs';
+
 import { removeAttendance, updateStatus } from '@/actions/attendance';
+import DataTable, { type Column } from '@/components/DataTable';
+import HighlightText from '@/components/HighlightText';
+import { toaster } from '@/components/ui/toaster';
+import Visibility from '@/components/Visibility';
+import usePermissions from '@/hooks/use-permissions';
+import useTableState from '@/hooks/use-table-state';
+import { enumLabel } from '@/i18n/enums';
 import type { AttendanceWithPlayer } from '@/types/attendance';
 
 const ACTIONS = [

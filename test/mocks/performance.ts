@@ -1,10 +1,14 @@
+import { ActivityKind, MatchResult, PlayerPosition } from '@/utils/enum';
+
 import type {
+  ActivityRecord,
+  AttendanceOverview,
   MatchesOverview,
   MatchPerformanceRecord,
   PerformanceIdentity,
+  PerformanceSummary,
   TestTypeProgress,
 } from '@/types/performance';
-import { MatchResult, PlayerPosition } from '@/utils/enum';
 
 export const MOCK_PERFORMANCE_TARGET_ID = 'player-1';
 export const MOCK_PERFORMANCE_RANGE = { from: '2026-01-01', to: '2026-12-31' };
@@ -65,3 +69,100 @@ export const createTestType = (
   series: [],
   ...overrides,
 });
+
+export const MOCK_ACTIVITY_RECORDS: Array<ActivityRecord> = [
+  {
+    id: 'training-1',
+    kind: ActivityKind.TRAINING,
+    date: '2026-03-02',
+    location: 'Main Gym',
+    duration_hours: 2,
+    status: 'late',
+    reason: 'Traffic',
+  },
+  {
+    id: 'training-2',
+    kind: ActivityKind.TRAINING,
+    date: '2026-03-04',
+    location: null,
+    duration_hours: null,
+    status: 'on_time',
+    reason: null,
+  },
+  {
+    id: 'training-3',
+    kind: ActivityKind.TRAINING,
+    date: '2026-03-06',
+    location: 'Court B',
+    duration_hours: null,
+    status: null,
+    reason: null,
+  },
+  {
+    id: 'test-1',
+    kind: ActivityKind.TEST,
+    date: '2026-03-08',
+    results: [
+      { name: 'Sprint', result: 12.3, unit: 'seconds' },
+      { name: 'Shooting', result: 85, unit: 'percent' },
+      { name: 'Jump', result: 4.2, unit: 'meters' },
+      { name: 'Push-ups', result: 30, unit: 'reps' },
+    ],
+  },
+  {
+    id: 'match-1',
+    kind: ActivityKind.MATCH,
+    date: '2026-03-10',
+    opponent: 'Tigers',
+    result: 'win',
+    score: '80-72',
+    points_scored: 18,
+    rebounds: 6,
+    assists: 4,
+  },
+];
+
+export const MOCK_PERFORMANCE_SUMMARY: PerformanceSummary = {
+  attendance: {
+    rate: 75,
+    total: 8,
+    on_time: 5,
+    late: 1,
+    current_streak: 3,
+    best_streak: 5,
+  },
+  tests_taken: 2,
+  last_tested: '2026-03-15',
+  honors: { count: 1, latest: { type: 'mvp', year: 2026 } },
+};
+
+export const MOCK_ATTENDANCE_OVERVIEW: AttendanceOverview = {
+  total: 10,
+  on_time: 6,
+  late: 2,
+  absent: 2,
+  rate: 80,
+  team_rate: 72.5,
+  current_streak: 2,
+  best_streak: 4,
+  trend: { recent: 90, previous: 70, delta: 20 },
+  monthly: [{ month: '2026-01', player: 80, team: 72.5 }],
+  reasons: [
+    { name: 'Sick', count: 2 },
+    { name: null, count: 1 },
+  ],
+};
+
+export const MOCK_EMPTY_ATTENDANCE_OVERVIEW: AttendanceOverview = {
+  total: 0,
+  on_time: 0,
+  late: 0,
+  absent: 0,
+  rate: 0,
+  team_rate: 0,
+  current_streak: 0,
+  best_streak: 0,
+  trend: null,
+  monthly: [],
+  reasons: [],
+};

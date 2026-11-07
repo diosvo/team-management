@@ -1,3 +1,8 @@
+import { removeLocation } from '@/actions/location';
+import type { Location } from '@/drizzle/schema';
+import usePermissions, {
+  type PermissionsResult,
+} from '@/hooks/use-permissions';
 import { MOCK_LOCATION, MOCK_LOCATION_2 } from '@/test/mocks/location';
 import {
   createPermissionsMock,
@@ -10,13 +15,6 @@ import {
   setupTestLifecycle,
   waitFor,
 } from '@/test/utilities';
-
-import usePermissions, {
-  type PermissionsResult,
-} from '@/hooks/use-permissions';
-
-import { removeLocation } from '@/actions/location';
-import type { Location } from '@/drizzle/schema';
 
 import LocationTable from './LocationTable';
 import { UpsertLocation } from './UpsertLocation';

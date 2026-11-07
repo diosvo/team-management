@@ -1,4 +1,5 @@
 import { expectNoA11yViolations, render } from '@/test/utilities';
+
 import Visibility from './Visibility';
 
 describe('Visibility', () => {

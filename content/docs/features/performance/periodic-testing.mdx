@@ -38,7 +38,7 @@ description: Player fitness scores per test and date, batch-entered and edited i
     - `q`, `type` and `page` are client-only. 10 players per page.
     - Each cell is a Chakra `Editable` number input:
       - Empty cell → `createTestResult` with one row.
-      - Filled cell → `updateTestResultById`; cleared → `deleteTestResultById`.
+      - Filled cell → `updateTestResult`; cleared → `removeTestResult`.
       - Unchanged value or clearing an empty cell writes nothing.
       - A failed write reverts the draft.
 
@@ -59,7 +59,7 @@ description: Player fitness scores per test and date, batch-entered and edited i
     - **+ Add** and row click open the same dialog: name, one unit,
       direction (higher or lower is better) and an optional target.
     - Units: `meters`, `percent`, `points`, `reps`, `seconds`, `times`.
-    - Form defaults to `seconds`; the column defaults to `times`.
+    - Form and column both default to `times`.
     - Selected rows delete in bulk; a type that still has results is refused.
 
   </Tab>
@@ -120,7 +120,7 @@ description: Player fitness scores per test and date, batch-entered and edited i
 
 - **One result per player, test type and date.** `createTestResult` upserts
   on that triple:
-  - `getExistingTestResults` resolves the batch in one `IN`-filtered query.
+  - `selectExistingTestResults` resolves the batch in one `IN`-filtered query.
   - Rows are re-checked against the submitted keys (the filters cross-product).
   - One insert for new cells, one update pass for existing ones.
   - Toast: `{N} created, {M} updated`.
@@ -208,12 +208,12 @@ Matrix payload of `getTestResult` (`src/types/periodic-testing.d.ts`):
         'Batch upsert keyed by player, type and date. Requires create.',
       required: true,
     },
-    'updateTestResultById({ result_id, result })': {
+    'updateTestResult({ result_id, result })': {
       type: 'Response',
       description: 'Inline edit of one score. Requires edit.',
       required: true,
     },
-    'deleteTestResultById(result_id)': {
+    'removeTestResult(result_id)': {
       type: 'Response',
       description: 'Removes one score (a cleared cell). Requires delete.',
       required: true,

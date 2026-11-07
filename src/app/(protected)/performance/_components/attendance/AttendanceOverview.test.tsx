@@ -1,10 +1,13 @@
 import {
+  MOCK_ATTENDANCE_OVERVIEW,
+  MOCK_EMPTY_ATTENDANCE_OVERVIEW,
+} from '@/test/mocks/performance';
+import {
   expectNoA11yViolations,
   renderWithUI,
   screen,
   setupTestLifecycle,
 } from '@/test/utilities';
-
 import type { AttendanceOverview as AttendanceOverviewData } from '@/types/performance';
 
 import AttendanceOverview from './AttendanceOverview';
@@ -18,43 +21,15 @@ vi.mock('../LazyCharts', () => ({
   },
 }));
 
-const DATA: AttendanceOverviewData = {
-  total: 10,
-  on_time: 6,
-  late: 2,
-  absent: 2,
-  rate: 80,
-  team_rate: 72.5,
-  current_streak: 2,
-  best_streak: 4,
-  trend: { recent: 90, previous: 70, delta: 20 },
-  monthly: [{ month: '2026-01', player: 80, team: 72.5 }],
-  reasons: [
-    { name: 'Sick', count: 2 },
-    { name: null, count: 1 },
-  ],
-};
-
-const EMPTY: AttendanceOverviewData = {
-  total: 0,
-  on_time: 0,
-  late: 0,
-  absent: 0,
-  rate: 0,
-  team_rate: 0,
-  current_streak: 0,
-  best_streak: 0,
-  trend: null,
-  monthly: [],
-  reasons: [],
-};
-
 describe('AttendanceOverview', () => {
   setupTestLifecycle();
 
   const setup = (data: Partial<AttendanceOverviewData> = {}) =>
     renderWithUI(
-      <AttendanceOverview data={{ ...DATA, ...data }} subject="You" />,
+      <AttendanceOverview
+        data={{ ...MOCK_ATTENDANCE_OVERVIEW, ...data }}
+        subject="You"
+      />,
     );
 
   test('should be accessible', async () => {
@@ -68,7 +43,7 @@ describe('AttendanceOverview', () => {
 
     expect(screen.getByTestId('trend-chart')).toBeInTheDocument();
     expect(chartProps).toHaveBeenCalledWith({
-      records: DATA.monthly,
+      records: MOCK_ATTENDANCE_OVERVIEW.monthly,
       subject: 'You',
     });
   });
@@ -125,7 +100,12 @@ describe('AttendanceOverview', () => {
   });
 
   test('renders the empty states when nothing was recorded', () => {
-    renderWithUI(<AttendanceOverview data={EMPTY} subject="Jane" />);
+    renderWithUI(
+      <AttendanceOverview
+        data={MOCK_EMPTY_ATTENDANCE_OVERVIEW}
+        subject="Jane"
+      />,
+    );
 
     expect(screen.queryByTestId('trend-chart')).not.toBeInTheDocument();
     expect(screen.getByText('No attendance records')).toBeInTheDocument();

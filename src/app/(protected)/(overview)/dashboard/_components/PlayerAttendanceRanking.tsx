@@ -1,12 +1,12 @@
+import { useTranslations } from 'next-intl';
 import { HStack, Span, Text, VStack } from '@chakra-ui/react';
 import { BetweenVerticalEnd, TrendingDown, TrendingUp } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+
+import { colorRank } from '@/utils/helper';
 
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
-
 import type { PlayerSessionSummary, PlayerStats } from '@/types/analytics';
-import { colorRank } from '@/utils/helper';
 
 const PlayerRank = (
   player: PlayerStats,

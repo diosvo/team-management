@@ -1,5 +1,8 @@
+import { saveTestNote } from '@/actions/progression';
+import type { TestType } from '@/drizzle/schema';
 import {
   MOCK_GENERAL_NOTE,
+  MOCK_PLAYER_PROGRESSION,
   MOCK_PROGRESSION_TYPE,
   MOCK_PROGRESSION_TYPE_TIMED,
   MOCK_TEST_NOTE,
@@ -13,10 +16,6 @@ import {
   setupTestLifecycle,
   waitFor,
 } from '@/test/utilities';
-
-import type { TestType } from '@/drizzle/schema';
-
-import { saveTestNote } from '@/actions/progression';
 
 import { AddTestNote } from './AddTestNote';
 
@@ -42,7 +41,7 @@ describe('AddTestNote', () => {
     const view = renderWithUI(<AddTestNote.Viewport />);
     await act(async () => {
       AddTestNote.open('add-test-note', {
-        playerId: 'player-1',
+        playerId: MOCK_PLAYER_PROGRESSION.player_id,
         types: [MOCK_PROGRESSION_TYPE, UNITLESS],
         ...extra,
       });
@@ -117,20 +116,25 @@ describe('AddTestNote', () => {
     mockCreate.mockResolvedValue({ success: true, message: 'Saved' } as never);
     const { user } = await open();
 
-    await user.type(await screen.findByRole('textbox'), 'Good form');
+    await user.type(await screen.findByRole('textbox'), MOCK_TEST_NOTE.content);
     const submit = screen.getByRole('button', { name: /save/i });
     await waitFor(() => expect(submit).toBeEnabled());
     await user.click(submit);
 
     await waitFor(() =>
       expect(mockCreate).toHaveBeenCalledWith(
-        'player-1',
-        expect.objectContaining({ content: 'Good form', type_id: '' }),
+        MOCK_PLAYER_PROGRESSION.player_id,
+        expect.objectContaining({
+          content: MOCK_TEST_NOTE.content,
+          type_id: '',
+        }),
         undefined,
       ),
     );
     await waitFor(() =>
-      expect(screen.queryByText('Good form')).not.toBeInTheDocument(),
+      expect(
+        screen.queryByText(MOCK_TEST_NOTE.content),
+      ).not.toBeInTheDocument(),
     );
   });
 
@@ -138,13 +142,13 @@ describe('AddTestNote', () => {
     mockCreate.mockResolvedValue({ success: false, message: 'Nope' } as never);
     const { user } = await open();
 
-    await user.type(await screen.findByRole('textbox'), 'Good form');
+    await user.type(await screen.findByRole('textbox'), MOCK_TEST_NOTE.content);
     const submit = screen.getByRole('button', { name: /save/i });
     await waitFor(() => expect(submit).toBeEnabled());
     await user.click(submit);
 
     await waitFor(() => expect(mockCreate).toHaveBeenCalled());
-    expect(screen.getByRole('textbox')).toHaveValue('Good form');
+    expect(screen.getByRole('textbox')).toHaveValue(MOCK_TEST_NOTE.content);
   });
 
   test('leaves out focus areas that already have a note', async () => {
@@ -174,7 +178,7 @@ describe('AddTestNote', () => {
 
     await waitFor(() =>
       expect(mockCreate).toHaveBeenCalledWith(
-        'player-1',
+        MOCK_PLAYER_PROGRESSION.player_id,
         expect.objectContaining({
           type_id: MOCK_PROGRESSION_TYPE.type_id,
           goal: String(MOCK_TEST_NOTE.goal),

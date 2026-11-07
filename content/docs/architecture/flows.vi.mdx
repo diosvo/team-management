@@ -117,7 +117,7 @@ sequenceDiagram
     participant B as Vercel Blob
     participant M as Resend
     V->>R: Bearer CRON_SECRET (01:00 UTC)
-    R->>DB: claimDueSchedules(20)
+    R->>DB: selectDueSchedulesForUpdate(20)
     R->>R: getServiceSession()
     loop mỗi lịch đến hạn, tối đa 40 s
         R->>E: chạy lượt (scheduled_for = next_run_at)

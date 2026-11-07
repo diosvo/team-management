@@ -22,10 +22,11 @@ description: Làm ngay trên trình duyệt, từ cầu thủ đang hoạt độ
 - Cầu thủ (`PLAYER`), huấn luyện viên (`COACH`) và admin (`SUPER_ADMIN`) đều mở
   được trang; nhưng chỉ admin và đội trưởng dùng được.
 - Mọi nút và ô nhập bị khoá khi `!isCaptain && !isAdmin`.
-- **Chỉ chặn trên giao diện.** Không có server action cho việc xuất file;
-  `getActivePlayers`, `getLeagues` là hàm đọc `withAuth` mở cho mọi thành viên.
-- **Dữ liệu nhạy cảm.** `getActivePlayers` trả về đủ `User` (ngày sinh, số điện
-  thoại, CCCD); chỉ trang này gửi các thông tin đó xuống trình duyệt.
+- **Ô chọn cầu thủ không chứa dữ liệu nhạy cảm.** `getActivePlayers` trả về
+  `PlayerOption` (id, tên, ảnh, player) cho mọi thành viên đã đăng nhập.
+- **Dữ liệu nhạy cảm có kiểm quyền.** Ngày sinh, số điện thoại và CCCD lấy từ
+  `getRegistrationPlayers(ids)`: cần quyền `registration:create` (admin hoặc đội
+  trưởng) và chỉ trả về các cầu thủ đang hoạt động đã chọn trong đội của bạn.
 
 ## Luồng
 
@@ -194,9 +195,16 @@ Các helper chạy trên trình duyệt trong `registration/_helpers`, cùng hai
         'Một dòng tiêu đề cộng mỗi cầu thủ một dòng đã escape. roster.ts.',
     },
     'getActivePlayers()': {
+      type: 'Array<PlayerOption>',
+      required: true,
+      description:
+        'Cầu thủ đang hoạt động của đội bạn, không có dữ liệu nhạy cảm. src/actions/user.ts.',
+    },
+    'getRegistrationPlayers(ids)': {
       type: 'Array<User & { player }>',
       required: true,
-      description: 'Cầu thủ đang hoạt động của đội bạn. src/actions/user.ts.',
+      description:
+        'Đủ thông tin của các cầu thủ đã chọn; cần registration:create. Dùng cho xem trước, CSV, PDF và lưu. src/actions/user.ts.',
     },
     'getLeagues()': {
       type: 'Array<League>',

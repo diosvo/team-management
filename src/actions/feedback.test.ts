@@ -1,7 +1,7 @@
 import { buildIssueBody } from '@/lib/feedback';
 import { createIssue } from '@/lib/github';
-import { SubmitFeedbackSchema } from '@/schemas/feedback';
 
+import { SubmitFeedbackSchema } from '@/schemas/feedback';
 import { mockWithAuth } from '@/test/mocks/auth';
 import { MOCK_USER } from '@/test/mocks/user';
 

@@ -1,23 +1,23 @@
 'use client';
 
 import { useMemo } from 'react';
-
-import { Badge } from '@chakra-ui/react';
 import { useTranslations } from 'next-intl';
+import { Badge } from '@chakra-ui/react';
 import type { ListEmail } from 'resend';
 
-import DataTable, { type Column } from '@/components/DataTable';
-import Filters from '@/components/filters/Filters';
-import HighlightText from '@/components/HighlightText';
-
-import useTableState from '@/hooks/use-table-state';
-import { enumLabel, useSelection } from '@/i18n/enums';
-import { useEmailFilters } from '@/lib/nuqs';
-import type { FilterDef } from '@/types/filters';
 import { EMAIL_STATUS_SELECTION } from '@/utils/constants';
 import { formatDatetime } from '@/utils/datetime';
 import { buildPredicate } from '@/utils/filters';
 import { getColor } from '@/utils/helper';
+
+import { useEmailFilters } from '@/lib/nuqs';
+
+import DataTable, { type Column } from '@/components/DataTable';
+import Filters from '@/components/filters/Filters';
+import HighlightText from '@/components/HighlightText';
+import useTableState from '@/hooks/use-table-state';
+import { enumLabel, useSelection } from '@/i18n/enums';
+import type { FilterDef } from '@/types/filters';
 
 export default function SentEmails({ emails }: { emails: Array<ListEmail> }) {
   const t = useTranslations('emails.table');

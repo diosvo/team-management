@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { getSessions } from '@/actions/training-session';
 import { loadTrainingFilters } from '@/lib/nuqs';
+
+import { getSessions } from '@/actions/training-session';
 
 import SessionFilters from './_components/SessionFilters';
 import SessionHeader from './_components/SessionHeader';

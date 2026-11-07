@@ -1,27 +1,27 @@
 'use client';
 
 import { useMemo } from 'react';
-
+import { useLocale, useTranslations } from 'next-intl';
 import {
   Button,
   DatePicker as ChakraDatePicker,
+  type DateValue,
+  parseDate,
   Portal,
   Span,
   Stack,
-  parseDate,
   useDatePickerContext,
-  type DateValue,
 } from '@chakra-ui/react';
-import { useLocale, useTranslations } from 'next-intl';
 
-import type { DateBounds, DateRange } from '@/types/common';
 import {
+  type DateSelection,
   formatDayHint,
   getPresets,
   isWithinBounds,
   parseLocaleDate,
-  type DateSelection,
 } from '@/utils/datetime';
+
+import type { DateBounds, DateRange } from '@/types/common';
 
 /* --------------------------------- Helpers -------------------------------- */
 
@@ -54,7 +54,11 @@ export const toSelection = (
 };
 
 export const isSameSelection = (a: Array<DateValue>, b: Array<DateValue>) =>
-  a.length === b.length && a.every((day, index) => day.compare(b[index]) === 0);
+  a.length === b.length &&
+  a.every((day, index) => {
+    const other = b[index];
+    return other !== undefined && day.compare(other) === 0;
+  });
 
 /* -------------------------------- Calendar -------------------------------- */
 

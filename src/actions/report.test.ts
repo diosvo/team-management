@@ -1,34 +1,34 @@
 import { cookies, headers } from 'next/headers';
 
+import { Interval, ReportTrigger } from '@/utils/enum';
+
+import { executeSchedule } from '@/lib/report-schedule';
+import { requestOrigin } from '@/lib/request';
+import { type EmailProps, sendEmail } from '@/lib/resend';
+
 import {
   deleteReportSchedules,
-  fetchReportHistory,
-  fetchReportRecipients,
-  fetchReportSchedules,
-  getReportSchedule,
   insertReportSchedule,
+  selectReportHistory,
+  selectReportRecipients,
+  selectReportSchedule,
+  selectReportSchedules,
   updateReportSchedule,
 } from '@/db/report';
-import { computeNextRun, executeSchedule } from '@/lib/report-schedule';
-import { requestOrigin } from '@/lib/request';
-import { sendEmail, type EmailProps } from '@/lib/resend';
-
+import type { UpsertReportScheduleValues } from '@/schemas/report';
 import {
   mockWithAuth,
   mockWithResource,
   resetMockAuthUser,
   setMockAuthUser,
 } from '@/test/mocks/auth';
-import { MOCK_USER } from '@/test/mocks/user';
 import {
   MOCK_REPORT_HISTORY,
   MOCK_REPORT_RECIPIENTS,
   MOCK_REPORT_SCHEDULE,
 } from '@/test/mocks/report';
 import { MOCK_TEAM } from '@/test/mocks/team';
-
-import type { UpsertReportScheduleValues } from '@/schemas/report';
-import { Interval, ReportTrigger } from '@/utils/enum';
+import { MOCK_USER } from '@/test/mocks/user';
 
 import {
   getReportHistory,
@@ -47,10 +47,10 @@ vi.mock('./auth', () => ({
 }));
 
 vi.mock('@/db/report', () => ({
-  fetchReportRecipients: vi.fn(),
-  fetchReportSchedules: vi.fn(),
-  fetchReportHistory: vi.fn(),
-  getReportSchedule: vi.fn(),
+  selectReportRecipients: vi.fn(),
+  selectReportSchedules: vi.fn(),
+  selectReportHistory: vi.fn(),
+  selectReportSchedule: vi.fn(),
   insertReportSchedule: vi.fn(),
   updateReportSchedule: vi.fn(),
   deleteReportSchedules: vi.fn(),
@@ -91,18 +91,18 @@ describe('Report Actions', () => {
 
   describe('getReportRecipients', () => {
     test('calls fetchReportRecipients with team_id', async () => {
-      vi.mocked(fetchReportRecipients).mockResolvedValue(
+      vi.mocked(selectReportRecipients).mockResolvedValue(
         MOCK_REPORT_RECIPIENTS,
       );
 
       const result = await getReportRecipients();
 
-      expect(fetchReportRecipients).toHaveBeenCalledWith(MOCK_TEAM.team_id);
+      expect(selectReportRecipients).toHaveBeenCalledWith(MOCK_TEAM.team_id);
       expect(result).toEqual(MOCK_REPORT_RECIPIENTS);
     });
 
     test('returns empty array when no recipients exist', async () => {
-      vi.mocked(fetchReportRecipients).mockResolvedValue([]);
+      vi.mocked(selectReportRecipients).mockResolvedValue([]);
 
       const result = await getReportRecipients();
 
@@ -111,7 +111,7 @@ describe('Report Actions', () => {
 
     test('propagates errors from fetchReportRecipients', async () => {
       const message = 'Database error';
-      vi.mocked(fetchReportRecipients).mockRejectedValue(new Error(message));
+      vi.mocked(selectReportRecipients).mockRejectedValue(new Error(message));
 
       await expect(getReportRecipients()).rejects.toThrow(message);
     });
@@ -122,7 +122,7 @@ describe('Report Actions', () => {
       const result = await getReportRecipients();
 
       expect(result).toEqual([]);
-      expect(fetchReportRecipients).not.toHaveBeenCalled();
+      expect(selectReportRecipients).not.toHaveBeenCalled();
 
       resetMockAuthUser();
     });
@@ -200,24 +200,24 @@ describe('Report Actions', () => {
 
   describe('getReportSchedules', () => {
     test('fetches schedules scoped to the team', async () => {
-      vi.mocked(fetchReportSchedules).mockResolvedValue([
+      vi.mocked(selectReportSchedules).mockResolvedValue([
         MOCK_REPORT_SCHEDULE,
       ]);
 
       const result = await getReportSchedules();
 
-      expect(fetchReportSchedules).toHaveBeenCalledWith(MOCK_TEAM.team_id);
+      expect(selectReportSchedules).toHaveBeenCalledWith(MOCK_TEAM.team_id);
       expect(result).toEqual([MOCK_REPORT_SCHEDULE]);
     });
   });
 
   describe('getReportHistory', () => {
     test('fetches history scoped to the team', async () => {
-      vi.mocked(fetchReportHistory).mockResolvedValue([MOCK_REPORT_HISTORY]);
+      vi.mocked(selectReportHistory).mockResolvedValue([MOCK_REPORT_HISTORY]);
 
       const result = await getReportHistory();
 
-      expect(fetchReportHistory).toHaveBeenCalledWith(MOCK_TEAM.team_id);
+      expect(selectReportHistory).toHaveBeenCalledWith(MOCK_TEAM.team_id);
       expect(result).toEqual([MOCK_REPORT_HISTORY]);
     });
   });
@@ -235,7 +235,7 @@ describe('Report Actions', () => {
     });
 
     test('recomputes next_run_at when re-enabling a known schedule', async () => {
-      vi.mocked(getReportSchedule).mockResolvedValue(MOCK_REPORT_SCHEDULE);
+      vi.mocked(selectReportSchedule).mockResolvedValue(MOCK_REPORT_SCHEDULE);
 
       const result = await toggleReportSchedule(schedule_id, true);
 
@@ -248,7 +248,7 @@ describe('Report Actions', () => {
     });
 
     test('enables without recomputing when the schedule no longer exists', async () => {
-      vi.mocked(getReportSchedule).mockResolvedValue(undefined);
+      vi.mocked(selectReportSchedule).mockResolvedValue(undefined);
 
       const result = await toggleReportSchedule(schedule_id, true);
 
@@ -261,9 +261,7 @@ describe('Report Actions', () => {
     });
 
     test('returns an error response when the db throws', async () => {
-      vi.mocked(updateReportSchedule).mockRejectedValueOnce(
-        new Error('boom'),
-      );
+      vi.mocked(updateReportSchedule).mockRejectedValueOnce(new Error('boom'));
 
       const result = await toggleReportSchedule(schedule_id, false);
 
@@ -282,9 +280,7 @@ describe('Report Actions', () => {
     });
 
     test('returns an error response when the db throws', async () => {
-      vi.mocked(deleteReportSchedules).mockRejectedValueOnce(
-        new Error('boom'),
-      );
+      vi.mocked(deleteReportSchedules).mockRejectedValueOnce(new Error('boom'));
 
       const result = await removeReportSchedules([schedule_id]);
 
@@ -307,7 +303,7 @@ describe('Report Actions', () => {
     });
 
     test('returns an error when the schedule no longer exists', async () => {
-      vi.mocked(getReportSchedule).mockResolvedValue(undefined);
+      vi.mocked(selectReportSchedule).mockResolvedValue(undefined);
 
       const result = await runReportNow(schedule_id);
 
@@ -316,7 +312,7 @@ describe('Report Actions', () => {
     });
 
     test('returns an error when the request origin is unknown', async () => {
-      vi.mocked(getReportSchedule).mockResolvedValue(MOCK_REPORT_SCHEDULE);
+      vi.mocked(selectReportSchedule).mockResolvedValue(MOCK_REPORT_SCHEDULE);
       vi.mocked(requestOrigin).mockReturnValue(null);
 
       const result = await runReportNow(schedule_id);
@@ -326,7 +322,7 @@ describe('Report Actions', () => {
     });
 
     test('executes the schedule immediately and revalidates on success', async () => {
-      vi.mocked(getReportSchedule).mockResolvedValue(MOCK_REPORT_SCHEDULE);
+      vi.mocked(selectReportSchedule).mockResolvedValue(MOCK_REPORT_SCHEDULE);
       vi.mocked(executeSchedule).mockResolvedValue({
         outcome: 'sent',
       } as never);
@@ -347,7 +343,7 @@ describe('Report Actions', () => {
     });
 
     test('returns the failure message when the run does not send', async () => {
-      vi.mocked(getReportSchedule).mockResolvedValue(MOCK_REPORT_SCHEDULE);
+      vi.mocked(selectReportSchedule).mockResolvedValue(MOCK_REPORT_SCHEDULE);
       vi.mocked(executeSchedule).mockResolvedValue({
         outcome: 'failed',
         error: 'puppeteer crashed',
@@ -360,7 +356,7 @@ describe('Report Actions', () => {
     });
 
     test('falls back to a generic message when the run fails without an error', async () => {
-      vi.mocked(getReportSchedule).mockResolvedValue(MOCK_REPORT_SCHEDULE);
+      vi.mocked(selectReportSchedule).mockResolvedValue(MOCK_REPORT_SCHEDULE);
       vi.mocked(executeSchedule).mockResolvedValue({
         outcome: 'failed',
       } as never);

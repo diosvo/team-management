@@ -1,8 +1,8 @@
-import { MOCK_TYPE_PROGRESSION } from '@/test/mocks/progression';
-import { renderWithUI, screen, setupTestLifecycle } from '@/test/utilities';
+import { loadProgressionFilters } from '@/lib/nuqs';
 
 import { getProgression } from '@/actions/progression';
-import { loadProgressionFilters } from '@/lib/nuqs';
+import { MOCK_TYPE_PROGRESSION } from '@/test/mocks/progression';
+import { renderWithUI, screen, setupTestLifecycle } from '@/test/utilities';
 
 import ProgressionPage, { generateMetadata } from './page';
 

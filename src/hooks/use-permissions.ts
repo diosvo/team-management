@@ -4,9 +4,9 @@ import { useMemo } from 'react';
 
 import type { UserRole } from '@/utils/enum';
 import {
+  type Action,
   defineAbility,
   hasPermissions,
-  type Action,
   type Permission,
   type Resource,
 } from '@/utils/permissions';

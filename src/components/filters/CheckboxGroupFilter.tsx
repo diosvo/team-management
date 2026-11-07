@@ -1,12 +1,12 @@
 'use client';
 
-import { Button, CheckboxGroup, Fieldset, Span } from '@chakra-ui/react';
 import { useTranslations } from 'next-intl';
-
-import { Checkbox } from '@/components/ui/checkbox';
+import { Button, CheckboxGroup, Fieldset, Span } from '@chakra-ui/react';
 
 import { getColor } from '@/utils/helper';
 import type { Selection } from '@/utils/type';
+
+import { Checkbox } from '@/components/ui/checkbox';
 
 type CheckboxGroupFilterProps = {
   label: string;

@@ -1,14 +1,14 @@
 'use client';
 
-import { usePathname, useRouter } from 'next/navigation';
 import type { PropsWithChildren } from 'react';
-
+import { usePathname, useRouter } from 'next/navigation';
 import { i18nProvider } from 'fumadocs-ui/i18n';
 import { RootProvider } from 'fumadocs-ui/provider/next';
 
-import { switchDocsLanguage, type Language } from '../_lib/i18n';
-import { translations } from '../_lib/translations';
 import SearchDialog from './search';
+
+import { type Language, switchDocsLanguage } from '../_lib/i18n';
+import { translations } from '../_lib/translations';
 
 /**
  * Fumadocs root provider bound to the current docs language.

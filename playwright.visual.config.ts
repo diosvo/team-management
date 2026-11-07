@@ -1,5 +1,6 @@
-import env from '@env';
 import { defineConfig, devices } from '@playwright/test';
+
+import env from '@env';
 
 // Visual regression guard for the Chakra UI screens.
 //

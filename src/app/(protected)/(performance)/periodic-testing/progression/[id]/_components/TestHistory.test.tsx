@@ -1,3 +1,5 @@
+import { nth } from 'es-toolkit/compat';
+
 import {
   MOCK_PLAYER_TYPE_PROGRESSION,
   MOCK_PROGRESSION_TYPE_TIMED,
@@ -24,7 +26,10 @@ describe('TestHistory', () => {
     expect(screen.getByText('Test History')).toBeInTheDocument();
     const rows = screen.getAllByRole('row').slice(1);
     expect(rows).toHaveLength(4);
-    const [row1, row2, row3, row4] = rows;
+    const row1 = nth(rows, 0)!;
+    const row2 = nth(rows, 1)!;
+    const row3 = nth(rows, 2)!;
+    const row4 = nth(rows, 3)!;
     expect(within(row1).getByText('Push-ups')).toBeInTheDocument();
     expect(within(row2).getByText('Sprint 30m')).toBeInTheDocument();
     // Above average, faster than average, level, below average.

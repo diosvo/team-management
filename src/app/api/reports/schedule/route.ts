@@ -1,10 +1,12 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
-import { claimDueSchedules } from '@/db/report';
+import { ReportTrigger } from '@/utils/enum';
+
 import { getServiceSession } from '@/lib/report';
 import { executeSchedule } from '@/lib/report-schedule';
 import { isAuthorizedCron, requestOrigin } from '@/lib/request';
-import { ReportTrigger } from '@/utils/enum';
+
+import { selectDueSchedulesForUpdate } from '@/db/report';
 
 export const maxDuration = 60; // in seconds (Vercel Hobby plan ceiling)
 
@@ -35,7 +37,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Missing host header' }, { status: 400 });
   }
 
-  const due = await claimDueSchedules(CLAIM_SIZE);
+  const due = await selectDueSchedulesForUpdate(CLAIM_SIZE);
   if (due.length === 0) {
     return NextResponse.json({ processed: 0, message: 'No schedules due' });
   }

@@ -1,3 +1,5 @@
+import { PerformanceBand, ProgressStatus, TestTypeUnit } from '@/utils/enum';
+
 import type { TestType } from '@/drizzle/schema';
 import type {
   PlayerProgression,
@@ -5,7 +7,6 @@ import type {
   TestNoteItem,
   TypeProgression,
 } from '@/types/periodic-testing';
-import { PerformanceBand, ProgressStatus, TestTypeUnit } from '@/utils/enum';
 
 import { MOCK_TEAM } from './team';
 

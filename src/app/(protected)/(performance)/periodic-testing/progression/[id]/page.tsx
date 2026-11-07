@@ -1,14 +1,13 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-
 import { SimpleGrid } from '@chakra-ui/react';
 import { TrendingUp } from 'lucide-react';
 
-import { EmptyState } from '@/components/ui/empty-state';
-import { Stat, StatGroup } from '@/components/ui/stat';
+import { PerformanceBand, ProgressStatus } from '@/utils/enum';
 
 import { getPlayerProgressionById } from '@/actions/progression';
-import { PerformanceBand, ProgressStatus } from '@/utils/enum';
+import { EmptyState } from '@/components/ui/empty-state';
+import { Stat, StatGroup } from '@/components/ui/stat';
 
 import PlayerProgressionHeader from './_components/PlayerProgressionHeader';
 import TestHistory from './_components/TestHistory';

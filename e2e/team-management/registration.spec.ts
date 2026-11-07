@@ -355,10 +355,6 @@ test.describe('Registration - Saved Registrations', () => {
       .first();
 
     if (await deleteButton.isVisible()) {
-      // Count current registrations
-      const cards = page.locator('[data-testid="saved-registration"]');
-      const initialCount = await cards.count();
-
       await deleteButton.click();
 
       // Wait for deletion

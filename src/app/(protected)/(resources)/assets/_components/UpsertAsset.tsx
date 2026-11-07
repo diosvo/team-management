@@ -1,35 +1,21 @@
 'use client';
 
-import dynamic from 'next/dynamic';
 import { useTransition } from 'react';
-
+import { Controller, useForm } from 'react-hook-form';
+import dynamic from 'next/dynamic';
+import { useTranslations } from 'next-intl';
 import {
   Button,
+  createOverlay,
   Dialog,
   Input,
   Portal,
   SimpleGrid,
   Skeleton,
-  createOverlay,
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Save } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { Controller, useForm } from 'react-hook-form';
 
-import { DatePickerField } from '@/components/date-picker/DatePicker';
-import { CloseButton } from '@/components/ui/close-button';
-import RadioGroupField from '@/components/RadioGroupField';
-import { Field } from '@/components/ui/field';
-import {
-  NumberInputField,
-  NumberInputRoot,
-} from '@/components/ui/number-input';
-import { toaster } from '@/components/ui/toaster';
-import { OnePlayerSelection } from '@/components/user/PlayerSelection';
-
-import { useSelection } from '@/i18n/enums';
-import { getDefaults, onError } from '@/lib/zod';
 import {
   ASSET_CATEGORY_SELECTION,
   ASSET_CONDITION_SELECTION,
@@ -38,7 +24,20 @@ import {
 } from '@/utils/constants';
 import { AssetCondition } from '@/utils/enum';
 
+import { getDefaults, onError } from '@/lib/zod';
+
 import { upsertAsset } from '@/actions/asset';
+import { DatePickerField } from '@/components/date-picker/DatePicker';
+import RadioGroupField from '@/components/RadioGroupField';
+import { CloseButton } from '@/components/ui/close-button';
+import { Field } from '@/components/ui/field';
+import {
+  NumberInputField,
+  NumberInputRoot,
+} from '@/components/ui/number-input';
+import { toaster } from '@/components/ui/toaster';
+import { OnePlayerSelection } from '@/components/user/PlayerSelection';
+import { useSelection } from '@/i18n/enums';
 import {
   NOTE_LIMIT,
   UpsertAssetSchema,

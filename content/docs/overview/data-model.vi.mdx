@@ -328,7 +328,7 @@ không có trong sơ đồ.
 
 - `user_team` lưu mỗi giai đoạn ở một đội một dòng, nên chuyển đội hay quay lại
   đội cũ đều giữ được lịch sử.
-- `user.team_id` trỏ tới giai đoạn đang mở; `transferMembership` đóng giai đoạn
+- `user.team_id` trỏ tới giai đoạn đang mở; `upsertMembership` đóng giai đoạn
   cũ và dời con trỏ trong cùng một transaction.
 - `user_current_team` cho mỗi user tối đa một giai đoạn đang mở;
   `user_team_stint` cho phép quay lại đội cũ, nhưng không tạo trùng một giai đoạn.

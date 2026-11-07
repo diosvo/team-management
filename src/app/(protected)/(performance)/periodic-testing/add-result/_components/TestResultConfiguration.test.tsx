@@ -1,10 +1,3 @@
-import {
-  expectNoA11yViolations,
-  renderWithUI,
-  screen,
-  setupTestLifecycle,
-  waitFor,
-} from '@/test/utilities';
 import { formatDate } from '@/utils/datetime';
 
 import {
@@ -13,6 +6,13 @@ import {
   MOCK_TEST_TYPE,
 } from '@/test/mocks/periodic-testing';
 import { MOCK_USER } from '@/test/mocks/user';
+import {
+  expectNoA11yViolations,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+  waitFor,
+} from '@/test/utilities';
 
 import TestResultConfiguration from './TestResultConfiguration';
 

@@ -1,3 +1,10 @@
+import { AssetCategory, AssetCondition } from '@/utils/enum';
+
+import { removeAsset } from '@/actions/asset';
+import type { Asset } from '@/drizzle/schema/asset';
+import usePermissions, {
+  type PermissionsResult,
+} from '@/hooks/use-permissions';
 import { MOCK_ASSET } from '@/test/mocks/asset';
 import {
   createPermissionsMock,
@@ -10,14 +17,6 @@ import {
   setupTestLifecycle,
   waitFor,
 } from '@/test/utilities';
-
-import usePermissions, {
-  type PermissionsResult,
-} from '@/hooks/use-permissions';
-import { AssetCategory, AssetCondition } from '@/utils/enum';
-
-import { removeAsset } from '@/actions/asset';
-import type { Asset } from '@/drizzle/schema/asset';
 
 import AssetTable from './AssetTable';
 import { UpsertAsset } from './UpsertAsset';

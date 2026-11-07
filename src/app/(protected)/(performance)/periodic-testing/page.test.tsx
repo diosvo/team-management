@@ -1,16 +1,11 @@
+import { loadPeriodicTestingFilters } from '@/lib/nuqs';
+
+import { getTestDates, getTestResult } from '@/actions/test-result';
 import {
   MOCK_TEST_RESULT_DATE,
   MOCK_TEST_RESULT_RESPONSE,
 } from '@/test/mocks/periodic-testing';
-import {
-  expectNoA11yViolations,
-  renderWithUI,
-  screen,
-  setupTestLifecycle,
-} from '@/test/utilities';
-
-import { getTestDates, getTestResult } from '@/actions/test-result';
-import { loadPeriodicTestingFilters } from '@/lib/nuqs';
+import { expectNoA11yViolations, renderWithUI, screen } from '@/test/utilities';
 
 import PeriodicTestingPage, { generateMetadata } from './page';
 

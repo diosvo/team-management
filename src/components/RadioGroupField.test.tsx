@@ -1,13 +1,13 @@
 import { useForm } from 'react-hook-form';
 
+import type { Selection } from '@/utils/type';
+
 import {
   expectNoA11yViolations,
   renderWithUI,
   screen,
   waitFor,
 } from '@/test/utilities';
-
-import type { Selection } from '@/utils/type';
 
 import RadioGroupField from './RadioGroupField';
 

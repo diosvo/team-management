@@ -1,3 +1,12 @@
+import { pick } from 'es-toolkit';
+import { nth } from 'es-toolkit/compat';
+
+import { getMatchPlayerStats, saveMatchPlayerStats } from '@/actions/match';
+import type { MatchPlayerStatsWithName, PlayedMatch } from '@/db/match';
+import type { User } from '@/drizzle/schema';
+import { MOCK_MATCH } from '@/test/mocks/match';
+import { MOCK_AWAY_TEAM } from '@/test/mocks/team';
+import { MOCK_ALICE, MOCK_DAN } from '@/test/mocks/user';
 import {
   createToasterMock,
   fireEvent,
@@ -9,10 +18,6 @@ import {
   within,
 } from '@/test/utilities';
 
-import { getMatchPlayerStats, saveMatchPlayerStats } from '@/actions/match';
-import type { MatchPlayerStatsWithName, PlayedMatch } from '@/db/match';
-import type { User } from '@/drizzle/schema';
-
 import MatchStatsPageClient from './MatchStatsPageClient';
 import type { GridPlayer, StatDraft } from './MatchStatsTable';
 
@@ -23,10 +28,9 @@ vi.mock('@/actions/match', () => ({
 
 vi.mock('@/components/ui/toaster', () => createToasterMock());
 
-const ACTIVE: Array<User> = [
-  { id: 'p1', name: 'Jane', player: { jersey_number: 7 } },
-  { id: 'p2', name: 'Kim', player: null },
-] as Array<User>;
+const ACTIVE: Array<User> = [MOCK_ALICE, MOCK_DAN];
+// How the grid stub prints Alice: `name#jersey`.
+const ALICE_TAG = `${MOCK_ALICE.name}#${MOCK_ALICE.player.jersey_number}`;
 
 // Stand-ins expose the callbacks the client wires up as plain buttons.
 vi.mock('@/components/user/PlayerSelection', () => ({
@@ -66,10 +70,12 @@ vi.mock('./MatchStatsTable', () => ({
           <button onClick={() => onRemove(id)}>Remove {id}</button>
         </div>
       ))}
-      <button onClick={() => onChange('p1', 'points_scored', '12')}>
+      <button onClick={() => onChange(MOCK_ALICE.id, 'points_scored', '12')}>
         Score p1
       </button>
-      <button onClick={() => onChange('p1', 'rebounds', '')}>Clear p1</button>
+      <button onClick={() => onChange(MOCK_ALICE.id, 'rebounds', '')}>
+        Clear p1
+      </button>
       <button onClick={() => onChange('ghost', 'points_scored', '3')}>
         Score ghost
       </button>
@@ -78,11 +84,13 @@ vi.mock('./MatchStatsTable', () => ({
 }));
 
 const match = (overrides: Partial<PlayedMatch> = {}): PlayedMatch => ({
-  match_id: 'm1',
-  date: '2026-09-01',
-  home_team_score: 80,
-  away_team_score: 70,
-  opponent: 'Tigers',
+  ...pick(MOCK_MATCH, [
+    'match_id',
+    'date',
+    'home_team_score',
+    'away_team_score',
+  ]),
+  opponent: MOCK_AWAY_TEAM.name,
   recorded: 2,
   ...overrides,
 });
@@ -91,8 +99,8 @@ const statRow = (
   overrides: Partial<MatchPlayerStatsWithName> = {},
 ): MatchPlayerStatsWithName =>
   ({
-    player_id: 'p1',
-    player_name: 'Jane',
+    player_id: MOCK_ALICE.id,
+    player_name: MOCK_ALICE.name,
     points_scored: 10,
     rebounds: null,
     assists: 0,
@@ -148,26 +156,30 @@ describe('MatchStatsPageClient', () => {
 
     const content = await openOptions(user);
 
-    expect(within(content).getAllByText(/· Tigers$/)).toHaveLength(2);
+    expect(
+      within(content).getAllByText(new RegExp(`· ${MOCK_AWAY_TEAM.name}$`)),
+    ).toHaveLength(2);
     expect(within(content).getByText('2 recorded')).toBeInTheDocument();
     expect(within(content).getByText('Not recorded')).toBeInTheDocument();
   });
 
   test('loads the box score of a picked match and updates the URL', async () => {
     const replaceState = vi.spyOn(window.history, 'replaceState');
-    mockGetStats.mockResolvedValue([statRow({ player_id: 'p2' })]);
+    mockGetStats.mockResolvedValue([statRow({ player_id: MOCK_DAN.id })]);
     const { user } = setup();
 
     const content = await openOptions(user);
     await user.click(
-      within(content).getAllByRole('option', { hidden: true })[1],
+      nth(within(content).getAllByRole('option', { hidden: true }), 1)!,
     );
 
     await waitFor(() =>
       expect(replaceState).toHaveBeenCalledWith(null, '', '?match=m2'),
     );
     expect(mockGetStats).toHaveBeenCalledWith('m2');
-    expect(screen.getByTestId('row-p2')).toHaveTextContent('Jane#-:10');
+    expect(screen.getByTestId(`row-${MOCK_DAN.id}`)).toHaveTextContent(
+      `${MOCK_ALICE.name}#-:10`,
+    );
   });
 
   test('ignores a cleared match selection', async () => {
@@ -191,10 +203,14 @@ describe('MatchStatsPageClient', () => {
       ],
     });
 
-    expect(screen.getByTestId('row-p1')).toHaveTextContent('Jane#7:10');
+    expect(screen.getByTestId(`row-${MOCK_ALICE.id}`)).toHaveTextContent(
+      `${ALICE_TAG}:10`,
+    );
     expect(screen.getByTestId('row-gone')).toHaveTextContent(':0');
     // Only active players reach the picker.
-    expect(screen.getByTestId('selection')).toHaveTextContent(/^p1/);
+    expect(screen.getByTestId('selection')).toHaveTextContent(
+      new RegExp(`^${MOCK_ALICE.id}`),
+    );
   });
 
   test('adds and drops picked players while keeping inactive rows', async () => {
@@ -208,12 +224,18 @@ describe('MatchStatsPageClient', () => {
 
     await user.click(screen.getByRole('button', { name: 'Select all' }));
 
-    expect(screen.getByTestId('row-p1')).toHaveTextContent('Jane#7:10');
-    expect(screen.getByTestId('row-p2')).toHaveTextContent('Kim#-:0');
+    expect(screen.getByTestId(`row-${MOCK_ALICE.id}`)).toHaveTextContent(
+      `${ALICE_TAG}:10`,
+    );
+    expect(screen.getByTestId(`row-${MOCK_DAN.id}`)).toHaveTextContent(
+      `${MOCK_DAN.name}#-:0`,
+    );
 
     await user.click(screen.getByRole('button', { name: 'Clear' }));
 
-    expect(screen.queryByTestId('row-p1')).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId(`row-${MOCK_ALICE.id}`),
+    ).not.toBeInTheDocument();
     expect(screen.getByTestId('row-gone')).toBeInTheDocument();
   });
 
@@ -222,7 +244,9 @@ describe('MatchStatsPageClient', () => {
 
     await user.click(screen.getByRole('button', { name: 'Select all' }));
 
-    expect(screen.getByTestId('row-p1')).toHaveTextContent('Jane#7:0');
+    expect(screen.getByTestId(`row-${MOCK_ALICE.id}`)).toHaveTextContent(
+      `${ALICE_TAG}:0`,
+    );
   });
 
   test('saves edited lines and removed players', async () => {
@@ -249,10 +273,10 @@ describe('MatchStatsPageClient', () => {
       title: 'Saving box score...',
     });
     expect(mockSave).toHaveBeenCalledWith({
-      match_id: 'm1',
+      match_id: MOCK_MATCH.match_id,
       rows: [
         expect.objectContaining({
-          player_id: 'p1',
+          player_id: MOCK_ALICE.id,
           points_scored: 12,
           rebounds: 0,
         }),
@@ -268,7 +292,9 @@ describe('MatchStatsPageClient', () => {
       initialStats: [statRow()],
     });
 
-    await user.click(screen.getByRole('button', { name: 'Remove p1' }));
+    await user.click(
+      screen.getByRole('button', { name: `Remove ${MOCK_ALICE.id}` }),
+    );
     await user.click(saveButton());
 
     await waitFor(() =>
@@ -278,9 +304,9 @@ describe('MatchStatsPageClient', () => {
       }),
     );
     expect(mockSave).toHaveBeenCalledWith({
-      match_id: 'm1',
+      match_id: MOCK_MATCH.match_id,
       rows: [],
-      removed_player_ids: ['p1'],
+      removed_player_ids: [MOCK_ALICE.id],
     });
     // A failed save keeps the loaded rows, so it can be retried.
     // isPending clears on the render after the transition settles.

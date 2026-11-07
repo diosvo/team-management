@@ -1,3 +1,5 @@
+import { ProgressStatus } from '@/utils/enum';
+
 import {
   MOCK_PROGRESSION_TYPE,
   MOCK_PROGRESSION_TYPE_TIMED,
@@ -9,8 +11,6 @@ import {
   setupTestLifecycle,
   waitFor,
 } from '@/test/utilities';
-
-import { ProgressStatus } from '@/utils/enum';
 
 import ProgressionFilters from './ProgressionFilters';
 

@@ -1,11 +1,11 @@
-import { getCookieCache, getSessionCookie } from 'better-auth/cookies';
 import type { NextRequest, NextResponse } from 'next/server';
+import { getCookieCache, getSessionCookie } from 'better-auth/cookies';
 
-import { DEFAULT_LOGIN_REDIRECT, LOGIN_PATH } from '@/routes';
+import env from '@env';
 import { UserRole } from '@/utils/enum';
 
+import { DEFAULT_LOGIN_REDIRECT, LOGIN_PATH } from '@/routes';
 import { MOCK_USER } from '@/test/mocks/user';
-import env from '@env';
 
 import proxy from './proxy';
 

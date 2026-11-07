@@ -19,6 +19,7 @@ import { vi } from 'date-fns/locale';
 
 import type { Locale } from '@/i18n/config';
 import type { DateBounds, DateRange } from '@/types/common';
+
 import {
   DEFAULT_DATE_FORMAT,
   DEFAULT_DAY_FORMAT,

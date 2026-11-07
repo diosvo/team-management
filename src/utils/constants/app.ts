@@ -4,7 +4,8 @@ export const TEAM_ID = 'saigon.rovers';
 export const FOUNDING_YEAR = 2024;
 export const ESTABLISHED_DATE = FOUNDING_YEAR + '-02-20';
 export const DEFAULT_DOB = '2000-01-01';
-export const CURRENT_DATE = new Date().toISOString().split('T')[0];
+// ISO 8601 date portion (`yyyy-MM-dd`) of the current instant.
+export const CURRENT_DATE = new Date().toISOString().slice(0, 10);
 
 export const DEFAULT_DAY_FORMAT = 'EEEE';
 export const DEFAULT_DATE_FORMAT = 'yyyy-MM-dd';

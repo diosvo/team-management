@@ -1,19 +1,19 @@
+import './globals.css';
+
+import type { PropsWithChildren } from 'react';
 import type { Metadata } from 'next';
 import { Google_Sans_Flex } from 'next/font/google';
-import type { PropsWithChildren } from 'react';
-
-import { Analytics } from '@vercel/analytics/next';
-import { SpeedInsights } from '@vercel/speed-insights/next';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getTranslations } from 'next-intl/server';
+import { Analytics } from '@vercel/analytics/next';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
+
+import env from '@env';
 
 import { Toaster } from '@/components/ui/toaster';
 import ZodErrorMap from '@/i18n/ZodErrorMap';
 import UiProvider from '@/providers/chakra';
-
-import env from '@env';
-import './globals.css';
 
 const ggSans = Google_Sans_Flex({
   display: 'swap',

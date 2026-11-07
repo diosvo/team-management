@@ -1,7 +1,7 @@
+import { memo, type ReactNode, useEffect, useMemo, useRef } from 'react';
 import Link, { useLinkStatus } from 'next/link';
 import { usePathname } from 'next/navigation';
-import { memo, useEffect, useMemo, useRef, type ReactNode } from 'react';
-
+import { useTranslations } from 'next-intl';
 import {
   Button,
   Flex,
@@ -14,7 +14,6 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { ChevronLeft, ChevronRight, type LucideIcon } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 
 import { Tooltip } from '@/components/ui/tooltip';
 import usePermissions from '@/hooks/use-permissions';
@@ -23,10 +22,10 @@ import {
   BUTTON_CONFIG,
   FADE_CSS,
   NAV_INSET,
+  navLabel,
   SCROLL_AREA_CSS,
   SIDEBAR_GROUP,
   TOGGLE_CSS,
-  navLabel,
 } from '../_helpers/utils';
 
 function LoadingIndicator() {

@@ -1,8 +1,11 @@
 import type { NextRequest } from 'next/server';
+import { head } from 'es-toolkit';
+
+import { Status } from '@/utils/response';
+
+import { getBrowser } from '@/lib/puppeteer';
 
 import { verifySession } from '@/actions/auth';
-import { getBrowser } from '@/lib/puppeteer';
-import { Status } from '@/utils/response';
 
 import { POST } from './route';
 
@@ -142,7 +145,7 @@ describe('POST /api/reports/dashboard', () => {
     );
     // No skeletons left, so the chart wait resolved immediately.
     await expect(
-      browser.page.waitForFunction.mock.results[0].value,
+      head(browser.page.waitForFunction.mock.results)!.value,
     ).resolves.toBeUndefined();
     expect(browser.page.pdf).toHaveBeenCalled();
 
@@ -165,7 +168,7 @@ describe('POST /api/reports/dashboard', () => {
 
     // The skeleton wait timed out, but it is best effort only.
     await expect(
-      browser.page.waitForFunction.mock.results[0].value,
+      head(browser.page.waitForFunction.mock.results)!.value,
     ).rejects.toThrow('exceeded');
     expect(response.status).toBe(Status.OK);
     expect(browser.page.pdf).toHaveBeenCalled();

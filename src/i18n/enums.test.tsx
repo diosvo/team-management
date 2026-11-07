@@ -1,11 +1,12 @@
 import { createTranslator } from 'next-intl';
 
-import { MESSAGES, renderHook, Providers } from '@/test/utilities';
 import {
   PLAYER_POSITIONS_SELECTION,
   USER_STATE_SELECTION,
 } from '@/utils/constants';
 import { PlayerPosition, UserRole, UserState } from '@/utils/enum';
+
+import { MESSAGES, Providers, renderHook } from '@/test/utilities';
 
 import { enumLabel, translateSelection, useSelection } from './enums';
 

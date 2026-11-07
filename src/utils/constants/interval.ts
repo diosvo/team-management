@@ -1,6 +1,7 @@
-import type { Selection } from '../type';
-import { Interval } from '../enum';
 import { ESTABLISHED_DATE } from './app';
+
+import { Interval } from '../enum';
+import type { Selection } from '../type';
 
 const START_YEAR = new Date(ESTABLISHED_DATE).getFullYear();
 

@@ -330,7 +330,6 @@ test.describe('Forgot Password Page', () => {
 
       // Button should be full width
       const buttonBox = await submitButton.boundingBox();
-      const viewportSize = page.viewportSize();
       expect(buttonBox?.width).toBeGreaterThan(300); // Should be nearly full width
     });
   });

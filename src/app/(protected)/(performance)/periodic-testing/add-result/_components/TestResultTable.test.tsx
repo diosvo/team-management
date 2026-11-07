@@ -1,3 +1,5 @@
+import { head } from 'es-toolkit';
+
 import {
   MOCK_TEST_CONFIGURATION,
   MOCK_TEST_PLAYER_2,
@@ -12,7 +14,6 @@ import {
   screen,
   setupTestLifecycle,
 } from '@/test/utilities';
-
 import type { TestConfigurationSelection } from '@/types/periodic-testing';
 
 import TestResultTable from './TestResultTable';
@@ -100,7 +101,7 @@ describe('TestResultTable', () => {
   test('records an entered score for the right player/type cell', async () => {
     const { user, setResults } = setup();
 
-    const [firstCell] = screen.getAllByRole('spinbutton');
+    const firstCell = head(screen.getAllByRole('spinbutton'))!;
     await user.type(firstCell, '5');
 
     expect(setResults).toHaveBeenCalled();

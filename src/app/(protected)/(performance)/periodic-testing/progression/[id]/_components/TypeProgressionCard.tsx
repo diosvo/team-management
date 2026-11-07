@@ -1,18 +1,19 @@
-import { HStack, Span, Text } from '@chakra-ui/react';
 import { useTranslations } from 'next-intl';
+import { HStack, Span, Text } from '@chakra-ui/react';
 
-import { Card } from '@/components/ui/card';
-
-import type { PlayerTypeProgression } from '@/types/periodic-testing';
 import { formatDate } from '@/utils/datetime';
 import { formatResult } from '@/utils/progression';
+
+import { Card } from '@/components/ui/card';
+import type { PlayerTypeProgression } from '@/types/periodic-testing';
+
+import LazyProgressionChart from './LazyProgressionChart';
 
 import {
   BandBadge,
   ChangeText,
   StatusBadge,
 } from '../../_components/ProgressBadges';
-import LazyProgressionChart from './LazyProgressionChart';
 
 export default function TypeProgressionCard({
   progression,

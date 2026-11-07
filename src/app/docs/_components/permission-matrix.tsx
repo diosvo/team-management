@@ -1,16 +1,17 @@
 import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
-import { TypeTable, type TypeNode } from 'fumadocs-ui/components/type-table';
+import { type TypeNode, TypeTable } from 'fumadocs-ui/components/type-table';
 
-import { RESOURCES } from '@/routes';
 import { UserRole } from '@/utils/enum';
 import {
+  type Action,
   ALL_ACTIONS,
   CAPTAIN_PERMISSIONS,
-  ROLE_CONFIG,
-  type Action,
   type Resource,
+  ROLE_CONFIG,
   type RoleConfig,
 } from '@/utils/permissions';
+
+import { RESOURCES } from '@/routes';
 
 const ROLES = [
   UserRole.GUEST,
@@ -100,8 +101,9 @@ export function PermissionMatrix({ resource }: PermissionMatrixProps) {
       : [resource]
     : RESOURCES;
 
-  if (resources.length === 1) {
-    return <TypeTable type={byRole(resources[0])} />;
+  const [only] = resources;
+  if (only && resources.length === 1) {
+    return <TypeTable type={byRole(only)} />;
   }
 
   const items = [...ROLES.map((role) => ROLE_LABEL[role]), CAPTAIN_LABEL];

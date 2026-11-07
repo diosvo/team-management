@@ -1,7 +1,8 @@
 import { between, gte } from 'drizzle-orm';
 
-import { MatchTable } from '@/drizzle/schema';
 import { toIsoDay } from '@/utils/datetime';
+
+import { MatchTable } from '@/drizzle/schema';
 
 import { fromNow, withinRange } from './utils';
 

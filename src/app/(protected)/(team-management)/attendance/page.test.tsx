@@ -1,19 +1,15 @@
+import { AttendanceStatus } from '@/utils/enum';
+
+import { loadAttendanceFilters } from '@/lib/nuqs';
+
+import { getAttendances } from '@/actions/attendance';
 import {
   MOCK_ATTENDANCE_DATE,
   MOCK_ATTENDANCE_RESPONSE,
   MOCK_ATTENDANCE_STATS,
 } from '@/test/mocks/attendance';
-import {
-  expectNoA11yViolations,
-  renderWithUI,
-  screen,
-  setupTestLifecycle,
-} from '@/test/utilities';
+import { expectNoA11yViolations, renderWithUI, screen } from '@/test/utilities';
 
-import { getAttendances } from '@/actions/attendance';
-import { loadAttendanceFilters } from '@/lib/nuqs';
-
-import { AttendanceStatus } from '@/utils/enum';
 import AttendancePage, { generateMetadata } from './page';
 
 vi.mock('@/actions/attendance', () => ({

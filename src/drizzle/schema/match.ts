@@ -14,11 +14,12 @@ import {
 
 import { enumValues, MatchStatus } from '@/utils/enum';
 
-import { created_at, updated_at } from '../helpers';
 import { LeagueTable } from './league';
 import { LocationTable } from './location';
 import { PlayerTable } from './player';
 import { TeamTable } from './team';
+
+import { created_at, updated_at } from '../helpers';
 
 export const matchStatusEnum = pgEnum('match_status', enumValues(MatchStatus));
 

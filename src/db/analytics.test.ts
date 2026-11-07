@@ -1,9 +1,11 @@
 import { and, asc, eq } from 'drizzle-orm';
+import { head } from 'es-toolkit';
+
+import { MatchStatus, SessionStatus } from '@/utils/enum';
 
 import db from '@/drizzle';
 import { MatchTable, TrainingSessionTable } from '@/drizzle/schema';
 import { AttendanceTable } from '@/drizzle/schema/attendance';
-
 import { mockSelectFailure, mockSelectSuccess } from '@/test/db-operations';
 import {
   MOCK_ABSENCE_REASONS,
@@ -17,14 +19,12 @@ import {
 } from '@/test/mocks/analytics';
 import { MOCK_TEAM } from '@/test/mocks/team';
 
-import { MatchStatus, SessionStatus } from '@/utils/enum';
-
 import {
-  getMostCommonAbsenceReasons,
-  getUpcomingMatches,
-  getUpcomingSessions,
-  getPlayersAttendanceSummary,
-  getTeamAttendanceHistory,
+  selectMostCommonAbsenceReasons,
+  selectPlayersAttendanceSummary,
+  selectTeamAttendanceHistory,
+  selectUpcomingMatches,
+  selectUpcomingSessions,
 } from './analytics';
 import { fromNow } from './utils';
 
@@ -73,7 +73,7 @@ vi.mock('@/drizzle/schema/attendance', () => ({
   },
 }));
 
-describe('getUpcomingMatches', () => {
+describe('selectUpcomingMatches', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -84,7 +84,7 @@ describe('getUpcomingMatches', () => {
       upcoming as never,
     );
 
-    await expect(getUpcomingMatches(MOCK_TEAM.team_id)).resolves.toEqual(
+    await expect(selectUpcomingMatches(MOCK_TEAM.team_id)).resolves.toEqual(
       upcoming,
     );
 
@@ -107,11 +107,11 @@ describe('getUpcomingMatches', () => {
       new Error('Query failed'),
     );
 
-    await expect(getUpcomingMatches(MOCK_TEAM.team_id)).resolves.toEqual([]);
+    await expect(selectUpcomingMatches(MOCK_TEAM.team_id)).resolves.toEqual([]);
   });
 });
 
-describe('getUpcomingSessions', () => {
+describe('selectUpcomingSessions', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -122,7 +122,7 @@ describe('getUpcomingSessions', () => {
       upcoming as never,
     );
 
-    await expect(getUpcomingSessions(MOCK_TEAM.team_id)).resolves.toEqual(
+    await expect(selectUpcomingSessions(MOCK_TEAM.team_id)).resolves.toEqual(
       upcoming,
     );
 
@@ -147,11 +147,13 @@ describe('getUpcomingSessions', () => {
       new Error('Query failed'),
     );
 
-    await expect(getUpcomingSessions(MOCK_TEAM.team_id)).resolves.toEqual([]);
+    await expect(selectUpcomingSessions(MOCK_TEAM.team_id)).resolves.toEqual(
+      [],
+    );
   });
 });
 
-describe('getTeamAttendanceHistory', () => {
+describe('selectTeamAttendanceHistory', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -165,7 +167,7 @@ describe('getTeamAttendanceHistory', () => {
       mockOrderBy,
     } = mockSelectSuccess(MOCK_ATTENDANCE_HISTORY);
 
-    const result = await getTeamAttendanceHistory(
+    const result = await selectTeamAttendanceHistory(
       MOCK_TEAM.team_id,
       MOCK_DATE_RANGE,
     );
@@ -194,7 +196,7 @@ describe('getTeamAttendanceHistory', () => {
     async ({ mockError }) => {
       mockSelectFailure(mockError);
 
-      const result = await getTeamAttendanceHistory(
+      const result = await selectTeamAttendanceHistory(
         MOCK_TEAM.team_id,
         MOCK_DATE_RANGE,
       );
@@ -204,7 +206,7 @@ describe('getTeamAttendanceHistory', () => {
   );
 });
 
-describe('getPlayersAttendanceSummary', () => {
+describe('selectPlayersAttendanceSummary', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -221,7 +223,7 @@ describe('getPlayersAttendanceSummary', () => {
       MOCK_PLAYERS_ATTENDANCE_SUMMARY.need_attention,
     );
 
-    const result = await getPlayersAttendanceSummary(
+    const result = await selectPlayersAttendanceSummary(
       MOCK_TEAM.team_id,
       MOCK_DATE_RANGE,
     );
@@ -236,13 +238,13 @@ describe('getPlayersAttendanceSummary', () => {
 
     // The `having` predicates passed to drizzle aren't invoked by the mock
     // chain, so call them directly to cover their bodies.
-    const [topHaving] = mockTopHaving.mock.calls[0];
+    const [topHaving] = head(mockTopHaving.mock.calls)!;
     expect(topHaving({ attendance_rate: 80 } as never)).toEqual({
       field: 80,
       value: 80,
       type: 'gte',
     });
-    const [needAttentionHaving] = mockNeedAttentionHaving.mock.calls[0];
+    const [needAttentionHaving] = head(mockNeedAttentionHaving.mock.calls)!;
     expect(needAttentionHaving({ attendance_rate: 40 } as never)).toEqual({
       field: 40,
       value: 50,
@@ -254,35 +256,39 @@ describe('getPlayersAttendanceSummary', () => {
     mockSelectSuccess(MOCK_PLAYER_RECORDS_TOP_PERFORMERS);
     mockSelectSuccess([]);
 
-    const result = await getPlayersAttendanceSummary(
+    const result = await selectPlayersAttendanceSummary(
       MOCK_TEAM.team_id,
       MOCK_DATE_RANGE,
     );
 
     expect(result.top_performers).toHaveLength(2);
-    expect(result.top_performers[0].attendance_rate).toBeGreaterThanOrEqual(80);
-    expect(result.top_performers[1].attendance_rate).toBeGreaterThanOrEqual(80);
+    expect(result.top_performers[0]?.attendance_rate).toBeGreaterThanOrEqual(
+      80,
+    );
+    expect(result.top_performers[1]?.attendance_rate).toBeGreaterThanOrEqual(
+      80,
+    );
   });
 
   test('filters need attention correctly (attendance_rate < 50)', async () => {
     mockSelectSuccess([]);
     mockSelectSuccess(MOCK_PLAYER_RECORDS_NEED_ATTENTION);
 
-    const result = await getPlayersAttendanceSummary(
+    const result = await selectPlayersAttendanceSummary(
       MOCK_TEAM.team_id,
       MOCK_DATE_RANGE,
     );
 
     expect(result.need_attention).toHaveLength(2);
-    expect(result.need_attention[0].attendance_rate).toBeLessThan(50);
-    expect(result.need_attention[1].attendance_rate).toBeLessThan(50);
+    expect(result.need_attention[0]?.attendance_rate).toBeLessThan(50);
+    expect(result.need_attention[1]?.attendance_rate).toBeLessThan(50);
   });
 
   test('limits top performers to 3 players', async () => {
     mockSelectSuccess(MOCK_PLAYER_RECORDS_MANY_TOP);
     mockSelectSuccess([]);
 
-    const result = await getPlayersAttendanceSummary(
+    const result = await selectPlayersAttendanceSummary(
       MOCK_TEAM.team_id,
       MOCK_DATE_RANGE,
     );
@@ -294,7 +300,7 @@ describe('getPlayersAttendanceSummary', () => {
     mockSelectSuccess([]);
     mockSelectSuccess(MOCK_PLAYER_RECORDS_MANY_NEED_ATTENTION);
 
-    const result = await getPlayersAttendanceSummary(
+    const result = await selectPlayersAttendanceSummary(
       MOCK_TEAM.team_id,
       MOCK_DATE_RANGE,
     );
@@ -316,7 +322,7 @@ describe('getPlayersAttendanceSummary', () => {
     async ({ mockError }) => {
       mockSelectFailure(mockError);
 
-      const result = await getPlayersAttendanceSummary(
+      const result = await selectPlayersAttendanceSummary(
         MOCK_TEAM.team_id,
         MOCK_DATE_RANGE,
       );
@@ -329,7 +335,7 @@ describe('getPlayersAttendanceSummary', () => {
   );
 });
 
-describe('getMostCommonAbsenceReasons', () => {
+describe('selectMostCommonAbsenceReasons', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -344,7 +350,7 @@ describe('getMostCommonAbsenceReasons', () => {
       mockLimit,
     } = mockSelectSuccess(MOCK_ABSENCE_REASONS);
 
-    const result = await getMostCommonAbsenceReasons(
+    const result = await selectMostCommonAbsenceReasons(
       MOCK_TEAM.team_id,
       MOCK_DATE_RANGE,
     );
@@ -363,7 +369,7 @@ describe('getMostCommonAbsenceReasons', () => {
   test('limits results to 5 reasons', async () => {
     const { mockLimit } = mockSelectSuccess(MOCK_ABSENCE_REASONS);
 
-    await getMostCommonAbsenceReasons(MOCK_TEAM.team_id, MOCK_DATE_RANGE);
+    await selectMostCommonAbsenceReasons(MOCK_TEAM.team_id, MOCK_DATE_RANGE);
 
     expect(mockLimit).toHaveBeenCalledWith(5);
   });
@@ -382,7 +388,7 @@ describe('getMostCommonAbsenceReasons', () => {
     async ({ mockError }) => {
       mockSelectFailure(mockError);
 
-      const result = await getMostCommonAbsenceReasons(
+      const result = await selectMostCommonAbsenceReasons(
         MOCK_TEAM.team_id,
         MOCK_DATE_RANGE,
       );

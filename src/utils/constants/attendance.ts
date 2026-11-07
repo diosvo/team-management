@@ -1,6 +1,7 @@
+import { ALL } from './app';
+
 import { AttendanceStatus } from '../enum';
 import type { Selection } from '../type';
-import { ALL } from './app';
 
 export const SELECTABLE_ATTENDANCE_STATUS = [
   AttendanceStatus.ON_TIME,

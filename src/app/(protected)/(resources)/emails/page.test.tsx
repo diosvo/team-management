@@ -1,11 +1,11 @@
+import { resend } from '@/lib/resend';
+
 import {
   expectNoA11yViolations,
   renderWithUI,
   screen,
   setupTestLifecycle,
 } from '@/test/utilities';
-
-import { resend } from '@/lib/resend';
 
 import EmailPreviewPage, { generateMetadata } from './page';
 
@@ -61,9 +61,7 @@ describe('EmailPreviewPage', () => {
 
     renderWithUI(await EmailPreviewPage());
 
-    expect(
-      screen.getByText('Error: Resend is down'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('Error: Resend is down')).toBeInTheDocument();
     expect(screen.queryByTestId('sent-emails')).not.toBeInTheDocument();
   });
 });

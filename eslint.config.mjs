@@ -1,6 +1,9 @@
+import { defineConfig, globalIgnores } from 'eslint/config';
 import nextVitals from 'eslint-config-next/core-web-vitals';
 import prettier from 'eslint-config-prettier/flat';
-import { defineConfig, globalIgnores } from 'eslint/config';
+import simpleImportSort from 'eslint-plugin-simple-import-sort';
+
+import { namingConfig } from './tools/eslint-rules/naming.mjs';
 
 const eslintConfig = defineConfig([
   ...nextVitals,
@@ -40,6 +43,34 @@ const eslintConfig = defineConfig([
       '@typescript-eslint/no-import-type-side-effects': 'error',
     },
   },
+  // Import order: external > @/utils > @/lib > other aliases > same folder > parent; a-z within groups.
+  {
+    plugins: { 'simple-import-sort': simpleImportSort },
+    rules: {
+      'simple-import-sort/imports': [
+        'error',
+        {
+          groups: [
+            // Side-effect imports.
+            ['^\\u0000'],
+            // External packages (node builtins, react, next, scoped packages).
+            ['^node:', '^react', '^next', '^@?\\w'],
+            // Internal helpers and utils.
+            ['^@env$', '^@/utils(/.*)?$'],
+            ['^@/lib(/.*)?$'],
+            // Other internal aliases.
+            ['^@/'],
+            // Same folder.
+            ['^\\./'],
+            // Parent folders.
+            ['^\\.\\./'],
+          ],
+        },
+      ],
+    },
+  },
+  // Naming rules from DEVELOPMENT.md.
+  ...namingConfig,
   prettier,
   // Override default ignores of eslint-config-next.
   globalIgnores([

@@ -1,5 +1,5 @@
-import { Separator } from '@chakra-ui/react';
 import { getTranslations } from 'next-intl/server';
+import { Separator } from '@chakra-ui/react';
 
 import FiltersSkeleton from '@/components/filters/FiltersSkeleton';
 import { TableSkeleton } from '@/components/PageSkeleton';

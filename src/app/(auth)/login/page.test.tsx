@@ -1,3 +1,11 @@
+import { head } from 'es-toolkit';
+
+import { type HttpStatus, Status } from '@/utils/response';
+
+import authClient from '@/lib/auth-client';
+
+import { DEFAULT_LOGIN_REDIRECT } from '@/routes';
+import type { LoginValues } from '@/schemas/auth';
 import {
   authCallbacks,
   expectNoA11yViolations,
@@ -8,11 +16,6 @@ import {
   waitFor,
 } from '@/test/utilities';
 
-import authClient from '@/lib/auth-client';
-import { Status, type HttpStatus } from '@/utils/response';
-import { DEFAULT_LOGIN_REDIRECT } from '@/routes';
-
-import type { LoginValues } from '@/schemas/auth';
 import LoginPage from './page';
 
 vi.mock('@/lib/auth-client', () => ({
@@ -61,7 +64,7 @@ describe('LoginPage', () => {
 
     const email = screen.getByLabelText(/email/i);
     // The password input shares its label with the visibility toggle.
-    const password = screen.getAllByLabelText(/password/i)[0];
+    const password = head(screen.getAllByLabelText(/password/i))!;
     const signIn = screen.getByRole('button', { name: /sign in/i });
 
     const fill = async ({
@@ -146,9 +149,7 @@ describe('LoginPage', () => {
 
     await submit({ password: 'wrongpassword' });
 
-    expect(
-      await screen.findByText('Something went wrong'),
-    ).toBeInTheDocument();
+    expect(await screen.findByText('Something went wrong')).toBeInTheDocument();
   });
 
   test('disables sign in after a 401 until a credential is edited', async () => {

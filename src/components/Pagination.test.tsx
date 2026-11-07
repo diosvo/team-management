@@ -4,6 +4,7 @@ import {
   screen,
   setupTestLifecycle,
 } from '@/test/utilities';
+
 import Pagination from './Pagination';
 
 describe('Pagination', () => {
@@ -49,7 +50,7 @@ describe('Pagination', () => {
     setup();
 
     const pageText =
-      screen.getByLabelText('pagination').children[0].textContent;
+      screen.getByLabelText('pagination').children[0]?.textContent;
     const prevButton = screen.getByRole('button', { name: /previous/i });
     const nextButton = screen.getByRole('button', { name: /next/i });
 

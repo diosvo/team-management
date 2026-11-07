@@ -2,14 +2,14 @@
 
 import { useTranslations } from 'next-intl';
 
-import Filters from '@/components/filters/Filters';
-
-import usePermissions from '@/hooks/use-permissions';
+import { USER_ROLE_SELECTION, USER_STATE_SELECTION } from '@/utils/constants';
 
 import { useRosterFilters } from '@/lib/nuqs';
-import type { FilterDef } from '@/types/filters';
+
+import Filters from '@/components/filters/Filters';
+import usePermissions from '@/hooks/use-permissions';
 import { useSelection } from '@/i18n/enums';
-import { USER_ROLE_SELECTION, USER_STATE_SELECTION } from '@/utils/constants';
+import type { FilterDef } from '@/types/filters';
 
 export default function RosterFilters() {
   const { isAdmin, isCaptain } = usePermissions();

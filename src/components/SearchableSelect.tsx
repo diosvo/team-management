@@ -1,24 +1,23 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import useSWR, { type SWRConfiguration } from 'swr';
-
-import {
-  Combobox,
-  HStack,
-  Portal,
-  Span,
-  Spinner,
-  createListCollection,
-  useFilter,
-} from '@chakra-ui/react';
-import { useTranslations } from 'next-intl';
 import {
   type Control,
   Controller,
   type FieldPath,
   type FieldValues,
 } from 'react-hook-form';
+import { useTranslations } from 'next-intl';
+import {
+  Combobox,
+  createListCollection,
+  HStack,
+  Portal,
+  Span,
+  Spinner,
+  useFilter,
+} from '@chakra-ui/react';
+import useSWR, { type SWRConfiguration } from 'swr';
 
 import { Field, type FieldProps } from './ui/field';
 import { toaster } from './ui/toaster';

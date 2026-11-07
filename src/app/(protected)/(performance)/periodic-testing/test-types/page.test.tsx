@@ -1,3 +1,4 @@
+import { getTestTypes } from '@/actions/test-type';
 import {
   MOCK_TEST_TYPE,
   MOCK_TEST_TYPE_2,
@@ -8,8 +9,6 @@ import {
   screen,
   setupTestLifecycle,
 } from '@/test/utilities';
-
-import { getTestTypes } from '@/actions/test-type';
 
 import TestTypesPage, { generateMetadata } from './page';
 
@@ -23,13 +22,13 @@ const propsSpy = {
   table: undefined as unknown,
 };
 
-vi.mock('./_components/TestTypesHeader', () => ({
+vi.mock('./_components/TestTypeHeader', () => ({
   default: () => <div data-testid="header" />,
 }));
-vi.mock('./_components/TestTypesFilters', () => ({
+vi.mock('./_components/TestTypeFilters', () => ({
   default: () => <div data-testid="filters" />,
 }));
-vi.mock('./_components/TestTypesTable', () => ({
+vi.mock('./_components/TestTypeTable', () => ({
   default: (props: unknown) => {
     propsSpy.table = props;
     return <div data-testid="table" />;

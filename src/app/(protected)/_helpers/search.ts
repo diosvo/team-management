@@ -1,8 +1,8 @@
 import {
   ClipboardPlus,
   ListChecks,
-  UserRound,
   type LucideIcon,
+  UserRound,
 } from 'lucide-react';
 
 import type { Action, Resource } from '@/utils/permissions';
@@ -122,8 +122,9 @@ function score({ names, haystack }: IndexedEntry, query: string): number {
   if (!words.every((word) => haystack.includes(word))) return -1;
   if (names.some((name) => name.startsWith(query))) return 0;
 
+  const [firstWord = ''] = words;
   const wordStart = names.some((name) =>
-    name.split(' ').some((part) => part.startsWith(words[0])),
+    name.split(' ').some((part) => part.startsWith(firstWord)),
   );
   return wordStart ? 1 : 2;
 }

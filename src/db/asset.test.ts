@@ -2,7 +2,6 @@ import { asc, desc, eq } from 'drizzle-orm';
 
 import db from '@/drizzle';
 import { AssetTable, type InsertAsset } from '@/drizzle/schema/asset';
-
 import {
   mockDeleteFailure,
   mockDeleteSuccess,
@@ -18,7 +17,7 @@ import {
 } from '@/test/mocks/asset';
 import { MOCK_TEAM } from '@/test/mocks/team';
 
-import { deleteAsset, getAssets, insertAsset, updateAsset } from './asset';
+import { deleteAsset, insertAsset, selectAssets, updateAsset } from './asset';
 
 vi.mock('@/drizzle', () => ({
   default: {
@@ -50,7 +49,7 @@ vi.mock('@/drizzle/schema/asset', () => ({
   },
 }));
 
-describe('getAssets', () => {
+describe('selectAssets', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -58,7 +57,7 @@ describe('getAssets', () => {
   test('returns assets with stats when database query succeeds', async () => {
     vi.mocked(db.query.AssetTable.findMany).mockResolvedValue([MOCK_ASSET]);
 
-    const result = await getAssets(MOCK_TEAM.team_id);
+    const result = await selectAssets(MOCK_TEAM.team_id);
 
     expect(result).toEqual({
       stats: MOCK_ASSET_STATS,
@@ -92,7 +91,7 @@ describe('getAssets', () => {
     async ({ mockError }) => {
       vi.mocked(db.query.AssetTable.findMany).mockRejectedValue(mockError);
 
-      const result = await getAssets(MOCK_TEAM.team_id);
+      const result = await selectAssets(MOCK_TEAM.team_id);
       expect(result).toEqual({
         stats: { total_items: 0, need_replacement: 0, obsolete_count: 0 },
         data: [],

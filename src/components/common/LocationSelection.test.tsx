@@ -1,3 +1,6 @@
+import { useForm } from 'react-hook-form';
+
+import { getLocations } from '@/actions/location';
 import { MOCK_LOCATION, MOCK_LOCATION_2 } from '@/test/mocks/location';
 import {
   expectNoA11yViolations,
@@ -6,9 +9,7 @@ import {
   waitFor,
   withFreshSWR,
 } from '@/test/utilities';
-import { useForm } from 'react-hook-form';
 
-import { getLocations } from '@/actions/location';
 import LocationSelection, { LocationLink } from './LocationSelection';
 
 vi.mock('@/actions/location', () => ({

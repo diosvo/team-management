@@ -1,3 +1,5 @@
+import { formatDate } from '@/utils/datetime';
+
 import { MOCK_TEST_RESULT_DATE } from '@/test/mocks/periodic-testing';
 import {
   mockUseQueryStates,
@@ -5,8 +7,6 @@ import {
   screen,
   setupTestLifecycle,
 } from '@/test/utilities';
-
-import { formatDate } from '@/utils/datetime';
 
 import TestingFilters from './TestingFilters';
 

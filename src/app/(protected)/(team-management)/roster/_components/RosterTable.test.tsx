@@ -1,13 +1,22 @@
+import { nth } from 'es-toolkit/compat';
+
+import { UserRole, UserState } from '@/utils/enum';
+
+import { removeUser } from '@/actions/user';
+import type { RosterUser } from '@/db/user';
+import usePermissions from '@/hooks/use-permissions';
 import {
+  MOCK_ALICE,
+  MOCK_BOB,
+  MOCK_CAROL,
   MOCK_COACH,
   MOCK_PLAYER,
-  MOCK_USER,
-  MOCK_USER_WITH_COACH,
   MOCK_USER_WITH_PLAYER,
 } from '@/test/mocks/user';
 import {
   createPermissionsMock,
   createToasterMock,
+  enumText,
   expectNoA11yViolations,
   mockToaster,
   mockUseQueryStates,
@@ -16,14 +25,7 @@ import {
   setupTestLifecycle,
   waitFor,
   within,
-  enumText,
 } from '@/test/utilities';
-
-import usePermissions from '@/hooks/use-permissions';
-import { UserRole, UserState } from '@/utils/enum';
-
-import { removeUser } from '@/actions/user';
-import type { RosterUser } from '@/db/user';
 
 import RosterTable from './RosterTable';
 
@@ -47,32 +49,9 @@ vi.mock('@/actions/user', () => ({
 
 vi.mock('@/components/ui/toaster', () => createToasterMock());
 
-const ALICE: RosterUser = {
-  ...MOCK_USER_WITH_PLAYER,
-  id: 'alice',
-  name: 'Alice',
-  email: 'alice@team.com',
-  role: UserRole.PLAYER,
-  state: UserState.ACTIVE,
-};
-
-const BOB: RosterUser = {
-  ...MOCK_USER_WITH_COACH,
-  id: 'bob',
-  name: 'Bob',
-  email: 'bob@team.com',
-  role: UserRole.COACH,
-  state: UserState.INACTIVE,
-};
-
-const CAROL: RosterUser = {
-  ...MOCK_USER,
-  id: 'carol',
-  name: 'Carol',
-  email: 'carol@team.com',
-  role: UserRole.GUEST,
-  state: UserState.ACTIVE,
-};
+const ALICE: RosterUser = MOCK_ALICE;
+const BOB: RosterUser = MOCK_BOB;
+const CAROL: RosterUser = MOCK_CAROL;
 
 describe('RosterTable', () => {
   const mockUsePermissions = vi.mocked(usePermissions);
@@ -111,9 +90,9 @@ describe('RosterTable', () => {
   test('renders a row for each user', () => {
     setup();
 
-    expect(screen.getByText('Alice')).toBeInTheDocument();
-    expect(screen.getByText('Bob')).toBeInTheDocument();
-    expect(screen.getByText('alice@team.com')).toBeInTheDocument();
+    expect(screen.getByText(ALICE.name)).toBeInTheDocument();
+    expect(screen.getByText(BOB.name)).toBeInTheDocument();
+    expect(screen.getByText(ALICE.email)).toBeInTheDocument();
   });
 
   test('renders the column headers', () => {
@@ -156,7 +135,7 @@ describe('RosterTable', () => {
     test('shows a dash for roles without a position', () => {
       setup({ users: [CAROL] });
 
-      const [, row] = screen.getAllByRole('row');
+      const row = nth(screen.getAllByRole('row'), 1)!;
       const cells = within(row).getAllByRole('cell');
       expect(cells.at(-1)).toHaveTextContent('-');
     });
@@ -169,40 +148,40 @@ describe('RosterTable', () => {
   });
 
   test('filters users by the search query', () => {
-    setup({ params: { q: 'alice' } });
+    setup({ params: { q: ALICE.id } });
 
-    expect(screen.getByText('Alice')).toBeInTheDocument();
-    expect(screen.queryByText('Bob')).not.toBeInTheDocument();
+    expect(screen.getByText(ALICE.name)).toBeInTheDocument();
+    expect(screen.queryByText(BOB.name)).not.toBeInTheDocument();
   });
 
   test('filters users by state', () => {
     setup({ params: { state: [UserState.ACTIVE] } });
 
-    expect(screen.getByText('Alice')).toBeInTheDocument();
-    expect(screen.queryByText('Bob')).not.toBeInTheDocument();
+    expect(screen.getByText(ALICE.name)).toBeInTheDocument();
+    expect(screen.queryByText(BOB.name)).not.toBeInTheDocument();
   });
 
   test('filters users by role', () => {
     setup({ params: { role: [UserRole.COACH] } });
 
-    expect(screen.getByText('Bob')).toBeInTheDocument();
-    expect(screen.queryByText('Alice')).not.toBeInTheDocument();
+    expect(screen.getByText(BOB.name)).toBeInTheDocument();
+    expect(screen.queryByText(ALICE.name)).not.toBeInTheDocument();
   });
 
   test('masks names and emails for guests', () => {
     setup({ perms: { isGuest: true } });
 
-    expect(screen.queryByText('Alice')).not.toBeInTheDocument();
-    expect(screen.queryByText('alice@team.com')).not.toBeInTheDocument();
+    expect(screen.queryByText(ALICE.name)).not.toBeInTheDocument();
+    expect(screen.queryByText(ALICE.email)).not.toBeInTheDocument();
   });
 
   test('navigates to the profile when a row is clicked', async () => {
     const { user } = setup();
 
-    await user.click(screen.getByText('Alice'));
+    await user.click(screen.getByText(ALICE.name));
 
     await waitFor(() => {
-      expect(mockReplace).toHaveBeenCalledWith('/profile/alice');
+      expect(mockReplace).toHaveBeenCalledWith(`/profile/${ALICE.id}`);
     });
   });
 
@@ -210,7 +189,7 @@ describe('RosterTable', () => {
     const { user } = setup({ perms: { isGuest: true } });
 
     // Row 0 is the header; the first data row follows.
-    const [, firstRow] = screen.getAllByRole('row');
+    const firstRow = nth(screen.getAllByRole('row'), 1)!;
     await user.click(firstRow);
 
     expect(mockReplace).not.toHaveBeenCalled();
@@ -229,7 +208,7 @@ describe('RosterTable', () => {
 
       await waitFor(() => {
         const ids = mockRemoveUser.mock.calls.map(([id]) => id);
-        expect(ids).toEqual(expect.arrayContaining(['alice', 'bob']));
+        expect(ids).toEqual(expect.arrayContaining([ALICE.id, BOB.id]));
       });
 
       expect(mockToaster.update).toHaveBeenCalledWith(

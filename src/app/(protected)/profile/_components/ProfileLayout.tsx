@@ -1,7 +1,7 @@
 'use client';
 
-import { Center, Tabs, useBreakpointValue } from '@chakra-ui/react';
 import { useTranslations } from 'next-intl';
+import { Center, Tabs, useBreakpointValue } from '@chakra-ui/react';
 
 import type { User } from '@/drizzle/schema';
 

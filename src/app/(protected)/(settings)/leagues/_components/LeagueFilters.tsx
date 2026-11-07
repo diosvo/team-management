@@ -2,12 +2,13 @@
 
 import { useTranslations } from 'next-intl';
 
-import Filters from '@/components/filters/Filters';
-
-import { useSelection } from '@/i18n/enums';
-import { useLeagueFilters } from '@/lib/nuqs';
-import type { FilterDef } from '@/types/filters';
 import { LEAGUE_STATUS_SELECTION } from '@/utils/constants';
+
+import { useLeagueFilters } from '@/lib/nuqs';
+
+import Filters from '@/components/filters/Filters';
+import { useSelection } from '@/i18n/enums';
+import type { FilterDef } from '@/types/filters';
 
 export default function LeagueFilters() {
   const t = useTranslations('leagues');

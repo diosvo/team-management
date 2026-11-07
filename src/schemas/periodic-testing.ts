@@ -5,7 +5,7 @@ import { TestTypeUnit } from '@/utils/enum';
 
 export const UpsertTestTypeSchema = z.object({
   name: z.string().min(3).max(64),
-  unit: z.enum(SELECTABLE_TEST_TYPES).default(TestTypeUnit.SECONDS),
+  unit: z.enum(SELECTABLE_TEST_TYPES).default(TestTypeUnit.TIMES),
   direction: z.enum(['higher', 'lower']).default('higher'),
   // Kept as the input's string; empty means no target.
   target: z

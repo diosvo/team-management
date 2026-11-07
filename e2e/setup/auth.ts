@@ -1,9 +1,9 @@
 import { expect, test as setup } from '@playwright/test';
 import path from 'path';
 
-import { DEFAULT_LOGIN_REDIRECT, LOGIN_PATH } from '@/routes';
-
 import env from '@env';
+
+import { DEFAULT_LOGIN_REDIRECT, LOGIN_PATH } from '@/routes';
 const adminFile = path.join(__dirname, '../../playwright/.auth/admin.json');
 
 setup('authenticate as admin', async ({ page }) => {

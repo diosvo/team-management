@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useState, useTransition } from 'react';
-
 import { useTranslations } from 'next-intl';
-
-import { toaster } from '@/components/ui/toaster';
 
 import { paginateData } from '@/utils/filters';
 import { pluralize } from '@/utils/formatter';
 import type { Response } from '@/utils/response';
+
+import { toaster } from '@/components/ui/toaster';
 
 /** Server action that deletes a single row by id. */
 type Remover = (id: string) => Promise<Response>;

@@ -1,9 +1,8 @@
-import { asc, desc, eq } from 'drizzle-orm';
+import { and, asc, desc, eq } from 'drizzle-orm';
 
 import db from '@/drizzle';
 import { AchievementTable } from '@/drizzle/schema/achievement';
 import type { UpsertAchievementSchemaValues } from '@/schemas/achievement';
-
 import {
   mockDeleteFailure,
   mockDeleteSuccess,
@@ -12,15 +11,20 @@ import {
   mockUpdateFailure,
   mockUpdateSuccess,
 } from '@/test/db-operations';
-import { MOCK_ACHIEVEMENT, MOCK_ACHIEVEMENT_INPUT } from '@/test/mocks/achievement';
+import {
+  MOCK_ACHIEVEMENT,
+  MOCK_ACHIEVEMENT_INPUT,
+} from '@/test/mocks/achievement';
 
 import {
   deleteAchievement,
-  getAchievements,
-  getPlayerLeagueStatSuggestions,
   insertAchievement,
+  selectAchievements,
+  selectPlayerLeagueStatSuggestions,
   updateAchievement,
 } from './achievement';
+
+const TEAM_ID = MOCK_ACHIEVEMENT.team_id;
 
 vi.mock('@/drizzle', () => ({
   default: {
@@ -72,7 +76,7 @@ vi.mock('@/drizzle/schema/user', () => ({
   },
 }));
 
-describe('getAchievements', () => {
+describe('selectAchievements', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -87,11 +91,12 @@ describe('getAchievements', () => {
       achievementDetails,
     ] as any);
 
-    const result = await getAchievements();
+    const result = await selectAchievements(TEAM_ID);
 
     expect(result).toEqual([achievementDetails]);
     // Validate query construction
     expect(db.query.AchievementTable.findMany).toHaveBeenCalledWith({
+      where: eq(AchievementTable.team_id, TEAM_ID),
       orderBy: [
         desc(AchievementTable.year),
         asc(AchievementTable.type),
@@ -116,7 +121,7 @@ describe('getAchievements', () => {
       new Error('Database error'),
     );
 
-    const result = await getAchievements();
+    const result = await selectAchievements(TEAM_ID);
     expect(result).toEqual([]);
   });
 });
@@ -165,6 +170,7 @@ describe('updateAchievement', () => {
     });
 
     const result = await updateAchievement(
+      TEAM_ID,
       MOCK_ACHIEVEMENT.achievement_id,
       MOCK_ACHIEVEMENT_INPUT as UpsertAchievementSchemaValues,
     );
@@ -176,7 +182,10 @@ describe('updateAchievement', () => {
     expect(db.update).toHaveBeenCalledWith(AchievementTable);
     expect(mockSet).toHaveBeenCalledWith(MOCK_ACHIEVEMENT_INPUT);
     expect(mockWhere).toHaveBeenCalledWith(
-      eq(AchievementTable.achievement_id, MOCK_ACHIEVEMENT.achievement_id),
+      and(
+        eq(AchievementTable.achievement_id, MOCK_ACHIEVEMENT.achievement_id),
+        eq(AchievementTable.team_id, TEAM_ID),
+      ),
     );
   });
 
@@ -186,6 +195,7 @@ describe('updateAchievement', () => {
 
     await expect(
       updateAchievement(
+        TEAM_ID,
         MOCK_ACHIEVEMENT.achievement_id,
         MOCK_ACHIEVEMENT_INPUT as UpsertAchievementSchemaValues,
       ),
@@ -203,7 +213,10 @@ describe('deleteAchievement', () => {
       achievement_id: MOCK_ACHIEVEMENT.achievement_id,
     });
 
-    const result = await deleteAchievement(MOCK_ACHIEVEMENT.achievement_id);
+    const result = await deleteAchievement(
+      TEAM_ID,
+      MOCK_ACHIEVEMENT.achievement_id,
+    );
 
     expect(result).toEqual({
       achievement_id: MOCK_ACHIEVEMENT.achievement_id,
@@ -211,7 +224,10 @@ describe('deleteAchievement', () => {
     // Verify query construction
     expect(db.delete).toHaveBeenCalledWith(AchievementTable);
     expect(mockWhere).toHaveBeenCalledWith(
-      eq(AchievementTable.achievement_id, MOCK_ACHIEVEMENT.achievement_id),
+      and(
+        eq(AchievementTable.achievement_id, MOCK_ACHIEVEMENT.achievement_id),
+        eq(AchievementTable.team_id, TEAM_ID),
+      ),
     );
   });
 
@@ -220,12 +236,12 @@ describe('deleteAchievement', () => {
     mockDeleteFailure(message);
 
     await expect(
-      deleteAchievement(MOCK_ACHIEVEMENT.achievement_id),
+      deleteAchievement(TEAM_ID, MOCK_ACHIEVEMENT.achievement_id),
     ).rejects.toThrow(message);
   });
 });
 
-describe('getPlayerLeagueStatSuggestions', () => {
+describe('selectPlayerLeagueStatSuggestions', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -260,7 +276,7 @@ describe('getPlayerLeagueStatSuggestions', () => {
   test('returns top players by average points for the league', async () => {
     const { mockLimit } = mockSuggestionQuery(suggestions);
 
-    const result = await getPlayerLeagueStatSuggestions('league-123');
+    const result = await selectPlayerLeagueStatSuggestions('league-123');
 
     expect(result).toEqual(suggestions);
     expect(mockLimit).toHaveBeenCalledWith(5);
@@ -269,7 +285,7 @@ describe('getPlayerLeagueStatSuggestions', () => {
   test('returns empty array when database query fails', async () => {
     mockSuggestionQuery(null, true);
 
-    const result = await getPlayerLeagueStatSuggestions('league-123');
+    const result = await selectPlayerLeagueStatSuggestions('league-123');
     expect(result).toEqual([]);
   });
 });

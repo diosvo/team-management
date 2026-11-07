@@ -1,11 +1,11 @@
+import { usePathname } from 'next/navigation';
+
 import {
   expectNoA11yViolations,
   renderWithUI,
   screen,
   setupTestLifecycle,
 } from '@/test/utilities';
-
-import { usePathname } from 'next/navigation';
 
 import Breadcrumbs from './Breadcrumbs';
 

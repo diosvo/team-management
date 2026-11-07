@@ -1,11 +1,10 @@
+import usePermissions from '@/hooks/use-permissions';
 import {
   createPermissionsMock,
   renderWithUI,
   screen,
   setupTestLifecycle,
 } from '@/test/utilities';
-
-import usePermissions from '@/hooks/use-permissions';
 
 import LeagueHeader from './LeagueHeader';
 import { UpsertLeague } from './UpsertLeague';

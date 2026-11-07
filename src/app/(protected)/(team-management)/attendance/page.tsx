@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { getAttendances } from '@/actions/attendance';
 import { loadAttendanceFilters } from '@/lib/nuqs';
+
+import { getAttendances } from '@/actions/attendance';
 
 import AttendanceFilters from './_components/AttendanceFilters';
 import AttendanceHeader from './_components/AttendanceHeader';

@@ -14,14 +14,15 @@ import {
 
 import {
   type EmailStatus,
+  enumValues,
   Interval,
   ReportStatus,
   ReportTrigger,
-  enumValues,
 } from '@/utils/enum';
 
-import { created_at, updated_at } from '../helpers';
 import { TeamTable } from './team';
+
+import { created_at, updated_at } from '../helpers';
 
 export const reportIntervalEnum = pgEnum(
   'report_interval',

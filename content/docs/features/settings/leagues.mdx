@@ -54,7 +54,7 @@ description: Competitions the club enters, each with its own player roster and a
 ## Rules
 
 - **Status is derived, not stored.** No status column; `getLeagues` and
-  `getLeagueById` use `deriveDateStatus`:
+  `selectLeagueById` use `deriveDateStatus`:
   - `upcoming` while `start_date` is in the future.
   - `ended` once `end_date` is past; otherwise `ongoing`.
 - **Read-only after kick-off, on both sides.**
@@ -67,7 +67,7 @@ description: Competitions the club enters, each with its own player roster and a
   - Enters the caller's team in `league_team` (`onConflictDoNothing`); roster
     rows have a composite FK to that pair.
   - Diffs submitted `player_ids` against the stored roster.
-  - Drops ids not on the caller's team via `getTeamPlayerIds` (`player`
+  - Drops ids not on the caller's team via `selectTeamPlayerIds` (`player`
     inherits its team from `user`).
   - Runs adds and removes with `Promise.allSettled`; one line per failure.
 - **Partial roster failure is not rolled back.**

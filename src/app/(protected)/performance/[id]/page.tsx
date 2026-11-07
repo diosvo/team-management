@@ -1,17 +1,17 @@
+import { type ReactNode, Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import { type ReactNode, Suspense } from 'react';
-
 import { UserRoundX } from 'lucide-react';
 
-import { Card } from '@/components/ui/card';
-import { EmptyState } from '@/components/ui/empty-state';
+import type { PerformanceTab } from '@/utils/constants';
+
+import { loadPerformanceFilters } from '@/lib/nuqs';
 
 import { verifySession } from '@/actions/auth';
 import { getPerformanceIdentity } from '@/actions/player-performance';
-import { loadPerformanceFilters } from '@/lib/nuqs';
+import { Card } from '@/components/ui/card';
+import { EmptyState } from '@/components/ui/empty-state';
 import type { DateRange } from '@/types/common';
-import type { PerformanceTab } from '@/utils/constants';
 
 import PerformanceHeader from '../_components/PerformanceHeader';
 import { BodySkeleton } from '../_components/PerformanceLoading';

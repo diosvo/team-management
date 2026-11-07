@@ -1,12 +1,12 @@
-import { Badge, HStack, VStack } from '@chakra-ui/react';
 import { useTranslations } from 'next-intl';
+import { Badge, HStack, VStack } from '@chakra-ui/react';
 
-import PageTitle from '@/components/PageTitle';
-
-import { useSelection } from '@/i18n/enums';
-import type { PerformanceIdentity } from '@/types/performance';
 import { PLAYER_POSITIONS_SELECTION } from '@/utils/constants';
 import { PlayerPosition } from '@/utils/enum';
+
+import PageTitle from '@/components/PageTitle';
+import { useSelection } from '@/i18n/enums';
+import type { PerformanceIdentity } from '@/types/performance';
 
 import PerformanceFilters from './PerformanceFilters';
 

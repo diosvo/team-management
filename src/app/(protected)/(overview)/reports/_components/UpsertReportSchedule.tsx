@@ -1,8 +1,7 @@
 'use client';
 
 import { useMemo, useState, useTransition } from 'react';
-import useSWRImmutable from 'swr/immutable';
-
+import { useTranslations } from 'next-intl';
 import {
   Button,
   createListCollection,
@@ -19,18 +18,8 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { Save, X } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import useSWRImmutable from 'swr/immutable';
 
-import SearchableSelect from '@/components/SearchableSelect';
-import { CloseButton } from '@/components/ui/close-button';
-import { Field } from '@/components/ui/field';
-import { toaster } from '@/components/ui/toaster';
-
-import { translateSelection } from '@/i18n/enums';
-import {
-  UpsertReportScheduleSchema,
-  type UpsertReportScheduleValues,
-} from '@/schemas/report';
 import {
   SCHEDULED_INTERVAL_SELECTION,
   type ScheduledInterval,
@@ -38,8 +27,16 @@ import {
 import type { Option } from '@/utils/type';
 
 import { getReportRecipients, upsertReportSchedule } from '@/actions/report';
-
+import SearchableSelect from '@/components/SearchableSelect';
+import { CloseButton } from '@/components/ui/close-button';
+import { Field } from '@/components/ui/field';
+import { toaster } from '@/components/ui/toaster';
 import type { ReportSchedule } from '@/drizzle/schema';
+import { translateSelection } from '@/i18n/enums';
+import {
+  UpsertReportScheduleSchema,
+  type UpsertReportScheduleValues,
+} from '@/schemas/report';
 
 export const UPSERT_SCHEDULE_ID = 'upsert-schedule';
 

@@ -1,6 +1,7 @@
-import type { Achievement } from '@/drizzle/schema/achievement';
 import type { MatchAverageField } from '@/utils/constants';
 import type { ActivityKind, AttendanceStatus, MatchResult } from '@/utils/enum';
+
+import type { Achievement } from '@/drizzle/schema/achievement';
 
 /** Rolling comparison of the last N days against the N days before them. */
 export interface AttendanceTrend {

@@ -320,7 +320,7 @@ omitted from the diagram.
 ## Membership over time
 
 - `user_team` keeps one row per stint, so transfers and rejoins keep their history.
-- `user.team_id` points at the open stint; `transferMembership` closes the old
+- `user.team_id` points at the open stint; `upsertMembership` closes the old
   stint and moves the pointer in one transaction.
 - `user_current_team` allows one open stint per user; `user_team_stint` allows
   rejoining a team, but not the same stint twice.

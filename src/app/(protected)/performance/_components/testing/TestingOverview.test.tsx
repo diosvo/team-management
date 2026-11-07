@@ -1,3 +1,8 @@
+import { createTestType } from '@/test/mocks/performance';
+import {
+  MOCK_TEST_TYPE,
+  MOCK_TEST_TYPE_2,
+} from '@/test/mocks/periodic-testing';
 import {
   enumText,
   mockUseQueryStates,
@@ -5,12 +10,11 @@ import {
   screen,
   setupTestLifecycle,
 } from '@/test/utilities';
-import { createTestType } from '@/test/mocks/performance';
-
 import type {
   TestingOverview as TestingOverviewData,
   TestTypeProgress,
 } from '@/types/performance';
+
 import TestingOverview from './TestingOverview';
 
 // Both charts are lazy recharts chunks; stub them so the test covers the cards.
@@ -37,6 +41,9 @@ vi.mock('../LazyCharts', () => ({
   ),
 }));
 
+const SPRINT = MOCK_TEST_TYPE.name;
+const JUMP = MOCK_TEST_TYPE_2.name;
+
 describe('TestingOverview', () => {
   setupTestLifecycle();
 
@@ -62,8 +69,8 @@ describe('TestingOverview', () => {
     setup(
       {
         types: [
-          createTestType('Sprint', {}, { lower_is_better: true }),
-          createTestType('Jump'),
+          createTestType(SPRINT, {}, { lower_is_better: true }),
+          createTestType(JUMP),
         ],
         last_tested: '2026-08-08',
       },
@@ -72,36 +79,34 @@ describe('TestingOverview', () => {
 
     expect(screen.getByText(/^Last tested .* pick a test/)).toBeInTheDocument();
     expect(screen.getByTestId('progress-chart')).toHaveTextContent(
-      'Sprint · You',
+      `${SPRINT} · You`,
     );
     expect(
       screen.getByText(
-        `Sprint (${enumText('testTypeUnit', 'seconds')}) · lower is better · dashed line is the team average on the same day`,
+        `${SPRINT} (${enumText('testTypeUnit', 'seconds')}) · lower is better · dashed line is the team average on the same day`,
       ),
     ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Sprint/ })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
-    expect(screen.getByRole('button', { name: /Jump/ })).toHaveAttribute(
-      'aria-pressed',
-      'false',
-    );
+    expect(
+      screen.getByRole('button', { name: new RegExp(SPRINT) }),
+    ).toHaveAttribute('aria-pressed', 'true');
+    expect(
+      screen.getByRole('button', { name: new RegExp(JUMP) }),
+    ).toHaveAttribute('aria-pressed', 'false');
   });
 
   test('charts the test from the URL and selects another on click', async () => {
     const { setParams, user } = setup(
-      { types: [createTestType('Sprint'), createTestType('Jump')] },
-      'Jump',
+      { types: [createTestType(SPRINT), createTestType(JUMP)] },
+      JUMP,
     );
 
-    expect(screen.getByTestId('progress-chart')).toHaveTextContent('Jump');
+    expect(screen.getByTestId('progress-chart')).toHaveTextContent(JUMP);
     expect(screen.getByText(/higher is better/)).toBeInTheDocument();
     expect(screen.queryByText(/^Last tested/)).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: /Sprint/ }));
+    await user.click(screen.getByRole('button', { name: new RegExp(SPRINT) }));
 
-    expect(setParams).toHaveBeenCalledWith({ test: 'Sprint' });
+    expect(setParams).toHaveBeenCalledWith({ test: SPRINT });
   });
 
   test('shows each improvement badge and team comparison', () => {
@@ -131,24 +136,21 @@ describe('TestingOverview', () => {
   test('draws the radar once three tests have a percentile', () => {
     setup({
       types: [
-        createTestType('Sprint'),
-        createTestType('Jump'),
+        createTestType(SPRINT),
+        createTestType(JUMP),
         createTestType('Plank'),
         createTestType('Solo', { percentile: null }),
       ],
     });
 
     expect(screen.getByTestId('radar-chart')).toHaveTextContent(
-      'Sprint,Jump,Plank',
+      `${SPRINT},${JUMP},Plank`,
     );
   });
 
   test('falls back to progress bars below three comparable tests', () => {
     setup({
-      types: [
-        createTestType('Sprint', { percentile: 70 }),
-        createTestType('Jump'),
-      ],
+      types: [createTestType(SPRINT, { percentile: 70 }), createTestType(JUMP)],
     });
 
     expect(screen.queryByTestId('radar-chart')).not.toBeInTheDocument();
@@ -157,7 +159,7 @@ describe('TestingOverview', () => {
   });
 
   test('shows the no-comparison state when no test has a percentile', () => {
-    setup({ types: [createTestType('Sprint', { percentile: null })] });
+    setup({ types: [createTestType(SPRINT, { percentile: null })] });
 
     expect(screen.getByText('No comparison yet')).toBeInTheDocument();
   });

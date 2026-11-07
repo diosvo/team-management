@@ -1,14 +1,13 @@
+import { createElement, type PropsWithChildren } from 'react';
+import { NextIntlClientProvider } from 'next-intl';
 import {
   act,
   renderHook as renderHookBase,
   waitFor,
 } from '@testing-library/react';
-import { NextIntlClientProvider } from 'next-intl';
-import { createElement, type PropsWithChildren } from 'react';
 import type { Mock } from 'vitest';
 
 import messages from '@/i18n/messages/en';
-
 import { createToasterMock, mockToaster } from '@/test/helpers';
 
 import usePermissions from './use-permissions';
@@ -86,14 +85,14 @@ describe('useTableState', () => {
       const result = setup();
 
       expect(result.current.currentData).toHaveLength(6);
-      expect(result.current.currentData[0].name).toBe('Alice');
+      expect(result.current.currentData[0]?.name).toBe('Alice');
     });
 
     test('returns the second page of items', () => {
       const result = setup(matchAll, 2, 5);
 
       expect(result.current.currentData).toHaveLength(1);
-      expect(result.current.currentData[0].name).toBe('Frank');
+      expect(result.current.currentData[0]?.name).toBe('Frank');
     });
 
     test('respects custom pageSize', () => {

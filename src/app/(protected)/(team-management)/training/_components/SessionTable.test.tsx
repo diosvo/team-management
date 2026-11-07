@@ -1,7 +1,14 @@
+import { head } from 'es-toolkit';
+
+import { removeSession } from '@/actions/training-session';
+import usePermissions, {
+  type PermissionsResult,
+} from '@/hooks/use-permissions';
 import { MOCK_TRAINING_SESSION_RESPONSE } from '@/test/mocks/training-sessions';
 import {
   createPermissionsMock,
   createToasterMock,
+  enumText,
   expectNoA11yViolations,
   mockToaster,
   mockUseQueryStates,
@@ -10,15 +17,8 @@ import {
   setupTestLifecycle,
   waitFor,
   within,
-  enumText,
 } from '@/test/utilities';
-
-import usePermissions, {
-  type PermissionsResult,
-} from '@/hooks/use-permissions';
 import type { TrainingSessionWithDetails } from '@/types/training-session';
-
-import { removeSession } from '@/actions/training-session';
 
 import SessionTable from './SessionTable';
 import { UpsertSession } from './UpsertSession';
@@ -42,8 +42,9 @@ describe('SessionTable', () => {
   const mockRemoveSession = vi.mocked(removeSession);
   const mockOpen = vi.mocked(UpsertSession.open);
 
-  const [COMPLETED_SESSION] =
-    MOCK_TRAINING_SESSION_RESPONSE.data as Array<TrainingSessionWithDetails>;
+  const COMPLETED_SESSION = head(
+    MOCK_TRAINING_SESSION_RESPONSE.data as Array<TrainingSessionWithDetails>,
+  )!;
 
   // Both fixtures share a location; give one its own so the search filter has
   // something to discriminate on.

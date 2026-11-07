@@ -1,3 +1,4 @@
+import type { Messages } from 'next-intl';
 import { formatDistanceToNow } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import {
@@ -8,6 +9,7 @@ import {
   Film,
   GamepadDirectional,
   LayoutDashboard,
+  type LucideIcon,
   MailSearch,
   MapPinHouse,
   Medal,
@@ -17,14 +19,13 @@ import {
   Swords,
   Trophy,
   UsersRound,
-  type LucideIcon,
 } from 'lucide-react';
-import type { Messages } from 'next-intl';
 
-import type { Locale } from '@/i18n/config';
 import { ESTABLISHED_DATE } from '@/utils/constants';
 import { toLabel } from '@/utils/formatter';
 import type { Resource } from '@/utils/permissions';
+
+import type { Locale } from '@/i18n/config';
 
 export type SidebarGroup = {
   /** Key under `shell.sidebar.groups` */

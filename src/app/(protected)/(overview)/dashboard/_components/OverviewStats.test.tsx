@@ -1,7 +1,7 @@
-import { renderWithUI, screen, setupTestLifecycle } from '@/test/utilities';
-
 import { getOverviewStats } from '@/actions/analytics';
 import { getYearsActive } from '@/app/(protected)/_helpers/utils';
+import { renderWithUI, screen, setupTestLifecycle } from '@/test/utilities';
+
 import OverviewStats from './OverviewStats';
 
 vi.mock('@/actions/analytics', () => ({

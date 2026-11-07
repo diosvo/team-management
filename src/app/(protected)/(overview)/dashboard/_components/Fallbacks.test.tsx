@@ -1,6 +1,6 @@
 import { renderWithUI, screen } from '@/test/utilities';
 
-import { CardFallback, ChartFallback, UpcomingFallback } from './fallbacks';
+import { CardFallback, ChartFallback, UpcomingFallback } from './Fallbacks';
 
 describe('fallbacks', () => {
   test('renders CardFallback', () => {

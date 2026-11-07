@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import {
   and,
   asc,
@@ -10,10 +11,6 @@ import {
   type SQL,
   sql,
 } from 'drizzle-orm';
-import { cache } from 'react';
-
-import type { AttendanceStatusValues } from '@/types/attendance';
-import type { DateRange } from '@/types/common';
 
 import { LOCALE_DATE_FORMAT } from '@/utils/constants';
 import { AttendanceStatus, MatchStatus, SessionStatus } from '@/utils/enum';
@@ -21,6 +18,8 @@ import { AttendanceStatus, MatchStatus, SessionStatus } from '@/utils/enum';
 import db from '@/drizzle';
 import { MatchTable, TrainingSessionTable, UserTable } from '@/drizzle/schema';
 import { AttendanceTable } from '@/drizzle/schema/attendance';
+import type { AttendanceStatusValues } from '@/types/attendance';
+import type { DateRange } from '@/types/common';
 
 import {
   attendanceDate,
@@ -28,11 +27,11 @@ import {
   teamAttendanceIn,
   totalCountSql,
 } from './attendance-utils';
-import { calculatePercentage, countWhen, fromNow, withinRange } from './utils';
+import { calculatePercentage, countWhen, fromNow } from './utils';
 
 // Request-scoped: the overview stats and the upcoming-matches card both ask
 // for this during one dashboard render.
-export const getUpcomingMatches = cache(async (team_id: string) => {
+export const selectUpcomingMatches = cache(async (team_id: string) => {
   try {
     return await db.query.MatchTable.findMany({
       where: and(
@@ -66,7 +65,7 @@ export const getUpcomingMatches = cache(async (team_id: string) => {
   }
 });
 
-export async function getUpcomingSessions(team_id: string) {
+export async function selectUpcomingSessions(team_id: string) {
   try {
     return await db.query.TrainingSessionTable.findMany({
       where: and(
@@ -98,7 +97,7 @@ export async function getUpcomingSessions(team_id: string) {
   }
 }
 
-export async function getTeamAttendanceHistory(
+export async function selectTeamAttendanceHistory(
   team_id: string,
   range: DateRange,
 ) {
@@ -128,7 +127,7 @@ export async function getTeamAttendanceHistory(
   }
 }
 
-export async function getPlayersAttendanceSummary(
+export async function selectPlayersAttendanceSummary(
   team_id: string,
   range: DateRange,
 ) {
@@ -178,7 +177,7 @@ export async function getPlayersAttendanceSummary(
   }
 }
 
-export async function getMostCommonAbsenceReasons(
+export async function selectMostCommonAbsenceReasons(
   team_id: string,
   range: DateRange,
 ) {

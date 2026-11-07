@@ -1,11 +1,10 @@
+import { getAchievements } from '@/actions/achievement';
 import {
   expectNoA11yViolations,
   renderWithUI,
   screen,
   setupTestLifecycle,
 } from '@/test/utilities';
-
-import { getAchievements } from '@/actions/achievement';
 
 import AchievementsPage, { generateMetadata } from './page';
 

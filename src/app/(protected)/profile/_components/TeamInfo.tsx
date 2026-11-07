@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { useSWRConfig } from 'swr';
-
+import { Controller, useForm } from 'react-hook-form';
+import { useLocale, useTranslations } from 'next-intl';
 import {
   Badge,
   HStack,
@@ -16,9 +16,19 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { formatDistanceToNow } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { Activity, Edit, LucideClock9, Save, Shirt } from 'lucide-react';
-import { useLocale, useTranslations } from 'next-intl';
-import { Controller, useForm } from 'react-hook-form';
+import { useSWRConfig } from 'swr';
 
+import { CACHE_KEY, ESTABLISHED_DATE } from '@/utils/constants';
+import { formatDate } from '@/utils/datetime';
+import {
+  CoachPosition,
+  PlayerPosition,
+  UserRole,
+  UserState,
+} from '@/utils/enum';
+import { getColor } from '@/utils/helper';
+
+import { updateTeamInfo } from '@/actions/user';
 import { DatePickerField } from '@/components/date-picker/DatePicker';
 import TextField from '@/components/TextField';
 import { Card } from '@/components/ui/card';
@@ -33,21 +43,9 @@ import { Tooltip } from '@/components/ui/tooltip';
 import { RolePositionSelection } from '@/components/user/RolePositionSelection';
 import { ControlledStateSelection } from '@/components/user/StateSelection';
 import Visibility from '@/components/Visibility';
-
-import { enumLabel } from '@/i18n/enums';
-import { CACHE_KEY, ESTABLISHED_DATE } from '@/utils/constants';
-import { formatDate } from '@/utils/datetime';
-import {
-  CoachPosition,
-  PlayerPosition,
-  UserRole,
-  UserState,
-} from '@/utils/enum';
-import { getColor } from '@/utils/helper';
-
-import { updateTeamInfo } from '@/actions/user';
 import type { User } from '@/drizzle/schema';
 import usePermissions from '@/hooks/use-permissions';
+import { enumLabel } from '@/i18n/enums';
 import { EditTeamInfoSchema, type EditTeamInfoValues } from '@/schemas/user';
 
 export default function TeamInfo({

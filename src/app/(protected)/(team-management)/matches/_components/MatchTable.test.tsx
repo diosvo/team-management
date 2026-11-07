@@ -1,7 +1,18 @@
+import { head, pick } from 'es-toolkit';
+import { nth } from 'es-toolkit/compat';
+
+import { MatchResult, MatchStatus } from '@/utils/enum';
+
+import { removeMatch } from '@/actions/match';
+import usePermissions, {
+  type PermissionsResult,
+} from '@/hooks/use-permissions';
 import { MOCK_MATCH_RESPONSE } from '@/test/mocks/match';
+import { MOCK_OTHER_TEAM } from '@/test/mocks/team';
 import {
   createPermissionsMock,
   createToasterMock,
+  enumText,
   expectNoA11yViolations,
   mockToaster,
   mockUseQueryStates,
@@ -9,16 +20,8 @@ import {
   screen,
   setupTestLifecycle,
   waitFor,
-  enumText,
 } from '@/test/utilities';
-
-import usePermissions, {
-  type PermissionsResult,
-} from '@/hooks/use-permissions';
 import type { MatchWithTeams } from '@/types/match';
-import { MatchResult, MatchStatus } from '@/utils/enum';
-
-import { removeMatch } from '@/actions/match';
 
 import MatchTable from './MatchTable';
 import { UpsertMatch } from './UpsertMatch';
@@ -42,15 +45,17 @@ describe('MatchTable', () => {
   const mockRemoveMatch = vi.mocked(removeMatch);
   const mockOpen = vi.mocked(UpsertMatch.open);
 
-  const [LOSS_MATCH, WIN_MATCH] =
+  const MATCHES =
     MOCK_MATCH_RESPONSE.data as Array<unknown> as Array<MatchWithTeams>;
+  const LOSS_MATCH = head(MATCHES)!;
+  const WIN_MATCH = nth(MATCHES, 1)!;
 
   // Both fixtures share an opponent; give one its own name so the search
   // filter has something to discriminate on.
   const AWAY_MATCH: MatchWithTeams = {
     ...WIN_MATCH,
     match_id: 'match-3',
-    away_team: { team_id: 'team-999', name: 'Hanoi Buffaloes' },
+    away_team: pick(MOCK_OTHER_TEAM, ['team_id', 'name']),
   };
 
   const setup = ({

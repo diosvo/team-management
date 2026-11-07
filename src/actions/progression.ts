@@ -1,25 +1,24 @@
 'use server';
 
 import { notFound } from 'next/navigation';
-
 import { getTranslations } from 'next-intl/server';
+
+import { ResponseFactory } from '@/utils/response';
 
 import { getDbErrorMessage } from '@/db/pg-error';
 import {
-  getPlayerProgression,
-  getTeamProgression,
   isPlayerInTeamScope,
+  selectPlayerProgression,
+  selectTeamProgression,
 } from '@/db/progression';
 import {
   deleteTestNote,
-  findTestNote,
-  findTypeNote,
   insertTestNote,
+  selectTestNote,
+  selectTypeNote,
   updateTestNote,
 } from '@/db/test-note';
 import type { TestNoteSchemaValues } from '@/schemas/periodic-testing';
-
-import { ResponseFactory } from '@/utils/response';
 
 import { withResource } from './auth';
 import { revalidate } from './cache';
@@ -29,14 +28,14 @@ const periodicTesting = withResource('periodic-testing');
 export const getProgression = periodicTesting(
   'view',
   async function getProgression({ team_id }, type_id: string) {
-    return await getTeamProgression(team_id, type_id);
+    return await selectTeamProgression(team_id, type_id);
   },
 );
 
 export const getPlayerProgressionById = periodicTesting(
   'view',
   async function getPlayerProgressionById({ team_id }, player_id: string) {
-    const progression = await getPlayerProgression(team_id, player_id);
+    const progression = await selectPlayerProgression(team_id, player_id);
     if (!progression) notFound();
     return progression;
   },
@@ -70,7 +69,7 @@ export const saveTestNote = periodicTesting(
       const existing =
         note_id ??
         (data.type_id
-          ? (await findTypeNote(player_id, data.type_id))?.note_id
+          ? (await selectTypeNote(player_id, data.type_id))?.note_id
           : undefined);
 
       if (existing) {
@@ -94,7 +93,7 @@ export const removeTestNote = periodicTesting(
   async function remove({ team_id }, note_id: string) {
     const t = await getTranslations('actions.testNote');
     try {
-      const note = await findTestNote(note_id);
+      const note = await selectTestNote(note_id);
       if (!note || !(await isPlayerInTeamScope(team_id, note.player_id))) {
         return ResponseFactory.error(t('notFound'));
       }

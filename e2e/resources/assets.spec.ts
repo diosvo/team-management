@@ -1,9 +1,10 @@
 import { expect, test } from '@playwright/test';
+
 import {
-  uniqueName as makeUniqueName,
   testDeleteWithCheckbox,
   testSearchWithQueryParams,
   testTableHeaders,
+  uniqueName as makeUniqueName,
 } from '../setup/helpers';
 import { DialogPOM } from '../setup/pom';
 

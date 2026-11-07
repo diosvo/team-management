@@ -1,11 +1,10 @@
+import { getLeagues } from '@/actions/league';
 import {
   expectNoA11yViolations,
   renderWithUI,
   screen,
   setupTestLifecycle,
 } from '@/test/utilities';
-
-import { getLeagues } from '@/actions/league';
 
 import LeaguesPage, { generateMetadata } from './page';
 

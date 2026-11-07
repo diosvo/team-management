@@ -1,11 +1,10 @@
+import { getAssets } from '@/actions/asset';
 import {
   expectNoA11yViolations,
   renderWithUI,
   screen,
   setupTestLifecycle,
 } from '@/test/utilities';
-
-import { getAssets } from '@/actions/asset';
 
 import AssetsPage, { generateMetadata } from './page';
 

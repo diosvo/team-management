@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { getProgression } from '@/actions/progression';
 import { loadProgressionFilters } from '@/lib/nuqs';
+
+import { getProgression } from '@/actions/progression';
 
 import ProgressionFilters from './_components/ProgressionFilters';
 import ProgressionHeader from './_components/ProgressionHeader';

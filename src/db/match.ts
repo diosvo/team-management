@@ -11,11 +11,11 @@ import {
   sql,
 } from 'drizzle-orm';
 
-import type { DataWithStats } from '@/types/common';
-import type { MatchStats, MatchWithTeams } from '@/types/match';
+import { MATCH_STAT_FIELDS } from '@/utils/constants';
+import { MatchResult, MatchStatus, MatchType } from '@/utils/enum';
+import { matchResult } from '@/utils/helper';
 
 import type { MatchSearchParams } from '@/lib/nuqs';
-import { MatchResult, MatchStatus, MatchType } from '@/utils/enum';
 
 import db from '@/drizzle';
 import {
@@ -29,11 +29,12 @@ import type {
   MatchPlayerStatsRow,
   UpsertMatchSchemaValues,
 } from '@/schemas/match';
-import { MATCH_STAT_FIELDS } from '@/utils/constants';
-import { matchResult } from '@/utils/helper';
+import type { DataWithStats } from '@/types/common';
+import type { MatchStats, MatchWithTeams } from '@/types/match';
+
 import { withinRange } from './utils';
 
-export async function getMatches(
+export async function selectMatches(
   params: MatchSearchParams & { team_id: string },
 ): Promise<DataWithStats<MatchWithTeams, MatchStats>> {
   const { game_type, from, to, match_type, status, team_id } = params;
@@ -170,7 +171,7 @@ export async function deleteMatch(match_id: string) {
  * Our team's completed matches, newest first, for the box-score picker. Only a
  * completed match was actually played, so only it can carry a box score.
  */
-export async function getPlayedMatches(team_id: string) {
+export async function selectPlayedMatches(team_id: string) {
   try {
     const rows = await db
       .select({
@@ -202,10 +203,12 @@ export async function getPlayedMatches(team_id: string) {
   }
 }
 
-export type PlayedMatch = Awaited<ReturnType<typeof getPlayedMatches>>[number];
+export type PlayedMatch = Awaited<
+  ReturnType<typeof selectPlayedMatches>
+>[number];
 
 /** Owning team and lifecycle of a match, for the box-score guards. */
-export async function getMatchOwnership(match_id: string) {
+export async function selectMatchOwnership(match_id: string) {
   const rows = await db
     .select({ home_team: MatchTable.home_team, status: MatchTable.status })
     .from(MatchTable)
@@ -215,7 +218,10 @@ export async function getMatchOwnership(match_id: string) {
   return rows[0] ?? null;
 }
 
-export async function getMatchPlayerStats(match_id: string, team_id: string) {
+export async function selectMatchPlayerStats(
+  match_id: string,
+  team_id: string,
+) {
   try {
     return await db
       .select({
@@ -244,7 +250,7 @@ export async function getMatchPlayerStats(match_id: string, team_id: string) {
 }
 
 export type MatchPlayerStatsWithName = Awaited<
-  ReturnType<typeof getMatchPlayerStats>
+  ReturnType<typeof selectMatchPlayerStats>
 >[number];
 
 /**
@@ -252,7 +258,7 @@ export type MatchPlayerStatsWithName = Awaited<
  * upserted on the `(match_id, player_id)` key and removed players deleted.
  * Every row is stamped with `team_id`, the team the player turned out for.
  */
-export async function saveMatchPlayerStats(
+export async function upsertMatchPlayerStats(
   match_id: string,
   team_id: string,
   rows: Array<MatchPlayerStatsRow>,

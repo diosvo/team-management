@@ -1,3 +1,6 @@
+import { LeagueStatus } from '@/utils/enum';
+
+import { getPlayersInLeague, upsertLeague } from '@/actions/league';
 import { MOCK_LEAGUE } from '@/test/mocks/league';
 import { MOCK_USER_WITH_PLAYER } from '@/test/mocks/user';
 import {
@@ -11,10 +14,6 @@ import {
   waitFor,
   withFreshSWR,
 } from '@/test/utilities';
-
-import { LeagueStatus } from '@/utils/enum';
-
-import { getPlayersInLeague, upsertLeague } from '@/actions/league';
 
 import { UpsertLeague } from './UpsertLeague';
 

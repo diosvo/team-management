@@ -8,7 +8,7 @@ import { type NullishTeamRule, TeamTable } from '@/drizzle/schema/team';
  * own. `rule_updated_at` is maintained here so the editor's "last updated"
  * tracks revisions to the rules rather than any edit to the team.
  */
-export async function getRule(team_id: string): Promise<NullishTeamRule> {
+export async function selectRule(team_id: string): Promise<NullishTeamRule> {
   try {
     const team = await db.query.TeamTable.findFirst({
       columns: { rule_content: true, rule_updated_at: true },
@@ -21,7 +21,7 @@ export async function getRule(team_id: string): Promise<NullishTeamRule> {
   }
 }
 
-export async function upsertRule(team_id: string, content: string) {
+export async function updateRule(team_id: string, content: string) {
   return await db
     .update(TeamTable)
     .set({ rule_content: content, rule_updated_at: new Date() })

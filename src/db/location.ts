@@ -3,7 +3,7 @@ import { asc, eq } from 'drizzle-orm';
 import db from '@/drizzle';
 import { type InsertLocation, LocationTable } from '@/drizzle/schema';
 
-export async function getLocations() {
+export async function selectLocations() {
   try {
     return await db.query.LocationTable.findMany({
       orderBy: asc(LocationTable.name),

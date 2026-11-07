@@ -1,3 +1,7 @@
+import { AttendanceStatus } from '@/utils/enum';
+
+import { submitLeave } from '@/actions/attendance';
+import { getActivePlayers } from '@/actions/user';
 import { MOCK_USER_WITH_PLAYER } from '@/test/mocks/user';
 import {
   createToasterMock,
@@ -11,9 +15,6 @@ import {
   within,
 } from '@/test/utilities';
 
-import { submitLeave } from '@/actions/attendance';
-import { getActivePlayers } from '@/actions/user';
-import { AttendanceStatus } from '@/utils/enum';
 import BulkAttendanceManager from './BulkAttendanceManager';
 
 vi.mock('@/actions/attendance', () => ({

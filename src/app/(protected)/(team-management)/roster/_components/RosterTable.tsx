@@ -1,9 +1,8 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
 import { useMemo } from 'react';
-
+import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Badge, HStack, Icon } from '@chakra-ui/react';
 import {
   ChartSpline,
@@ -13,20 +12,19 @@ import {
   UserRound,
 } from 'lucide-react';
 
-import DataTable, { RowAction, type Column } from '@/components/DataTable';
-import HighlightText from '@/components/HighlightText';
-
-import usePermissions from '@/hooks/use-permissions';
-import useTableState from '@/hooks/use-table-state';
-
-import { enumLabel } from '@/i18n/enums';
-import { useRosterFilters } from '@/lib/nuqs';
 import { UserRole } from '@/utils/enum';
 import { buildPredicate } from '@/utils/filters';
 import { getColor } from '@/utils/helper';
 
+import { useRosterFilters } from '@/lib/nuqs';
+
 import { removeUser } from '@/actions/user';
+import DataTable, { type Column, RowAction } from '@/components/DataTable';
+import HighlightText from '@/components/HighlightText';
 import type { RosterUser } from '@/db/user';
+import usePermissions from '@/hooks/use-permissions';
+import useTableState from '@/hooks/use-table-state';
+import { enumLabel } from '@/i18n/enums';
 
 const mask = (cc: string, num = 4) =>
   `${cc}`.slice(-num).padStart(`${cc}`.length, '*');

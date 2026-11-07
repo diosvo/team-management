@@ -1,7 +1,6 @@
 import { useTranslations } from 'next-intl';
 
 import { Stat, StatGroup } from '@/components/ui/stat';
-
 import type { MatchStats } from '@/types/match';
 
 export default function MatchesStats({ stats }: { stats: MatchStats }) {

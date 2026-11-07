@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import {
   Avatar,
   type AvatarFallbackProps,
@@ -7,7 +8,6 @@ import {
   Skeleton,
 } from '@chakra-ui/react';
 import { ImageUp } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 
 import { toaster } from '@/components/ui/toaster';
 
@@ -61,7 +61,7 @@ export default function ImageUploader({
       disabled={state !== 'editable'}
       maxFileSize={MAX_FILE_SIZE}
       accept={['image/png', 'image/jpeg']}
-      onFileAccept={({ files }) => onChange(files[0])}
+      onFileAccept={({ files: [file] }) => file && onChange(file)}
       onFileReject={({ files }) =>
         notifyRejection(files, {
           tooLarge: t('tooLarge'),

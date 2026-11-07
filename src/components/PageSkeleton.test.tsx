@@ -28,7 +28,7 @@ describe('PageSkeleton', () => {
 
     const rows = screen.getAllByRole('row');
     expect(rows).toHaveLength(5);
-    expect(rows[0].children).toHaveLength(3);
+    expect(rows[0]?.children).toHaveLength(3);
   });
 
   test('omits the stats when the list page has none', () => {

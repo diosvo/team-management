@@ -1,11 +1,10 @@
-import { SimpleGrid } from '@chakra-ui/react';
 import { getLocale, getTranslations } from 'next-intl/server';
-
-import { Card } from '@/components/ui/card';
-import { Stat } from '@/components/ui/stat';
+import { SimpleGrid } from '@chakra-ui/react';
 
 import { getOverviewStats } from '@/actions/analytics';
 import { getYearsActive } from '@/app/(protected)/_helpers/utils';
+import { Card } from '@/components/ui/card';
+import { Stat } from '@/components/ui/stat';
 
 export default async function OverviewStats() {
   const [stats, t, locale] = await Promise.all([

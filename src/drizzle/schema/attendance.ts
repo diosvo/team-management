@@ -12,9 +12,10 @@ import {
 
 import { AttendanceStatus, enumValues } from '@/utils/enum';
 
-import { created_at, updated_at } from '../helpers';
 import { PlayerTable } from './player';
 import { TrainingSessionTable } from './training';
+
+import { created_at, updated_at } from '../helpers';
 
 export const attendanceStatusEnum = pgEnum(
   'attendance_status',

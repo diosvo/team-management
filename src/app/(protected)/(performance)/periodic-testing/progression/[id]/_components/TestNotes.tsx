@@ -1,23 +1,21 @@
 'use client';
 
 import { useTransition } from 'react';
-
+import { useLocale, useTranslations } from 'next-intl';
 import { Badge, HStack, IconButton, Stack, Text } from '@chakra-ui/react';
 import { formatDistanceToNow } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { NotebookPen, Pencil, Trash2 } from 'lucide-react';
-import { useLocale, useTranslations } from 'next-intl';
 
+import { formatResult, type GoalOutcome } from '@/utils/progression';
+
+import { removeTestNote } from '@/actions/progression';
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { toaster } from '@/components/ui/toaster';
-
-import usePermissions from '@/hooks/use-permissions';
-
-import { removeTestNote } from '@/actions/progression';
 import type { TestType } from '@/drizzle/schema';
+import usePermissions from '@/hooks/use-permissions';
 import type { TestNoteItem } from '@/types/periodic-testing';
-import { formatResult, type GoalOutcome } from '@/utils/progression';
 
 import { AddTestNote } from './AddTestNote';
 

@@ -1,8 +1,9 @@
 import type { ReactNode } from 'react';
 
-import type { DateBounds } from '@/types/common';
 import type { DateSelection } from '@/utils/datetime';
 import type { Option } from '@/utils/type';
+
+import type { DateBounds } from '@/types/common';
 
 export type FilterControl =
   // Renders inline and reads/writes the `from`/`to` params
@@ -12,7 +13,7 @@ export type FilterControl =
       selection?: DateSelection;
       icon?: ReactNode; // replaces the trigger's calendar icon
     } & DateBounds)
-  | { type: 'checkbox-group'; options: Array<Option> }; // panel / drawer, multi-select
+  | { type: 'checkbox-group'; options: Array<Option<string>> }; // panel / drawer, multi-select
 
 export type FilterDef = {
   key: string;

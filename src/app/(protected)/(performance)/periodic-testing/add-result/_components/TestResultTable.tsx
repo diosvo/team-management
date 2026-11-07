@@ -1,10 +1,13 @@
 'use client';
 
 import { memo, useCallback } from 'react';
-
+import { useLocale, useTranslations } from 'next-intl';
 import { Table, Text } from '@chakra-ui/react';
 import { BookUser } from 'lucide-react';
-import { useLocale, useTranslations } from 'next-intl';
+
+import { paginateData } from '@/utils/filters';
+
+import { useCommonParams } from '@/lib/nuqs';
 
 import Pagination from '@/components/Pagination';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -13,11 +16,7 @@ import {
   NumberInputRoot,
 } from '@/components/ui/number-input';
 import { Tooltip } from '@/components/ui/tooltip';
-
 import { enumLabel } from '@/i18n/enums';
-import { useCommonParams } from '@/lib/nuqs';
-import { paginateData } from '@/utils/filters';
-
 import type { TestConfigurationSelection } from '@/types/periodic-testing';
 
 const removalStyle = {

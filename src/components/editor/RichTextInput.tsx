@@ -1,16 +1,16 @@
 'use client';
 
-import { useEffect, useMemo, useRef, type ComponentType } from 'react';
-
+import { type ComponentType, useEffect, useMemo, useRef } from 'react';
+import { useTranslations } from 'next-intl';
+import { Box, Span, Text, useFieldContext } from '@chakra-ui/react';
 import { CharacterCount } from '@tiptap/extensions';
 import {
-  useEditor,
-  useEditorState,
   type Editor,
   type EditorOptions,
+  useEditor,
+  useEditorState,
 } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import { useTranslations } from 'next-intl';
 
 import {
   Control,
@@ -19,7 +19,6 @@ import {
   type RichTextEditorToolbarProps,
 } from '@/components/ui/rich-text-editor';
 import { useRichTextEditorContext } from '@/components/ui/rich-text-editor-context';
-import { Box, Span, Text, useFieldContext } from '@chakra-ui/react';
 
 /** Ceiling for editors that are not given a field-specific `limit`. */
 export const DEFAULT_CHARACTER_LIMIT = 100000;

@@ -1,3 +1,6 @@
+import { useForm } from 'react-hook-form';
+import { head } from 'es-toolkit';
+
 import {
   expectNoA11yViolations,
   renderWithUI,
@@ -6,7 +9,6 @@ import {
   waitFor,
   withFreshSWR,
 } from '@/test/utilities';
-import { useForm } from 'react-hook-form';
 
 import SearchableSelect, { SearchableSelectField } from './SearchableSelect';
 
@@ -15,11 +17,10 @@ type MockItem = {
   name: string;
 };
 
-const mockItems: Array<MockItem> = [
-  { id: '1', name: 'Item 1' },
-  { id: '2', name: 'Item 2' },
-  { id: '3', name: 'Item 3' },
-];
+const ITEM_1: MockItem = { id: '1', name: 'Item 1' };
+const ITEM_2: MockItem = { id: '2', name: 'Item 2' };
+const ITEM_3: MockItem = { id: '3', name: 'Item 3' };
+const mockItems: Array<MockItem> = [ITEM_1, ITEM_2, ITEM_3];
 
 const mockAction = vi.fn().mockResolvedValue(mockItems);
 
@@ -82,9 +83,9 @@ describe('SearchableSelect', () => {
 
         await user.click(screen.getByPlaceholderText('Type to search'));
 
-        expect(await screen.findByText('Item 1')).toBeInTheDocument();
-        expect(screen.getByText('Item 2')).toBeInTheDocument();
-        expect(screen.getByText('Item 3')).toBeInTheDocument();
+        expect(await screen.findByText(ITEM_1.name)).toBeInTheDocument();
+        expect(screen.getByText(ITEM_2.name)).toBeInTheDocument();
+        expect(screen.getByText(ITEM_3.name)).toBeInTheDocument();
       });
 
       test('filters items based on input', async () => {
@@ -94,13 +95,13 @@ describe('SearchableSelect', () => {
 
         const input = screen.getByPlaceholderText('Type to search');
         await user.click(input);
-        await screen.findByText('Item 1');
+        await screen.findByText(ITEM_1.name);
 
         await user.type(input, '1');
 
         await waitFor(() => {
-          expect(screen.getByText('Item 1')).toBeInTheDocument();
-          expect(screen.queryByText('Item 2')).not.toBeInTheDocument();
+          expect(screen.getByText(ITEM_1.name)).toBeInTheDocument();
+          expect(screen.queryByText(ITEM_2.name)).not.toBeInTheDocument();
         });
       });
 
@@ -110,7 +111,7 @@ describe('SearchableSelect', () => {
         await waitFor(() => expect(mockAction).toHaveBeenCalled());
 
         await user.click(screen.getByPlaceholderText('Type to search'));
-        await user.click(await screen.findByText('Item 1'));
+        await user.click(await screen.findByText(ITEM_1.name));
 
         expect(onChange).toHaveBeenCalledWith([mockItems[0]]);
       });
@@ -124,7 +125,7 @@ describe('SearchableSelect', () => {
         await waitFor(() => expect(mockAction).toHaveBeenCalled());
 
         await user.click(screen.getByPlaceholderText('Type to search'));
-        await user.click(await screen.findByText('Item 3'));
+        await user.click(await screen.findByText(ITEM_3.name));
 
         expect(onChange).not.toHaveBeenCalled();
       });
@@ -137,7 +138,9 @@ describe('SearchableSelect', () => {
 
         await user.click(screen.getByPlaceholderText('Type to search'));
 
-        expect(await screen.findByText('Custom: Item 1')).toBeInTheDocument();
+        expect(
+          await screen.findByText(`Custom: ${ITEM_1.name}`),
+        ).toBeInTheDocument();
       });
 
       test('treats an undefined value as no selection', async () => {
@@ -220,9 +223,9 @@ describe('SearchableSelect', () => {
 
         await user.click(screen.getByPlaceholderText('Type to search'));
 
-        expect(await screen.findByText('Item 1')).toBeInTheDocument();
-        expect(screen.getByText('Item 2')).toBeInTheDocument();
-        expect(screen.getByText('Item 3')).toBeInTheDocument();
+        expect(await screen.findByText(ITEM_1.name)).toBeInTheDocument();
+        expect(screen.getByText(ITEM_2.name)).toBeInTheDocument();
+        expect(screen.getByText(ITEM_3.name)).toBeInTheDocument();
       });
 
       test('calls onChange with a single item (not an array)', async () => {
@@ -231,7 +234,7 @@ describe('SearchableSelect', () => {
         await waitFor(() => expect(mockAction).toHaveBeenCalled());
 
         await user.click(screen.getByPlaceholderText('Type to search'));
-        await user.click(await screen.findByText('Item 1'));
+        await user.click(await screen.findByText(ITEM_1.name));
 
         expect(onChange).toHaveBeenCalledWith(mockItems[0]);
       });
@@ -242,7 +245,7 @@ describe('SearchableSelect', () => {
         await waitFor(() => expect(mockAction).toHaveBeenCalled());
 
         expect(
-          screen.getByDisplayValue(mockItems[0].name),
+          screen.getByDisplayValue(head(mockItems)!.name),
         ).toBeInTheDocument();
       });
 
@@ -291,9 +294,9 @@ describe('SearchableSelect', () => {
 
         await user.click(screen.getByPlaceholderText('Type to search'));
 
-        expect(await screen.findByText('Item 1')).toBeInTheDocument();
-        expect(screen.getByText('Item 2')).toBeInTheDocument();
-        expect(screen.getByText('Item 3')).toBeInTheDocument();
+        expect(await screen.findByText(ITEM_1.name)).toBeInTheDocument();
+        expect(screen.getByText(ITEM_2.name)).toBeInTheDocument();
+        expect(screen.getByText(ITEM_3.name)).toBeInTheDocument();
       });
 
       test('updates form value with string IDs on selection', async () => {
@@ -322,7 +325,7 @@ describe('SearchableSelect', () => {
         await waitFor(() => expect(mockAction).toHaveBeenCalled());
 
         await user.click(screen.getByPlaceholderText('Type to search'));
-        await user.click(await screen.findByText('Item 1'));
+        await user.click(await screen.findByText(ITEM_1.name));
 
         expect(screen.getByTestId('form-value')).toHaveTextContent('["1"]');
       });
@@ -415,9 +418,9 @@ describe('SearchableSelect', () => {
 
         await user.click(screen.getByPlaceholderText('Type to search'));
 
-        expect(await screen.findByText('Item 1')).toBeInTheDocument();
-        expect(screen.getByText('Item 2')).toBeInTheDocument();
-        expect(screen.getByText('Item 3')).toBeInTheDocument();
+        expect(await screen.findByText(ITEM_1.name)).toBeInTheDocument();
+        expect(screen.getByText(ITEM_2.name)).toBeInTheDocument();
+        expect(screen.getByText(ITEM_3.name)).toBeInTheDocument();
       });
 
       test('updates form value with a single string ID on selection', async () => {
@@ -446,7 +449,7 @@ describe('SearchableSelect', () => {
         await waitFor(() => expect(mockAction).toHaveBeenCalled());
 
         await user.click(screen.getByPlaceholderText('Type to search'));
-        await user.click(await screen.findByText('Item 1'));
+        await user.click(await screen.findByText(ITEM_1.name));
 
         expect(screen.getByTestId('form-value')).toHaveTextContent('"1"');
       });

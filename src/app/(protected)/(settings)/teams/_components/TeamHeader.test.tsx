@@ -1,12 +1,10 @@
-
+import usePermissions from '@/hooks/use-permissions';
 import {
   createPermissionsMock,
   renderWithUI,
   screen,
   setupTestLifecycle,
 } from '@/test/utilities';
-
-import usePermissions from '@/hooks/use-permissions';
 
 import TeamHeader from './TeamHeader';
 import { UpsertTeam } from './UpsertTeam';
@@ -24,10 +22,12 @@ describe('TeamHeader', () => {
   const mockOpen = vi.mocked(UpsertTeam.open);
 
   const setup = (canCreate = false) => {
-    mockUsePermissions.mockReturnValue(createPermissionsMock({
-      can: vi.fn(() => canCreate),
-      isLoading: false,
-    }));
+    mockUsePermissions.mockReturnValue(
+      createPermissionsMock({
+        can: vi.fn(() => canCreate),
+        isLoading: false,
+      }),
+    );
 
     return renderWithUI(<TeamHeader />);
   };

@@ -1,21 +1,6 @@
 import { and, asc, eq } from 'drizzle-orm';
 import { groupBy } from 'es-toolkit/array';
 
-import db from '@/drizzle';
-import {
-  type TestType,
-  TestNoteTable,
-  TestResultTable,
-  TestTypeTable,
-  UserTable,
-} from '@/drizzle/schema';
-
-import type {
-  PlayerProgressionDetail,
-  PlayerTypeProgression,
-  TestNoteItem,
-  TypeProgression,
-} from '@/types/periodic-testing';
 import {
   average,
   goalOutcome,
@@ -23,6 +8,21 @@ import {
   summarize,
   toNumber,
 } from '@/utils/progression';
+
+import db from '@/drizzle';
+import {
+  TestNoteTable,
+  TestResultTable,
+  type TestType,
+  TestTypeTable,
+  UserTable,
+} from '@/drizzle/schema';
+import type {
+  PlayerProgressionDetail,
+  PlayerTypeProgression,
+  TestNoteItem,
+  TypeProgression,
+} from '@/types/periodic-testing';
 
 type HistoryRow = {
   player_id: string;
@@ -70,7 +70,11 @@ function buildTypeProgression(
 
   const players = Object.values(groupBy(rows, (row) => row.player_id)).map(
     (history) => {
-      const { player_id, player_name } = history[0];
+      // `groupBy` never yields an empty group.
+      const [{ player_id, player_name }] = history as [
+        HistoryRow,
+        ...Array<HistoryRow>,
+      ];
       return {
         player_id,
         player_name,
@@ -99,7 +103,7 @@ function buildTypeProgression(
  * Progression of every tested player for one test type. Falls back to the
  * first type that has results when `type_id` is empty or not on the team.
  */
-export async function getTeamProgression(
+export async function selectTeamProgression(
   team_id: string,
   type_id: string,
 ): Promise<{
@@ -182,7 +186,7 @@ export async function isPlayerInTeamScope(team_id: string, player_id: string) {
   return Boolean(tested);
 }
 
-export async function getPlayerProgression(
+export async function selectPlayerProgression(
   team_id: string,
   player_id: string,
 ): Promise<Nullable<PlayerProgressionDetail>> {
@@ -246,7 +250,9 @@ export async function getPlayerProgression(
           date,
           result,
           // The date's rows include this player's own result, so never empty.
-          team_average: average(byDate[date].map((row) => row.result))!,
+          team_average: average(
+            (byDate[date] as typeof typeRows).map((row) => row.result),
+          )!,
         })),
       },
     ];

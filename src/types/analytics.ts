@@ -5,7 +5,7 @@ export interface AnalyticsStats {
 }
 
 export interface PlayerStats {
-  player_name: Picked<UserTable, 'name'>;
+  player_name: string;
   attended: number;
   total_sessions: number;
   attendance_rate: number;

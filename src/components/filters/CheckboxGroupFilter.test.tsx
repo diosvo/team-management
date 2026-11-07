@@ -1,4 +1,9 @@
 import {
+  MOCK_ACTIVE_OPTION,
+  MOCK_INACTIVE_OPTION,
+  MOCK_STATUS_OPTIONS,
+} from '@/test/mocks/filters';
+import {
   expectNoA11yViolations,
   renderWithUI,
   screen,
@@ -7,11 +12,6 @@ import {
 } from '@/test/utilities';
 
 import CheckboxGroupFilter from './CheckboxGroupFilter';
-
-const TWO_OPTIONS = [
-  { label: 'Active', value: 'active' },
-  { label: 'Inactive', value: 'inactive' },
-];
 
 const FOUR_OPTIONS = [
   { label: 'On Time', value: 'on_time' },
@@ -33,7 +33,7 @@ describe('CheckboxGroupFilter', () => {
       <CheckboxGroupFilter
         label="Status"
         value={[]}
-        options={TWO_OPTIONS}
+        options={MOCK_STATUS_OPTIONS}
         onChange={onChange}
         {...overrides}
       />,
@@ -62,10 +62,10 @@ describe('CheckboxGroupFilter', () => {
     await setup();
 
     expect(
-      screen.getByRole('checkbox', { name: 'Active' }),
+      screen.getByRole('checkbox', { name: MOCK_ACTIVE_OPTION.label }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole('checkbox', { name: 'Inactive' }),
+      screen.getByRole('checkbox', { name: MOCK_INACTIVE_OPTION.label }),
     ).toBeInTheDocument();
   });
 
@@ -79,13 +79,13 @@ describe('CheckboxGroupFilter', () => {
     });
 
     test('is visible when at least one value is selected', async () => {
-      await setup({ value: ['active'] });
+      await setup({ value: [MOCK_ACTIVE_OPTION.value] });
 
       expect(screen.getByText('clear')).toBeVisible();
     });
 
     test('calls onChange with an empty array when clicked', async () => {
-      const { user } = await setup({ value: ['active'] });
+      const { user } = await setup({ value: [MOCK_ACTIVE_OPTION.value] });
 
       await user.click(screen.getByText('clear'));
 
@@ -95,28 +95,36 @@ describe('CheckboxGroupFilter', () => {
 
   describe('checkbox interaction', () => {
     test('pre-checks the checkboxes that match the current value', async () => {
-      await setup({ value: ['active'] });
+      await setup({ value: [MOCK_ACTIVE_OPTION.value] });
 
-      expect(screen.getByRole('checkbox', { name: 'Active' })).toBeChecked();
       expect(
-        screen.getByRole('checkbox', { name: 'Inactive' }),
+        screen.getByRole('checkbox', { name: MOCK_ACTIVE_OPTION.label }),
+      ).toBeChecked();
+      expect(
+        screen.getByRole('checkbox', { name: MOCK_INACTIVE_OPTION.label }),
       ).not.toBeChecked();
     });
 
     test('calls onChange when a checkbox is checked', async () => {
       const { user } = await setup({ value: [] });
 
-      await user.click(screen.getByRole('checkbox', { name: 'Active' }));
+      await user.click(
+        screen.getByRole('checkbox', { name: MOCK_ACTIVE_OPTION.label }),
+      );
 
-      expect(onChange).toHaveBeenCalledWith(['active']);
+      expect(onChange).toHaveBeenCalledWith([MOCK_ACTIVE_OPTION.value]);
     });
 
     test('calls onChange with remaining values when a checked box is unchecked', async () => {
-      const { user } = await setup({ value: ['active', 'inactive'] });
+      const { user } = await setup({
+        value: [MOCK_ACTIVE_OPTION.value, MOCK_INACTIVE_OPTION.value],
+      });
 
-      await user.click(screen.getByRole('checkbox', { name: 'Active' }));
+      await user.click(
+        screen.getByRole('checkbox', { name: MOCK_ACTIVE_OPTION.label }),
+      );
 
-      expect(onChange).toHaveBeenCalledWith(['inactive']);
+      expect(onChange).toHaveBeenCalledWith([MOCK_INACTIVE_OPTION.value]);
     });
   });
 
@@ -128,9 +136,9 @@ describe('CheckboxGroupFilter', () => {
     };
 
     test('renders all options when 3 or fewer are provided (horizontal layout)', async () => {
-      await setup({ options: TWO_OPTIONS });
+      await setup({ options: MOCK_STATUS_OPTIONS });
 
-      verifyOptionsRendered(TWO_OPTIONS);
+      verifyOptionsRendered(MOCK_STATUS_OPTIONS);
     });
 
     test('renders all options when more than 3 are provided (vertical layout)', async () => {

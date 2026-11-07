@@ -2,15 +2,16 @@
 
 import { useTranslations } from 'next-intl';
 
-import Filters from '@/components/filters/Filters';
-
-import { useSelection } from '@/i18n/enums';
-import { useAttendanceFilters } from '@/lib/nuqs';
-import type { FilterDef } from '@/types/filters';
 import {
   ATTENDANCE_STATUS_SELECTION,
   ESTABLISHED_DATE,
 } from '@/utils/constants';
+
+import { useAttendanceFilters } from '@/lib/nuqs';
+
+import Filters from '@/components/filters/Filters';
+import { useSelection } from '@/i18n/enums';
+import type { FilterDef } from '@/types/filters';
 
 export default function AttendanceFilters() {
   const [values, setSearchParams] = useAttendanceFilters();

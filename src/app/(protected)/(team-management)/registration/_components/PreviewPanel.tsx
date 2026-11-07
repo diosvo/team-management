@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-
+import { useTranslations } from 'next-intl';
 import { Box, Button, HStack, Spinner, Text } from '@chakra-ui/react';
 import {
   Eye,
@@ -10,17 +10,14 @@ import {
   Save,
   Table as TableIcon,
 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 
 import DataTable, { type Column } from '@/components/DataTable';
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { toaster } from '@/components/ui/toaster';
-
-import useTableState from '@/hooks/use-table-state';
-
 import type { League } from '@/drizzle/schema';
 import type { User } from '@/drizzle/schema/user';
+import useTableState from '@/hooks/use-table-state';
 
 import { COLUMNS, downloadCsv, downloadPdf, toRow } from '../_helpers/roster';
 

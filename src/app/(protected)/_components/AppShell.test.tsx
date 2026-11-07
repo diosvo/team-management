@@ -1,5 +1,7 @@
 import type React from 'react';
 
+import { useSessionContext } from '@/providers/session';
+import { LOGIN_PATH } from '@/routes';
 import {
   createSessionMock,
   createToasterMock,
@@ -8,9 +10,6 @@ import {
   screen,
   setupTestLifecycle,
 } from '@/test/utilities';
-
-import { useSessionContext } from '@/providers/session';
-import { LOGIN_PATH } from '@/routes';
 
 import AppShell from './AppShell';
 

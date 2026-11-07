@@ -1,6 +1,5 @@
 'use client';
 
-import { usePathname, useRouter } from 'next/navigation';
 import {
   useEffect,
   useMemo,
@@ -8,12 +7,14 @@ import {
   useState,
   useSyncExternalStore,
 } from 'react';
-
+import { usePathname, useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import {
   Button,
+  createListCollection,
   Dialog,
-  HStack,
   Highlight,
+  HStack,
   Icon,
   IconButton,
   Input,
@@ -22,10 +23,9 @@ import {
   Portal,
   Stack,
   Text,
-  createListCollection,
 } from '@chakra-ui/react';
+import { head } from 'es-toolkit';
 import { Lightbulb, Search, TextSearch } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 
 import { CloseButton } from '@/components/ui/close-button';
 import usePermissions from '@/hooks/use-permissions';
@@ -37,12 +37,12 @@ import {
   useRecentPages,
 } from '../_helpers/recent-pages';
 import {
-  SEARCH_ENTRIES,
+  type IndexedEntry,
   indexEntry,
   matchEntry,
   rankPages,
+  SEARCH_ENTRIES,
   searchTargets,
-  type IndexedEntry,
 } from '../_helpers/search';
 
 const SHORTCUTS = [
@@ -300,7 +300,9 @@ function SearchPalette({
               {group === 'searchIn' ? (
                 <HStack gap={1.5}>
                   <TextSearch size={14} />
-                  {tSearch('searchIn', { term: groupItems[0].term! })}
+                  {tSearch('searchIn', {
+                    term: head(groupItems)!.term as string,
+                  })}
                 </HStack>
               ) : (
                 tSearch(group as 'recent' | 'pages')

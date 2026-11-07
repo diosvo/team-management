@@ -12,9 +12,10 @@ import {
 
 import { AssetCategory, AssetCondition, enumValues } from '@/utils/enum';
 
-import { created_at, updated_at } from '../helpers';
 import { TeamTable } from './team';
 import { type User, UserTable } from './user';
+
+import { created_at, updated_at } from '../helpers';
 
 export const assetConditionEnum = pgEnum(
   'asset_condition',

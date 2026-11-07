@@ -23,7 +23,7 @@ sequenceDiagram
     participant App
     participant Resend
 
-    Admin->>App: addUser (roster:create)
+    Admin->>App: createUser (roster:create)
     App->>App: signUpEmail với mật khẩu tạm, thêm dòng player/coach
     App->>Resend: requestPasswordReset → "Create a new password"
     Resend-->>Member: Link kèm token, redirectTo /new-password

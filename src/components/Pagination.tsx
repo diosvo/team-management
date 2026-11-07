@@ -1,12 +1,12 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import {
   ButtonGroup,
-  Pagination as ChakraPagination,
   IconButton,
+  Pagination as ChakraPagination,
 } from '@chakra-ui/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 
 import { Tooltip } from '@/components/ui/tooltip';
 

@@ -1,11 +1,11 @@
 import {
-  SEARCH_ENTRIES,
+  type IndexedEntry,
   indexEntry,
   matchEntry,
   normalize,
   rankPages,
+  SEARCH_ENTRIES,
   searchTargets,
-  type IndexedEntry,
 } from './search';
 import { SIDEBAR_GROUP } from './utils';
 

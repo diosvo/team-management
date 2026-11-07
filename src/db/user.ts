@@ -1,4 +1,6 @@
-import { and, eq, isNull, ne } from 'drizzle-orm';
+import { and, eq, inArray, isNull, ne } from 'drizzle-orm';
+
+import { UserRole, UserState } from '@/utils/enum';
 
 import db from '@/drizzle';
 import {
@@ -14,8 +16,6 @@ import {
 import { type InsertUser, type User, UserTable } from '@/drizzle/schema/user';
 import { type UserTeam, UserTeamTable } from '@/drizzle/schema/user-team';
 
-import { UserRole, UserState } from '@/utils/enum';
-
 /**
  * The subset of the user row the roster table renders. The full row carries
  * PII (dob, phone, citizen id) that must not cross the RSC boundary.
@@ -29,7 +29,7 @@ export type RosterUser = Pick<
     coach: Nullish<Pick<Coach, 'position'>>;
   }>;
 
-export async function getRosterUsers(
+export async function selectRosterUsers(
   team_id: string,
 ): Promise<Array<RosterUser>> {
   try {
@@ -65,7 +65,7 @@ export async function getRosterUsers(
   }
 }
 
-export async function getUsers(team_id: string): Promise<Array<User>> {
+export async function selectUsers(team_id: string): Promise<Array<User>> {
   try {
     return await db.query.UserTable.findMany({
       where: and(
@@ -82,14 +82,29 @@ export async function getUsers(team_id: string): Promise<Array<User>> {
   }
 }
 
-export async function fetchActivePlayers(team_id: string) {
+/**
+ * What the player pickers need. Shared with every signed-in member, so it
+ * leaves out PII (dob, phone, citizen id); Registration fetches those
+ * server-side via `fetchRegistrationPlayers` for the selected players only.
+ */
+export type PlayerOption = Pick<User, 'id' | 'name' | 'image'> & {
+  player?: Nullish<Player>;
+};
+
+const activePlayersOf = (team_id: string) =>
+  and(
+    eq(UserTable.team_id, team_id),
+    eq(UserTable.role, UserRole.PLAYER),
+    eq(UserTable.state, UserState.ACTIVE),
+  );
+
+export async function selectActivePlayers(
+  team_id: string,
+): Promise<Array<PlayerOption>> {
   try {
     return await db.query.UserTable.findMany({
-      where: and(
-        eq(UserTable.team_id, team_id),
-        eq(UserTable.role, UserRole.PLAYER),
-        eq(UserTable.state, UserState.ACTIVE),
-      ),
+      columns: { id: true, name: true, image: true },
+      where: activePlayersOf(team_id),
       with: {
         player: true,
       },
@@ -99,7 +114,28 @@ export async function fetchActivePlayers(team_id: string) {
   }
 }
 
-export async function getTeamHeadCoach(team_id: string) {
+/**
+ * @description Full rows (incl. PII) for the given active players of a team,
+ * used by the registration export. Ids outside the team are ignored.
+ */
+export async function selectRegistrationPlayers(
+  team_id: string,
+  ids: Array<string>,
+): Promise<Array<User>> {
+  if (ids.length === 0) return [];
+  try {
+    return await db.query.UserTable.findMany({
+      where: and(activePlayersOf(team_id), inArray(UserTable.id, ids)),
+      with: {
+        player: true,
+      },
+    });
+  } catch {
+    return [];
+  }
+}
+
+export async function selectTeamHeadCoach(team_id: string) {
   try {
     const coach = await db
       .select({
@@ -118,7 +154,7 @@ export async function getTeamHeadCoach(team_id: string) {
   }
 }
 
-export async function getUserById(id: string): Promise<Nullish<User>> {
+export async function selectUserById(id: string): Promise<Nullish<User>> {
   try {
     const user = await db.query.UserTable.findFirst({
       where: eq(UserTable.id, id),

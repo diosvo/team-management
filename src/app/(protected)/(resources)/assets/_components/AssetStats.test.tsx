@@ -1,3 +1,5 @@
+import { AssetCondition } from '@/utils/enum';
+
 import { MOCK_ASSET_STATS } from '@/test/mocks/asset';
 import {
   axeInteractiveStat,
@@ -7,8 +9,6 @@ import {
   screen,
   setupTestLifecycle,
 } from '@/test/utilities';
-
-import { AssetCondition } from '@/utils/enum';
 
 import AssetStats from './AssetStats';
 

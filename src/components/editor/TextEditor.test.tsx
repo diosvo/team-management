@@ -1,10 +1,13 @@
+import { head } from 'es-toolkit';
+
+import { editorToPlainText } from '@/components/editor/plain-text';
 import {
   asEditor,
   createMockEditor,
   editorOptions,
   emitUpdate,
-  useEditorMock,
   type MockEditor,
+  useEditorMock,
 } from '@/test/mocks/tiptap';
 import {
   act,
@@ -14,8 +17,6 @@ import {
   setupTestLifecycle,
   waitFor,
 } from '@/test/utilities';
-
-import { editorToPlainText } from '@/components/editor/plain-text';
 
 import TextEditor from './TextEditor';
 
@@ -310,9 +311,11 @@ describe('TextEditor', () => {
       await clickButton(user, 'Copy');
 
       expect(write).toHaveBeenCalledOnce();
-      const [item] = write.mock.calls[0][0] as unknown as FakeClipboardItem[];
+      const item = head(
+        write.mock.calls[0]?.[0] as unknown as FakeClipboardItem[],
+      )!;
       expect(Object.keys(item.items)).toEqual(['text/html', 'text/plain']);
-      expect(item.items['text/html'].type).toBe('text/html');
+      expect(item.items['text/html']?.type).toBe('text/html');
       expect(editor.getHTML).toHaveBeenCalled();
     });
 

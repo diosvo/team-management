@@ -1,9 +1,9 @@
+import { getUpcomingMatches } from '@/actions/analytics';
 import { MOCK_LEAGUE } from '@/test/mocks/league';
 import { MOCK_LOCATION, MOCK_LOCATION_2 } from '@/test/mocks/location';
 import { MOCK_MATCH } from '@/test/mocks/match';
 import { renderWithUI, screen, setupTestLifecycle } from '@/test/utilities';
 
-import { getUpcomingMatches } from '@/actions/analytics';
 import UpcomingMatches from './UpcomingMatches';
 
 vi.mock('@/actions/analytics', () => ({

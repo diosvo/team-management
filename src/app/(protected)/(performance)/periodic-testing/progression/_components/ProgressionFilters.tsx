@@ -1,21 +1,21 @@
 'use client';
 
 import { useMemo } from 'react';
-
+import { useTranslations } from 'next-intl';
 import { createListCollection, HStack, Portal, Select } from '@chakra-ui/react';
 import { Activity } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 
-import Filters from '@/components/filters/Filters';
-
-import type { TestType } from '@/drizzle/schema';
-import { enumLabel, useSelection } from '@/i18n/enums';
-import { useProgressionFilters } from '@/lib/nuqs';
-import type { FilterDef } from '@/types/filters';
 import {
   PERFORMANCE_BAND_SELECTION,
   PROGRESS_STATUS_SELECTION,
 } from '@/utils/constants';
+
+import { useProgressionFilters } from '@/lib/nuqs';
+
+import Filters from '@/components/filters/Filters';
+import type { TestType } from '@/drizzle/schema';
+import { enumLabel, useSelection } from '@/i18n/enums';
+import type { FilterDef } from '@/types/filters';
 
 export default function ProgressionFilters({
   types,

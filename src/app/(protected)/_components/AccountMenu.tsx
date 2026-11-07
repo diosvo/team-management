@@ -1,15 +1,15 @@
 'use client';
 
+import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
-
+import { useLocale, useTranslations } from 'next-intl';
 import {
   Avatar,
-  Link as ChakraLink,
   Circle,
   type ColorPalette,
   Float,
+  Link as ChakraLink,
   Menu,
   Portal,
   SkeletonCircle,
@@ -27,17 +27,17 @@ import {
   MessageSquareHeart,
   UserRound,
 } from 'lucide-react';
-import { useLocale, useTranslations } from 'next-intl';
-
-import { setLocale } from '@/actions/locale';
-import { useUserAvatar } from '@/hooks/use-image';
-import authClient from '@/lib/auth-client';
-import { useSessionContext } from '@/providers/session';
-import { LOGIN_PATH } from '@/routes';
 
 import { TEAM_ID } from '@/utils/constants';
 import { UserRole } from '@/utils/enum';
 import { getColor } from '@/utils/helper';
+
+import authClient from '@/lib/auth-client';
+
+import { setLocale } from '@/actions/locale';
+import { useUserAvatar } from '@/hooks/use-image';
+import { useSessionContext } from '@/providers/session';
+import { LOGIN_PATH } from '@/routes';
 
 import FeedbackDialog from './FeedbackDialog';
 

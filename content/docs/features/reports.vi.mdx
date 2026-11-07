@@ -138,7 +138,7 @@ flowchart TD
 - **Lỗi hẳn vẫn dời `next_run_at`.** Muốn gửi lại, bạn bấm **Run now**.
 - **Báo lỗi.** Lần chạy theo lịch bị lỗi sẽ gửi email cho các HLV, admin và đội
   trưởng của đội.
-- **Thành công là xong trọn gói.** `completeReportRun` đóng lần chạy và dời
+- **Thành công là xong trọn gói.** `updateCompletedReportRun` đóng lần chạy và dời
   lịch trong cùng một transaction.
 - **Kỳ báo cáo tính theo giờ Việt Nam.** `intervalRange` dùng `scheduled_for`
   theo `DEFAULT_TIMEZONE`; 08:00 ngày 1 (vẫn là hôm trước theo UTC) vẫn lấy

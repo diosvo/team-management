@@ -1,4 +1,5 @@
 import { expectNoA11yViolations, renderWithUI, screen } from '@/test/utilities';
+
 import StepIndicator from './StepIndicator';
 
 describe('StepIndicator', () => {

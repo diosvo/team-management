@@ -8,7 +8,7 @@ export async function insertTestNote(note: InsertTestNote) {
 }
 
 /** The note a player already has for a test type: one per focus area. */
-export async function findTypeNote(player_id: string, type_id: string) {
+export async function selectTypeNote(player_id: string, type_id: string) {
   return await db.query.TestNoteTable.findFirst({
     columns: { note_id: true },
     where: and(
@@ -35,7 +35,7 @@ export async function updateTestNote(
     );
 }
 
-export async function findTestNote(note_id: string) {
+export async function selectTestNote(note_id: string) {
   return await db.query.TestNoteTable.findFirst({
     columns: { note_id: true, player_id: true },
     where: eq(TestNoteTable.note_id, note_id),

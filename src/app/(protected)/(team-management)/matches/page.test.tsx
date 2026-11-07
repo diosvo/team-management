@@ -1,12 +1,12 @@
+import { loadMatchFilters } from '@/lib/nuqs';
+
+import { getMatches } from '@/actions/match';
 import {
   expectNoA11yViolations,
   renderWithUI,
   screen,
   setupTestLifecycle,
 } from '@/test/utilities';
-
-import { getMatches } from '@/actions/match';
-import { loadMatchFilters } from '@/lib/nuqs';
 
 import MatchesPage, { generateMetadata } from './page';
 

@@ -1,7 +1,8 @@
+import '../docs.css';
+
+import type { PropsWithChildren } from 'react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import type { PropsWithChildren } from 'react';
-
 import { DocsLayout } from 'fumadocs-ui/layouts/docs';
 
 import { DocsProvider } from '../_components/provider';
@@ -9,8 +10,6 @@ import { isLanguage } from '../_lib/i18n';
 import { baseOptions } from '../_lib/layout.shared';
 import { appName } from '../_lib/shared';
 import { source } from '../_lib/source';
-
-import '../docs.css';
 
 export const metadata: Metadata = {
   title: {

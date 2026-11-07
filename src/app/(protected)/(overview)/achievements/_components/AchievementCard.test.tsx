@@ -1,8 +1,12 @@
-
 import { removeAchievement } from '@/actions/achievement';
+import type { AchievementWithRelations } from '@/db/achievement';
 import usePermissions from '@/hooks/use-permissions';
-
-import { MOCK_ACHIEVEMENT } from '@/test/mocks/achievement';
+import {
+  MOCK_ACHIEVEMENT_PLAYER,
+  MOCK_ACHIEVEMENT_WITH_RELATIONS,
+} from '@/test/mocks/achievement';
+import { MOCK_LEAGUE } from '@/test/mocks/league';
+import { MOCK_PLAYER, MOCK_USER } from '@/test/mocks/user';
 import {
   createPermissionsMock,
   renderWithUI,
@@ -10,8 +14,6 @@ import {
   setupTestLifecycle,
   waitFor,
 } from '@/test/utilities';
-
-import type { AchievementWithRelations } from '@/db/achievement';
 
 import AchievementCard from './AchievementCard';
 import { UpsertAchievement } from './UpsertAchievement';
@@ -31,15 +33,9 @@ vi.mock('./UpsertAchievement', () => ({
 }));
 
 const achievement: AchievementWithRelations = {
-  ...MOCK_ACHIEVEMENT,
+  ...MOCK_ACHIEVEMENT_WITH_RELATIONS,
   // Distinct from the "Champion" type badge so queries are unambiguous.
   title: 'Summer Champions',
-  league: {
-    name: 'Summer League',
-    start_date: '2024-01-01',
-    end_date: '2024-12-31',
-  },
-  player: null,
 };
 
 describe('AchievementCard', () => {
@@ -50,9 +46,11 @@ describe('AchievementCard', () => {
     item = achievement,
     { canManage = false }: { canManage?: boolean } = {},
   ) => {
-    mockUsePermissions.mockReturnValue(createPermissionsMock({
-      can: vi.fn(() => canManage),
-    }));
+    mockUsePermissions.mockReturnValue(
+      createPermissionsMock({
+        can: vi.fn(() => canManage),
+      }),
+    );
 
     return renderWithUI(<AchievementCard achievement={item} />);
   };
@@ -62,10 +60,10 @@ describe('AchievementCard', () => {
   test('renders the title, type icon and league period', () => {
     setup();
 
-    expect(screen.getByText('Summer Champions')).toBeInTheDocument();
+    expect(screen.getByText(achievement.title)).toBeInTheDocument();
     expect(screen.getByRole('img', { name: 'Champion' })).toBeInTheDocument();
     expect(
-      screen.getByText('Summer League • 01/01/2024 – 31/12/2024'),
+      screen.getByText(`${MOCK_LEAGUE.name} • 01/01/2024 – 31/12/2024`),
     ).toBeInTheDocument();
   });
 
@@ -78,15 +76,14 @@ describe('AchievementCard', () => {
   test('names the awarded player instead of the league for individual honors', () => {
     setup({
       ...achievement,
-      player_id: 'player-123',
-      player: {
-        id: 'player-123',
-        user: { id: 'player-123', name: 'Player Name', image: null },
-      },
+      player_id: MOCK_PLAYER.id,
+      player: MOCK_ACHIEVEMENT_PLAYER,
     });
 
-    expect(screen.getByText(/Player Name/)).toBeInTheDocument();
-    expect(screen.queryByText(/Summer League/)).not.toBeInTheDocument();
+    expect(screen.getByText(new RegExp(MOCK_USER.name))).toBeInTheDocument();
+    expect(
+      screen.queryByText(new RegExp(MOCK_LEAGUE.name)),
+    ).not.toBeInTheDocument();
   });
 
   // The actions only surface on hover (desktop) and are dropped on mobile, so

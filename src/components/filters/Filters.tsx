@@ -1,17 +1,15 @@
 import type { ReactNode } from 'react';
-
+import { useTranslations } from 'next-intl';
 import { Badge, Box, Button, Drawer, HStack, Portal } from '@chakra-ui/react';
 import { SlidersHorizontal } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+
+import { countActiveFilters } from '@/utils/filters';
 
 import { DateRangePicker } from '@/components/date-picker/DateRangePicker';
 import SearchInput from '@/components/SearchInput';
 import { CloseButton } from '@/components/ui/close-button';
-
 import useSyncedState from '@/hooks/use-synced-state';
-
 import type { FilterControl, FilterDef } from '@/types/filters';
-import { countActiveFilters } from '@/utils/filters';
 
 import CheckboxGroupFilter from './CheckboxGroupFilter';
 import { CONTROLS_ROW_PROPS, SEARCH_SLOT_PROPS, TOOLBAR_PROPS } from './layout';
@@ -150,7 +148,8 @@ export default function Filters<T extends Record<string, unknown>>({
                             key={def.key}
                             label={def.label}
                             options={options}
-                            value={draft[def.key]}
+                            // `pickArrays` fills every key
+                            value={draft[def.key] as Array<string>}
                             onChange={(value) => setField(def.key, value)}
                           />
                         );

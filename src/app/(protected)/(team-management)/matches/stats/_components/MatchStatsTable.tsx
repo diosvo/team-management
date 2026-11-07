@@ -1,8 +1,9 @@
-import { useTranslations } from 'next-intl';
 import { memo } from 'react';
-
+import { useTranslations } from 'next-intl';
 import { chakra, Table, Text } from '@chakra-ui/react';
 import { ClipboardList } from 'lucide-react';
+
+import { MATCH_STAT_FIELDS, type MatchStatField } from '@/utils/constants';
 
 import StatAbbr from '@/components/StatAbbr';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -11,8 +12,6 @@ import {
   NumberInputRoot,
 } from '@/components/ui/number-input';
 import { Tooltip } from '@/components/ui/tooltip';
-
-import { MATCH_STAT_FIELDS, type MatchStatField } from '@/utils/constants';
 
 export type GridPlayer = {
   id: string;

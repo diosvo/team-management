@@ -1,3 +1,6 @@
+import { formatDate } from '@/utils/datetime';
+
+import { updatePersonalInfo } from '@/actions/user';
 import { MOCK_USER } from '@/test/mocks/user';
 import {
   createToasterMock,
@@ -8,9 +11,6 @@ import {
   waitFor,
   waitForStable,
 } from '@/test/utilities';
-
-import { updatePersonalInfo } from '@/actions/user';
-import { formatDate } from '@/utils/datetime';
 
 import PersonalInfo from './PersonalInfo';
 

@@ -1,18 +1,19 @@
 'use client';
 
-import { ShoppingCart } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { ShoppingCart } from 'lucide-react';
 
-import Filters from '@/components/filters/Filters';
-
-import { useSelection } from '@/i18n/enums';
-import { useAssetFilters } from '@/lib/nuqs';
-import type { FilterDef } from '@/types/filters';
 import {
   ASSET_CATEGORY_SELECTION,
   ASSET_CONDITION_SELECTION,
   ESTABLISHED_DATE,
 } from '@/utils/constants';
+
+import { useAssetFilters } from '@/lib/nuqs';
+
+import Filters from '@/components/filters/Filters';
+import { useSelection } from '@/i18n/enums';
+import type { FilterDef } from '@/types/filters';
 
 export default function AssetFilters() {
   const t = useTranslations('assets');

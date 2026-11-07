@@ -1,10 +1,9 @@
 import { and, eq, inArray, or } from 'drizzle-orm';
 
-import db from '@/drizzle';
-import { PlayerTable, UserTable } from '@/drizzle/schema';
-
 import { EmailStatus, ReportStatus, UserRole } from '@/utils/enum';
 
+import db from '@/drizzle';
+import { PlayerTable, UserTable } from '@/drizzle/schema';
 import {
   mockDeleteSuccess,
   mockInsertReturningSuccess,
@@ -18,23 +17,23 @@ import {
 import { MOCK_TEAM } from '@/test/mocks/team';
 
 import {
-  claimDueSchedules,
-  completeReportRun,
   deleteReportSchedules,
-  fetchExpiredReports,
-  fetchReportHistory,
-  fetchReportRecipients,
-  fetchDefaultRecipientEmails,
-  fetchReportSchedules,
-  getReportById,
-  getReportSchedule,
   insertReportHistory,
   insertReportSchedule,
-  markReportsExpired,
-  reclaimStaleReportRun,
+  selectDefaultRecipientEmails,
+  selectDueSchedulesForUpdate,
+  selectExpiredReports,
+  selectReportById,
+  selectReportHistory,
+  selectReportRecipients,
+  selectReportSchedule,
+  selectReportSchedules,
+  updateCompletedReportRun,
   updateDeliveryStatus,
+  updateExpiredReports,
   updateReportHistory,
   updateReportSchedule,
+  updateStaleReportRun,
 } from './report';
 
 vi.mock('@/drizzle', () => ({
@@ -120,7 +119,7 @@ function mockSelectDistinctFailure(error: unknown) {
   return { mockFrom, mockLeftJoin, mockWhere };
 }
 
-describe('fetchReportRecipients', () => {
+describe('selectReportRecipients', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -130,7 +129,7 @@ describe('fetchReportRecipients', () => {
       MOCK_REPORT_RECIPIENTS as never,
     );
 
-    const result = await fetchReportRecipients(MOCK_TEAM.team_id);
+    const result = await selectReportRecipients(MOCK_TEAM.team_id);
 
     expect(result).toEqual(MOCK_REPORT_RECIPIENTS);
     // Verify query construction
@@ -150,13 +149,13 @@ describe('fetchReportRecipients', () => {
       new Error('Database error'),
     );
 
-    const result = await fetchReportRecipients(MOCK_TEAM.team_id);
+    const result = await selectReportRecipients(MOCK_TEAM.team_id);
 
     expect(result).toEqual([]);
   });
 });
 
-describe('fetchDefaultRecipientEmails', () => {
+describe('selectDefaultRecipientEmails', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -167,7 +166,7 @@ describe('fetchDefaultRecipientEmails', () => {
     const { mockFrom, mockLeftJoin, mockWhere } =
       mockSelectDistinctSuccess(rows);
 
-    const result = await fetchDefaultRecipientEmails(MOCK_TEAM.team_id);
+    const result = await selectDefaultRecipientEmails(MOCK_TEAM.team_id);
 
     expect(result).toEqual(emails);
     // Verify query construction
@@ -191,7 +190,7 @@ describe('fetchDefaultRecipientEmails', () => {
   test('returns empty array when no default recipients exist', async () => {
     mockSelectDistinctSuccess([]);
 
-    const result = await fetchDefaultRecipientEmails(MOCK_TEAM.team_id);
+    const result = await selectDefaultRecipientEmails(MOCK_TEAM.team_id);
 
     expect(result).toEqual([]);
   });
@@ -199,13 +198,13 @@ describe('fetchDefaultRecipientEmails', () => {
   test('returns empty array when database query fails', async () => {
     mockSelectDistinctFailure(new Error('Database error'));
 
-    const result = await fetchDefaultRecipientEmails(MOCK_TEAM.team_id);
+    const result = await selectDefaultRecipientEmails(MOCK_TEAM.team_id);
 
     expect(result).toEqual([]);
   });
 });
 
-describe('fetchReportSchedules', () => {
+describe('selectReportSchedules', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -215,7 +214,7 @@ describe('fetchReportSchedules', () => {
       MOCK_REPORT_SCHEDULE,
     ]);
 
-    const result = await fetchReportSchedules(MOCK_TEAM.team_id);
+    const result = await selectReportSchedules(MOCK_TEAM.team_id);
 
     expect(result).toEqual([MOCK_REPORT_SCHEDULE]);
   });
@@ -225,13 +224,13 @@ describe('fetchReportSchedules', () => {
       new Error('db error'),
     );
 
-    const result = await fetchReportSchedules(MOCK_TEAM.team_id);
+    const result = await selectReportSchedules(MOCK_TEAM.team_id);
 
     expect(result).toEqual([]);
   });
 });
 
-describe('claimDueSchedules', () => {
+describe('selectDueSchedulesForUpdate', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -254,7 +253,7 @@ describe('claimDueSchedules', () => {
   test('returns due schedules claimed under a row lock', async () => {
     const { forFn } = mockTransaction([MOCK_REPORT_SCHEDULE]);
 
-    const result = await claimDueSchedules(20);
+    const result = await selectDueSchedulesForUpdate(20);
 
     expect(result).toEqual([MOCK_REPORT_SCHEDULE]);
     expect(forFn).toHaveBeenCalledWith('update', { skipLocked: true });
@@ -263,13 +262,13 @@ describe('claimDueSchedules', () => {
   test('returns an empty array when the transaction fails', async () => {
     vi.mocked(db.transaction).mockRejectedValue(new Error('db error'));
 
-    const result = await claimDueSchedules(20);
+    const result = await selectDueSchedulesForUpdate(20);
 
     expect(result).toEqual([]);
   });
 });
 
-describe('getReportSchedule', () => {
+describe('selectReportSchedule', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -279,7 +278,7 @@ describe('getReportSchedule', () => {
       MOCK_REPORT_SCHEDULE,
     );
 
-    const result = await getReportSchedule(
+    const result = await selectReportSchedule(
       MOCK_TEAM.team_id,
       MOCK_REPORT_SCHEDULE.schedule_id,
     );
@@ -335,7 +334,7 @@ describe('deleteReportSchedules', () => {
   });
 });
 
-describe('fetchReportHistory', () => {
+describe('selectReportHistory', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -345,7 +344,7 @@ describe('fetchReportHistory', () => {
       MOCK_REPORT_HISTORY,
     ]);
 
-    const result = await fetchReportHistory(MOCK_TEAM.team_id);
+    const result = await selectReportHistory(MOCK_TEAM.team_id);
 
     expect(result).toEqual([MOCK_REPORT_HISTORY]);
   });
@@ -355,13 +354,13 @@ describe('fetchReportHistory', () => {
       new Error('db error'),
     );
 
-    const result = await fetchReportHistory(MOCK_TEAM.team_id);
+    const result = await selectReportHistory(MOCK_TEAM.team_id);
 
     expect(result).toEqual([]);
   });
 });
 
-describe('getReportById', () => {
+describe('selectReportById', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -371,7 +370,7 @@ describe('getReportById', () => {
       MOCK_REPORT_HISTORY,
     );
 
-    const result = await getReportById(MOCK_REPORT_HISTORY.report_id);
+    const result = await selectReportById(MOCK_REPORT_HISTORY.report_id);
 
     expect(result).toEqual(MOCK_REPORT_HISTORY);
   });
@@ -410,7 +409,7 @@ describe('updateReportHistory', () => {
   });
 });
 
-describe('reclaimStaleReportRun', () => {
+describe('updateStaleReportRun', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -425,7 +424,7 @@ describe('reclaimStaleReportRun', () => {
     ]);
     mockWhere.mockReturnValue({ returning: mockReturning });
 
-    const result = await reclaimStaleReportRun(
+    const result = await updateStaleReportRun(
       MOCK_REPORT_SCHEDULE.schedule_id,
       MOCK_REPORT_HISTORY.scheduled_for!,
       new Date('2026-09-01T02:00:00Z'),
@@ -441,7 +440,7 @@ describe('reclaimStaleReportRun', () => {
     const { mockWhere } = mockUpdateSuccess(undefined);
     mockWhere.mockReturnValue({ returning: vi.fn().mockResolvedValue([]) });
 
-    const result = await reclaimStaleReportRun(
+    const result = await updateStaleReportRun(
       MOCK_REPORT_SCHEDULE.schedule_id,
       MOCK_REPORT_HISTORY.scheduled_for!,
       new Date('2026-09-01T02:00:00Z'),
@@ -451,7 +450,7 @@ describe('reclaimStaleReportRun', () => {
   });
 });
 
-describe('completeReportRun', () => {
+describe('updateCompletedReportRun', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -471,7 +470,7 @@ describe('completeReportRun', () => {
       callback({ update } as never),
     );
 
-    await completeReportRun(
+    await updateCompletedReportRun(
       MOCK_REPORT_HISTORY.report_id,
       { status: ReportStatus.SUCCESS },
       MOCK_REPORT_SCHEDULE.schedule_id,
@@ -501,7 +500,7 @@ describe('updateDeliveryStatus', () => {
   });
 });
 
-describe('fetchExpiredReports', () => {
+describe('selectExpiredReports', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -511,7 +510,7 @@ describe('fetchExpiredReports', () => {
       MOCK_REPORT_HISTORY,
     ]);
 
-    const result = await fetchExpiredReports(new Date('2026-12-01'));
+    const result = await selectExpiredReports(new Date('2026-12-01'));
 
     expect(result).toEqual([MOCK_REPORT_HISTORY]);
   });
@@ -521,13 +520,13 @@ describe('fetchExpiredReports', () => {
       new Error('db error'),
     );
 
-    const result = await fetchExpiredReports(new Date('2026-12-01'));
+    const result = await selectExpiredReports(new Date('2026-12-01'));
 
     expect(result).toEqual([]);
   });
 });
 
-describe('markReportsExpired', () => {
+describe('updateExpiredReports', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -535,7 +534,7 @@ describe('markReportsExpired', () => {
   test('marks the given reports expired and drops their blob reference', async () => {
     const { mockSet } = mockUpdateSuccess(undefined);
 
-    await markReportsExpired([MOCK_REPORT_HISTORY.report_id]);
+    await updateExpiredReports([MOCK_REPORT_HISTORY.report_id]);
 
     expect(mockSet).toHaveBeenCalledWith({
       status: ReportStatus.EXPIRED,

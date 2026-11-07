@@ -1,17 +1,18 @@
+import { head, omit } from 'es-toolkit';
+
+import { MOCK_SAVED_REGISTRATION } from '@/test/mocks/registration';
 import { act, renderHook } from '@/test/utilities';
 
-import { useSavedRegistrations } from './useSavedRegistrations';
+import { useSavedRegistrations } from './use-saved-registrations';
 
 const STORAGE_KEY = 'registration:saved';
 
+// What the page hands to `save`; the hook assigns the id.
 const newEntry = (overrides = {}) => ({
-  leagueName: 'Summer League',
-  playerCount: 10,
-  filename: 'roster.pdf',
-  pdfBase64: 'base64data',
-  savedAt: '',
+  ...omit(MOCK_SAVED_REGISTRATION, ['id']),
   ...overrides,
 });
+const NAME = MOCK_SAVED_REGISTRATION.leagueName;
 
 /**
  * Node 26's own global `localStorage` is gated behind `--localstorage-file`
@@ -86,9 +87,9 @@ describe('useSavedRegistrations', () => {
 
     expect(result.current.items).toHaveLength(1);
     expect(result.current.items[0]).toMatchObject({
-      leagueName: 'Summer League',
+      leagueName: NAME,
     });
-    expect(result.current.items[0].id).toBeTruthy();
+    expect(head(result.current.items)!.id).toBeTruthy();
 
     const persisted = JSON.parse(localStorage.getItem(STORAGE_KEY)!);
     expect(persisted).toHaveLength(1);
@@ -100,7 +101,7 @@ describe('useSavedRegistrations', () => {
     act(() => {
       result.current.save(newEntry());
     });
-    const id = result.current.items[0].id;
+    const id = head(result.current.items)!.id;
 
     act(() => {
       result.current.remove(id);
@@ -113,26 +114,20 @@ describe('useSavedRegistrations', () => {
   test('getUniqueName returns the base name when it is not taken', () => {
     const { result } = renderHook(() => useSavedRegistrations());
 
-    expect(result.current.getUniqueName('Summer League')).toBe(
-      'Summer League',
-    );
+    expect(result.current.getUniqueName(NAME)).toBe(NAME);
   });
 
   test('getUniqueName appends an incrementing suffix for collisions', () => {
     const { result } = renderHook(() => useSavedRegistrations());
 
     act(() => {
-      result.current.save(newEntry({ leagueName: 'Summer League' }));
+      result.current.save(newEntry({ leagueName: NAME }));
     });
     act(() => {
-      result.current.save(
-        newEntry({ leagueName: 'Summer League (2)' }),
-      );
+      result.current.save(newEntry({ leagueName: `${NAME} (2)` }));
     });
 
-    expect(result.current.getUniqueName('Summer League')).toBe(
-      'Summer League (3)',
-    );
+    expect(result.current.getUniqueName(NAME)).toBe(`${NAME} (3)`);
   });
 
   test('save is best-effort when localStorage throws', () => {

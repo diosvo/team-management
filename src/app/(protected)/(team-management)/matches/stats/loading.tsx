@@ -1,5 +1,5 @@
-import { SimpleGrid, Skeleton } from '@chakra-ui/react';
 import { getTranslations } from 'next-intl/server';
+import { SimpleGrid, Skeleton } from '@chakra-ui/react';
 
 import PageTitle from '@/components/PageTitle';
 

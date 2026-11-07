@@ -1,5 +1,9 @@
-import { getCookieCache, getSessionCookie } from 'better-auth/cookies';
 import { type NextRequest, NextResponse } from 'next/server';
+import { getCookieCache, getSessionCookie } from 'better-auth/cookies';
+
+import { COOKIE } from '@/utils/constants';
+import type { UserRole } from '@/utils/enum';
+import { Status } from '@/utils/response';
 
 import {
   AUTH_ROUTES,
@@ -8,9 +12,7 @@ import {
   PUBLIC_ROUTES,
   RESOURCES,
 } from '@/routes';
-import { COOKIE } from '@/utils/constants';
-import type { UserRole } from '@/utils/enum';
-import { Status } from '@/utils/response';
+
 import { docsUrl, i18n, parseDocsPath } from './app/docs/_lib/i18n';
 import { can } from './utils/permissions';
 

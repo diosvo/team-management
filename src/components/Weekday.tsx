@@ -1,7 +1,7 @@
 'use client';
 
-import { chakra, type HTMLChakraProps } from '@chakra-ui/react';
 import { useLocale } from 'next-intl';
+import { chakra, type HTMLChakraProps } from '@chakra-ui/react';
 
 import { formatDay } from '@/utils/datetime';
 

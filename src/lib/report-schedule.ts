@@ -1,22 +1,23 @@
 import { TZDate } from '@date-fns/tz';
+import { head } from 'es-toolkit';
+import { nth } from 'es-toolkit/compat';
 import { delay } from 'es-toolkit/promise';
+
+import { DEFAULT_TIMEZONE, reportDownloadUrl } from '@/utils/constants';
+import { formatDateRange, intervalRange } from '@/utils/datetime';
+import { Interval, ReportStatus, ReportTrigger } from '@/utils/enum';
 
 import AnalyticsReport from '@/app/(protected)/(overview)/reports/_components/AnalyticsReport';
 import EmailLayout from '@/components/common/EmailLayout';
-
 import { isUniqueViolation } from '@/db/pg-error';
 import {
-  completeReportRun,
-  fetchDefaultRecipientEmails,
   insertReportHistory,
-  reclaimStaleReportRun,
+  selectDefaultRecipientEmails,
+  updateCompletedReportRun,
   updateReportHistory,
+  updateStaleReportRun,
 } from '@/db/report';
 import type { ReportSchedule } from '@/drizzle/schema';
-
-import { DEFAULT_TIMEZONE, reportDownloadUrl } from '@/utils/constants';
-import { Interval, ReportStatus, ReportTrigger } from '@/utils/enum';
-import { formatDateRange, intervalRange } from '@/utils/datetime';
 
 import {
   dashboardPath,
@@ -123,17 +124,20 @@ export async function executeSchedule({
   // Step memoization across retries: a Resend failure must not re-render.
   let pathname: string | null = null;
   try {
-    [{ report_id }] = await insertReportHistory({
-      team_id,
-      schedule_id,
-      scheduled_for,
-      interval,
-      period,
-      trigger,
-      status: ReportStatus.PENDING,
-      attempts: 1,
-      started_at: new Date(),
-    });
+    const inserted = head(
+      await insertReportHistory({
+        team_id,
+        schedule_id,
+        scheduled_for,
+        interval,
+        period,
+        trigger,
+        status: ReportStatus.PENDING,
+        attempts: 1,
+        started_at: new Date(),
+      }),
+    )!;
+    report_id = inserted.report_id;
   } catch (error) {
     if (!isUniqueViolation(error, 'unique_report_run_occurrence')) {
       return {
@@ -143,7 +147,7 @@ export async function executeSchedule({
       };
     }
 
-    const stale = await reclaimStaleReportRun(
+    const stale = await updateStaleReportRun(
       schedule_id,
       scheduled_for,
       new Date(Date.now() - STALE_RUN_MS),
@@ -195,7 +199,7 @@ export async function executeSchedule({
       }
 
       // 4. Success: close the run and advance the schedule atomically.
-      await completeReportRun(
+      await updateCompletedReportRun(
         report_id,
         {
           status: ReportStatus.SUCCESS,
@@ -212,7 +216,8 @@ export async function executeSchedule({
       return { schedule_id, outcome: 'sent', report_id };
     } catch (error) {
       lastError = error;
-      if (attempt < MAX_ATTEMPTS) await delay(RETRY_DELAYS_MS[attempt - 1]);
+      if (attempt < MAX_ATTEMPTS)
+        await delay(nth(RETRY_DELAYS_MS, attempt - 1)!);
     }
   }
 
@@ -220,7 +225,7 @@ export async function executeSchedule({
   //    tick there is no "retry tomorrow"; a human recovers via "Run now".
   const message = (lastError as Error)?.message ?? String(lastError);
   try {
-    await completeReportRun(
+    await updateCompletedReportRun(
       report_id,
       {
         status: ReportStatus.FAILED,
@@ -254,7 +259,7 @@ async function notifyFailure(
   origin: string,
 ) {
   try {
-    const emails = await fetchDefaultRecipientEmails(schedule.team_id);
+    const emails = await selectDefaultRecipientEmails(schedule.team_id);
     if (emails.length === 0) return;
 
     await sendEmail({

@@ -1,9 +1,10 @@
 import { DatePicker as ChakraDatePicker } from '@chakra-ui/react';
 import { format } from 'date-fns';
 
-import { renderWithUI, screen } from '@/test/utilities';
 import { DEFAULT_DATE_FORMAT } from '@/utils/constants';
-import { getPresets, type DateSelection } from '@/utils/datetime';
+import { type DateSelection, getPresets } from '@/utils/datetime';
+
+import { renderWithUI, screen } from '@/test/utilities';
 
 import {
   Calendar,

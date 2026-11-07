@@ -1,3 +1,5 @@
+import { removeTestNote } from '@/actions/progression';
+import usePermissions from '@/hooks/use-permissions';
 import {
   MOCK_GENERAL_NOTE,
   MOCK_PROGRESSION_TYPE,
@@ -12,10 +14,6 @@ import {
   setupTestLifecycle,
   waitFor,
 } from '@/test/utilities';
-
-import usePermissions from '@/hooks/use-permissions';
-
-import { removeTestNote } from '@/actions/progression';
 
 import { AddTestNote } from './AddTestNote';
 import TestNotes from './TestNotes';

@@ -1,6 +1,7 @@
+import { ALL } from './app';
+
 import { EmailStatus } from '../enum';
 import type { Selection } from '../type';
-import { ALL } from './app';
 
 export const SELECTABLE_EMAIL_STATUS = [
   EmailStatus.BOUNCED,

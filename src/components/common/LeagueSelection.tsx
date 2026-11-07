@@ -1,7 +1,6 @@
 'use client';
 
 import NextLink from 'next/link';
-
 import { Link as ChakraLink, type LinkProps } from '@chakra-ui/react';
 
 export function LeagueLink({

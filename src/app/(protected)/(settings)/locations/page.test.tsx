@@ -1,11 +1,10 @@
+import { getLocations } from '@/actions/location';
 import {
   expectNoA11yViolations,
   renderWithUI,
   screen,
   setupTestLifecycle,
 } from '@/test/utilities';
-
-import { getLocations } from '@/actions/location';
 
 import LocationsPage, { generateMetadata } from './page';
 

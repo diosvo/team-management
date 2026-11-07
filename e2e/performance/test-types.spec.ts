@@ -457,8 +457,6 @@ test.describe('Test Types - Edit', () => {
     const firstDataRow = page.getByRole('row').nth(1);
 
     if (await firstDataRow.isVisible()) {
-      const rowText = await firstDataRow.textContent();
-
       await firstDataRow.click();
 
       const dialog = page.getByRole('dialog');

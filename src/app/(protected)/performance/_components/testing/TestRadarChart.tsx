@@ -1,7 +1,7 @@
 'use client';
 
-import { Chart, useChart } from '@chakra-ui/charts';
 import { useTranslations } from 'next-intl';
+import { Chart, useChart } from '@chakra-ui/charts';
 import {
   PolarAngleAxis,
   PolarGrid,
