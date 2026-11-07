@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import type { NextRequest } from 'next/server';
 
 import { verifySession } from '@/actions/auth';
 import { getBrowser } from '@/lib/puppeteer';

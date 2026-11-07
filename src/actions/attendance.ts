@@ -3,7 +3,7 @@
 import { getTranslations } from 'next-intl/server';
 import { forbidden } from 'next/navigation';
 
-import { AttendanceStatus } from '@/utils/enum';
+import type { AttendanceStatus } from '@/utils/enum';
 import { hasPermissions } from '@/utils/permissions';
 import { ResponseFactory } from '@/utils/response';
 

@@ -36,7 +36,7 @@ import {
   INDIVIDUAL_ACHIEVEMENT_TYPES,
   YEARS_SELECTION,
 } from '@/utils/constants';
-import { AchievementType } from '@/utils/enum';
+import type { AchievementType } from '@/utils/enum';
 
 import {
   UpsertAchievementSchema,

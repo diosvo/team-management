@@ -1,4 +1,4 @@
-import { type ColorPalette } from '@chakra-ui/react';
+import type { ColorPalette } from '@chakra-ui/react';
 import { isFuture, isPast } from 'date-fns';
 import { unescape } from 'es-toolkit/string';
 

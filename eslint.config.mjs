@@ -19,6 +19,27 @@ const eslintConfig = defineConfig([
       'react/no-children-prop': 'off',
     },
   },
+  // `import type` when the whole import is types, inline `type` when mixed with values.
+  {
+    files: ['**/*.{ts,tsx}'],
+    // Reuse the plugin eslint-config-next registers (it isn't a direct dependency).
+    plugins: {
+      '@typescript-eslint': nextVitals.find(
+        (config) => config.plugins?.['@typescript-eslint'],
+      ).plugins['@typescript-eslint'],
+    },
+    rules: {
+      '@typescript-eslint/consistent-type-imports': [
+        'error',
+        {
+          prefer: 'type-imports',
+          fixStyle: 'inline-type-imports',
+          disallowTypeAnnotations: false,
+        },
+      ],
+      '@typescript-eslint/no-import-type-side-effects': 'error',
+    },
+  },
   prettier,
   // Override default ignores of eslint-config-next.
   globalIgnores([

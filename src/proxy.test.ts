@@ -1,5 +1,5 @@
 import { getCookieCache, getSessionCookie } from 'better-auth/cookies';
-import { NextRequest, type NextResponse } from 'next/server';
+import type { NextRequest, NextResponse } from 'next/server';
 
 import { DEFAULT_LOGIN_REDIRECT, LOGIN_PATH } from '@/routes';
 import { UserRole } from '@/utils/enum';

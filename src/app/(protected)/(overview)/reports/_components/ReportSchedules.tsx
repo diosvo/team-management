@@ -22,7 +22,7 @@ import {
   runReportNow,
   toggleReportSchedule,
 } from '@/actions/report';
-import { ReportSchedule } from '@/drizzle/schema';
+import type { ReportSchedule } from '@/drizzle/schema';
 
 import {
   UPSERT_SCHEDULE_ID,

@@ -15,7 +15,7 @@ import type { User } from '@/drizzle/schema/user';
 import auth from '@/lib/auth';
 import { LOGIN_PATH } from '@/routes';
 
-import { UserRole } from '@/utils/enum';
+import type { UserRole } from '@/utils/enum';
 import {
   defineAbility,
   type Action,

@@ -1,6 +1,6 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 
 import env from '@env';
 
@@ -39,7 +39,10 @@ function isVerified(req: NextRequest, payload: string): boolean {
   if (!id || !timestamp || !signatures) return false;
 
   const sentAt = Number(timestamp) * 1000;
-  if (!Number.isFinite(sentAt) || Math.abs(Date.now() - sentAt) > TOLERANCE_MS) {
+  if (
+    !Number.isFinite(sentAt) ||
+    Math.abs(Date.now() - sentAt) > TOLERANCE_MS
+  ) {
     return false;
   }
 

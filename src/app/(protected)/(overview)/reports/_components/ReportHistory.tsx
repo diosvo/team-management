@@ -16,7 +16,7 @@ import { formatDatetime } from '@/utils/datetime';
 import { paginateData } from '@/utils/filters';
 import { getColor } from '@/utils/helper';
 
-import { ReportHistory as ReportHistoryRow } from '@/drizzle/schema';
+import type { ReportHistory as ReportHistoryRow } from '@/drizzle/schema';
 
 type Translator = ReturnType<typeof useTranslations<'reports.history'>>;
 type CommonTranslator = ReturnType<typeof useTranslations<'common'>>;
