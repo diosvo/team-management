@@ -1,7 +1,7 @@
-import { AttendanceStatus, enumUnion } from '@/utils/enum';
+import type { AttendanceStatus, enumUnion } from '@/utils/enum';
 
-import { Attendance } from '@/drizzle/schema/attendance';
-import { User } from '@/drizzle/schema/user';
+import type { Attendance } from '@/drizzle/schema/attendance';
+import type { User } from '@/drizzle/schema/user';
 
 export type AttendanceStatusValues = enumUnion<typeof AttendanceStatus>;
 

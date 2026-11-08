@@ -1,4 +1,4 @@
-import { between, Column, gte, SQL, sql } from 'drizzle-orm';
+import { between, type Column, gte, type SQL, sql } from 'drizzle-orm';
 
 import type { DateRange } from '@/types/common';
 import { toIsoDay } from '@/utils/datetime';

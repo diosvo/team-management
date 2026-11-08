@@ -12,7 +12,7 @@ import {
   reclaimStaleReportRun,
   updateReportHistory,
 } from '@/db/report';
-import { ReportSchedule } from '@/drizzle/schema';
+import type { ReportSchedule } from '@/drizzle/schema';
 
 import { DEFAULT_TIMEZONE, reportDownloadUrl } from '@/utils/constants';
 import { Interval, ReportStatus, ReportTrigger } from '@/utils/enum';

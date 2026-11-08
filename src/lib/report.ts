@@ -5,7 +5,7 @@ import { getBrowser } from '@/lib/puppeteer';
 import { uploadFile } from '@/lib/blob';
 
 import type { DateRange } from '@/types/common';
-import { Interval } from '@/utils/enum';
+import type { Interval } from '@/utils/enum';
 
 /** Days a generated report stays downloadable before the retention job prunes it. */
 export const RETENTION_DAYS = 90;

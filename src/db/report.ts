@@ -13,15 +13,15 @@ import {
 
 import db from '@/drizzle';
 import {
-  InsertReportHistory,
-  InsertReportSchedule,
+  type InsertReportHistory,
+  type InsertReportSchedule,
   PlayerTable,
   ReportHistoryTable,
   ReportScheduleTable,
   UserTable,
 } from '@/drizzle/schema';
 
-import { EmailStatus, ReportStatus, UserRole } from '@/utils/enum';
+import { type EmailStatus, ReportStatus, UserRole } from '@/utils/enum';
 
 /** Roles that always receive scheduled reports and are not user-selectable. */
 const DEFAULT_REPORT_ROLES = [UserRole.COACH, UserRole.SUPER_ADMIN];
