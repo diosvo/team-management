@@ -68,7 +68,7 @@ describe('ActivityTable', () => {
     setup();
 
     expect(
-      within(row('Main Gym · 2h')).getByText(formatDay('2026-03-02')),
+      within(row('Main Gym · 2h')).getByText(formatDay('2026-03-02', 'EEE')),
     ).toBeInTheDocument();
   });
 

@@ -101,7 +101,7 @@ export default function AccountMenu() {
           ) : (
             <Avatar.Root
               variant="outline"
-              size={{ base: 'xs', md: 'sm', lg: 'md' }}
+              size={{ base: 'xs', md: 'xs', lg: 'sm' }}
             >
               <Avatar.Fallback name={user.name} />
               <Avatar.Image src={image ?? undefined} />

@@ -5,6 +5,13 @@
 
 DROP INDEX "achievement_league_type_idx";--> statement-breakpoint
 ALTER TABLE "achievement" ADD COLUMN "team_id" uuid;--> statement-breakpoint
+DO $$
+ BEGIN
+   IF EXISTS (SELECT 1 FROM "achievement")
+      AND NOT EXISTS (SELECT 1 FROM "team" WHERE "is_default" = true) THEN
+     RAISE EXCEPTION '0020_scope_achievements_to_team: no default team found for achievement backfill';
+   END IF;
+END $$;--> statement-breakpoint
 UPDATE "achievement"
 SET "team_id" = (SELECT "team_id" FROM "team" WHERE "is_default" LIMIT 1);--> statement-breakpoint
 ALTER TABLE "achievement" ALTER COLUMN "team_id" SET NOT NULL;--> statement-breakpoint

@@ -119,10 +119,13 @@ export default function ActivityTable({
     {
       header: t('columns.date'),
       cell: (item) => (
-        <HStack gap={1} whiteSpace="nowrap">
-          <Weekday date={item.date} fontSize="sm" />
-          <Span color="gray.400">&bull;</Span>
-          <Span fontSize="sm">{formatDate(item.date)}</Span>
+        <HStack
+          whiteSpace="nowrap"
+          fontSize="sm"
+          fontVariantNumeric="tabular-nums"
+        >
+          <Span>{formatDate(item.date)}</Span>
+          <Weekday date={item.date} />
         </HStack>
       ),
     },

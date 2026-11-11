@@ -45,11 +45,13 @@ export default function Authorized({
   const [single] = actions;
 
   const allowed =
-    single !== undefined && actions.length === 1
-      ? can(resource, single)
-      : mode === 'all'
-        ? canAll(perms)
-        : canAny(perms);
+    actions.length === 0
+      ? false
+      : single !== undefined && actions.length === 1
+        ? can(resource, single)
+        : mode === 'all'
+          ? canAll(perms)
+          : canAny(perms);
 
   return <>{allowed ? children : fallback}</>;
 }

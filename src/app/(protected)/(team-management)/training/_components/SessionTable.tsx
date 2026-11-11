@@ -69,9 +69,10 @@ export default function SessionTable({
             onClick={(e) => e.stopPropagation()}
           >
             <HStack>
+              <Span fontVariantNumeric="tabular-nums">
+                {formatDate(item.date)}
+              </Span>
               <Weekday date={item.date} />
-              <Span color="gray.400">&bull;</Span>
-              <Span>{formatDate(item.date)}</Span>
             </HStack>
           </NextLink>
         </ChakraLink>

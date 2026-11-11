@@ -1,6 +1,6 @@
 {
   "boxScore": {
-    "activeOnly": "Only active players can be added; existing lines for other players are kept.",
+    "activeOnly": "Only active players can be added; others stay on the sheet.",
     "activeQuery": "active",
     "cellLabel": "{stat} for {name}",
     "emptyDescription": "Pick a match, then add the players who took the court.",

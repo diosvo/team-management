@@ -133,6 +133,7 @@ export default function GlobalSearch() {
         <Search />
       </IconButton>
       <Button
+        size="xs"
         hideBelow="md"
         variant="surface"
         width={{ md: 56, xl: 64 }}

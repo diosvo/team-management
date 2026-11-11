@@ -102,12 +102,11 @@ export default function MatchTable({
     {
       header: tc('date'),
       cell: (item) => (
-        <HStack gap={1}>
-          <Weekday date={item.date} fontSize="sm" />
+        <HStack fontSize="sm" fontVariantNumeric="tabular-nums">
+          <Span>{formatDate(item.date)}</Span>
+          <Weekday date={item.date} />
           <Span color="gray.400">&bull;</Span>
-          <Span fontSize="sm">{formatDate(item.date)}</Span>
-          <Span color="gray.400">&bull;</Span>
-          <Span fontSize="sm">{item.time}</Span>
+          <Span>{item.time}</Span>
         </HStack>
       ),
     },
