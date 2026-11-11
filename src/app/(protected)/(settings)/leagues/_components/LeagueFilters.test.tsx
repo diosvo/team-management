@@ -1,10 +1,10 @@
+import { LeagueStatus } from '@/utils/enum';
+
 import {
   mockUseQueryStates,
   renderWithUI,
   setupTestLifecycle,
 } from '@/test/utilities';
-
-import { LeagueStatus } from '@/utils/enum';
 
 import LeagueFilters from './LeagueFilters';
 
@@ -41,7 +41,9 @@ describe('LeagueFilters', () => {
   test('provides the status filter', () => {
     setup();
 
-    expect(propsSpy.filters).toMatchObject([{ key: 'status', label: 'Status' }]);
+    expect(propsSpy.filters).toMatchObject([
+      { key: 'status', label: 'Status' },
+    ]);
   });
 
   test('passes the committed values and defaults through', () => {

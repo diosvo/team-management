@@ -1,3 +1,4 @@
+import { upsertLocation } from '@/actions/location';
 import { MOCK_LOCATION } from '@/test/mocks/location';
 import {
   act,
@@ -9,8 +10,6 @@ import {
   setupTestLifecycle,
   waitFor,
 } from '@/test/utilities';
-
-import { upsertLocation } from '@/actions/location';
 
 import { UpsertLocation } from './UpsertLocation';
 

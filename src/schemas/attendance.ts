@@ -1,6 +1,7 @@
+import { z } from 'zod';
+
 import { SELECTABLE_ATTENDANCE_STATUS } from '@/utils/constants';
 import { AttendanceStatus } from '@/utils/enum';
-import { z } from 'zod';
 
 export const UpsertAttendanceSchema = z.object({
   player_id: z.string().default(''),

@@ -1,4 +1,5 @@
 import { expectNoA11yViolations, renderWithUI } from '@/test/utilities';
+
 import Loading from './Loading';
 
 describe('Loading', () => {

@@ -1,5 +1,12 @@
 import { act } from 'react';
 
+import { formatDate, formatDateRange, thisDay } from '@/utils/datetime';
+
+import {
+  MOCK_ACTIVE_OPTION,
+  MOCK_INACTIVE_OPTION,
+  MOCK_STATUS_OPTIONS,
+} from '@/test/mocks/filters';
 import {
   expectNoA11yViolations,
   fireEvent,
@@ -8,9 +15,7 @@ import {
   setupTestLifecycle,
   waitFor,
 } from '@/test/utilities';
-
-import type { FilterDef } from '@/types/filters.d';
-import { formatDate, formatDateRange, thisDay } from '@/utils/datetime';
+import type { FilterDef } from '@/types/filters';
 
 import Filters from './Filters';
 
@@ -22,15 +27,10 @@ vi.mock('@/components/SearchInput', () => ({
 // Fixtures
 // ---------------------------------------------------------------------------
 
-const STATUS_OPTIONS = [
-  { label: 'Active', value: 'active' },
-  { label: 'Inactive', value: 'inactive' },
-];
-
 const CHECKBOX_FILTER: FilterDef = {
   key: 'status',
   label: 'Status',
-  control: { type: 'checkbox-group', options: STATUS_OPTIONS },
+  control: { type: 'checkbox-group', options: MOCK_STATUS_OPTIONS },
 };
 
 const RANGE_FILTER: FilterDef = {
@@ -55,8 +55,8 @@ const rangeValues: Values = { status: [], ...RANGE };
 const checkbox = (name: string) => screen.getByRole('checkbox', { name });
 const button = (name: RegExp) => screen.getByRole('button', { name });
 
-const activeCheckbox = () => checkbox('Active');
-const inactiveCheckbox = () => checkbox('Inactive');
+const activeCheckbox = () => checkbox(MOCK_ACTIVE_OPTION.label);
+const inactiveCheckbox = () => checkbox(MOCK_INACTIVE_OPTION.label);
 
 describe('Filters', () => {
   const onApply = vi.fn();
@@ -244,7 +244,7 @@ describe('Filters', () => {
     });
 
     test('shows an active-count badge when values differ from defaults', () => {
-      setup({ values: { status: ['active'] } });
+      setup({ values: { status: [MOCK_ACTIVE_OPTION.value] } });
 
       expect(screen.getByText('1')).toBeInTheDocument();
     });
@@ -282,7 +282,9 @@ describe('Filters', () => {
     });
 
     test('reflects committed values as pre-checked on open', async () => {
-      const { user } = setup({ values: { status: ['active'] } });
+      const { user } = setup({
+        values: { status: [MOCK_ACTIVE_OPTION.value] },
+      });
 
       await openDrawer(user);
 
@@ -297,11 +299,15 @@ describe('Filters', () => {
       await user.click(activeCheckbox());
       await user.click(button(/apply/i));
 
-      expect(onApply).toHaveBeenCalledWith({ status: ['active'] });
+      expect(onApply).toHaveBeenCalledWith({
+        status: [MOCK_ACTIVE_OPTION.value],
+      });
     });
 
     test('Reset all resets draft to defaults and calls onApply with empty arrays', async () => {
-      const { user } = setup({ values: { status: ['active'] } });
+      const { user } = setup({
+        values: { status: [MOCK_ACTIVE_OPTION.value] },
+      });
 
       await openDrawer(user);
       await user.click(button(/reset all/i));
@@ -363,7 +369,7 @@ describe('Filters', () => {
         rerender(
           <Filters
             filters={[CHECKBOX_FILTER]}
-            values={{ status: ['active'] }}
+            values={{ status: [MOCK_ACTIVE_OPTION.value] }}
             defaults={defaults}
             onApply={onApply}
           />,

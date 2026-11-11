@@ -1,3 +1,6 @@
+import { useBreakpointValue } from '@chakra-ui/react';
+
+import { useSessionContext } from '@/providers/session';
 import {
   createSessionMock,
   expectNoA11yViolations,
@@ -7,9 +10,6 @@ import {
   waitFor,
 } from '@/test/utilities';
 
-import { useSessionContext } from '@/providers/session';
-
-import { useBreakpointValue } from '@chakra-ui/react';
 import MobileSidebar from './MobileSidebar';
 
 const { mockUsePathname } = vi.hoisted(() => ({

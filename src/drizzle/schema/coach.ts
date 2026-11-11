@@ -3,8 +3,9 @@ import { pgEnum, pgTable, text } from 'drizzle-orm/pg-core';
 
 import { CoachPosition, enumValues } from '@/utils/enum';
 
-import { created_at, updated_at } from '../helpers';
 import { UserTable } from './user';
+
+import { created_at, updated_at } from '../helpers';
 
 export const coachPositionEnum = pgEnum(
   'coach_position',

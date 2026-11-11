@@ -9,7 +9,6 @@ import {
   TestTypeUnit,
   UserState,
 } from './enum';
-
 import {
   colorRank,
   deriveDateStatus,

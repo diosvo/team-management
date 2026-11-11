@@ -1,3 +1,6 @@
+import { formatDate, thisDay } from '@/utils/datetime';
+import { AttendanceStatus } from '@/utils/enum';
+
 import {
   expectNoA11yViolations,
   mockUseQueryStates,
@@ -5,8 +8,6 @@ import {
   screen,
   setupTestLifecycle,
 } from '@/test/utilities';
-import { formatDate, thisDay } from '@/utils/datetime';
-import { AttendanceStatus } from '@/utils/enum';
 
 import AttendanceFilters from './AttendanceFilters';
 

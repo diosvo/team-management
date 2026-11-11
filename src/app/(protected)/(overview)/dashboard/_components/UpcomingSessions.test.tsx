@@ -1,9 +1,8 @@
-
+import { getUpcomingSessions } from '@/actions/analytics';
 import { MOCK_LOCATION, MOCK_LOCATION_2 } from '@/test/mocks/location';
 import { MOCK_TRAINING_SESSION } from '@/test/mocks/training-sessions';
 import { renderWithUI, screen, setupTestLifecycle } from '@/test/utilities';
 
-import { getUpcomingSessions } from '@/actions/analytics';
 import UpcomingSessions from './UpcomingSessions';
 
 vi.mock('@/actions/analytics', () => ({

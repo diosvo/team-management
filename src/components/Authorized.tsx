@@ -9,8 +9,9 @@
  * - `actions`: optional array form, checked with every/some semantics
  */
 
-import usePermissions from '@/hooks/use-permissions';
 import type { Action, Resource } from '@/utils/permissions';
+
+import usePermissions from '@/hooks/use-permissions';
 
 type AuthorizedProps = Required<{
   resource: Resource;
@@ -41,13 +42,16 @@ export default function Authorized({
 
   const actions = Array.isArray(action) ? action : [action];
   const perms = actions.map((a) => `${resource}:${a}` as const);
+  const [single] = actions;
 
   const allowed =
-    actions.length === 1
-      ? can(resource, actions[0])
-      : mode === 'all'
-        ? canAll(perms)
-        : canAny(perms);
+    actions.length === 0
+      ? false
+      : single !== undefined && actions.length === 1
+        ? can(resource, single)
+        : mode === 'all'
+          ? canAll(perms)
+          : canAny(perms);
 
   return <>{allowed ? children : fallback}</>;
 }

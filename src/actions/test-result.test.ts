@@ -1,17 +1,15 @@
 import { revalidate } from '@/actions/cache';
-import type { InsertTestResult } from '@/drizzle/schema';
-
 import { getDbErrorMessage } from '@/db/pg-error';
 import {
-  deleteTestResultById as deleteAction,
-  getDates,
-  getExistingTestResults,
-  getTestResultByDate,
+  deleteTestResultById,
   insertTestResult,
-  updateTestResultById as updateAction,
+  selectDates,
+  selectExistingTestResults,
+  selectTestResultByDate,
+  updateTestResultById,
   updateTestResults,
 } from '@/db/test-result';
-
+import type { InsertTestResult } from '@/drizzle/schema';
 import {
   mockWithAuth,
   mockWithResource,
@@ -27,10 +25,10 @@ import {
 import {
   canCreateTestResult,
   createTestResult,
-  deleteTestResultById,
   getTestDates,
   getTestResult,
-  updateTestResultById,
+  removeTestResult,
+  updateTestResult,
 } from './test-result';
 
 vi.mock('./auth', () => ({
@@ -39,9 +37,9 @@ vi.mock('./auth', () => ({
 }));
 
 vi.mock('@/db/test-result', () => ({
-  getDates: vi.fn(),
-  getExistingTestResults: vi.fn(),
-  getTestResultByDate: vi.fn(),
+  selectDates: vi.fn(),
+  selectExistingTestResults: vi.fn(),
+  selectTestResultByDate: vi.fn(),
   testResultKey: (result: InsertTestResult) =>
     `${result.date ?? ''}|${result.player_id}|${result.type_id}`,
   insertTestResult: vi.fn(),
@@ -103,16 +101,16 @@ describe('Test Result Actions', () => {
 
   describe('getTestDates', () => {
     test('returns list of dates', async () => {
-      vi.mocked(getDates).mockResolvedValue([MOCK_TEST_RESULT_DATE]);
+      vi.mocked(selectDates).mockResolvedValue([MOCK_TEST_RESULT_DATE]);
 
       const result = await getTestDates();
 
-      expect(getDates).toHaveBeenCalled();
+      expect(selectDates).toHaveBeenCalled();
       expect(result).toEqual([MOCK_TEST_RESULT_DATE]);
     });
 
     test('returns empty array when no dates exist', async () => {
-      vi.mocked(getDates).mockResolvedValue([]);
+      vi.mocked(selectDates).mockResolvedValue([]);
 
       const result = await getTestDates();
 
@@ -121,7 +119,7 @@ describe('Test Result Actions', () => {
 
     test('propagates errors from getDates', async () => {
       const message = 'Database error';
-      vi.mocked(getDates).mockRejectedValue(new Error(message));
+      vi.mocked(selectDates).mockRejectedValue(new Error(message));
 
       await expect(getTestDates()).rejects.toThrow(message);
     });
@@ -129,26 +127,28 @@ describe('Test Result Actions', () => {
 
   describe('getTestResult', () => {
     test('returns test result for a given date', async () => {
-      vi.mocked(getTestResultByDate).mockResolvedValue(
+      vi.mocked(selectTestResultByDate).mockResolvedValue(
         MOCK_TEST_RESULT_RESPONSE,
       );
 
       const result = await getTestResult(MOCK_TEST_RESULT_DATE);
 
-      expect(getTestResultByDate).toHaveBeenCalledWith(MOCK_TEST_RESULT_DATE);
+      expect(selectTestResultByDate).toHaveBeenCalledWith(
+        MOCK_TEST_RESULT_DATE,
+      );
       expect(result).toEqual(MOCK_TEST_RESULT_RESPONSE);
     });
 
     test('returns empty response when date is empty string', async () => {
       const result = await getTestResult('');
 
-      expect(getTestResultByDate).not.toHaveBeenCalled();
+      expect(selectTestResultByDate).not.toHaveBeenCalled();
       expect(result).toEqual({ headers: [], players: [] });
     });
 
     test('propagates errors from getTestResultByDate', async () => {
       const message = 'Database error';
-      vi.mocked(getTestResultByDate).mockRejectedValue(new Error(message));
+      vi.mocked(selectTestResultByDate).mockRejectedValue(new Error(message));
 
       await expect(getTestResult(MOCK_TEST_RESULT_DATE)).rejects.toThrow(
         message,
@@ -165,7 +165,7 @@ describe('Test Result Actions', () => {
     };
 
     test('creates new results when none exist', async () => {
-      vi.mocked(getExistingTestResults).mockResolvedValue(new Map());
+      vi.mocked(selectExistingTestResults).mockResolvedValue(new Map());
       vi.mocked(insertTestResult).mockResolvedValue({
         ...mockResult,
         command: 'INSERT',
@@ -173,7 +173,7 @@ describe('Test Result Actions', () => {
 
       const result = await createTestResult([MOCK_TEST_RESULT_INPUT]);
 
-      expect(getExistingTestResults).toHaveBeenCalledWith([
+      expect(selectExistingTestResults).toHaveBeenCalledWith([
         MOCK_TEST_RESULT_INPUT,
       ]);
       expect(insertTestResult).toHaveBeenCalledWith([MOCK_TEST_RESULT_INPUT]);
@@ -185,7 +185,7 @@ describe('Test Result Actions', () => {
     });
 
     test('updates existing results when they already exist', async () => {
-      vi.mocked(getExistingTestResults).mockResolvedValue(
+      vi.mocked(selectExistingTestResults).mockResolvedValue(
         new Map([[keyOf(MOCK_TEST_RESULT_INPUT), MOCK_TEST_RESULT.result_id]]),
       );
       vi.mocked(updateTestResults).mockResolvedValue([
@@ -194,7 +194,7 @@ describe('Test Result Actions', () => {
 
       const result = await createTestResult([MOCK_TEST_RESULT_INPUT]);
 
-      expect(getExistingTestResults).toHaveBeenCalledWith([
+      expect(selectExistingTestResults).toHaveBeenCalledWith([
         MOCK_TEST_RESULT_INPUT,
       ]);
       expect(updateTestResults).toHaveBeenCalledWith([
@@ -209,7 +209,7 @@ describe('Test Result Actions', () => {
 
     test('handles mixed create and update in batch', async () => {
       // only the first result exists; the second one is new
-      vi.mocked(getExistingTestResults).mockResolvedValue(
+      vi.mocked(selectExistingTestResults).mockResolvedValue(
         new Map([[keyOf(MOCK_TEST_RESULT_INPUT), MOCK_TEST_RESULT.result_id]]),
       );
       vi.mocked(updateTestResults).mockResolvedValue([
@@ -237,7 +237,7 @@ describe('Test Result Actions', () => {
 
     test('returns error response when batch operation fails', async () => {
       const errorMessage = 'Insert failed';
-      vi.mocked(getExistingTestResults).mockResolvedValue(new Map());
+      vi.mocked(selectExistingTestResults).mockResolvedValue(new Map());
       vi.mocked(insertTestResult).mockRejectedValue(new Error(errorMessage));
       vi.mocked(getDbErrorMessage).mockReturnValue({
         message: errorMessage,
@@ -261,14 +261,14 @@ describe('Test Result Actions', () => {
     };
 
     test('updates test result and revalidates cache', async () => {
-      vi.mocked(updateAction).mockResolvedValue({
+      vi.mocked(updateTestResultById).mockResolvedValue({
         ...mockResult,
         command: 'UPDATE',
       });
 
-      const result = await updateTestResultById(updateData);
+      const result = await updateTestResult(updateData);
 
-      expect(updateAction).toHaveBeenCalledWith(updateData);
+      expect(updateTestResultById).toHaveBeenCalledWith(updateData);
       expect(revalidate.testResults).toHaveBeenCalled();
       expect(result).toEqual({
         success: true,
@@ -278,13 +278,15 @@ describe('Test Result Actions', () => {
 
     test('returns error response when update fails', async () => {
       const errorMessage = 'Update failed';
-      vi.mocked(updateAction).mockRejectedValue(new Error(errorMessage));
+      vi.mocked(updateTestResultById).mockRejectedValue(
+        new Error(errorMessage),
+      );
       vi.mocked(getDbErrorMessage).mockReturnValue({
         message: errorMessage,
         constraint: null,
       });
 
-      const result = await updateTestResultById(updateData);
+      const result = await updateTestResult(updateData);
 
       expect(getDbErrorMessage).toHaveBeenCalled();
       expect(revalidate.testResults).not.toHaveBeenCalled();
@@ -296,13 +298,13 @@ describe('Test Result Actions', () => {
 
     test('handles database constraint errors', async () => {
       const pgError = 'Foreign key violation';
-      vi.mocked(updateAction).mockRejectedValue({ code: '23503' });
+      vi.mocked(updateTestResultById).mockRejectedValue({ code: '23503' });
       vi.mocked(getDbErrorMessage).mockReturnValue({
         message: pgError,
         constraint: 'fk_test_result',
       });
 
-      const result = await updateTestResultById(updateData);
+      const result = await updateTestResult(updateData);
 
       expect(result).toEqual({
         success: false,
@@ -313,14 +315,16 @@ describe('Test Result Actions', () => {
 
   describe('deleteTestResultById', () => {
     test('deletes test result and revalidates cache', async () => {
-      vi.mocked(deleteAction).mockResolvedValue({
+      vi.mocked(deleteTestResultById).mockResolvedValue({
         ...mockResult,
         command: 'DELETE',
       });
 
-      const result = await deleteTestResultById(MOCK_TEST_RESULT.result_id);
+      const result = await removeTestResult(MOCK_TEST_RESULT.result_id);
 
-      expect(deleteAction).toHaveBeenCalledWith(MOCK_TEST_RESULT.result_id);
+      expect(deleteTestResultById).toHaveBeenCalledWith(
+        MOCK_TEST_RESULT.result_id,
+      );
       expect(revalidate.testResults).toHaveBeenCalled();
       expect(result).toEqual({
         success: true,
@@ -330,13 +334,15 @@ describe('Test Result Actions', () => {
 
     test('returns error response when delete fails', async () => {
       const errorMessage = 'Delete failed';
-      vi.mocked(deleteAction).mockRejectedValue(new Error(errorMessage));
+      vi.mocked(deleteTestResultById).mockRejectedValue(
+        new Error(errorMessage),
+      );
       vi.mocked(getDbErrorMessage).mockReturnValue({
         message: errorMessage,
         constraint: null,
       });
 
-      const result = await deleteTestResultById(MOCK_TEST_RESULT.result_id);
+      const result = await removeTestResult(MOCK_TEST_RESULT.result_id);
 
       expect(getDbErrorMessage).toHaveBeenCalled();
       expect(revalidate.testResults).not.toHaveBeenCalled();

@@ -1,10 +1,10 @@
 import { useTranslations } from 'next-intl';
 
-import { Stat, StatGroup } from '@/components/ui/stat';
-
-import type { TypeProgression } from '@/types/periodic-testing';
 import { PerformanceBand, ProgressStatus } from '@/utils/enum';
 import { formatResult, unitLabel } from '@/utils/progression';
+
+import { Stat, StatGroup } from '@/components/ui/stat';
+import type { TypeProgression } from '@/types/periodic-testing';
 
 export default function ProgressionStats({
   progression,

@@ -1,5 +1,4 @@
 import db from '@/drizzle';
-
 import {
   mockDeleteFailure,
   mockDeleteSuccess,
@@ -8,7 +7,13 @@ import {
 } from '@/test/db-operations';
 import { MOCK_TEAM } from '@/test/mocks/team';
 
-import { deleteTeam, getTeam, getTeams, insertTeam, updateTeam } from './team';
+import {
+  deleteTeam,
+  insertTeam,
+  selectTeam,
+  selectTeams,
+  updateTeam,
+} from './team';
 
 vi.mock('@/drizzle', () => ({
   default: {
@@ -32,7 +37,7 @@ vi.mock('@/drizzle/schema/team', () => ({
   },
 }));
 
-describe('getTeams', () => {
+describe('selectTeams', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -40,7 +45,7 @@ describe('getTeams', () => {
   test('returns external teams ordered by name', async () => {
     vi.mocked(db.query.TeamTable.findMany).mockResolvedValue([MOCK_TEAM]);
 
-    const result = await getTeams();
+    const result = await selectTeams();
 
     expect(result).toEqual([MOCK_TEAM]);
   });
@@ -50,13 +55,13 @@ describe('getTeams', () => {
       new Error('db down'),
     );
 
-    const result = await getTeams();
+    const result = await selectTeams();
 
     expect(result).toEqual([]);
   });
 });
 
-describe('getTeam', () => {
+describe('selectTeam', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -64,7 +69,7 @@ describe('getTeam', () => {
   test('returns the matching team', async () => {
     vi.mocked(db.query.TeamTable.findFirst).mockResolvedValue(MOCK_TEAM);
 
-    const result = await getTeam(MOCK_TEAM.team_id);
+    const result = await selectTeam(MOCK_TEAM.team_id);
 
     expect(result).toEqual(MOCK_TEAM);
   });

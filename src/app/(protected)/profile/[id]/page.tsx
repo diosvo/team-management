@@ -1,12 +1,11 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-
 import { Text } from '@chakra-ui/react';
 
-import PageTitle from '@/components/PageTitle';
+import { formatDatetime } from '@/utils/datetime';
 
 import { getUserProfile } from '@/actions/user';
-import { formatDatetime } from '@/utils/datetime';
+import PageTitle from '@/components/PageTitle';
 
 import ProfileLayout from '../_components/ProfileLayout';
 

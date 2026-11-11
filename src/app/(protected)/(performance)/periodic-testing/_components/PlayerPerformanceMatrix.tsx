@@ -1,28 +1,25 @@
 'use client';
 
 import { memo, useCallback, useMemo, useState, useTransition } from 'react';
-
 import NextLink from 'next/link';
-
+import { useLocale, useTranslations } from 'next-intl';
 import { Editable, Link, Table, Text } from '@chakra-ui/react';
 import { FileUser } from 'lucide-react';
-import { useLocale, useTranslations } from 'next-intl';
 
+import { usePeriodicTestingFilters } from '@/lib/nuqs';
+
+import {
+  createTestResult,
+  removeTestResult,
+  updateTestResult,
+} from '@/actions/test-result';
 import HighlightText from '@/components/HighlightText';
 import Pagination from '@/components/Pagination';
 import { EmptyState } from '@/components/ui/empty-state';
 import { toaster } from '@/components/ui/toaster';
-
 import usePermissions from '@/hooks/use-permissions';
 import useTableState from '@/hooks/use-table-state';
-
-import {
-  createTestResult,
-  deleteTestResultById,
-  updateTestResultById,
-} from '@/actions/test-result';
 import { enumLabel } from '@/i18n/enums';
-import { usePeriodicTestingFilters } from '@/lib/nuqs';
 import type { PlayerTestResult, TestResult } from '@/types/periodic-testing';
 
 const stickyColumn = {
@@ -86,8 +83,7 @@ const MatrixCell = memo(function MatrixCell({
       });
 
       startTransition(async () => {
-        const { success, message: title } =
-          await deleteTestResultById(resultId);
+        const { success, message: title } = await removeTestResult(resultId);
 
         toaster.update(id, { type: success ? 'success' : 'error', title });
 
@@ -101,7 +97,7 @@ const MatrixCell = memo(function MatrixCell({
 
     startTransition(async () => {
       const { success, message: title } = resultId
-        ? await updateTestResultById({ result_id: resultId, result: next })
+        ? await updateTestResult({ result_id: resultId, result: next })
         : await createTestResult([
             { player_id: playerId, type_id: typeId, date, result: next },
           ]);

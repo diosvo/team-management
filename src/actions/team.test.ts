@@ -1,17 +1,10 @@
-import { countTeamMatches } from '@/db/match';
-import { getDbErrorMessage } from '@/db/pg-error';
-import {
-  deleteTeam,
-  getTeams as fetchTeams,
-  insertTeam,
-  updateTeam,
-} from '@/db/team';
-
 import { deleteFile, getFile, uploadFile } from '@/lib/blob';
 
 import { revalidate } from '@/actions/cache';
+import { countTeamMatches } from '@/db/match';
+import { getDbErrorMessage } from '@/db/pg-error';
+import { deleteTeam, insertTeam, selectTeams, updateTeam } from '@/db/team';
 import type { UpsertTeamSchemaValues } from '@/schemas/team';
-
 import {
   mockWithAuth,
   mockWithResource,
@@ -27,8 +20,8 @@ vi.mock('./auth', () => ({
 }));
 
 vi.mock('@/db/team', () => ({
-  getTeam: vi.fn(),
-  getTeams: vi.fn(),
+  selectTeam: vi.fn(),
+  selectTeams: vi.fn(),
   insertTeam: vi.fn(),
   updateTeam: vi.fn(),
   deleteTeam: vi.fn(),
@@ -66,7 +59,7 @@ describe('permissions', () => {
   });
 
   test('getTeams is wrapped with withAuth', () => {
-    expect(mockWithAuth).toHaveBeenCalledWith(fetchTeams);
+    expect(mockWithAuth).toHaveBeenCalledWith(selectTeams);
   });
 
   test('upsertTeam requires create and edit actions', () => {
@@ -90,16 +83,16 @@ describe('Team Actions', () => {
   });
 
   describe('getTeams', () => {
-    test('returns teams from fetchTeams', async () => {
-      vi.mocked(fetchTeams).mockResolvedValue([MOCK_AWAY_TEAM]);
+    test('returns teams from selectTeams', async () => {
+      vi.mocked(selectTeams).mockResolvedValue([MOCK_AWAY_TEAM]);
 
       const result = await getTeams();
 
       expect(result).toEqual([MOCK_AWAY_TEAM]);
     });
 
-    test('returns empty array when fetchTeams returns empty array', async () => {
-      vi.mocked(fetchTeams).mockResolvedValue([]);
+    test('returns empty array when selectTeams returns empty array', async () => {
+      vi.mocked(selectTeams).mockResolvedValue([]);
 
       const result = await getTeams();
       expect(result).toEqual([]);

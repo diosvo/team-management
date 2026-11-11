@@ -5,10 +5,9 @@ import {
   type InsertTestResult,
   TestResultTable,
 } from '@/drizzle/schema/periodic-testing';
-
 import type { PlayerTestResult, TestResult } from '@/types/periodic-testing';
 
-export async function getDates(): Promise<Array<string>> {
+export async function selectDates(): Promise<Array<string>> {
   try {
     const dates = await db
       .selectDistinct({ date: TestResultTable.date })
@@ -21,7 +20,9 @@ export async function getDates(): Promise<Array<string>> {
   }
 }
 
-export async function getTestResultByDate(date: string): Promise<TestResult> {
+export async function selectTestResultByDate(
+  date: string,
+): Promise<TestResult> {
   const types = new Map<string, { type_id: string; unit: string }>();
 
   try {
@@ -97,7 +98,7 @@ export function testResultKey(result: {
  *
  * @returns a map of {@link testResultKey} to the existing `result_id`
  */
-export async function getExistingTestResults(
+export async function selectExistingTestResults(
   results: Array<InsertTestResult>,
 ): Promise<Map<string, string>> {
   const existings = new Map<string, string>();

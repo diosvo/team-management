@@ -1,6 +1,6 @@
-import { enumText, renderWithUI, screen } from '@/test/utilities';
-
 import { PerformanceBand, ProgressStatus } from '@/utils/enum';
+
+import { enumText, renderWithUI, screen } from '@/test/utilities';
 
 import { BandBadge, ChangeText, StatusBadge } from './ProgressBadges';
 

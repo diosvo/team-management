@@ -1,12 +1,13 @@
 'use server';
 
 import { getTranslations } from 'next-intl/server';
+
 import { ResponseFactory } from '@/utils/response';
 
 import {
   deleteAsset,
-  getAssets as fetchAssets,
   insertAsset,
+  selectAssets,
   updateAsset,
 } from '@/db/asset';
 import { getDbErrorMessage } from '@/db/pg-error';
@@ -18,7 +19,7 @@ import { revalidate } from './cache';
 const assets = withResource('assets');
 
 export const getAssets = withAuth(
-  async ({ team_id }) => await fetchAssets(team_id),
+  async ({ team_id }) => await selectAssets(team_id),
 );
 
 export const upsertAsset = assets(

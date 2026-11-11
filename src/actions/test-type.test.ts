@@ -2,13 +2,12 @@ import { revalidate } from '@/actions/cache';
 import { getDbErrorMessage } from '@/db/pg-error';
 import {
   deleteTestType,
-  getTestTypes as getAction,
-  getTestTypeById,
   insertTestType,
+  selectTestTypeById,
+  selectTestTypes,
   updateTestType,
 } from '@/db/test-type';
 import type { UpsertTestTypeSchemaValues } from '@/schemas/periodic-testing';
-
 import {
   mockWithAuth,
   mockWithResource,
@@ -29,8 +28,8 @@ vi.mock('./auth', () => ({
 }));
 
 vi.mock('@/db/test-type', () => ({
-  getTestTypes: vi.fn(),
-  getTestTypeById: vi.fn(),
+  selectTestTypes: vi.fn(),
+  selectTestTypeById: vi.fn(),
   insertTestType: vi.fn(),
   updateTestType: vi.fn(),
   deleteTestType: vi.fn(),
@@ -76,19 +75,19 @@ describe('Test Type Actions', () => {
 
   describe('getTestTypes', () => {
     test('returns all test types', async () => {
-      vi.mocked(getAction).mockResolvedValue([
+      vi.mocked(selectTestTypes).mockResolvedValue([
         MOCK_TEST_TYPE,
         MOCK_TEST_TYPE_2,
       ]);
 
       const result = await getTestTypes();
 
-      expect(getAction).toHaveBeenCalled();
+      expect(selectTestTypes).toHaveBeenCalled();
       expect(result).toEqual([MOCK_TEST_TYPE, MOCK_TEST_TYPE_2]);
     });
 
     test('returns empty array when no test types exist', async () => {
-      vi.mocked(getAction).mockResolvedValue([]);
+      vi.mocked(selectTestTypes).mockResolvedValue([]);
 
       const result = await getTestTypes();
 
@@ -97,7 +96,7 @@ describe('Test Type Actions', () => {
 
     test('propagates errors from getTestTypes', async () => {
       const message = 'Database error';
-      vi.mocked(getAction).mockRejectedValue(new Error(message));
+      vi.mocked(selectTestTypes).mockRejectedValue(new Error(message));
 
       await expect(getTestTypes()).rejects.toThrow(message);
     });
@@ -119,7 +118,7 @@ describe('Test Type Actions', () => {
     };
 
     test('updates existing test type and revalidates cache', async () => {
-      vi.mocked(getTestTypeById).mockResolvedValue(MOCK_TEST_TYPE);
+      vi.mocked(selectTestTypeById).mockResolvedValue(MOCK_TEST_TYPE);
       vi.mocked(updateTestType).mockResolvedValue({
         ...mockResult,
         command: 'UPDATE',
@@ -127,7 +126,7 @@ describe('Test Type Actions', () => {
 
       const result = await upsertTestType(MOCK_TEST_TYPE.type_id, typeData);
 
-      expect(getTestTypeById).toHaveBeenCalledWith(MOCK_TEST_TYPE.type_id);
+      expect(selectTestTypeById).toHaveBeenCalledWith(MOCK_TEST_TYPE.type_id);
       expect(updateTestType).toHaveBeenCalledWith(
         MOCK_TEST_TYPE.type_id,
         dbValues,
@@ -141,7 +140,7 @@ describe('Test Type Actions', () => {
     });
 
     test('inserts new test type when not found and revalidates cache', async () => {
-      vi.mocked(getTestTypeById).mockResolvedValue(undefined);
+      vi.mocked(selectTestTypeById).mockResolvedValue(undefined);
       vi.mocked(insertTestType).mockResolvedValue({
         ...mockResult,
         command: 'INSERT',
@@ -162,7 +161,7 @@ describe('Test Type Actions', () => {
     });
 
     test('maps a lower-is-better direction and keeps a set target', async () => {
-      vi.mocked(getTestTypeById).mockResolvedValue(undefined);
+      vi.mocked(selectTestTypeById).mockResolvedValue(undefined);
       vi.mocked(insertTestType).mockResolvedValue({
         ...mockResult,
         command: 'INSERT',
@@ -184,7 +183,7 @@ describe('Test Type Actions', () => {
 
     test('returns error response when update fails', async () => {
       const errorMessage = 'Update failed';
-      vi.mocked(getTestTypeById).mockResolvedValue(MOCK_TEST_TYPE);
+      vi.mocked(selectTestTypeById).mockResolvedValue(MOCK_TEST_TYPE);
       vi.mocked(updateTestType).mockRejectedValue(new Error(errorMessage));
       vi.mocked(getDbErrorMessage).mockReturnValue({
         message: errorMessage,
@@ -203,7 +202,7 @@ describe('Test Type Actions', () => {
 
     test('returns error response when insert fails', async () => {
       const errorMessage = 'Insert failed';
-      vi.mocked(getTestTypeById).mockResolvedValue(undefined);
+      vi.mocked(selectTestTypeById).mockResolvedValue(undefined);
       vi.mocked(insertTestType).mockRejectedValue(new Error(errorMessage));
       vi.mocked(getDbErrorMessage).mockReturnValue({
         message: errorMessage,
@@ -222,7 +221,7 @@ describe('Test Type Actions', () => {
 
     test('handles database constraint errors', async () => {
       const pgError = 'Unique constraint violation';
-      vi.mocked(getTestTypeById).mockResolvedValue(undefined);
+      vi.mocked(selectTestTypeById).mockResolvedValue(undefined);
       vi.mocked(insertTestType).mockRejectedValue({
         code: '23505',
         detail: 'Duplicate key',

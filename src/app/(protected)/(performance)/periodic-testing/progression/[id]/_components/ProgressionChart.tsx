@@ -1,8 +1,8 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Chart, useChart } from '@chakra-ui/charts';
 import { Box, Text } from '@chakra-ui/react';
-import { useTranslations } from 'next-intl';
 import type { TooltipContentProps } from 'recharts';
 import {
   CartesianGrid,
@@ -14,9 +14,10 @@ import {
   YAxis,
 } from 'recharts';
 
-import type { PlayerTypeProgression } from '@/types/periodic-testing';
 import { formatDate } from '@/utils/datetime';
 import { formatResult } from '@/utils/progression';
+
+import type { PlayerTypeProgression } from '@/types/periodic-testing';
 
 type Point = PlayerTypeProgression['history'][number];
 
@@ -27,9 +28,10 @@ function CustomTooltip({
 }: Partial<TooltipContentProps<string, string>> & { unit: string }) {
   const t = useTranslations('periodicTesting.playerProgression');
 
-  if (!active || !payload || payload.length === 0) return null;
+  const [first] = payload ?? [];
+  if (!active || !first) return null;
 
-  const entry = payload[0].payload as Point;
+  const entry = first.payload as Point;
 
   return (
     <Box backgroundColor="white" padding={2} borderRadius="sm" boxShadow="sm">

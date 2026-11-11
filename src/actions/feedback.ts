@@ -1,17 +1,20 @@
 'use server';
 
 import { getTranslations } from 'next-intl/server';
+import { head } from 'es-toolkit';
+
 import env from '@env';
+import { FEEDBACK_ASSIGNEES, FEEDBACK_TYPES } from '@/utils/constants/feedback';
+import { ResponseFactory } from '@/utils/response';
 
 import { buildIssueBody } from '@/lib/feedback';
 import { createIssue } from '@/lib/github';
+
+import { localizeIssue } from '@/i18n/zod';
 import {
   SubmitFeedbackSchema,
   type SubmitFeedbackSchemaValues,
 } from '@/schemas/feedback';
-import { FEEDBACK_ASSIGNEES, FEEDBACK_TYPES } from '@/utils/constants/feedback';
-import { localizeIssue } from '@/i18n/zod';
-import { ResponseFactory } from '@/utils/response';
 
 import { withAuth } from './auth';
 
@@ -31,7 +34,7 @@ export const submitFeedback = withAuth(
 
     if (!parsed.success) {
       // Schema-specific messages are `validation` keys
-      const { message } = parsed.error.issues[0];
+      const message = head(parsed.error.issues)!.message;
       return ResponseFactory.error(
         tValidation.has(message as never)
           ? tValidation(message as never)

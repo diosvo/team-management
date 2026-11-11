@@ -1,15 +1,13 @@
 'use client';
 
 import { useMemo } from 'react';
-
+import { useTranslations } from 'next-intl';
 import { Chart, useChart } from '@chakra-ui/charts';
 import { ChartPie } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 import { Pie, PieChart, type PieSectorShapeProps, Sector } from 'recharts';
 
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
-
 import type { AbsenceReason } from '@/types/analytics';
 
 const CHART_COLORS = ['#8884D8', '#83A6ED', '#8DD1E1', '#82CA9D', '#A4DE6C'];

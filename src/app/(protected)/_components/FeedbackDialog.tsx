@@ -1,8 +1,9 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
 import { useState, useTransition } from 'react';
-
+import { Controller, useForm } from 'react-hook-form';
+import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import {
   Button,
   Dialog,
@@ -15,26 +16,24 @@ import {
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Send } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { Controller, useForm } from 'react-hook-form';
 
+import {
+  FEEDBACK_DESCRIPTION_LIMIT,
+  FEEDBACK_TITLE_LIMIT,
+  FEEDBACK_TYPE_KEYS,
+} from '@/utils/constants';
+
+import { submitFeedback } from '@/actions/feedback';
 import { CloseButton } from '@/components/ui/close-button';
 import { Field } from '@/components/ui/field';
 import { Radio, RadioGroup } from '@/components/ui/radio';
 import { Switch } from '@/components/ui/switch';
 import { toaster } from '@/components/ui/toaster';
 import { Tooltip } from '@/components/ui/tooltip';
-
-import { submitFeedback } from '@/actions/feedback';
 import {
   FeedbackFormSchema,
   type FeedbackFormSchemaValues,
 } from '@/schemas/feedback';
-import {
-  FEEDBACK_DESCRIPTION_LIMIT,
-  FEEDBACK_TITLE_LIMIT,
-  FEEDBACK_TYPE_KEYS,
-} from '@/utils/constants';
 
 /**
  * Collects the gist of a report and files it as a GitHub issue with the app's

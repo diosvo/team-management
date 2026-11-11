@@ -1,12 +1,11 @@
 import { revalidate } from '@/actions/cache';
 import {
   deleteAsset,
-  getAssets as getDbAssets,
-  insertAsset as insertDbAsset,
-  updateAsset as updateDbAsset,
+  insertAsset,
+  selectAssets,
+  updateAsset,
 } from '@/db/asset';
 import { getDbErrorMessage } from '@/db/pg-error';
-
 import { MOCK_ASSET, MOCK_ASSET_INPUT } from '@/test/mocks/asset';
 import {
   mockWithAuth,
@@ -23,7 +22,7 @@ vi.mock('./auth', () => ({
 }));
 
 vi.mock('@/db/asset', () => ({
-  getAssets: vi.fn(),
+  selectAssets: vi.fn(),
   insertAsset: vi.fn(),
   updateAsset: vi.fn(),
   deleteAsset: vi.fn(),
@@ -78,11 +77,11 @@ describe('Asset Actions', () => {
 
   describe('getAssets', () => {
     test('calls getAssets with team_id', async () => {
-      vi.mocked(getDbAssets).mockResolvedValue(MOCK_ASSETS_RESPONSE);
+      vi.mocked(selectAssets).mockResolvedValue(MOCK_ASSETS_RESPONSE);
 
       const result = await getAssets();
 
-      expect(getDbAssets).toHaveBeenCalledWith(MOCK_TEAM.team_id);
+      expect(selectAssets).toHaveBeenCalledWith(MOCK_TEAM.team_id);
       expect(result).toEqual(MOCK_ASSETS_RESPONSE);
     });
 
@@ -91,7 +90,7 @@ describe('Asset Actions', () => {
         stats: { total_items: 0, need_replacement: 0, obsolete_count: 0 },
         data: [],
       };
-      vi.mocked(getDbAssets).mockResolvedValue(emptyResponse);
+      vi.mocked(selectAssets).mockResolvedValue(emptyResponse);
 
       const result = await getAssets();
       expect(result).toEqual(emptyResponse);
@@ -100,7 +99,7 @@ describe('Asset Actions', () => {
     test('propagates errors from getAssets', async () => {
       const message = 'Database error';
       const error = new Error(message);
-      vi.mocked(getDbAssets).mockRejectedValue(error);
+      vi.mocked(selectAssets).mockRejectedValue(error);
 
       await expect(getAssets()).rejects.toThrow(message);
     });
@@ -108,18 +107,18 @@ describe('Asset Actions', () => {
 
   describe('upsertAsset', () => {
     test('updates existing asset and revalidates cache', async () => {
-      vi.mocked(updateDbAsset).mockResolvedValue({
+      vi.mocked(updateAsset).mockResolvedValue({
         ...mockResult,
         command: 'UPDATE',
       });
 
       const result = await upsertAsset(MOCK_ASSET.asset_id, MOCK_ASSET_INPUT);
 
-      expect(updateDbAsset).toHaveBeenCalledWith(MOCK_ASSET.asset_id, {
+      expect(updateAsset).toHaveBeenCalledWith(MOCK_ASSET.asset_id, {
         ...MOCK_ASSET_INPUT,
         team_id: MOCK_TEAM.team_id,
       });
-      expect(insertDbAsset).not.toHaveBeenCalled();
+      expect(insertAsset).not.toHaveBeenCalled();
       expect(revalidate.assets).toHaveBeenCalled();
       expect(result).toEqual({
         success: true,
@@ -128,18 +127,18 @@ describe('Asset Actions', () => {
     });
 
     test('inserts new asset when asset_id is empty', async () => {
-      vi.mocked(insertDbAsset).mockResolvedValue({
+      vi.mocked(insertAsset).mockResolvedValue({
         ...mockResult,
         command: 'INSERT',
       });
 
       const result = await upsertAsset('', MOCK_ASSET_INPUT);
 
-      expect(insertDbAsset).toHaveBeenCalledWith({
+      expect(insertAsset).toHaveBeenCalledWith({
         ...MOCK_ASSET_INPUT,
         team_id: MOCK_TEAM.team_id,
       });
-      expect(updateDbAsset).not.toHaveBeenCalled();
+      expect(updateAsset).not.toHaveBeenCalled();
       expect(revalidate.assets).toHaveBeenCalled();
       expect(result).toEqual({
         success: true,
@@ -149,7 +148,7 @@ describe('Asset Actions', () => {
 
     test('returns error response when update fails', async () => {
       const errorMessage = 'Update failed';
-      vi.mocked(updateDbAsset).mockRejectedValue(new Error(errorMessage));
+      vi.mocked(updateAsset).mockRejectedValue(new Error(errorMessage));
       vi.mocked(getDbErrorMessage).mockReturnValue({
         message: errorMessage,
         constraint: null,
@@ -167,7 +166,7 @@ describe('Asset Actions', () => {
 
     test('returns error response when insert fails', async () => {
       const errorMessage = 'Insert failed';
-      vi.mocked(insertDbAsset).mockRejectedValue(new Error(errorMessage));
+      vi.mocked(insertAsset).mockRejectedValue(new Error(errorMessage));
       vi.mocked(getDbErrorMessage).mockReturnValue({
         message: errorMessage,
         constraint: null,
@@ -185,7 +184,7 @@ describe('Asset Actions', () => {
 
     test('handles database constraint errors', async () => {
       const pgError = 'Unique constraint violation';
-      vi.mocked(updateDbAsset).mockRejectedValue({
+      vi.mocked(updateAsset).mockRejectedValue({
         code: '23505',
         detail: 'Duplicate key',
       });

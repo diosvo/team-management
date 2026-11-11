@@ -1,8 +1,7 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState, useTransition } from 'react';
-
+import { useTranslations } from 'next-intl';
 import {
   Badge,
   Button,
@@ -17,18 +16,18 @@ import {
 } from '@chakra-ui/react';
 import { Save } from 'lucide-react';
 
+import { MATCH_STAT_FIELDS, type MatchStatField } from '@/utils/constants';
+import { formatDate } from '@/utils/datetime';
+
+import { getMatchPlayerStats, saveMatchPlayerStats } from '@/actions/match';
 import StepIndicator from '@/components/StepIndicator';
 import { Card } from '@/components/ui/card';
 import { Field } from '@/components/ui/field';
 import { toaster } from '@/components/ui/toaster';
 import { PlayerSelectionWithActions } from '@/components/user/PlayerSelection';
-
-import { getMatchPlayerStats, saveMatchPlayerStats } from '@/actions/match';
 import type { MatchPlayerStatsWithName, PlayedMatch } from '@/db/match';
-import type { User } from '@/drizzle/schema';
+import type { PlayerOption } from '@/db/user';
 import type { SaveMatchPlayerStatsValues } from '@/schemas/match';
-import { MATCH_STAT_FIELDS, type MatchStatField } from '@/utils/constants';
-import { formatDate } from '@/utils/datetime';
 
 import MatchStatsTable, {
   type GridPlayer,
@@ -45,7 +44,7 @@ const draftFrom = (row: MatchPlayerStatsWithName): StatDraft =>
     MATCH_STAT_FIELDS.map(({ key }) => [key, String(row[key] ?? 0)]),
   ) as StatDraft;
 
-const toGridPlayer = (user: User): GridPlayer => ({
+const toGridPlayer = (user: PlayerOption): GridPlayer => ({
   id: user.id,
   name: user.name,
   jersey_number: user.player?.jersey_number ?? null,
@@ -61,7 +60,7 @@ type GridState = {
 /** Grid state for a saved box score; jersey numbers come from the roster. */
 const fromRows = (
   rows: Array<MatchPlayerStatsWithName>,
-  activeById: Map<string, User>,
+  activeById: Map<string, PlayerOption>,
 ): GridState => ({
   players: rows.map(({ player_id, player_name }) => ({
     id: player_id,
@@ -76,7 +75,7 @@ const fromRows = (
 
 type MatchStatsPageClientProps = {
   matches: Array<PlayedMatch>;
-  activePlayers: Array<User>;
+  activePlayers: Array<PlayerOption>;
   initialMatch: Nullable<PlayedMatch>;
   initialStats: Array<MatchPlayerStatsWithName>;
 };
@@ -144,7 +143,7 @@ export default function MatchStatsPageClient({
     });
   };
 
-  const onSelectionChange = (selected: Array<User>) => {
+  const onSelectionChange = (selected: Array<PlayerOption>) => {
     const selectedIds = new Set(selected.map(({ id }) => id));
 
     setGrid((prev) => {

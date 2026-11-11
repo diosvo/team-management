@@ -2,12 +2,13 @@
 
 import { useTranslations } from 'next-intl';
 
-import { Stat, StatGroup } from '@/components/ui/stat';
-
-import { useAttendanceFilters } from '@/lib/nuqs';
-import type { AttendanceStats as StatsType } from '@/types/attendance';
 import { AttendanceStatus } from '@/utils/enum';
 import { colorRank } from '@/utils/helper';
+
+import { useAttendanceFilters } from '@/lib/nuqs';
+
+import { Stat, StatGroup } from '@/components/ui/stat';
+import type { AttendanceStats as StatsType } from '@/types/attendance';
 
 export default function AttendanceStats({ stats }: { stats: StatsType }) {
   const t = useTranslations('attendance.stats');

@@ -1,9 +1,9 @@
 import { createHmac } from 'node:crypto';
-
 import type { NextRequest } from 'next/server';
 
-import { updateDeliveryStatus } from '@/db/report';
 import { EmailStatus } from '@/utils/enum';
+
+import { updateDeliveryStatus } from '@/db/report';
 
 vi.mock('@/db/report', () => ({ updateDeliveryStatus: vi.fn() }));
 

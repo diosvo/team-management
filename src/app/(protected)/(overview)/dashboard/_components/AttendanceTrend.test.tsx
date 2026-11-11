@@ -1,7 +1,9 @@
+import { head } from 'es-toolkit';
+
 import { MOCK_ATTENDANCE_HISTORY } from '@/test/mocks/analytics';
 import { renderWithUI, screen } from '@/test/utilities';
-
 import type { AttendanceHistoryRecord } from '@/types/analytics';
+
 import AttendanceTrend, { CustomTooltip } from './AttendanceTrend';
 
 describe('AttendanceTrend', () => {
@@ -38,7 +40,7 @@ describe('AttendanceTrend', () => {
   test('colors the average rate red when it is below the target', () => {
     // Use a record with a low present_rate to produce an average below 80%.
     const lowRecord = {
-      ...MOCK_ATTENDANCE_HISTORY[0],
+      ...head(MOCK_ATTENDANCE_HISTORY)!,
       present_rate: 50,
     };
 
@@ -58,10 +60,14 @@ describe('CustomTooltip', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
+  test('renders nothing when the payload is missing', () => {
+    const { container } = renderWithUI(<CustomTooltip active />);
+
+    expect(container).toBeEmptyDOMElement();
+  });
+
   test('renders nothing when there is no payload', () => {
-    const { container } = renderWithUI(
-      <CustomTooltip active payload={[]} />,
-    );
+    const { container } = renderWithUI(<CustomTooltip active payload={[]} />);
 
     expect(container).toBeEmptyDOMElement();
   });

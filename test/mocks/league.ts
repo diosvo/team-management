@@ -1,5 +1,6 @@
-import type { InsertLeague, League } from '@/drizzle/schema';
 import { LeagueStatus } from '@/utils/enum';
+
+import type { InsertLeague, League } from '@/drizzle/schema';
 
 export const MOCK_LEAGUE_INPUT: InsertLeague = {
   name: 'Summer League',
@@ -18,4 +19,12 @@ export const MOCK_LEAGUE: League = {
   status: LeagueStatus.ENDED,
   created_at: new Date('2026-01-01'),
   updated_at: new Date('2026-01-01'),
+};
+
+/** A league as the achievement dialog lists it; the form validates `league_id` as a uuid. */
+export const MOCK_LEAGUE_OPTION = {
+  ...MOCK_LEAGUE,
+  league_id: '11111111-1111-1111-1111-111111111111',
+  player_count: 0,
+  achievement_type: [],
 };

@@ -1,15 +1,15 @@
 import type { ReactElement, ReactNode } from 'react';
 
+import { loadPerformanceFilters } from '@/lib/nuqs';
+
+import { verifySession } from '@/actions/auth';
+import { getPerformanceIdentity } from '@/actions/player-performance';
 import {
   MOCK_PERFORMANCE_IDENTITY,
   MOCK_PERFORMANCE_RANGE,
   MOCK_PERFORMANCE_TARGET_ID,
 } from '@/test/mocks/performance';
 import { renderWithUI, screen, setupTestLifecycle } from '@/test/utilities';
-
-import { verifySession } from '@/actions/auth';
-import { getPerformanceIdentity } from '@/actions/player-performance';
-import { loadPerformanceFilters } from '@/lib/nuqs';
 import type { PerformanceIdentity } from '@/types/performance';
 
 import PerformancePage, { generateMetadata } from './page';

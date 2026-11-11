@@ -1,8 +1,11 @@
+import { Interval } from '@/utils/enum';
+
 import auth from '@/lib/auth';
 import { uploadFile } from '@/lib/blob';
 import { getBrowser } from '@/lib/puppeteer';
 
-import { Interval } from '@/utils/enum';
+import { MOCK_REPORT_HISTORY } from '@/test/mocks/report';
+import { MOCK_TEAM } from '@/test/mocks/team';
 
 import {
   dashboardPath,
@@ -48,9 +51,9 @@ describe('dashboardPath', () => {
 
 describe('reportFilename', () => {
   test('strips non-numeric characters from the period', () => {
-    expect(
-      reportFilename(Interval.LAST_MONTH, '01/08/2026 - 31/08/2026'),
-    ).toBe('analytics-last_month-0108202631082026.pdf');
+    expect(reportFilename(Interval.LAST_MONTH, '01/08/2026 - 31/08/2026')).toBe(
+      'analytics-last_month-0108202631082026.pdf',
+    );
   });
 });
 
@@ -97,7 +100,7 @@ describe('renderReportPdf', () => {
       path: '/dashboard?from=2026-01-01',
       host: 'portal.app',
       cookies: [{ name: 'session', value: 'abc' }],
-      period: '01/01/2026 - 31/01/2026',
+      period: MOCK_REPORT_HISTORY.period,
     });
 
     expect(browser.setCookie).toHaveBeenCalledWith({
@@ -124,7 +127,7 @@ describe('renderReportPdf', () => {
         origin: 'https://portal.app',
         host: 'portal.app',
         cookies: [],
-        period: '01/01/2026 - 31/01/2026',
+        period: MOCK_REPORT_HISTORY.period,
       }),
     ).rejects.toThrow('navigation failed');
 
@@ -139,7 +142,7 @@ describe('renderReportPdf', () => {
       origin: 'https://portal.app',
       host: 'portal.app',
       cookies: [],
-      period: '01/01/2026 - 31/01/2026',
+      period: MOCK_REPORT_HISTORY.period,
     });
 
     expect(browser.page.goto).toHaveBeenCalledWith('https://portal.app', {
@@ -155,12 +158,12 @@ describe('renderReportPdf', () => {
       origin: 'https://portal.app',
       host: 'portal.app',
       cookies: [],
-      period: '01/01/2026 - 31/01/2026',
+      period: MOCK_REPORT_HISTORY.period,
     });
 
     expect(document.getElementById('pdf-wrapper')).toBeTruthy();
     expect(document.getElementById('pdf-duration')?.textContent).toBe(
-      'Duration: 01/01/2026 - 31/01/2026',
+      `Duration: ${MOCK_REPORT_HISTORY.period}`,
     );
     expect(document.title).toBe('SGR | Analytics Overview Report');
   });
@@ -175,7 +178,7 @@ describe('renderReportPdf', () => {
       origin: 'https://portal.app',
       host: 'portal.app',
       cookies: [],
-      period: '01/01/2026 - 31/01/2026',
+      period: MOCK_REPORT_HISTORY.period,
     });
 
     expect(document.getElementById('pdf-wrapper')).toBeNull();
@@ -192,7 +195,7 @@ describe('renderReportPdf', () => {
       origin: 'https://portal.app',
       host: 'portal.app',
       cookies: [],
-      period: '01/01/2026 - 31/01/2026',
+      period: MOCK_REPORT_HISTORY.period,
     });
 
     expect(result).toEqual(Buffer.from('%PDF-1.4 mock'));
@@ -230,9 +233,8 @@ describe('getServiceSession', () => {
       default: { PW_USERNAME: undefined, PW_PASSWORD: undefined },
     }));
     vi.resetModules();
-    const { getServiceSession: getServiceSessionNoCreds } = await import(
-      './report'
-    );
+    const { getServiceSession: getServiceSessionNoCreds } =
+      await import('./report');
 
     await expect(getServiceSessionNoCreds()).rejects.toThrow(
       'Missing service account credentials for scheduled report',
@@ -245,7 +247,7 @@ describe('getServiceSession', () => {
   test('throws when the sign-in response has no session cookie', async () => {
     mockSignInEmail.mockResolvedValue({
       headers: { getSetCookie: () => [] },
-      json: async () => ({ user: { team_id: 'team-1' } }),
+      json: async () => ({ user: { team_id: MOCK_TEAM.team_id } }),
     } as never);
 
     await expect(getServiceSession()).rejects.toThrow(
@@ -261,7 +263,7 @@ describe('getServiceSession', () => {
           'other=value; Path=/',
         ],
       },
-      json: async () => ({ user: { team_id: 'team-1' } }),
+      json: async () => ({ user: { team_id: MOCK_TEAM.team_id } }),
     } as never);
 
     const result = await getServiceSession();
@@ -271,7 +273,7 @@ describe('getServiceSession', () => {
       asResponse: true,
     });
     expect(result).toEqual({
-      team_id: 'team-1',
+      team_id: MOCK_TEAM.team_id,
       cookies: [
         { name: 'better-auth.session_token', value: 'abc123' },
         { name: 'other', value: 'value' },

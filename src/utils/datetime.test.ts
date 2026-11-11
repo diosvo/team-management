@@ -1,19 +1,18 @@
 import { DEFAULT_TIME_FORMAT } from './constants/app';
-import { Interval } from './enum';
 import {
+  describeRange,
+  findPreset,
   formatCalendarDay,
   formatDate,
   formatDateRange,
   formatDatetime,
   formatDay,
-  formatTime,
   formatDayHint,
+  formatTime,
   getDayPresets,
   getPeriodPresets,
   intervalRange,
   isWithinBounds,
-  describeRange,
-  findPreset,
   parseLocaleDate,
   thisDay,
   thisMonth,
@@ -22,6 +21,7 @@ import {
   toIsoDay,
   toLocalDate,
 } from './datetime';
+import { Interval } from './enum';
 
 // Local-time strings: a bare `yyyy-MM-dd` parses as UTC midnight and would
 // slip a day west of GMT.

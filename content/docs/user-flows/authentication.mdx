@@ -22,7 +22,7 @@ sequenceDiagram
     participant App
     participant Resend
 
-    Admin->>App: addUser (roster:create)
+    Admin->>App: createUser (roster:create)
     App->>App: signUpEmail with temporary password, insert player/coach row
     App->>Resend: requestPasswordReset → "Create a new password"
     Resend-->>Member: Link with token, redirectTo /new-password

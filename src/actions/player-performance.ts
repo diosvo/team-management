@@ -1,39 +1,38 @@
 'use server';
 
-import { pick } from 'es-toolkit';
-import { forbidden, notFound } from 'next/navigation';
 import { cache } from 'react';
+import { forbidden, notFound } from 'next/navigation';
+import { pick } from 'es-toolkit';
 
+import { UserRole } from '@/utils/enum';
+import { hasPermissions } from '@/utils/permissions';
+
+import {
+  selectPlayerActivity,
+  selectPlayerAttendanceOverview,
+  selectPlayerHonorSummary,
+  selectPlayerMatchesOverview,
+  selectPlayerTestingOverview,
+  selectPlayerTestingSummary,
+} from '@/db/player-performance';
+import { selectUserById } from '@/db/user';
+import type { User } from '@/drizzle/schema/user';
 import type { DateRange } from '@/types/common';
 import type {
   PerformanceIdentity,
   PerformanceSummary,
 } from '@/types/performance';
-import { UserRole } from '@/utils/enum';
-import { hasPermissions } from '@/utils/permissions';
-
-import {
-  getPlayerActivity as fetchActivity,
-  getPlayerAttendanceOverview as fetchAttendance,
-  getPlayerHonorSummary as fetchHonorSummary,
-  getPlayerMatchesOverview as fetchMatches,
-  getPlayerTestingOverview as fetchTesting,
-  getPlayerTestingSummary as fetchTestingSummary,
-} from '@/db/player-performance';
-import { getUserById } from '@/db/user';
-import type { User } from '@/drizzle/schema/user';
 
 import { withResource } from './auth';
 
 const performance = withResource('performance');
 
 // Request-scoped: the stat row and every tab resolve the same target.
-const fetchTarget = cache(getUserById);
+const fetchTarget = cache(selectUserById);
 
 /**
- * Who the page is about. The id comes from the URL, so it is checked against
- * the session first: players may only open themselves, SUPER_ADMIN may open
- * any member (from the Roster actions).
+ * Who the page is about. URL ids are checked against the session: players can
+ * only view themselves; SUPER_ADMIN can view any member.
  */
 async function resolveTarget(user: User, target_id: string) {
   const { isAdmin } = hasPermissions(user.role);
@@ -76,9 +75,9 @@ function forTarget<T extends Array<unknown>, R>(
 export const getPerformanceSummary = forTarget(
   async (id, team_id, range: DateRange): Promise<PerformanceSummary> => {
     const [attendance, testing, honors] = await Promise.all([
-      fetchAttendance(id, team_id, range),
-      fetchTestingSummary(id),
-      fetchHonorSummary(id),
+      selectPlayerAttendanceOverview(id, team_id, range),
+      selectPlayerTestingSummary(id),
+      selectPlayerHonorSummary(id),
     ]);
 
     return {
@@ -96,7 +95,7 @@ export const getPerformanceSummary = forTarget(
   },
 );
 
-export const getPlayerAttendance = forTarget(fetchAttendance);
-export const getPlayerTesting = forTarget(fetchTesting);
-export const getPlayerActivity = forTarget(fetchActivity);
-export const getPlayerMatches = forTarget(fetchMatches);
+export const getPlayerAttendance = forTarget(selectPlayerAttendanceOverview);
+export const getPlayerTesting = forTarget(selectPlayerTestingOverview);
+export const getPlayerActivity = forTarget(selectPlayerActivity);
+export const getPlayerMatches = forTarget(selectPlayerMatchesOverview);

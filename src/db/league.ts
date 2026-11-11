@@ -1,5 +1,7 @@
 import { and, desc, eq } from 'drizzle-orm';
 
+import { deriveDateStatus } from '@/utils/helper';
+
 import db from '@/drizzle';
 import type { User } from '@/drizzle/schema';
 import {
@@ -9,9 +11,8 @@ import {
   LeagueTeamTable,
 } from '@/drizzle/schema/league';
 import type { UpsertLeagueSchemaValues } from '@/schemas/league';
-import { deriveDateStatus } from '@/utils/helper';
 
-export async function getLeagues() {
+export async function selectLeagues() {
   try {
     const leagues = await db.query.LeagueTable.findMany({
       orderBy: desc(LeagueTable.end_date),
@@ -40,7 +41,7 @@ export async function getLeagues() {
   }
 }
 
-export async function getPlayersInLeague(
+export async function selectPlayersInLeague(
   team_id: string,
   league_id: string,
 ): Promise<Array<User>> {
@@ -66,7 +67,7 @@ export async function getPlayersInLeague(
   }
 }
 
-export async function getLeagueById(league_id: string) {
+export async function selectLeagueById(league_id: string) {
   const league = await db.query.LeagueTable.findFirst({
     where: eq(LeagueTable.league_id, league_id),
   });
@@ -105,14 +106,14 @@ export async function deleteLeague(league_id: string) {
  * Enters a team into a league. Roster rows carry a composite FK to
  * `league_team`, so this pair has to exist before any player is registered.
  */
-export async function registerTeamInLeague(league_id: string, team_id: string) {
+export async function insertLeagueTeam(league_id: string, team_id: string) {
   return await db
     .insert(LeagueTeamTable)
     .values({ league_id, team_id })
     .onConflictDoNothing();
 }
 
-export async function addPlayerToLeagueRoster(
+export async function insertLeagueRosterPlayer(
   team_id: string,
   league_id: string,
   player_id: string,
@@ -124,7 +125,7 @@ export async function addPlayerToLeagueRoster(
   });
 }
 
-export async function removePlayerFromLeagueRoster(
+export async function deleteLeagueRosterPlayer(
   team_id: string,
   league_id: string,
   player_id: string,

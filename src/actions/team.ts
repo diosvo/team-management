@@ -1,17 +1,14 @@
 'use server';
 
 import { getTranslations } from 'next-intl/server';
-import { deleteFile, getFile, uploadFile } from '@/lib/blob';
+
 import { ResponseFactory } from '@/utils/response';
+
+import { deleteFile, getFile, uploadFile } from '@/lib/blob';
 
 import { countTeamMatches } from '@/db/match';
 import { getDbErrorMessage } from '@/db/pg-error';
-import {
-  deleteTeam,
-  getTeams as fetchTeams,
-  insertTeam,
-  updateTeam,
-} from '@/db/team';
+import { deleteTeam, insertTeam, selectTeams, updateTeam } from '@/db/team';
 import type { UpsertTeamSchemaValues } from '@/schemas/team';
 
 import { withAuth, withResource } from './auth';
@@ -20,7 +17,7 @@ import { revalidate } from './cache';
 const teams = withResource('teams');
 
 /** @returns A list of teams as opponents */
-export const getTeams = withAuth(fetchTeams);
+export const getTeams = withAuth(selectTeams);
 
 export const upsertTeam = teams(
   ['create', 'edit'],

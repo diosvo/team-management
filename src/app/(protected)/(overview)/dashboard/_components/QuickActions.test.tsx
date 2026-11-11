@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
 
+import usePermissions from '@/hooks/use-permissions';
+import { type SessionUser, useSessionContext } from '@/providers/session';
 import { MOCK_SESSION_USER } from '@/test/mocks/user';
 import {
   createPermissionsMock,
@@ -8,10 +10,6 @@ import {
   screen,
   setupTestLifecycle,
 } from '@/test/utilities';
-
-import usePermissions from '@/hooks/use-permissions';
-
-import { useSessionContext, type SessionUser } from '@/providers/session';
 
 import QuickActions from './QuickActions';
 

@@ -1,24 +1,3 @@
-import {
-  MOCK_COACH,
-  MOCK_PLAYER,
-  MOCK_USER,
-  MOCK_USER_WITH_COACH,
-  MOCK_USER_WITH_PLAYER,
-} from '@/test/mocks/user';
-import {
-  createPermissionsMock,
-  createToasterMock,
-  expectNoA11yViolations,
-  fireEvent,
-  renderWithUI,
-  screen,
-  setupTestLifecycle,
-  waitFor,
-  enumText,
-} from '@/test/utilities';
-
-import { updateTeamInfo } from '@/actions/user';
-import usePermissions from '@/hooks/use-permissions';
 import { formatDate } from '@/utils/datetime';
 import {
   CoachPosition,
@@ -26,6 +5,25 @@ import {
   UserRole,
   UserState,
 } from '@/utils/enum';
+
+import { updateTeamInfo } from '@/actions/user';
+import usePermissions from '@/hooks/use-permissions';
+import {
+  MOCK_COACH,
+  MOCK_PLAYER,
+  MOCK_USER_WITH_COACH,
+  MOCK_USER_WITH_PLAYER,
+} from '@/test/mocks/user';
+import {
+  createPermissionsMock,
+  createToasterMock,
+  enumText,
+  expectNoA11yViolations,
+  renderWithUI,
+  screen,
+  setupTestLifecycle,
+  waitFor,
+} from '@/test/utilities';
 
 import TeamInfo from './TeamInfo';
 

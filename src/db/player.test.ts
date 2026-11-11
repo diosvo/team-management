@@ -3,7 +3,6 @@ import { eq, inArray, ne } from 'drizzle-orm';
 import db from '@/drizzle';
 import { PlayerTable } from '@/drizzle/schema/player';
 import { UserTable } from '@/drizzle/schema/user';
-
 import {
   mockInsertFailure,
   mockInsertSuccess,
@@ -12,7 +11,12 @@ import {
 import { MOCK_TEAM } from '@/test/mocks/team';
 import { MOCK_PLAYER } from '@/test/mocks/user';
 
-import { getTeamPlayerIds, insertPlayer, isJerseyNumberTaken } from './player';
+import {
+  insertPlayer,
+  isCaptain,
+  isJerseyNumberTaken,
+  selectTeamPlayerIds,
+} from './player';
 
 vi.mock('@/drizzle', () => ({
   default: {
@@ -64,7 +68,7 @@ describe('insertPlayer', () => {
   });
 });
 
-describe('getTeamPlayerIds', () => {
+describe('selectTeamPlayerIds', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -72,7 +76,7 @@ describe('getTeamPlayerIds', () => {
   test('returns only the ids that are players on the team', async () => {
     const { mockInnerJoin, mockWhereWithGroupBy } = mockSelectSuccess([{ id }]);
 
-    const result = await getTeamPlayerIds(team_id, [id, 'player-elsewhere']);
+    const result = await selectTeamPlayerIds(team_id, [id, 'player-elsewhere']);
 
     expect(result).toEqual([id]);
     // Verify query construction: the team is only reachable through `user`
@@ -97,7 +101,7 @@ describe('getTeamPlayerIds', () => {
   });
 
   test('skips the query entirely when there is nothing to check', async () => {
-    const result = await getTeamPlayerIds(team_id, []);
+    const result = await selectTeamPlayerIds(team_id, []);
 
     expect(result).toEqual([]);
     expect(db.select).not.toHaveBeenCalled();
@@ -152,5 +156,36 @@ describe('isJerseyNumberTaken', () => {
       { field: PlayerTable.id, value: id, type: 'ne' },
     ]);
     expect(mockLimit).toHaveBeenCalledWith(1);
+  });
+});
+
+describe('isCaptain', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  test.each([
+    [[{ is_captain: true }], true],
+    [[{ is_captain: false }], false],
+    [[], false],
+  ])('reads the flag from the player row (%o)', async (rows, expected) => {
+    const { mockWhere } = mockSelectSuccess(rows);
+
+    const result = await isCaptain(id);
+
+    expect(result).toBe(expected);
+    expect(mockWhere).toHaveBeenCalledWith({
+      field: PlayerTable.id,
+      value: id,
+      type: 'eq',
+    });
+  });
+
+  test('returns false when the query fails', async () => {
+    vi.mocked(db.select).mockImplementation(() => {
+      throw new Error('Database error');
+    });
+
+    expect(await isCaptain(id)).toBe(false);
   });
 });

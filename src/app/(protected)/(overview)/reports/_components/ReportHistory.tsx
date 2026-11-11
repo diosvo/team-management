@@ -1,22 +1,20 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-
+import { useTranslations } from 'next-intl';
 import { Badge, Button, HStack, VisuallyHidden } from '@chakra-ui/react';
 import { Download, FileClock } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 
-import DataTable, { type Column } from '@/components/DataTable';
-import PageTitle from '@/components/PageTitle';
-
-import { enumLabel } from '@/i18n/enums';
 import { reportDownloadUrl } from '@/utils/constants';
-import { ReportStatus } from '@/utils/enum';
 import { formatDatetime } from '@/utils/datetime';
+import { ReportStatus } from '@/utils/enum';
 import { paginateData } from '@/utils/filters';
 import { getColor } from '@/utils/helper';
 
+import DataTable, { type Column } from '@/components/DataTable';
+import PageTitle from '@/components/PageTitle';
 import type { ReportHistory as ReportHistoryRow } from '@/drizzle/schema';
+import { enumLabel } from '@/i18n/enums';
 
 type Translator = ReturnType<typeof useTranslations<'reports.history'>>;
 type CommonTranslator = ReturnType<typeof useTranslations<'common'>>;

@@ -1,6 +1,7 @@
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
 
 import { getDbErrorMessage } from '@/db/pg-error';
+
 import db from '../index';
 
 interface MigrationError extends Error {

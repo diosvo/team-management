@@ -1,3 +1,5 @@
+import { AttendanceStatus } from '@/utils/enum';
+
 import { MOCK_ATTENDANCE_STATS } from '@/test/mocks/attendance';
 import {
   axeInteractiveStat,
@@ -7,9 +9,7 @@ import {
   screen,
   setupTestLifecycle,
 } from '@/test/utilities';
-
 import type { AttendanceStats as StatsType } from '@/types/attendance';
-import { AttendanceStatus } from '@/utils/enum';
 
 import AttendanceStats from './AttendanceStats';
 

@@ -10,12 +10,13 @@ import {
 } from 'drizzle-orm/pg-core';
 
 import type { LeagueStatus } from '@/utils/enum';
-import { created_at, updated_at } from '../helpers';
 
 import { AchievementTable } from './achievement';
 import { MatchTable } from './match';
 import { PlayerTable } from './player';
 import { TeamTable } from './team';
+
+import { created_at, updated_at } from '../helpers';
 
 export const LeagueTable = pgTable('league', {
   league_id: uuid().primaryKey().defaultRandom(),

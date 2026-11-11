@@ -34,7 +34,7 @@ flowchart TD
 `}
 />
 
-- **Danh sách đội** (**Roster**; `addUser`, `removeUser`, quyền `roster`): nơi
+- **Danh sách đội** (**Roster**; `createUser`, `removeUser`, quyền `roster`): nơi
   mỗi thành viên bắt đầu; mọi trang khác đọc `user` / `player` từ đây.
 - **Giải đấu** (**Leagues**; `upsertLeague`, chỉ admin): ghi danh đội qua
   `league_team`; đồng bộ cầu thủ được chọn vào `league_team_roster` (lưu DB).

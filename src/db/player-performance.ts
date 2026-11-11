@@ -1,17 +1,7 @@
+import { cache } from 'react';
 import { subDays } from 'date-fns';
 import { and, asc, desc, eq, inArray, isNotNull, ne, sql } from 'drizzle-orm';
-import { cache } from 'react';
-
-import type { DateRange } from '@/types/common';
-import type {
-  ActivityRecord,
-  AttendanceOverview,
-  MatchesOverview,
-  MatchPerformanceRecord,
-  PerformanceSummary,
-  TestingOverview,
-  TestTypeProgress,
-} from '@/types/performance';
+import { nth } from 'es-toolkit/compat';
 
 import {
   MATCH_AVERAGE_FIELDS,
@@ -22,7 +12,6 @@ import { toIsoDay } from '@/utils/datetime';
 import {
   ActivityKind,
   AttendanceStatus,
-  MatchResult,
   MatchStatus,
   SessionStatus,
 } from '@/utils/enum';
@@ -40,6 +29,16 @@ import {
 import { TeamTable } from '@/drizzle/schema/team';
 import { TrainingSessionTable } from '@/drizzle/schema/training';
 import { UserTable } from '@/drizzle/schema/user';
+import type { DateRange } from '@/types/common';
+import type {
+  ActivityRecord,
+  AttendanceOverview,
+  MatchesOverview,
+  MatchPerformanceRecord,
+  PerformanceSummary,
+  TestingOverview,
+  TestTypeProgress,
+} from '@/types/performance';
 
 import {
   attendanceDate,
@@ -95,7 +94,7 @@ const EMPTY_MATCHES: MatchesOverview = {
  * React `cache` compares arguments by identity, so the cached reads take the
  * range as two strings: a fresh `{ from, to }` object would never hit.
  */
-export const getPlayerAttendanceOverview = (
+export const selectPlayerAttendanceOverview = (
   player_id: string,
   team_id: string,
   { from, to }: DateRange,
@@ -238,7 +237,7 @@ const fetchAttendanceOverview = cache(
 //#region Testing
 
 /** Distinct testing days and the latest one, without the per-type detail. */
-export async function getPlayerTestingSummary(
+export async function selectPlayerTestingSummary(
   player_id: string,
 ): Promise<Pick<TestingOverview, 'tests_taken' | 'last_tested'>> {
   try {
@@ -261,7 +260,7 @@ export async function getPlayerTestingSummary(
 }
 
 /** All-time: tests are sparse, so a date-range filter would usually be empty. */
-export const getPlayerTestingOverview = cache(
+export const selectPlayerTestingOverview = cache(
   async (player_id: string, team_id: string): Promise<TestingOverview> => {
     try {
       const mine = await db
@@ -322,7 +321,11 @@ export const getPlayerTestingOverview = cache(
 
       const types: Array<TestTypeProgress> = [...byType.values()].map(
         (rows) => {
-          const { type_id, name, unit } = rows[0];
+          // Every group was created from at least one row.
+          const [{ type_id, name, unit }] = rows as [
+            (typeof mine)[number],
+            ...typeof mine,
+          ];
           const lower_is_better = isLowerBetter(unit);
 
           const series = rows.map(({ date, result }) => {
@@ -336,7 +339,7 @@ export const getPlayerTestingOverview = cache(
             };
           });
 
-          const latest = series[series.length - 1];
+          const latest = series.at(-1) as (typeof series)[number];
           const previous = series.at(-2);
           const others = (
             teamByKey.get(`${type_id}|${latest.date}`) ?? []
@@ -373,7 +376,8 @@ export const getPlayerTestingOverview = cache(
       return {
         types: types.sort((a, b) => a.name.localeCompare(b.name)),
         tests_taken: dates.length,
-        last_tested: dates[dates.length - 1],
+        // The no-results case returned above, so `dates` is never empty.
+        last_tested: nth(dates, dates.length - 1)!,
       };
     } catch {
       return EMPTY_TESTING;
@@ -445,7 +449,7 @@ const fetchMatchRows = cache(
   },
 );
 
-export async function getPlayerMatchesOverview(
+export async function selectPlayerMatchesOverview(
   player_id: string,
   team_id: string,
   range: DateRange,
@@ -467,7 +471,7 @@ export async function getPlayerMatchesOverview(
 
 //#region Activity
 
-export async function getPlayerActivity(
+export async function selectPlayerActivity(
   player_id: string,
   team_id: string,
   range: DateRange,
@@ -584,7 +588,7 @@ export async function getPlayerActivity(
 //#region Honors
 
 /** How many honors the player holds, and the most recent one. */
-export async function getPlayerHonorSummary(
+export async function selectPlayerHonorSummary(
   player_id: string,
 ): Promise<PerformanceSummary['honors']> {
   try {
@@ -664,7 +668,7 @@ function _improvement(
 /** Session length in hours, rounded to one decimal. */
 function _durationHours(start: string, end: string) {
   const toMinutes = (time: string) => {
-    const [h, m] = time.split(':').map(Number);
+    const [h = 0, m = 0] = time.split(':').map(Number);
     return h * 60 + m;
   };
   const minutes = toMinutes(end) - toMinutes(start);

@@ -89,11 +89,14 @@ Các trường hợp chuyển hướng:
   đối số đầu tiên. Các hàm đọc dữ liệu dùng thẳng lớp này.
 - **`withResource(resource)(actions, fn)`:** bọc ngoài `withAuth`, tạo
   `defineAbility(user.role, user.is_captain)`.
+- **`is_captain`:** không phải cột của `user`. Plugin `customSession` của Better
+  Auth trong `src/lib/auth.ts` đọc `player.is_captain` (`isCaptain`) rồi gắn vào
+  `session.user`; phía client nhận qua `customSessionClient`.
 - Gọi `forbidden()` nếu `canAll` không đúng với tất cả hành động được liệt kê.
 
 ```ts
 const roster = withResource('roster');
-export const addUser = roster(['create'], async (user, values) => { ... });
+export const createUser = roster(['create'], async (user, values) => { ... });
 ```
 
 Lớp này cấp quyền theo resource, không theo từng bản ghi. Xem [Kiểm tra sở hữu](#kiểm-tra-sở-hữu).

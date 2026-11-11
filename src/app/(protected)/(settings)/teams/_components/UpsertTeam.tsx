@@ -1,32 +1,31 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { useSWRConfig } from 'swr';
-
+import { useForm } from 'react-hook-form';
+import { useTranslations } from 'next-intl';
 import {
   Button,
+  createOverlay,
   Dialog,
   Input,
   Portal,
   VStack,
-  createOverlay,
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ImageOff, Save } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useForm } from 'react-hook-form';
+import { useSWRConfig } from 'swr';
 
-import { CloseButton } from '@/components/ui/close-button';
-import { Field } from '@/components/ui/field';
-import { toaster } from '@/components/ui/toaster';
+import { CACHE_KEY } from '@/utils/constants';
 
 import { getDefaults } from '@/lib/zod';
-import { UpsertTeamSchema, type UpsertTeamSchemaValues } from '@/schemas/team';
-import { CACHE_KEY } from '@/utils/constants';
 
 import { uploadLogo, upsertTeam } from '@/actions/team';
 import ImageUploader from '@/components/common/ImageUploader';
+import { CloseButton } from '@/components/ui/close-button';
+import { Field } from '@/components/ui/field';
+import { toaster } from '@/components/ui/toaster';
 import { useTeamLogo } from '@/hooks/use-image';
+import { UpsertTeamSchema, type UpsertTeamSchemaValues } from '@/schemas/team';
 
 export const UpsertTeam = createOverlay(({ action, item, ...rest }) => {
   const t = useTranslations('teams.upsert');

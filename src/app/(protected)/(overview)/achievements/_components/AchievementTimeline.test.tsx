@@ -1,6 +1,9 @@
+import { ESTABLISHED_DATE } from '@/utils/constants';
+import { formatDate } from '@/utils/datetime';
+import { AchievementType } from '@/utils/enum';
 
+import type { AchievementWithRelations } from '@/db/achievement';
 import usePermissions from '@/hooks/use-permissions';
-
 import { MOCK_ACHIEVEMENT } from '@/test/mocks/achievement';
 import {
   createPermissionsMock,
@@ -8,11 +11,6 @@ import {
   screen,
   setupTestLifecycle,
 } from '@/test/utilities';
-import { ESTABLISHED_DATE } from '@/utils/constants';
-import { formatDate } from '@/utils/datetime';
-import { AchievementType } from '@/utils/enum';
-
-import type { AchievementWithRelations } from '@/db/achievement';
 
 import AchievementTimeline from './AchievementTimeline';
 
@@ -48,9 +46,11 @@ describe('AchievementTimeline', () => {
   const mockUsePermissions = vi.mocked(usePermissions);
 
   const setup = (achievements: Array<AchievementWithRelations>) => {
-    mockUsePermissions.mockReturnValue(createPermissionsMock({
-      can: vi.fn(() => false),
-    }));
+    mockUsePermissions.mockReturnValue(
+      createPermissionsMock({
+        can: vi.fn(() => false),
+      }),
+    );
 
     return renderWithUI(<AchievementTimeline achievements={achievements} />);
   };

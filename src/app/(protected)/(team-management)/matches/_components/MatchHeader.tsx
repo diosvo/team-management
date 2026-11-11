@@ -1,8 +1,7 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
 import Link from 'next/link';
-
+import { useTranslations } from 'next-intl';
 import { Button } from '@chakra-ui/react';
 import { ClipboardList } from 'lucide-react';
 

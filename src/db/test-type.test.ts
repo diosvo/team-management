@@ -2,7 +2,6 @@ import { asc, eq } from 'drizzle-orm';
 
 import db from '@/drizzle';
 import { type InsertTestType, TestTypeTable } from '@/drizzle/schema';
-
 import {
   mockDeleteFailure,
   mockDeleteSuccess,
@@ -19,9 +18,9 @@ import {
 
 import {
   deleteTestType,
-  getTestTypeById,
-  getTestTypes,
   insertTestType,
+  selectTestTypeById,
+  selectTestTypes,
   updateTestType,
 } from './test-type';
 
@@ -55,7 +54,7 @@ vi.mock('@/drizzle/schema', () => ({
   },
 }));
 
-describe('getTestTypes', () => {
+describe('selectTestTypes', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -66,7 +65,7 @@ describe('getTestTypes', () => {
       MOCK_TEST_TYPE_2,
     ]);
 
-    const result = await getTestTypes();
+    const result = await selectTestTypes();
 
     expect(result).toEqual([MOCK_TEST_TYPE, MOCK_TEST_TYPE_2]);
     expect(db.query.TestTypeTable.findMany).toHaveBeenCalledWith({
@@ -77,7 +76,7 @@ describe('getTestTypes', () => {
   test('returns empty array when no test types exist', async () => {
     vi.mocked(db.query.TestTypeTable.findMany).mockResolvedValue([]);
 
-    const result = await getTestTypes();
+    const result = await selectTestTypes();
 
     expect(result).toEqual([]);
   });
@@ -87,13 +86,13 @@ describe('getTestTypes', () => {
       new Error('Database error'),
     );
 
-    const result = await getTestTypes();
+    const result = await selectTestTypes();
 
     expect(result).toEqual([]);
   });
 });
 
-describe('getTestTypeById', () => {
+describe('selectTestTypeById', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -103,7 +102,7 @@ describe('getTestTypeById', () => {
       MOCK_TEST_TYPE,
     );
 
-    const result = await getTestTypeById(MOCK_TEST_TYPE.type_id);
+    const result = await selectTestTypeById(MOCK_TEST_TYPE.type_id);
 
     expect(result).toEqual(MOCK_TEST_TYPE);
     expect(db.query.TestTypeTable.findFirst).toHaveBeenCalledWith({
@@ -114,7 +113,7 @@ describe('getTestTypeById', () => {
   test('returns undefined when test type not found', async () => {
     vi.mocked(db.query.TestTypeTable.findFirst).mockResolvedValue(undefined);
 
-    const result = await getTestTypeById('unknown-id');
+    const result = await selectTestTypeById('unknown-id');
 
     expect(result).toBeUndefined();
   });
@@ -124,7 +123,7 @@ describe('getTestTypeById', () => {
       new Error('Database error'),
     );
 
-    const result = await getTestTypeById(MOCK_TEST_TYPE.type_id);
+    const result = await selectTestTypeById(MOCK_TEST_TYPE.type_id);
 
     expect(result).toBeNull();
   });

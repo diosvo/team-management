@@ -1,6 +1,5 @@
 import db from '@/drizzle';
 import { CoachTable } from '@/drizzle/schema/coach';
-
 import { mockInsertFailure, mockInsertSuccess } from '@/test/db-operations';
 import { MOCK_COACH } from '@/test/mocks/user';
 

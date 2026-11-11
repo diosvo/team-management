@@ -1,12 +1,12 @@
 import { Field } from '@/components/ui/field';
-
+import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import {
   asEditor,
   createMockEditor,
   editorOptions,
   emitUpdate,
-  useEditorMock,
   type MockEditor,
+  useEditorMock,
 } from '@/test/mocks/tiptap';
 import {
   expectNoA11yViolations,
@@ -14,8 +14,6 @@ import {
   screen,
   setupTestLifecycle,
 } from '@/test/utilities';
-
-import { RichTextEditor } from '@/components/ui/rich-text-editor';
 
 import RichTextInput, {
   DEFAULT_CHARACTER_LIMIT,

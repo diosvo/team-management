@@ -1,8 +1,8 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
-
+import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import {
   CloseButton,
   Drawer,
@@ -11,9 +11,9 @@ import {
   useBreakpointValue,
 } from '@chakra-ui/react';
 import { PanelRightOpen } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 
 import { useSessionContext } from '@/providers/session';
+
 import Sidebar from './Sidebar';
 
 export default function MobileSidebar() {

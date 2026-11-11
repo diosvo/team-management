@@ -1,23 +1,25 @@
 'use server';
 
 import { getTranslations } from 'next-intl/server';
+
+import { ResponseFactory } from '@/utils/response';
+
 import { getDbErrorMessage } from '@/db/pg-error';
 import {
   deleteTestType,
-  getTestTypes as getAction,
-  getTestTypeById,
   insertTestType,
+  selectTestTypeById,
+  selectTestTypes,
   updateTestType,
 } from '@/db/test-type';
 import type { UpsertTestTypeSchemaValues } from '@/schemas/periodic-testing';
 
-import { ResponseFactory } from '@/utils/response';
 import { withAuth, withResource } from './auth';
 import { revalidate } from './cache';
 
 const periodicTesting = withResource('periodic-testing');
 
-export const getTestTypes = withAuth(async () => await getAction());
+export const getTestTypes = withAuth(async () => await selectTestTypes());
 
 export const upsertTestType = periodicTesting(
   ['create', 'edit'],
@@ -28,7 +30,7 @@ export const upsertTestType = periodicTesting(
   ) {
     const t = await getTranslations('actions.testType');
     try {
-      const existingTestType = await getTestTypeById(type_id);
+      const existingTestType = await selectTestTypeById(type_id);
 
       const { direction, target, ...rest } = data;
       const values = {

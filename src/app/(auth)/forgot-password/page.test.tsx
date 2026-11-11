@@ -1,3 +1,8 @@
+import { type HttpStatus, Status } from '@/utils/response';
+
+import authClient from '@/lib/auth-client';
+
+import { LOGIN_PATH } from '@/routes';
 import {
   authCallbacks,
   expectNoA11yViolations,
@@ -7,10 +12,6 @@ import {
   setupTestLifecycle,
   waitFor,
 } from '@/test/utilities';
-
-import authClient from '@/lib/auth-client';
-import { Status, type HttpStatus } from '@/utils/response';
-import { LOGIN_PATH } from '@/routes';
 
 import ForgotPasswordPage from './page';
 

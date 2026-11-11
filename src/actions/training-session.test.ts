@@ -1,20 +1,21 @@
+import type { TrainingSearchParams } from '@/lib/nuqs';
+
 import { revalidate } from '@/actions/cache';
 import { getDbErrorMessage } from '@/db/pg-error';
 import {
   deleteSession,
-  getSessions as getDbSessions,
   insertSession,
+  selectSessions,
   updateSession,
 } from '@/db/training-session';
-import { getTeamHeadCoach } from '@/db/user';
+import { selectTeamHeadCoach } from '@/db/user';
 import type { UpsertSessionSchemaValues } from '@/schemas/training';
-
+import { MOCK_DATE_RANGE } from '@/test/mocks/analytics';
 import {
   mockWithAuth,
   mockWithResource,
   mockWithResourceAction,
 } from '@/test/mocks/auth';
-import { MOCK_DATE_RANGE } from '@/test/mocks/analytics';
 import { MOCK_TEAM } from '@/test/mocks/team';
 import {
   MOCK_TRAINING_SESSION,
@@ -22,9 +23,6 @@ import {
   MOCK_TRAINING_SESSION_RESPONSE,
 } from '@/test/mocks/training-sessions';
 import { MOCK_COACH_WITH_NAME } from '@/test/mocks/user';
-
-
-import type { TrainingSearchParams } from '@/lib/nuqs';
 
 import {
   getCoach,
@@ -39,14 +37,14 @@ vi.mock('./auth', () => ({
 }));
 
 vi.mock('@/db/training-session', () => ({
-  getSessions: vi.fn(),
+  selectSessions: vi.fn(),
   insertSession: vi.fn(),
   updateSession: vi.fn(),
   deleteSession: vi.fn(),
 }));
 
 vi.mock('@/db/user', () => ({
-  getTeamHeadCoach: vi.fn(),
+  selectTeamHeadCoach: vi.fn(),
 }));
 
 vi.mock('@/actions/cache', () => ({
@@ -84,16 +82,16 @@ describe('Training Session Actions', () => {
 
   describe('getCoach', () => {
     test('returns head coach for the team', async () => {
-      vi.mocked(getTeamHeadCoach).mockResolvedValue(MOCK_COACH_WITH_NAME);
+      vi.mocked(selectTeamHeadCoach).mockResolvedValue(MOCK_COACH_WITH_NAME);
 
       const result = await getCoach();
 
-      expect(getTeamHeadCoach).toHaveBeenCalled();
+      expect(selectTeamHeadCoach).toHaveBeenCalled();
       expect(result).toEqual(MOCK_COACH_WITH_NAME);
     });
 
     test('returns null when no coach is assigned', async () => {
-      vi.mocked(getTeamHeadCoach).mockResolvedValue(null);
+      vi.mocked(selectTeamHeadCoach).mockResolvedValue(null);
 
       const result = await getCoach();
 
@@ -110,13 +108,16 @@ describe('Training Session Actions', () => {
     };
 
     test('calls getSessions with params', async () => {
-      vi.mocked(getDbSessions).mockResolvedValue(
+      vi.mocked(selectSessions).mockResolvedValue(
         MOCK_TRAINING_SESSION_RESPONSE,
       );
 
       const result = await getSessions(mockParams);
 
-      expect(getDbSessions).toHaveBeenCalledWith(MOCK_TEAM.team_id, mockParams);
+      expect(selectSessions).toHaveBeenCalledWith(
+        MOCK_TEAM.team_id,
+        mockParams,
+      );
       expect(result).toEqual(MOCK_TRAINING_SESSION_RESPONSE);
     });
 
@@ -129,7 +130,7 @@ describe('Training Session Actions', () => {
           total_hours: 0,
         },
       };
-      vi.mocked(getDbSessions).mockResolvedValue(emptyResponse);
+      vi.mocked(selectSessions).mockResolvedValue(emptyResponse);
 
       const result = await getSessions(mockParams);
 
@@ -138,7 +139,7 @@ describe('Training Session Actions', () => {
 
     test('propagates errors from getSessions', async () => {
       const message = 'Database error';
-      vi.mocked(getDbSessions).mockRejectedValue(new Error(message));
+      vi.mocked(selectSessions).mockRejectedValue(new Error(message));
 
       await expect(getSessions(mockParams)).rejects.toThrow(message);
     });
@@ -154,7 +155,7 @@ describe('Training Session Actions', () => {
     };
 
     test('updates existing session and revalidates cache', async () => {
-      vi.mocked(getTeamHeadCoach).mockResolvedValue(MOCK_COACH_WITH_NAME);
+      vi.mocked(selectTeamHeadCoach).mockResolvedValue(MOCK_COACH_WITH_NAME);
       vi.mocked(updateSession).mockResolvedValue([MOCK_TRAINING_SESSION]);
 
       const result = await upsertSession(MOCK_SESSION_ID, sessionData);
@@ -169,7 +170,7 @@ describe('Training Session Actions', () => {
     });
 
     test('inserts new session when session_id is empty', async () => {
-      vi.mocked(getTeamHeadCoach).mockResolvedValue(MOCK_COACH_WITH_NAME);
+      vi.mocked(selectTeamHeadCoach).mockResolvedValue(MOCK_COACH_WITH_NAME);
       vi.mocked(insertSession).mockResolvedValue([MOCK_TRAINING_SESSION]);
 
       const result = await upsertSession('', sessionData);
@@ -188,7 +189,7 @@ describe('Training Session Actions', () => {
     });
 
     test('returns error when no coach is assigned to the team', async () => {
-      vi.mocked(getTeamHeadCoach).mockResolvedValue(null);
+      vi.mocked(selectTeamHeadCoach).mockResolvedValue(null);
 
       const result = await upsertSession(MOCK_SESSION_ID, sessionData);
 
@@ -203,7 +204,7 @@ describe('Training Session Actions', () => {
 
     test('returns error response when update fails', async () => {
       const errorMessage = 'Update failed';
-      vi.mocked(getTeamHeadCoach).mockResolvedValue(MOCK_COACH_WITH_NAME);
+      vi.mocked(selectTeamHeadCoach).mockResolvedValue(MOCK_COACH_WITH_NAME);
       vi.mocked(updateSession).mockRejectedValue(new Error(errorMessage));
       vi.mocked(getDbErrorMessage).mockReturnValue({
         message: errorMessage,
@@ -222,7 +223,7 @@ describe('Training Session Actions', () => {
 
     test('returns error response when insert fails', async () => {
       const errorMessage = 'Insert failed';
-      vi.mocked(getTeamHeadCoach).mockResolvedValue(MOCK_COACH_WITH_NAME);
+      vi.mocked(selectTeamHeadCoach).mockResolvedValue(MOCK_COACH_WITH_NAME);
       vi.mocked(insertSession).mockRejectedValue(new Error(errorMessage));
       vi.mocked(getDbErrorMessage).mockReturnValue({
         message: errorMessage,
@@ -241,7 +242,7 @@ describe('Training Session Actions', () => {
 
     test('handles database constraint errors', async () => {
       const pgError = 'Unique constraint violation';
-      vi.mocked(getTeamHeadCoach).mockResolvedValue(MOCK_COACH_WITH_NAME);
+      vi.mocked(selectTeamHeadCoach).mockResolvedValue(MOCK_COACH_WITH_NAME);
       vi.mocked(updateSession).mockRejectedValue({
         code: '23505',
         detail: 'Duplicate key',

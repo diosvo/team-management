@@ -6,7 +6,7 @@ import PageHeader, { AddButton } from '@/components/PageHeader';
 
 import { UpsertTestType } from './UpsertTestType';
 
-export default function TestTypesHeader() {
+export default function TestTypeHeader() {
   const t = useTranslations('periodicTesting.testTypes');
   const tCommon = useTranslations('common');
 

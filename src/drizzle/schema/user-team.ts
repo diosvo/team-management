@@ -9,9 +9,10 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 
-import { created_at, updated_at } from '../helpers';
 import { TeamTable } from './team';
 import { UserTable } from './user';
+
+import { created_at, updated_at } from '../helpers';
 
 /**
  * One row per stint a user spends on a team. A transfer closes the current row

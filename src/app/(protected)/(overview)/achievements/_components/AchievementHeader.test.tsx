@@ -1,7 +1,7 @@
 import { useSearchParams } from 'next/navigation';
 
 import usePermissions from '@/hooks/use-permissions';
-
+import { MOCK_LEAGUE } from '@/test/mocks/league';
 import {
   createPermissionsMock,
   renderWithUI,
@@ -74,16 +74,16 @@ describe('AchievementHeader', () => {
   });
 
   test('pre-fills the league from the record query param', () => {
-    setup({ canCreate: true, record: 'league-123' });
+    setup({ canCreate: true, record: MOCK_LEAGUE.league_id });
 
     expect(mockOpen).toHaveBeenCalledWith('add-achievement', {
       action: 'Add',
-      item: { achievement_id: '', league_id: 'league-123' },
+      item: { achievement_id: '', league_id: MOCK_LEAGUE.league_id },
     });
   });
 
   test('ignores the record query param when the user cannot create', () => {
-    setup({ record: 'league-123' });
+    setup({ record: MOCK_LEAGUE.league_id });
 
     expect(mockOpen).not.toHaveBeenCalled();
   });

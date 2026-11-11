@@ -1,6 +1,7 @@
+import { ALL } from './app';
+
 import { SessionStatus } from '../enum';
 import type { Selection } from '../type';
-import { ALL } from './app';
 
 export const SELECTABLE_SESSION_STATUS = [
   SessionStatus.SCHEDULED,

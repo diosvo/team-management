@@ -1,6 +1,6 @@
-import type { InsertTrainingSession, TrainingSession } from '@/drizzle/schema';
-
 import { AttendanceStatus, SessionStatus } from '@/utils/enum';
+
+import type { InsertTrainingSession, TrainingSession } from '@/drizzle/schema';
 
 import { MOCK_LOCATION } from './location';
 import { MOCK_TEAM } from './team';
@@ -41,34 +41,38 @@ const createSessionWithDetails = (
   attendances,
 });
 
+const COMPLETED_SESSION_ROW = createSessionWithDetails(
+  'session-1',
+  SessionStatus.COMPLETED,
+  '09:00:00',
+  '11:00:00',
+  [
+    { attendance_id: 'att-1', status: AttendanceStatus.ON_TIME },
+    { attendance_id: 'att-2', status: AttendanceStatus.LATE },
+    { attendance_id: 'att-3', status: AttendanceStatus.ABSENT },
+  ],
+);
+
+const SCHEDULED_SESSION_ROW = createSessionWithDetails(
+  'session-2',
+  SessionStatus.SCHEDULED,
+  '10:00:00',
+  '12:00:00',
+  [
+    { attendance_id: 'att-4', status: AttendanceStatus.ON_TIME },
+    { attendance_id: 'att-5', status: AttendanceStatus.ON_TIME },
+  ],
+);
+
 export const MOCK_SESSIONS_DB_RESULT = [
-  createSessionWithDetails(
-    'session-1',
-    SessionStatus.COMPLETED,
-    '09:00:00',
-    '11:00:00',
-    [
-      { attendance_id: 'att-1', status: AttendanceStatus.ON_TIME },
-      { attendance_id: 'att-2', status: AttendanceStatus.LATE },
-      { attendance_id: 'att-3', status: AttendanceStatus.ABSENT },
-    ],
-  ),
-  createSessionWithDetails(
-    'session-2',
-    SessionStatus.SCHEDULED,
-    '10:00:00',
-    '12:00:00',
-    [
-      { attendance_id: 'att-4', status: AttendanceStatus.ON_TIME },
-      { attendance_id: 'att-5', status: AttendanceStatus.ON_TIME },
-    ],
-  ),
+  COMPLETED_SESSION_ROW,
+  SCHEDULED_SESSION_ROW,
 ];
 
 export const MOCK_TRAINING_SESSION_RESPONSE = {
   data: [
     {
-      ...MOCK_SESSIONS_DB_RESULT[0],
+      ...COMPLETED_SESSION_ROW,
       attendance_count: 3,
       analytics: {
         late: 1,
@@ -77,7 +81,7 @@ export const MOCK_TRAINING_SESSION_RESPONSE = {
       },
     },
     {
-      ...MOCK_SESSIONS_DB_RESULT[1],
+      ...SCHEDULED_SESSION_ROW,
       attendance_count: 2,
       analytics: {
         late: 0,

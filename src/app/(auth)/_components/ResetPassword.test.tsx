@@ -1,8 +1,10 @@
+import { MOCK_USER } from '@/test/mocks/user';
+
 import ResetPassword from './ResetPassword';
 
 describe('ResetPassword', () => {
   const mockProps = {
-    name: 'John Doe',
+    name: MOCK_USER.name,
     url: 'https://example.com/reset-password?token=abc123',
   };
 

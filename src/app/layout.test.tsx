@@ -1,6 +1,5 @@
-import { render, screen, setupTestLifecycle } from '@/test/utilities';
-
 import messages from '@/i18n/messages/en';
+import { render, screen, setupTestLifecycle } from '@/test/utilities';
 
 import RootLayout, { generateMetadata } from './layout';
 
@@ -9,9 +8,7 @@ vi.mock('next/font/google', () => ({
 }));
 
 vi.mock('next-intl', async () => {
-  const actual = await vi.importActual<typeof import('next-intl')>(
-    'next-intl',
-  );
+  const actual = await vi.importActual<typeof import('next-intl')>('next-intl');
   return {
     ...actual,
     // The real provider requires a `locale`/`messages` it infers from a

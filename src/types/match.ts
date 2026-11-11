@@ -1,7 +1,10 @@
-import type { Match, Team } from '@/drizzle/schema';
 import type { MatchResult } from '@/utils/enum';
 
-export interface MatchWithTeams extends Match {
+import type { Match, Team } from '@/drizzle/schema';
+
+// The `home_team` / `away_team` columns hold team ids; the query layer
+// replaces them with the joined team rows.
+export interface MatchWithTeams extends Omit<Match, 'home_team' | 'away_team'> {
   home_team: Pick<Team, 'name' | 'team_id'>;
   away_team: Pick<Team, 'name' | 'team_id'>;
   league: Nullable<{

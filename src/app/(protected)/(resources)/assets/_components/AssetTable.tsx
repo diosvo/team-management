@@ -1,25 +1,23 @@
 'use client';
 
-import dynamic from 'next/dynamic';
 import { useMemo } from 'react';
-
-import { Badge } from '@chakra-ui/react';
+import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
+import { Badge } from '@chakra-ui/react';
 
-import DataTable, { type Column } from '@/components/DataTable';
-import HighlightText from '@/components/HighlightText';
-
-import usePermissions from '@/hooks/use-permissions';
-import useTableState from '@/hooks/use-table-state';
-
-import { enumLabel } from '@/i18n/enums';
-import { useAssetFilters } from '@/lib/nuqs';
 import { formatDate, formatDatetime } from '@/utils/datetime';
 import { buildPredicate } from '@/utils/filters';
 import { getColor } from '@/utils/helper';
 
+import { useAssetFilters } from '@/lib/nuqs';
+
 import { removeAsset } from '@/actions/asset';
+import DataTable, { type Column } from '@/components/DataTable';
+import HighlightText from '@/components/HighlightText';
 import type { Asset } from '@/drizzle/schema/asset';
+import usePermissions from '@/hooks/use-permissions';
+import useTableState from '@/hooks/use-table-state';
+import { enumLabel } from '@/i18n/enums';
 
 import { UpsertAsset } from './UpsertAsset';
 

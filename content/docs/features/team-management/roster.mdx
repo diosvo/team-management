@@ -28,7 +28,7 @@ description: The team's membership list, with invite and removal for admins and 
     ### Invite
 
     - **+ Add** opens the invite dialog.
-    - `addUser` creates the account (temporary password) and the `player` or
+    - `createUser` creates the account (temporary password) and the `player` or
       `coach` row.
     - It also opens a `user_team` stint from the join date, or the club's
       founding date (`ESTABLISHED_DATE`) when none is given.
@@ -93,7 +93,7 @@ Server actions in `src/actions/user.ts`, gated by `withResource('roster')`.
       required: true,
       description: 'All members of the caller’s team except SUPER_ADMIN.',
     },
-    'addUser(values)': {
+    'createUser(values)': {
       type: 'Response',
       required: true,
       description: (

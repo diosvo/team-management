@@ -1,15 +1,15 @@
+import { TestTypeUnit } from '@/utils/enum';
+
 import {
   mockUseQueryStates,
   renderWithUI,
   setupTestLifecycle,
 } from '@/test/utilities';
 
-import { TestTypeUnit } from '@/utils/enum';
-
-import TestTypesFilters from './TestTypesFilters';
+import TestTypeFilters from './TestTypeFilters';
 
 // The generic Filters component is covered by its own tests; capture the props
-// TestTypesFilters wires through to it.
+// TestTypeFilters wires through to it.
 const propsSpy = {
   filters: [] as Array<{ key: string }>,
   values: undefined as unknown,
@@ -24,7 +24,7 @@ vi.mock('@/components/filters/Filters', () => ({
   },
 }));
 
-describe('TestTypesFilters', () => {
+describe('TestTypeFilters', () => {
   const mockSetSearchParams = vi.fn();
 
   const setup = (values: Record<string, unknown> = {}) => {
@@ -33,7 +33,7 @@ describe('TestTypesFilters', () => {
       mockSetSearchParams,
     );
 
-    return renderWithUI(<TestTypesFilters />);
+    return renderWithUI(<TestTypeFilters />);
   };
 
   const filterKeys = () => propsSpy.filters.map(({ key }) => key);

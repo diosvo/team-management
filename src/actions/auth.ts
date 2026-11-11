@@ -7,21 +7,22 @@
  * 5. Return success/error state within a message
  */
 
+import { cache } from 'react';
 import { headers } from 'next/headers';
 import { forbidden, redirect, RedirectType } from 'next/navigation';
-import { cache } from 'react';
-
-import type { User } from '@/drizzle/schema/user';
-import auth from '@/lib/auth';
-import { LOGIN_PATH } from '@/routes';
 
 import type { UserRole } from '@/utils/enum';
 import {
-  defineAbility,
   type Action,
+  defineAbility,
   type Permission,
   type Resource,
 } from '@/utils/permissions';
+
+import auth from '@/lib/auth';
+
+import type { User } from '@/drizzle/schema/user';
+import { LOGIN_PATH } from '@/routes';
 
 type ServerAction<T extends Array<unknown>, R> = (...args: T) => Promise<R>;
 

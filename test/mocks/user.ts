@@ -1,12 +1,13 @@
-import type { Coach, Player, User, UserTeam } from '@/drizzle/schema';
-import type { SessionUser } from '@/providers/session';
-import type { AddUserValues } from '@/schemas/user';
 import {
   CoachPosition,
   PlayerPosition,
   UserRole,
   UserState,
 } from '@/utils/enum';
+
+import type { Coach, Player, User, UserTeam } from '@/drizzle/schema';
+import type { SessionUser } from '@/providers/session';
+import type { AddUserValues } from '@/schemas/user';
 
 import { MOCK_TEAM } from './team';
 
@@ -38,8 +39,7 @@ export const MOCK_USER: User = {
 
 /**
  * The user as better-auth projects it onto the session, which is what
- * `useSessionContext` hands to components. It overlaps `MOCK_USER` but requires
- * `is_captain`, which the database row only carries optionally.
+ * `useSessionContext` hands to components.
  */
 export const MOCK_SESSION_USER: SessionUser = {
   ...MOCK_USER,
@@ -87,4 +87,48 @@ export const MOCK_USER_WITH_PLAYER = {
 export const MOCK_USER_WITH_COACH = {
   ...MOCK_USER,
   coach: MOCK_COACH,
+};
+
+/**
+ * Distinct teammates for list, table and picker tests that need several
+ * rows. Each has its own id, name and email so rows can be told apart.
+ */
+export const MOCK_ALICE = {
+  ...MOCK_USER,
+  id: 'alice',
+  name: 'Alice',
+  email: 'alice@team.com',
+  role: UserRole.PLAYER,
+  state: UserState.ACTIVE,
+  player: { ...MOCK_PLAYER, id: 'alice', jersey_number: 7 },
+};
+
+export const MOCK_BOB = {
+  ...MOCK_USER,
+  id: 'bob',
+  name: 'Bob',
+  email: 'bob@team.com',
+  role: UserRole.COACH,
+  state: UserState.INACTIVE,
+  coach: { ...MOCK_COACH, id: 'bob' },
+};
+
+export const MOCK_CAROL = {
+  ...MOCK_USER,
+  id: 'carol',
+  name: 'Carol',
+  email: 'carol@team.com',
+  role: UserRole.GUEST,
+  state: UserState.ACTIVE,
+};
+
+/** An active player with no jersey number yet. */
+export const MOCK_DAN = {
+  ...MOCK_USER,
+  id: 'dan',
+  name: 'Dan',
+  email: 'dan@team.com',
+  role: UserRole.PLAYER,
+  state: UserState.ACTIVE,
+  player: { ...MOCK_PLAYER, id: 'dan', jersey_number: null },
 };

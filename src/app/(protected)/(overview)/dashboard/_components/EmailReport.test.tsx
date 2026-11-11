@@ -1,5 +1,6 @@
 import { useController } from 'react-hook-form';
 
+import { sendReportEmail } from '@/actions/report';
 import {
   createToasterMock,
   mockToaster,
@@ -7,8 +8,6 @@ import {
   screen,
   waitFor,
 } from '@/test/utilities';
-
-import { sendReportEmail } from '@/actions/report';
 
 import EmailReport from './EmailReport';
 

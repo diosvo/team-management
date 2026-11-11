@@ -1,15 +1,14 @@
-import { renderWithUI, screen, setupTestLifecycle } from '@/test/utilities';
-import {
-  MOCK_PERFORMANCE_RANGE,
-  MOCK_PERFORMANCE_TARGET_ID,
-} from '@/test/mocks/performance';
-
 import {
   getPlayerActivity,
   getPlayerAttendance,
   getPlayerMatches,
   getPlayerTesting,
 } from '@/actions/player-performance';
+import {
+  MOCK_PERFORMANCE_RANGE,
+  MOCK_PERFORMANCE_TARGET_ID,
+} from '@/test/mocks/performance';
+import { renderWithUI, screen, setupTestLifecycle } from '@/test/utilities';
 
 import {
   ActivitySection,

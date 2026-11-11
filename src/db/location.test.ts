@@ -2,7 +2,6 @@ import { asc, eq } from 'drizzle-orm';
 
 import db from '@/drizzle';
 import { type InsertLocation, LocationTable } from '@/drizzle/schema';
-
 import {
   mockDeleteFailure,
   mockDeleteSuccess,
@@ -15,8 +14,8 @@ import { MOCK_LOCATION } from '@/test/mocks/location';
 
 import {
   deleteLocation,
-  getLocations,
   insertLocation,
+  selectLocations,
   updateLocation,
 } from './location';
 
@@ -48,7 +47,7 @@ vi.mock('@/drizzle/schema', () => ({
   },
 }));
 
-describe('getLocations', () => {
+describe('selectLocations', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -58,7 +57,7 @@ describe('getLocations', () => {
       MOCK_LOCATION,
     ]);
 
-    const result = await getLocations();
+    const result = await selectLocations();
 
     expect(result).toEqual([MOCK_LOCATION]);
     // Verify query construction
@@ -81,7 +80,7 @@ describe('getLocations', () => {
     async ({ mockError }) => {
       vi.mocked(db.query.LocationTable.findMany).mockRejectedValue(mockError);
 
-      const result = await getLocations();
+      const result = await selectLocations();
       expect(result).toEqual([]);
     },
   );

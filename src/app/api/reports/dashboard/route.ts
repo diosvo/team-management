@@ -1,14 +1,14 @@
 import { type NextRequest, NextResponse } from 'next/server';
-
 import { getTranslations } from 'next-intl/server';
 
 import env from '@env';
+import { formatDateRange } from '@/utils/datetime';
+import { Status } from '@/utils/response';
 
-import { verifySession } from '@/actions/auth';
 import { getBrowser } from '@/lib/puppeteer';
 import { dashboardPath } from '@/lib/report';
-import { Status } from '@/utils/response';
-import { formatDateRange } from '@/utils/datetime';
+
+import { verifySession } from '@/actions/auth';
 
 export const maxDuration = 30; // in seconds
 const devEnv = env.NODE_ENV === 'development';

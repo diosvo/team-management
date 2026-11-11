@@ -2,10 +2,11 @@
 
 import { useTranslations } from 'next-intl';
 
-import { DateRangePicker } from '@/components/date-picker/DateRangePicker';
+import { ESTABLISHED_DATE } from '@/utils/constants';
 
 import { usePerformanceFilters } from '@/lib/nuqs';
-import { ESTABLISHED_DATE } from '@/utils/constants';
+
+import { DateRangePicker } from '@/components/date-picker/DateRangePicker';
 
 export default function PerformanceFilters() {
   const t = useTranslations('common');

@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import {
   Box,
   Circle,
@@ -9,7 +10,6 @@ import {
   Stack,
   VStack,
 } from '@chakra-ui/react';
-import { useTranslations } from 'next-intl';
 
 import { ButtonSkeleton } from '@/components/PageSkeleton';
 

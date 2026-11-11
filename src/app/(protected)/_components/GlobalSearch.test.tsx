@@ -1,22 +1,24 @@
 import { renderToString } from 'react-dom/server';
+import { head } from 'es-toolkit';
+import { nth } from 'es-toolkit/compat';
 
+import type { Resource } from '@/utils/permissions';
+
+import usePermissions from '@/hooks/use-permissions';
+import type { Locale } from '@/i18n/config';
+import { type SessionUser, useSessionContext } from '@/providers/session';
 import { MOCK_SESSION_USER } from '@/test/mocks/user';
 import {
-  MESSAGES,
-  Providers,
   createPermissionsMock,
   createSessionMock,
   expectNoA11yViolations,
+  MESSAGES,
+  Providers,
   renderWithUI,
   screen,
   setupTestLifecycle,
   waitFor,
 } from '@/test/utilities';
-
-import usePermissions from '@/hooks/use-permissions';
-import { useSessionContext, type SessionUser } from '@/providers/session';
-import type { Locale } from '@/i18n/config';
-import type { Resource } from '@/utils/permissions';
 
 import GlobalSearch from './GlobalSearch';
 
@@ -70,7 +72,7 @@ describe('GlobalSearch', () => {
   /** Open from the desktop trigger and focus the input, as a user would */
   const open = async ({ user }: ReturnType<typeof setup>) => {
     await user.click(
-      screen.getAllByRole('button', { name: 'Search pages' })[1],
+      nth(screen.getAllByRole('button', { name: 'Search pages' }), 1)!,
     );
     const input = await screen.findByPlaceholderText(/Search pages/);
     await user.click(input);
@@ -121,7 +123,7 @@ describe('GlobalSearch', () => {
       const { user } = setup();
 
       await user.click(
-        screen.getAllByRole('button', { name: 'Search pages' })[0],
+        head(screen.getAllByRole('button', { name: 'Search pages' }))!,
       );
 
       expect(await screen.findByRole('dialog')).toBeInTheDocument();

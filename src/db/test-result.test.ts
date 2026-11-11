@@ -5,7 +5,6 @@ import {
   type InsertTestResult,
   TestResultTable,
 } from '@/drizzle/schema/periodic-testing';
-
 import {
   mockDeleteFailure,
   mockDeleteSuccess,
@@ -26,10 +25,10 @@ import {
 
 import {
   deleteTestResultById,
-  getDates,
-  getExistingTestResults,
-  getTestResultByDate,
   insertTestResult,
+  selectDates,
+  selectExistingTestResults,
+  selectTestResultByDate,
   updateTestResultById,
   updateTestResults,
 } from './test-result';
@@ -67,7 +66,7 @@ vi.mock('@/drizzle/schema/periodic-testing', () => ({
   },
 }));
 
-describe('getDates', () => {
+describe('selectDates', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -79,7 +78,7 @@ describe('getDates', () => {
       { date: '2026-01-14' },
     ]);
 
-    const result = await getDates();
+    const result = await selectDates();
 
     expect(result).toEqual(['2026-01-16', MOCK_TEST_RESULT_DATE, '2026-01-14']);
     expect(db.selectDistinct).toHaveBeenCalledWith({
@@ -92,7 +91,7 @@ describe('getDates', () => {
   test('returns empty array when no dates exist', async () => {
     mockSelectDistinctSuccess([]);
 
-    const result = await getDates();
+    const result = await selectDates();
 
     expect(result).toEqual([]);
   });
@@ -100,13 +99,13 @@ describe('getDates', () => {
   test('returns empty array when database query fails', async () => {
     mockSelectDistinctFailure('Database error');
 
-    const result = await getDates();
+    const result = await selectDates();
 
     expect(result).toEqual([]);
   });
 });
 
-describe('getTestResultByDate', () => {
+describe('selectTestResultByDate', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -131,7 +130,7 @@ describe('getTestResultByDate', () => {
       secondRow,
     ]);
 
-    const result = await getTestResultByDate(MOCK_TEST_RESULT_DATE);
+    const result = await selectTestResultByDate(MOCK_TEST_RESULT_DATE);
 
     expect(result).toEqual({
       headers: [
@@ -176,7 +175,7 @@ describe('getTestResultByDate', () => {
   test('returns empty headers and players when no results exist', async () => {
     vi.mocked(db.query.TestResultTable.findMany).mockResolvedValue([]);
 
-    const result = await getTestResultByDate(MOCK_TEST_RESULT_DATE);
+    const result = await selectTestResultByDate(MOCK_TEST_RESULT_DATE);
 
     expect(result).toEqual({ headers: [], players: [] });
   });
@@ -186,13 +185,13 @@ describe('getTestResultByDate', () => {
       new Error('Database error'),
     );
 
-    const result = await getTestResultByDate(MOCK_TEST_RESULT_DATE);
+    const result = await selectTestResultByDate(MOCK_TEST_RESULT_DATE);
 
     expect(result).toEqual({ headers: [], players: [] });
   });
 });
 
-describe('getExistingTestResults', () => {
+describe('selectExistingTestResults', () => {
   const key = ({ date, player_id, type_id }: InsertTestResult) =>
     `${date ?? ''}|${player_id}|${type_id}`;
 
@@ -208,7 +207,7 @@ describe('getExistingTestResults', () => {
   });
 
   test('returns an empty map without querying when nothing is submitted', async () => {
-    const result = await getExistingTestResults([]);
+    const result = await selectExistingTestResults([]);
 
     expect(result.size).toBe(0);
     expect(db.select).not.toHaveBeenCalled();
@@ -217,7 +216,7 @@ describe('getExistingTestResults', () => {
   test('maps every submitted cell that already exists to its result_id', async () => {
     mockSelect([MOCK_TEST_RESULT]);
 
-    const result = await getExistingTestResults([MOCK_TEST_RESULT_INPUT]);
+    const result = await selectExistingTestResults([MOCK_TEST_RESULT_INPUT]);
 
     expect(db.select).toHaveBeenCalledTimes(1);
     expect(result.get(key(MOCK_TEST_RESULT_INPUT))).toBe(
@@ -230,7 +229,7 @@ describe('getExistingTestResults', () => {
     // test type can come back even though it was never submitted
     mockSelect([{ ...MOCK_TEST_RESULT, player_id: MOCK_TEST_PLAYER_2.id }]);
 
-    const result = await getExistingTestResults([MOCK_TEST_RESULT_INPUT]);
+    const result = await selectExistingTestResults([MOCK_TEST_RESULT_INPUT]);
 
     expect(result.size).toBe(0);
   });
@@ -240,7 +239,7 @@ describe('getExistingTestResults', () => {
     mockSelect([row]);
 
     const submitted = { ...MOCK_TEST_RESULT_INPUT, date: null as never };
-    const result = await getExistingTestResults([submitted]);
+    const result = await selectExistingTestResults([submitted]);
 
     expect(result.get(key(submitted))).toBe(row.result_id);
   });
@@ -248,8 +247,8 @@ describe('getExistingTestResults', () => {
   test('uses the required date value when resolving existing rows', async () => {
     mockSelect([MOCK_TEST_RESULT]);
 
-    await getExistingTestResults([
-      { ...MOCK_TEST_RESULT_INPUT, date: '2026-01-15' },
+    await selectExistingTestResults([
+      { ...MOCK_TEST_RESULT_INPUT, date: MOCK_TEST_RESULT_DATE },
     ]);
 
     expect(db.select).toHaveBeenCalledTimes(1);
@@ -262,7 +261,7 @@ describe('getExistingTestResults', () => {
     vi.mocked(db.select).mockReturnValue({ from } as never);
 
     await expect(
-      getExistingTestResults([MOCK_TEST_RESULT_INPUT]),
+      selectExistingTestResults([MOCK_TEST_RESULT_INPUT]),
     ).rejects.toThrow('Database error');
   });
 });

@@ -1,5 +1,5 @@
-import { HStack, Separator, Span, Text, VStack } from '@chakra-ui/react';
 import { useTranslations } from 'next-intl';
+import { HStack, Separator, Span, Text, VStack } from '@chakra-ui/react';
 
 export default function AchievementFooter() {
   const t = useTranslations('achievements.footer');

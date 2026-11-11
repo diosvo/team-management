@@ -1,5 +1,4 @@
 import env from '@env';
-
 import { FEEDBACK_REPOSITORY } from '@/utils/constants/feedback';
 
 const GITHUB_API_URL = 'https://api.github.com';

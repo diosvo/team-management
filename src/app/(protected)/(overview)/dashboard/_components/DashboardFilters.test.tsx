@@ -1,4 +1,7 @@
+import { formatDateRange, thisYear } from '@/utils/datetime';
+
 import { triggerDownload } from '@/lib/download';
+
 import {
   createToasterMock,
   expectNoA11yViolations,
@@ -9,7 +12,6 @@ import {
   waitFor,
 } from '@/test/utilities';
 import type { DateRange } from '@/types/common';
-import { formatDateRange, thisYear } from '@/utils/datetime';
 
 import DashboardFilters from './DashboardFilters';
 

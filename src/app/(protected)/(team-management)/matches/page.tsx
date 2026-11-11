@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { getMatches } from '@/actions/match';
 import { loadMatchFilters } from '@/lib/nuqs';
+
+import { getMatches } from '@/actions/match';
 
 import MatchFilters from './_components/MatchFilters';
 import MatchHeader from './_components/MatchHeader';

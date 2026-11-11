@@ -1,3 +1,4 @@
+import usePermissions from '@/hooks/use-permissions';
 import {
   createPermissionsMock,
   expectNoA11yViolations,
@@ -5,8 +6,6 @@ import {
   screen,
   setupTestLifecycle,
 } from '@/test/utilities';
-
-import usePermissions from '@/hooks/use-permissions';
 
 import TestingHeader from './TestingHeader';
 
@@ -18,9 +17,11 @@ describe('TestingHeader', () => {
   const mockUsePermissions = vi.mocked(usePermissions);
 
   const setup = (canCreate = false) => {
-    mockUsePermissions.mockReturnValue(createPermissionsMock({
-      can: vi.fn(() => canCreate),
-    }));
+    mockUsePermissions.mockReturnValue(
+      createPermissionsMock({
+        can: vi.fn(() => canCreate),
+      }),
+    );
 
     return renderWithUI(<TestingHeader />);
   };
@@ -68,8 +69,9 @@ describe('TestingHeader', () => {
       'href',
       '/periodic-testing/add-result',
     );
-    expect(
-      screen.getByRole('link', { name: /manage types/i }),
-    ).toHaveAttribute('href', '/periodic-testing/test-types');
+    expect(screen.getByRole('link', { name: /manage types/i })).toHaveAttribute(
+      'href',
+      '/periodic-testing/test-types',
+    );
   });
 });

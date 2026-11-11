@@ -1,17 +1,16 @@
 import { useQueryStates, type UseQueryStatesKeysMap } from 'nuqs';
 import {
   createLoader,
+  type inferParserType,
+  type LoaderInput,
+  type Options,
   parseAsArrayOf,
   parseAsInteger,
   parseAsString,
   parseAsStringEnum,
-  type inferParserType,
-  type LoaderInput,
-  type Options,
   type ParserMap,
 } from 'nuqs/server';
 
-import type { DateRange } from '@/types/common';
 import {
   PERFORMANCE_TABS,
   SELECTABLE_ASSET_CATEGORIES,
@@ -31,6 +30,8 @@ import {
 } from '@/utils/constants';
 import { thisDay, thisYear } from '@/utils/datetime';
 import { ActivityKind, enumValues } from '@/utils/enum';
+
+import type { DateRange } from '@/types/common';
 
 export const commonParams = {
   page: parseAsInteger.withDefault(1),

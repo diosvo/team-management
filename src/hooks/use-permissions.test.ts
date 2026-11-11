@@ -1,10 +1,10 @@
 import { createElement, type PropsWithChildren } from 'react';
-
 import { renderHook } from '@testing-library/react';
 import type { Mock } from 'vitest';
 
-import authClient from '@/lib/auth-client';
 import { UserRole } from '@/utils/enum';
+
+import authClient from '@/lib/auth-client';
 
 import SessionProvider from '@/providers/session';
 
@@ -25,8 +25,7 @@ vi.mock('@/lib/auth-client', () => ({
 const wrapper = ({ children }: PropsWithChildren) =>
   createElement(SessionProvider, { initialUser: null, children });
 
-const renderPermissions = () =>
-  renderHook(() => usePermissions(), { wrapper });
+const renderPermissions = () => renderHook(() => usePermissions(), { wrapper });
 
 describe('usePermissions', () => {
   beforeEach(() => {

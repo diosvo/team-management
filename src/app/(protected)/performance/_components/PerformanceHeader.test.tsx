@@ -1,14 +1,14 @@
+import { PlayerPosition } from '@/utils/enum';
+
+import { useSelection } from '@/i18n/enums';
+import { MOCK_PERFORMANCE_IDENTITY } from '@/test/mocks/performance';
 import {
   expectNoA11yViolations,
   renderWithUI,
   screen,
   setupTestLifecycle,
 } from '@/test/utilities';
-import { MOCK_PERFORMANCE_IDENTITY } from '@/test/mocks/performance';
-
-import { useSelection } from '@/i18n/enums';
 import type { PerformanceIdentity } from '@/types/performance';
-import { PlayerPosition } from '@/utils/enum';
 
 import PerformanceHeader from './PerformanceHeader';
 

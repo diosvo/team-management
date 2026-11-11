@@ -162,9 +162,8 @@ pnpm exec playwright test -c playwright.visual.config.ts --update-snapshots
 
 - `.github/workflows/playwright.yaml` chạy khi có PR vào `main`, nhưng
   `if: false` luôn bỏ qua job.
-- Bước upload đọc `playwright-report/`, trong khi config lại ghi ra
-  `playwright/report`.
-- Khi bật lại thì sửa cả hai; trước đó, luồng E2E có hỏng cũng không làm PR
+- Bước upload đọc `playwright/report/`, đúng thư mục config ghi ra.
+- Bỏ `if: false` để bật lại; trước đó, luồng E2E có hỏng cũng không làm PR
   fail.
 
 </Callout>

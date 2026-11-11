@@ -1,4 +1,5 @@
 import type { TeamRule } from '@/drizzle/schema';
+
 import { MOCK_TEAM } from './team';
 
 export const MOCK_RULE: TeamRule = {

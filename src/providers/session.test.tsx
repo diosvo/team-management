@@ -1,17 +1,16 @@
 import type { PropsWithChildren } from 'react';
-
 import { renderHook } from '@testing-library/react';
-
-import { setupTestLifecycle } from '@/test/utilities';
 
 import { UserRole } from '@/utils/enum';
 
 import type auth from '@/lib/auth';
 import authClient from '@/lib/auth-client';
 
+import { setupTestLifecycle } from '@/test/utilities';
+
 import SessionProvider, {
-  useSessionContext,
   type SessionUser,
+  useSessionContext,
 } from './session';
 
 vi.mock('@/lib/auth-client', () => ({

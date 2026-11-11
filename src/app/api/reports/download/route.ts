@@ -1,9 +1,11 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
-import { verifySession } from '@/actions/auth';
-import { getReportById } from '@/db/report';
-import { getFileBytes } from '@/lib/blob';
 import { ReportStatus, UserRole } from '@/utils/enum';
+
+import { getFileBytes } from '@/lib/blob';
+
+import { verifySession } from '@/actions/auth';
+import { selectReportById } from '@/db/report';
 
 export async function GET(req: NextRequest) {
   const session = await verifySession();
@@ -17,7 +19,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Missing report id' }, { status: 400 });
   }
 
-  const report = await getReportById(id);
+  const report = await selectReportById(id);
 
   if (!report || !report.pathname || report.status === ReportStatus.EXPIRED) {
     return NextResponse.json(

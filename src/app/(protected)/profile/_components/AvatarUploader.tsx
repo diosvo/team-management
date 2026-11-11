@@ -1,21 +1,19 @@
 'use client';
 
 import { useTransition } from 'react';
-
-import { Stack, Text, VStack } from '@chakra-ui/react';
 import { useTranslations } from 'next-intl';
+import { Stack, Text, VStack } from '@chakra-ui/react';
 
+import authClient from '@/lib/auth-client';
+
+import { uploadAvatar } from '@/actions/user';
 import ImageUploader from '@/components/common/ImageUploader';
 import { Card } from '@/components/ui/card';
 import { toaster } from '@/components/ui/toaster';
-
 import type { User } from '@/drizzle/schema/user';
-import { enumLabel } from '@/i18n/enums';
-import authClient from '@/lib/auth-client';
-import { useSessionContext } from '@/providers/session';
-
-import { uploadAvatar } from '@/actions/user';
 import { useUserAvatar } from '@/hooks/use-image';
+import { enumLabel } from '@/i18n/enums';
+import { useSessionContext } from '@/providers/session';
 
 export default function AvatarUploader({ user }: { user: User }) {
   const t = useTranslations('profile.avatar');

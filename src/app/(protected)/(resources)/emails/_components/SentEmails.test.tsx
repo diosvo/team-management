@@ -1,17 +1,17 @@
 import type { ListEmail } from 'resend';
 
+import { EmailStatus } from '@/utils/enum';
+
+import usePermissions from '@/hooks/use-permissions';
 import {
   createPermissionsMock,
+  enumText,
   expectNoA11yViolations,
   mockUseQueryStates,
   renderWithUI,
   screen,
   setupTestLifecycle,
-  enumText,
 } from '@/test/utilities';
-
-import usePermissions from '@/hooks/use-permissions';
-import { EmailStatus } from '@/utils/enum';
 
 import SentEmails from './SentEmails';
 

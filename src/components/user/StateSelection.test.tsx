@@ -1,5 +1,7 @@
 import { useForm } from 'react-hook-form';
 
+import { UserState } from '@/utils/enum';
+
 import {
   act,
   cleanup,
@@ -10,7 +12,6 @@ import {
   waitFor,
 } from '@/test/utilities';
 
-import { UserState } from '@/utils/enum';
 import { ControlledStateSelection, StateSelection } from './StateSelection';
 
 // Unmount before the global rAF mock drops pending frames: zag clears a closed

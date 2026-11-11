@@ -1,3 +1,7 @@
+import { AttendanceStatus } from '@/utils/enum';
+
+import { removeAttendance, updateStatus } from '@/actions/attendance';
+import usePermissions from '@/hooks/use-permissions';
 import { MOCK_ATTENDANCE_BY_DATE } from '@/test/mocks/attendance';
 import {
   createToasterMock,
@@ -7,12 +11,7 @@ import {
   screen,
   waitFor,
 } from '@/test/utilities';
-
-import usePermissions from '@/hooks/use-permissions';
 import type { AttendanceWithPlayer } from '@/types/attendance';
-import { AttendanceStatus } from '@/utils/enum';
-
-import { removeAttendance, updateStatus } from '@/actions/attendance';
 
 import AttendanceTable from './AttendanceTable';
 

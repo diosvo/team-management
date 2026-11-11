@@ -1,3 +1,4 @@
+import usePermissions from '@/hooks/use-permissions';
 import {
   createPermissionsMock,
   expectNoA11yViolations,
@@ -5,8 +6,6 @@ import {
   screen,
   setupTestLifecycle,
 } from '@/test/utilities';
-
-import usePermissions from '@/hooks/use-permissions';
 
 import Sidebar, { SidebarToggle } from './Sidebar';
 

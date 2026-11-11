@@ -1,5 +1,5 @@
-import { addSeconds } from 'date-fns';
 import type { useTranslations } from 'next-intl';
+import { addSeconds } from 'date-fns';
 
 import { formatTime } from './datetime';
 import { Status } from './response';

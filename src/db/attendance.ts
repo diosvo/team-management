@@ -1,18 +1,19 @@
 import { and, desc, eq } from 'drizzle-orm';
 
+import { AttendanceStatus } from '@/utils/enum';
+
 import db from '@/drizzle';
 import {
   AttendanceTable,
   type InsertAttendance,
 } from '@/drizzle/schema/attendance';
 import { UserTable } from '@/drizzle/schema/user';
-
 import type { AttendanceStats, AttendanceWithPlayer } from '@/types/attendance';
 import type { DataWithStats, DateRange } from '@/types/common';
-import { AttendanceStatus } from '@/utils/enum';
+
 import { withinRange } from './utils';
 
-export async function getAttendances(
+export async function selectAttendances(
   team_id: string,
   { from, to }: DateRange,
 ): Promise<DataWithStats<AttendanceWithPlayer, AttendanceStats>> {

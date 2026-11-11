@@ -2,8 +2,8 @@ import {
   asEditor,
   createMockEditor,
   editorOptions,
-  useEditorMock,
   type MockEditor,
+  useEditorMock,
 } from '@/test/mocks/tiptap';
 import {
   expectNoA11yViolations,

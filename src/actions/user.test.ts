@@ -1,13 +1,29 @@
-import { revalidate } from '@/actions/cache';
+import { ESTABLISHED_DATE } from '@/utils/constants';
+import { CoachPosition, PlayerPosition, UserRole } from '@/utils/enum';
+
 import auth from '@/lib/auth';
+import { deleteFile, getFile, uploadFile } from '@/lib/blob';
+
+import { revalidate } from '@/actions/cache';
+import { insertCoach } from '@/db/coach';
+import { getDbErrorMessage } from '@/db/pg-error';
+import { insertPlayer, isJerseyNumberTaken } from '@/db/player';
+import {
+  deleteUser,
+  selectActivePlayers,
+  selectRegistrationPlayers,
+  selectRosterUsers,
+  selectUserById,
+  selectUsers,
+  updateUser,
+  updateUserTeamInfo,
+} from '@/db/user';
+import { insertMembership } from '@/db/user-team';
 import type {
   AddUserValues,
   EditPersonalInfoValues,
   EditTeamInfoValues,
 } from '@/schemas/user';
-import { ESTABLISHED_DATE } from '@/utils/constants';
-import { CoachPosition, PlayerPosition, UserRole } from '@/utils/enum';
-
 import {
   mockWithAuth,
   mockWithResource,
@@ -25,25 +41,11 @@ import {
   MOCK_USER_WITH_PLAYER,
 } from '@/test/mocks/user';
 
-import { insertCoach } from '@/db/coach';
-import { getDbErrorMessage } from '@/db/pg-error';
-import { insertPlayer, isJerseyNumberTaken } from '@/db/player';
 import {
-  deleteUser as deleteDbUser,
-  fetchActivePlayers,
-  getRosterUsers,
-  getUsers as getDbUsers,
-  getUserById,
-  updateUser as updateDbUser,
-  updateUserTeamInfo,
-} from '@/db/user';
-import { insertMembership } from '@/db/user-team';
-import { deleteFile, getFile, uploadFile } from '@/lib/blob';
-
-import {
-  addUser,
+  createUser,
   getActivePlayers,
   getAvatar,
+  getRegistrationPlayers,
   getRoster,
   getUserProfile,
   getUsers,
@@ -59,10 +61,11 @@ vi.mock('./auth', () => ({
 }));
 
 vi.mock('@/db/user', () => ({
-  fetchActivePlayers: vi.fn(),
-  getRosterUsers: vi.fn(),
-  getUsers: vi.fn(),
-  getUserById: vi.fn(),
+  selectActivePlayers: vi.fn(),
+  selectRegistrationPlayers: vi.fn(),
+  selectRosterUsers: vi.fn(),
+  selectUsers: vi.fn(),
+  selectUserById: vi.fn(),
   updateUser: vi.fn(),
   updateUserTeamInfo: vi.fn(),
   deleteUser: vi.fn(),
@@ -112,7 +115,15 @@ describe('permissions', () => {
     expect(mockWithResource).toHaveBeenCalledWith('profile');
   });
 
-  test('addUser requires create action', () => {
+  test('getRegistrationPlayers requires registration:create', () => {
+    expect(mockWithResource).toHaveBeenCalledWith('registration');
+    expect(mockWithResourceAction).toHaveBeenCalledWith(
+      ['create'],
+      expect.objectContaining({ name: 'registrationPlayers' }),
+    );
+  });
+
+  test('createUser requires create action', () => {
     expect(mockWithResourceAction).toHaveBeenCalledWith(
       ['create'],
       expect.objectContaining({ name: 'add' }),
@@ -170,11 +181,11 @@ describe('User Actions', () => {
 
   describe('getActivePlayers', () => {
     test('calls fetchActivePlayers with team_id', async () => {
-      vi.mocked(fetchActivePlayers).mockResolvedValue([MOCK_USER_WITH_PLAYER]);
+      vi.mocked(selectActivePlayers).mockResolvedValue([MOCK_USER_WITH_PLAYER]);
 
       const result = await getActivePlayers();
 
-      expect(fetchActivePlayers).toHaveBeenCalledWith(MOCK_TEAM.team_id);
+      expect(selectActivePlayers).toHaveBeenCalledWith(MOCK_TEAM.team_id);
       expect(result).toEqual([MOCK_USER_WITH_PLAYER]);
     });
 
@@ -184,7 +195,34 @@ describe('User Actions', () => {
       const result = await getActivePlayers();
 
       expect(result).toEqual([]);
-      expect(fetchActivePlayers).not.toHaveBeenCalled();
+      expect(selectActivePlayers).not.toHaveBeenCalled();
+
+      resetMockAuthUser();
+    });
+  });
+
+  describe('getRegistrationPlayers', () => {
+    test('loads full rows for the selected ids within the team', async () => {
+      vi.mocked(selectRegistrationPlayers).mockResolvedValue([
+        MOCK_USER_WITH_PLAYER,
+      ]);
+
+      const result = await getRegistrationPlayers([MOCK_USER_WITH_PLAYER.id]);
+
+      expect(selectRegistrationPlayers).toHaveBeenCalledWith(
+        MOCK_TEAM.team_id,
+        [MOCK_USER_WITH_PLAYER.id],
+      );
+      expect(result).toEqual([MOCK_USER_WITH_PLAYER]);
+    });
+
+    test('returns an empty array when the user has no team', async () => {
+      setMockAuthUser({ ...MOCK_USER, team_id: '' });
+
+      const result = await getRegistrationPlayers(['user-1']);
+
+      expect(result).toEqual([]);
+      expect(selectRegistrationPlayers).not.toHaveBeenCalled();
 
       resetMockAuthUser();
     });
@@ -193,11 +231,11 @@ describe('User Actions', () => {
   describe('getUsers', () => {
     test('calls getUsers with team_id', async () => {
       const mockUsers = [MOCK_USER_WITH_PLAYER, MOCK_USER_WITH_COACH];
-      vi.mocked(getDbUsers).mockResolvedValue(mockUsers);
+      vi.mocked(selectUsers).mockResolvedValue(mockUsers);
 
       const result = await getUsers();
 
-      expect(getDbUsers).toHaveBeenCalledWith(MOCK_TEAM.team_id);
+      expect(selectUsers).toHaveBeenCalledWith(MOCK_TEAM.team_id);
       expect(result).toEqual(mockUsers);
     });
   });
@@ -205,22 +243,22 @@ describe('User Actions', () => {
   describe('getRoster', () => {
     test('calls getRosterUsers with team_id', async () => {
       const mockUsers = [MOCK_USER_WITH_PLAYER, MOCK_USER_WITH_COACH];
-      vi.mocked(getRosterUsers).mockResolvedValue(mockUsers);
+      vi.mocked(selectRosterUsers).mockResolvedValue(mockUsers);
 
       const result = await getRoster();
 
-      expect(getRosterUsers).toHaveBeenCalledWith(MOCK_TEAM.team_id);
+      expect(selectRosterUsers).toHaveBeenCalledWith(MOCK_TEAM.team_id);
       expect(result).toEqual(mockUsers);
     });
   });
 
   describe('getUserProfile', () => {
     test('returns target user and viewOnly flag for own profile', async () => {
-      vi.mocked(getUserById).mockResolvedValue(MOCK_USER_WITH_PLAYER);
+      vi.mocked(selectUserById).mockResolvedValue(MOCK_USER_WITH_PLAYER);
 
       const result = await getUserProfile(MOCK_USER_WITH_PLAYER.id);
 
-      expect(getUserById).toHaveBeenCalledWith(MOCK_USER_WITH_PLAYER.id);
+      expect(selectUserById).toHaveBeenCalledWith(MOCK_USER_WITH_PLAYER.id);
       expect(result).toEqual({
         targetUser: MOCK_USER_WITH_PLAYER,
         viewOnly: false,
@@ -228,7 +266,7 @@ describe('User Actions', () => {
     });
 
     test('throws NOT_FOUND when user does not exist', async () => {
-      vi.mocked(getUserById).mockResolvedValue(null);
+      vi.mocked(selectUserById).mockResolvedValue(null);
 
       await expect(getUserProfile('invalid-id')).rejects.toThrow('NOT_FOUND');
     });
@@ -243,7 +281,7 @@ describe('User Actions', () => {
 
     test('is view-only when an admin views their own profile', async () => {
       setMockAuthUser({ ...MOCK_USER, role: UserRole.SUPER_ADMIN });
-      vi.mocked(getUserById).mockResolvedValue({
+      vi.mocked(selectUserById).mockResolvedValue({
         ...MOCK_USER_WITH_PLAYER,
         id: MOCK_USER.id,
       });
@@ -258,7 +296,7 @@ describe('User Actions', () => {
     test('is view-only when a player views someone else’s profile', async () => {
       setMockAuthUser({ ...MOCK_USER, role: UserRole.PLAYER });
       const otherUser = { ...MOCK_USER_WITH_COACH, id: 'someone-elses-id' };
-      vi.mocked(getUserById).mockResolvedValue(otherUser);
+      vi.mocked(selectUserById).mockResolvedValue(otherUser);
 
       const result = await getUserProfile(otherUser.id);
 
@@ -270,7 +308,7 @@ describe('User Actions', () => {
     test('is view-only when a coach views someone else’s profile', async () => {
       setMockAuthUser({ ...MOCK_USER, role: UserRole.COACH });
       const otherUser = { ...MOCK_USER_WITH_COACH, id: 'someone-elses-id' };
-      vi.mocked(getUserById).mockResolvedValue(otherUser);
+      vi.mocked(selectUserById).mockResolvedValue(otherUser);
 
       const result = await getUserProfile(otherUser.id);
 
@@ -280,7 +318,7 @@ describe('User Actions', () => {
     });
   });
 
-  describe('addUser', () => {
+  describe('createUser', () => {
     const newUser = {
       id: 'new-user-id',
       createdAt: new Date(),
@@ -313,7 +351,7 @@ describe('User Actions', () => {
         expect.anything(),
       );
 
-      const result = await addUser(newPlayerData);
+      const result = await createUser(newPlayerData);
 
       expect(auth.api.signUpEmail).toHaveBeenCalled();
       expect(insertPlayer).toHaveBeenCalledWith({
@@ -347,7 +385,7 @@ describe('User Actions', () => {
         expect.anything(),
       );
 
-      await addUser({ ...newPlayerData, join_date: undefined as never });
+      await createUser({ ...newPlayerData, join_date: undefined as never });
 
       expect(insertMembership).toHaveBeenCalledWith(
         'new-user-id',
@@ -369,7 +407,7 @@ describe('User Actions', () => {
         expect.anything(),
       );
 
-      const result = await addUser({
+      const result = await createUser({
         ...MOCK_USER_INPUT,
         role: UserRole.COACH,
         position: CoachPosition.HEAD_COACH,
@@ -392,7 +430,7 @@ describe('User Actions', () => {
         constraint: null,
       });
 
-      const result = await addUser(newPlayerData);
+      const result = await createUser(newPlayerData);
 
       expect(result).toEqual({
         success: false,
@@ -434,7 +472,7 @@ describe('User Actions', () => {
       vi.mocked(uploadFile).mockResolvedValue({ pathname } as Awaited<
         ReturnType<typeof uploadFile>
       >);
-      vi.mocked(updateDbUser).mockResolvedValue({
+      vi.mocked(updateUser).mockResolvedValue({
         ...mockResult,
         command: 'UPDATE',
       });
@@ -444,7 +482,7 @@ describe('User Actions', () => {
       expect(uploadFile).toHaveBeenCalledWith('users/' + MOCK_USER.id, file, {
         contentType: file.type,
       });
-      expect(updateDbUser).toHaveBeenCalledWith(MOCK_USER.id, {
+      expect(updateUser).toHaveBeenCalledWith(MOCK_USER.id, {
         image: pathname,
       });
       expect(deleteFile).not.toHaveBeenCalled();
@@ -466,14 +504,14 @@ describe('User Actions', () => {
 
     test('deletes the old avatar when it is the one on record', async () => {
       const oldPath = 'users/user-123-old-avatar.png';
-      vi.mocked(getUserById).mockResolvedValue({
+      vi.mocked(selectUserById).mockResolvedValue({
         ...MOCK_USER,
         image: oldPath,
       });
       vi.mocked(uploadFile).mockResolvedValue({ pathname } as Awaited<
         ReturnType<typeof uploadFile>
       >);
-      vi.mocked(updateDbUser).mockResolvedValue({
+      vi.mocked(updateUser).mockResolvedValue({
         ...mockResult,
         command: 'UPDATE',
       });
@@ -485,7 +523,7 @@ describe('User Actions', () => {
 
     test('forbids deleting a blob the user does not own', async () => {
       // `users/user-123` is a prefix of another user's key, but not the record
-      vi.mocked(getUserById).mockResolvedValue({
+      vi.mocked(selectUserById).mockResolvedValue({
         ...MOCK_USER,
         image: 'users/user-123-own.png',
       });
@@ -507,7 +545,7 @@ describe('User Actions', () => {
 
       const result = await uploadAvatar(MOCK_USER.id, null, file);
 
-      expect(updateDbUser).not.toHaveBeenCalled();
+      expect(updateUser).not.toHaveBeenCalled();
       expect(revalidate.user).not.toHaveBeenCalled();
       expect(result).toEqual({
         success: false,
@@ -523,14 +561,14 @@ describe('User Actions', () => {
     };
 
     test('updates personal info successfully', async () => {
-      vi.mocked(updateDbUser).mockResolvedValue({
+      vi.mocked(updateUser).mockResolvedValue({
         ...mockResult,
         command: 'UPDATE',
       });
 
       const result = await updatePersonalInfo(MOCK_USER.id, personalInfoData);
 
-      expect(updateDbUser).toHaveBeenCalledWith(MOCK_USER.id, personalInfoData);
+      expect(updateUser).toHaveBeenCalledWith(MOCK_USER.id, personalInfoData);
       expect(revalidate.user).toHaveBeenCalledWith(MOCK_USER.id);
       expect(result).toEqual({
         success: true,
@@ -539,7 +577,7 @@ describe('User Actions', () => {
     });
 
     test('returns error when update fails', async () => {
-      vi.mocked(updateDbUser).mockRejectedValue(new Error(errorMessage));
+      vi.mocked(updateUser).mockRejectedValue(new Error(errorMessage));
 
       const result = await updatePersonalInfo(MOCK_USER.id, personalInfoData);
 
@@ -552,12 +590,12 @@ describe('User Actions', () => {
         updatePersonalInfo('someone-elses-id', personalInfoData),
       ).rejects.toThrow('FORBIDDEN');
 
-      expect(updateDbUser).not.toHaveBeenCalled();
+      expect(updateUser).not.toHaveBeenCalled();
     });
 
     test('allows an admin to edit another user’s personal info', async () => {
       setMockAuthUser({ ...MOCK_USER, role: UserRole.SUPER_ADMIN });
-      vi.mocked(updateDbUser).mockResolvedValue({
+      vi.mocked(updateUser).mockResolvedValue({
         ...mockResult,
         command: 'UPDATE',
       });
@@ -596,7 +634,7 @@ describe('User Actions', () => {
     beforeEach(() => {
       vi.mocked(isJerseyNumberTaken).mockResolvedValue(false);
       // The edited user currently holds the role being submitted
-      vi.mocked(getUserById).mockResolvedValue(MOCK_USER_WITH_PLAYER);
+      vi.mocked(selectUserById).mockResolvedValue(MOCK_USER_WITH_PLAYER);
     });
 
     afterEach(() => {
@@ -668,7 +706,7 @@ describe('User Actions', () => {
           role: UserRole.COACH,
         },
       };
-      vi.mocked(getUserById).mockResolvedValue({
+      vi.mocked(selectUserById).mockResolvedValue({
         ...MOCK_USER_WITH_COACH,
         role: UserRole.COACH,
       });
@@ -703,7 +741,7 @@ describe('User Actions', () => {
 
       const { join_date, ...columns } = user;
 
-      expect(getUserById).toHaveBeenCalledWith(MOCK_PLAYER.id);
+      expect(selectUserById).toHaveBeenCalledWith(MOCK_PLAYER.id);
       expect(updateUserTeamInfo).toHaveBeenCalledWith(MOCK_PLAYER.id, {
         user: columns,
         membership: { join_date },
@@ -716,7 +754,7 @@ describe('User Actions', () => {
 
     test('switches a coach to player, creating the player and removing the coach', async () => {
       asAdmin();
-      vi.mocked(getUserById).mockResolvedValue({
+      vi.mocked(selectUserById).mockResolvedValue({
         ...MOCK_USER_WITH_COACH,
         role: UserRole.COACH,
       });
@@ -757,7 +795,7 @@ describe('User Actions', () => {
 
     test('throws not found when the user does not exist', async () => {
       asAdmin();
-      vi.mocked(getUserById).mockResolvedValue(null);
+      vi.mocked(selectUserById).mockResolvedValue(null);
 
       await expect(
         updateTeamInfo(MOCK_PLAYER.id, teamInfoData),
@@ -820,14 +858,14 @@ describe('User Actions', () => {
 
   describe('removeUser', () => {
     test('deletes user successfully', async () => {
-      vi.mocked(deleteDbUser).mockResolvedValue({
+      vi.mocked(deleteUser).mockResolvedValue({
         ...mockResult,
         command: 'DELETE',
       });
 
       const result = await removeUser(MOCK_USER.id);
 
-      expect(deleteDbUser).toHaveBeenCalledWith(MOCK_USER.id);
+      expect(deleteUser).toHaveBeenCalledWith(MOCK_USER.id);
       expect(revalidate.roster).toHaveBeenCalled();
       expect(result).toEqual({
         success: true,
@@ -836,7 +874,7 @@ describe('User Actions', () => {
     });
 
     test('returns error when delete fails', async () => {
-      vi.mocked(deleteDbUser).mockRejectedValue(new Error('Delete failed'));
+      vi.mocked(deleteUser).mockRejectedValue(new Error('Delete failed'));
 
       const result = await removeUser(MOCK_USER.id);
 

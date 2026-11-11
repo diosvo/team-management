@@ -18,7 +18,7 @@ const messageOf = (
   const result = schema.safeParse(input, {
     error: (issue) => localizeIssue(issue, t),
   });
-  return result.success ? undefined : result.error.issues[0].message;
+  return result.success ? undefined : result.error.issues[0]?.message;
 };
 
 describe('localizeIssue', () => {

@@ -1,22 +1,21 @@
 'use client';
 
 import { useRef, useTransition } from 'react';
-
+import { useForm } from 'react-hook-form';
+import { useTranslations } from 'next-intl';
 import { Button, Dialog, Input, Portal, SimpleGrid } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useTranslations } from 'next-intl';
 import { Plus, UserRoundPlus } from 'lucide-react';
-import { useForm } from 'react-hook-form';
 
+import { getDefaults } from '@/lib/zod';
+
+import { createUser } from '@/actions/user';
 import { DatePickerField } from '@/components/date-picker/DatePicker';
 import { CloseButton } from '@/components/ui/close-button';
 import { Field } from '@/components/ui/field';
 import { toaster } from '@/components/ui/toaster';
 import { RolePositionSelection } from '@/components/user/RolePositionSelection';
 import { ControlledStateSelection } from '@/components/user/StateSelection';
-
-import { addUser } from '@/actions/user';
-import { getDefaults } from '@/lib/zod';
 import { AddUserSchema, type AddUserValues } from '@/schemas/user';
 
 export default function AddUser() {
@@ -44,7 +43,7 @@ export default function AddUser() {
     });
 
     startTransition(async () => {
-      const { success, message: title } = await addUser(data);
+      const { success, message: title } = await createUser(data);
 
       toaster.update(id, {
         type: success ? 'success' : 'error',

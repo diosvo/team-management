@@ -1,11 +1,11 @@
+import { useTranslations } from 'next-intl';
 import { Button, type ButtonProps, HStack } from '@chakra-ui/react';
 import { Plus } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+
+import type { Resource } from '@/utils/permissions';
 
 import Authorized from '@/components/Authorized';
 import PageTitle from '@/components/PageTitle';
-
-import type { Resource } from '@/utils/permissions';
 
 type PageHeaderProps = {
   title: string;

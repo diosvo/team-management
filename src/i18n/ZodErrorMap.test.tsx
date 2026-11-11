@@ -16,6 +16,6 @@ describe('ZodErrorMap', () => {
     // `renderWithUI` mounts `<ZodErrorMap />` inside the intl provider
     renderWithUI(<div />, { locale });
 
-    expect(schema.safeParse('abc').error?.issues[0].message).toBe(message);
+    expect(schema.safeParse('abc').error?.issues[0]?.message).toBe(message);
   });
 });

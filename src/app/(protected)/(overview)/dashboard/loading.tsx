@@ -1,5 +1,4 @@
 import { useTranslations } from 'next-intl';
-
 import { Button, HStack, SimpleGrid, Skeleton } from '@chakra-ui/react';
 import { CalendarSearch, ChevronDown } from 'lucide-react';
 
@@ -9,7 +8,7 @@ import {
   CardFallback,
   ChartFallback,
   UpcomingFallback,
-} from './_components/fallbacks';
+} from './_components/Fallbacks';
 
 export default function DashboardLoading() {
   const t = useTranslations('dashboard');

@@ -1,6 +1,6 @@
+import { useTranslations } from 'next-intl';
 import { Accordion, Span } from '@chakra-ui/react';
 import { FileChartLine, RotateCcwKey } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 
 import ResetPassword from '@/app/(auth)/_components/ResetPassword';
 import AnalyticsReport from '@/app/(protected)/(overview)/reports/_components/AnalyticsReport';

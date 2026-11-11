@@ -1,3 +1,21 @@
+import { head } from 'es-toolkit';
+import { nth } from 'es-toolkit/compat';
+
+import { AchievementType } from '@/utils/enum';
+
+import {
+  getPlayerLeagueStatSuggestions,
+  upsertAchievement,
+} from '@/actions/achievement';
+import { getLeagues } from '@/actions/league';
+import { getActivePlayers } from '@/actions/user';
+import {
+  MOCK_ACHIEVEMENT,
+  MOCK_ACHIEVEMENT_FORM,
+  MOCK_STAT_SUGGESTIONS,
+} from '@/test/mocks/achievement';
+import { MOCK_LEAGUE_OPTION } from '@/test/mocks/league';
+import { MOCK_PLAYER, MOCK_USER_WITH_PLAYER } from '@/test/mocks/user';
 import {
   act,
   createToasterMock,
@@ -10,15 +28,6 @@ import {
   withFreshSWR,
   within,
 } from '@/test/utilities';
-
-import {
-  getPlayerLeagueStatSuggestions,
-  upsertAchievement,
-} from '@/actions/achievement';
-import { getLeagues } from '@/actions/league';
-import { getActivePlayers } from '@/actions/user';
-import { MOCK_LEAGUE } from '@/test/mocks/league';
-import { MOCK_USER, MOCK_USER_WITH_PLAYER } from '@/test/mocks/user';
 
 import { UpsertAchievement } from './UpsertAchievement';
 
@@ -84,7 +93,7 @@ describe('UpsertAchievement', () => {
   });
 
   test('renders update title when action is Update', async () => {
-    await open('Update', { achievement_id: 'achievement-123' });
+    await open('Update', { achievement_id: MOCK_ACHIEVEMENT.achievement_id });
 
     expect(await screen.findByText('Update Achievement')).toBeInTheDocument();
   });
@@ -95,12 +104,7 @@ describe('UpsertAchievement', () => {
       message: 'Saved',
     });
 
-    await open('Add', {
-      achievement_id: '',
-      type: 'champion',
-      title: 'Test Achievement',
-      year: 2024,
-    });
+    await open('Add', MOCK_ACHIEVEMENT_FORM);
 
     const submit = await screen.findByRole('button', { name: /add/i });
     expect(submit).toBeInTheDocument();
@@ -113,13 +117,8 @@ describe('UpsertAchievement', () => {
     });
 
     const { user } = await open('Update', {
-      achievement_id: 'achievement-123',
-      type: 'champion',
-      title: 'Summer Champions',
-      year: 2024,
-      league_id: null,
-      player_id: null,
-      description: '',
+      ...MOCK_ACHIEVEMENT_FORM,
+      achievement_id: MOCK_ACHIEVEMENT.achievement_id,
     });
 
     const submit = await screen.findByRole('button', { name: /update/i });
@@ -128,11 +127,11 @@ describe('UpsertAchievement', () => {
 
     await waitFor(() => {
       expect(mockUpsertAchievement).toHaveBeenCalledWith(
-        'achievement-123',
+        MOCK_ACHIEVEMENT.achievement_id,
         expect.objectContaining({
-          type: 'champion',
-          title: 'Summer Champions',
-          year: 2024,
+          type: MOCK_ACHIEVEMENT_FORM.type,
+          title: MOCK_ACHIEVEMENT_FORM.title,
+          year: MOCK_ACHIEVEMENT_FORM.year,
           player_id: null,
         }),
       );
@@ -146,12 +145,8 @@ describe('UpsertAchievement', () => {
     });
 
     const { user } = await open('Update', {
-      achievement_id: 'achievement-123',
-      type: 'champion',
-      title: 'Champions',
-      year: 2024,
-      league_id: null,
-      player_id: null,
+      ...MOCK_ACHIEVEMENT_FORM,
+      achievement_id: MOCK_ACHIEVEMENT.achievement_id,
       description: 'Test',
     });
 
@@ -170,15 +165,7 @@ describe('UpsertAchievement', () => {
       message: 'Failed to save achievement',
     });
 
-    const { user } = await open('Add', {
-      achievement_id: '',
-      type: 'champion',
-      title: 'Champions',
-      year: 2024,
-      league_id: null,
-      player_id: null,
-      description: '',
-    });
+    const { user } = await open('Add', MOCK_ACHIEVEMENT_FORM);
 
     const submit = await screen.findByRole('button', { name: /add/i });
     await waitFor(() => expect(submit).toBeEnabled());
@@ -192,21 +179,9 @@ describe('UpsertAchievement', () => {
   test('shows the player field and stat suggestions for an individual achievement with a league selected', async () => {
     // `league_id` is validated as a uuid by the schema — the shared league
     // mock isn't formatted as one, so use a local league just for this test.
-    const league = {
-      ...MOCK_LEAGUE,
-      league_id: '11111111-1111-1111-1111-111111111111',
-      player_count: 0,
-      achievement_type: [],
-    };
+    const league = MOCK_LEAGUE_OPTION;
     mockGetLeagues.mockResolvedValue([league]);
-    mockGetSuggestions.mockResolvedValue([
-      {
-        player_id: 'player-1',
-        player_name: 'Dios Vo',
-        games_played: 10,
-        avg_points: 24.5,
-      },
-    ]);
+    mockGetSuggestions.mockResolvedValue(MOCK_STAT_SUGGESTIONS);
     mockUpsertAchievement.mockResolvedValue({
       success: true,
       message: 'Saved',
@@ -214,15 +189,20 @@ describe('UpsertAchievement', () => {
 
     // MVP is an individual type, set directly rather than through the
     // (portal-rendered, hard to scope in jsdom) Select UI.
-    const { user } = await open('Add', { achievement_id: '', type: 'mvp' });
+    const { user } = await open('Add', {
+      achievement_id: '',
+      type: AchievementType.MVP,
+    });
 
-    const [leagueCombobox] = await screen.findAllByPlaceholderText(
-      'Type to search',
-    );
+    const leagueCombobox = head(
+      await screen.findAllByPlaceholderText('Type to search'),
+    )!;
     await user.click(leagueCombobox);
     await user.click(await screen.findByText(league.name));
 
-    const suggestion = await screen.findByText(/Dios Vo.*24.5/);
+    const suggestion = await screen.findByText(
+      new RegExp(`${head(MOCK_STAT_SUGGESTIONS)!.player_name}.*24.5`),
+    );
     expect(suggestion).toBeInTheDocument();
 
     // Clicking the suggestion fills the player field via setValue.
@@ -230,19 +210,17 @@ describe('UpsertAchievement', () => {
   });
 
   test('updates year automatically when league is selected', async () => {
-    const league = {
-      ...MOCK_LEAGUE,
-      league_id: '11111111-1111-1111-1111-111111111111',
-      player_count: 0,
-      achievement_type: [],
-    };
+    const league = MOCK_LEAGUE_OPTION;
     mockGetLeagues.mockResolvedValue([league]);
 
-    const { user } = await open('Add', { achievement_id: '', type: 'champion' });
+    const { user } = await open('Add', {
+      achievement_id: '',
+      type: AchievementType.CHAMPION,
+    });
 
-    const [leagueCombobox] = await screen.findAllByPlaceholderText(
-      'Type to search',
-    );
+    const leagueCombobox = head(
+      await screen.findAllByPlaceholderText('Type to search'),
+    )!;
     await user.click(leagueCombobox);
     await user.click(await screen.findByText(league.name));
 
@@ -254,12 +232,7 @@ describe('UpsertAchievement', () => {
   });
 
   test('loads leagues data on component mount', async () => {
-    const league = {
-      ...MOCK_LEAGUE,
-      league_id: '11111111-1111-1111-1111-111111111111',
-      player_count: 0,
-      achievement_type: [],
-    };
+    const league = MOCK_LEAGUE_OPTION;
     mockGetLeagues.mockResolvedValue([league]);
 
     await open('Add', { achievement_id: '' });
@@ -271,30 +244,18 @@ describe('UpsertAchievement', () => {
   });
 
   test('loads player suggestions when individual type and league are selected', async () => {
-    const league = {
-      ...MOCK_LEAGUE,
-      league_id: '11111111-1111-1111-1111-111111111111',
-      player_count: 0,
-      achievement_type: [],
-    };
+    const league = MOCK_LEAGUE_OPTION;
     mockGetLeagues.mockResolvedValue([league]);
-    mockGetSuggestions.mockResolvedValue([
-      {
-        player_id: 'player-1',
-        player_name: 'John Doe',
-        games_played: 10,
-        avg_points: 20.0,
-      },
-    ]);
+    mockGetSuggestions.mockResolvedValue(MOCK_STAT_SUGGESTIONS);
 
     const { user } = await open('Add', {
       achievement_id: '',
-      type: 'mvp',
+      type: AchievementType.MVP,
     });
 
-    const [leagueCombobox] = await screen.findAllByPlaceholderText(
-      'Type to search',
-    );
+    const leagueCombobox = head(
+      await screen.findAllByPlaceholderText('Type to search'),
+    )!;
     await user.click(leagueCombobox);
     await user.click(await screen.findByText(league.name));
 
@@ -305,21 +266,9 @@ describe('UpsertAchievement', () => {
   });
 
   test('clicking suggestion button fills player field', async () => {
-    const league = {
-      ...MOCK_LEAGUE,
-      league_id: '11111111-1111-1111-1111-111111111111',
-      player_count: 0,
-      achievement_type: [],
-    };
+    const league = MOCK_LEAGUE_OPTION;
     mockGetLeagues.mockResolvedValue([league]);
-    mockGetSuggestions.mockResolvedValue([
-      {
-        player_id: 'player-2',
-        player_name: 'Jane Smith',
-        games_played: 15,
-        avg_points: 25.5,
-      },
-    ]);
+    mockGetSuggestions.mockResolvedValue(MOCK_STAT_SUGGESTIONS);
     mockUpsertAchievement.mockResolvedValue({
       success: true,
       message: 'Saved',
@@ -327,18 +276,18 @@ describe('UpsertAchievement', () => {
 
     const { user } = await open('Add', {
       achievement_id: '',
-      type: 'mvp',
+      type: AchievementType.MVP,
     });
 
-    const [leagueCombobox] = await screen.findAllByPlaceholderText(
-      'Type to search',
-    );
+    const leagueCombobox = head(
+      await screen.findAllByPlaceholderText('Type to search'),
+    )!;
     await user.click(leagueCombobox);
     await user.click(await screen.findByText(league.name));
 
     // Wait for suggestions and click
     const suggestionButton = await screen.findByRole('button', {
-      name: /Jane Smith/,
+      name: new RegExp(head(MOCK_STAT_SUGGESTIONS)!.player_name),
     });
     await user.click(suggestionButton);
 
@@ -353,12 +302,7 @@ describe('UpsertAchievement', () => {
       message: 'Achievement added successfully',
     });
 
-    const { user } = await open('Add', {
-      achievement_id: '',
-      type: 'champion',
-      title: 'Test',
-      year: 2024,
-    });
+    const { user } = await open('Add', MOCK_ACHIEVEMENT_FORM);
 
     const submit = await screen.findByRole('button', { name: /add/i });
     await waitFor(() => expect(submit).toBeEnabled());
@@ -375,12 +319,7 @@ describe('UpsertAchievement', () => {
       message: 'Failed to save achievement - validation error',
     });
 
-    const { user } = await open('Add', {
-      achievement_id: '',
-      type: 'champion',
-      title: 'Test',
-      year: 2024,
-    });
+    const { user } = await open('Add', MOCK_ACHIEVEMENT_FORM);
 
     const submit = await screen.findByRole('button', { name: /add/i });
     await waitFor(() => expect(submit).toBeEnabled());
@@ -400,8 +339,8 @@ describe('UpsertAchievement', () => {
     // Champion is a team/collective achievement, not individual
     const { user } = await open('Add', {
       achievement_id: '',
-      type: 'champion',
-      player_id: 'player-123', // Should be cleared
+      type: AchievementType.CHAMPION,
+      player_id: MOCK_PLAYER.id, // Should be cleared
     });
 
     const submit = await screen.findByRole('button', { name: /add/i });
@@ -419,7 +358,7 @@ describe('UpsertAchievement', () => {
   });
 
   test('does not show player field for non-individual achievement types', async () => {
-    await open('Add', { achievement_id: '', type: 'champion' });
+    await open('Add', { achievement_id: '', type: AchievementType.CHAMPION });
 
     // Champion is non-individual, player field should be hidden via Visibility
     await waitFor(() => {
@@ -434,7 +373,7 @@ describe('UpsertAchievement', () => {
   test('shows player field for individual achievement types', async () => {
     mockGetActivePlayers.mockResolvedValue([]);
 
-    const { user } = await open('Add', { achievement_id: '', type: 'mvp' });
+    await open('Add', { achievement_id: '', type: AchievementType.MVP });
 
     // MVP is an individual type, player field should be visible
     await waitFor(() => {
@@ -451,10 +390,8 @@ describe('UpsertAchievement', () => {
     });
 
     const { user } = await open('Update', {
-      achievement_id: 'test-id',
-      type: 'champion',
-      title: 'Champions',
-      year: 2024,
+      ...MOCK_ACHIEVEMENT_FORM,
+      achievement_id: MOCK_ACHIEVEMENT.achievement_id,
     });
 
     const submit = await screen.findByRole('button', { name: /update/i });
@@ -463,7 +400,7 @@ describe('UpsertAchievement', () => {
 
     await waitFor(() => {
       expect(mockUpsertAchievement).toHaveBeenCalledWith(
-        'test-id',
+        MOCK_ACHIEVEMENT.achievement_id,
         expect.any(Object),
       );
     });
@@ -475,12 +412,7 @@ describe('UpsertAchievement', () => {
       message: 'Achievement added',
     });
 
-    const { user } = await open('Add', {
-      achievement_id: '',
-      type: 'champion',
-      title: 'Champions',
-      year: 2024,
-    });
+    const { user } = await open('Add', MOCK_ACHIEVEMENT_FORM);
 
     const submit = await screen.findByRole('button', { name: /add/i });
     await waitFor(() => expect(submit).toBeEnabled());
@@ -500,13 +432,7 @@ describe('UpsertAchievement', () => {
       message: 'Saved',
     });
 
-    const { user } = await open('Add', {
-      achievement_id: '',
-      type: 'champion',
-      title: 'Test Achievement',
-      year: 2024,
-      description: '',
-    });
+    const { user } = await open('Add', MOCK_ACHIEVEMENT_FORM);
 
     const descriptionField = screen.getByPlaceholderText(/Comment/i);
     await user.type(descriptionField, 'This is a test description');
@@ -526,9 +452,9 @@ describe('UpsertAchievement', () => {
   });
 
   test('preserves custom title when not dirty and type changes', async () => {
-    const { user } = await open('Add', {
+    await open('Add', {
       achievement_id: '',
-      type: 'mvp',
+      type: AchievementType.MVP,
       title: 'Custom MVP Award',
     });
 
@@ -538,20 +464,18 @@ describe('UpsertAchievement', () => {
   });
 
   test('renders helper text for year field when league is selected', async () => {
-    const league = {
-      ...MOCK_LEAGUE,
-      league_id: '11111111-1111-1111-1111-111111111111',
-      player_count: 0,
-      achievement_type: [],
-    };
+    const league = MOCK_LEAGUE_OPTION;
     mockGetLeagues.mockResolvedValue([league]);
 
-    const { user } = await open('Add', { achievement_id: '', type: 'champion' });
+    const { user } = await open('Add', {
+      achievement_id: '',
+      type: AchievementType.CHAMPION,
+    });
 
     // Select league
-    const [leagueCombobox] = await screen.findAllByPlaceholderText(
-      'Type to search',
-    );
+    const leagueCombobox = head(
+      await screen.findAllByPlaceholderText('Type to search'),
+    )!;
     await user.click(leagueCombobox);
     await user.click(await screen.findByText(league.name));
 
@@ -570,12 +494,7 @@ describe('UpsertAchievement', () => {
       message: successMessage,
     });
 
-    const { user } = await open('Add', {
-      achievement_id: '',
-      type: 'champion',
-      title: 'Test',
-      year: 2024,
-    });
+    const { user } = await open('Add', MOCK_ACHIEVEMENT_FORM);
 
     const submit = await screen.findByRole('button', { name: /add/i });
     await waitFor(() => expect(submit).toBeEnabled());
@@ -593,12 +512,7 @@ describe('UpsertAchievement', () => {
       message: errorMessage,
     });
 
-    const { user } = await open('Add', {
-      achievement_id: '',
-      type: 'champion',
-      title: 'Test',
-      year: 2024,
-    });
+    const { user } = await open('Add', MOCK_ACHIEVEMENT_FORM);
 
     const submit = await screen.findByRole('button', { name: /add/i });
     await waitFor(() => expect(submit).toBeEnabled());
@@ -624,12 +538,7 @@ describe('UpsertAchievement', () => {
         ),
     );
 
-    const { user } = await open('Add', {
-      achievement_id: '',
-      type: 'champion',
-      title: 'Test',
-      year: 2024,
-    });
+    const { user } = await open('Add', MOCK_ACHIEVEMENT_FORM);
 
     const submit = await screen.findByRole('button', { name: /add/i });
     await waitFor(() => expect(submit).toBeEnabled());
@@ -650,10 +559,7 @@ describe('UpsertAchievement', () => {
     });
 
     const { user } = await open('Add', {
-      achievement_id: '',
-      type: 'champion',
-      title: 'Champions 2024',
-      year: 2024,
+      ...MOCK_ACHIEVEMENT_FORM,
       description: 'Test description',
     });
 
@@ -672,24 +578,21 @@ describe('UpsertAchievement', () => {
 
   test('year is auto-populated from selected league end_date', async () => {
     const testLeague = {
-      ...MOCK_LEAGUE,
-      league_id: '22222222-2222-2222-2222-222222222222',
+      ...MOCK_LEAGUE_OPTION,
       end_date: new Date(2023, 11, 31).toISOString(), // Dec 31, 2023
-      player_count: 0,
-      achievement_type: [],
     };
     mockGetLeagues.mockResolvedValue([testLeague]);
 
     const { user } = await open('Add', {
       achievement_id: '',
-      type: 'champion',
+      type: AchievementType.CHAMPION,
       year: 2024, // Start with 2024
     });
 
     // Select the league
-    const [leagueCombobox] = await screen.findAllByPlaceholderText(
-      'Type to search',
-    );
+    const leagueCombobox = head(
+      await screen.findAllByPlaceholderText('Type to search'),
+    )!;
     await user.click(leagueCombobox);
     await user.click(await screen.findByText(testLeague.name));
 
@@ -706,16 +609,11 @@ describe('UpsertAchievement', () => {
     ]);
 
     // Start with non-individual type
-    const { user } = await open('Add', {
-      achievement_id: '',
-      type: 'champion',
-      title: 'Test',
-      year: 2024,
-    });
+    await open('Add', MOCK_ACHIEVEMENT_FORM);
 
     // Dialog should render properly
     expect(await screen.findByText('Add Achievement')).toBeInTheDocument();
-    
+
     // Verify form is interactive
     const submit = screen.getByRole('button', { name: /add/i });
     expect(submit).toBeInTheDocument();
@@ -725,9 +623,9 @@ describe('UpsertAchievement', () => {
     mockGetSuggestions.mockResolvedValue([]);
     mockGetLeagues.mockResolvedValue([]);
 
-    const { user } = await open('Add', {
+    await open('Add', {
       achievement_id: '',
-      type: 'mvp',
+      type: AchievementType.MVP,
     });
 
     // Component should render without crashing
@@ -741,11 +639,7 @@ describe('UpsertAchievement', () => {
     });
 
     const { user } = await open('Add', {
-      achievement_id: '',
-      type: 'champion',
-      title: 'Season Achievement',
-      year: 2024,
-      league_id: null,
+      ...MOCK_ACHIEVEMENT_FORM,
       description: 'Outstanding performance',
     });
 
@@ -757,9 +651,9 @@ describe('UpsertAchievement', () => {
       expect(mockUpsertAchievement).toHaveBeenCalledWith(
         '',
         expect.objectContaining({
-          type: 'champion',
-          title: 'Season Achievement',
-          year: 2024,
+          type: MOCK_ACHIEVEMENT_FORM.type,
+          title: MOCK_ACHIEVEMENT_FORM.title,
+          year: MOCK_ACHIEVEMENT_FORM.year,
           description: 'Outstanding performance',
         }),
       );
@@ -773,10 +667,8 @@ describe('UpsertAchievement', () => {
     });
 
     const { user } = await open('Update', {
-      achievement_id: 'error-test-id',
-      type: 'champion',
-      title: 'Error Test',
-      year: 2024,
+      ...MOCK_ACHIEVEMENT_FORM,
+      achievement_id: MOCK_ACHIEVEMENT.achievement_id,
     });
 
     const submit = await screen.findByRole('button', { name: /update/i });
@@ -795,12 +687,7 @@ describe('UpsertAchievement', () => {
       message: 'Saved successfully',
     });
 
-    const { user } = await open('Add', {
-      achievement_id: '',
-      type: 'champion',
-      title: 'Test Achievement',
-      year: 2024,
-    });
+    const { user } = await open('Add', MOCK_ACHIEVEMENT_FORM);
 
     const submit = await screen.findByRole('button', { name: /add/i });
     await waitFor(() => expect(submit).toBeEnabled());
@@ -826,11 +713,8 @@ describe('UpsertAchievement', () => {
 
     // Pass player_id for team type (should be cleared)
     const { user } = await open('Add', {
-      achievement_id: '',
-      type: 'champion', // Team type
-      title: 'Champions',
-      year: 2024,
-      player_id: 'some-player-id', // This should be cleared
+      ...MOCK_ACHIEVEMENT_FORM,
+      player_id: 'some-player-id', // This should be cleared,
     });
 
     const submit = await screen.findByRole('button', { name: /add/i });
@@ -853,12 +737,7 @@ describe('UpsertAchievement', () => {
       message: 'Saved',
     });
 
-    const { user } = await open('Add', {
-      achievement_id: '',
-      type: 'champion',
-      title: 'Champions Cup',
-      year: 2024,
-    });
+    const { user } = await open('Add', MOCK_ACHIEVEMENT_FORM);
 
     const submit = await screen.findByRole('button', { name: /add/i });
 
@@ -879,11 +758,6 @@ describe('UpsertAchievement', () => {
 
     // Dialog should have close button
     const closeButtons = screen.getAllByRole('button');
-    const closeButton = closeButtons.find(
-      (btn) =>
-        btn.getAttribute('aria-label')?.includes('Close') ||
-        btn.className?.includes('close'),
-    );
     expect(closeButtons.length).toBeGreaterThan(0);
   });
 
@@ -893,12 +767,7 @@ describe('UpsertAchievement', () => {
       message: 'Achievement saved',
     });
 
-    const { user } = await open('Add', {
-      achievement_id: '',
-      type: 'champion',
-      title: 'Test',
-      year: 2024,
-    });
+    const { user } = await open('Add', MOCK_ACHIEVEMENT_FORM);
 
     const submit = await screen.findByRole('button', { name: /add/i });
     await waitFor(() => expect(submit).toBeEnabled());
@@ -912,10 +781,7 @@ describe('UpsertAchievement', () => {
 
   test('form fields are properly registered with react-hook-form', async () => {
     await open('Add', {
-      achievement_id: '',
-      type: 'champion',
-      title: 'Test Title',
-      year: 2024,
+      ...MOCK_ACHIEVEMENT_FORM,
       description: 'Test description',
     });
 
@@ -931,11 +797,9 @@ describe('UpsertAchievement', () => {
     });
 
     // MVP is an individual type
-    const { user } = await open('Add', {
-      achievement_id: '',
-      type: 'mvp',
-      title: 'MVP',
-      year: 2024,
+    await open('Add', {
+      ...MOCK_ACHIEVEMENT_FORM,
+      type: AchievementType.MVP,
     });
 
     // Dialog should render for individual type
@@ -950,10 +814,7 @@ describe('UpsertAchievement', () => {
 
     // Champion is a team type, even if player_id is provided
     const { user } = await open('Add', {
-      achievement_id: '',
-      type: 'champion',
-      title: 'Champions',
-      year: 2024,
+      ...MOCK_ACHIEVEMENT_FORM,
       player_id: 'should-be-cleared',
     });
 
@@ -977,13 +838,7 @@ describe('UpsertAchievement', () => {
       message: 'Saved',
     });
 
-    const { user } = await open('Add', {
-      achievement_id: '',
-      type: 'champion',
-      title: 'Test',
-      year: 2024,
-      description: '',
-    });
+    const { user } = await open('Add', MOCK_ACHIEVEMENT_FORM);
 
     const submit = await screen.findByRole('button', { name: /add/i });
     await waitFor(() => expect(submit).toBeEnabled());
@@ -1007,10 +862,8 @@ describe('UpsertAchievement', () => {
 
     const achievementId = 'specific-achievement-id-123';
     const { user } = await open('Update', {
+      ...MOCK_ACHIEVEMENT_FORM,
       achievement_id: achievementId,
-      type: 'champion',
-      title: 'Update Test',
-      year: 2024,
     });
 
     const submit = screen.getByRole('button', { name: /update/i });
@@ -1026,26 +879,23 @@ describe('UpsertAchievement', () => {
 
   test('league_id changes trigger year field recalculation', async () => {
     const league1 = {
-      ...MOCK_LEAGUE,
-      league_id: '11111111-1111-1111-1111-111111111111',
+      ...MOCK_LEAGUE_OPTION,
       name: 'League 2023',
       end_date: new Date(2023, 11, 31).toISOString(),
-      player_count: 0,
-      achievement_type: [],
     };
 
     mockGetLeagues.mockResolvedValue([league1]);
 
     const { user } = await open('Add', {
       achievement_id: '',
-      type: 'champion',
+      type: AchievementType.CHAMPION,
       year: 2024,
     });
 
     // Select league
-    const [leagueCombobox] = await screen.findAllByPlaceholderText(
-      'Type to search',
-    );
+    const leagueCombobox = head(
+      await screen.findAllByPlaceholderText('Type to search'),
+    )!;
     await user.click(leagueCombobox);
     await user.click(await screen.findByText(league1.name));
 
@@ -1055,11 +905,9 @@ describe('UpsertAchievement', () => {
 
   test('isIndividualType function correctly identifies individual types', async () => {
     // Open with MVP (individual type)
-    const { user } = await open('Add', {
-      achievement_id: '',
-      type: 'mvp',
-      title: 'MVP',
-      year: 2024,
+    await open('Add', {
+      ...MOCK_ACHIEVEMENT_FORM,
+      type: AchievementType.MVP,
     });
 
     // Component should render successfully
@@ -1071,15 +919,10 @@ describe('UpsertAchievement', () => {
   });
 
   test('onBlur is triggered for form fields', async () => {
-    const { user } = await open('Add', {
-      achievement_id: '',
-      type: 'champion',
-      title: 'Test',
-      year: 2024,
-    });
+    const { user } = await open('Add', MOCK_ACHIEVEMENT_FORM);
 
     // Find type combobox and interact with it
-    const typeCombobox = (await screen.findAllByRole('combobox'))[0];
+    const typeCombobox = head(await screen.findAllByRole('combobox'))!;
     await user.click(typeCombobox);
 
     // Click elsewhere to blur
@@ -1096,10 +939,8 @@ describe('UpsertAchievement', () => {
     });
 
     const { user } = await open('Update', {
-      achievement_id: 'test-update-id',
-      type: 'champion',
-      title: 'Test Update',
-      year: 2024,
+      ...MOCK_ACHIEVEMENT_FORM,
+      achievement_id: MOCK_ACHIEVEMENT.achievement_id,
     });
 
     const submit = screen.getByRole('button', { name: /update/i });
@@ -1108,7 +949,7 @@ describe('UpsertAchievement', () => {
     // Verify the action was called
     await waitFor(() => {
       expect(mockUpsertAchievement).toHaveBeenCalledWith(
-        'test-update-id',
+        MOCK_ACHIEVEMENT.achievement_id,
         expect.any(Object),
       );
     });
@@ -1121,7 +962,7 @@ describe('UpsertAchievement', () => {
     comboboxIndex: number,
   ) => {
     const comboboxes = await screen.findAllByRole('combobox');
-    const trigger = comboboxes[comboboxIndex];
+    const trigger = nth(comboboxes, comboboxIndex)!;
     await user.click(trigger);
     return {
       trigger,
@@ -1130,7 +971,10 @@ describe('UpsertAchievement', () => {
   };
 
   test('updates the default title when type is changed via the dropdown', async () => {
-    const { user } = await open('Add', { achievement_id: '', type: 'champion' });
+    const { user } = await open('Add', {
+      achievement_id: '',
+      type: AchievementType.CHAMPION,
+    });
 
     const { content } = await openSelectAndGetContent(user, 0);
     const option = within(content!).getByRole('option', {
@@ -1140,12 +984,17 @@ describe('UpsertAchievement', () => {
     fireEvent.click(option);
 
     await waitFor(() =>
-      expect(screen.queryAllByDisplayValue('Runner-up').length).toBeGreaterThan(0),
+      expect(screen.queryAllByDisplayValue('Runner-up').length).toBeGreaterThan(
+        0,
+      ),
     );
   });
 
   test('keeps a custom title when type changes after the title has been edited', async () => {
-    const { user } = await open('Add', { achievement_id: '', type: 'champion' });
+    const { user } = await open('Add', {
+      achievement_id: '',
+      type: AchievementType.CHAMPION,
+    });
 
     const titleInput = screen.getByPlaceholderText('Champion');
     await user.clear(titleInput);
@@ -1163,7 +1012,7 @@ describe('UpsertAchievement', () => {
 
   test('blurs the type field when interacting outside the open dropdown', async () => {
     const { user } = await open('Add', { achievement_id: '' });
-    const [typeSelect] = await screen.findAllByRole('combobox');
+    const typeSelect = head(await screen.findAllByRole('combobox'))!;
     await user.click(typeSelect);
 
     // Zag's onFocusin defers the callback via requestAnimationFrame (defer: true).
@@ -1190,7 +1039,10 @@ describe('UpsertAchievement', () => {
   // ── Year Select interaction ────────────────────────────────────────────────
 
   test('updates the year when a value is manually selected from the dropdown', async () => {
-    const { user } = await open('Add', { achievement_id: '', type: 'champion' });
+    const { user } = await open('Add', {
+      achievement_id: '',
+      type: AchievementType.CHAMPION,
+    });
 
     // Combobox order: [type, league, year]
     const { content } = await openSelectAndGetContent(user, 2);
@@ -1208,7 +1060,7 @@ describe('UpsertAchievement', () => {
     const { user } = await open('Add', { achievement_id: '' });
 
     const comboboxes = await screen.findAllByRole('combobox');
-    await user.click(comboboxes[2]);
+    await user.click(nth(comboboxes, 2)!);
 
     const rafSpy = vi
       .spyOn(window, 'requestAnimationFrame')
@@ -1242,18 +1094,17 @@ describe('UpsertAchievement', () => {
   });
 
   test('passes player_id through for individual achievement types on submit', async () => {
-    mockUpsertAchievement.mockResolvedValue({ success: true, message: 'Saved' });
+    mockUpsertAchievement.mockResolvedValue({
+      success: true,
+      message: 'Saved',
+    });
     // Provide a player so the refine constraint (player required for mvp) is met.
-    mockGetActivePlayers.mockResolvedValue([
-      { ...MOCK_USER_WITH_PLAYER, id: 'player-individual-123', name: 'MVP Player' },
-    ]);
+    mockGetActivePlayers.mockResolvedValue([MOCK_USER_WITH_PLAYER]);
 
     const { user } = await open('Add', {
-      achievement_id: '',
-      type: 'mvp',
-      title: 'MVP Award',
-      year: 2024,
-      player_id: 'player-individual-123',
+      ...MOCK_ACHIEVEMENT_FORM,
+      type: AchievementType.MVP,
+      player_id: MOCK_USER_WITH_PLAYER.id,
     });
 
     const submit = await screen.findByRole('button', { name: /add/i });
@@ -1263,7 +1114,7 @@ describe('UpsertAchievement', () => {
     await waitFor(() =>
       expect(mockUpsertAchievement).toHaveBeenCalledWith(
         '',
-        expect.objectContaining({ type: 'mvp' }),
+        expect.objectContaining({ type: AchievementType.MVP }),
       ),
     );
   });

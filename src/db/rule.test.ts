@@ -2,12 +2,11 @@ import { eq } from 'drizzle-orm';
 
 import db from '@/drizzle';
 import { type Team, TeamTable } from '@/drizzle/schema/team';
-
 import { mockUpdateFailure, mockUpdateSuccess } from '@/test/db-operations';
 import { MOCK_RULE } from '@/test/mocks/rule';
 import { MOCK_TEAM } from '@/test/mocks/team';
 
-import { getRule, upsertRule } from './rule';
+import { selectRule, updateRule } from './rule';
 
 vi.mock('@/drizzle', () => ({
   default: {
@@ -30,7 +29,7 @@ vi.mock('@/drizzle/schema/team', () => ({
   },
 }));
 
-describe('getRule', () => {
+describe('selectRule', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -41,7 +40,7 @@ describe('getRule', () => {
       MOCK_RULE as Team,
     );
 
-    const result = await getRule(MOCK_TEAM.team_id);
+    const result = await selectRule(MOCK_TEAM.team_id);
 
     expect(result).toEqual(MOCK_RULE);
     // Verify query construction: only the two rule columns are selected
@@ -54,7 +53,7 @@ describe('getRule', () => {
   test('returns null when the team does not exist', async () => {
     vi.mocked(db.query.TeamTable.findFirst).mockResolvedValue(undefined);
 
-    const result = await getRule(MOCK_TEAM.team_id);
+    const result = await selectRule(MOCK_TEAM.team_id);
     expect(result).toBeNull();
   });
 
@@ -70,12 +69,12 @@ describe('getRule', () => {
   ])('returns null when database query $description', async ({ mockError }) => {
     vi.mocked(db.query.TeamTable.findFirst).mockRejectedValue(mockError);
 
-    const result = await getRule(MOCK_TEAM.team_id);
+    const result = await selectRule(MOCK_TEAM.team_id);
     expect(result).toBeNull();
   });
 });
 
-describe('upsertRule', () => {
+describe('updateRule', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -89,7 +88,7 @@ describe('upsertRule', () => {
 
     const { mockWhere, mockSet } = mockUpdateSuccess({ rowCount: 1 });
 
-    const result = await upsertRule(MOCK_TEAM.team_id, newContent);
+    const result = await updateRule(MOCK_TEAM.team_id, newContent);
 
     expect(result).toEqual({ rowCount: 1 });
     // Verify query construction
@@ -112,7 +111,7 @@ describe('upsertRule', () => {
     const message = 'Update failed';
     mockUpdateFailure(message);
 
-    await expect(upsertRule(MOCK_TEAM.team_id, newContent)).rejects.toThrow(
+    await expect(updateRule(MOCK_TEAM.team_id, newContent)).rejects.toThrow(
       message,
     );
   });

@@ -1,36 +1,33 @@
 'use client';
 
-import NextLink from 'next/link';
 import { useCallback } from 'react';
-
+import NextLink from 'next/link';
+import { useTranslations } from 'next-intl';
 import {
   Badge,
-  Link as ChakraLink,
   HStack,
+  Link as ChakraLink,
   List,
   Span,
 } from '@chakra-ui/react';
 import { CirclePile } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 
-import { LocationLink } from '@/components/common/LocationSelection';
-import Weekday from '@/components/Weekday';
-import DataTable, { type Column } from '@/components/DataTable';
-import HighlightText from '@/components/HighlightText';
-import { Tooltip } from '@/components/ui/tooltip';
-
-import usePermissions from '@/hooks/use-permissions';
-import useTableState from '@/hooks/use-table-state';
-
-import type { TrainingSessionWithDetails } from '@/types/training-session';
-
-import { enumLabel } from '@/i18n/enums';
-
-import { useTrainingFilters } from '@/lib/nuqs';
 import { formatDate } from '@/utils/datetime';
 import { getColor } from '@/utils/helper';
 
+import { useTrainingFilters } from '@/lib/nuqs';
+
 import { removeSession } from '@/actions/training-session';
+import { LocationLink } from '@/components/common/LocationSelection';
+import DataTable, { type Column } from '@/components/DataTable';
+import HighlightText from '@/components/HighlightText';
+import { Tooltip } from '@/components/ui/tooltip';
+import Weekday from '@/components/Weekday';
+import usePermissions from '@/hooks/use-permissions';
+import useTableState from '@/hooks/use-table-state';
+import { enumLabel } from '@/i18n/enums';
+import type { TrainingSessionWithDetails } from '@/types/training-session';
+
 import { UpsertSession } from './UpsertSession';
 
 export default function SessionTable({
@@ -72,9 +69,10 @@ export default function SessionTable({
             onClick={(e) => e.stopPropagation()}
           >
             <HStack>
+              <Span fontVariantNumeric="tabular-nums">
+                {formatDate(item.date)}
+              </Span>
               <Weekday date={item.date} />
-              <Span color="gray.400">&bull;</Span>
-              <Span>{formatDate(item.date)}</Span>
             </HStack>
           </NextLink>
         </ChakraLink>

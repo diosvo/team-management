@@ -1,13 +1,12 @@
 'use client';
 
+import { useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Button } from '@chakra-ui/react';
 import { Plus } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useSearchParams } from 'next/navigation';
-import { useEffect } from 'react';
 
 import Authorized from '@/components/Authorized';
-
 import usePermissions from '@/hooks/use-permissions';
 
 import { UpsertAchievement } from './UpsertAchievement';

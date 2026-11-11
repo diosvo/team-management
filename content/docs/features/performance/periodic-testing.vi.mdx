@@ -42,7 +42,7 @@ description: Điểm thể lực theo bài kiểm tra và ngày, nhập theo lô
     - `q`, `type` và `page` chỉ xử lý trên trình duyệt. Mỗi trang 10 cầu thủ.
     - Mỗi ô là một ô nhập số `Editable` của Chakra:
       - Ô đang trống → `createTestResult` với một dòng.
-      - Ô đã có điểm → `updateTestResultById`; xóa trắng → `deleteTestResultById`.
+      - Ô đã có điểm → `updateTestResult`; xóa trắng → `removeTestResult`.
       - Giữ nguyên giá trị, hoặc xóa trắng một ô vốn đã trống, thì không ghi gì.
       - Lưu không thành công thì ô quay về giá trị cũ.
 
@@ -66,7 +66,7 @@ description: Điểm thể lực theo bài kiểm tra và ngày, nhập theo lô
       đơn vị, chiều cải thiện (càng cao hoặc càng thấp càng tốt) và target tùy
       chọn.
     - Đơn vị: `meters`, `percent`, `points`, `reps`, `seconds`, `times`.
-    - Form mặc định là `seconds`; cột trong DB mặc định là `times`.
+    - Form và cột trong DB đều mặc định là `times`.
     - Có thể chọn nhiều dòng để xóa cùng lúc; bài kiểm tra còn kết quả thì không
       xóa được.
 
@@ -130,7 +130,7 @@ description: Điểm thể lực theo bài kiểm tra và ngày, nhập theo lô
 
 - **Mỗi cầu thủ, mỗi bài kiểm tra, mỗi ngày chỉ có một kết quả.**
   `createTestResult` upsert theo bộ ba đó:
-  - `getExistingTestResults` tra cả lô bằng một truy vấn lọc `IN`.
+  - `selectExistingTestResults` tra cả lô bằng một truy vấn lọc `IN`.
   - Từng dòng được đối chiếu lại với các khóa đã gửi (vì bộ lọc tạo ra mọi tổ
     hợp).
   - Một lệnh insert cho ô mới, một lượt update cho ô đã có.
@@ -218,12 +218,12 @@ Dữ liệu bảng kết quả mà `getTestResult` trả về (`src/types/period
         'Upsert cả lô theo cầu thủ, bài kiểm tra và ngày. Cần quyền create.',
       required: true,
     },
-    'updateTestResultById({ result_id, result })': {
+    'updateTestResult({ result_id, result })': {
       type: 'Response',
       description: 'Sửa một điểm ngay trên bảng. Cần quyền edit.',
       required: true,
     },
-    'deleteTestResultById(result_id)': {
+    'removeTestResult(result_id)': {
       type: 'Response',
       description: 'Xóa một điểm (khi ô bị xóa trắng). Cần quyền delete.',
       required: true,

@@ -2,22 +2,24 @@
 
 import { forbidden } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
-import { getDbErrorMessage } from '@/db/pg-error';
+
 import { MatchStatus } from '@/utils/enum';
 import { ResponseFactory } from '@/utils/response';
 
+import type { MatchSearchParams } from '@/lib/nuqs';
+
 import {
   deleteMatch,
-  getMatches as fetchMatches,
-  getMatchPlayerStats as fetchMatchPlayerStats,
-  getMatchOwnership,
-  getPlayedMatches as fetchPlayedMatches,
   insertMatch,
-  saveMatchPlayerStats as persistMatchPlayerStats,
+  selectMatches,
+  selectMatchOwnership,
+  selectMatchPlayerStats,
+  selectPlayedMatches,
   updateMatch,
+  upsertMatchPlayerStats,
 } from '@/db/match';
-import { getTeamPlayerIds } from '@/db/player';
-import type { MatchSearchParams } from '@/lib/nuqs';
+import { getDbErrorMessage } from '@/db/pg-error';
+import { selectTeamPlayerIds } from '@/db/player';
 import {
   SaveMatchPlayerStatsSchema,
   type SaveMatchPlayerStatsValues,
@@ -31,7 +33,7 @@ const matches = withResource('matches');
 
 export const getMatches = withAuth(
   async ({ team_id }, params: MatchSearchParams) =>
-    await fetchMatches({ ...params, team_id }),
+    await selectMatches({ ...params, team_id }),
 );
 
 export const upsertMatch = matches(
@@ -83,16 +85,16 @@ export const canEditMatchStats = matches(['edit'], async () => true);
 
 export const getPlayedMatches = matches(
   ['view'],
-  async ({ team_id }) => await fetchPlayedMatches(team_id),
+  async ({ team_id }) => await selectPlayedMatches(team_id),
 );
 
 export const getMatchPlayerStats = matches(
   ['view'],
   async ({ team_id }, match_id: string) => {
     // Only our own matches: the id comes from the URL.
-    const match = await getMatchOwnership(match_id);
+    const match = await selectMatchOwnership(match_id);
     if (match?.home_team !== team_id) forbidden();
-    return await fetchMatchPlayerStats(match_id, team_id);
+    return await selectMatchPlayerStats(match_id, team_id);
   },
 );
 
@@ -115,8 +117,8 @@ export const saveMatchPlayerStats = matches(
     ];
     // The match and every player must belong to the caller's team.
     const [match, allowedIds] = await Promise.all([
-      getMatchOwnership(match_id),
-      getTeamPlayerIds(team_id, submitted),
+      selectMatchOwnership(match_id),
+      selectTeamPlayerIds(team_id, submitted),
     ]);
     if (match?.home_team !== team_id) forbidden();
 
@@ -129,12 +131,7 @@ export const saveMatchPlayerStats = matches(
     if (submitted.some((id) => !allowed.has(id))) forbidden();
 
     try {
-      await persistMatchPlayerStats(
-        match_id,
-        team_id,
-        rows,
-        removed_player_ids,
-      );
+      await upsertMatchPlayerStats(match_id, team_id, rows, removed_player_ids);
 
       revalidate.matchStats();
 

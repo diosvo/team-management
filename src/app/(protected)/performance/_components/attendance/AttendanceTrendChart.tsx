@@ -1,10 +1,9 @@
 'use client';
 
 import { useMemo } from 'react';
-
+import { useLocale, useTranslations } from 'next-intl';
 import { Chart, useChart } from '@chakra-ui/charts';
 import { parseISO } from 'date-fns';
-import { useLocale, useTranslations } from 'next-intl';
 import {
   CartesianGrid,
   Legend,
@@ -16,9 +15,10 @@ import {
   YAxis,
 } from 'recharts';
 
-import type { MonthlyAttendance } from '@/types/performance';
 import { ATTENDANCE_TARGET_RATE } from '@/utils/constants';
 import { formatDay } from '@/utils/datetime';
+
+import type { MonthlyAttendance } from '@/types/performance';
 
 export default function AttendanceTrendChart({
   records,

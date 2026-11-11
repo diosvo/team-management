@@ -1,3 +1,5 @@
+import { createUser } from '@/actions/user';
+import { MOCK_USER_INPUT } from '@/test/mocks/user';
 import {
   createToasterMock,
   expectNoA11yViolations,
@@ -7,12 +9,10 @@ import {
   waitFor,
 } from '@/test/utilities';
 
-import { addUser } from '@/actions/user';
-
 import AddUser from './AddUser';
 
 vi.mock('@/actions/user', () => ({
-  addUser: vi.fn(),
+  createUser: vi.fn(),
 }));
 
 vi.mock('@/components/ui/toaster', () => createToasterMock());
@@ -27,7 +27,7 @@ vi.mock('@/components/user/StateSelection', () => ({
 }));
 
 describe('AddUser', () => {
-  const mockAddUser = vi.mocked(addUser);
+  const mockAddUser = vi.mocked(createUser);
 
   const setup = () => renderWithUI(<AddUser />);
 
@@ -87,8 +87,8 @@ describe('AddUser', () => {
 
     const { user } = await openDialog();
 
-    await user.type(screen.getByLabelText(/fullname/i), 'Dios Vo');
-    await user.type(screen.getByLabelText(/email/i), 'dios@example.com');
+    await user.type(screen.getByLabelText(/fullname/i), MOCK_USER_INPUT.name);
+    await user.type(screen.getByLabelText(/email/i), MOCK_USER_INPUT.email);
 
     const submit = await screen.findByRole('button', { name: /^Add$/ });
     await waitFor(() => expect(submit).toBeEnabled());
@@ -97,8 +97,8 @@ describe('AddUser', () => {
     await waitFor(() => {
       expect(mockAddUser).toHaveBeenCalledWith(
         expect.objectContaining({
-          name: 'Dios Vo',
-          email: 'dios@example.com',
+          name: MOCK_USER_INPUT.name,
+          email: MOCK_USER_INPUT.email,
         }),
       );
     });
@@ -109,8 +109,8 @@ describe('AddUser', () => {
 
     const { user } = await openDialog();
 
-    await user.type(screen.getByLabelText(/fullname/i), 'Dios Vo');
-    await user.type(screen.getByLabelText(/email/i), 'dios@example.com');
+    await user.type(screen.getByLabelText(/fullname/i), MOCK_USER_INPUT.name);
+    await user.type(screen.getByLabelText(/email/i), MOCK_USER_INPUT.email);
 
     const submit = await screen.findByRole('button', { name: /^Add$/ });
     await waitFor(() => expect(submit).toBeEnabled());
@@ -118,6 +118,8 @@ describe('AddUser', () => {
 
     await waitFor(() => expect(mockAddUser).toHaveBeenCalled());
     // The dialog stays open with the entered values on failure.
-    expect(screen.getByLabelText(/fullname/i)).toHaveValue('Dios Vo');
+    expect(screen.getByLabelText(/fullname/i)).toHaveValue(
+      MOCK_USER_INPUT.name,
+    );
   });
 });

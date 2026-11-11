@@ -1,5 +1,6 @@
-import env from '@env';
 import { defineConfig, devices } from '@playwright/test';
+
+import env from '@env';
 
 // ⭕️ DEVELOPMENT: Verify each step carefully to avoid impacting the database.
 // Create → Edit → Delete

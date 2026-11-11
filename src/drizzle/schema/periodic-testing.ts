@@ -13,10 +13,11 @@ import {
 
 import { enumValues, TestTypeUnit } from '@/utils/enum';
 
-import { created_at, updated_at } from '../helpers';
 import { PlayerTable } from './player';
 import { TeamTable } from './team';
 import { UserTable } from './user';
+
+import { created_at, updated_at } from '../helpers';
 
 export const testTypeUnitEnum = pgEnum(
   'test_type_unit',

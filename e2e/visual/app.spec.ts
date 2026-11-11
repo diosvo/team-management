@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, type Page, test } from '@playwright/test';
 
 // Screenshots of authenticated Chakra UI screens. Requires a working
 // PW_USERNAME/PW_PASSWORD login against the dev database (see the `setup`

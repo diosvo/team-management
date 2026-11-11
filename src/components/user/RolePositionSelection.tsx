@@ -1,13 +1,4 @@
 import { useEffect, useMemo } from 'react';
-
-import {
-  createListCollection,
-  Portal,
-  Select,
-  type SelectRootProps,
-  Span,
-  Stack,
-} from '@chakra-ui/react';
 import {
   type Control,
   Controller,
@@ -17,9 +8,14 @@ import {
   useWatch,
 } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
-
-import { Field } from '@/components/ui/field';
-import { useSelection } from '@/i18n/enums';
+import {
+  createListCollection,
+  Portal,
+  Select,
+  type SelectRootProps,
+  Span,
+  Stack,
+} from '@chakra-ui/react';
 
 import {
   COACH_POSITIONS_SELECTION,
@@ -28,6 +24,9 @@ import {
 } from '@/utils/constants';
 import { PlayerPosition, UserRole } from '@/utils/enum';
 import type { Option } from '@/utils/type';
+
+import { Field } from '@/components/ui/field';
+import { useSelection } from '@/i18n/enums';
 
 type StateRoleProps = Omit<SelectRootProps, 'collection'> &
   Partial<{

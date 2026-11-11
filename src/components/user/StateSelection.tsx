@@ -1,25 +1,25 @@
 'use client';
 
 import {
-  createListCollection,
-  Portal,
-  Select,
-  type SelectRootProps,
-} from '@chakra-ui/react';
-import {
   type Control,
   Controller,
   type FieldPath,
   type FieldValues,
 } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
+import {
+  createListCollection,
+  Portal,
+  Select,
+  type SelectRootProps,
+} from '@chakra-ui/react';
+
+import { USER_STATE_SELECTION } from '@/utils/constants';
+import { getColor } from '@/utils/helper';
 
 import { Field } from '@/components/ui/field';
 import { Status } from '@/components/ui/status';
 import { useSelection } from '@/i18n/enums';
-
-import { USER_STATE_SELECTION } from '@/utils/constants';
-import { getColor } from '@/utils/helper';
 
 type StateSelectionProps = Omit<SelectRootProps, 'collection'> &
   Partial<{

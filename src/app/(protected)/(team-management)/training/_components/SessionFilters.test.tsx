@@ -1,11 +1,11 @@
+import { thisYear } from '@/utils/datetime';
+import { SessionStatus } from '@/utils/enum';
+
 import {
   mockUseQueryStates,
   renderWithUI,
   setupTestLifecycle,
 } from '@/test/utilities';
-
-import { thisYear } from '@/utils/datetime';
-import { SessionStatus } from '@/utils/enum';
 
 import SessionFilters from './SessionFilters';
 

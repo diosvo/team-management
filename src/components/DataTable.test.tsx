@@ -1,3 +1,6 @@
+import { head } from 'es-toolkit';
+import { Eye } from 'lucide-react';
+
 import {
   expectNoA11yViolations,
   renderWithUI,
@@ -6,9 +9,7 @@ import {
   waitFor,
 } from '@/test/utilities';
 
-import { Eye } from 'lucide-react';
-
-import DataTable, { RowAction, type Column } from './DataTable';
+import DataTable, { type Column, RowAction } from './DataTable';
 
 const { mockUseLinkStatus } = vi.hoisted(() => ({
   mockUseLinkStatus: vi.fn(() => ({ pending: false })),
@@ -207,7 +208,7 @@ describe('DataTable', () => {
         />,
       );
 
-      const [link] = screen.getAllByRole('link', { name: 'Open' });
+      const link = head(screen.getAllByRole('link', { name: 'Open' }))!;
       expect(link).toHaveAttribute('href', '/rows/a');
 
       await user.click(link);
@@ -371,10 +372,10 @@ describe('DataTable', () => {
       );
 
       await user.click(
-        screen.getAllByRole('checkbox', { name: 'Select row' })[0],
+        head(screen.getAllByRole('checkbox', { name: 'Select row' }))!,
       );
 
-      const updater = setSelection.mock.calls[0][0];
+      const [updater] = head(setSelection.mock.calls)!;
       expect(updater(['x'])).toEqual(['x', 'a']);
     });
 
@@ -388,10 +389,10 @@ describe('DataTable', () => {
       );
 
       await user.click(
-        screen.getAllByRole('checkbox', { name: 'Select row' })[0],
+        head(screen.getAllByRole('checkbox', { name: 'Select row' }))!,
       );
 
-      const updater = setSelection.mock.calls[0][0];
+      const [updater] = head(setSelection.mock.calls)!;
       expect(updater(['a', 'z'])).toEqual(['z']);
     });
   });

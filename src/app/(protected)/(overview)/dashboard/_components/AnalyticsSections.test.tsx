@@ -1,4 +1,9 @@
-
+import {
+  getAttendanceHistory,
+  getAttendanceSummary,
+  getMatchesRate,
+  getMostAbsenceReasons,
+} from '@/actions/analytics';
 import {
   MOCK_ABSENCE_REASONS,
   MOCK_ATTENDANCE_HISTORY,
@@ -6,13 +11,6 @@ import {
   MOCK_PLAYERS_ATTENDANCE_SUMMARY,
 } from '@/test/mocks/analytics';
 import { renderWithUI, screen, setupTestLifecycle } from '@/test/utilities';
-
-import {
-  getAttendanceHistory,
-  getAttendanceSummary,
-  getMatchesRate,
-  getMostAbsenceReasons,
-} from '@/actions/analytics';
 
 import {
   AbsenceReasonsBreakdownSection,
@@ -63,7 +61,7 @@ describe('AnalyticsSections', () => {
 
   test('MatchesRateSection fetches by range and passes records', async () => {
     const MOCK_MATCHES_RATE = [{ outcome: 'win', league: 3, friendly: 2 }];
-    (vi.mocked(getMatchesRate)).mockResolvedValue(MOCK_MATCHES_RATE);
+    vi.mocked(getMatchesRate).mockResolvedValue(MOCK_MATCHES_RATE);
 
     renderWithUI(await MatchesRateSection({ range: MOCK_DATE_RANGE }));
 
@@ -73,9 +71,7 @@ describe('AnalyticsSections', () => {
   });
 
   test('AttendanceTrendSection fetches by range and passes records', async () => {
-    (vi.mocked(getAttendanceHistory)).mockResolvedValue(
-      MOCK_ATTENDANCE_HISTORY,
-    );
+    vi.mocked(getAttendanceHistory).mockResolvedValue(MOCK_ATTENDANCE_HISTORY);
 
     renderWithUI(await AttendanceTrendSection({ range: MOCK_DATE_RANGE }));
 
@@ -86,11 +82,13 @@ describe('AnalyticsSections', () => {
   });
 
   test('PlayerAttendanceRankingSection fetches by range and passes records', async () => {
-    (vi.mocked(getAttendanceSummary)).mockResolvedValue(
+    vi.mocked(getAttendanceSummary).mockResolvedValue(
       MOCK_PLAYERS_ATTENDANCE_SUMMARY,
     );
 
-    renderWithUI(await PlayerAttendanceRankingSection({ range: MOCK_DATE_RANGE }));
+    renderWithUI(
+      await PlayerAttendanceRankingSection({ range: MOCK_DATE_RANGE }),
+    );
 
     expect(getAttendanceSummary).toHaveBeenCalledWith(MOCK_DATE_RANGE);
     expect(propsSpy.ranking).toEqual({
@@ -99,11 +97,11 @@ describe('AnalyticsSections', () => {
   });
 
   test('AbsenceReasonsBreakdownSection fetches by range and passes reasons', async () => {
-    (vi.mocked(getMostAbsenceReasons)).mockResolvedValue(
-      MOCK_ABSENCE_REASONS,
-    );
+    vi.mocked(getMostAbsenceReasons).mockResolvedValue(MOCK_ABSENCE_REASONS);
 
-    renderWithUI(await AbsenceReasonsBreakdownSection({ range: MOCK_DATE_RANGE }));
+    renderWithUI(
+      await AbsenceReasonsBreakdownSection({ range: MOCK_DATE_RANGE }),
+    );
 
     expect(getMostAbsenceReasons).toHaveBeenCalledWith(MOCK_DATE_RANGE);
     expect(propsSpy.absence).toEqual({ reasons: MOCK_ABSENCE_REASONS });

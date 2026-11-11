@@ -6,6 +6,7 @@ import {
   screen,
   setupTestLifecycle,
 } from '@/test/utilities';
+
 import SelectionActionBar from './SelectionActionBar';
 
 describe('SelectionActionBar', () => {

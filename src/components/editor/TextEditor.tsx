@@ -1,30 +1,29 @@
 import {
+  type ReactNode,
   useCallback,
   useEffect,
   useId,
   useRef,
   useState,
   useTransition,
-  type ReactNode,
 } from 'react';
-
+import { useTranslations } from 'next-intl';
 import { Button, ButtonGroup, HStack, Text } from '@chakra-ui/react';
 import type { Editor } from '@tiptap/react';
 import { Check, Copy, Eye, Pencil, X } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 
+import { formatDatetime } from '@/utils/datetime';
+
+import { editorToPlainText } from '@/components/editor/plain-text';
 import {
   EditorToolbar,
   useEditorContent,
   useRichTextEditor,
 } from '@/components/editor/RichTextInput';
 import {
-  RichTextEditor,
   flushContentCss,
+  RichTextEditor,
 } from '@/components/ui/rich-text-editor';
-
-import { editorToPlainText } from '@/components/editor/plain-text';
-import { formatDatetime } from '@/utils/datetime';
 
 type TextEditorProps = {
   content: string;

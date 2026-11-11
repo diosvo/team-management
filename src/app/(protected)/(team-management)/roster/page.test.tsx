@@ -1,8 +1,6 @@
-
+import { getRoster } from '@/actions/user';
 import { MOCK_USER } from '@/test/mocks/user';
 import { renderWithUI, screen, setupTestLifecycle } from '@/test/utilities';
-
-import { getRoster } from '@/actions/user';
 
 import RosterPage, { generateMetadata } from './page';
 

@@ -34,7 +34,7 @@ flowchart TD
 `}
 />
 
-- **Roster** (`addUser`, `removeUser`, gated by `roster`): where a member
+- **Roster** (`createUser`, `removeUser`, gated by `roster`): where a member
   starts; every other page reads `user` / `player` from it.
 - **Leagues** (`upsertLeague`, admin only): enrols the caller's team via
   `league_team`; syncs picked players into `league_team_roster` (persisted).

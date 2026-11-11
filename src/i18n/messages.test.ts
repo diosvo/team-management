@@ -32,7 +32,7 @@ const argumentsOf = (message: unknown): Array<string> => {
     for (let i = text.indexOf('{'); i !== -1;) {
       const end = closing(text, i);
       const [name, type, ...branches] = text.slice(i + 1, end).split(',');
-      names.add(name.trim());
+      names.add((name ?? '').trim());
       if (type) scanBranches(branches.join(','));
       i = text.indexOf('{', end + 1);
     }

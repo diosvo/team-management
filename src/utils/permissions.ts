@@ -1,5 +1,6 @@
-import { RESOURCES } from '@/routes';
 import { UserRole } from '@/utils/enum';
+
+import { RESOURCES } from '@/routes';
 
 export const ALL_ACTIONS = ['view', 'create', 'edit', 'delete'] as const;
 

@@ -1,6 +1,7 @@
 import { Mail } from 'lucide-react';
 
 import { expectNoA11yViolations, renderWithUI, screen } from '@/test/utilities';
+
 import TextField from './TextField';
 
 describe('TextField', () => {

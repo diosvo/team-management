@@ -1,15 +1,14 @@
 import type { PropsWithChildren } from 'react';
-
 import { render as renderComponent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { configureAxe } from 'jest-axe';
 export * from '@testing-library/react';
 
-import { toMerged } from 'es-toolkit';
 import { createTranslator, NextIntlClientProvider } from 'next-intl';
+import { toMerged } from 'es-toolkit';
 
 import type { Locale } from '@/i18n/config';
-import { enumLabel, type EnumGroup } from '@/i18n/enums';
+import { type EnumGroup, enumLabel } from '@/i18n/enums';
 import messages from '@/i18n/messages/en';
 import viMessages from '@/i18n/messages/vi';
 import ZodErrorMap from '@/i18n/ZodErrorMap';

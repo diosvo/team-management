@@ -1,3 +1,5 @@
+import { uploadLogo, upsertTeam } from '@/actions/team';
+import { useTeamLogo } from '@/hooks/use-image';
 import { MOCK_AWAY_TEAM } from '@/test/mocks/team';
 import {
   act,
@@ -9,9 +11,6 @@ import {
   setupTestLifecycle,
   waitFor,
 } from '@/test/utilities';
-
-import { uploadLogo, upsertTeam } from '@/actions/team';
-import { useTeamLogo } from '@/hooks/use-image';
 
 import { UpsertTeam } from './UpsertTeam';
 

@@ -19,10 +19,11 @@ description: A browser-side wizard that turns the active roster into a league re
 
 - PLAYER, COACH and SUPER_ADMIN can open it; only SUPER_ADMIN and Captain use it.
 - Every control is disabled when `!isCaptain && !isAdmin`.
-- **UI-only gate.** No server action behind export; `getActivePlayers` and
-  `getLeagues` are `withAuth` reads open to any signed-in member.
-- **Sensitive data.** `getActivePlayers` returns full `User` rows (date of
-  birth, phone, citizen ID); the only page where these reach the client.
+- **Picker carries no PII.** `getActivePlayers` returns `PlayerOption` (id,
+  name, image, player) to any signed-in member.
+- **Sensitive data is gated.** Date of birth, phone and citizen ID come from
+  `getRegistrationPlayers(ids)`, which requires `registration:create` (SUPER_ADMIN
+  or Captain) and only returns the selected active players of the caller's team.
 
 ## Flows
 
@@ -183,9 +184,16 @@ Browser helpers under `registration/_helpers`, plus two `withAuth` reads.
       description: 'Header row plus one escaped row per player. roster.ts.',
     },
     'getActivePlayers()': {
+      type: 'Array<PlayerOption>',
+      required: true,
+      description:
+        'Active players of the caller’s team, without PII. src/actions/user.ts.',
+    },
+    'getRegistrationPlayers(ids)': {
       type: 'Array<User & { player }>',
       required: true,
-      description: 'Active players of the caller’s team. src/actions/user.ts.',
+      description:
+        'Full rows for the selected players; registration:create. Feeds the preview, CSV, PDF and save. src/actions/user.ts.',
     },
     'getLeagues()': {
       type: 'Array<League>',

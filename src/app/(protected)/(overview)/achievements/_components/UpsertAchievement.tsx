@@ -1,10 +1,12 @@
 'use client';
 
 import { useEffect, useTransition } from 'react';
-import useSWRImmutable from 'swr/immutable';
-
+import { Controller, useForm } from 'react-hook-form';
+import { useTranslations } from 'next-intl';
 import {
   Button,
+  createListCollection,
+  createOverlay,
   Dialog,
   Input,
   Portal,
@@ -13,23 +15,12 @@ import {
   Textarea,
   VStack,
   Wrap,
-  createListCollection,
-  createOverlay,
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { getYear, isPast } from 'date-fns';
 import { Save } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { Controller, useForm } from 'react-hook-form';
+import useSWRImmutable from 'swr/immutable';
 
-import { SearchableSelectField } from '@/components/SearchableSelect';
-import { CloseButton } from '@/components/ui/close-button';
-import { Field } from '@/components/ui/field';
-import { toaster } from '@/components/ui/toaster';
-import Visibility from '@/components/Visibility';
-
-import { useSelection } from '@/i18n/enums';
-import { getDefaults } from '@/lib/zod';
 import {
   ACHIEVEMENT_TYPE_SELECTION,
   CACHE_KEY,
@@ -38,10 +29,7 @@ import {
 } from '@/utils/constants';
 import type { AchievementType } from '@/utils/enum';
 
-import {
-  UpsertAchievementSchema,
-  type UpsertAchievementSchemaValues,
-} from '@/schemas/achievement';
+import { getDefaults } from '@/lib/zod';
 
 import {
   getPlayerLeagueStatSuggestions,
@@ -49,6 +37,16 @@ import {
 } from '@/actions/achievement';
 import { getLeagues } from '@/actions/league';
 import { getActivePlayers } from '@/actions/user';
+import { SearchableSelectField } from '@/components/SearchableSelect';
+import { CloseButton } from '@/components/ui/close-button';
+import { Field } from '@/components/ui/field';
+import { toaster } from '@/components/ui/toaster';
+import Visibility from '@/components/Visibility';
+import { useSelection } from '@/i18n/enums';
+import {
+  UpsertAchievementSchema,
+  type UpsertAchievementSchemaValues,
+} from '@/schemas/achievement';
 
 const ENDED_LEAGUES_KEY = 'ended_leagues';
 
@@ -87,7 +85,7 @@ export const UpsertAchievement = createOverlay(({ action, item, ...rest }) => {
     resolver: zodResolver(UpsertAchievementSchema),
     // Title starts from the default type's label until the user edits it.
     defaultValues: getDefaults(UpsertAchievementSchema, {
-      title: typeSelection[0].label,
+      title: typeSelection[0]?.label,
       ...item,
     }),
   });

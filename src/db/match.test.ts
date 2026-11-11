@@ -10,13 +10,13 @@ import {
   sql,
 } from 'drizzle-orm';
 
-import db from '@/drizzle';
-import { type InsertMatch, MatchTable } from '@/drizzle/schema';
-
-import type { MatchSearchParams } from '@/lib/nuqs';
-import type { UpsertMatchSchemaValues } from '@/schemas/match';
 import { MatchResult, MatchStatus, MatchType } from '@/utils/enum';
 
+import type { MatchSearchParams } from '@/lib/nuqs';
+
+import db from '@/drizzle';
+import { type InsertMatch, MatchTable } from '@/drizzle/schema';
+import type { UpsertMatchSchemaValues } from '@/schemas/match';
 import {
   mockDeleteFailure,
   mockDeleteSuccess,
@@ -34,13 +34,13 @@ import { MOCK_AWAY_TEAM, MOCK_TEAM } from '@/test/mocks/team';
 import {
   countTeamMatches,
   deleteMatch,
-  getMatches,
-  getMatchOwnership,
-  getMatchPlayerStats,
-  getPlayedMatches,
   insertMatch,
-  saveMatchPlayerStats,
+  selectMatches,
+  selectMatchOwnership,
+  selectMatchPlayerStats,
+  selectPlayedMatches,
   updateMatch,
+  upsertMatchPlayerStats,
 } from './match';
 import { withinRange } from './utils';
 
@@ -85,7 +85,7 @@ vi.mock('@/drizzle/schema', () => ({
   },
 }));
 
-describe('getMatches', () => {
+describe('selectMatches', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -119,7 +119,7 @@ describe('getMatches', () => {
     ];
     vi.mocked(db.query.MatchTable.findMany).mockResolvedValue(mockMatchData);
 
-    const result = await getMatches(mockParams);
+    const result = await selectMatches(mockParams);
 
     expect(result).toEqual({
       stats: {
@@ -162,15 +162,15 @@ describe('getMatches', () => {
       },
     ]);
 
-    const result = await getMatches(mockParams);
+    const result = await selectMatches(mockParams);
 
-    expect(result.data[0].result).toBe(MatchResult.DRAW);
+    expect(result.data[0]?.result).toBe(MatchResult.DRAW);
   });
 
   test('filters league matches when type is league', async () => {
     vi.mocked(db.query.MatchTable.findMany).mockResolvedValue([]);
 
-    await getMatches({ ...mockParams, match_type: [MatchType.LEAGUE] });
+    await selectMatches({ ...mockParams, match_type: [MatchType.LEAGUE] });
 
     expect(db.query.MatchTable.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -187,7 +187,7 @@ describe('getMatches', () => {
   test('filters friendly matches when type is friendly', async () => {
     vi.mocked(db.query.MatchTable.findMany).mockResolvedValue([]);
 
-    await getMatches({ ...mockParams, match_type: [MatchType.FRIENDLY] });
+    await selectMatches({ ...mockParams, match_type: [MatchType.FRIENDLY] });
 
     expect(db.query.MatchTable.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -204,7 +204,7 @@ describe('getMatches', () => {
   test('skips the is_5x5 filter when no game_type is selected', async () => {
     vi.mocked(db.query.MatchTable.findMany).mockResolvedValue([]);
 
-    await getMatches({ ...mockParams, game_type: [] });
+    await selectMatches({ ...mockParams, game_type: [] });
 
     expect(db.query.MatchTable.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -219,7 +219,7 @@ describe('getMatches', () => {
   test('skips the is_5x5 filter when both game types are selected', async () => {
     vi.mocked(db.query.MatchTable.findMany).mockResolvedValue([]);
 
-    await getMatches({ ...mockParams, game_type: ['true', 'false'] });
+    await selectMatches({ ...mockParams, game_type: ['true', 'false'] });
 
     expect(db.query.MatchTable.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -234,7 +234,7 @@ describe('getMatches', () => {
   test('skips the league_id filter when both match types are selected', async () => {
     vi.mocked(db.query.MatchTable.findMany).mockResolvedValue([]);
 
-    await getMatches({
+    await selectMatches({
       ...mockParams,
       match_type: [MatchType.LEAGUE, MatchType.FRIENDLY],
     });
@@ -253,7 +253,7 @@ describe('getMatches', () => {
   test('narrows to the selected statuses', async () => {
     vi.mocked(db.query.MatchTable.findMany).mockResolvedValue([]);
 
-    await getMatches({ ...mockParams, status: [MatchStatus.SCHEDULED] });
+    await selectMatches({ ...mockParams, status: [MatchStatus.SCHEDULED] });
 
     expect(db.query.MatchTable.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -291,7 +291,7 @@ describe('getMatches', () => {
     ];
     vi.mocked(db.query.MatchTable.findMany).mockResolvedValue(mockMatchData);
 
-    const result = await getMatches(mockParams);
+    const result = await selectMatches(mockParams);
 
     expect(result.data.map(({ result }) => result)).toEqual([
       MatchResult.WIN,
@@ -310,7 +310,7 @@ describe('getMatches', () => {
   test('returns empty stats when no matches exist', async () => {
     vi.mocked(db.query.MatchTable.findMany).mockResolvedValue([]);
 
-    const result = await getMatches(mockParams);
+    const result = await selectMatches(mockParams);
 
     expect(result).toEqual({
       stats: {
@@ -338,7 +338,7 @@ describe('getMatches', () => {
     async ({ mockError }) => {
       vi.mocked(db.query.MatchTable.findMany).mockRejectedValue(mockError);
 
-      const result = await getMatches(mockParams);
+      const result = await selectMatches(mockParams);
 
       expect(result).toEqual({
         stats: {
@@ -482,7 +482,7 @@ describe('countTeamMatches', () => {
   });
 });
 
-describe('getPlayedMatches', () => {
+describe('selectPlayedMatches', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -501,7 +501,7 @@ describe('getPlayedMatches', () => {
     const { mockInnerJoin, mockWhereWithGroupBy, mockOrderBy } =
       mockSelectSuccess(rows);
 
-    await expect(getPlayedMatches(MOCK_TEAM.team_id)).resolves.toEqual(rows);
+    await expect(selectPlayedMatches(MOCK_TEAM.team_id)).resolves.toEqual(rows);
 
     expect(mockInnerJoin).toHaveBeenCalled();
     expect(mockWhereWithGroupBy).toHaveBeenCalledWith(
@@ -516,11 +516,11 @@ describe('getPlayedMatches', () => {
   test('returns an empty list on a database error', async () => {
     mockSelectFailure('Select failed');
 
-    await expect(getPlayedMatches(MOCK_TEAM.team_id)).resolves.toEqual([]);
+    await expect(selectPlayedMatches(MOCK_TEAM.team_id)).resolves.toEqual([]);
   });
 });
 
-describe('getMatchOwnership', () => {
+describe('selectMatchOwnership', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -541,7 +541,7 @@ describe('getMatchOwnership', () => {
     };
     const { mockWhere, mockLimit } = mockOwnership([owner]);
 
-    await expect(getMatchOwnership(MOCK_MATCH.match_id)).resolves.toEqual(
+    await expect(selectMatchOwnership(MOCK_MATCH.match_id)).resolves.toEqual(
       owner,
     );
     expect(mockWhere).toHaveBeenCalledWith(
@@ -553,11 +553,11 @@ describe('getMatchOwnership', () => {
   test('returns null for an unknown match', async () => {
     mockOwnership([]);
 
-    await expect(getMatchOwnership('missing')).resolves.toBeNull();
+    await expect(selectMatchOwnership('missing')).resolves.toBeNull();
   });
 });
 
-describe('getMatchPlayerStats', () => {
+describe('selectMatchPlayerStats', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -569,7 +569,7 @@ describe('getMatchPlayerStats', () => {
     const { mockWhereWithGroupBy } = mockSelectSuccess(rows);
 
     await expect(
-      getMatchPlayerStats(MOCK_MATCH.match_id, MOCK_TEAM.team_id),
+      selectMatchPlayerStats(MOCK_MATCH.match_id, MOCK_TEAM.team_id),
     ).resolves.toEqual(rows);
     expect(mockWhereWithGroupBy).toHaveBeenCalled();
   });
@@ -578,12 +578,12 @@ describe('getMatchPlayerStats', () => {
     mockSelectFailure('Select failed');
 
     await expect(
-      getMatchPlayerStats(MOCK_MATCH.match_id, MOCK_TEAM.team_id),
+      selectMatchPlayerStats(MOCK_MATCH.match_id, MOCK_TEAM.team_id),
     ).resolves.toEqual([]);
   });
 });
 
-describe('saveMatchPlayerStats', () => {
+describe('upsertMatchPlayerStats', () => {
   const mockOnConflict = vi.fn();
   const mockValues = vi.fn(() => ({ onConflictDoUpdate: mockOnConflict }));
   const mockDeleteWhere = vi.fn();
@@ -619,7 +619,7 @@ describe('saveMatchPlayerStats', () => {
   };
 
   test('upserts rows and deletes removed players in one transaction', async () => {
-    await saveMatchPlayerStats(
+    await upsertMatchPlayerStats(
       MOCK_MATCH.match_id,
       MOCK_TEAM.team_id,
       [row],
@@ -645,7 +645,12 @@ describe('saveMatchPlayerStats', () => {
   });
 
   test('skips both writes when nothing changed', async () => {
-    await saveMatchPlayerStats(MOCK_MATCH.match_id, MOCK_TEAM.team_id, [], []);
+    await upsertMatchPlayerStats(
+      MOCK_MATCH.match_id,
+      MOCK_TEAM.team_id,
+      [],
+      [],
+    );
 
     expect(tx.delete).not.toHaveBeenCalled();
     expect(tx.insert).not.toHaveBeenCalled();

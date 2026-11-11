@@ -1,9 +1,8 @@
+import type { PropsWithChildren } from 'react';
 import type { Metadata } from 'next';
 import Image from 'next/image';
-import type { PropsWithChildren } from 'react';
-
-import { Box, Center, Container } from '@chakra-ui/react';
 import { getTranslations } from 'next-intl/server';
+import { Box, Center, Container } from '@chakra-ui/react';
 
 import BackgroundLayer from '@/assets/images/bg-layer.webp';
 

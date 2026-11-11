@@ -1,11 +1,11 @@
 import env from '@env';
+import type { Interval } from '@/utils/enum';
 
 import auth from '@/lib/auth';
-import { getBrowser } from '@/lib/puppeteer';
 import { uploadFile } from '@/lib/blob';
+import { getBrowser } from '@/lib/puppeteer';
 
 import type { DateRange } from '@/types/common';
-import type { Interval } from '@/utils/enum';
 
 /** Days a generated report stays downloadable before the retention job prunes it. */
 export const RETENTION_DAYS = 90;
@@ -175,7 +175,7 @@ export async function getServiceSession(): Promise<{
   return {
     team_id: user.team_id,
     cookies: setCookies.map((cookie) => {
-      const [pair] = cookie.split(';');
+      const [pair = ''] = cookie.split(';');
       const separator = pair.indexOf('=');
       return {
         name: pair.slice(0, separator).trim(),

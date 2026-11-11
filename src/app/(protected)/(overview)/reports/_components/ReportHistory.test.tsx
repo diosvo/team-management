@@ -1,3 +1,7 @@
+import { reportDownloadUrl } from '@/utils/constants';
+import { EmailStatus, ReportStatus } from '@/utils/enum';
+
+import type { ReportHistory as ReportHistoryRow } from '@/drizzle/schema';
 import { MOCK_REPORT_HISTORY } from '@/test/mocks/report';
 import {
   expectNoA11yViolations,
@@ -6,11 +10,6 @@ import {
   setupTestLifecycle,
   within,
 } from '@/test/utilities';
-
-import { reportDownloadUrl } from '@/utils/constants';
-import { EmailStatus, ReportStatus } from '@/utils/enum';
-
-import type { ReportHistory as ReportHistoryRow } from '@/drizzle/schema';
 
 import ReportHistory from './ReportHistory';
 

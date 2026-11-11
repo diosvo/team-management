@@ -1,3 +1,6 @@
+import type { PerformanceTab } from '@/utils/constants';
+
+import { MOCK_PERFORMANCE_RANGE } from '@/test/mocks/performance';
 import {
   expectNoA11yViolations,
   mockUseQueryStates,
@@ -5,9 +8,6 @@ import {
   screen,
   setupTestLifecycle,
 } from '@/test/utilities';
-import { MOCK_PERFORMANCE_RANGE } from '@/test/mocks/performance';
-
-import type { PerformanceTab } from '@/utils/constants';
 
 import PerformanceTabs from './PerformanceTabs';
 

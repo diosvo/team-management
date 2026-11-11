@@ -302,8 +302,6 @@ test.describe('Team Rule - Edit Mode (Admin/Captain)', () => {
 
       const editor = page.locator('textarea, [contenteditable="true"]');
       if (await editor.isVisible()) {
-        const originalContent = await editor.textContent();
-
         await editor.fill('# Temporary Change');
 
         const cancelButton = page.getByRole('button', { name: /cancel/i });

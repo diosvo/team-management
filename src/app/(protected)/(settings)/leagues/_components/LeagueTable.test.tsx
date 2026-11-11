@@ -1,3 +1,10 @@
+import { AchievementType, LeagueStatus } from '@/utils/enum';
+
+import { removeLeague } from '@/actions/league';
+import type { League } from '@/drizzle/schema';
+import usePermissions, {
+  type PermissionsResult,
+} from '@/hooks/use-permissions';
 import { MOCK_LEAGUE } from '@/test/mocks/league';
 import {
   createPermissionsMock,
@@ -10,14 +17,6 @@ import {
   setupTestLifecycle,
   waitFor,
 } from '@/test/utilities';
-
-import usePermissions, {
-  type PermissionsResult,
-} from '@/hooks/use-permissions';
-import { AchievementType, LeagueStatus } from '@/utils/enum';
-
-import { removeLeague } from '@/actions/league';
-import type { League } from '@/drizzle/schema';
 
 import LeagueTable from './LeagueTable';
 import { UpsertLeague } from './UpsertLeague';

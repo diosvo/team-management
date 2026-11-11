@@ -69,14 +69,15 @@ description: Tủ danh hiệu của câu lạc bộ, ghi tay cho những giải 
 - **Chỉ giải đã kết thúc.** `upsertAchievement` từ chối nếu không
   `isPast(league.end_date)`; bộ lọc trên trình duyệt chỉ để bạn chọn cho tiện.
 - **Mỗi giải, mỗi loại chỉ một danh hiệu.** Partial unique index
-  `achievement_league_type_idx` bỏ qua `custom` và danh hiệu riêng.
+  `achievement_team_league_type_idx` (đội, giải, loại) bỏ qua `custom` và danh hiệu riêng.
 - **Danh hiệu vẫn còn khi giải hay cầu thủ bị xóa.** `league_id` / `player_id`
   là `ON DELETE SET NULL`; xóa giải thì danh hiệu thành danh hiệu riêng.
 - **Chỉ danh hiệu cá nhân mới gắn cầu thủ.** Bắt buộc cho MVP / Top Scorer;
   `null` cho danh hiệu tập thể.
-- **Không lọc theo đội.** `getAchievements` (`withAuth`) trả về mọi dòng.
-- **Không có `team_id`.** Một `achievement` chỉ thuộc về đội thông qua giải
-  hoặc cầu thủ.
+- **Lọc theo đội.** `achievement.team_id` lấy từ phiên đăng nhập khi thêm mới;
+  đọc, sửa, xóa đều lọc theo cột này, nên không bao giờ trả về hay sửa dòng của
+  đội khác.
+- **Bổ sung dữ liệu cũ.** Migration `0020` gán các dòng sẵn có cho đội mặc định.
 
 ## Dữ liệu
 

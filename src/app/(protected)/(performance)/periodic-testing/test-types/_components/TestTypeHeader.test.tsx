@@ -1,4 +1,4 @@
-
+import usePermissions from '@/hooks/use-permissions';
 import {
   createPermissionsMock,
   renderWithUI,
@@ -6,10 +6,8 @@ import {
   setupTestLifecycle,
 } from '@/test/utilities';
 
-import usePermissions from '@/hooks/use-permissions';
-
+import TestTypeHeader from './TestTypeHeader';
 import { UpsertTestType } from './UpsertTestType';
-import TestTypesHeader from './TestTypesHeader';
 
 vi.mock('@/hooks/use-permissions', () => ({
   default: vi.fn(),
@@ -21,16 +19,18 @@ vi.mock('./UpsertTestType', () => ({
   UpsertTestType: { open: vi.fn() },
 }));
 
-describe('TestTypesHeader', () => {
+describe('TestTypeHeader', () => {
   const mockUsePermissions = vi.mocked(usePermissions);
   const mockOpen = vi.mocked(UpsertTestType.open);
 
   const setup = (canCreate = false) => {
-    mockUsePermissions.mockReturnValue(createPermissionsMock({
-      can: vi.fn(() => canCreate),
-    }));
+    mockUsePermissions.mockReturnValue(
+      createPermissionsMock({
+        can: vi.fn(() => canCreate),
+      }),
+    );
 
-    return renderWithUI(<TestTypesHeader />);
+    return renderWithUI(<TestTypeHeader />);
   };
 
   setupTestLifecycle();

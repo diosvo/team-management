@@ -6,7 +6,6 @@ import {
   type InsertAttendance,
 } from '@/drizzle/schema/attendance';
 import { UserTable } from '@/drizzle/schema/user';
-
 import {
   mockDeleteFailure,
   mockDeleteSuccess,
@@ -27,8 +26,8 @@ import { MOCK_TEAM } from '@/test/mocks/team';
 
 import {
   deleteAttendance,
-  getAttendances,
   insertAttendance,
+  selectAttendances,
   updateAttendance,
 } from './attendance';
 import { withinRange } from './utils';
@@ -75,7 +74,7 @@ const MOCK_JOINED_ROWS = MOCK_ATTENDANCE_BY_DATE.map(
   ({ player, ...attendance }) => ({ attendance, name: player.user.name }),
 );
 
-describe('getAttendances', () => {
+describe('selectAttendances', () => {
   const RANGE = { from: '2026-02-01', to: '2026-02-28' };
 
   beforeEach(() => {
@@ -86,7 +85,7 @@ describe('getAttendances', () => {
     const { mockFrom, mockInnerJoin, mockWhereWithGroupBy, mockOrderBy } =
       mockSelectSuccess(MOCK_JOINED_ROWS);
 
-    const result = await getAttendances(MOCK_TEAM.team_id, RANGE);
+    const result = await selectAttendances(MOCK_TEAM.team_id, RANGE);
 
     expect(result).toEqual(MOCK_ATTENDANCE_RESPONSE);
     // Verify query construction
@@ -116,7 +115,7 @@ describe('getAttendances', () => {
   test('returns a zero present rate when there are no records', async () => {
     mockSelectSuccess([]);
 
-    const result = await getAttendances(MOCK_TEAM.team_id, RANGE);
+    const result = await selectAttendances(MOCK_TEAM.team_id, RANGE);
 
     expect(result).toEqual({
       stats: {
@@ -143,7 +142,7 @@ describe('getAttendances', () => {
     async ({ mockError }) => {
       mockSelectFailure(mockError as string | Error);
 
-      const result = await getAttendances(MOCK_TEAM.team_id, RANGE);
+      const result = await selectAttendances(MOCK_TEAM.team_id, RANGE);
 
       expect(result).toEqual({
         stats: {

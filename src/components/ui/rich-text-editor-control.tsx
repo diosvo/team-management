@@ -198,7 +198,7 @@ export function createSelectControl(config: SelectControlConfig) {
         variant="ghost"
         collection={collection}
         value={[currentValue]}
-        onValueChange={(details) => command(editor, details.value[0])}
+        onValueChange={({ value: [next] }) => next && command(editor, next)}
         disabled={disabled}
         ids={{ trigger: controlId }}
         positioning={{ sameWidth: false }}

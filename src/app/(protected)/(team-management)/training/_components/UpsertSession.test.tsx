@@ -1,3 +1,9 @@
+import { pick } from 'es-toolkit';
+
+import { SessionStatus } from '@/utils/enum';
+
+import { upsertSession } from '@/actions/training-session';
+import { MOCK_TRAINING_SESSION } from '@/test/mocks/training-sessions';
 import {
   act,
   createToasterMock,
@@ -8,10 +14,6 @@ import {
   setupTestLifecycle,
   waitFor,
 } from '@/test/utilities';
-
-import { SessionStatus } from '@/utils/enum';
-
-import { upsertSession } from '@/actions/training-session';
 
 import { UpsertSession } from './UpsertSession';
 
@@ -30,10 +32,12 @@ describe('UpsertSession', () => {
   const mockUpsertSession = vi.mocked(upsertSession);
 
   const EXISTING_SESSION = {
-    session_id: 'session-123',
-    date: '2026-12-12',
-    start_time: '09:00:00',
-    end_time: '11:00:00',
+    ...pick(MOCK_TRAINING_SESSION, [
+      'session_id',
+      'date',
+      'start_time',
+      'end_time',
+    ]),
     location_id: null,
     status: SessionStatus.SCHEDULED,
   };
@@ -164,10 +168,8 @@ describe('UpsertSession', () => {
     mockUpsertSession.mockResolvedValue({ success: true, message: 'Created' });
 
     const { user } = await open('Create', {
+      ...pick(MOCK_TRAINING_SESSION, ['date', 'start_time', 'end_time']),
       session_id: '',
-      date: '2026-12-12',
-      start_time: '09:00:00',
-      end_time: '11:00:00',
     });
 
     const submit = await screen.findByRole('button', { name: /create/i });
@@ -177,7 +179,7 @@ describe('UpsertSession', () => {
     await waitFor(() =>
       expect(mockUpsertSession).toHaveBeenCalledWith(
         '',
-        expect.objectContaining({ date: '2026-12-12' }),
+        expect.objectContaining({ date: MOCK_TRAINING_SESSION.date }),
       ),
     );
   });

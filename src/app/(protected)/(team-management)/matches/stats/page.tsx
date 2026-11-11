@@ -1,8 +1,6 @@
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
 import { forbidden } from 'next/navigation';
-
-import PageTitle from '@/components/PageTitle';
+import { getTranslations } from 'next-intl/server';
 
 import {
   canEditMatchStats,
@@ -10,6 +8,7 @@ import {
   getPlayedMatches,
 } from '@/actions/match';
 import { getActivePlayers } from '@/actions/user';
+import PageTitle from '@/components/PageTitle';
 
 import MatchStatsPageClient from './_components/MatchStatsPageClient';
 

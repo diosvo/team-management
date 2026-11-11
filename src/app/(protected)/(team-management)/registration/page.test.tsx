@@ -5,7 +5,7 @@ import RegistrationPage, { generateMetadata } from './page';
 vi.mock('./_components/RegistrationIntro', () => ({
   default: () => <div data-testid="intro" />,
 }));
-vi.mock('./_components/main', () => ({
+vi.mock('./_components/RegistrationPageClient', () => ({
   default: () => <div data-testid="client" />,
 }));
 

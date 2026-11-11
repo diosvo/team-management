@@ -1,6 +1,5 @@
-import { createPermissionsMock, render, screen } from '@/test/utilities';
-
 import usePermissions from '@/hooks/use-permissions';
+import { createPermissionsMock, render, screen } from '@/test/utilities';
 
 import Authorized from './Authorized';
 
@@ -25,6 +24,20 @@ describe('Authorized', () => {
       </Authorized>,
     );
   };
+
+  test('do not children when no actions', () => {
+    mockUsePermissions.mockReturnValue(
+      createPermissionsMock({ can: () => true }),
+    );
+
+    render(
+      <Authorized resource="roster" action={[]}>
+        <span>Protected content</span>
+      </Authorized>,
+    );
+
+    expect(screen.queryByText('Protected content')).not.toBeInTheDocument();
+  });
 
   test('renders children when the user has permission', () => {
     setup({ can: () => true });

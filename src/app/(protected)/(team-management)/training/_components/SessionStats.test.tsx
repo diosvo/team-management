@@ -1,3 +1,5 @@
+import { SessionStatus } from '@/utils/enum';
+
 import { MOCK_TRAINING_SESSION_RESPONSE } from '@/test/mocks/training-sessions';
 import {
   axeInteractiveStat,
@@ -7,9 +9,6 @@ import {
   screen,
   setupTestLifecycle,
 } from '@/test/utilities';
-
-import { SessionStatus } from '@/utils/enum';
-
 import type { TrainingSessionStats } from '@/types/training-session';
 
 import SessionStats from './SessionStats';

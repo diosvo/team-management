@@ -1,6 +1,5 @@
-import { MOCK_PERFORMANCE_RANGE } from '@/test/mocks/performance';
+import { pick } from 'es-toolkit';
 
-import db from '@/drizzle';
 import {
   AchievementType,
   ActivityKind,
@@ -9,13 +8,26 @@ import {
   TestTypeUnit,
 } from '@/utils/enum';
 
+import db from '@/drizzle';
 import {
-  getPlayerActivity,
-  getPlayerAttendanceOverview,
-  getPlayerHonorSummary,
-  getPlayerMatchesOverview,
-  getPlayerTestingOverview,
-  getPlayerTestingSummary,
+  MOCK_PERFORMANCE_RANGE,
+  MOCK_PERFORMANCE_TARGET_ID,
+} from '@/test/mocks/performance';
+import {
+  MOCK_TEST_PLAYER_2,
+  MOCK_TEST_TYPE,
+  MOCK_TEST_TYPE_2,
+} from '@/test/mocks/periodic-testing';
+import { MOCK_TEAM } from '@/test/mocks/team';
+import { MOCK_PLAYER } from '@/test/mocks/user';
+
+import {
+  selectPlayerActivity,
+  selectPlayerAttendanceOverview,
+  selectPlayerHonorSummary,
+  selectPlayerMatchesOverview,
+  selectPlayerTestingOverview,
+  selectPlayerTestingSummary,
 } from './player-performance';
 
 vi.mock('@/drizzle', () => ({
@@ -53,8 +65,15 @@ function queueSelects(...results: Array<unknown>) {
   );
 }
 
-const PLAYER_ID = 'player-1';
-const TEAM_ID = 'team-1';
+const PLAYER_ID = MOCK_PERFORMANCE_TARGET_ID;
+const TEAM_ID = MOCK_TEAM.team_id;
+const TEAMMATE_ID = MOCK_PLAYER.id;
+const OTHER_TEAMMATE_ID = MOCK_TEST_PLAYER_2.id;
+// Sprint (seconds) is lower-is-better; Push-ups (reps) higher-is-better.
+const SPRINT = pick(MOCK_TEST_TYPE, ['type_id', 'name', 'unit']);
+const JUMP = pick(MOCK_TEST_TYPE_2, ['type_id', 'name', 'unit']);
+const FIRST_DATE = '2026-01-10';
+const LATEST_DATE = '2026-03-10';
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -66,7 +85,7 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-describe('getPlayerAttendanceOverview', () => {
+describe('selectPlayerAttendanceOverview', () => {
   test('summarizes rates, streaks, months, reasons and the trend', async () => {
     queueSelects(
       [
@@ -88,7 +107,7 @@ describe('getPlayerAttendanceOverview', () => {
       ],
     );
 
-    const result = await getPlayerAttendanceOverview(
+    const result = await selectPlayerAttendanceOverview(
       PLAYER_ID,
       TEAM_ID,
       MOCK_PERFORMANCE_RANGE,
@@ -121,7 +140,7 @@ describe('getPlayerAttendanceOverview', () => {
   test('returns zeroed rates and no trend without any rows', async () => {
     queueSelects([], [], []);
 
-    const result = await getPlayerAttendanceOverview(
+    const result = await selectPlayerAttendanceOverview(
       PLAYER_ID,
       TEAM_ID,
       MOCK_PERFORMANCE_RANGE,
@@ -149,7 +168,7 @@ describe('getPlayerAttendanceOverview', () => {
       [{ date: '2026-06-20', status: AttendanceStatus.ON_TIME }],
     );
 
-    const result = await getPlayerAttendanceOverview(
+    const result = await selectPlayerAttendanceOverview(
       PLAYER_ID,
       TEAM_ID,
       MOCK_PERFORMANCE_RANGE,
@@ -161,7 +180,7 @@ describe('getPlayerAttendanceOverview', () => {
   test('falls back to the empty overview on a database error', async () => {
     queueSelects(new Error('boom'), [], []);
 
-    const result = await getPlayerAttendanceOverview(
+    const result = await selectPlayerAttendanceOverview(
       PLAYER_ID,
       TEAM_ID,
       MOCK_PERFORMANCE_RANGE,
@@ -171,147 +190,133 @@ describe('getPlayerAttendanceOverview', () => {
   });
 });
 
-describe('getPlayerTestingOverview', () => {
+describe('selectPlayerTestingOverview', () => {
   test('returns the empty overview when the player has no results', async () => {
     queueSelects([]);
 
-    const result = await getPlayerTestingOverview(PLAYER_ID, TEAM_ID);
+    const result = await selectPlayerTestingOverview(PLAYER_ID, TEAM_ID);
 
     expect(db.select).toHaveBeenCalledTimes(1);
     expect(result).toEqual({ types: [], tests_taken: 0, last_tested: null });
   });
 
   test('builds per-type progress against the team', async () => {
+    // Edge cases: a zero baseline and a plain higher-is-better rise.
+    const ZERO = { type_id: 't3', name: 'Zero', unit: TestTypeUnit.POINTS };
+    const VERTICAL = {
+      type_id: 't4',
+      name: 'Vertical',
+      unit: TestTypeUnit.POINTS,
+    };
+
     queueSelects(
       [
-        {
-          type_id: 't1',
-          name: 'Sprint',
-          unit: TestTypeUnit.SECONDS,
-          date: '2026-01-10',
-          result: '5.0',
-        },
-        {
-          type_id: 't3',
-          name: 'Zero',
-          unit: TestTypeUnit.POINTS,
-          date: '2026-01-10',
-          result: '0',
-        },
-        {
-          type_id: 't4',
-          name: 'Vertical',
-          unit: TestTypeUnit.POINTS,
-          date: '2026-01-10',
-          result: '10',
-        },
-        {
-          type_id: 't1',
-          name: 'Sprint',
-          unit: TestTypeUnit.SECONDS,
-          date: '2026-03-10',
-          result: '4.5',
-        },
-        {
-          type_id: 't2',
-          name: 'Jump',
-          unit: TestTypeUnit.METERS,
-          date: '2026-03-10',
-          result: '2.0',
-        },
-        {
-          type_id: 't3',
-          name: 'Zero',
-          unit: TestTypeUnit.POINTS,
-          date: '2026-03-10',
-          result: '5',
-        },
-        {
-          type_id: 't4',
-          name: 'Vertical',
-          unit: TestTypeUnit.POINTS,
-          date: '2026-03-10',
-          result: '12',
-        },
+        { ...SPRINT, date: FIRST_DATE, result: '5.0' },
+        { ...ZERO, date: FIRST_DATE, result: '0' },
+        { ...VERTICAL, date: FIRST_DATE, result: '10' },
+        { ...SPRINT, date: LATEST_DATE, result: '4.5' },
+        { ...JUMP, date: LATEST_DATE, result: '2.0' },
+        { ...ZERO, date: LATEST_DATE, result: '5' },
+        { ...VERTICAL, date: LATEST_DATE, result: '12' },
       ],
       [
         {
-          type_id: 't1',
-          date: '2026-01-10',
+          type_id: SPRINT.type_id,
+          date: FIRST_DATE,
           player_id: PLAYER_ID,
           result: '5.0',
         },
-        { type_id: 't1', date: '2026-01-10', player_id: 'p2', result: '6.0' },
         {
-          type_id: 't1',
-          date: '2026-03-10',
+          type_id: SPRINT.type_id,
+          date: FIRST_DATE,
+          player_id: TEAMMATE_ID,
+          result: '6.0',
+        },
+        {
+          type_id: SPRINT.type_id,
+          date: LATEST_DATE,
           player_id: PLAYER_ID,
           result: '4.5',
         },
-        { type_id: 't1', date: '2026-03-10', player_id: 'p2', result: '4.0' },
-        { type_id: 't1', date: '2026-03-10', player_id: 'p3', result: '5.0' },
         {
-          type_id: 't2',
-          date: '2026-03-10',
+          type_id: SPRINT.type_id,
+          date: LATEST_DATE,
+          player_id: TEAMMATE_ID,
+          result: '4.0',
+        },
+        {
+          type_id: SPRINT.type_id,
+          date: LATEST_DATE,
+          player_id: OTHER_TEAMMATE_ID,
+          result: '5.0',
+        },
+        {
+          type_id: JUMP.type_id,
+          date: LATEST_DATE,
           player_id: PLAYER_ID,
           result: '2.0',
         },
-        { type_id: 't2', date: '2026-03-10', player_id: 'p2', result: '1.5' },
+        {
+          type_id: JUMP.type_id,
+          date: LATEST_DATE,
+          player_id: TEAMMATE_ID,
+          result: '1.5',
+        },
       ],
     );
 
-    const result = await getPlayerTestingOverview(PLAYER_ID, TEAM_ID);
+    const result = await selectPlayerTestingOverview(PLAYER_ID, TEAM_ID);
 
     expect(result.tests_taken).toBe(2);
-    expect(result.last_tested).toBe('2026-03-10');
+    expect(result.last_tested).toBe(LATEST_DATE);
     expect(result.types.map(({ name }) => name)).toEqual([
-      'Jump',
-      'Sprint',
-      'Vertical',
-      'Zero',
+      JUMP.name,
+      SPRINT.name,
+      VERTICAL.name,
+      ZERO.name,
     ]);
 
     const [jump, sprint, vertical, zero] = result.types;
 
     // Higher is better: a rise reads as a positive change.
-    expect(vertical.latest.improvement_pct).toBe(20);
+    expect(vertical?.latest.improvement_pct).toBe(20);
 
     expect(jump).toEqual({
-      type_id: 't2',
-      name: 'Jump',
-      unit: TestTypeUnit.METERS,
+      type_id: JUMP.type_id,
+      name: JUMP.name,
+      unit: JUMP.unit,
       lower_is_better: false,
       latest: {
-        date: '2026-03-10',
+        date: LATEST_DATE,
         result: 2,
         improvement_pct: null,
         team_avg: 1.8,
         percentile: 100,
       },
-      series: [{ date: '2026-03-10', result: 2, team_avg: 1.8 }],
+      series: [{ date: LATEST_DATE, result: 2, team_avg: 1.8 }],
     });
 
     expect(sprint).toEqual({
-      type_id: 't1',
-      name: 'Sprint',
-      unit: TestTypeUnit.SECONDS,
+      type_id: SPRINT.type_id,
+      name: SPRINT.name,
+      unit: SPRINT.unit,
       lower_is_better: true,
       latest: {
-        date: '2026-03-10',
+        date: LATEST_DATE,
         result: 4.5,
         improvement_pct: 10,
         team_avg: 4.5,
         percentile: 50,
       },
       series: [
-        { date: '2026-01-10', result: 5, team_avg: 5.5 },
-        { date: '2026-03-10', result: 4.5, team_avg: 4.5 },
+        { date: FIRST_DATE, result: 5, team_avg: 5.5 },
+        { date: LATEST_DATE, result: 4.5, team_avg: 4.5 },
       ],
     });
 
     // No team rows and a zero baseline: nothing to compare against.
-    expect(zero.latest).toEqual({
-      date: '2026-03-10',
+    expect(zero?.latest).toEqual({
+      date: LATEST_DATE,
       result: 5,
       improvement_pct: null,
       team_avg: null,
@@ -322,7 +327,7 @@ describe('getPlayerTestingOverview', () => {
   test('falls back to the empty overview on a database error', async () => {
     queueSelects(new Error('boom'));
 
-    const result = await getPlayerTestingOverview(PLAYER_ID, TEAM_ID);
+    const result = await selectPlayerTestingOverview(PLAYER_ID, TEAM_ID);
 
     expect(result).toEqual({ types: [], tests_taken: 0, last_tested: null });
   });
@@ -373,11 +378,11 @@ const MATCH_ROWS = [
   },
 ];
 
-describe('getPlayerMatchesOverview', () => {
+describe('selectPlayerMatchesOverview', () => {
   test('maps results and averages the box scores', async () => {
     queueSelects(MATCH_ROWS);
 
-    const result = await getPlayerMatchesOverview(
+    const result = await selectPlayerMatchesOverview(
       PLAYER_ID,
       TEAM_ID,
       MOCK_PERFORMANCE_RANGE,
@@ -422,7 +427,7 @@ describe('getPlayerMatchesOverview', () => {
   ])('returns the empty overview when %s', async (_, rows) => {
     queueSelects(rows);
 
-    const result = await getPlayerMatchesOverview(
+    const result = await selectPlayerMatchesOverview(
       PLAYER_ID,
       TEAM_ID,
       MOCK_PERFORMANCE_RANGE,
@@ -442,7 +447,7 @@ describe('getPlayerMatchesOverview', () => {
   });
 });
 
-describe('getPlayerActivity', () => {
+describe('selectPlayerActivity', () => {
   test('merges sessions, tests and matches newest first', async () => {
     queueSelects(
       [
@@ -475,14 +480,14 @@ describe('getPlayerActivity', () => {
         },
       ],
       [
-        { date: '2026-03-10', name: 'Jump', unit: 'meters', result: '2.0' },
-        { date: '2026-03-10', name: 'Sprint', unit: 'seconds', result: '4.5' },
-        { date: '2026-01-10', name: 'Sprint', unit: 'seconds', result: '5.0' },
+        { ...JUMP, date: LATEST_DATE, result: '2.0' },
+        { ...SPRINT, date: LATEST_DATE, result: '4.5' },
+        { ...SPRINT, date: FIRST_DATE, result: '5.0' },
       ],
       [MATCH_ROWS[0]],
     );
 
-    const result = await getPlayerActivity(
+    const result = await selectPlayerActivity(
       PLAYER_ID,
       TEAM_ID,
       MOCK_PERFORMANCE_RANGE,
@@ -502,12 +507,12 @@ describe('getPlayerActivity', () => {
           assists: 3,
         },
         {
-          id: 'test-2026-03-10',
-          date: '2026-03-10',
+          id: `test-${LATEST_DATE}`,
+          date: LATEST_DATE,
           kind: ActivityKind.TEST,
           results: [
-            { name: 'Jump', result: 2, unit: 'meters' },
-            { name: 'Sprint', result: 4.5, unit: 'seconds' },
+            { name: JUMP.name, result: 2, unit: JUMP.unit },
+            { name: SPRINT.name, result: 4.5, unit: SPRINT.unit },
           ],
         },
         {
@@ -538,10 +543,10 @@ describe('getPlayerActivity', () => {
           reason: null,
         },
         {
-          id: 'test-2026-01-10',
-          date: '2026-01-10',
+          id: `test-${FIRST_DATE}`,
+          date: FIRST_DATE,
           kind: ActivityKind.TEST,
-          results: [{ name: 'Sprint', result: 5, unit: 'seconds' }],
+          results: [{ name: SPRINT.name, result: 5, unit: SPRINT.unit }],
         },
       ].sort((a, b) => b.date.localeCompare(a.date)),
     );
@@ -550,7 +555,7 @@ describe('getPlayerActivity', () => {
   test('keeps a range that ends before today', async () => {
     queueSelects([], [], []);
 
-    const result = await getPlayerActivity(PLAYER_ID, TEAM_ID, {
+    const result = await selectPlayerActivity(PLAYER_ID, TEAM_ID, {
       from: '2026-01-01',
       to: '2026-02-01',
     });
@@ -561,7 +566,7 @@ describe('getPlayerActivity', () => {
   test('returns an empty log on a database error', async () => {
     queueSelects(new Error('boom'), [], []);
 
-    const result = await getPlayerActivity(
+    const result = await selectPlayerActivity(
       PLAYER_ID,
       TEAM_ID,
       MOCK_PERFORMANCE_RANGE,
@@ -571,11 +576,11 @@ describe('getPlayerActivity', () => {
   });
 });
 
-describe('getPlayerHonorSummary', () => {
+describe('selectPlayerHonorSummary', () => {
   test('counts the honors and keeps the newest', async () => {
     queueSelects([{ type: AchievementType.MVP, year: 2026, count: 3 }]);
 
-    await expect(getPlayerHonorSummary(PLAYER_ID)).resolves.toEqual({
+    await expect(selectPlayerHonorSummary(PLAYER_ID)).resolves.toEqual({
       count: 3,
       latest: { type: AchievementType.MVP, year: 2026 },
     });
@@ -587,20 +592,20 @@ describe('getPlayerHonorSummary', () => {
   ])('returns no honors when %s', async (_, rows) => {
     queueSelects(rows);
 
-    await expect(getPlayerHonorSummary(PLAYER_ID)).resolves.toEqual({
+    await expect(selectPlayerHonorSummary(PLAYER_ID)).resolves.toEqual({
       count: 0,
       latest: null,
     });
   });
 });
 
-describe('getPlayerTestingSummary', () => {
+describe('selectPlayerTestingSummary', () => {
   test('counts the distinct testing days', async () => {
-    queueSelects([{ tests_taken: 2, last_tested: '2026-03-10' }]);
+    queueSelects([{ tests_taken: 2, last_tested: LATEST_DATE }]);
 
-    await expect(getPlayerTestingSummary(PLAYER_ID)).resolves.toEqual({
+    await expect(selectPlayerTestingSummary(PLAYER_ID)).resolves.toEqual({
       tests_taken: 2,
-      last_tested: '2026-03-10',
+      last_tested: LATEST_DATE,
     });
   });
 
@@ -610,7 +615,7 @@ describe('getPlayerTestingSummary', () => {
   ])('returns no tests when %s', async (_, rows) => {
     queueSelects(rows);
 
-    await expect(getPlayerTestingSummary(PLAYER_ID)).resolves.toEqual({
+    await expect(selectPlayerTestingSummary(PLAYER_ID)).resolves.toEqual({
       tests_taken: 0,
       last_tested: null,
     });

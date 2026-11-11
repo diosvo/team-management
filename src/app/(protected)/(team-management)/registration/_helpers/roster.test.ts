@@ -1,6 +1,6 @@
-import { MOCK_USER } from '@/test/mocks/user';
-
 import { triggerDownload, withExtension } from '@/lib/download';
+
+import { MOCK_USER } from '@/test/mocks/user';
 
 import {
   buildRosterCsv,

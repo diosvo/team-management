@@ -1,4 +1,4 @@
-import { asc, avg, count, desc, eq, sql } from 'drizzle-orm';
+import { and, asc, avg, count, desc, eq, sql } from 'drizzle-orm';
 
 import db from '@/drizzle';
 import {
@@ -9,9 +9,10 @@ import { MatchPlayerStatsTable, MatchTable } from '@/drizzle/schema/match';
 import { UserTable } from '@/drizzle/schema/user';
 import type { UpsertAchievementSchemaValues } from '@/schemas/achievement';
 
-export async function getAchievements() {
+export async function selectAchievements(team_id: string) {
   try {
     return await db.query.AchievementTable.findMany({
+      where: eq(AchievementTable.team_id, team_id),
       orderBy: [
         desc(AchievementTable.year),
         asc(AchievementTable.type),
@@ -35,7 +36,7 @@ export async function getAchievements() {
 }
 
 export type AchievementWithRelations = Awaited<
-  ReturnType<typeof getAchievements>
+  ReturnType<typeof selectAchievements>
 >[number];
 
 export async function insertAchievement(achievement: InsertAchievement) {
@@ -44,27 +45,37 @@ export async function insertAchievement(achievement: InsertAchievement) {
   });
 }
 
+const ownAchievement = (team_id: string, achievement_id: string) =>
+  and(
+    eq(AchievementTable.achievement_id, achievement_id),
+    eq(AchievementTable.team_id, team_id),
+  );
+
 export async function updateAchievement(
+  team_id: string,
   achievement_id: string,
   achievement: UpsertAchievementSchemaValues,
 ) {
   return await db
     .update(AchievementTable)
     .set(achievement)
-    .where(eq(AchievementTable.achievement_id, achievement_id));
+    .where(ownAchievement(team_id, achievement_id));
 }
 
-export async function deleteAchievement(achievement_id: string) {
+export async function deleteAchievement(
+  team_id: string,
+  achievement_id: string,
+) {
   return await db
     .delete(AchievementTable)
-    .where(eq(AchievementTable.achievement_id, achievement_id));
+    .where(ownAchievement(team_id, achievement_id));
 }
 
 /**
  * Top-performing players in a league, used to suggest MVP / Top Scorer
  * candidates when recording an individual honor.
  */
-export async function getPlayerLeagueStatSuggestions(league_id: string) {
+export async function selectPlayerLeagueStatSuggestions(league_id: string) {
   try {
     const avgPointsSql = sql<number>`ROUND(${avg(MatchPlayerStatsTable.points_scored)}, 1)`;
 

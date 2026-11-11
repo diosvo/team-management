@@ -1,12 +1,12 @@
+import { UserState } from '@/utils/enum';
+
+import usePermissions from '@/hooks/use-permissions';
 import {
   createPermissionsMock,
   mockUseQueryStates,
   renderWithUI,
   setupTestLifecycle,
 } from '@/test/utilities';
-
-import usePermissions from '@/hooks/use-permissions';
-import { UserState } from '@/utils/enum';
 
 import RosterFilters from './RosterFilters';
 

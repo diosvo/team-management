@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-
+import { useForm, useWatch } from 'react-hook-form';
+import { useTranslations } from 'next-intl';
 import {
   Button,
   CloseButton,
@@ -12,20 +13,17 @@ import {
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Base64 } from 'js-base64';
-import { useTranslations } from 'next-intl';
-import { useForm, useWatch } from 'react-hook-form';
 
-import { SearchableSelectField } from '@/components/SearchableSelect';
-import { toaster } from '@/components/ui/toaster';
-
-import type { DateRange } from '@/types/common';
 import { formatDateRange } from '@/utils/datetime';
 
 import { getReportRecipients, sendReportEmail } from '@/actions/report';
+import { SearchableSelectField } from '@/components/SearchableSelect';
+import { toaster } from '@/components/ui/toaster';
 import {
   EmailReportSchema,
   type EmailReportSchemaValues,
 } from '@/schemas/report';
+import type { DateRange } from '@/types/common';
 
 import AnalyticsReport from '../../reports/_components/AnalyticsReport';
 

@@ -1,7 +1,6 @@
 import type { ComponentProps } from 'react';
 
 import { renderWithUI, screen } from '@/test/utilities';
-
 import type { MonthlyAttendance } from '@/types/performance';
 
 import AttendanceTrendChart from './AttendanceTrendChart';

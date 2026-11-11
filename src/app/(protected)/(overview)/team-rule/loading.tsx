@@ -1,6 +1,6 @@
+import { useTranslations } from 'next-intl';
 import { Button, HStack, Skeleton, SkeletonText } from '@chakra-ui/react';
 import { Copy } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 
 import PageTitle from '@/components/PageTitle';
 

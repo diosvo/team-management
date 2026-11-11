@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
 import RegistrationIntro from './_components/RegistrationIntro';
-import RegistrationPageClient from './_components/main';
+import RegistrationPageClient from './_components/RegistrationPageClient';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('registration.metadata');

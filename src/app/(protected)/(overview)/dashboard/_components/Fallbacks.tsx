@@ -1,5 +1,4 @@
 import { useTranslations } from 'next-intl';
-
 import { Skeleton, Text, VStack } from '@chakra-ui/react';
 
 import { Card } from '@/components/ui/card';

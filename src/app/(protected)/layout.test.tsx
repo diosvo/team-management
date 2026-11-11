@@ -1,9 +1,8 @@
 import { redirect } from 'next/navigation';
 
-import { render, screen } from '@/test/utilities';
-
 import { verifySession } from '@/actions/auth';
 import { LOGIN_PATH } from '@/routes';
+import { render, screen } from '@/test/utilities';
 
 import ProtectedLayout from './layout';
 

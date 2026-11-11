@@ -1,5 +1,7 @@
 import { and, desc, eq } from 'drizzle-orm';
 
+import { AchievementType, LeagueStatus } from '@/utils/enum';
+
 import db from '@/drizzle';
 import {
   type InsertLeague,
@@ -8,8 +10,6 @@ import {
   LeagueTeamTable,
 } from '@/drizzle/schema/league';
 import type { UpsertLeagueSchemaValues } from '@/schemas/league';
-import { AchievementType, LeagueStatus } from '@/utils/enum';
-
 import {
   mockDeleteFailure,
   mockDeleteSuccess,
@@ -25,14 +25,14 @@ import { MOCK_TEAM } from '@/test/mocks/team';
 import { MOCK_PLAYER, MOCK_USER } from '@/test/mocks/user';
 
 import {
-  addPlayerToLeagueRoster,
   deleteLeague,
-  getLeagueById,
-  getLeagues,
-  getPlayersInLeague,
+  deleteLeagueRosterPlayer,
   insertLeague,
-  registerTeamInLeague,
-  removePlayerFromLeagueRoster,
+  insertLeagueRosterPlayer,
+  insertLeagueTeam,
+  selectLeagueById,
+  selectLeagues,
+  selectPlayersInLeague,
   updateLeague,
 } from './league';
 
@@ -77,7 +77,7 @@ vi.mock('@/drizzle/schema/league', () => ({
   },
 }));
 
-describe('getLeagues', () => {
+describe('selectLeagues', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -98,7 +98,7 @@ describe('getLeagues', () => {
       mockLeagueData,
     ]);
 
-    const result = await getLeagues();
+    const result = await selectLeagues();
 
     const { team_rosters, achievements, ...league } = mockLeagueData;
     expect(result).toEqual([
@@ -136,13 +136,13 @@ describe('getLeagues', () => {
     async ({ mockError }) => {
       vi.mocked(db.query.LeagueTable.findMany).mockRejectedValue(mockError);
 
-      const result = await getLeagues();
+      const result = await selectLeagues();
       expect(result).toEqual([]);
     },
   );
 });
 
-describe('getLeagueById', () => {
+describe('selectLeagueById', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -175,7 +175,7 @@ describe('getLeagueById', () => {
         end_date,
       });
 
-      const result = await getLeagueById(MOCK_LEAGUE.league_id);
+      const result = await selectLeagueById(MOCK_LEAGUE.league_id);
 
       expect(result?.status).toBe(expected);
     },
@@ -184,7 +184,7 @@ describe('getLeagueById', () => {
   test('returns undefined when the league does not exist', async () => {
     vi.mocked(db.query.LeagueTable.findFirst).mockResolvedValue(undefined);
 
-    const result = await getLeagueById(MOCK_LEAGUE.league_id);
+    const result = await selectLeagueById(MOCK_LEAGUE.league_id);
 
     expect(result).toBeUndefined();
     expect(eq).toHaveBeenCalledWith(
@@ -194,7 +194,7 @@ describe('getLeagueById', () => {
   });
 });
 
-describe('getPlayersInLeague', () => {
+describe('selectPlayersInLeague', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -211,7 +211,7 @@ describe('getPlayersInLeague', () => {
       },
     ] as any);
 
-    const result = await getPlayersInLeague(
+    const result = await selectPlayersInLeague(
       MOCK_TEAM.team_id,
       MOCK_LEAGUE.league_id,
     );
@@ -238,7 +238,7 @@ describe('getPlayersInLeague', () => {
     const error = new Error('Database error');
     vi.mocked(db.query.LeagueTeamRosterTable.findMany).mockRejectedValue(error);
 
-    const result = await getPlayersInLeague(
+    const result = await selectPlayersInLeague(
       MOCK_TEAM.team_id,
       MOCK_LEAGUE.league_id,
     );
@@ -351,7 +351,7 @@ describe('deleteLeague', () => {
   });
 });
 
-describe('registerTeamInLeague', () => {
+describe('insertLeagueTeam', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -374,7 +374,7 @@ describe('registerTeamInLeague', () => {
       rowCount: 0,
     });
 
-    const result = await registerTeamInLeague(
+    const result = await insertLeagueTeam(
       MOCK_LEAGUE.league_id,
       MOCK_TEAM.team_id,
     );
@@ -399,12 +399,12 @@ describe('registerTeamInLeague', () => {
     } as unknown as ReturnType<typeof db.insert>);
 
     await expect(
-      registerTeamInLeague(MOCK_LEAGUE.league_id, MOCK_TEAM.team_id),
+      insertLeagueTeam(MOCK_LEAGUE.league_id, MOCK_TEAM.team_id),
     ).rejects.toThrow(message);
   });
 });
 
-describe('addPlayerToLeagueRoster', () => {
+describe('insertLeagueRosterPlayer', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -412,7 +412,7 @@ describe('addPlayerToLeagueRoster', () => {
   test('adds player to league roster successfully', async () => {
     const mockValues = mockInsertSuccess({ team_id: MOCK_TEAM.team_id });
 
-    const result = await addPlayerToLeagueRoster(
+    const result = await insertLeagueRosterPlayer(
       MOCK_TEAM.team_id,
       MOCK_LEAGUE.league_id,
       MOCK_PLAYER.id,
@@ -433,7 +433,7 @@ describe('addPlayerToLeagueRoster', () => {
     mockInsertFailure(message);
 
     await expect(
-      addPlayerToLeagueRoster(
+      insertLeagueRosterPlayer(
         MOCK_TEAM.team_id,
         MOCK_LEAGUE.league_id,
         MOCK_PLAYER.id,
@@ -442,7 +442,7 @@ describe('addPlayerToLeagueRoster', () => {
   });
 });
 
-describe('removePlayerFromLeagueRoster', () => {
+describe('deleteLeagueRosterPlayer', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -450,7 +450,7 @@ describe('removePlayerFromLeagueRoster', () => {
   test('removes player from league roster successfully', async () => {
     const mockWhere = mockDeleteSuccess({ team_id: MOCK_TEAM.team_id });
 
-    const result = await removePlayerFromLeagueRoster(
+    const result = await deleteLeagueRosterPlayer(
       MOCK_TEAM.team_id,
       MOCK_LEAGUE.league_id,
       MOCK_PLAYER.id,
@@ -499,7 +499,7 @@ describe('removePlayerFromLeagueRoster', () => {
     mockDeleteFailure(message);
 
     await expect(
-      removePlayerFromLeagueRoster(
+      deleteLeagueRosterPlayer(
         MOCK_TEAM.team_id,
         MOCK_LEAGUE.league_id,
         MOCK_PLAYER.id,

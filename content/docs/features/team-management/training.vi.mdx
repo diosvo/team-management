@@ -69,7 +69,7 @@ description: Lịch tập của đội, kèm tỉ lệ có mặt từng buổi t
 
 ## Quy tắc
 
-- **Đội phải có huấn luyện viên.** `upsertSession` gọi `getTeamHeadCoach` cả khi
+- **Đội phải có huấn luyện viên.** `upsertSession` gọi `selectTeamHeadCoach` cả khi
   tạo lẫn khi sửa.
   - Đội chưa có ai là huấn luyện viên thì báo lỗi "No coach assigned to the
     team".

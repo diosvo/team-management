@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-
+import { Controller, useForm } from 'react-hook-form';
+import { useTranslations } from 'next-intl';
 import {
   Badge,
   Button,
+  createOverlay,
   Dialog,
   Fieldset,
   HStack,
@@ -14,13 +16,25 @@ import {
   Stack,
   Text,
   VStack,
-  createOverlay,
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Save } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { Controller, useForm } from 'react-hook-form';
 
+import {
+  CACHE_KEY,
+  CURRENT_DATE,
+  ESTABLISHED_DATE,
+  MATCH_STATUS_SELECTION,
+} from '@/utils/constants';
+import { formatDatetime } from '@/utils/datetime';
+import { MatchStatus } from '@/utils/enum';
+import { getColor } from '@/utils/helper';
+
+import { getDefaults } from '@/lib/zod';
+
+import { getLeagues } from '@/actions/league';
+import { upsertMatch } from '@/actions/match';
+import { getTeams } from '@/actions/team';
 import Authorized from '@/components/Authorized';
 import LocationSelection from '@/components/common/LocationSelection';
 import { DatePickerField } from '@/components/date-picker/DatePicker';
@@ -33,27 +47,11 @@ import { Switch } from '@/components/ui/switch';
 import { toaster } from '@/components/ui/toaster';
 import { Tooltip } from '@/components/ui/tooltip';
 import Visibility from '@/components/Visibility';
-
-import {
-  CACHE_KEY,
-  CURRENT_DATE,
-  ESTABLISHED_DATE,
-  MATCH_STATUS_SELECTION,
-} from '@/utils/constants';
-import { formatDatetime } from '@/utils/datetime';
-import { MatchStatus } from '@/utils/enum';
-import { getColor } from '@/utils/helper';
-
 import { enumLabel, useSelection } from '@/i18n/enums';
-import { getDefaults } from '@/lib/zod';
 import {
   UpsertMatchSchema,
   type UpsertMatchSchemaValues,
 } from '@/schemas/match';
-
-import { getLeagues } from '@/actions/league';
-import { upsertMatch } from '@/actions/match';
-import { getTeams } from '@/actions/team';
 
 export const UpsertMatch = createOverlay(({ action, item, ...rest }) => {
   const t = useTranslations('matches.upsertMatch');

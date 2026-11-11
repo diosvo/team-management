@@ -1,6 +1,12 @@
 'use client';
 
 import {
+  type Control,
+  Controller,
+  type FieldValues,
+  type Path,
+} from 'react-hook-form';
+import {
   type ColorPalette,
   Fieldset,
   type FieldsetRootProps,
@@ -8,17 +14,11 @@ import {
   SimpleGrid,
   type SimpleGridProps,
 } from '@chakra-ui/react';
-import {
-  type Control,
-  Controller,
-  type FieldValues,
-  type Path,
-} from 'react-hook-form';
+
+import type { Option } from '@/utils/type';
 
 import { Radio, RadioGroup } from '@/components/ui/radio';
 import { Tooltip } from '@/components/ui/tooltip';
-
-import type { Option } from '@/utils/type';
 
 type RadioGroupFieldProps<T extends FieldValues> = Required<{
   control: Control<T>;

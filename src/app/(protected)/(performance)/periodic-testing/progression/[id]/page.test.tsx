@@ -1,14 +1,14 @@
-import {
-  MOCK_PLAYER_TYPE_PROGRESSION,
-  MOCK_PROGRESSION_TYPE,
-  MOCK_GENERAL_NOTE,
-  MOCK_TEST_NOTE,
-} from '@/test/mocks/progression';
-import { renderWithUI, screen, setupTestLifecycle } from '@/test/utilities';
-
 import { PerformanceBand, ProgressStatus } from '@/utils/enum';
 
 import { getPlayerProgressionById } from '@/actions/progression';
+import {
+  MOCK_GENERAL_NOTE,
+  MOCK_PLAYER_PROGRESSION,
+  MOCK_PLAYER_TYPE_PROGRESSION,
+  MOCK_PROGRESSION_TYPE,
+  MOCK_TEST_NOTE,
+} from '@/test/mocks/progression';
+import { renderWithUI, screen, setupTestLifecycle } from '@/test/utilities';
 
 import PlayerProgressionPage, { generateMetadata } from './page';
 
@@ -44,7 +44,7 @@ describe('PlayerProgressionPage', () => {
 
   const setup = async () => {
     const ui = await PlayerProgressionPage({
-      params: Promise.resolve({ id: 'player-1' }),
+      params: Promise.resolve({ id: MOCK_PLAYER_PROGRESSION.player_id }),
       searchParams: Promise.resolve({}),
     } as Parameters<typeof PlayerProgressionPage>[0]);
     return renderWithUI(ui);
@@ -60,8 +60,8 @@ describe('PlayerProgressionPage', () => {
 
   test('summarises every tracked test type', async () => {
     mockGet.mockResolvedValue({
-      player_id: 'player-1',
-      player_name: 'Alice',
+      player_id: MOCK_PLAYER_PROGRESSION.player_id,
+      player_name: MOCK_PLAYER_PROGRESSION.player_name,
       types: [
         MOCK_PLAYER_TYPE_PROGRESSION,
         {
@@ -81,12 +81,13 @@ describe('PlayerProgressionPage', () => {
 
     await setup();
 
-    expect(mockGet).toHaveBeenCalledWith('player-1');
+    expect(mockGet).toHaveBeenCalledWith(MOCK_PLAYER_PROGRESSION.player_id);
     // Only typed notes use up a focus area.
-    expect(screen.getByRole('heading', { name: 'Alice' })).toHaveAttribute(
-      'data-used',
-      MOCK_TEST_NOTE.type_id,
-    );
+    expect(
+      screen.getByRole('heading', {
+        name: MOCK_PLAYER_PROGRESSION.player_name,
+      }),
+    ).toHaveAttribute('data-used', MOCK_TEST_NOTE.type_id);
     expect(statText('Tests Tracked')).toContain('3');
     expect(statText('Improving')).toContain('1');
     expect(statText('Regressing')).toContain('1');
@@ -98,8 +99,8 @@ describe('PlayerProgressionPage', () => {
 
   test('shows the empty state before the player is tested', async () => {
     mockGet.mockResolvedValue({
-      player_id: 'player-1',
-      player_name: 'Alice',
+      player_id: MOCK_PLAYER_PROGRESSION.player_id,
+      player_name: MOCK_PLAYER_PROGRESSION.player_name,
       types: [],
       notes: [],
       test_types: [],

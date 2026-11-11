@@ -30,7 +30,7 @@ description: Danh sách thành viên của đội, admin và đội trưởng c�
     ### Mời thành viên
 
     - Bấm **+ Add** để mở hộp thoại mời.
-    - `addUser` tạo tài khoản (kèm mật khẩu tạm) và bản ghi `player` hoặc
+    - `createUser` tạo tài khoản (kèm mật khẩu tạm) và bản ghi `player` hoặc
       `coach`.
     - Đồng thời mở một lần gia nhập trong `user_team` từ ngày vào đội; không
       nhập thì lấy ngày thành lập CLB (`ESTABLISHED_DATE`).
@@ -101,7 +101,7 @@ Server action trong `src/actions/user.ts`, được bảo vệ bởi
       required: true,
       description: 'Mọi thành viên trong đội của bạn, trừ SUPER_ADMIN.',
     },
-    'addUser(values)': {
+    'createUser(values)': {
       type: 'Response',
       required: true,
       description: (

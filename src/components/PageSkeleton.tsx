@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import {
   Button,
   ButtonGroup,
@@ -7,7 +8,6 @@ import {
   Table,
 } from '@chakra-ui/react';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 
 import FiltersSkeleton from '@/components/filters/FiltersSkeleton';
 import PageHeader from '@/components/PageHeader';

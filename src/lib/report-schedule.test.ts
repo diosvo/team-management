@@ -1,13 +1,16 @@
+import { Interval, ReportStatus, ReportTrigger } from '@/utils/enum';
+
 import { isUniqueViolation } from '@/db/pg-error';
 import {
-  completeReportRun,
-  fetchDefaultRecipientEmails,
   insertReportHistory,
-  reclaimStaleReportRun,
+  selectDefaultRecipientEmails,
+  updateCompletedReportRun,
   updateReportHistory,
+  updateStaleReportRun,
 } from '@/db/report';
 import type { ReportSchedule } from '@/drizzle/schema';
-import { Interval, ReportStatus, ReportTrigger } from '@/utils/enum';
+import { MOCK_REPORT_HISTORY, MOCK_REPORT_SCHEDULE } from '@/test/mocks/report';
+import { MOCK_AWAY_TEAM } from '@/test/mocks/team';
 
 import {
   renderReportPdf,
@@ -23,10 +26,10 @@ import {
 import { sendEmail } from './resend';
 
 vi.mock('@/db/report', () => ({
-  completeReportRun: vi.fn(),
-  fetchDefaultRecipientEmails: vi.fn(),
+  updateCompletedReportRun: vi.fn(),
+  selectDefaultRecipientEmails: vi.fn(),
   insertReportHistory: vi.fn(),
-  reclaimStaleReportRun: vi.fn(),
+  updateStaleReportRun: vi.fn(),
   updateReportHistory: vi.fn(),
 }));
 
@@ -115,18 +118,15 @@ describe('computeNextRun', () => {
 });
 
 describe('executeSchedule', () => {
-  const TEAM_ID = 'team-1';
+  const TEAM_ID = MOCK_REPORT_SCHEDULE.team_id;
   const SCHEDULED_FOR = new Date('2026-09-01T01:00:00Z');
   const NEXT_RUN = new Date('2026-10-01T01:00:00Z');
   const EXPIRES_AT = new Date('2026-11-30T01:00:00Z');
 
-  const schedule = {
-    schedule_id: 'schedule-1',
-    team_id: TEAM_ID,
-    interval: Interval.LAST_MONTH,
-    recipients: ['coach@example.com'],
+  const schedule: ReportSchedule = {
+    ...MOCK_REPORT_SCHEDULE,
     next_run_at: SCHEDULED_FOR,
-  } as ReportSchedule;
+  };
 
   const options: ExecuteScheduleOptions = {
     schedule,
@@ -141,18 +141,20 @@ describe('executeSchedule', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(insertReportHistory).mockResolvedValue([
-      { report_id: 'report-1' },
+      { report_id: MOCK_REPORT_HISTORY.report_id },
     ] as never);
     vi.mocked(renderReportPdf).mockResolvedValue(Buffer.from('pdf'));
-    vi.mocked(reportFilename).mockReturnValue('analytics.pdf');
+    vi.mocked(reportFilename).mockReturnValue(
+      MOCK_REPORT_HISTORY.filename as string,
+    );
     vi.mocked(reportExpiresAt).mockReturnValue(EXPIRES_AT);
     vi.mocked(storeReportPdf).mockResolvedValue({
-      pathname: 'reports/report.pdf',
+      pathname: MOCK_REPORT_HISTORY.pathname,
     } as never);
     vi.mocked(sendEmail).mockResolvedValue({
-      data: { id: 'email-1' },
+      data: { id: MOCK_REPORT_HISTORY.resend_email_id },
     } as never);
-    vi.mocked(fetchDefaultRecipientEmails).mockResolvedValue([
+    vi.mocked(selectDefaultRecipientEmails).mockResolvedValue([
       'admin@example.com',
     ]);
   });
@@ -161,22 +163,25 @@ describe('executeSchedule', () => {
     const result = await executeSchedule(options);
 
     expect(result).toEqual({
-      schedule_id: 'schedule-1',
+      schedule_id: MOCK_REPORT_SCHEDULE.schedule_id,
       outcome: 'sent',
-      report_id: 'report-1',
+      report_id: MOCK_REPORT_HISTORY.report_id,
     });
-    expect(updateReportHistory).toHaveBeenCalledWith('report-1', {
-      pathname: 'reports/report.pdf',
-      filename: 'analytics.pdf',
-    });
-    expect(completeReportRun).toHaveBeenCalledWith(
-      'report-1',
+    expect(updateReportHistory).toHaveBeenCalledWith(
+      MOCK_REPORT_HISTORY.report_id,
+      {
+        pathname: MOCK_REPORT_HISTORY.pathname,
+        filename: MOCK_REPORT_HISTORY.filename,
+      },
+    );
+    expect(updateCompletedReportRun).toHaveBeenCalledWith(
+      MOCK_REPORT_HISTORY.report_id,
       expect.objectContaining({
         status: ReportStatus.SUCCESS,
-        resend_email_id: 'email-1',
+        resend_email_id: MOCK_REPORT_HISTORY.resend_email_id,
         expires_at: EXPIRES_AT,
       }),
-      'schedule-1',
+      MOCK_REPORT_SCHEDULE.schedule_id,
       expect.objectContaining({ next_run_at: NEXT_RUN }),
     );
   });
@@ -187,10 +192,10 @@ describe('executeSchedule', () => {
     const result = await executeSchedule(options);
 
     expect(result.outcome).toBe('sent');
-    expect(completeReportRun).toHaveBeenCalledWith(
-      'report-1',
+    expect(updateCompletedReportRun).toHaveBeenCalledWith(
+      MOCK_REPORT_HISTORY.report_id,
       expect.objectContaining({ resend_email_id: null }),
-      'schedule-1',
+      MOCK_REPORT_SCHEDULE.schedule_id,
       expect.anything(),
     );
   });
@@ -202,15 +207,15 @@ describe('executeSchedule', () => {
     });
 
     expect(result).toEqual({
-      schedule_id: 'schedule-1',
+      schedule_id: MOCK_REPORT_SCHEDULE.schedule_id,
       outcome: 'sent',
-      report_id: 'report-1',
+      report_id: MOCK_REPORT_HISTORY.report_id,
     });
     expect(sendEmail).not.toHaveBeenCalled();
-    expect(completeReportRun).toHaveBeenCalledWith(
-      'report-1',
+    expect(updateCompletedReportRun).toHaveBeenCalledWith(
+      MOCK_REPORT_HISTORY.report_id,
       expect.objectContaining({ resend_email_id: null }),
-      'schedule-1',
+      MOCK_REPORT_SCHEDULE.schedule_id,
       expect.anything(),
     );
   });
@@ -218,27 +223,27 @@ describe('executeSchedule', () => {
   test('skips an occurrence that is already running', async () => {
     vi.mocked(insertReportHistory).mockRejectedValue(new Error('duplicate'));
     vi.mocked(isUniqueViolation).mockReturnValue(true);
-    vi.mocked(reclaimStaleReportRun).mockResolvedValue(undefined);
+    vi.mocked(updateStaleReportRun).mockResolvedValue(undefined);
 
     const result = await executeSchedule(options);
 
     expect(result).toEqual({
-      schedule_id: 'schedule-1',
+      schedule_id: MOCK_REPORT_SCHEDULE.schedule_id,
       outcome: 'skipped_duplicate',
     });
     expect(renderReportPdf).not.toHaveBeenCalled();
-    expect(completeReportRun).not.toHaveBeenCalled();
+    expect(updateCompletedReportRun).not.toHaveBeenCalled();
   });
 
   test('skips the occurrence when reclaiming the stale run itself fails', async () => {
     vi.mocked(insertReportHistory).mockRejectedValue(new Error('duplicate'));
     vi.mocked(isUniqueViolation).mockReturnValue(true);
-    vi.mocked(reclaimStaleReportRun).mockRejectedValue(new Error('db error'));
+    vi.mocked(updateStaleReportRun).mockRejectedValue(new Error('db error'));
 
     const result = await executeSchedule(options);
 
     expect(result).toEqual({
-      schedule_id: 'schedule-1',
+      schedule_id: MOCK_REPORT_SCHEDULE.schedule_id,
       outcome: 'skipped_duplicate',
     });
     expect(renderReportPdf).not.toHaveBeenCalled();
@@ -247,7 +252,7 @@ describe('executeSchedule', () => {
   test('takes over a stale pending run and reuses its stored PDF', async () => {
     vi.mocked(insertReportHistory).mockRejectedValue(new Error('duplicate'));
     vi.mocked(isUniqueViolation).mockReturnValue(true);
-    vi.mocked(reclaimStaleReportRun).mockResolvedValue({
+    vi.mocked(updateStaleReportRun).mockResolvedValue({
       report_id: 'report-stale',
       pathname: 'reports/stale.pdf',
     });
@@ -255,15 +260,15 @@ describe('executeSchedule', () => {
     const result = await executeSchedule(options);
 
     expect(result).toEqual({
-      schedule_id: 'schedule-1',
+      schedule_id: MOCK_REPORT_SCHEDULE.schedule_id,
       outcome: 'sent',
       report_id: 'report-stale',
     });
     expect(renderReportPdf).not.toHaveBeenCalled();
-    expect(completeReportRun).toHaveBeenCalledWith(
+    expect(updateCompletedReportRun).toHaveBeenCalledWith(
       'report-stale',
       expect.objectContaining({ status: ReportStatus.SUCCESS }),
-      'schedule-1',
+      MOCK_REPORT_SCHEDULE.schedule_id,
       expect.objectContaining({ next_run_at: NEXT_RUN }),
     );
   });
@@ -275,11 +280,11 @@ describe('executeSchedule', () => {
     const result = await executeSchedule(options);
 
     expect(result).toEqual({
-      schedule_id: 'schedule-1',
+      schedule_id: MOCK_REPORT_SCHEDULE.schedule_id,
       outcome: 'failed',
       error: 'db down',
     });
-    expect(reclaimStaleReportRun).not.toHaveBeenCalled();
+    expect(updateStaleReportRun).not.toHaveBeenCalled();
   });
 
   test('retries a failed send without re-rendering the PDF', async () => {
@@ -290,9 +295,12 @@ describe('executeSchedule', () => {
     expect(result.outcome).toBe('sent');
     expect(renderReportPdf).toHaveBeenCalledTimes(1);
     expect(sendEmail).toHaveBeenCalledTimes(2);
-    expect(updateReportHistory).toHaveBeenCalledWith('report-1', {
-      attempts: 2,
-    });
+    expect(updateReportHistory).toHaveBeenCalledWith(
+      MOCK_REPORT_HISTORY.report_id,
+      {
+        attempts: 2,
+      },
+    );
   });
 
   test('records the final failure, expires the stored PDF and notifies', async () => {
@@ -306,20 +314,20 @@ describe('executeSchedule', () => {
     const result = await executeSchedule(options);
 
     expect(result).toEqual({
-      schedule_id: 'schedule-1',
+      schedule_id: MOCK_REPORT_SCHEDULE.schedule_id,
       outcome: 'failed',
-      report_id: 'report-1',
+      report_id: MOCK_REPORT_HISTORY.report_id,
       error: 'resend down',
     });
     expect(renderReportPdf).toHaveBeenCalledTimes(1);
-    expect(completeReportRun).toHaveBeenCalledWith(
-      'report-1',
+    expect(updateCompletedReportRun).toHaveBeenCalledWith(
+      MOCK_REPORT_HISTORY.report_id,
       expect.objectContaining({
         status: ReportStatus.FAILED,
         error: 'resend down',
         expires_at: EXPIRES_AT,
       }),
-      'schedule-1',
+      MOCK_REPORT_SCHEDULE.schedule_id,
       { next_run_at: NEXT_RUN },
     );
     expect(sendEmail).toHaveBeenLastCalledWith(
@@ -337,7 +345,7 @@ describe('executeSchedule', () => {
       }
       return { data: { id: 'email-2' } } as never;
     });
-    vi.mocked(fetchDefaultRecipientEmails).mockResolvedValue([]);
+    vi.mocked(selectDefaultRecipientEmails).mockResolvedValue([]);
 
     await executeSchedule(options);
 
@@ -355,9 +363,9 @@ describe('executeSchedule', () => {
     });
 
     expect(result).toEqual({
-      schedule_id: 'schedule-1',
+      schedule_id: MOCK_REPORT_SCHEDULE.schedule_id,
       outcome: 'failed',
-      report_id: 'report-1',
+      report_id: MOCK_REPORT_HISTORY.report_id,
       error: 'plain string failure',
     });
   });
@@ -372,29 +380,29 @@ describe('executeSchedule', () => {
 
     expect(result.outcome).toBe('failed');
     expect(renderReportPdf).toHaveBeenCalledTimes(3);
-    expect(completeReportRun).toHaveBeenCalledWith(
-      'report-1',
+    expect(updateCompletedReportRun).toHaveBeenCalledWith(
+      MOCK_REPORT_HISTORY.report_id,
       expect.objectContaining({
         status: ReportStatus.FAILED,
         expires_at: null,
       }),
-      'schedule-1',
+      MOCK_REPORT_SCHEDULE.schedule_id,
       { next_run_at: NEXT_RUN },
     );
     // Manual runs report the failure to the caller instead of by email.
-    expect(fetchDefaultRecipientEmails).not.toHaveBeenCalled();
+    expect(selectDefaultRecipientEmails).not.toHaveBeenCalled();
   });
 
   test('refuses to render under another team’s session', async () => {
     const result = await executeSchedule({
       ...options,
-      session_team_id: 'team-2',
+      session_team_id: MOCK_AWAY_TEAM.team_id,
     });
 
     expect(result).toEqual({
-      schedule_id: 'schedule-1',
+      schedule_id: MOCK_REPORT_SCHEDULE.schedule_id,
       outcome: 'failed',
-      report_id: 'report-1',
+      report_id: MOCK_REPORT_HISTORY.report_id,
       error: 'Report session does not belong to the schedule team',
     });
     expect(renderReportPdf).not.toHaveBeenCalled();

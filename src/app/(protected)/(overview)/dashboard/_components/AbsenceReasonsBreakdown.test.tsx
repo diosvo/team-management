@@ -1,8 +1,9 @@
-import { MOCK_ABSENCE_REASONS } from '@/test/mocks/analytics';
-import { renderWithUI, screen } from '@/test/utilities';
 import type { PieSectorShapeProps } from 'recharts';
 
+import { MOCK_ABSENCE_REASONS } from '@/test/mocks/analytics';
+import { renderWithUI, screen } from '@/test/utilities';
 import type { AbsenceReason } from '@/types/analytics';
+
 import AbsenceReasonsBreakdown, {
   formatSliceLabel,
   ReasonSector,

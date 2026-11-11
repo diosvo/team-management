@@ -1,21 +1,18 @@
+import { uploadAvatar } from '@/actions/user';
+import { useUserAvatar } from '@/hooks/use-image';
+import { useSessionContext } from '@/providers/session';
 import { MOCK_SESSION_USER, MOCK_USER } from '@/test/mocks/user';
 import {
   createSessionMock,
   createSWRMock,
   createToasterMock,
+  enumText,
   expectNoA11yViolations,
   renderWithUI,
   screen,
   setupTestLifecycle,
   waitFor,
-  enumText,
 } from '@/test/utilities';
-
-import { uploadAvatar } from '@/actions/user';
-import { useUserAvatar } from '@/hooks/use-image';
-import { useSessionContext } from '@/providers/session';
-
-import { toaster } from '@/components/ui/toaster';
 
 import AvatarUploader from './AvatarUploader';
 
@@ -40,6 +37,8 @@ vi.mock('@/lib/auth-client', () => ({
 }));
 
 vi.mock('@/components/ui/toaster', () => createToasterMock());
+
+import { toaster } from '@/components/ui/toaster';
 
 describe('AvatarUploader', () => {
   setupTestLifecycle();

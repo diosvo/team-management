@@ -1,3 +1,8 @@
+import { head, last } from 'es-toolkit';
+import { nth } from 'es-toolkit/compat';
+
+import usePermissions from '@/hooks/use-permissions';
+import { MOCK_SAVED_REGISTRATION } from '@/test/mocks/registration';
 import {
   act,
   createPermissionsMock,
@@ -11,11 +16,10 @@ import {
   within,
 } from '@/test/utilities';
 
-import usePermissions from '@/hooks/use-permissions';
+import SavedRegistrations from './SavedRegistrations';
 
 import { downloadPdf } from '../_helpers/roster';
-import type { SavedRegistration } from '../_helpers/useSavedRegistrations';
-import SavedRegistrations from './SavedRegistrations';
+import type { SavedRegistration } from '../_helpers/use-saved-registrations';
 
 // Reached indirectly through useTableState.
 vi.mock('@/hooks/use-permissions', () => ({
@@ -32,15 +36,7 @@ describe('SavedRegistrations', () => {
   const mockDownloadPdf = vi.mocked(downloadPdf);
   const onRemove = vi.fn();
 
-  const SAVED: SavedRegistration = {
-    id: 'saved-1',
-    leagueName: 'Summer League',
-    playerCount: 12,
-    filename: 'summer-league',
-    // "pdf" base64-encoded.
-    pdfBase64: 'cGRm',
-    savedAt: '2026-01-01T09:00:00.000Z',
-  };
+  const SAVED = MOCK_SAVED_REGISTRATION;
 
   const LEGACY_SAVED: SavedRegistration = {
     ...SAVED,
@@ -124,7 +120,7 @@ describe('SavedRegistrations', () => {
     test('decodes the stored PDF and hands it to downloadPdf', async () => {
       const { user } = setup({ items: [SAVED] });
 
-      const [download] = rowOf(SAVED).getAllByRole('button');
+      const download = head(rowOf(SAVED).getAllByRole('button'))!;
       await user.click(download);
 
       await waitFor(() => {
@@ -142,7 +138,7 @@ describe('SavedRegistrations', () => {
       const unnamed = rest as SavedRegistration;
       const { user } = setup({ items: [unnamed] });
 
-      const [download] = rowOf(unnamed).getAllByRole('button');
+      const download = head(rowOf(unnamed).getAllByRole('button'))!;
       await user.click(download);
 
       await waitFor(() => {
@@ -165,7 +161,9 @@ describe('SavedRegistrations', () => {
 
       const { user } = setup({ items: [SAVED] });
 
-      const [download, remove] = rowOf(SAVED).getAllByRole('button');
+      const buttons = rowOf(SAVED).getAllByRole('button');
+      const download = head(buttons)!;
+      const remove = nth(buttons, 1)!;
       await user.click(download);
 
       await waitFor(() => expect(remove).toBeDisabled());
@@ -191,7 +189,7 @@ describe('SavedRegistrations', () => {
     const { user } = setup({ items: [SAVED] });
 
     const buttons = rowOf(SAVED).getAllByRole('button');
-    await user.click(buttons[buttons.length - 1]);
+    await user.click(last(buttons)!);
 
     await waitFor(() => expect(onRemove).toHaveBeenCalledWith(SAVED.id));
     expect(mockToaster.promise).toHaveBeenCalled();
@@ -214,7 +212,7 @@ describe('SavedRegistrations', () => {
     const { user } = setup({ items: [SAVED] });
 
     const buttons = rowOf(SAVED).getAllByRole('button');
-    await user.click(buttons[buttons.length - 1]);
+    await user.click(last(buttons)!);
 
     await waitFor(() => {
       expect(result).toEqual({
@@ -228,7 +226,7 @@ describe('SavedRegistrations', () => {
     const { user } = setup({ items: [SAVED] });
 
     const buttons = rowOf(SAVED).getAllByRole('button');
-    await user.click(buttons[buttons.length - 1]);
+    await user.click(last(buttons)!);
 
     const [, options] = mockToaster.promise.mock.calls[0] as Array<any>;
     expect(options.error('boom')).toEqual({

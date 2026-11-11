@@ -1,5 +1,4 @@
 import type { User } from '@/drizzle/schema';
-
 import { MOCK_USER } from '@/test/mocks/user';
 import {
   renderWithUI,

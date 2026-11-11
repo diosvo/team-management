@@ -1,8 +1,8 @@
 'use client';
 
 import { useCallback } from 'react';
-import useSWRImmutable from 'swr/immutable';
-
+import type { Control, FieldPath, FieldValues } from 'react-hook-form';
+import { useTranslations } from 'next-intl';
 import {
   Box,
   type BoxProps,
@@ -12,20 +12,18 @@ import {
   Span,
 } from '@chakra-ui/react';
 import { UserRoundX } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import type { Control, FieldPath, FieldValues } from 'react-hook-form';
+import useSWRImmutable from 'swr/immutable';
 
-import type { User } from '@/drizzle/schema/user';
+import { CACHE_KEY } from '@/utils/constants';
 
+import { getActivePlayers } from '@/actions/user';
 import SearchableSelect, {
   SearchableSelectField,
 } from '@/components/SearchableSelect';
 import { EmptyState } from '@/components/ui/empty-state';
+import type { PlayerOption } from '@/db/user';
 
-import { getActivePlayers } from '@/actions/user';
-import { CACHE_KEY } from '@/utils/constants';
-
-type UserSelector = Selector<Array<User>>;
+type UserSelector = Selector<Array<PlayerOption>>;
 
 export function PlayerSelection({
   disabled,
@@ -138,7 +136,7 @@ export function SelectedPlayers({
     <Box {...props}>
       {selection.length > 0 ? (
         <List.Root paddingInline={6} paddingBlock={4}>
-          {selection.map((user: User) => (
+          {selection.map((user: PlayerOption) => (
             <List.Item
               key={user.id}
               width="max-content"
@@ -172,7 +170,7 @@ export function SelectedPlayers({
   );
 }
 
-function PlayerItem(user: User) {
+function PlayerItem(user: PlayerOption) {
   return (
     <>
       <Span color="GrayText">

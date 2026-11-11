@@ -1,13 +1,11 @@
-import type { Metadata } from 'next';
 import { Suspense } from 'react';
-
+import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-
 import { HStack, SimpleGrid } from '@chakra-ui/react';
 
-import PageTitle from '@/components/PageTitle';
-
 import { loadDashboardFilters } from '@/lib/nuqs';
+
+import PageTitle from '@/components/PageTitle';
 
 import {
   AbsenceReasonsBreakdownSection,
@@ -20,7 +18,7 @@ import {
   CardFallback,
   ChartFallback,
   UpcomingFallback,
-} from './_components/fallbacks';
+} from './_components/Fallbacks';
 import OverviewStats from './_components/OverviewStats';
 import QuickActions from './_components/QuickActions';
 import UpcomingMatches from './_components/UpcomingMatches';

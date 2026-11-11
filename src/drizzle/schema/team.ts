@@ -11,13 +11,14 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core';
 
-import { created_at, updated_at } from '../helpers';
 import { AssetTable } from './asset';
 import { LeagueTeamTable } from './league';
 import { MatchTable } from './match';
 import { TestTypeTable } from './periodic-testing';
 import { UserTable } from './user';
 import { UserTeamTable } from './user-team';
+
+import { created_at, updated_at } from '../helpers';
 
 export const TeamTable = pgTable(
   'team',

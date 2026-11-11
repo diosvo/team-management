@@ -1,11 +1,10 @@
+import BackgroundLayer from '@/assets/images/bg-layer.webp';
 import {
   renderWithUI,
   screen,
   setupTestLifecycle,
   waitFor,
 } from '@/test/utilities';
-
-import BackgroundLayer from '@/assets/images/bg-layer.webp';
 
 import AuthLayout, { generateMetadata } from './layout';
 

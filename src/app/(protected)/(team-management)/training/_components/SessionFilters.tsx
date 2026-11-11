@@ -2,12 +2,13 @@
 
 import { useTranslations } from 'next-intl';
 
-import Filters from '@/components/filters/Filters';
+import { ESTABLISHED_DATE, SESSION_STATUS_SELECTION } from '@/utils/constants';
 
 import { useTrainingFilters } from '@/lib/nuqs';
-import type { FilterDef } from '@/types/filters';
+
+import Filters from '@/components/filters/Filters';
 import { useSelection } from '@/i18n/enums';
-import { ESTABLISHED_DATE, SESSION_STATUS_SELECTION } from '@/utils/constants';
+import type { FilterDef } from '@/types/filters';
 
 export default function SessionFilters() {
   const t = useTranslations('training.filters');

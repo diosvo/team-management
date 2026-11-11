@@ -1,7 +1,6 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-
 import { Skeleton } from '@chakra-ui/react';
 
 /**

@@ -1,3 +1,5 @@
+import { TestTypeUnit } from '@/utils/enum';
+
 import type {
   InsertTestResult,
   InsertTestType,
@@ -5,12 +7,10 @@ import type {
   TestType,
   User,
 } from '@/drizzle/schema';
-
 import type {
   TestConfigurationSelection,
   TestResult as TestResultType,
 } from '@/types/periodic-testing';
-import { TestTypeUnit } from '@/utils/enum';
 
 import { MOCK_TEAM } from './team';
 import { MOCK_PLAYER, MOCK_USER } from './user';

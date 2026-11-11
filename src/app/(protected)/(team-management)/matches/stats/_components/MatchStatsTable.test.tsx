@@ -1,6 +1,9 @@
-import { renderWithUI, screen, setupTestLifecycle } from '@/test/utilities';
+import { pick } from 'es-toolkit';
 
 import { MATCH_STAT_FIELDS } from '@/utils/constants';
+
+import { MOCK_ALICE, MOCK_DAN } from '@/test/mocks/user';
+import { renderWithUI, screen, setupTestLifecycle } from '@/test/utilities';
 
 import MatchStatsTable, { type StatDraft } from './MatchStatsTable';
 
@@ -20,12 +23,12 @@ describe('MatchStatsTable', () => {
         players={
           withPlayer
             ? [
-                { id: 'p1', name: 'Jane Doe', jersey_number: 7 },
-                { id: 'p2', name: 'Kim Lee', jersey_number: null },
+                { ...pick(MOCK_ALICE, ['id', 'name']), jersey_number: 7 },
+                { ...pick(MOCK_DAN, ['id', 'name']), jersey_number: null },
               ]
             : []
         }
-        drafts={{ p1: draft }}
+        drafts={{ [MOCK_ALICE.id]: draft }}
         disabled={disabled}
         onChange={onChange}
         onRemove={onRemove}
@@ -48,7 +51,7 @@ describe('MatchStatsTable', () => {
       'Personal fouls',
     );
     expect(
-      screen.getByRole('spinbutton', { name: 'Points for Jane Doe' }),
+      screen.getByRole('spinbutton', { name: `Points for ${MOCK_ALICE.name}` }),
     ).toBeInTheDocument();
   });
 
@@ -56,10 +59,10 @@ describe('MatchStatsTable', () => {
     setup();
 
     expect(screen.getByText('7 -')).toBeInTheDocument();
-    expect(screen.getByText('Kim Lee')).toBeInTheDocument();
+    expect(screen.getByText(MOCK_DAN.name)).toBeInTheDocument();
     // A player without a draft starts at zero.
     expect(
-      screen.getByRole('spinbutton', { name: 'Points for Kim Lee' }),
+      screen.getByRole('spinbutton', { name: `Points for ${MOCK_DAN.name}` }),
     ).toHaveValue('0');
   });
 
@@ -67,37 +70,41 @@ describe('MatchStatsTable', () => {
     const { user } = setup();
 
     await user.type(
-      screen.getByRole('spinbutton', { name: 'Points for Jane Doe' }),
+      screen.getByRole('spinbutton', { name: `Points for ${MOCK_ALICE.name}` }),
       '5',
     );
 
-    expect(onChange).toHaveBeenLastCalledWith('p1', 'points_scored', '05');
+    expect(onChange).toHaveBeenLastCalledWith(
+      MOCK_ALICE.id,
+      'points_scored',
+      '05',
+    );
   });
 
   test('removes a player when their name is clicked', async () => {
     const { user } = setup();
 
-    await user.click(screen.getByText('Jane Doe'));
+    await user.click(screen.getByText(MOCK_ALICE.name));
 
-    expect(onRemove).toHaveBeenCalledWith('p1');
+    expect(onRemove).toHaveBeenCalledWith(MOCK_ALICE.id);
   });
 
   test('removes a player from the keyboard', async () => {
     const { user } = setup();
 
-    screen.getByRole('button', { name: /Jane Doe/ }).focus();
+    screen.getByRole('button', { name: new RegExp(MOCK_ALICE.name) }).focus();
     await user.keyboard('{Enter}');
-    expect(onRemove).toHaveBeenCalledWith('p1');
+    expect(onRemove).toHaveBeenCalledWith(MOCK_ALICE.id);
 
     onRemove.mockClear();
     await user.keyboard(' ');
-    expect(onRemove).toHaveBeenCalledWith('p1');
+    expect(onRemove).toHaveBeenCalledWith(MOCK_ALICE.id);
   });
 
   test('ignores name clicks while disabled', async () => {
     const { user } = setup(true, true);
 
-    await user.click(screen.getByText('Jane Doe'));
+    await user.click(screen.getByText(MOCK_ALICE.name));
 
     expect(onRemove).not.toHaveBeenCalled();
   });

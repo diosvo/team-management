@@ -245,7 +245,7 @@ test.describe('Cross-Cutting: Dialog Behavior', () => {
     },
   ];
 
-  for (const { path, buttonName, dialogTitle } of pagesWithAddButton) {
+  for (const { path, buttonName } of pagesWithAddButton) {
     test(`${path} - Escape key closes dialog`, async ({ page }) => {
       await page.goto(path);
 

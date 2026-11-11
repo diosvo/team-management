@@ -1,7 +1,8 @@
 'use client';
 
 import { useMemo, useTransition } from 'react';
-
+import { Controller, useForm } from 'react-hook-form';
+import { useTranslations } from 'next-intl';
 import {
   Button,
   createListCollection,
@@ -14,17 +15,15 @@ import {
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Save } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { Controller, useForm } from 'react-hook-form';
 
+import { unitLabel } from '@/utils/progression';
+
+import { getDefaults } from '@/lib/zod';
+
+import { saveTestNote } from '@/actions/progression';
 import { CloseButton } from '@/components/ui/close-button';
 import { Field } from '@/components/ui/field';
 import { toaster } from '@/components/ui/toaster';
-
-import { getDefaults } from '@/lib/zod';
-import { unitLabel } from '@/utils/progression';
-
-import { saveTestNote } from '@/actions/progression';
 import type { TestType } from '@/drizzle/schema';
 import {
   TestNoteSchema,

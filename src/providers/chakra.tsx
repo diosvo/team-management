@@ -1,8 +1,7 @@
 'use client';
 
-import { useServerInsertedHTML } from 'next/navigation';
 import { type PropsWithChildren, useRef, useState } from 'react';
-
+import { useServerInsertedHTML } from 'next/navigation';
 import {
   ChakraProvider,
   createSystem,
@@ -54,8 +53,8 @@ const RESPONSIVE_BUTTON_SIZES = Object.fromEntries(
   Object.entries(PHONE_BUTTON_SIZE).map(([size, phoneSize]) => [
     size,
     phoneThenFull(
-      BUTTON_SIZES[phoneSize],
-      BUTTON_SIZES[size],
+      BUTTON_SIZES[phoneSize] ?? {},
+      BUTTON_SIZES[size] ?? {},
     ) as SystemStyleObject,
   ]),
 );

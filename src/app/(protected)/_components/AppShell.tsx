@@ -1,8 +1,8 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { type PropsWithChildren, Suspense, useEffect, useState } from 'react';
-
+import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import {
   Grid,
   GridItem,
@@ -10,16 +10,16 @@ import {
   SkipNavLink,
   Stack,
 } from '@chakra-ui/react';
-import { useTranslations } from 'next-intl';
 
 import { toaster } from '@/components/ui/toaster';
 import { useSessionContext } from '@/providers/session';
 import { LOGIN_PATH } from '@/routes';
 
-import { REDUCED_MOTION_CSS, SIDEBAR_TRANSITION } from '../_helpers/utils';
 import Header from './AppHeader';
 import Breadcrumbs from './Breadcrumbs';
 import Sidebar, { SidebarToggle } from './Sidebar';
+
+import { REDUCED_MOTION_CSS, SIDEBAR_TRANSITION } from '../_helpers/utils';
 
 export default function AppShell({ children }: PropsWithChildren) {
   const router = useRouter();

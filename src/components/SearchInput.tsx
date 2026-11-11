@@ -1,14 +1,14 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-
+import { useTranslations } from 'next-intl';
 import { Input, InputGroup, type InputProps } from '@chakra-ui/react';
 import { Search } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+
+import { useCommonParams } from '@/lib/nuqs';
 
 import { CloseButton } from '@/components/ui/close-button';
 import useSyncedState from '@/hooks/use-synced-state';
-import { useCommonParams } from '@/lib/nuqs';
 
 export default function SearchInput(props: InputProps) {
   const t = useTranslations('components.searchInput');

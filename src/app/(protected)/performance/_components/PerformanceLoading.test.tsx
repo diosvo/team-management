@@ -1,8 +1,8 @@
-import { MOCK_PERFORMANCE_RANGE } from '@/test/mocks/performance';
-import { mockUseQueryStates, renderWithUI, screen } from '@/test/utilities';
-
 import type { PerformanceTab } from '@/utils/constants';
 import { MATCH_AVERAGE_FIELDS } from '@/utils/constants';
+
+import { MOCK_PERFORMANCE_RANGE } from '@/test/mocks/performance';
+import { mockUseQueryStates, renderWithUI, screen } from '@/test/utilities';
 
 import PerformanceLoading from './PerformanceLoading';
 

@@ -2,18 +2,18 @@
 
 import { useTranslations } from 'next-intl';
 
-import Filters from '@/components/filters/Filters';
-
-import type { FilterDef } from '@/types/filters';
-
-import { useMatchFilters } from '@/lib/nuqs';
-import { useSelection } from '@/i18n/enums';
 import {
   ESTABLISHED_DATE,
   GAME_TYPE_SELECTION,
   MATCH_STATUS_SELECTION,
   MATCH_TYPE_SELECTION,
 } from '@/utils/constants';
+
+import { useMatchFilters } from '@/lib/nuqs';
+
+import Filters from '@/components/filters/Filters';
+import { useSelection } from '@/i18n/enums';
+import type { FilterDef } from '@/types/filters';
 
 export default function MatchFilters() {
   const t = useTranslations('matches.filters');

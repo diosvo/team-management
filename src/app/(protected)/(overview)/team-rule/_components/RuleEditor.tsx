@@ -1,18 +1,14 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
-
+import { useTranslations } from 'next-intl';
 import { Skeleton } from '@chakra-ui/react';
 
+import { upsertRule } from '@/actions/rule';
 import PageTitle from '@/components/PageTitle';
 import { toaster } from '@/components/ui/toaster';
-
-import usePermissions from '@/hooks/use-permissions';
-
 import type { NullishTeamRule } from '@/drizzle/schema/team';
-
-import { upsertRule } from '@/actions/rule';
+import usePermissions from '@/hooks/use-permissions';
 
 const TextEditor = dynamic(() => import('@/components/editor/TextEditor'), {
   ssr: false,

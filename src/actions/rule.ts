@@ -1,17 +1,19 @@
 'use server';
 
 import { getTranslations } from 'next-intl/server';
-import { revalidate } from '@/actions/cache';
-import { getDbErrorMessage } from '@/db/pg-error';
-import { getRule as getAction, upsertRule as saveRule } from '@/db/rule';
 
 import { ResponseFactory } from '@/utils/response';
+
+import { revalidate } from '@/actions/cache';
+import { getDbErrorMessage } from '@/db/pg-error';
+import { selectRule, updateRule } from '@/db/rule';
+
 import { withAuth, withResource } from './auth';
 
 const teamRule = withResource('team-rule');
 
 export const getRule = withAuth(
-  async ({ team_id }) => await getAction(team_id),
+  async ({ team_id }) => await selectRule(team_id),
 );
 
 // The rule is a per-team singleton that is created lazily, so maintaining it
@@ -24,9 +26,9 @@ export const upsertRule = teamRule(
     try {
       // The row always exists, so the only thing "added" vs "updated"
       // distinguishes is whether the team had any rules written yet.
-      const existing = await getAction(team_id);
+      const existing = await selectRule(team_id);
 
-      await saveRule(team_id, content);
+      await updateRule(team_id, content);
 
       revalidate.rule();
 

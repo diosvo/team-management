@@ -87,11 +87,14 @@ Redirects:
   arg. Reads use it directly.
 - **`withResource(resource)(actions, fn)`:** wraps `withAuth`, builds
   `defineAbility(user.role, user.is_captain)`.
+- **`is_captain`:** not a `user` column. The Better Auth `customSession` plugin
+  in `src/lib/auth.ts` reads `player.is_captain` (`isCaptain`) and adds it to
+  `session.user`; the client gets it through `customSessionClient`.
 - Calls `forbidden()` unless `canAll` holds for every listed action.
 
 ```ts
 const roster = withResource('roster');
-export const addUser = roster(['create'], async (user, values) => { ... });
+export const createUser = roster(['create'], async (user, values) => { ... });
 ```
 
 This authorizes a resource, not a record. See [Ownership checks](#ownership-checks).

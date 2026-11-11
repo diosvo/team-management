@@ -1,11 +1,10 @@
+import usePermissions from '@/hooks/use-permissions';
 import {
   createPermissionsMock,
   renderWithUI,
   screen,
   setupTestLifecycle,
 } from '@/test/utilities';
-
-import usePermissions from '@/hooks/use-permissions';
 
 import AssetHeader from './AssetHeader';
 import { UpsertAsset } from './UpsertAsset';

@@ -1,3 +1,5 @@
+import { nth } from 'es-toolkit/compat';
+
 import { renderWithUI } from '@/test/utilities';
 
 import FiltersSkeleton from './FiltersSkeleton';
@@ -17,7 +19,10 @@ describe('FiltersSkeleton', () => {
   });
 
   test('groups the date window, Filters button and action in one row', () => {
-    const [, row] = setup({ date: 'This year', filters: true, action: 'Date' });
+    const row = nth(
+      [...setup({ date: 'This year', filters: true, action: 'Date' })],
+      1,
+    )!;
 
     expect(row.textContent).toContain('This year');
     expect(row.textContent).toContain('Filters');

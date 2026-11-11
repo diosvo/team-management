@@ -1,9 +1,9 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Chart, useChart } from '@chakra-ui/charts';
 import { Box, Span, Text } from '@chakra-ui/react';
 import { ChartLine } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 import type { TooltipContentProps } from 'recharts';
 import {
   CartesianGrid,
@@ -14,20 +14,21 @@ import {
   XAxis,
 } from 'recharts';
 
+import { ATTENDANCE_TARGET_RATE } from '@/utils/constants';
+
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
-
 import type { AttendanceHistoryRecord } from '@/types/analytics';
-import { ATTENDANCE_TARGET_RATE } from '@/utils/constants';
 
 export function CustomTooltip(
   props: Partial<TooltipContentProps<string, string>>,
 ) {
   const { active, payload } = props;
   const t = useTranslations('dashboard.attendanceTrend');
-  if (!active || !payload || payload.length === 0) return null;
+  const [first] = payload ?? [];
+  if (!active || !first) return null;
 
-  const entry = payload[0].payload as AttendanceHistoryRecord;
+  const entry = first.payload as AttendanceHistoryRecord;
 
   return (
     <Box backgroundColor="white" padding={2} borderRadius="sm" boxShadow="sm">

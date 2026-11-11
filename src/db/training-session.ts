@@ -1,6 +1,7 @@
 import { and, desc, eq, inArray } from 'drizzle-orm';
 
 import { AttendanceStatus, SessionStatus } from '@/utils/enum';
+
 import type { TrainingSearchParams } from '@/lib/nuqs';
 
 import db from '@/drizzle';
@@ -8,15 +9,15 @@ import {
   type InsertTrainingSession,
   TrainingSessionTable,
 } from '@/drizzle/schema';
-
 import type { DataWithStats } from '@/types/common';
 import type {
   TrainingSessionStats,
   TrainingSessionWithDetails,
 } from '@/types/training-session';
+
 import { withinRange } from './utils';
 
-export async function getSessions(
+export async function selectSessions(
   team_id: string,
   params: TrainingSearchParams,
 ): Promise<DataWithStats<TrainingSessionWithDetails, TrainingSessionStats>> {

@@ -1,6 +1,5 @@
 import { MOCK_MATCH_RESPONSE } from '@/test/mocks/match';
 import { expectNoA11yViolations, renderWithUI, screen } from '@/test/utilities';
-
 import type { MatchStats as StatsType } from '@/types/match';
 
 import MatchStats from './MatchStats';

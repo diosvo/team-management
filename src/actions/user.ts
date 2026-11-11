@@ -1,21 +1,26 @@
 'use server';
 
-import { getTranslations } from 'next-intl/server';
 import { forbidden, notFound } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 
 import { ESTABLISHED_DATE } from '@/utils/constants';
 import type { CoachPosition, PlayerPosition } from '@/utils/enum';
+import { hasPermissions } from '@/utils/permissions';
 import { ResponseFactory } from '@/utils/response';
+
+import auth from '@/lib/auth';
+import { deleteFile, getFile, uploadFile } from '@/lib/blob';
 
 import { insertCoach } from '@/db/coach';
 import { getDbErrorMessage } from '@/db/pg-error';
 import { insertPlayer, isJerseyNumberTaken } from '@/db/player';
 import {
   deleteUser,
-  fetchActivePlayers,
-  getUsers as fetchUsers,
-  getRosterUsers,
-  getUserById,
+  selectActivePlayers,
+  selectRegistrationPlayers,
+  selectRosterUsers,
+  selectUserById,
+  selectUsers,
   updateUser,
   updateUserTeamInfo,
 } from '@/db/user';
@@ -26,34 +31,43 @@ import type {
   EditTeamInfoValues,
 } from '@/schemas/user';
 
-import auth from '@/lib/auth';
-import { deleteFile, getFile, uploadFile } from '@/lib/blob';
-import { hasPermissions } from '@/utils/permissions';
-
 import { withAuth, withResource } from './auth';
 import { revalidate } from './cache';
 
 const roster = withResource('roster');
 const profile = withResource('profile');
+const registration = withResource('registration');
 
 export const getActivePlayers = withAuth(async ({ team_id }) => {
   if (!team_id) return [];
-  return await fetchActivePlayers(team_id);
+  return await selectActivePlayers(team_id);
 });
 
+/**
+ * Full player rows (dob, phone, citizen id) for the registration export,
+ * limited to the selected players and to roles that can file a registration.
+ */
+export const getRegistrationPlayers = registration(
+  ['create'],
+  async function registrationPlayers({ team_id }, ids: Array<string>) {
+    if (!team_id) return [];
+    return await selectRegistrationPlayers(team_id, ids);
+  },
+);
+
 export const getUsers = withAuth(
-  async ({ team_id }) => await fetchUsers(team_id),
+  async ({ team_id }) => await selectUsers(team_id),
 );
 
 export const getRoster = withAuth(
-  async ({ team_id }) => await getRosterUsers(team_id),
+  async ({ team_id }) => await selectRosterUsers(team_id),
 );
 
 export const getUserProfile = withAuth(async (user, target_id: string) => {
   const { isPlayer, isCoach, isGuest, isAdmin } = hasPermissions(user.role);
   if (isGuest) forbidden();
 
-  const targetUser = await getUserById(target_id);
+  const targetUser = await selectUserById(target_id);
   if (!targetUser) notFound();
 
   // Do NOT enable button if:
@@ -69,7 +83,7 @@ export const getUserProfile = withAuth(async (user, target_id: string) => {
   };
 });
 
-export const addUser = roster(
+export const createUser = roster(
   ['create'],
   async function add({ team_id }, values: AddUserValues) {
     // TODO: check rate limiting first
@@ -156,7 +170,7 @@ export const uploadAvatar = profile(
     // A `users/<user_id>` prefix check is not enough: blob keys carry a random
     // suffix (`users/1-abc`), so `users/1` would also match `users/12-abc`.
     if (old_path) {
-      const target = await getUserById(user_id);
+      const target = await selectUserById(user_id);
       if (old_path !== target?.image) forbidden();
     }
 
@@ -218,7 +232,7 @@ export const updateTeamInfo = profile(
     }
 
     // The current role tells which row to remove when switching role
-    const target = await getUserById(user_id);
+    const target = await selectUserById(user_id);
     if (!target) notFound();
 
     const t = await getTranslations('actions.user');

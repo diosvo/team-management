@@ -1,3 +1,5 @@
+import type { User } from '@/drizzle/schema/user';
+import usePermissions from '@/hooks/use-permissions';
 import { MOCK_LEAGUE } from '@/test/mocks/league';
 import { MOCK_USER_WITH_PLAYER } from '@/test/mocks/user';
 import {
@@ -12,12 +14,9 @@ import {
   waitFor,
 } from '@/test/utilities';
 
-import usePermissions from '@/hooks/use-permissions';
+import RegistrationPageClient from './RegistrationPageClient';
 
-import type { User } from '@/drizzle/schema/user';
-
-import { useSavedRegistrations } from '../_helpers/useSavedRegistrations';
-import RegistrationPageClient from './main';
+import { useSavedRegistrations } from '../_helpers/use-saved-registrations';
 
 vi.mock('@/hooks/use-permissions', () => ({
   default: vi.fn(),
@@ -29,7 +28,15 @@ vi.mock('@/actions/league', () => ({
   getLeagues: vi.fn(),
 }));
 
-vi.mock('../_helpers/useSavedRegistrations', () => ({
+// The picker hands over a narrow row; the action returns the PII fields.
+const FULL_PLAYER = { ...MOCK_USER_WITH_PLAYER, phone_number: '0901234567' };
+const getRegistrationPlayers = vi.fn();
+vi.mock('@/actions/user', () => ({
+  getRegistrationPlayers: (...args: Array<unknown>) =>
+    getRegistrationPlayers(...args),
+}));
+
+vi.mock('../_helpers/use-saved-registrations', () => ({
   useSavedRegistrations: vi.fn(),
 }));
 
@@ -91,10 +98,21 @@ vi.mock('@/components/SearchableSelect', () => ({
 }));
 
 vi.mock('./PreviewPanel', () => ({
-  default: ({ onSave }: { onSave: () => void }) => (
-    <button type="button" onClick={onSave}>
-      SavePreview
-    </button>
+  default: ({
+    players,
+    onSave,
+  }: {
+    players: Array<User>;
+    onSave: () => void;
+  }) => (
+    <>
+      <div data-testid="preview-players">
+        {players.map(({ phone_number }) => phone_number).join(',')}
+      </div>
+      <button type="button" onClick={onSave}>
+        SavePreview
+      </button>
+    </>
   ),
 }));
 
@@ -136,6 +154,7 @@ describe('RegistrationPageClient', () => {
   beforeEach(() => {
     getUniqueName.mockImplementation((name: string) => name);
     buildPdf.mockResolvedValue({ bytes: new Uint8Array([1, 2, 3]) });
+    getRegistrationPlayers.mockResolvedValue([FULL_PLAYER]);
   });
 
   test('should be accessible', async () => {
@@ -276,6 +295,18 @@ describe('RegistrationPageClient', () => {
       expect(save).not.toHaveBeenCalled();
     });
 
+    test('fetches full rows for the selected players only', async () => {
+      const { user } = setup();
+
+      await selectPlayersAndLeague(user);
+
+      await waitFor(() =>
+        expect(screen.getByTestId('preview-players')).toHaveTextContent(
+          FULL_PLAYER.phone_number,
+        ),
+      );
+    });
+
     test('builds a PDF and stores it base64-encoded', async () => {
       const { user } = setup();
 
@@ -294,6 +325,12 @@ describe('RegistrationPageClient', () => {
       });
       expect(mockToaster.success).toHaveBeenCalledWith(
         expect.objectContaining({ title: 'Registration saved' }),
+      );
+      expect(getRegistrationPlayers).toHaveBeenCalledWith([
+        MOCK_USER_WITH_PLAYER.id,
+      ]);
+      expect(buildPdf).toHaveBeenCalledWith(
+        expect.objectContaining({ players: [FULL_PLAYER] }),
       );
     });
 

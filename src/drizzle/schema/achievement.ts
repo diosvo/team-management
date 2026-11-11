@@ -10,10 +10,12 @@ import {
 } from 'drizzle-orm/pg-core';
 
 import { AchievementType, enumValues } from '@/utils/enum';
-import { created_at, updated_at } from '../helpers';
 
 import { LeagueTable } from './league';
 import { PlayerTable } from './player';
+import { TeamTable } from './team';
+
+import { created_at, updated_at } from '../helpers';
 
 export const achievementTypeEnum = pgEnum(
   'achievement_type',
@@ -24,6 +26,10 @@ export const AchievementTable = pgTable(
   'achievement',
   {
     achievement_id: uuid().primaryKey().defaultRandom(),
+    // Owning team; every read and write is scoped to the session team.
+    team_id: uuid()
+      .notNull()
+      .references(() => TeamTable.team_id, { onDelete: 'cascade' }),
     type: achievementTypeEnum().notNull(),
     title: varchar({ length: 128 }).notNull(),
     year: integer().notNull(),
@@ -40,14 +46,18 @@ export const AchievementTable = pgTable(
     updated_at,
   },
   (table) => [
-    // One honor of each type per league, except "custom" which may repeat
-    uniqueIndex('achievement_league_type_idx')
-      .on(table.league_id, table.type)
+    // One honor of each type per league and team, except "custom" which may repeat
+    uniqueIndex('achievement_team_league_type_idx')
+      .on(table.team_id, table.league_id, table.type)
       .where(sql`${table.league_id} IS NOT NULL AND ${table.type} != 'custom'`),
   ],
 );
 
 export const AchievementRelations = relations(AchievementTable, ({ one }) => ({
+  team: one(TeamTable, {
+    fields: [AchievementTable.team_id],
+    references: [TeamTable.team_id],
+  }),
   league: one(LeagueTable, {
     fields: [AchievementTable.league_id],
     references: [LeagueTable.league_id],

@@ -1,12 +1,13 @@
+import { AttendanceStatus } from '@/utils/enum';
+
 import { revalidate } from '@/actions/cache';
 import {
   deleteAttendance,
-  getAttendances as fetchAttendances,
   insertAttendance,
+  selectAttendances,
   updateAttendance,
 } from '@/db/attendance';
 import { getDbErrorMessage } from '@/db/pg-error';
-
 import {
   MOCK_ATTENDANCE_DATE,
   MOCK_ATTENDANCE_INPUT,
@@ -21,8 +22,6 @@ import {
 import { MOCK_TEAM } from '@/test/mocks/team';
 import { MOCK_USER } from '@/test/mocks/user';
 
-import { AttendanceStatus } from '@/utils/enum';
-
 import {
   getAttendances,
   removeAttendance,
@@ -36,7 +35,7 @@ vi.mock('./auth', () => ({
 }));
 
 vi.mock('@/db/attendance', () => ({
-  getAttendances: vi.fn(),
+  selectAttendances: vi.fn(),
   insertAttendance: vi.fn(),
   updateAttendance: vi.fn(),
   deleteAttendance: vi.fn(),
@@ -90,23 +89,26 @@ describe('Attendance Actions', () => {
   };
 
   describe('getAttendances', () => {
-    test('calls fetchAttendances with team_id and the window', async () => {
-      vi.mocked(fetchAttendances).mockResolvedValue(MOCK_ATTENDANCE_RESPONSE);
+    test('calls selectAttendances with team_id and the window', async () => {
+      vi.mocked(selectAttendances).mockResolvedValue(MOCK_ATTENDANCE_RESPONSE);
       const range = { from: MOCK_ATTENDANCE_DATE, to: MOCK_ATTENDANCE_DATE };
 
       const result = await getAttendances(range);
 
-      expect(fetchAttendances).toHaveBeenCalledWith(MOCK_TEAM.team_id, range);
+      expect(selectAttendances).toHaveBeenCalledWith(MOCK_TEAM.team_id, range);
       expect(result).toEqual(MOCK_ATTENDANCE_RESPONSE);
     });
 
-    test('propagates errors from fetchAttendances', async () => {
+    test('propagates errors from selectAttendances', async () => {
       const message = 'Database error';
       const error = new Error(message);
-      vi.mocked(fetchAttendances).mockRejectedValue(error);
+      vi.mocked(selectAttendances).mockRejectedValue(error);
 
       await expect(
-        getAttendances({ from: MOCK_ATTENDANCE_DATE, to: MOCK_ATTENDANCE_DATE }),
+        getAttendances({
+          from: MOCK_ATTENDANCE_DATE,
+          to: MOCK_ATTENDANCE_DATE,
+        }),
       ).rejects.toThrow(message);
     });
   });

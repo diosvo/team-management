@@ -1,11 +1,10 @@
-import type { DateRange } from '@/types/common';
-
 import {
   getAttendanceHistory,
   getAttendanceSummary,
   getMatchesRate,
   getMostAbsenceReasons,
 } from '@/actions/analytics';
+import type { DateRange } from '@/types/common';
 
 import {
   AbsenceReasonsBreakdown,
@@ -32,16 +31,12 @@ export async function AttendanceTrendSection({ range }: SectionProps) {
   return <AttendanceTrend records={records} />;
 }
 
-export async function PlayerAttendanceRankingSection({
-  range,
-}: SectionProps) {
+export async function PlayerAttendanceRankingSection({ range }: SectionProps) {
   const records = await getAttendanceSummary(range);
   return <PlayerAttendanceRanking records={records} />;
 }
 
-export async function AbsenceReasonsBreakdownSection({
-  range,
-}: SectionProps) {
+export async function AbsenceReasonsBreakdownSection({ range }: SectionProps) {
   const reasons = await getMostAbsenceReasons(range);
   return <AbsenceReasonsBreakdown reasons={reasons} />;
 }

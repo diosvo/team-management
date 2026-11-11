@@ -59,7 +59,7 @@ description: Các giải CLB tham gia, mỗi giải có danh sách cầu thủ r
 ## Quy tắc
 
 - **Trạng thái được tính ra, không lưu.** Không có cột trạng thái;
-  `getLeagues` và `getLeagueById` dùng `deriveDateStatus`:
+  `getLeagues` và `selectLeagueById` dùng `deriveDateStatus`:
   - `upcoming` khi `start_date` còn ở phía trước.
   - `ended` khi `end_date` đã qua; còn lại là `ongoing`.
 - **Giải đã khởi tranh thì không sửa được, chặn ở cả hai phía.**
@@ -73,7 +73,7 @@ description: Các giải CLB tham gia, mỗi giải có danh sách cầu thủ r
   - Đăng ký đội của bạn vào `league_team` (`onConflictDoNothing`); các dòng
     danh sách cầu thủ có FK kép trỏ tới cặp giải–đội đó.
   - So `player_ids` gửi lên với danh sách đã lưu.
-  - Bỏ các id không thuộc đội của bạn, dựa vào `getTeamPlayerIds` (`player`
+  - Bỏ các id không thuộc đội của bạn, dựa vào `selectTeamPlayerIds` (`player`
     lấy đội từ `user`).
   - Thêm và bỏ cầu thủ bằng `Promise.allSettled`; mỗi lỗi ghi một dòng.
 - **Lỗi một phần thì không hoàn tác.**

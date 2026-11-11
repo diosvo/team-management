@@ -1,18 +1,17 @@
 'use client';
 
-import { Span, VStack } from '@chakra-ui/react';
 import { useLocale, useTranslations } from 'next-intl';
+import { Span, VStack } from '@chakra-ui/react';
 
+import { ESTABLISHED_DATE } from '@/utils/constants';
+
+import { getTestTypes } from '@/actions/test-type';
 import DatePicker from '@/components/date-picker/DatePicker';
 import SearchableSelect from '@/components/SearchableSelect';
 import { Field } from '@/components/ui/field';
 import { PlayerSelectionWithActions } from '@/components/user/PlayerSelection';
-
 import { enumLabel } from '@/i18n/enums';
 import type { TestConfigurationSelection } from '@/types/periodic-testing';
-import { ESTABLISHED_DATE } from '@/utils/constants';
-
-import { getTestTypes } from '@/actions/test-type';
 
 type TestResultConfigurationProps = {
   selection: TestConfigurationSelection;

@@ -1,10 +1,11 @@
 import { expect, test } from '@playwright/test';
+
 import {
-  uniqueName as makeUniqueName,
   testDeleteWithCheckbox,
   testEmptyState,
   testSearchWithQueryParams,
   testTableHeaders,
+  uniqueName as makeUniqueName,
 } from '../setup/helpers';
 import { DialogPOM, TablePOM } from '../setup/pom';
 
@@ -347,12 +348,6 @@ test.describe('Locations - Integration', () => {
   test('refreshes table data after successful update', async ({ page }) => {
     const firstRow = page.getByRole('row').nth(1);
     if (await firstRow.isVisible()) {
-      // Get original address
-      const originalAddress = await firstRow
-        .getByRole('cell')
-        .nth(1)
-        .textContent();
-
       await firstRow.click();
 
       const addressField = page.getByLabel('Address');

@@ -1,5 +1,5 @@
-import { UserX } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
+import { UserX } from 'lucide-react';
 
 import { EmptyState } from '@/components/ui/empty-state';
 

@@ -1,29 +1,28 @@
 'use client';
 
 import { useTransition } from 'react';
-import { useSWRConfig } from 'swr';
-
+import { useForm } from 'react-hook-form';
+import { useTranslations } from 'next-intl';
 import {
   Button,
+  createOverlay,
   Dialog,
   Input,
   Portal,
   VStack,
-  createOverlay,
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Save } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useForm } from 'react-hook-form';
+import { useSWRConfig } from 'swr';
 
+import { CACHE_KEY } from '@/utils/constants';
+
+import { getDefaults } from '@/lib/zod';
+
+import { upsertLocation } from '@/actions/location';
 import { CloseButton } from '@/components/ui/close-button';
 import { Field } from '@/components/ui/field';
 import { toaster } from '@/components/ui/toaster';
-
-import { getDefaults } from '@/lib/zod';
-import { CACHE_KEY } from '@/utils/constants';
-
-import { upsertLocation } from '@/actions/location';
 import {
   UpsertLocationSchema,
   type UpsertLocationSchemaValues,

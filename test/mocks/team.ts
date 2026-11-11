@@ -27,3 +27,11 @@ export const MOCK_AWAY_TEAM: Team = {
   created_at: new Date('2026-01-01'),
   updated_at: new Date('2026-01-01'),
 };
+
+export const MOCK_OTHER_TEAM: Team = {
+  ...MOCK_AWAY_TEAM,
+  team_id: 'team-999',
+  name: 'Hanoi Buffaloes',
+  email: 'hanoi.buffaloes@gmail.com',
+  image: null,
+};

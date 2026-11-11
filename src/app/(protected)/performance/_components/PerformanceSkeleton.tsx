@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import {
   Badge,
   Button,
@@ -9,20 +10,19 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { CalendarSearch } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 
-import PageTitle from '@/components/PageTitle';
-import { TableSkeleton } from '@/components/PageSkeleton';
-import { Card } from '@/components/ui/card';
-import { Stat, StatGroup } from '@/components/ui/stat';
-
-import { enumLabel } from '@/i18n/enums';
 import {
   MATCH_AVERAGE_FIELDS,
   MATCH_STAT_FIELDS,
   type PerformanceTab,
 } from '@/utils/constants';
 import { AttendanceStatus, Interval } from '@/utils/enum';
+
+import { TableSkeleton } from '@/components/PageSkeleton';
+import PageTitle from '@/components/PageTitle';
+import { Card } from '@/components/ui/card';
+import { Stat, StatGroup } from '@/components/ui/stat';
+import { enumLabel } from '@/i18n/enums';
 
 /* Loading placeholders for the performance page. They mirror the layout and keep static text visible so the page doesn't jump while data loads. */
 

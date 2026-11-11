@@ -1,3 +1,12 @@
+import { head } from 'es-toolkit';
+import { nth } from 'es-toolkit/compat';
+
+import {
+  createTestResult,
+  removeTestResult,
+  updateTestResult,
+} from '@/actions/test-result';
+import usePermissions from '@/hooks/use-permissions';
 import {
   MOCK_TEST_PLAYER_2,
   MOCK_TEST_RESULT,
@@ -19,14 +28,6 @@ import {
   setupTestLifecycle,
   waitFor,
 } from '@/test/utilities';
-
-import usePermissions from '@/hooks/use-permissions';
-
-import {
-  createTestResult,
-  deleteTestResultById,
-  updateTestResultById,
-} from '@/actions/test-result';
 import type { TestResult } from '@/types/periodic-testing';
 
 import PlayerPerformanceMatrix from './PlayerPerformanceMatrix';
@@ -37,8 +38,8 @@ vi.mock('@/hooks/use-permissions', () => ({
 
 vi.mock('@/actions/test-result', () => ({
   createTestResult: vi.fn(),
-  updateTestResultById: vi.fn(),
-  deleteTestResultById: vi.fn(),
+  updateTestResult: vi.fn(),
+  removeTestResult: vi.fn(),
 }));
 
 vi.mock('@/components/ui/toaster', () => createToasterMock());
@@ -50,8 +51,8 @@ const FIRST_RESULT = MOCK_TEST_RESULT_INPUT.result;
 describe('PlayerPerformanceMatrix', () => {
   const mockUsePermissions = vi.mocked(usePermissions);
   const mockCreate = vi.mocked(createTestResult);
-  const mockUpdate = vi.mocked(updateTestResultById);
-  const mockDelete = vi.mocked(deleteTestResultById);
+  const mockUpdate = vi.mocked(updateTestResult);
+  const mockDelete = vi.mocked(removeTestResult);
 
   const setup = ({
     result = MOCK_TEST_RESULT_RESPONSE,
@@ -148,7 +149,7 @@ describe('PlayerPerformanceMatrix', () => {
     const { user } = setup();
 
     // The first player has no second-type score yet (placeholder cell).
-    const [emptyCell] = screen.getAllByText('-');
+    const emptyCell = head(screen.getAllByText('-'))!;
     await user.click(emptyCell);
     const input = await screen.findByRole('spinbutton');
     await user.type(input, '10{Enter}');
@@ -224,7 +225,7 @@ describe('PlayerPerformanceMatrix', () => {
     const { user } = setup();
 
     // The first player has no second-type score yet (placeholder cell).
-    const [emptyCell] = screen.getAllByText('-');
+    const emptyCell = head(screen.getAllByText('-'))!;
     await user.click(emptyCell);
     const input = await screen.findByRole('spinbutton');
     await user.type(input, '{Enter}');
@@ -244,7 +245,7 @@ describe('PlayerPerformanceMatrix', () => {
       ...MOCK_TEST_RESULT_RESPONSE,
       players: [
         {
-          ...MOCK_TEST_RESULT_RESPONSE.players[0],
+          ...head(MOCK_TEST_RESULT_RESPONSE.players)!,
           tests: {
             [MOCK_TEST_TYPE.name]: {
               result_id: MOCK_TEST_RESULT.result_id,
@@ -252,7 +253,7 @@ describe('PlayerPerformanceMatrix', () => {
             },
           },
         },
-        MOCK_TEST_RESULT_RESPONSE.players[1],
+        nth(MOCK_TEST_RESULT_RESPONSE.players, 1)!,
       ],
     };
 
@@ -277,7 +278,7 @@ describe('PlayerPerformanceMatrix', () => {
       ...MOCK_TEST_RESULT_RESPONSE,
       players: [
         {
-          ...MOCK_TEST_RESULT_RESPONSE.players[0],
+          ...head(MOCK_TEST_RESULT_RESPONSE.players)!,
           tests: {
             [MOCK_TEST_TYPE.name]: {
               result_id: undefined as unknown as string,
@@ -285,7 +286,7 @@ describe('PlayerPerformanceMatrix', () => {
             },
           },
         },
-        MOCK_TEST_RESULT_RESPONSE.players[1],
+        nth(MOCK_TEST_RESULT_RESPONSE.players, 1)!,
       ],
     };
 

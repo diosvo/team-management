@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect, useState, useTransition } from 'react';
-import { useSWRConfig } from 'swr';
-import useSWRImmutable from 'swr/immutable';
-
+import { useForm } from 'react-hook-form';
+import { useTranslations } from 'next-intl';
 import {
   Badge,
   Button,
+  createOverlay,
   Dialog,
   Flex,
   Input,
@@ -14,13 +14,18 @@ import {
   Stack,
   Textarea,
   VStack,
-  createOverlay,
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Save } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useForm } from 'react-hook-form';
+import { useSWRConfig } from 'swr';
+import useSWRImmutable from 'swr/immutable';
 
+import { CACHE_KEY, ESTABLISHED_DATE } from '@/utils/constants';
+import { LeagueStatus } from '@/utils/enum';
+
+import { getDefaults } from '@/lib/zod';
+
+import { getPlayersInLeague, upsertLeague } from '@/actions/league';
 import { DatePickerField } from '@/components/date-picker/DatePicker';
 import { CloseButton } from '@/components/ui/close-button';
 import { Field } from '@/components/ui/field';
@@ -30,18 +35,11 @@ import {
   SelectedPlayers,
 } from '@/components/user/PlayerSelection';
 import Visibility from '@/components/Visibility';
-
-import { getDefaults } from '@/lib/zod';
-import { CACHE_KEY, ESTABLISHED_DATE } from '@/utils/constants';
-import { LeagueStatus } from '@/utils/enum';
-
-import type { User } from '@/drizzle/schema';
+import type { PlayerOption } from '@/db/user';
 import {
   UpsertLeagueSchema,
   type UpsertLeagueSchemaValues,
 } from '@/schemas/league';
-
-import { getPlayersInLeague, upsertLeague } from '@/actions/league';
 
 export const UpsertLeague = createOverlay(({ action, item, ...rest }) => {
   const t = useTranslations('leagues.upsert');
@@ -49,7 +47,7 @@ export const UpsertLeague = createOverlay(({ action, item, ...rest }) => {
   const { mutate } = useSWRConfig();
   const [isPending, startTransition] = useTransition();
 
-  const [selection, setSelection] = useState<Array<User>>([]);
+  const [selection, setSelection] = useState<Array<PlayerOption>>([]);
 
   const { data: playersInLeague } = useSWRImmutable(
     action === 'Update' && item.league_id

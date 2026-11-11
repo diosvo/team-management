@@ -1,6 +1,6 @@
+import { useTranslations } from 'next-intl';
 import { Box, Button, HStack, Skeleton } from '@chakra-ui/react';
 import { CalendarSearch, SlidersHorizontal } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 
 import {
   CONTROL_HEIGHT,

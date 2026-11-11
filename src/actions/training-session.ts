@@ -1,6 +1,7 @@
 'use server';
 
 import { getTranslations } from 'next-intl/server';
+
 import { ResponseFactory } from '@/utils/response';
 
 import type { TrainingSearchParams } from '@/lib/nuqs';
@@ -8,11 +9,11 @@ import type { TrainingSearchParams } from '@/lib/nuqs';
 import { getDbErrorMessage } from '@/db/pg-error';
 import {
   deleteSession,
-  getSessions as fetchSessions,
   insertSession,
+  selectSessions,
   updateSession,
 } from '@/db/training-session';
-import { getTeamHeadCoach } from '@/db/user';
+import { selectTeamHeadCoach } from '@/db/user';
 import type { UpsertSessionSchemaValues } from '@/schemas/training';
 
 import { withAuth, withResource } from './auth';
@@ -21,12 +22,12 @@ import { revalidate } from './cache';
 const training = withResource('training');
 
 export const getCoach = withAuth(
-  async ({ team_id }) => await getTeamHeadCoach(team_id),
+  async ({ team_id }) => await selectTeamHeadCoach(team_id),
 );
 
 export const getSessions = withAuth(
   async ({ team_id }, filters: TrainingSearchParams) =>
-    await fetchSessions(team_id, filters),
+    await selectSessions(team_id, filters),
 );
 
 export const upsertSession = training(
@@ -38,7 +39,7 @@ export const upsertSession = training(
   ) {
     const t = await getTranslations('actions.training');
     try {
-      const coach = await getTeamHeadCoach(team_id);
+      const coach = await selectTeamHeadCoach(team_id);
 
       if (!coach) {
         return ResponseFactory.error(t('noCoach'));

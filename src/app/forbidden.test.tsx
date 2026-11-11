@@ -1,6 +1,5 @@
-import { renderWithUI, screen } from '@/test/utilities';
-
 import { DEFAULT_LOGIN_REDIRECT } from '@/routes';
+import { renderWithUI, screen } from '@/test/utilities';
 
 import Forbidden from './forbidden';
 

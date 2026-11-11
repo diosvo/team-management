@@ -3,7 +3,7 @@ import { asc, eq } from 'drizzle-orm';
 import db from '@/drizzle';
 import { type InsertTestType, TestTypeTable } from '@/drizzle/schema';
 
-export async function getTestTypes() {
+export async function selectTestTypes() {
   try {
     return await db.query.TestTypeTable.findMany({
       orderBy: [asc(TestTypeTable.name)],
@@ -13,7 +13,7 @@ export async function getTestTypes() {
   }
 }
 
-export async function getTestTypeById(type_id: string) {
+export async function selectTestTypeById(type_id: string) {
   try {
     return await db.query.TestTypeTable.findFirst({
       where: eq(TestTypeTable.type_id, type_id),

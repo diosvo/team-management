@@ -55,7 +55,7 @@ describe('createIssue', () => {
 
     await createIssue({ ...ISSUE, assignees: ['diosvo'] });
 
-    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({
+    expect(JSON.parse(fetchMock.mock.calls[0]?.[1].body)).toEqual({
       ...ISSUE,
       assignees: ['diosvo'],
     });
@@ -69,7 +69,7 @@ describe('createIssue', () => {
 
     await createIssue({ ...ISSUE, assignees: [] });
 
-    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).not.toHaveProperty(
+    expect(JSON.parse(fetchMock.mock.calls[0]?.[1].body)).not.toHaveProperty(
       'assignees',
     );
   });

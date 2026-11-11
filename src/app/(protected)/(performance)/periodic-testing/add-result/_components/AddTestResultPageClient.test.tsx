@@ -1,3 +1,9 @@
+import { createTestResult } from '@/actions/test-result';
+import {
+  MOCK_TEST_RESULT_DATE,
+  MOCK_TEST_TYPE,
+} from '@/test/mocks/periodic-testing';
+import { MOCK_PLAYER } from '@/test/mocks/user';
 import {
   createToasterMock,
   renderWithUI,
@@ -5,8 +11,6 @@ import {
   setupTestLifecycle,
   waitFor,
 } from '@/test/utilities';
-
-import { createTestResult } from '@/actions/test-result';
 
 import AddTestResultPageClient from './AddTestResultPageClient';
 
@@ -32,9 +36,9 @@ vi.mock('./TestResultConfiguration', () => ({
     <button
       onClick={() =>
         setSelection({
-          players: [{ id: 'p1' }],
-          types: [{ type_id: 't1' }],
-          date: '2026-01-15',
+          players: [{ id: MOCK_PLAYER.id }],
+          types: [{ type_id: MOCK_TEST_TYPE.type_id }],
+          date: MOCK_TEST_RESULT_DATE,
         })
       }
     >
@@ -81,17 +85,17 @@ describe('AddTestResultPageClient', () => {
     await waitFor(() => {
       expect(mockCreate).toHaveBeenCalledWith([
         {
-          type_id: 't1',
-          player_id: 'p1',
+          type_id: MOCK_TEST_TYPE.type_id,
+          player_id: MOCK_PLAYER.id,
           result: '0',
-          date: '2026-01-15',
+          date: MOCK_TEST_RESULT_DATE,
         },
       ]);
     });
 
     await waitFor(() => {
       expect(mockReplace).toHaveBeenCalledWith(
-        '/periodic-testing?date=2026-01-15',
+        `/periodic-testing?date=${MOCK_TEST_RESULT_DATE}`,
       );
     });
   });

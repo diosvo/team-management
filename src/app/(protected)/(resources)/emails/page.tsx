@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
+import { Separator, Text } from '@chakra-ui/react';
 
-import PageTitle from '@/components/PageTitle';
 import { resend } from '@/lib/resend';
 
-import { Separator, Text } from '@chakra-ui/react';
+import PageTitle from '@/components/PageTitle';
+
 import EmailPreview from './_components/EmailPreview';
 import SentEmails from './_components/SentEmails';
 

@@ -1,11 +1,11 @@
+import { PerformanceBand, ProgressStatus } from '@/utils/enum';
+
 import {
   MOCK_PLAYER_PROGRESSION,
   MOCK_TYPE_PROGRESSION,
 } from '@/test/mocks/progression';
 import { renderWithUI, screen } from '@/test/utilities';
-
 import type { TypeProgression } from '@/types/periodic-testing';
-import { PerformanceBand, ProgressStatus } from '@/utils/enum';
 
 import ProgressionStats from './ProgressionStats';
 

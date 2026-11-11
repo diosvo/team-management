@@ -2,12 +2,17 @@ import { and, eq } from 'drizzle-orm';
 
 import db from '@/drizzle';
 import { TestNoteTable } from '@/drizzle/schema';
+import {
+  MOCK_PROGRESSION_TYPE,
+  MOCK_TEST_NOTE,
+} from '@/test/mocks/progression';
+import { MOCK_PLAYER } from '@/test/mocks/user';
 
 import {
   deleteTestNote,
-  findTestNote,
-  findTypeNote,
   insertTestNote,
+  selectTestNote,
+  selectTypeNote,
   updateTestNote,
 } from './test-note';
 
@@ -45,7 +50,7 @@ beforeEach(() => {
 });
 
 test('insertTestNote inserts the note', async () => {
-  const note = { player_id: 'p1', content: 'Good form' };
+  const note = { player_id: MOCK_PLAYER.id, content: MOCK_TEST_NOTE.content };
   values.mockResolvedValue({ rowCount: 1 });
 
   await expect(insertTestNote(note)).resolves.toEqual({ rowCount: 1 });
@@ -55,29 +60,34 @@ test('insertTestNote inserts the note', async () => {
 });
 
 test('deleteTestNote deletes by id and player and returns the player', async () => {
-  returning.mockResolvedValue([{ player_id: 'p1' }]);
+  returning.mockResolvedValue([{ player_id: MOCK_PLAYER.id }]);
 
-  await expect(deleteTestNote('n1', 'p1')).resolves.toEqual([
-    { player_id: 'p1' },
-  ]);
+  await expect(
+    deleteTestNote(MOCK_TEST_NOTE.note_id, MOCK_PLAYER.id),
+  ).resolves.toEqual([{ player_id: MOCK_PLAYER.id }]);
 
   expect(db.delete).toHaveBeenCalledWith(TestNoteTable);
   expect(where).toHaveBeenCalledWith(
-    and(eq(TestNoteTable.note_id, 'n1'), eq(TestNoteTable.player_id, 'p1')),
+    and(
+      eq(TestNoteTable.note_id, MOCK_TEST_NOTE.note_id),
+      eq(TestNoteTable.player_id, MOCK_PLAYER.id),
+    ),
   );
   expect(returning).toHaveBeenCalledWith({ player_id: 'player_id' });
 });
 
-test('findTypeNote looks up the note for a player and test type', async () => {
-  findFirst.mockResolvedValue({ note_id: 'n1' });
+test('selectTypeNote looks up the note for a player and test type', async () => {
+  findFirst.mockResolvedValue({ note_id: MOCK_TEST_NOTE.note_id });
 
-  await expect(findTypeNote('p1', 't1')).resolves.toEqual({ note_id: 'n1' });
+  await expect(
+    selectTypeNote(MOCK_PLAYER.id, MOCK_PROGRESSION_TYPE.type_id),
+  ).resolves.toEqual({ note_id: MOCK_TEST_NOTE.note_id });
 
   expect(findFirst).toHaveBeenCalledWith({
     columns: { note_id: true },
     where: and(
-      eq(TestNoteTable.player_id, 'p1'),
-      eq(TestNoteTable.type_id, 't1'),
+      eq(TestNoteTable.player_id, MOCK_PLAYER.id),
+      eq(TestNoteTable.type_id, MOCK_PROGRESSION_TYPE.type_id),
     ),
   });
 });
@@ -91,26 +101,34 @@ test('updateTestNote updates the note scoped to its player', async () => {
   };
   updateWhere.mockResolvedValue({ rowCount: 1 });
 
-  await expect(updateTestNote('n1', 'p1', note)).resolves.toEqual({
+  await expect(
+    updateTestNote(MOCK_TEST_NOTE.note_id, MOCK_PLAYER.id, note),
+  ).resolves.toEqual({
     rowCount: 1,
   });
 
   expect(db.update).toHaveBeenCalledWith(TestNoteTable);
   expect(set).toHaveBeenCalledWith({ ...note, updated_at: expect.any(Date) });
   expect(updateWhere).toHaveBeenCalledWith(
-    and(eq(TestNoteTable.note_id, 'n1'), eq(TestNoteTable.player_id, 'p1')),
+    and(
+      eq(TestNoteTable.note_id, MOCK_TEST_NOTE.note_id),
+      eq(TestNoteTable.player_id, MOCK_PLAYER.id),
+    ),
   );
 });
 
-test('findTestNote looks up a note with its player', async () => {
-  findFirst.mockResolvedValue({ note_id: 'n1', player_id: 'p1' });
+test('selectTestNote looks up a note with its player', async () => {
+  findFirst.mockResolvedValue({
+    note_id: MOCK_TEST_NOTE.note_id,
+    player_id: MOCK_PLAYER.id,
+  });
 
-  await expect(findTestNote('n1')).resolves.toEqual({
-    note_id: 'n1',
-    player_id: 'p1',
+  await expect(selectTestNote(MOCK_TEST_NOTE.note_id)).resolves.toEqual({
+    note_id: MOCK_TEST_NOTE.note_id,
+    player_id: MOCK_PLAYER.id,
   });
   expect(findFirst).toHaveBeenCalledWith({
     columns: { note_id: true, player_id: true },
-    where: eq(TestNoteTable.note_id, 'n1'),
+    where: eq(TestNoteTable.note_id, MOCK_TEST_NOTE.note_id),
   });
 });

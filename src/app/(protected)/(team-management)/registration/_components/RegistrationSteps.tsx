@@ -1,6 +1,7 @@
-import StepIndicator from '@/components/StepIndicator';
-import { Span, Steps } from '@chakra-ui/react';
 import { useTranslations } from 'next-intl';
+import { Span, Steps } from '@chakra-ui/react';
+
+import StepIndicator from '@/components/StepIndicator';
 
 export type StepDef = {
   title: string;

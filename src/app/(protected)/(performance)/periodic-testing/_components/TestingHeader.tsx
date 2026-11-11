@@ -1,8 +1,7 @@
 import Link from 'next/link';
-
+import { useTranslations } from 'next-intl';
 import { Button } from '@chakra-ui/react';
 import { Plus, Settings2, TrendingUp } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 
 import Authorized from '@/components/Authorized';
 import PageHeader from '@/components/PageHeader';

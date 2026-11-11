@@ -1,13 +1,17 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-
+import { useForm } from 'react-hook-form';
+import { useTranslations } from 'next-intl';
 import { HStack, IconButton, Input, SimpleGrid } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Edit, Save } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useForm } from 'react-hook-form';
 
+import { formatDate } from '@/utils/datetime';
+
+import { getDefaults } from '@/lib/zod';
+
+import { updatePersonalInfo } from '@/actions/user';
 import { DatePickerField } from '@/components/date-picker/DatePicker';
 import TextField from '@/components/TextField';
 import { Card } from '@/components/ui/card';
@@ -15,12 +19,7 @@ import { CloseButton } from '@/components/ui/close-button';
 import { Field } from '@/components/ui/field';
 import { toaster } from '@/components/ui/toaster';
 import { Tooltip } from '@/components/ui/tooltip';
-
 import type { User } from '@/drizzle/schema/user';
-import { getDefaults } from '@/lib/zod';
-import { formatDate } from '@/utils/datetime';
-
-import { updatePersonalInfo } from '@/actions/user';
 import {
   EditPersonalInfoSchema,
   type EditPersonalInfoValues,

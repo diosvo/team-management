@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import {
   Badge,
   HStack,
@@ -11,20 +12,19 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { CalendarCheck } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+
+import { TREND_WINDOW_DAYS } from '@/utils/constants';
+import { AttendanceStatus } from '@/utils/enum';
+import { colorRank } from '@/utils/helper';
 
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Stat } from '@/components/ui/stat';
-
 import { enumLabel } from '@/i18n/enums';
 import type {
   AttendanceOverview as AttendanceOverviewData,
   AttendanceTrend,
 } from '@/types/performance';
-import { TREND_WINDOW_DAYS } from '@/utils/constants';
-import { AttendanceStatus } from '@/utils/enum';
-import { colorRank } from '@/utils/helper';
 
 import { AttendanceTrendChart } from '../LazyCharts';
 import TrendBadge from '../TrendBadge';

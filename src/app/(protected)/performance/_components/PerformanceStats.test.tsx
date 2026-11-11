@@ -1,12 +1,13 @@
-import { renderWithUI, screen, setupTestLifecycle } from '@/test/utilities';
-import {
-  MOCK_PERFORMANCE_RANGE,
-  MOCK_PERFORMANCE_TARGET_ID,
-} from '@/test/mocks/performance';
+import { formatDate } from '@/utils/datetime';
 
 import { getPerformanceSummary } from '@/actions/player-performance';
+import {
+  MOCK_PERFORMANCE_RANGE,
+  MOCK_PERFORMANCE_SUMMARY,
+  MOCK_PERFORMANCE_TARGET_ID,
+} from '@/test/mocks/performance';
+import { renderWithUI, screen, setupTestLifecycle } from '@/test/utilities';
 import type { PerformanceSummary } from '@/types/performance';
-import { formatDate } from '@/utils/datetime';
 
 import PerformanceStats from './PerformanceStats';
 
@@ -14,26 +15,14 @@ vi.mock('@/actions/player-performance', () => ({
   getPerformanceSummary: vi.fn(),
 }));
 
-const SUMMARY: PerformanceSummary = {
-  attendance: {
-    rate: 75,
-    total: 8,
-    on_time: 5,
-    late: 1,
-    current_streak: 3,
-    best_streak: 5,
-  },
-  tests_taken: 2,
-  last_tested: '2026-03-15',
-  honors: { count: 1, latest: { type: 'mvp', year: 2026 } },
-};
-
 describe('PerformanceStats', () => {
   const mockGetSummary = vi.mocked(getPerformanceSummary);
 
   setupTestLifecycle();
 
-  const setup = async (summary: PerformanceSummary = SUMMARY) => {
+  const setup = async (
+    summary: PerformanceSummary = MOCK_PERFORMANCE_SUMMARY,
+  ) => {
     mockGetSummary.mockResolvedValue(summary);
 
     return renderWithUI(

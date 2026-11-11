@@ -1,3 +1,9 @@
+import { removeTeam } from '@/actions/team';
+import type { Team } from '@/drizzle/schema';
+import { useTeamLogo } from '@/hooks/use-image';
+import usePermissions, {
+  type PermissionsResult,
+} from '@/hooks/use-permissions';
 import { MOCK_AWAY_TEAM, MOCK_TEAM } from '@/test/mocks/team';
 import {
   createPermissionsMock,
@@ -12,14 +18,6 @@ import {
   waitForStable,
 } from '@/test/utilities';
 
-import usePermissions, {
-  type PermissionsResult,
-} from '@/hooks/use-permissions';
-
-import { removeTeam } from '@/actions/team';
-import type { Team } from '@/drizzle/schema';
-
-import { useTeamLogo } from '@/hooks/use-image';
 import TeamTable from './TeamTable';
 import { UpsertTeam } from './UpsertTeam';
 

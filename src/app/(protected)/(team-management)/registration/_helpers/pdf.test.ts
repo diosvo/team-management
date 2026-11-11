@@ -1,12 +1,10 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
-
 import { PDFDocument } from 'pdf-lib';
 
-import { MOCK_USER } from '@/test/mocks/user';
-
-import type { League } from '@/drizzle/schema';
 import type { User } from '@/drizzle/schema/user';
+import { MOCK_LEAGUE } from '@/test/mocks/league';
+import { MOCK_USER } from '@/test/mocks/user';
 
 import { buildRegistrationPdf, generateDefaultRosterPdf } from './pdf';
 
@@ -59,7 +57,7 @@ describe('generateDefaultRosterPdf', () => {
   });
 
   test('includes the league name when provided', async () => {
-    const league = { name: 'Summer League' } as League;
+    const league = MOCK_LEAGUE;
 
     const bytes = await generateDefaultRosterPdf([player()], league);
 

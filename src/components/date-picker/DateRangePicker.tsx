@@ -1,7 +1,7 @@
 'use client';
 
-import { useMemo, type ReactNode } from 'react';
-
+import { type ReactNode, useMemo } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
 import {
   Button,
   DatePicker as ChakraDatePicker,
@@ -10,20 +10,18 @@ import {
   Span,
 } from '@chakra-ui/react';
 import { CalendarSearch } from 'lucide-react';
-import { useLocale, useTranslations } from 'next-intl';
 
-import { CloseButton } from '@/components/ui/close-button';
-
-import useSyncedState from '@/hooks/use-synced-state';
-import { INTL_LOCALE } from '@/i18n/config';
-
-import type { DateRange } from '@/types/common';
 import {
+  type DateSelection,
   describeRange,
   findPreset,
   formatCalendarDay,
-  type DateSelection,
 } from '@/utils/datetime';
+
+import { CloseButton } from '@/components/ui/close-button';
+import useSyncedState from '@/hooks/use-synced-state';
+import { INTL_LOCALE } from '@/i18n/config';
+import type { DateRange } from '@/types/common';
 
 import {
   Calendar,
@@ -86,8 +84,14 @@ export function DateRangePicker({
 
   const handleValueChange = (next: Array<DateValue>) => {
     setSelected(next);
-    if (next.length === size && !isSameSelection(next, committed)) {
-      onChange({ from: next[0].toString(), to: next[size - 1].toString() });
+    const [from, to = from] = size === 2 ? next : [next[0]];
+    if (
+      next.length === size &&
+      from &&
+      to &&
+      !isSameSelection(next, committed)
+    ) {
+      onChange({ from: from.toString(), to: to.toString() });
     }
   };
 

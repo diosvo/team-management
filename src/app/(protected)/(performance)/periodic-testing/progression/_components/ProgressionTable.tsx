@@ -2,24 +2,23 @@
 
 import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-
+import { useTranslations } from 'next-intl';
 import { Badge, HStack } from '@chakra-ui/react';
 import { TrendingUp } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+
+import { formatDate } from '@/utils/datetime';
+import { buildPredicate } from '@/utils/filters';
+import { formatResult } from '@/utils/progression';
+
+import { useProgressionFilters } from '@/lib/nuqs';
 
 import DataTable, { type Column } from '@/components/DataTable';
 import HighlightText from '@/components/HighlightText';
-
 import useTableState from '@/hooks/use-table-state';
-
-import { useProgressionFilters } from '@/lib/nuqs';
 import type {
   PlayerProgression,
   TypeProgression,
 } from '@/types/periodic-testing';
-import { formatDate } from '@/utils/datetime';
-import { buildPredicate } from '@/utils/filters';
-import { formatResult } from '@/utils/progression';
 
 import { BandBadge, ChangeText, StatusBadge } from './ProgressBadges';
 

@@ -26,11 +26,10 @@ export async function isJerseyNumberTaken(
 }
 
 /**
- * Narrows `player_ids` to those that are players on `team_id`. The database
- * cannot express this — `player` has no team of its own, it inherits one from
- * `user` — so callers registering players against a team must check it here.
+ * Filters `player_ids` to those belonging to `team_id`; players inherit their
+ * team from `user`.
  */
-export async function getTeamPlayerIds(
+export async function selectTeamPlayerIds(
   team_id: string,
   player_ids: Array<string>,
 ): Promise<Array<string>> {
@@ -49,4 +48,16 @@ export async function getTeamPlayerIds(
 
 export async function insertPlayer(player: InsertPlayer) {
   return await db.insert(PlayerTable).values(player);
+}
+
+export async function isCaptain(user_id: string): Promise<boolean> {
+  try {
+    const [row] = await db
+      .select({ is_captain: PlayerTable.is_captain })
+      .from(PlayerTable)
+      .where(eq(PlayerTable.id, user_id));
+    return row?.is_captain ?? false;
+  } catch {
+    return false;
+  }
 }

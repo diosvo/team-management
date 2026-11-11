@@ -1,9 +1,8 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
 import NextLink from 'next/link';
 import { useRouter } from 'next/navigation';
-
+import { useTranslations } from 'next-intl';
 import { Chart, useChart } from '@chakra-ui/charts';
 import { Link } from '@chakra-ui/react';
 import { ChartColumnBig } from 'lucide-react';
@@ -20,7 +19,6 @@ import {
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { enumLabel } from '@/i18n/enums';
-
 import type { MatchesRateRecord } from '@/types/analytics';
 
 /** Analytics returns `lose`; the enum key is `loss`. */

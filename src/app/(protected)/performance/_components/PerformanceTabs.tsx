@@ -1,15 +1,15 @@
 'use client';
 
 import type { ReactNode } from 'react';
-
-import { Tabs } from '@chakra-ui/react';
 import { useTranslations } from 'next-intl';
+import { Tabs } from '@chakra-ui/react';
 
-import { usePerformanceFilters } from '@/lib/nuqs';
 import {
   PERFORMANCE_TAB_SELECTION,
   type PerformanceTab,
 } from '@/utils/constants';
+
+import { usePerformanceFilters } from '@/lib/nuqs';
 
 import { SECTION_SKELETONS } from './PerformanceSkeleton';
 

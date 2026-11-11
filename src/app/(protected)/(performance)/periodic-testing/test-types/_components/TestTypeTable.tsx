@@ -1,29 +1,27 @@
 'use client';
 
 import { useMemo } from 'react';
-
+import { useLocale, useTranslations } from 'next-intl';
 import { VisuallyHidden } from '@chakra-ui/react';
 import { formatDistanceToNow } from 'date-fns';
 import { vi } from 'date-fns/locale';
-import { useLocale, useTranslations } from 'next-intl';
 
-import DataTable, { type Column } from '@/components/DataTable';
-import HighlightText from '@/components/HighlightText';
-
-import usePermissions from '@/hooks/use-permissions';
-import useTableState from '@/hooks/use-table-state';
-
-import { enumLabel } from '@/i18n/enums';
-import { useTestTypeFilters } from '@/lib/nuqs';
 import { formatDatetime } from '@/utils/datetime';
 import { buildPredicate } from '@/utils/filters';
 
+import { useTestTypeFilters } from '@/lib/nuqs';
+
 import { removeTestType } from '@/actions/test-type';
+import DataTable, { type Column } from '@/components/DataTable';
+import HighlightText from '@/components/HighlightText';
 import type { TestType } from '@/drizzle/schema';
+import usePermissions from '@/hooks/use-permissions';
+import useTableState from '@/hooks/use-table-state';
+import { enumLabel } from '@/i18n/enums';
 
 import { UpsertTestType } from './UpsertTestType';
 
-export default function TestTypesTable({ data }: { data: Array<TestType> }) {
+export default function TestTypeTable({ data }: { data: Array<TestType> }) {
   const t = useTranslations('periodicTesting.testTypes');
   const tCommon = useTranslations('common');
   const tEnums = useTranslations('enums');

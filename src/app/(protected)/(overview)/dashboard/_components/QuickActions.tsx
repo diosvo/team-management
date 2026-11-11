@@ -1,9 +1,8 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-
+import { useTranslations } from 'next-intl';
 import { Flex, SimpleGrid, Skeleton, VStack } from '@chakra-ui/react';
 import {
   CalendarRange,

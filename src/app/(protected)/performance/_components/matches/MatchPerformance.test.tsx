@@ -1,19 +1,16 @@
 import {
+  createMatchRecord,
+  MOCK_MATCH_AVERAGES,
+} from '@/test/mocks/performance';
+import {
   enumText,
   mockUseQueryStates,
   renderWithUI,
   screen,
   setupTestLifecycle,
 } from '@/test/utilities';
-import {
-  MOCK_MATCH_AVERAGES,
-  createMatchRecord,
-} from '@/test/mocks/performance';
+import type { MatchPerformanceRecord } from '@/types/performance';
 
-import type {
-  MatchesOverview,
-  MatchPerformanceRecord,
-} from '@/types/performance';
 import MatchPerformance from './MatchPerformance';
 
 // The chart is a lazy recharts chunk; stub it so the test covers this card.

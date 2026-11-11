@@ -1,9 +1,8 @@
 import { cookies, headers } from 'next/headers';
-
-import { toMerged } from 'es-toolkit';
 import { getRequestConfig } from 'next-intl/server';
+import { toMerged } from 'es-toolkit';
 
-import { DEFAULT_LOCALE, isLocale, LOCALE_COOKIE, type Locale } from './config';
+import { DEFAULT_LOCALE, isLocale, type Locale, LOCALE_COOKIE } from './config';
 import en from './messages/en';
 import vi from './messages/vi';
 

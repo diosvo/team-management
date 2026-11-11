@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
 import { forbidden } from 'next/navigation';
-
-import PageTitle from '@/components/PageTitle';
+import { getTranslations } from 'next-intl/server';
 
 import { canCreateTestResult } from '@/actions/test-result';
+import PageTitle from '@/components/PageTitle';
+
 import AddTestResultPageClient from './_components/AddTestResultPageClient';
 
 export async function generateMetadata(): Promise<Metadata> {

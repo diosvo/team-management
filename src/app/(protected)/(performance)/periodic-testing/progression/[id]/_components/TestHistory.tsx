@@ -1,15 +1,15 @@
-import { Table } from '@chakra-ui/react';
 import { useTranslations } from 'next-intl';
+import { Table } from '@chakra-ui/react';
 
-import { Card } from '@/components/ui/card';
-
-import type { PlayerTypeProgression } from '@/types/periodic-testing';
 import { formatDate } from '@/utils/datetime';
 import {
   formatChange,
   formatResult,
   relativeChange,
 } from '@/utils/progression';
+
+import { Card } from '@/components/ui/card';
+import type { PlayerTypeProgression } from '@/types/periodic-testing';
 
 /** Every result across test types, newest first, against the team average. */
 export default function TestHistory({

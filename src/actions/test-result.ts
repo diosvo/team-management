@@ -1,21 +1,21 @@
 'use server';
 
 import { getTranslations } from 'next-intl/server';
-import type { InsertTestResult } from '@/drizzle/schema';
+
+import { ResponseFactory } from '@/utils/response';
 
 import { getDbErrorMessage } from '@/db/pg-error';
 import {
-  deleteTestResultById as deleteAction,
-  getDates,
-  getExistingTestResults,
-  getTestResultByDate,
+  deleteTestResultById,
   insertTestResult,
+  selectDates,
+  selectExistingTestResults,
+  selectTestResultByDate,
   testResultKey,
-  updateTestResultById as updateAction,
+  updateTestResultById,
   updateTestResults,
 } from '@/db/test-result';
-
-import { ResponseFactory } from '@/utils/response';
+import type { InsertTestResult } from '@/drizzle/schema';
 
 import { withAuth, withResource } from './auth';
 import { revalidate } from './cache';
@@ -29,14 +29,14 @@ export const canCreateTestResult = periodicTesting(
   },
 );
 
-export const getTestDates = withAuth(getDates);
+export const getTestDates = withAuth(selectDates);
 
 export const getTestResult = withAuth(async (_: unknown, date: string) => {
   if (!date) {
     return { headers: [], players: [] };
   }
 
-  return await getTestResultByDate(date);
+  return await selectTestResultByDate(date);
 });
 
 export const createTestResult = periodicTesting(
@@ -47,7 +47,7 @@ export const createTestResult = periodicTesting(
     const toUpdate: Array<InsertTestResult> = [];
 
     try {
-      const existings = await getExistingTestResults(results);
+      const existings = await selectExistingTestResults(results);
 
       results.forEach((result) => {
         const result_id = existings.get(testResultKey(result));
@@ -75,12 +75,12 @@ export const createTestResult = periodicTesting(
   },
 );
 
-export const updateTestResultById = periodicTesting(
+export const updateTestResult = periodicTesting(
   ['edit'],
   async function updateById(_, result: Partial<InsertTestResult>) {
     const t = await getTranslations('actions.testResult');
     try {
-      await updateAction(result);
+      await updateTestResultById(result);
 
       revalidate.testResults();
 
@@ -92,12 +92,12 @@ export const updateTestResultById = periodicTesting(
   },
 );
 
-export const deleteTestResultById = periodicTesting(
+export const removeTestResult = periodicTesting(
   ['delete'],
   async function deleteById(_, result_id: string) {
     const t = await getTranslations('actions.testResult');
     try {
-      await deleteAction(result_id);
+      await deleteTestResultById(result_id);
 
       revalidate.testResults();
 

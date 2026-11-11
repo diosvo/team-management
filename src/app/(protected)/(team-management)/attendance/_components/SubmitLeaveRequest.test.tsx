@@ -1,3 +1,5 @@
+import { submitLeave } from '@/actions/attendance';
+import { useSessionContext } from '@/providers/session';
 import { MOCK_SESSION_USER } from '@/test/mocks/user';
 import {
   createSessionMock,
@@ -8,10 +10,6 @@ import {
   screen,
   waitFor,
 } from '@/test/utilities';
-
-import { submitLeave } from '@/actions/attendance';
-
-import { useSessionContext } from '@/providers/session';
 
 import SubmitLeaveRequest from './SubmitLeaveRequest';
 
@@ -82,10 +80,12 @@ describe('SubmitLeaveRequest', () => {
     expect(mockSubmitLeave).toHaveBeenCalledWith(
       expect.objectContaining({ player_id: MOCK_SESSION_USER.id }),
     );
-    await waitFor(() => expect(mockToaster.update).toHaveBeenCalledWith(
-      'toast-id',
-      expect.objectContaining({ type: 'success', title: 'Submitted' }),
-    ));
+    await waitFor(() =>
+      expect(mockToaster.update).toHaveBeenCalledWith(
+        'toast-id',
+        expect.objectContaining({ type: 'success', title: 'Submitted' }),
+      ),
+    );
   });
 
   test('shows an error toast and keeps the form when the request fails', async () => {

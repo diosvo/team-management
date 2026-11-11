@@ -1,6 +1,8 @@
-import type { TestType, User } from '@/drizzle/schema';
 import type { PerformanceBand, ProgressStatus } from '@/utils/enum';
 import type { GoalOutcome } from '@/utils/progression';
+
+import type { PlayerOption } from '@/db/user';
+import type { TestType } from '@/drizzle/schema';
 
 export interface PlayerTestResult {
   player_id: string;
@@ -22,7 +24,7 @@ export interface TestFilters {
 }
 
 export interface TestConfigurationSelection {
-  players: Array<User>;
+  players: Array<PlayerOption>;
   types: Array<TestType>;
   date: string;
 }

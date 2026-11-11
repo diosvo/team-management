@@ -1,7 +1,8 @@
 import { between, type Column, gte, type SQL, sql } from 'drizzle-orm';
 
-import type { DateRange } from '@/types/common';
 import { toIsoDay } from '@/utils/datetime';
+
+import type { DateRange } from '@/types/common';
 
 export function calculatePercentage(value: SQL<number>, total: SQL<number>) {
   return sql<number>`ROUND((${value} * 100.0 / NULLIF(${total}, 0))::numeric, 1)`.mapWith(

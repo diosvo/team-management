@@ -1,3 +1,4 @@
+import usePermissions from '@/hooks/use-permissions';
 import { MOCK_PROGRESSION_TYPE } from '@/test/mocks/progression';
 import {
   createPermissionsMock,
@@ -6,8 +7,6 @@ import {
   screen,
   setupTestLifecycle,
 } from '@/test/utilities';
-
-import usePermissions from '@/hooks/use-permissions';
 
 import { AddTestNote } from './AddTestNote';
 import PlayerProgressionHeader from './PlayerProgressionHeader';

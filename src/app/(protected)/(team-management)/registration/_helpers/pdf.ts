@@ -4,7 +4,7 @@ import { PDFDocument, PDFTextField, rgb } from 'pdf-lib';
 import type { League } from '@/drizzle/schema';
 import type { User } from '@/drizzle/schema/user';
 
-import { toRow, type ColumnKey } from './roster';
+import { type ColumnKey, toRow } from './roster';
 
 // NOTE: this module carries pdf-lib (~400KB). Import it dynamically
 // (`await import('../_helpers/pdf')`) from event handlers/effects only —

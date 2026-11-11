@@ -1,22 +1,21 @@
 'use client';
 
 import { useMemo } from 'react';
-
-import { MapPinXInside } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { MapPinXInside } from 'lucide-react';
 
-import { LocationLink } from '@/components/common/LocationSelection';
-import DataTable, { type Column } from '@/components/DataTable';
-import HighlightText from '@/components/HighlightText';
-
-import usePermissions from '@/hooks/use-permissions';
-import useTableState from '@/hooks/use-table-state';
-import { useCommonParams } from '@/lib/nuqs';
 import { formatDatetime } from '@/utils/datetime';
 import { buildPredicate } from '@/utils/filters';
 
+import { useCommonParams } from '@/lib/nuqs';
+
 import { removeLocation } from '@/actions/location';
+import { LocationLink } from '@/components/common/LocationSelection';
+import DataTable, { type Column } from '@/components/DataTable';
+import HighlightText from '@/components/HighlightText';
 import type { Location } from '@/drizzle/schema';
+import usePermissions from '@/hooks/use-permissions';
+import useTableState from '@/hooks/use-table-state';
 
 import { UpsertLocation } from './UpsertLocation';
 

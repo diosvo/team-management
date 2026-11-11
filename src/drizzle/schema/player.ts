@@ -9,13 +9,14 @@ import {
 } from 'drizzle-orm/pg-core';
 
 import { enumValues, PlayerPosition } from '@/utils/enum';
-import { created_at, updated_at } from '../helpers';
 
 import { AttendanceTable } from './attendance';
 import { LeagueTeamRosterTable } from './league';
 import { MatchPlayerStatsTable } from './match';
 import { TestResultTable } from './periodic-testing';
 import { UserTable } from './user';
+
+import { created_at, updated_at } from '../helpers';
 
 export const playerPositionEnum = pgEnum(
   'player_position',

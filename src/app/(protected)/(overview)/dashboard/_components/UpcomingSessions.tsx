@@ -1,14 +1,14 @@
+import { getLocale, getTranslations } from 'next-intl/server';
 import { Badge, Flex, HStack, Span, VStack } from '@chakra-ui/react';
 import { isToday as isTodayParser } from 'date-fns';
 import { CircleOff, MapPin } from 'lucide-react';
-import { getLocale, getTranslations } from 'next-intl/server';
 
+import { formatDate, formatDay } from '@/utils/datetime';
+
+import { getUpcomingSessions } from '@/actions/analytics';
 import { LocationLink } from '@/components/common/LocationSelection';
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
-
-import { getUpcomingSessions } from '@/actions/analytics';
-import { formatDate, formatDay } from '@/utils/datetime';
 
 export default async function UpcomingSessions() {
   const [sessions, t, locale] = await Promise.all([

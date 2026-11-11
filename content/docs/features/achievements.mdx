@@ -65,14 +65,15 @@ description: The club's trophy cabinet, recorded by hand for leagues that have e
 - **Ended leagues only.** `upsertAchievement` rejects unless
   `isPast(league.end_date)`; the client filter is convenience.
 - **One honour per type per league.** Partial unique index
-  `achievement_league_type_idx` skips `custom` and standalone rows.
+  `achievement_team_league_type_idx` (team, league, type) skips `custom` and standalone rows.
 - **Honours outlive references.** `league_id` / `player_id` are
   `ON DELETE SET NULL`; a deleted league leaves a standalone honour.
 - **Player only for individual types.** Required for MVP / Top Scorer; `null`
   for team honours.
-- **Not team-scoped.** `getAchievements` (`withAuth`) returns every row.
-- **No `team_id`.** An `achievement` reaches a team only via its league or
-  player.
+- **Team-scoped.** `achievement.team_id` is set from the session on insert;
+  reads, updates and deletes filter on it, so another team's rows are never
+  returned or changed.
+- **Backfill.** Migration `0020` assigns existing rows to the default team.
 
 ## Data
 

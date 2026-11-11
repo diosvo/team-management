@@ -1,7 +1,6 @@
 import { revalidate } from '@/actions/cache';
 import { getDbErrorMessage } from '@/db/pg-error';
-import { getRule as getDbRule, upsertRule as saveDbRule } from '@/db/rule';
-
+import { selectRule, updateRule } from '@/db/rule';
 import {
   mockWithAuth,
   mockWithResource,
@@ -18,8 +17,8 @@ vi.mock('./auth', () => ({
 }));
 
 vi.mock('@/db/rule', () => ({
-  getRule: vi.fn(),
-  upsertRule: vi.fn(),
+  selectRule: vi.fn(),
+  updateRule: vi.fn(),
 }));
 
 vi.mock('@/actions/cache', () => ({
@@ -48,16 +47,16 @@ describe('Rule Actions', () => {
 
   describe('getRule', () => {
     test('calls getRule with team_id through withAuth', async () => {
-      vi.mocked(getDbRule).mockResolvedValue(MOCK_RULE);
+      vi.mocked(selectRule).mockResolvedValue(MOCK_RULE);
 
       const result = await getRule();
 
-      expect(getDbRule).toHaveBeenCalledWith(MOCK_TEAM.team_id);
+      expect(selectRule).toHaveBeenCalledWith(MOCK_TEAM.team_id);
       expect(result).toEqual(MOCK_RULE);
     });
 
     test('returns null when the team cannot be read', async () => {
-      vi.mocked(getDbRule).mockResolvedValue(null);
+      vi.mocked(selectRule).mockResolvedValue(null);
 
       const result = await getRule();
       expect(result).toBeNull();
@@ -66,7 +65,7 @@ describe('Rule Actions', () => {
     test('propagates errors from getRule', async () => {
       const message = 'Database error';
       const error = new Error(message);
-      vi.mocked(getDbRule).mockRejectedValue(error);
+      vi.mocked(selectRule).mockRejectedValue(error);
 
       await expect(getRule()).rejects.toThrow(message);
     });
@@ -84,13 +83,13 @@ describe('Rule Actions', () => {
     const errorMessage = 'An error occurred';
 
     test('writes the content onto the team and revalidates cache', async () => {
-      vi.mocked(getDbRule).mockResolvedValue(MOCK_RULE);
-      vi.mocked(saveDbRule).mockResolvedValue(mockResult);
+      vi.mocked(selectRule).mockResolvedValue(MOCK_RULE);
+      vi.mocked(updateRule).mockResolvedValue(mockResult);
 
       const result = await upsertRule(newContent);
 
-      expect(getDbRule).toHaveBeenCalledWith(MOCK_TEAM.team_id);
-      expect(saveDbRule).toHaveBeenCalledWith(MOCK_TEAM.team_id, newContent);
+      expect(selectRule).toHaveBeenCalledWith(MOCK_TEAM.team_id);
+      expect(updateRule).toHaveBeenCalledWith(MOCK_TEAM.team_id, newContent);
       expect(revalidate.rule).toHaveBeenCalled();
       expect(result).toEqual({
         success: true,
@@ -99,15 +98,15 @@ describe('Rule Actions', () => {
     });
 
     test('reports "Added" when the team had no rules written yet', async () => {
-      vi.mocked(getDbRule).mockResolvedValue({
+      vi.mocked(selectRule).mockResolvedValue({
         rule_content: null,
         rule_updated_at: null,
       });
-      vi.mocked(saveDbRule).mockResolvedValue(mockResult);
+      vi.mocked(updateRule).mockResolvedValue(mockResult);
 
       const result = await upsertRule(newContent);
 
-      expect(saveDbRule).toHaveBeenCalledWith(MOCK_TEAM.team_id, newContent);
+      expect(updateRule).toHaveBeenCalledWith(MOCK_TEAM.team_id, newContent);
       expect(revalidate.rule).toHaveBeenCalled();
       expect(result).toEqual({
         success: true,
@@ -116,8 +115,8 @@ describe('Rule Actions', () => {
     });
 
     test('returns error response when the write fails', async () => {
-      vi.mocked(getDbRule).mockResolvedValue(MOCK_RULE);
-      vi.mocked(saveDbRule).mockRejectedValue(new Error(errorMessage));
+      vi.mocked(selectRule).mockResolvedValue(MOCK_RULE);
+      vi.mocked(updateRule).mockRejectedValue(new Error(errorMessage));
       vi.mocked(getDbErrorMessage).mockReturnValue({
         message: errorMessage,
         constraint: null,
@@ -134,7 +133,7 @@ describe('Rule Actions', () => {
     });
 
     test('returns error response when the team lookup fails', async () => {
-      vi.mocked(getDbRule).mockRejectedValue(new Error(errorMessage));
+      vi.mocked(selectRule).mockRejectedValue(new Error(errorMessage));
       vi.mocked(getDbErrorMessage).mockReturnValue({
         message: errorMessage,
         constraint: null,
@@ -142,7 +141,7 @@ describe('Rule Actions', () => {
 
       const result = await upsertRule(newContent);
 
-      expect(saveDbRule).not.toHaveBeenCalled();
+      expect(updateRule).not.toHaveBeenCalled();
       expect(revalidate.rule).not.toHaveBeenCalled();
       expect(result).toEqual({
         success: false,
@@ -152,8 +151,8 @@ describe('Rule Actions', () => {
 
     test('handles database constraint errors', async () => {
       const pgError = 'Check constraint violation';
-      vi.mocked(getDbRule).mockResolvedValue(MOCK_RULE);
-      vi.mocked(saveDbRule).mockRejectedValue({
+      vi.mocked(selectRule).mockResolvedValue(MOCK_RULE);
+      vi.mocked(updateRule).mockRejectedValue({
         code: '23514',
         detail: 'Violates check',
       });

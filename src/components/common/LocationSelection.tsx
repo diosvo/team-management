@@ -1,21 +1,20 @@
 'use client';
 
+import type { Control, FieldPath, FieldValues } from 'react-hook-form';
 import NextLink from 'next/link';
-
+import { useTranslations } from 'next-intl';
 import {
   Link as ChakraLink,
   type LinkProps,
   Span,
   Stack,
 } from '@chakra-ui/react';
-import { useTranslations } from 'next-intl';
-import type { Control, FieldPath, FieldValues } from 'react-hook-form';
-
-import { SearchableSelectField } from '../SearchableSelect';
 
 import { CACHE_KEY } from '@/utils/constants';
 
 import { getLocations } from '@/actions/location';
+
+import { SearchableSelectField } from '../SearchableSelect';
 
 type LocationSelectionProps<TFieldValues extends FieldValues = FieldValues> = {
   control: Control<TFieldValues>;

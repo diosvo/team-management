@@ -4,5 +4,11 @@
   "js/ts.tsdk.path": "node_modules/typescript/lib",
   "chat.tools.terminal.autoApprove": {
     "pnpm": true
-  }
+  },
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "never",
+    "source.sortImports": "never"
+  },
+  "eslint.useFlatConfig": true
 }

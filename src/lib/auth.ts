@@ -1,12 +1,17 @@
 import { dash } from '@better-auth/infra';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
-import { betterAuth } from 'better-auth/minimal';
+import { betterAuth, type BetterAuthOptions } from 'better-auth/minimal';
 import { nextCookies } from 'better-auth/next-js';
+import { customSession } from 'better-auth/plugins';
 
+import env from '@env';
 import { COOKIE } from '@/utils/constants';
 import { UserRole, UserState } from '@/utils/enum';
-import env from '@env';
 
+import { sendEmail } from '@/lib/resend';
+
+import ResetPassword from '@/app/(auth)/_components/ResetPassword';
+import { isCaptain } from '@/db/player';
 import db from '@/drizzle';
 import {
   AccountTable,
@@ -14,9 +19,6 @@ import {
   UserTable,
   VerificationTable,
 } from '@/drizzle/schema/user';
-import { sendEmail } from '@/lib/resend';
-
-import ResetPassword from '@/app/(auth)/_components/ResetPassword';
 
 /**
  * Credential routes: 3 requests/min per IP + path.
@@ -27,7 +29,7 @@ const STRICT_RATE_LIMIT = {
   max: 3,
 };
 
-export default betterAuth({
+const options = {
   appName: 'Saigon Rovers Basketball Club Portal',
   database: drizzleAdapter(db, {
     provider: 'pg',
@@ -56,7 +58,7 @@ export default betterAuth({
     requireEmailVerification: false,
     sendResetPassword: async ({ user, url }) => {
       const email = user.email;
-      const name = email.split('@')[0];
+      const name = email.split('@')[0] ?? email;
 
       await sendEmail({
         to: email,
@@ -81,11 +83,6 @@ export default betterAuth({
         type: 'string',
         required: true,
       },
-      is_captain: {
-        type: 'boolean',
-        required: false,
-        defaultValue: false,
-      },
     },
   },
   advanced: {
@@ -99,8 +96,20 @@ export default betterAuth({
       maxAge: COOKIE.maxAge, // Cache duration in seconds
     },
   },
+} satisfies BetterAuthOptions;
+
+export default betterAuth({
+  ...options,
   plugins: [
     dash(),
+    // `is_captain` is joined here for permission checks.
+    customSession(
+      async ({ user, session }) => ({
+        user: { ...user, is_captain: await isCaptain(user.id) },
+        session,
+      }),
+      options,
+    ),
     nextCookies(), // Ensure that it is the last plugin in the array
   ],
 });

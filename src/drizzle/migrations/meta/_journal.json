@@ -141,6 +141,13 @@
       "when": 1792859557646,
       "tag": "0019_performance_progression",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1794068936093,
+      "tag": "0020_scope_achievements_to_team",
+      "breakpoints": true
     }
   ]
 }

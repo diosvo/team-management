@@ -1,12 +1,12 @@
+import { loadTrainingFilters } from '@/lib/nuqs';
+
+import { getSessions } from '@/actions/training-session';
 import {
   expectNoA11yViolations,
   renderWithUI,
   screen,
   setupTestLifecycle,
 } from '@/test/utilities';
-
-import { getSessions } from '@/actions/training-session';
-import { loadTrainingFilters } from '@/lib/nuqs';
 
 import TrainingSessionsPage, { generateMetadata } from './page';
 

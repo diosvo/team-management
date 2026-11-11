@@ -1,6 +1,6 @@
+import { head } from 'es-toolkit';
 import { axe } from 'jest-axe';
 
-import { renderWithUI, screen, waitFor } from '@/test/utilities';
 import {
   formatDate,
   formatDateRange,
@@ -8,6 +8,8 @@ import {
   thisMonth,
   thisYear,
 } from '@/utils/datetime';
+
+import { renderWithUI, screen, waitFor } from '@/test/utilities';
 
 import { DateRangePicker } from './DateRangePicker';
 
@@ -142,7 +144,7 @@ describe('DateRangePicker', () => {
 
       await user.click(screen.getByRole('button', { name: /\b20\b/ }));
       await waitFor(() => expect(onChange).toHaveBeenCalledTimes(1));
-      const [{ from, to }] = onChange.mock.calls[0];
+      const [{ from, to }] = head(onChange.mock.calls)!;
       expect(from).toMatch(/-10$/);
       expect(to).toMatch(/-20$/);
     });

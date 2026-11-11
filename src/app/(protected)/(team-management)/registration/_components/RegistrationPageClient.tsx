@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-
+import { useTranslations } from 'next-intl';
 import {
   Badge,
   Code,
@@ -19,9 +19,13 @@ import {
   Textarea,
 } from '@chakra-ui/react';
 import { Base64 } from 'js-base64';
-import { useTranslations } from 'next-intl';
 import { HelpCircle, Trophy, Upload, UsersRound } from 'lucide-react';
+import useSWR from 'swr';
 
+import { CACHE_KEY } from '@/utils/constants';
+
+import { getLeagues } from '@/actions/league';
+import { getRegistrationPlayers } from '@/actions/user';
 import SearchableSelect from '@/components/SearchableSelect';
 import { Card } from '@/components/ui/card';
 import { toaster } from '@/components/ui/toaster';
@@ -29,19 +33,15 @@ import {
   PlayerSelectionWithActions,
   SelectedPlayers,
 } from '@/components/user/PlayerSelection';
-
+import type { PlayerOption } from '@/db/user';
 import type { League } from '@/drizzle/schema';
-import type { User } from '@/drizzle/schema/user';
-
-import { getLeagues } from '@/actions/league';
-
 import usePermissions from '@/hooks/use-permissions';
-import { CACHE_KEY } from '@/utils/constants';
-import { useSavedRegistrations } from '../_helpers/useSavedRegistrations';
 
 import PreviewPanel from './PreviewPanel';
 import RegistrationSteps, { type StepDef } from './RegistrationSteps';
 import SavedRegistrations from './SavedRegistrations';
+
+import { useSavedRegistrations } from '../_helpers/use-saved-registrations';
 
 const NOTES_LIMIT = 256;
 
@@ -61,7 +61,15 @@ export default function RegistrationPageClient() {
   const t = useTranslations('registration');
   const tCommon = useTranslations('common');
   const [league, setLeague] = useState<League>();
-  const [selection, setSelection] = useState<Array<User>>([]);
+  const [selection, setSelection] = useState<Array<PlayerOption>>([]);
+  // The picker only carries names and jerseys; the PII the form needs (dob,
+  // phone, citizen id) is fetched server-side for the selected players only.
+  const selectedIds = selection.map(({ id }) => id);
+  const { data: players = [] } = useSWR(
+    selectedIds.length > 0 ? ['registration-players', ...selectedIds] : null,
+    () => getRegistrationPlayers(selectedIds),
+    { keepPreviousData: true },
+  );
   const [template, setTemplate] = useState<File>();
   const [notes, setNotes] = useState('');
 
@@ -77,8 +85,10 @@ export default function RegistrationPageClient() {
     try {
       // pdf-lib is loaded on demand so it stays out of the route's initial JS
       const { buildRegistrationPdf } = await import('../_helpers/pdf');
+      // Fetched here rather than read from the preview so a save right after
+      // a selection change never races the preview request.
       const { bytes } = await buildRegistrationPdf({
-        players: selection,
+        players: await getRegistrationPlayers(selectedIds),
         league,
         template,
       });
@@ -298,7 +308,7 @@ export default function RegistrationPageClient() {
 
         <GridItem colSpan={{ base: 1, lg: 7 }}>
           <PreviewPanel
-            players={selection}
+            players={selection.length > 0 ? players : []}
             league={league}
             template={template}
             onSave={handleSave}

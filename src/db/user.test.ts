@@ -1,13 +1,12 @@
-import { and, eq, isNull, ne } from 'drizzle-orm';
+import { and, eq, inArray, isNull, ne } from 'drizzle-orm';
+
+import { UserRole, UserState } from '@/utils/enum';
 
 import db from '@/drizzle';
 import { CoachTable } from '@/drizzle/schema/coach';
 import { PlayerTable } from '@/drizzle/schema/player';
 import { type InsertUser, type User, UserTable } from '@/drizzle/schema/user';
 import { UserTeamTable } from '@/drizzle/schema/user-team';
-
-import { UserRole, UserState } from '@/utils/enum';
-
 import {
   mockDeleteFailure,
   mockDeleteSuccess,
@@ -28,11 +27,12 @@ import {
 
 import {
   deleteUser,
-  fetchActivePlayers,
-  getRosterUsers,
-  getTeamHeadCoach,
-  getUserById,
-  getUsers,
+  selectActivePlayers,
+  selectRegistrationPlayers,
+  selectRosterUsers,
+  selectTeamHeadCoach,
+  selectUserById,
+  selectUsers,
   updateUser,
   updateUserTeamInfo,
 } from './user';
@@ -87,7 +87,7 @@ vi.mock('@/drizzle/schema/player', () => ({
   },
 }));
 
-describe('getTeamHeadCoach', () => {
+describe('selectTeamHeadCoach', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -97,7 +97,7 @@ describe('getTeamHeadCoach', () => {
     const { mockFrom, mockLeftJoin, mockWhereWithGroupBy } =
       mockSelectSuccess(mockCoach);
 
-    const result = await getTeamHeadCoach(MOCK_TEAM.team_id);
+    const result = await selectTeamHeadCoach(MOCK_TEAM.team_id);
 
     expect(result).toEqual(mockCoach[0]);
     // Verify query construction
@@ -121,7 +121,7 @@ describe('getTeamHeadCoach', () => {
   test('returns null when query succeeds but no coach exists', async () => {
     mockSelectSuccess([]);
 
-    const result = await getTeamHeadCoach(MOCK_TEAM.team_id);
+    const result = await selectTeamHeadCoach(MOCK_TEAM.team_id);
 
     expect(result).toBeNull();
   });
@@ -129,13 +129,13 @@ describe('getTeamHeadCoach', () => {
   test('returns null when database query fails', async () => {
     mockSelectFailure('Database error');
 
-    const result = await getTeamHeadCoach(MOCK_TEAM.team_id);
+    const result = await selectTeamHeadCoach(MOCK_TEAM.team_id);
 
     expect(result).toBeNull();
   });
 });
 
-describe('getUsers', () => {
+describe('selectUsers', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -144,7 +144,7 @@ describe('getUsers', () => {
     const mockUsers = [MOCK_USER_WITH_PLAYER, MOCK_USER_WITH_COACH];
     vi.mocked(db.query.UserTable.findMany).mockResolvedValue(mockUsers);
 
-    const result = await getUsers(MOCK_TEAM.team_id);
+    const result = await selectUsers(MOCK_TEAM.team_id);
 
     expect(result).toEqual(mockUsers);
     // Verify query construction
@@ -164,13 +164,13 @@ describe('getUsers', () => {
     const error = new Error('Database error');
     vi.mocked(db.query.UserTable.findMany).mockRejectedValue(error);
 
-    const result = await getUsers(MOCK_TEAM.team_id);
+    const result = await selectUsers(MOCK_TEAM.team_id);
 
     expect(result).toEqual([]);
   });
 });
 
-describe('getRosterUsers', () => {
+describe('selectRosterUsers', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -179,7 +179,7 @@ describe('getRosterUsers', () => {
     const mockUsers = [MOCK_USER_WITH_PLAYER, MOCK_USER_WITH_COACH];
     vi.mocked(db.query.UserTable.findMany).mockResolvedValue(mockUsers);
 
-    const result = await getRosterUsers(MOCK_TEAM.team_id);
+    const result = await selectRosterUsers(MOCK_TEAM.team_id);
 
     expect(result).toEqual(mockUsers);
     // Verify query construction
@@ -216,13 +216,13 @@ describe('getRosterUsers', () => {
     const error = new Error('Database error');
     vi.mocked(db.query.UserTable.findMany).mockRejectedValue(error);
 
-    const result = await getRosterUsers(MOCK_TEAM.team_id);
+    const result = await selectRosterUsers(MOCK_TEAM.team_id);
 
     expect(result).toEqual([]);
   });
 });
 
-describe('fetchActivePlayers', () => {
+describe('selectActivePlayers', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -231,11 +231,13 @@ describe('fetchActivePlayers', () => {
     const mockPlayers = [MOCK_USER_WITH_PLAYER];
     vi.mocked(db.query.UserTable.findMany).mockResolvedValue(mockPlayers);
 
-    const result = await fetchActivePlayers(MOCK_TEAM.team_id);
+    const result = await selectActivePlayers(MOCK_TEAM.team_id);
 
     expect(result).toEqual(mockPlayers);
     // Verify query construction
+    // No PII: only what the pickers render
     expect(db.query.UserTable.findMany).toHaveBeenCalledWith({
+      columns: { id: true, name: true, image: true },
       where: and(
         eq(UserTable.team_id, MOCK_TEAM.team_id),
         eq(UserTable.role, UserRole.PLAYER),
@@ -251,13 +253,58 @@ describe('fetchActivePlayers', () => {
     const error = new Error('Database error');
     vi.mocked(db.query.UserTable.findMany).mockRejectedValue(error);
 
-    const result = await fetchActivePlayers(MOCK_TEAM.team_id);
+    const result = await selectActivePlayers(MOCK_TEAM.team_id);
 
     expect(result).toEqual([]);
   });
 });
 
-describe('getUserById', () => {
+describe('selectRegistrationPlayers', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  test('loads full rows for the given active players of the team', async () => {
+    vi.mocked(db.query.UserTable.findMany).mockResolvedValue([
+      MOCK_USER_WITH_PLAYER,
+    ]);
+    const ids = [MOCK_USER_WITH_PLAYER.id];
+
+    const result = await selectRegistrationPlayers(MOCK_TEAM.team_id, ids);
+
+    expect(result).toEqual([MOCK_USER_WITH_PLAYER]);
+    expect(db.query.UserTable.findMany).toHaveBeenCalledWith({
+      where: and(
+        and(
+          eq(UserTable.team_id, MOCK_TEAM.team_id),
+          eq(UserTable.role, UserRole.PLAYER),
+          eq(UserTable.state, UserState.ACTIVE),
+        ),
+        inArray(UserTable.id, ids),
+      ),
+      with: {
+        player: true,
+      },
+    });
+  });
+
+  test('skips the query for an empty selection', async () => {
+    const result = await selectRegistrationPlayers(MOCK_TEAM.team_id, []);
+
+    expect(result).toEqual([]);
+    expect(db.query.UserTable.findMany).not.toHaveBeenCalled();
+  });
+
+  test('returns empty array when database query fails', async () => {
+    vi.mocked(db.query.UserTable.findMany).mockRejectedValue(new Error('x'));
+
+    const result = await selectRegistrationPlayers(MOCK_TEAM.team_id, ['id']);
+
+    expect(result).toEqual([]);
+  });
+});
+
+describe('selectUserById', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -269,7 +316,7 @@ describe('getUserById', () => {
       // The `with` clause widens the row; the mock's type is the bare user.
     } as never);
 
-    const result = await getUserById(MOCK_PLAYER.id);
+    const result = await selectUserById(MOCK_PLAYER.id);
 
     // `join_date` / `leave_date` read the same as before the move to `user_team`
     expect(result).toEqual(MOCK_USER_WITH_PLAYER);
@@ -294,7 +341,7 @@ describe('getUserById', () => {
       memberships: [],
     } as never);
 
-    const result = await getUserById(MOCK_PLAYER.id);
+    const result = await selectUserById(MOCK_PLAYER.id);
 
     expect(result).toMatchObject({ join_date: null, leave_date: null });
   });
@@ -302,14 +349,14 @@ describe('getUserById', () => {
   test('returns null when the user does not exist', async () => {
     vi.mocked(db.query.UserTable.findFirst).mockResolvedValue(undefined);
 
-    expect(await getUserById(MOCK_PLAYER.id)).toBeNull();
+    expect(await selectUserById(MOCK_PLAYER.id)).toBeNull();
   });
 
   test('returns null when database query fails', async () => {
     const error = new Error('Database error');
     vi.mocked(db.query.UserTable.findFirst).mockRejectedValue(error);
 
-    const result = await getUserById(MOCK_PLAYER.id);
+    const result = await selectUserById(MOCK_PLAYER.id);
 
     expect(result).toBeNull();
   });

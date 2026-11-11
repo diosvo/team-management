@@ -1,12 +1,14 @@
-import {
-  getMostCommonAbsenceReasons,
-  getPlayersAttendanceSummary,
-  getTeamAttendanceHistory,
-  getUpcomingMatches,
-  getUpcomingSessions,
-} from '@/db/analytics';
-import { getMatches } from '@/db/match';
+import { thisYear } from '@/utils/datetime';
+import { MatchResult } from '@/utils/enum';
 
+import {
+  selectMostCommonAbsenceReasons,
+  selectPlayersAttendanceSummary,
+  selectTeamAttendanceHistory,
+  selectUpcomingMatches,
+  selectUpcomingSessions,
+} from '@/db/analytics';
+import { selectMatches } from '@/db/match';
 import {
   MOCK_ABSENCE_REASONS,
   MOCK_ATTENDANCE_HISTORY,
@@ -16,11 +18,8 @@ import {
 import { mockWithAuth, mockWithResource } from '@/test/mocks/auth';
 import { MOCK_MATCH } from '@/test/mocks/match';
 import { MOCK_TEAM } from '@/test/mocks/team';
-import { thisYear } from '@/utils/datetime';
-import { MatchResult } from '@/utils/enum';
 
 import { getAchievements } from './achievement';
-
 import {
   getAttendanceHistory,
   getAttendanceSummary,
@@ -38,14 +37,14 @@ vi.mock('./auth', () => ({
 }));
 
 vi.mock('@/db/analytics', () => ({
-  getTeamAttendanceHistory: vi.fn(),
-  getPlayersAttendanceSummary: vi.fn(),
-  getMostCommonAbsenceReasons: vi.fn(),
-  getUpcomingMatches: vi.fn(),
-  getUpcomingSessions: vi.fn(),
+  selectTeamAttendanceHistory: vi.fn(),
+  selectPlayersAttendanceSummary: vi.fn(),
+  selectMostCommonAbsenceReasons: vi.fn(),
+  selectUpcomingMatches: vi.fn(),
+  selectUpcomingSessions: vi.fn(),
 }));
 
-vi.mock('@/db/match', () => ({ getMatches: vi.fn() }));
+vi.mock('@/db/match', () => ({ selectMatches: vi.fn() }));
 vi.mock('./achievement', () => ({ getAchievements: vi.fn() }));
 vi.mock('./user', () => ({ getActivePlayers: vi.fn() }));
 
@@ -61,16 +60,13 @@ const gameMatchesQuery = ({ from, to }: { from: string; to: string }) => ({
   q: '',
 });
 
-type GameMatch = Awaited<ReturnType<typeof getMatches>>['data'][number];
+type GameMatch = Awaited<ReturnType<typeof selectMatches>>['data'][number];
 
-const matchesResponse = (
-  data: Array<Partial<GameMatch>>,
-  avg_win_rate = 0,
-) =>
+const matchesResponse = (data: Array<Partial<GameMatch>>, avg_win_rate = 0) =>
   ({
     data: data.map((match) => ({ ...MOCK_MATCH, ...match })),
     stats: { avg_win_rate },
-  }) as unknown as Awaited<ReturnType<typeof getMatches>>;
+  }) as unknown as Awaited<ReturnType<typeof selectMatches>>;
 
 describe('Analytics Actions', () => {
   beforeEach(() => {
@@ -79,13 +75,13 @@ describe('Analytics Actions', () => {
 
   describe('getAttendanceHistory', () => {
     test('calls getTeamAttendanceHistory with team_id and the date range', async () => {
-      vi.mocked(getTeamAttendanceHistory).mockResolvedValue(
+      vi.mocked(selectTeamAttendanceHistory).mockResolvedValue(
         MOCK_ATTENDANCE_HISTORY,
       );
 
       const result = await getAttendanceHistory(MOCK_DATE_RANGE);
 
-      expect(getTeamAttendanceHistory).toHaveBeenCalledWith(
+      expect(selectTeamAttendanceHistory).toHaveBeenCalledWith(
         MOCK_TEAM.team_id,
         MOCK_DATE_RANGE,
       );
@@ -93,7 +89,7 @@ describe('Analytics Actions', () => {
     });
 
     test('returns empty array when no attendance history exists', async () => {
-      vi.mocked(getTeamAttendanceHistory).mockResolvedValue([]);
+      vi.mocked(selectTeamAttendanceHistory).mockResolvedValue([]);
 
       const result = await getAttendanceHistory(MOCK_DATE_RANGE);
 
@@ -103,7 +99,7 @@ describe('Analytics Actions', () => {
     test('propagates errors from getTeamAttendanceHistory', async () => {
       const message = 'Database error';
       const error = new Error(message);
-      vi.mocked(getTeamAttendanceHistory).mockRejectedValue(error);
+      vi.mocked(selectTeamAttendanceHistory).mockRejectedValue(error);
 
       await expect(getAttendanceHistory(MOCK_DATE_RANGE)).rejects.toThrow(
         message,
@@ -113,13 +109,13 @@ describe('Analytics Actions', () => {
 
   describe('getAttendanceSummary', () => {
     test('calls getPlayersAttendanceSummary with team_id and the date range', async () => {
-      vi.mocked(getPlayersAttendanceSummary).mockResolvedValue(
+      vi.mocked(selectPlayersAttendanceSummary).mockResolvedValue(
         MOCK_PLAYERS_ATTENDANCE_SUMMARY,
       );
 
       const result = await getAttendanceSummary(MOCK_DATE_RANGE);
 
-      expect(getPlayersAttendanceSummary).toHaveBeenCalledWith(
+      expect(selectPlayersAttendanceSummary).toHaveBeenCalledWith(
         MOCK_TEAM.team_id,
         MOCK_DATE_RANGE,
       );
@@ -127,7 +123,7 @@ describe('Analytics Actions', () => {
     });
 
     test('returns summary with top performers and need attention lists', async () => {
-      vi.mocked(getPlayersAttendanceSummary).mockResolvedValue(
+      vi.mocked(selectPlayersAttendanceSummary).mockResolvedValue(
         MOCK_PLAYERS_ATTENDANCE_SUMMARY,
       );
 
@@ -143,7 +139,9 @@ describe('Analytics Actions', () => {
         top_performers: [],
         need_attention: [],
       };
-      vi.mocked(getPlayersAttendanceSummary).mockResolvedValue(emptyResponse);
+      vi.mocked(selectPlayersAttendanceSummary).mockResolvedValue(
+        emptyResponse,
+      );
 
       const result = await getAttendanceSummary(MOCK_DATE_RANGE);
 
@@ -155,7 +153,7 @@ describe('Analytics Actions', () => {
     test('propagates errors from getPlayersAttendanceSummary', async () => {
       const message = 'Database connection failed';
       const error = new Error(message);
-      vi.mocked(getPlayersAttendanceSummary).mockRejectedValue(error);
+      vi.mocked(selectPlayersAttendanceSummary).mockRejectedValue(error);
 
       await expect(getAttendanceSummary(MOCK_DATE_RANGE)).rejects.toThrow(
         message,
@@ -165,13 +163,13 @@ describe('Analytics Actions', () => {
 
   describe('getMostAbsenceReasons', () => {
     test('calls getMostCommonAbsenceReasons with team_id and the date range', async () => {
-      vi.mocked(getMostCommonAbsenceReasons).mockResolvedValue(
+      vi.mocked(selectMostCommonAbsenceReasons).mockResolvedValue(
         MOCK_ABSENCE_REASONS,
       );
 
       const result = await getMostAbsenceReasons(MOCK_DATE_RANGE);
 
-      expect(getMostCommonAbsenceReasons).toHaveBeenCalledWith(
+      expect(selectMostCommonAbsenceReasons).toHaveBeenCalledWith(
         MOCK_TEAM.team_id,
         MOCK_DATE_RANGE,
       );
@@ -179,7 +177,7 @@ describe('Analytics Actions', () => {
     });
 
     test('returns empty array when no absence reasons exist', async () => {
-      vi.mocked(getMostCommonAbsenceReasons).mockResolvedValue([]);
+      vi.mocked(selectMostCommonAbsenceReasons).mockResolvedValue([]);
 
       const result = await getMostAbsenceReasons(MOCK_DATE_RANGE);
 
@@ -189,7 +187,7 @@ describe('Analytics Actions', () => {
     test('propagates errors from getMostCommonAbsenceReasons', async () => {
       const message = 'Query timeout';
       const error = new Error(message);
-      vi.mocked(getMostCommonAbsenceReasons).mockRejectedValue(error);
+      vi.mocked(selectMostCommonAbsenceReasons).mockRejectedValue(error);
 
       await expect(getMostAbsenceReasons(MOCK_DATE_RANGE)).rejects.toThrow(
         message,
@@ -199,17 +197,17 @@ describe('Analytics Actions', () => {
 
   describe('getMatchesRate', () => {
     test('queries 5x5 matches in the selected window', async () => {
-      vi.mocked(getMatches).mockResolvedValue(matchesResponse([]));
+      vi.mocked(selectMatches).mockResolvedValue(matchesResponse([]));
 
       await getMatchesRate(MOCK_DATE_RANGE);
 
-      expect(getMatches).toHaveBeenCalledWith(
+      expect(selectMatches).toHaveBeenCalledWith(
         gameMatchesQuery(MOCK_DATE_RANGE),
       );
     });
 
     test('tallies each outcome by league and friendly', async () => {
-      vi.mocked(getMatches).mockResolvedValue(
+      vi.mocked(selectMatches).mockResolvedValue(
         matchesResponse([
           { result: MatchResult.WIN, league_id: 'league-1' },
           { result: MatchResult.WIN, league_id: null },
@@ -227,7 +225,7 @@ describe('Analytics Actions', () => {
     });
 
     test('leaves out matches that have not been played', async () => {
-      vi.mocked(getMatches).mockResolvedValue(
+      vi.mocked(selectMatches).mockResolvedValue(
         matchesResponse([
           { result: MatchResult.WIN, league_id: null },
           // Scheduled and cancelled fixtures carry no result.
@@ -247,9 +245,9 @@ describe('Analytics Actions', () => {
   describe('getOverviewStats', () => {
     test('reads the win rate year-to-date, whatever the filter', async () => {
       vi.mocked(getActivePlayers).mockResolvedValue([{}, {}, {}] as never);
-      vi.mocked(getUpcomingMatches).mockResolvedValue([]);
+      vi.mocked(selectUpcomingMatches).mockResolvedValue([]);
       vi.mocked(getAchievements).mockResolvedValue([{}] as never);
-      vi.mocked(getMatches).mockResolvedValue(matchesResponse([], 75));
+      vi.mocked(selectMatches).mockResolvedValue(matchesResponse([], 75));
 
       await expect(getOverviewStats()).resolves.toEqual({
         active_players: 3,
@@ -257,14 +255,14 @@ describe('Analytics Actions', () => {
         win_rate: 75,
         achievements: 1,
       });
-      expect(getMatches).toHaveBeenCalledWith(gameMatchesQuery(thisYear()));
+      expect(selectMatches).toHaveBeenCalledWith(gameMatchesQuery(thisYear()));
     });
 
     test('reports days until the next game when one is upcoming', async () => {
       vi.mocked(getActivePlayers).mockResolvedValue([]);
-      vi.mocked(getUpcomingMatches).mockResolvedValue([MOCK_MATCH] as never);
+      vi.mocked(selectUpcomingMatches).mockResolvedValue([MOCK_MATCH] as never);
       vi.mocked(getAchievements).mockResolvedValue([]);
-      vi.mocked(getMatches).mockResolvedValue(matchesResponse([], 0));
+      vi.mocked(selectMatches).mockResolvedValue(matchesResponse([], 0));
 
       const { next_game } = await getOverviewStats();
 
@@ -274,19 +272,19 @@ describe('Analytics Actions', () => {
 
   describe('getUpcomingMatches', () => {
     test('fetches upcoming matches scoped to the team', async () => {
-      vi.mocked(getUpcomingMatches).mockResolvedValue([MOCK_MATCH] as never);
+      vi.mocked(selectUpcomingMatches).mockResolvedValue([MOCK_MATCH] as never);
 
       await expect(getUpcomingMatchesAction()).resolves.toEqual([MOCK_MATCH]);
-      expect(getUpcomingMatches).toHaveBeenCalledWith(MOCK_TEAM.team_id);
+      expect(selectUpcomingMatches).toHaveBeenCalledWith(MOCK_TEAM.team_id);
     });
   });
 
   describe('getUpcomingSessions', () => {
     test('fetches upcoming sessions scoped to the team', async () => {
-      vi.mocked(getUpcomingSessions).mockResolvedValue([]);
+      vi.mocked(selectUpcomingSessions).mockResolvedValue([]);
 
       await expect(getUpcomingSessionsAction()).resolves.toEqual([]);
-      expect(getUpcomingSessions).toHaveBeenCalledWith(MOCK_TEAM.team_id);
+      expect(selectUpcomingSessions).toHaveBeenCalledWith(MOCK_TEAM.team_id);
     });
   });
 });

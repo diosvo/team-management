@@ -1,6 +1,7 @@
+import { MatchResult, MatchStatus } from '@/utils/enum';
+
 import type { InsertMatch, Match } from '@/drizzle/schema';
 
-import { MatchResult, MatchStatus } from '@/utils/enum';
 import { MOCK_LEAGUE } from './league';
 import { MOCK_LOCATION } from './location';
 import { MOCK_AWAY_TEAM, MOCK_TEAM } from './team';

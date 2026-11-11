@@ -1,31 +1,29 @@
 'use client';
 
-import Link from 'next/link';
 import { useMemo } from 'react';
-
+import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { Badge, IconButton, VisuallyHidden } from '@chakra-ui/react';
 import { isPast } from 'date-fns';
 import { CircuitBoard } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 
-import Authorized from '@/components/Authorized';
-import DataTable, { type Column } from '@/components/DataTable';
-import HighlightText from '@/components/HighlightText';
-import { Tooltip } from '@/components/ui/tooltip';
-
-import { enumLabel } from '@/i18n/enums';
-import { useLeagueFilters } from '@/lib/nuqs';
 import { ACHIEVEMENT_STYLE } from '@/utils/constants/achievement';
 import { formatDate } from '@/utils/datetime';
 import { type AchievementType, LeagueStatus } from '@/utils/enum';
 import { buildPredicate } from '@/utils/filters';
 import { getColor } from '@/utils/helper';
 
-import usePermissions from '@/hooks/use-permissions';
-import useTableState from '@/hooks/use-table-state';
+import { useLeagueFilters } from '@/lib/nuqs';
 
 import { removeLeague } from '@/actions/league';
+import Authorized from '@/components/Authorized';
+import DataTable, { type Column } from '@/components/DataTable';
+import HighlightText from '@/components/HighlightText';
+import { Tooltip } from '@/components/ui/tooltip';
 import type { League } from '@/drizzle/schema';
+import usePermissions from '@/hooks/use-permissions';
+import useTableState from '@/hooks/use-table-state';
+import { enumLabel } from '@/i18n/enums';
 
 import { UpsertLeague } from './UpsertLeague';
 

@@ -1,15 +1,15 @@
 'use server';
 
 import { getTranslations } from 'next-intl/server';
+
 import { ResponseFactory } from '@/utils/response';
 
 import {
   deleteLocation,
-  getLocations as fetchLocations,
   insertLocation,
+  selectLocations,
   updateLocation,
 } from '@/db/location';
-
 import { getDbErrorMessage } from '@/db/pg-error';
 import type { UpsertLocationSchemaValues } from '@/schemas/location';
 
@@ -18,7 +18,7 @@ import { revalidate } from './cache';
 
 const locations = withResource('locations');
 
-export const getLocations = withAuth(fetchLocations);
+export const getLocations = withAuth(selectLocations);
 
 export const upsertLocation = locations(
   ['create', 'edit'],

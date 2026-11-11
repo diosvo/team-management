@@ -1,3 +1,5 @@
+import { PerformanceBand, ProgressStatus } from '@/utils/enum';
+
 import { MOCK_TYPE_PROGRESSION } from '@/test/mocks/progression';
 import {
   enumText,
@@ -7,8 +9,6 @@ import {
   screen,
   setupTestLifecycle,
 } from '@/test/utilities';
-
-import { PerformanceBand, ProgressStatus } from '@/utils/enum';
 
 import ProgressionTable from './ProgressionTable';
 

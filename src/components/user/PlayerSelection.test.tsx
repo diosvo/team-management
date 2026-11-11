@@ -1,5 +1,7 @@
 import { useForm } from 'react-hook-form';
 
+import { getActivePlayers } from '@/actions/user';
+import type { User } from '@/drizzle/schema/user';
 import { MOCK_PLAYER, MOCK_USER_WITH_PLAYER } from '@/test/mocks/user';
 import {
   expectNoA11yViolations,
@@ -10,8 +12,6 @@ import {
   withFreshSWR,
 } from '@/test/utilities';
 
-import { getActivePlayers } from '@/actions/user';
-import type { User } from '@/drizzle/schema/user';
 import {
   OnePlayerSelection,
   PlayerSelection,
@@ -259,7 +259,9 @@ describe('PlayerSelectionWithActions', () => {
     setup(ACTIVE_PLAYERS, true);
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /select all/i })).toBeDisabled();
+      expect(
+        screen.getByRole('button', { name: /select all/i }),
+      ).toBeDisabled();
       expect(screen.getByRole('button', { name: 'Clear' })).toBeDisabled();
     });
   });

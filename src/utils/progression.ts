@@ -44,15 +44,16 @@ export function progressStatus(
 ): ProgressStatus {
   if (results.length < 2) return ProgressStatus.INSUFFICIENT;
 
-  const latest = results[results.length - 1];
-  const previous = results[results.length - 2];
+  // Length checked above, so the last two exist.
+  const latest = results.at(-1) as number;
+  const previous = results.at(-2) as number;
 
   const last = relativeChange(previous, latest, higherIsBetter);
   if (last >= CHANGE_THRESHOLD) return ProgressStatus.IMPROVING;
   if (last <= -CHANGE_THRESHOLD) return ProgressStatus.REGRESSING;
 
-  if (results.length >= 3) {
-    const before = results[results.length - 3];
+  const before = results.at(-3);
+  if (before !== undefined) {
     const change = relativeChange(before, previous, higherIsBetter);
     if (Math.abs(change) < CHANGE_THRESHOLD) return ProgressStatus.PLATEAUING;
   }
@@ -81,8 +82,10 @@ export function summarize(
   higherIsBetter: boolean,
   target: Nullable<number>,
 ): ProgressionSummary {
-  const baseline = history[0];
-  const latest = history[history.length - 1];
+  const [baseline] = history;
+  const latest = history.at(-1);
+  // `reduce` below throws on an empty history too; fail with a clear message.
+  if (!baseline || !latest) throw new Error('summarize: empty history');
   const best = history.reduce((top, point) =>
     isBetter(point.result, top.result, higherIsBetter) ? point : top,
   );

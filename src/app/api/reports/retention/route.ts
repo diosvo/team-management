@@ -1,8 +1,9 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
-import { fetchExpiredReports, markReportsExpired } from '@/db/report';
 import { deleteFile } from '@/lib/blob';
 import { isAuthorizedCron } from '@/lib/request';
+
+import { selectExpiredReports, updateExpiredReports } from '@/db/report';
 
 export const maxDuration = 60; // in seconds
 
@@ -16,17 +17,17 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const expired = await fetchExpiredReports(new Date());
+  const expired = await selectExpiredReports(new Date());
 
   const deletions = await Promise.allSettled(
     expired.map((report) => deleteFile(report.pathname!)),
   );
   const purged = expired
-    .filter((_, index) => deletions[index].status === 'fulfilled')
+    .filter((_, index) => deletions[index]?.status === 'fulfilled')
     .map((report) => report.report_id);
 
   if (purged.length > 0) {
-    await markReportsExpired(purged);
+    await updateExpiredReports(purged);
   }
 
   return NextResponse.json({ purged: purged.length });

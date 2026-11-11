@@ -1,14 +1,18 @@
 import type { NextRequest } from 'next/server';
 
-import { claimDueSchedules } from '@/db/report';
+import { ReportTrigger } from '@/utils/enum';
+
 import { getServiceSession } from '@/lib/report';
 import { executeSchedule } from '@/lib/report-schedule';
 import { isAuthorizedCron, requestOrigin } from '@/lib/request';
-import { ReportTrigger } from '@/utils/enum';
+
+import { selectDueSchedulesForUpdate } from '@/db/report';
+import { MOCK_REPORT_SCHEDULE } from '@/test/mocks/report';
+import { MOCK_TEAM } from '@/test/mocks/team';
 
 import { GET } from './route';
 
-vi.mock('@/db/report', () => ({ claimDueSchedules: vi.fn() }));
+vi.mock('@/db/report', () => ({ selectDueSchedulesForUpdate: vi.fn() }));
 vi.mock('@/lib/report', () => ({ getServiceSession: vi.fn() }));
 vi.mock('@/lib/report-schedule', () => ({ executeSchedule: vi.fn() }));
 vi.mock('@/lib/request', () => ({
@@ -22,7 +26,7 @@ const createRequest = (): NextRequest =>
 describe('GET /api/reports/schedule', () => {
   const mockIsAuthorizedCron = vi.mocked(isAuthorizedCron);
   const mockRequestOrigin = vi.mocked(requestOrigin);
-  const mockClaimDueSchedules = vi.mocked(claimDueSchedules);
+  const mockClaimDueSchedules = vi.mocked(selectDueSchedulesForUpdate);
   const mockGetServiceSession = vi.mocked(getServiceSession);
   const mockExecuteSchedule = vi.mocked(executeSchedule);
 
@@ -81,13 +85,10 @@ describe('GET /api/reports/schedule', () => {
   });
 
   test('executes every due schedule with the scheduled occurrence time', async () => {
-    const schedule = {
-      schedule_id: '1',
-      next_run_at: new Date('2026-01-01T08:00:00Z'),
-    };
-    mockClaimDueSchedules.mockResolvedValue([schedule] as never);
+    const schedule = MOCK_REPORT_SCHEDULE;
+    mockClaimDueSchedules.mockResolvedValue([schedule]);
     mockGetServiceSession.mockResolvedValue({
-      team_id: 'service-team',
+      team_id: MOCK_TEAM.team_id,
       cookies: [{ name: 'session', value: 'token' }],
     });
     mockExecuteSchedule.mockResolvedValue({ success: true } as never);
@@ -102,7 +103,7 @@ describe('GET /api/reports/schedule', () => {
       host: 'example.com',
       origin: 'https://example.com',
       cookies: [{ name: 'session', value: 'token' }],
-      session_team_id: 'service-team',
+      session_team_id: MOCK_TEAM.team_id,
     });
     expect(body).toEqual({
       processed: 1,
@@ -112,12 +113,12 @@ describe('GET /api/reports/schedule', () => {
 
   test('stops processing once the tick budget is exhausted', async () => {
     const schedules = [
-      { schedule_id: '1', next_run_at: new Date('2026-01-01') },
-      { schedule_id: '2', next_run_at: new Date('2026-01-01') },
+      MOCK_REPORT_SCHEDULE,
+      { ...MOCK_REPORT_SCHEDULE, schedule_id: 'schedule-456' },
     ];
-    mockClaimDueSchedules.mockResolvedValue(schedules as never);
+    mockClaimDueSchedules.mockResolvedValue(schedules);
     mockGetServiceSession.mockResolvedValue({
-      team_id: 'service-team',
+      team_id: MOCK_TEAM.team_id,
       cookies: [],
     });
 

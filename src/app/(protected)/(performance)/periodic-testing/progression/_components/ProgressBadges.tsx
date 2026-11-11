@@ -1,7 +1,5 @@
-import { Badge, Span } from '@chakra-ui/react';
 import { useTranslations } from 'next-intl';
-
-import { enumLabel } from '@/i18n/enums';
+import { Badge, Span } from '@chakra-ui/react';
 
 import {
   PERFORMANCE_BAND_COLOR,
@@ -9,6 +7,8 @@ import {
 } from '@/utils/constants';
 import type { PerformanceBand, ProgressStatus } from '@/utils/enum';
 import { formatChange } from '@/utils/progression';
+
+import { enumLabel } from '@/i18n/enums';
 
 export function StatusBadge({ status }: { status: ProgressStatus }) {
   const t = useTranslations('enums');

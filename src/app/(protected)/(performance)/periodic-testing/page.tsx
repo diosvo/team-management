@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { getTestDates, getTestResult } from '@/actions/test-result';
 import { loadPeriodicTestingFilters } from '@/lib/nuqs';
+
+import { getTestDates, getTestResult } from '@/actions/test-result';
 
 import PlayerPerformanceMatrix from './_components/PlayerPerformanceMatrix';
 import TestingFilters from './_components/TestingFilters';

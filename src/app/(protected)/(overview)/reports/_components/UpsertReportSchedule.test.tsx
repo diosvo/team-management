@@ -1,3 +1,10 @@
+import { head } from 'es-toolkit';
+import { nth } from 'es-toolkit/compat';
+
+import { SCHEDULED_INTERVAL_LABEL } from '@/utils/constants';
+import { Interval } from '@/utils/enum';
+
+import { getReportRecipients, upsertReportSchedule } from '@/actions/report';
 import {
   MOCK_REPORT_RECIPIENTS,
   MOCK_REPORT_SCHEDULE,
@@ -11,21 +18,17 @@ import {
   screen,
   setupTestLifecycle,
   waitFor,
-  within,
   withFreshSWR,
+  within,
 } from '@/test/utilities';
-
-import { SCHEDULED_INTERVAL_LABEL } from '@/utils/constants';
-import { Interval } from '@/utils/enum';
-
-import { getReportRecipients, upsertReportSchedule } from '@/actions/report';
 
 import {
   UPSERT_SCHEDULE_ID,
   UpsertReportSchedule,
 } from './UpsertReportSchedule';
 
-const [ME, COACH] = MOCK_REPORT_RECIPIENTS;
+const ME = head(MOCK_REPORT_RECIPIENTS)!;
+const COACH = nth(MOCK_REPORT_RECIPIENTS, 1)!;
 
 vi.mock('@/actions/report', () => ({
   getReportRecipients: vi.fn(),

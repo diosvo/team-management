@@ -1,9 +1,8 @@
 'use client';
 
 import { useMemo } from 'react';
-
-import { Chart, useChart } from '@chakra-ui/charts';
 import { useTranslations } from 'next-intl';
+import { Chart, useChart } from '@chakra-ui/charts';
 import {
   Bar,
   BarChart,
@@ -14,8 +13,9 @@ import {
   YAxis,
 } from 'recharts';
 
-import type { MatchPerformanceRecord } from '@/types/performance';
 import { formatDate } from '@/utils/datetime';
+
+import type { MatchPerformanceRecord } from '@/types/performance';
 
 export default function MatchStatsChart({
   records,

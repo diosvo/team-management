@@ -1,16 +1,14 @@
 import { useState } from 'react';
-
+import { head } from 'es-toolkit';
 import { axe } from 'jest-axe';
 
+import { submitFeedback } from '@/actions/feedback';
 import {
   createToasterMock,
   renderWithUI,
   screen,
   waitFor,
 } from '@/test/utilities';
-
-import { submitFeedback } from '@/actions/feedback';
-import { toaster } from '@/components/ui/toaster';
 
 import FeedbackDialog from './FeedbackDialog';
 
@@ -27,20 +25,33 @@ vi.mock('@/actions/feedback', () => ({ submitFeedback: vi.fn() }));
 
 vi.mock('@/components/ui/toaster', () => createToasterMock());
 
+import { toaster } from '@/components/ui/toaster';
+
 /** Owns the open state, as `AccountMenu` does. */
 function Harness() {
   const [open, setOpen] = useState(true);
   return <FeedbackDialog open={open} onOpenChange={setOpen} />;
 }
 
+const PAGE = '/attendance';
+const REPORT = {
+  title: 'Attendance export is empty',
+  description: 'It is empty',
+};
+const SENT = {
+  success: true,
+  message: 'Thanks! Your feedback was filed as #42.',
+};
+const FAILED = {
+  success: false,
+  message: 'Unable to send your feedback right now.',
+};
+
 describe('FeedbackDialog', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockUsePathname.mockReturnValue('/attendance');
-    vi.mocked(submitFeedback).mockResolvedValue({
-      success: true,
-      message: 'Thanks! Your feedback was filed as #42.',
-    });
+    mockUsePathname.mockReturnValue(PAGE);
+    vi.mocked(submitFeedback).mockResolvedValue(SENT);
   });
 
   const open = async () => {
@@ -53,7 +64,7 @@ describe('FeedbackDialog', () => {
 
   const fill = async (
     user: Awaited<ReturnType<typeof open>>['user'],
-    { title = 'Attendance export is empty', description = 'It is empty' } = {},
+    { title, description } = REPORT,
   ) => {
     await user.type(screen.getByLabelText(/title/i), title);
     await user.type(screen.getByLabelText(/description/i), description);
@@ -100,15 +111,14 @@ describe('FeedbackDialog', () => {
     await waitFor(() =>
       expect(submitFeedback).toHaveBeenCalledWith({
         type: 'bug',
-        title: 'Attendance export is empty',
-        description: 'It is empty',
-        page: '/attendance',
+        ...REPORT,
+        page: PAGE,
       }),
     );
     await waitFor(() =>
       expect(toaster.update).toHaveBeenCalledWith(expect.anything(), {
         type: 'success',
-        title: 'Thanks! Your feedback was filed as #42.',
+        title: SENT.message,
       }),
     );
     await waitFor(() =>
@@ -140,14 +150,13 @@ describe('FeedbackDialog', () => {
     await send(user);
 
     await waitFor(() => expect(submitFeedback).toHaveBeenCalledTimes(1));
-    expect(vi.mocked(submitFeedback).mock.calls[0][0].page).toBeUndefined();
+    expect(
+      head(head(vi.mocked(submitFeedback).mock.calls)!)!.page,
+    ).toBeUndefined();
   });
 
   test('keeps the dialog open when sending fails', async () => {
-    vi.mocked(submitFeedback).mockResolvedValue({
-      success: false,
-      message: 'Unable to send your feedback right now.',
-    });
+    vi.mocked(submitFeedback).mockResolvedValue(FAILED);
     const { user } = await open();
 
     await fill(user);
@@ -156,7 +165,7 @@ describe('FeedbackDialog', () => {
     await waitFor(() =>
       expect(toaster.update).toHaveBeenCalledWith(expect.anything(), {
         type: 'error',
-        title: 'Unable to send your feedback right now.',
+        title: FAILED.message,
       }),
     );
     expect(screen.getByRole('dialog')).toBeInTheDocument();

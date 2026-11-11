@@ -1,11 +1,13 @@
+import { useForm } from 'react-hook-form';
 import { format } from 'date-fns';
 import { axe } from 'jest-axe';
-import { useForm } from 'react-hook-form';
 
-import { renderWithUI, screen, waitFor } from '@/test/utilities';
 import { DEFAULT_DATE_FORMAT } from '@/utils/constants';
 
+import { renderWithUI, screen, waitFor } from '@/test/utilities';
+
 import DatePicker, { DatePickerField } from './DatePicker';
+
 import { Field } from '../ui/field';
 
 const TODAY = format(new Date(), DEFAULT_DATE_FORMAT);

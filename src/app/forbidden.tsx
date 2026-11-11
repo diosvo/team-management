@@ -1,8 +1,7 @@
 import Link from 'next/link';
-
+import { useTranslations } from 'next-intl';
 import { Button, Center } from '@chakra-ui/react';
 import { LockKeyhole } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 
 import { EmptyState } from '@/components/ui/empty-state';
 import { DEFAULT_LOGIN_REDIRECT } from '@/routes';
