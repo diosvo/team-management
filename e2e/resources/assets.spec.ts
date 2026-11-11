@@ -1,204 +1,178 @@
-import { expect, test } from '@playwright/test';
+import { expect, type Page, test } from '@playwright/test';
 
+import { SEED } from '../setup/accounts';
 import {
-  testDeleteWithCheckbox,
-  testSearchWithQueryParams,
+  applyDrawerFilters,
+  expectToast,
+  pickOption,
+  resetDrawerFilters,
   testTableHeaders,
-  uniqueName as makeUniqueName,
+  uniqueName,
 } from '../setup/helpers';
-import { DialogPOM } from '../setup/pom';
 
-const uniqueName = () => makeUniqueName('E2E Asset');
+const dialog = (page: Page) => page.getByRole('dialog');
+const assetRow = (page: Page, name: string) =>
+  page.getByRole('row', { name: new RegExp(name) });
 
-test.beforeEach(async ({ page }) => {
-  await page.goto('/assets');
-});
+test.describe('Assets page', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/assets');
+  });
 
-test.describe('Assets Page', () => {
-  test('has correct title', async ({ page }) => {
+  test('has the title, stats and table', async ({ page }) => {
     await expect(page).toHaveTitle(/Assets/);
-  });
-
-  test('displays stats cards', async ({ page }) => {
-    await expect(page.getByText('Total Items')).toBeVisible();
-    await expect(page.getByText('Need Replacement')).toBeVisible();
-  });
-
-  test('clicking "Total Items" resets filters', async ({ page }) => {
-    // Apply a condition filter first
-    await page.getByTestId('condition-filter').click();
-    await page.getByRole('listbox').waitFor({ state: 'visible' });
-    await page.getByRole('option', { name: 'Poor' }).click();
-    await expect(page).toHaveURL(/condition=POOR/);
-
-    // Click "Total Items" to reset
-    await page.getByText('Total Items').click();
-    await expect(page).not.toHaveURL(/condition=/);
-  });
-
-  test('clicking "Need Replacement" filters by Poor condition', async ({
-    page,
-  }) => {
-    await page.getByText('Need Replacement').click();
-    await expect(page).toHaveURL(/condition=POOR/);
-  });
-
-  test('renders the table with headers', async ({ page }) => {
+    for (const stat of ['Total Quantity', 'Need Replacement', 'Outdated']) {
+      await expect(page.getByText(stat, { exact: true })).toBeVisible();
+    }
     await testTableHeaders(page, [
       'Name',
       'Category',
       'Quantity',
       'Condition',
+      'Assigned To',
+      'Acquired Date',
       'Last Updated',
       'Note',
     ]);
-  });
-});
-
-test.describe('Filtering', () => {
-  test('filters assets by name and updates query params', async ({ page }) => {
-    await testSearchWithQueryParams(page, 'Ball', /q=Ball/);
+    await expect(assetRow(page, 'Tactics board')).toContainText(
+      SEED.coach.name,
+    );
   });
 
-  test('filters assets by acquired date and clears back to all time', async ({
+  test('filters by condition from the stat cards and clears them', async ({
     page,
   }) => {
-    const trigger = page.getByRole('button', { name: /^Acquired Date:/ });
-    // Optional window: no dates in the URL until one is picked.
-    await expect(trigger).toHaveAccessibleName('Acquired Date: All time');
-    await expect(page).not.toHaveURL(/from=/);
+    await page.getByRole('button', { name: /Need Replacement/ }).click();
+    await expect(page).toHaveURL(/condition=poor/);
+    await expect(assetRow(page, 'Agility ladders')).toBeVisible();
+    await expect(assetRow(page, 'Tactics board')).toHaveCount(0);
 
-    await trigger.click();
-    await page.getByRole('button', { name: 'This year' }).click();
+    await page.getByRole('button', { name: /Outdated/ }).click();
+    await expect(page).toHaveURL(/condition=obsolete/);
+    await expect(assetRow(page, 'Stopwatches')).toBeVisible();
 
-    await expect(page).toHaveURL(/from=\d{4}-01-01/);
-    await expect(page).toHaveURL(/to=\d{4}-12-31/);
-    await expect(trigger).toHaveAccessibleName('Acquired Date: This year');
-
-    await page.getByRole('button', { name: 'Clear Acquired Date' }).click();
-
-    await expect(trigger).toHaveAccessibleName('Acquired Date: All time');
-    await expect(page).not.toHaveURL(/from=/);
-  });
-
-  test('filters assets by Condition and updates query params', async ({
-    page,
-  }) => {
-    // Open condition select
-    await page.getByTestId('condition-filter').click();
-    await page.getByRole('listbox').waitFor({ state: 'visible' });
-    await page.getByRole('option', { name: 'Good' }).click();
-
-    await expect(page).toHaveURL(/condition=GOOD/);
-
-    // Clear filter
-    await page.getByTestId('condition-filter').click();
-    await page.getByRole('listbox').waitFor({ state: 'visible' });
-    await page.getByRole('option', { name: 'All' }).click();
+    // The total resets every filter.
+    await page.getByRole('button', { name: /Total Quantity/ }).click();
     await expect(page).not.toHaveURL(/condition=/);
   });
 
-  test('filters assets by Category and updates query params', async ({
+  test('filters by category in the drawer and resets', async ({ page }) => {
+    await applyDrawerFilters(page, ['Training']);
+    await expect(page).toHaveURL(/category=training/);
+    await expect(assetRow(page, 'Training cones')).toBeVisible();
+    await expect(assetRow(page, 'Tactics board')).toHaveCount(0);
+
+    await resetDrawerFilters(page);
+    await expect(page).not.toHaveURL(/category=/);
+  });
+
+  test('filters by acquired date and clears back to all time', async ({
     page,
   }) => {
-    // Open condition select
-    await page.getByTestId('category-filter').click();
-    await page.getByRole('listbox').waitFor({ state: 'visible' });
-    await page.getByRole('option', { name: 'Equipment' }).click();
+    const trigger = page.getByRole('button', { name: /^Acquired Date:/ });
+    await expect(trigger).toHaveAccessibleName('Acquired Date: All time');
 
-    await expect(page).toHaveURL(/category=EQUIPMENT/);
+    await trigger.click();
+    await page.getByRole('button', { name: 'This year' }).click();
+    await expect(page).toHaveURL(/from=\d{4}-01-01/);
 
-    // Clear filter
-    await page.getByTestId('category-filter').click();
-    await page.getByRole('listbox').waitFor({ state: 'visible' });
-    await page.getByRole('option', { name: 'All', exact: true }).click();
-    await expect(page).not.toHaveURL(/category=/);
+    await page.getByRole('button', { name: 'Clear Acquired Date' }).click();
+    await expect(trigger).toHaveAccessibleName('Acquired Date: All time');
+    await expect(page).not.toHaveURL(/from=/);
+  });
+
+  test('searches assets by name', async ({ page }) => {
+    await page.getByPlaceholder(/search/i).fill('jersey');
+
+    await expect(page).toHaveURL(/q=jersey/);
+    await expect(assetRow(page, 'Home jerseys')).toBeVisible();
+    await expect(assetRow(page, 'Tactics board')).toHaveCount(0);
   });
 });
 
-test.describe('Add Asset', () => {
-  test('opens dialog and adds a new asset with required fields', async ({
-    page,
-  }) => {
-    await page.getByRole('button', { name: 'Add' }).click();
+test.describe.serial('Asset lifecycle', () => {
+  const name = uniqueName('E2E Water bottles');
 
-    // Dialog should be visible
-    await expect(page.getByRole('heading', { name: 'Add Item' })).toBeVisible();
-
-    // Fill required fields
-    await page.getByLabel('Name').fill(uniqueName());
-
-    // Verify defaults are pre-selected
-    await expect(page.getByLabel('Equipment')).toBeChecked();
-    await expect(page.getByLabel('Good')).toBeChecked();
-
-    await page.getByRole('button', { name: 'Add' }).click();
-
-    // Verify success toast
-    await expect(page.getByText('Added asset successfully')).toBeVisible();
+  test.beforeEach(async ({ page }) => {
+    // Searched to the new asset: the table pages 10 rows at a time.
+    await page.goto(`/assets?q=${encodeURIComponent(name)}`);
   });
 
-  test('disables Submit button when form is empty', async ({ page }) => {
-    const dialog = new DialogPOM(page);
-    await dialog.open('Add');
-    await dialog.expectSubmitDisabled('Add');
-  });
-
-  test('adds a new asset with all fields', async ({ page }) => {
+  test('adds an asset assigned to a member, with a note', async ({ page }) => {
     await page.getByRole('button', { name: 'Add' }).click();
+    await expect(
+      dialog(page).getByRole('heading', { name: 'Add Item' }),
+    ).toBeVisible();
+    const add = dialog(page).getByRole('button', { name: 'Add' });
+    await expect(add).toBeDisabled();
 
-    // Fill all fields
-    await page.getByLabel('Name').fill(uniqueName());
-    await page.getByLabel('Quantity').fill('5');
-    await page
+    await dialog(page).getByLabel('Name').fill(name);
+    await dialog(page).getByRole('spinbutton').fill('12');
+    await dialog(page)
       .getByRole('radiogroup', { name: 'Category' })
       .getByText('Training')
       .click();
-    await page
+    await dialog(page)
       .getByRole('radiogroup', { name: 'Condition' })
       .getByText('Fair')
       .click();
-    await page.getByLabel('Note').fill('E2E test note');
+    await pickOption(
+      page,
+      dialog(page).getByRole('combobox', { name: 'Select owner' }),
+      new RegExp(SEED.captain.name),
+    );
+    await dialog(page).locator('[contenteditable="true"]').fill('Keep cold.');
+    await add.click();
 
-    await page.getByRole('dialog').getByRole('button', { name: 'Add' }).click();
+    await expectToast(page, 'Added asset successfully');
+    // The dialog stays open, emptied for the next item.
+    await expect(dialog(page).getByLabel('Name')).toHaveValue('');
+    await dialog(page).getByRole('button', { name: 'Close' }).click();
 
-    // Success toast
-    await expect(page.getByText('Added asset successfully')).toBeVisible();
+    const row = assetRow(page, name);
+    await expect(row).toContainText('12');
+    await expect(row).toContainText('Training');
+    await expect(row).toContainText(SEED.captain.name);
   });
-});
 
-test.describe('Update Asset', () => {
-  test('opens dialog and updates an existing asset', async ({ page }) => {
-    // Click the first data row to open the update dialog
-    const firstRow = page.getByRole('row').nth(1);
-    await firstRow.click();
+  test('rejects a duplicate name in the team', async ({ page }) => {
+    await page.getByRole('button', { name: 'Add' }).click();
+    await dialog(page).getByLabel('Name').fill(name);
+    await dialog(page).getByRole('button', { name: 'Add' }).click();
 
+    await expect(page.getByText('Added asset successfully')).toHaveCount(0);
+    await expect(dialog(page)).toBeVisible();
+    await dialog(page).getByRole('button', { name: 'Close' }).click();
+    await expect(assetRow(page, name)).toHaveCount(1);
+  });
+
+  test('updates the asset from its row', async ({ page }) => {
+    await assetRow(page, name).getByRole('cell', { name }).click();
     await expect(
-      page.getByRole('heading', { name: 'Update Item' }),
+      dialog(page).getByRole('heading', { name: 'Update Item' }),
     ).toBeVisible();
+    await expect(dialog(page).getByLabel('Name')).toHaveValue(name);
 
-    // Modify the note field
-    const noteField = page.getByLabel('Note');
-    await noteField.clear();
-    await noteField.fill('Updated via E2E');
-
-    await page
-      .getByRole('dialog')
-      .getByRole('button', { name: 'Update' })
+    await dialog(page).getByRole('spinbutton').fill('20');
+    await dialog(page)
+      .getByRole('radiogroup', { name: 'Condition' })
+      .getByText('Poor')
       .click();
+    await dialog(page).getByRole('button', { name: 'Update' }).click();
 
-    // Verify success toast
-    await expect(page.getByText('Updated asset successfully')).toBeVisible();
-    // Verify update reflects in the table without refresh
-    await expect(
-      page.getByRole('cell', { name: 'Updated via E2E' }),
-    ).toBeVisible();
+    await expectToast(page, 'Updated asset successfully');
+    await expect(assetRow(page, name)).toContainText('20');
+    await expect(assetRow(page, name)).toContainText('Poor');
   });
-});
 
-test.describe('Delete Asset', () => {
-  test('selects and deletes assets via checkboxes', async ({ page }) => {
-    await testDeleteWithCheckbox(page, 'E2E', /Successfully deleted.*asset/i);
-    await page.getByText('No items found').waitFor({ state: 'visible' });
+  test('deletes the asset', async ({ page }) => {
+    await assetRow(page, name)
+      .getByRole('checkbox', { name: 'Select row' })
+      .click({ force: true });
+    await expect(page.getByText('1 selected')).toBeVisible();
+    await page.getByRole('button', { name: 'Delete' }).click();
+
+    await expectToast(page, 'Successfully deleted 1 asset.');
+    await expect(assetRow(page, name)).toHaveCount(0);
   });
 });

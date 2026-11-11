@@ -3,32 +3,135 @@ name: 🧪 End-To-End Testing
 on:
   pull_request:
     branches: [main]
-    types: [labeled, unlabeled, opened, synchronize]
+    types: [opened, reopened, synchronize, labeled, unlabeled]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
 concurrency:
-  group: e2e-${{ github.head_ref || github.run_id }}
+  # Adding or removing an unrelated label lands in its own group, so it never
+  # cancels a test run that is already going.
+  group: e2e-${{ github.event.pull_request.number || github.ref }}-${{ (github.event.action == 'labeled' || github.event.action == 'unlabeled') && github.event.label.name != 'e2e' && github.event.label.name || 'run' }}
   cancel-in-progress: true
 
-jobs:
-  e2e-gate:
-    name: E2E Gate
-    runs-on: ubuntu-latest
-    steps:
-      - name: ✅ Require e2e label
-        run: |
-          if [[ "${{ contains(toJson(github.event.pull_request.labels.*.name), 'e2e') }}" != "true" ]]; then
-            echo "❌ Apply the 'e2e' label to run e2e tests before merging."
-            exit 1
-          fi
-          echo "✅ e2e label detected."
+env:
+  E2E_LABEL: e2e
 
-  # ✨ Temporarily disabled to speed up development; will be enabled once a real database or alternative setup is established to prevent conflicts in production.
+jobs:
+  e2e-check:
+    name: E2E Check
+    # Unrelated label changes don't need a run.
+    if: >-
+      (github.event.action != 'labeled' && github.event.action != 'unlabeled')
+      || github.event.label.name == 'e2e'
+    runs-on: ubuntu-latest
+    outputs:
+      run: ${{ steps.label.outputs.run }}
+    steps:
+      # Labels are read live from the API, not from the event payload, so
+      # "Re-run jobs" picks up a label added after the original run.
+      - name: 🏷️ Check e2e label
+        id: label
+        uses: actions/github-script@v9
+        with:
+          script: |
+            if (context.eventName !== 'pull_request') {
+              core.setOutput('run', 'true');
+              return;
+            }
+            const labels = await github.paginate(github.rest.issues.listLabelsOnIssue, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              per_page: 100,
+            });
+            const run = labels.some((l) => l.name === process.env.E2E_LABEL);
+            core.setOutput('run', String(run));
+            core.notice(run ? 'e2e label found: running tests.' : 'No e2e label: tests skipped.');
+
+      - name: 💬 Upsert PR comment
+        if: github.event_name == 'pull_request'
+        # Fork PRs get a read-only token; the banner is a nice-to-have.
+        continue-on-error: true
+        uses: actions/github-script@v9
+        env:
+          RUN: ${{ steps.label.outputs.run }}
+        with:
+          script: |
+            const MARKER = '<!-- e2e-notice -->';
+            const LABEL = process.env.E2E_LABEL;
+            const sha = context.payload.pull_request.head.sha.slice(0, 7);
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+            const body = process.env.RUN === 'true'
+              ? [
+                  MARKER,
+                  '> [!TIP]',
+                  `> **E2E tests requested** for \`${sha}\`.`,
+                  `> Results: [E2E Tests run](${runUrl}).`,
+                ].join('\n')
+              : [
+                  MARKER,
+                  '> [!WARNING]',
+                  `> **E2E tests were skipped** for \`${sha}\`.`,
+                  `> Add the \`${LABEL}\` label to run them before merging.`,
+                ].join('\n');
+
+            const issue = {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            };
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              ...issue,
+              per_page: 100,
+            });
+            const existing = comments.find(
+              (c) => c.user?.type === 'Bot' && c.body?.includes(MARKER),
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                ...issue,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({ ...issue, body });
+            }
+
   e2e-tests:
     name: E2E Tests
-    needs: e2e-gate
+    needs: e2e-check
+    if: needs.e2e-check.outputs.run == 'true'
     timeout-minutes: 60
     runs-on: ubuntu-latest
+
+    # Throwaway database: GitHub starts this container before the first step
+    # and removes it when the job ends, pass or fail.
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: e2e
+          POSTGRES_PASSWORD: e2e
+          POSTGRES_DB: e2e
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U e2e -d e2e"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      TEST_DATABASE_URL: postgresql://e2e:e2e@localhost:5432/e2e
+      # Signs sessions on the e2e server only; nothing real depends on it.
+      BETTER_AUTH_SECRET: e2e-ci-secret-not-for-production-use
+
     steps:
       - name: 📥 Checkout Code
         uses: actions/checkout@v7
@@ -36,8 +139,14 @@ jobs:
       - name: 🚚 Setup
         uses: ./.github/actions/setup
 
+      # Playwright starts the web server (which builds the app) before its
+      # global setup, so the schema and seed must exist first. Global setup
+      # rebuilds them again, which is cheap and keeps local runs unchanged.
+      - name: 🗄️ Run migrations & seed
+        run: pnpm exec tsx -e "import('./e2e/setup/global-setup.ts').then((m) => m.default())"
+
       - name: 🎭 Install Playwright Browsers
-        run: pnpm exec playwright install --with-deps
+        run: pnpm exec playwright install --with-deps chromium
 
       - name: 🧪 Run Playwright tests
         run: pnpm exec playwright test

@@ -1,32 +1,41 @@
-import { expect, test } from '@playwright/test';
+import { expect, type Page, test } from '@playwright/test';
 
 import {
+  applyDrawerFilters,
+  expectToast,
   fillDate,
-  testCheckboxFilter,
-  testCheckboxFilterReset,
-  testDeleteWithCheckbox,
-  testEmptyState,
-  testSearchWithQueryParams,
+  pickOption,
+  resetDrawerFilters,
   testTableHeaders,
 } from '../setup/helpers';
-import { DialogPOM, TablePOM } from '../setup/pom';
 
-test.beforeEach(async ({ page }) => {
-  await page.goto('/training');
-});
+const LOCATION = 'Nhà thi đấu Rạch Miễu';
 
-test.describe('Training Sessions Page', () => {
-  test('has correct title', async ({ page }) => {
+/** An ISO day `days` from today. */
+function isoIn(days: number) {
+  const day = new Date();
+  day.setDate(day.getDate() + days);
+  return day.toISOString().slice(0, 10);
+}
+
+const dayUrl = (iso: string) => `/training?from=${iso}&to=${iso}`;
+const sessionRow = (page: Page) =>
+  page.getByRole('row').filter({ hasText: LOCATION });
+
+test.describe('Training sessions page', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/training');
+  });
+
+  test('has the title, stats and table', async ({ page }) => {
     await expect(page).toHaveTitle(/Training Sessions/);
-  });
-
-  test('displays stats cards', async ({ page }) => {
-    await expect(page.getByText('Total Sessions')).toBeVisible();
-    await expect(page.getByText('Avg Attendance Rate')).toBeVisible();
-    await expect(page.getByText('Present')).toBeVisible();
-  });
-
-  test('renders the table with headers', async ({ page }) => {
+    for (const stat of [
+      'Completed Sessions',
+      'Average Attendance',
+      'Total Hours',
+    ]) {
+      await expect(page.getByText(stat, { exact: true })).toBeVisible();
+    }
     await testTableHeaders(page, [
       'Date',
       'Time',
@@ -34,351 +43,113 @@ test.describe('Training Sessions Page', () => {
       'Status',
       'Present Rate',
     ]);
+    // Seeded sessions run at Sân Hoa Viên, 20:00 - 21:30.
+    await expect(
+      page.getByRole('cell', { name: /Sân Hoa Viên/ }).first(),
+    ).toBeVisible();
   });
 
-  test('displays empty state when no sessions found', async ({ page }) => {
-    await testEmptyState(page, 'NonExistentLocation12345', 'No sessions found');
-  });
-});
-
-test.describe('Training Sessions - Search and Filtering', () => {
-  test('filters sessions by location and updates query params', async ({
-    page,
-  }) => {
-    await testSearchWithQueryParams(page, 'Stadium', /q=Stadium/);
-  });
-
-  test('filters sessions by status', async ({ page }) => {
-    await testCheckboxFilter(page, 'Status', 'Scheduled', /status=/);
-  });
-
-  test('opens on this year and filters sessions by date range', async ({
-    page,
-  }) => {
+  test('narrows the time range', async ({ page }) => {
     const trigger = page.getByRole('button', { name: /^Time:/ });
     await expect(trigger).toHaveAccessibleName('Time: This year');
 
     await trigger.click();
     await page.getByRole('button', { name: 'Last month' }).click();
 
-    await expect(page).toHaveURL(/from=\d{4}-\d{2}-\d{2}/);
-    await expect(page).toHaveURL(/to=\d{4}-\d{2}-\d{2}/);
     await expect(trigger).toHaveAccessibleName('Time: Last month');
+    await expect(page).toHaveURL(/from=\d{4}-\d{2}-01/);
   });
 
-  test('clears filters when reset is clicked', async ({ page }) => {
-    await testCheckboxFilterReset(page, 'Status', 'Completed', /status=/);
+  test('shows completed sessions from the stat card', async ({ page }) => {
+    await page.getByText('Completed Sessions', { exact: true }).click();
+    await expect(page).toHaveURL(/status=completed/);
+    await expect(page.getByRole('cell', { name: 'Scheduled' })).toHaveCount(0);
   });
 
-  test('combines search and filters', async ({ page }) => {
-    const searchInput = page.getByPlaceholder('Search...');
-    await searchInput.fill('Field');
+  test('filters by status in the drawer and resets', async ({ page }) => {
+    await applyDrawerFilters(page, ['Cancelled']);
+    await expect(page).toHaveURL(/status=cancelled/);
+    await expect(page.getByRole('cell', { name: 'Completed' })).toHaveCount(0);
 
-    const filterSection = page.locator('text=Status').first();
-    if (await filterSection.isVisible()) {
-      await filterSection.click();
-      const scheduledOption = page.getByRole('checkbox', { name: 'Scheduled' });
-      if (await scheduledOption.isVisible()) {
-        await scheduledOption.check();
-        const applyButton = page.getByRole('button', { name: 'Apply' });
-        if (await applyButton.isVisible()) {
-          await applyButton.click();
-        }
-      }
-    }
-
-    await expect(page).toHaveURL(/q=Field/);
-    await expect(page).toHaveURL(/status=/);
+    await resetDrawerFilters(page);
+    await expect(page).not.toHaveURL(/status=/);
   });
 });
 
-test.describe('Training Sessions - Pagination', () => {
-  test('displays pagination controls when there are multiple pages', async ({
-    page,
-  }) => {
-    const pagination = page.getByRole('navigation', { name: 'pagination' });
-    const hasMultiplePages = await pagination.isVisible();
+test.describe.serial('Session lifecycle', () => {
+  // A day with no seeded session, so the new one is the only row.
+  const day = isoIn(45);
 
-    if (hasMultiplePages) {
-      await expect(pagination).toBeVisible();
-    }
-  });
-
-  test('navigates to next page and updates query params', async ({ page }) => {
-    await new TablePOM(page).navigateToNextPage();
-  });
-});
-
-test.describe('Add Training Session', () => {
-  test('opens dialog and displays form', async ({ page }) => {
-    await page.getByRole('button', { name: 'Add' }).click();
-
+  test('validates the time range before creating', async ({ page }) => {
+    await page.goto('/training');
+    await page.getByRole('button', { name: 'New Session' }).click();
+    const dialog = page.getByRole('dialog');
     await expect(
-      page.getByRole('heading', { name: 'Add Session' }),
+      dialog.getByRole('heading', { name: 'Create Session' }),
     ).toBeVisible();
 
-    // Check for form fields
-    await expect(page.getByLabel('Date')).toBeVisible();
-    await expect(page.getByLabel('Start Time')).toBeVisible();
-    await expect(page.getByLabel('End Time')).toBeVisible();
+    await dialog.getByLabel('Start Time').fill('19:00');
+    await dialog.getByLabel('End Time').fill('18:00');
+    // An end before the start cannot be submitted...
+    await expect(dialog.getByRole('button', { name: 'Create' })).toBeDisabled();
+
+    // ...until the range is fixed.
+    await dialog.getByLabel('End Time').fill('20:00');
+    await expect(dialog.getByRole('button', { name: 'Create' })).toBeEnabled();
   });
 
-  test('disables Submit button when form is invalid', async ({ page }) => {
-    const dialog = new DialogPOM(page);
-    await dialog.open('Add');
-    await dialog.expectSubmitDisabled('Add');
+  test('creates a session', async ({ page }) => {
+    await page.goto('/training');
+    await page.getByRole('button', { name: 'New Session' }).click();
+    const dialog = page.getByRole('dialog');
+
+    await fillDate(page, 'Date', day);
+    // The weekday follows the picked date.
+    await expect(dialog.getByLabel('Day')).not.toHaveValue('');
+    await dialog.getByLabel('Start Time').fill('18:00');
+    await dialog.getByLabel('End Time').fill('19:30');
+    await pickOption(
+      page,
+      dialog.getByRole('combobox', { name: 'Select locations' }),
+      LOCATION,
+    );
+    await dialog.getByRole('button', { name: 'Create' }).click();
+
+    await expectToast(page, 'Created training session successfully');
+
+    await page.goto(dayUrl(day));
+    await expect(sessionRow(page)).toHaveCount(1);
+    await expect(sessionRow(page)).toContainText('18:00');
+    await expect(sessionRow(page)).toContainText('Scheduled');
   });
 
-  test('adds a new training session with required fields', async ({ page }) => {
-    await page.getByRole('button', { name: 'Add' }).click();
+  test('updates the session from its row', async ({ page }) => {
+    await page.goto(dayUrl(day));
+    // Not the location cell: it is a maps link that keeps the click to itself.
+    await sessionRow(page).getByRole('cell', { name: /18:00/ }).click();
 
-    await fillDate(page, 'Date', '2026-12-31');
-    await page.getByLabel('Start Time').fill('16:00');
-    await page.getByLabel('End Time').fill('18:00');
-
-    // Select location
-    const locationSelect = page.locator('[data-testid="location-select"]');
-    if (await locationSelect.isVisible()) {
-      await locationSelect.click();
-      const firstOption = page.getByRole('option').first();
-      if (await firstOption.isVisible()) {
-        await firstOption.click();
-      }
-    }
-
-    const submitButton = page
-      .getByRole('dialog')
-      .getByRole('button', { name: 'Add' });
-
-    if (await submitButton.isEnabled()) {
-      await submitButton.click();
-
-      await expect(page.getByText(/Saving session|success/i)).toBeVisible();
-    }
-  });
-
-  test('validates time range (end time after start time)', async ({ page }) => {
-    await page.getByRole('button', { name: 'Add' }).click();
-
-    await fillDate(page, 'Date', '2026-12-31');
-    await page.getByLabel('Start Time').fill('18:00');
-    await page.getByLabel('End Time').fill('16:00');
-
-    const submitButton = page
-      .getByRole('dialog')
-      .getByRole('button', { name: 'Add' });
-
-    // Form should show error or be disabled
-    await expect(submitButton).toBeDisabled();
-  });
-
-  test('displays location selection', async ({ page }) => {
-    await page.getByRole('button', { name: 'Add' }).click();
-
-    const locationField = page.locator('text=Location');
-    await expect(locationField).toBeVisible();
-  });
-
-  test('closes dialog on cancel', async ({ page }) => {
-    const dialog = new DialogPOM(page);
-    await dialog.open('Add');
-    await dialog.close();
-  });
-});
-
-test.describe('Update Training Session', () => {
-  test('opens dialog when clicking a table row', async ({ page }) => {
-    await new TablePOM(page).clickFirstRow();
+    const dialog = page.getByRole('dialog');
     await expect(
-      page.getByRole('heading', { name: 'Update Session' }),
+      dialog.getByRole('heading', { name: 'Update Session' }),
     ).toBeVisible();
+    // Stored with seconds; the time input accepts either form.
+    await expect(dialog.getByLabel('Start Time')).toHaveValue(/^18:00/);
+
+    await dialog.getByLabel('End Time').fill('20:00');
+    await dialog.getByRole('button', { name: 'Update' }).click();
+
+    await expectToast(page, 'Updated training session successfully');
+    await expect(sessionRow(page)).toContainText('20:00');
   });
 
-  test('updates an existing session', async ({ page }) => {
-    const firstRow = page.getByRole('row').nth(1);
-    if (await firstRow.isVisible()) {
-      await firstRow.click();
+  test('deletes the session', async ({ page }) => {
+    await page.goto(dayUrl(day));
+    await sessionRow(page)
+      .getByRole('checkbox', { name: 'Select row' })
+      .click({ force: true });
+    await page.getByRole('button', { name: 'Delete' }).click();
 
-      const startTimeField = page.getByLabel('Start Time');
-      if (await startTimeField.isVisible()) {
-        await startTimeField.clear();
-        await startTimeField.fill('17:00');
-
-        await page
-          .getByRole('dialog')
-          .getByRole('button', { name: 'Update' })
-          .click();
-
-        await expect(page.getByText(/Saving session|success/i)).toBeVisible();
-      }
-    }
-  });
-
-  test('pre-fills form with existing session data', async ({ page }) => {
-    const firstRow = page.getByRole('row').nth(1);
-    if (await firstRow.isVisible()) {
-      await firstRow.click();
-
-      const dateField = page.getByLabel('Date');
-      await expect(dateField).not.toHaveValue('');
-    }
-  });
-});
-
-test.describe('Delete Training Session', () => {
-  test('selects and deletes sessions via checkboxes', async ({ page }) => {
-    await testDeleteWithCheckbox(page, 'E2E', /Successfully deleted.*session/i);
-  });
-});
-
-test.describe('Training Session Display', () => {
-  test('displays date with day and formatted date', async ({ page }) => {
-    const firstRow = page.getByRole('row').nth(1);
-    if (await firstRow.isVisible()) {
-      const dateCell = firstRow.getByRole('cell').first();
-      const dateText = await dateCell.textContent();
-
-      // Should contain formatted date
-      expect(dateText?.length).toBeGreaterThan(0);
-    }
-  });
-
-  test('displays time range in correct format', async ({ page }) => {
-    const firstRow = page.getByRole('row').nth(1);
-    if (await firstRow.isVisible()) {
-      const timeCell = firstRow
-        .getByRole('cell')
-        .filter({ hasText: /→/ })
-        .first();
-
-      if (await timeCell.isVisible()) {
-        const timeText = await timeCell.textContent();
-        // Time should be in format "HH:MM → HH:MM"
-        expect(timeText).toMatch(/\d{2}:\d{2}/);
-      }
-    }
-  });
-
-  test('displays location as a clickable link', async ({ page }) => {
-    const firstRow = page.getByRole('row').nth(1);
-    if (await firstRow.isVisible()) {
-      const locationLink = firstRow.getByRole('link');
-
-      if (await locationLink.isVisible()) {
-        await expect(locationLink).toBeVisible();
-      }
-    }
-  });
-
-  test('displays status badge with proper styling', async ({ page }) => {
-    const firstRow = page.getByRole('row').nth(1);
-    if (await firstRow.isVisible()) {
-      const statusBadge = firstRow.locator('[data-badge]');
-      await expect(statusBadge).toBeVisible();
-    }
-  });
-
-  test('displays present rate with tooltip', async ({ page }) => {
-    const firstRow = page.getByRole('row').nth(1);
-    if (await firstRow.isVisible()) {
-      const presentRate = firstRow.getByRole('cell').last().getByText(/\d+%/);
-      await expect(presentRate).toBeVisible();
-
-      // Hover to show tooltip
-      await presentRate.hover();
-
-      // Tooltip should show attendance details
-      const tooltip = page.getByRole('tooltip');
-      await expect(tooltip).toBeVisible();
-      await expect(tooltip).toContainText(/On Time: \d+/);
-      await expect(tooltip).toContainText(/Late: \d+/);
-    }
-  });
-});
-
-test.describe('Training Session - Date Link', () => {
-  test('clicking date navigates to attendance page', async ({ page }) => {
-    const firstRow = page.getByRole('row').nth(1);
-    if (await firstRow.isVisible()) {
-      const dateLink = firstRow.getByRole('link');
-
-      if (await dateLink.isVisible()) {
-        await dateLink.click();
-
-        // Should navigate to attendance page with date query param
-        await expect(page).toHaveURL(/attendance/);
-        await expect(page).toHaveURL(/date=/);
-      }
-    }
-  });
-
-  test('date link contains correct query parameter', async ({ page }) => {
-    const firstRow = page.getByRole('row').nth(1);
-    if (await firstRow.isVisible()) {
-      const dateLink = firstRow.getByRole('link');
-
-      if (await dateLink.isVisible()) {
-        const href = await dateLink.getAttribute('href');
-        expect(href).toContain('attendance');
-        expect(href).toContain('date=');
-      }
-    }
-  });
-});
-
-test.describe('Training Stats Integration', () => {
-  test('stats cards display numeric values', async ({ page }) => {
-    const totalSessions = page.getByText('Total Sessions').locator('..');
-    await expect(totalSessions).toBeVisible();
-  });
-
-  test('attendance rate displays percentage', async ({ page }) => {
-    const attendanceRate = page.getByText('Avg Attendance Rate').locator('..');
-    await expect(attendanceRate).toBeVisible();
-  });
-
-  test('present count displays number', async ({ page }) => {
-    const presentCount = page.getByText('Present').locator('..');
-    await expect(presentCount).toBeVisible();
-  });
-});
-
-test.describe('Training Sessions - Integration', () => {
-  test('maintains filter state after adding session', async ({ page }) => {
-    const searchInput = page.getByPlaceholder('Search...');
-    await searchInput.fill('Test');
-    await expect(page).toHaveURL(/q=Test/);
-
-    // Open add dialog
-    await page.getByRole('button', { name: 'Add' }).click();
-
-    // Close without adding
-    const closeButton = page
-      .getByRole('dialog')
-      .getByRole('button', { name: 'Close' });
-    await closeButton.click();
-
-    // Search should still be applied
-    await expect(page).toHaveURL(/q=Test/);
-    await expect(searchInput).toHaveValue('Test');
-  });
-
-  test('stats update reflects filtered data', async ({ page }) => {
-    const filterSection = page.locator('text=Status').first();
-    if (await filterSection.isVisible()) {
-      await filterSection.click();
-      const completedOption = page.getByRole('checkbox', { name: 'Completed' });
-      if (await completedOption.isVisible()) {
-        await completedOption.check();
-        const applyButton = page.getByRole('button', { name: 'Apply' });
-        if (await applyButton.isVisible()) {
-          await applyButton.click();
-        }
-      }
-    }
-
-    // Stats should still be visible
-    const totalSessions = page.getByText('Total Sessions');
-    await expect(totalSessions).toBeVisible();
+    await expectToast(page, 'Successfully deleted 1 session.');
+    await expect(sessionRow(page)).toHaveCount(0);
   });
 });

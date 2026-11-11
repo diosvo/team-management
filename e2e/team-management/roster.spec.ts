@@ -1,297 +1,153 @@
-import { expect, test } from '@playwright/test';
+import { expect, type Page, test } from '@playwright/test';
 
+import { SEED } from '../setup/accounts';
 import {
-  testCheckboxFilter,
-  testCheckboxFilterReset,
-  testEmptyState,
-  testSearchWithQueryParams,
+  applyDrawerFilters,
+  expectToast,
+  pickOption,
+  resetDrawerFilters,
+  testTableHeaders,
 } from '../setup/helpers';
-import { TablePOM } from '../setup/pom';
 
-test.beforeEach(async ({ page }) => {
-  await page.goto('/roster');
-});
+const dialog = (page: Page) => page.getByRole('dialog');
+const memberRow = (page: Page, name: string) =>
+  page.getByRole('row', { name: new RegExp(name) });
 
-test.describe('Roster Page', () => {
-  test('has correct title', async ({ page }) => {
+test.describe('Roster page', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/roster');
+  });
+
+  test('has the title and the team table', async ({ page }) => {
     await expect(page).toHaveTitle(/Roster/);
+    await testTableHeaders(page, [
+      'No.',
+      'Name',
+      'Email',
+      'State',
+      'Roles',
+      'Position',
+    ]);
+    await page.getByPlaceholder(/search/i).fill(SEED.captain.name);
+    await expect(memberRow(page, SEED.captain.name)).toContainText(
+      SEED.captain.email,
+    );
   });
 
-  test('renders the table with headers', async ({ page }) => {
-    const headers = ['No.', 'Name', 'Email', 'State', 'Roles', 'Position'];
+  test('filters by state and role, then resets', async ({ page }) => {
+    await applyDrawerFilters(page, ['Inactive']);
+    await expect(page).toHaveURL(/state=inactive/);
+    await expect(memberRow(page, 'Lâm Tấn Phát')).toBeVisible();
+    await expect(memberRow(page, SEED.captain.name)).toHaveCount(0);
 
-    for (const header of headers) {
-      const columnHeader = page.getByRole('columnheader', { name: header });
-      if (await columnHeader.isVisible()) {
-        await expect(columnHeader).toBeVisible();
-      }
-    }
+    await resetDrawerFilters(page);
+    await applyDrawerFilters(page, ['Coach']);
+    await expect(page).toHaveURL(/role=coach/);
+    await expect(memberRow(page, SEED.coach.name)).toBeVisible();
+
+    await resetDrawerFilters(page);
+    await expect(page).not.toHaveURL(/state=|role=/);
   });
 
-  test('displays empty state when no roster members found', async ({
+  test('searches by name and keeps the search on reload', async ({ page }) => {
+    await page.getByPlaceholder(/search/i).fill('Bảo');
+    await expect(page).toHaveURL(/q=/);
+    await expect(memberRow(page, SEED.player.name)).toBeVisible();
+
+    await page.reload();
+    await expect(page.getByPlaceholder(/search/i)).toHaveValue('Bảo');
+    await expect(memberRow(page, SEED.player.name)).toBeVisible();
+  });
+
+  test('opens a member’s profile and performance from the row actions', async ({
     page,
   }) => {
-    await testEmptyState(page, 'NonExistentPlayer12345', 'No users found');
+    await page.getByPlaceholder(/search/i).fill(SEED.player.name);
+    const row = memberRow(page, SEED.player.name);
+
+    await expect(
+      row.getByRole('link', { name: 'View performance' }),
+    ).toHaveAttribute('href', `/performance/${SEED.player.id}`);
+    await row.getByRole('link', { name: 'View profile' }).click();
+    await expect(page).toHaveURL(`/profile/${SEED.player.id}`);
   });
 
-  test('displays verified status icons for admin/captain', async ({ page }) => {
-    // Check if Verified column exists (only for admin/captain)
-    const verifiedHeader = page.getByRole('columnheader', { name: 'Verified' });
-    const isVisible = await verifiedHeader.isVisible();
-
-    if (isVisible) {
-      await expect(verifiedHeader).toBeVisible();
-    }
-  });
-});
-
-test.describe('Roster - Search and Filtering', () => {
-  test('filters roster by player name and updates query params', async ({
-    page,
-  }) => {
-    await testSearchWithQueryParams(page, 'John', /q=John/);
-  });
-
-  test('filters roster by email and updates query params', async ({ page }) => {
-    await testSearchWithQueryParams(page, 'player@', /q=player/);
-  });
-
-  test('filters roster by state using checkbox filters', async ({ page }) => {
-    await testCheckboxFilter(page, 'State', 'Active', /state=/);
-  });
-
-  test('filters roster by role', async ({ page }) => {
-    await testCheckboxFilter(page, 'Role', 'Player', /role=/);
-  });
-
-  test('clears filters when reset is clicked', async ({ page }) => {
-    await testCheckboxFilterReset(page, 'State', 'Active', /state=/);
-  });
-
-  test('combines search and filters', async ({ page }) => {
-    const searchInput = page.getByPlaceholder('Search...');
-    await searchInput.fill('player');
-
-    const filterSection = page.locator('text=State').first();
-    if (await filterSection.isVisible()) {
-      await filterSection.click();
-      const activeOption = page.getByRole('checkbox', { name: 'Active' });
-      if (await activeOption.isVisible()) {
-        await activeOption.check();
-        const applyButton = page.getByRole('button', { name: 'Apply' });
-        if (await applyButton.isVisible()) {
-          await applyButton.click();
-        }
-      }
-    }
-
-    await expect(page).toHaveURL(/q=player/);
-    await expect(page).toHaveURL(/state=/);
+  test('offers no performance page for a coach', async ({ page }) => {
+    await page.getByPlaceholder(/search/i).fill(SEED.coach.name);
+    await expect(
+      memberRow(page, SEED.coach.name).getByRole('link', {
+        name: 'View performance',
+      }),
+    ).toHaveCount(0);
   });
 });
 
-test.describe('Roster - Pagination', () => {
-  test('displays pagination controls when there are multiple pages', async ({
-    page,
-  }) => {
-    const pagination = page.getByRole('navigation', { name: 'pagination' });
-    const hasMultiplePages = await pagination.isVisible();
+test.describe.serial('Member lifecycle', () => {
+  const stamp = Date.now();
+  const name = `E2E Member ${stamp}`;
+  const email = `e2e.member.${stamp}@example.com`;
 
-    if (hasMultiplePages) {
-      await expect(pagination).toBeVisible();
-    }
+  test('adds a player to the roster', async ({ page }) => {
+    await page.goto('/roster');
+    await page.getByRole('button', { name: 'Add' }).click();
+    await expect(
+      page.getByRole('dialog', { name: 'Add to Roster' }),
+    ).toBeVisible();
+    const add = dialog(page).getByRole('button', { name: 'Add' });
+    await expect(add).toBeDisabled();
+
+    await dialog(page).getByLabel('Fullname').fill(name);
+    await dialog(page).getByLabel('Email').fill(email);
+    await pickOption(
+      page,
+      dialog(page).getByRole('combobox', { name: 'State' }),
+      'Active',
+    );
+    await pickOption(
+      page,
+      dialog(page).getByRole('combobox', { name: 'Role' }),
+      'Player',
+    );
+    await expect(add).toBeEnabled();
+    await add.click();
+
+    // The account is created, then an invite is emailed. The e2e server
+    // cannot send email, so only the outcome on the roster is asserted.
+    await expect(page.getByText('Adding user to database...')).toBeHidden({
+      timeout: 30_000,
+    });
+    await page.goto(`/roster?q=${encodeURIComponent(name)}`);
+    await expect(memberRow(page, name)).toContainText(email);
   });
 
-  test('navigates to next page and updates query params', async ({ page }) => {
-    await new TablePOM(page).navigateToNextPage();
+  test('rejects a second member with the same email', async ({ page }) => {
+    await page.goto('/roster');
+    await page.getByRole('button', { name: 'Add' }).click();
+    await dialog(page).getByLabel('Fullname').fill(`${name} twin`);
+    await dialog(page).getByLabel('Email').fill(email);
+    await pickOption(
+      page,
+      dialog(page).getByRole('combobox', { name: 'State' }),
+      'Active',
+    );
+    await pickOption(
+      page,
+      dialog(page).getByRole('combobox', { name: 'Role' }),
+      'Player',
+    );
+    await dialog(page).getByRole('button', { name: 'Add' }).click();
+
+    await expectToast(page, /already exists|exist/i);
   });
 
-  test('navigates to specific page using page numbers', async ({ page }) => {
-    const pageButton = page.getByRole('button', { name: '2', exact: true });
-    if (await pageButton.isVisible()) {
-      await pageButton.click();
-      await expect(page).toHaveURL(/page=2/);
-    }
-  });
-});
-
-test.describe('Roster Display', () => {
-  test('displays jersey numbers for players', async ({ page }) => {
-    const firstRow = page.getByRole('row').nth(1);
-    if (await firstRow.isVisible()) {
-      const jerseyCell = firstRow.getByRole('cell').first();
-      const jerseyText = await jerseyCell.textContent();
-
-      // Should display either a number or "-"
-      expect(jerseyText).toBeTruthy();
-    }
-  });
-
-  test('displays state badges with proper styling', async ({ page }) => {
-    const firstRow = page.getByRole('row').nth(1);
-    if (await firstRow.isVisible()) {
-      const stateBadge = firstRow.locator('[data-badge]').first();
-      if (await stateBadge.isVisible()) {
-        await expect(stateBadge).toBeVisible();
-      }
-    }
-  });
-
-  test('displays role badges', async ({ page }) => {
-    const firstRow = page.getByRole('row').nth(1);
-    if (await firstRow.isVisible()) {
-      const roleBadges = firstRow.locator('[data-badge]');
-      const count = await roleBadges.count();
-
-      // Should have at least state badge
-      expect(count).toBeGreaterThan(0);
-    }
-  });
-
-  test('displays position badges for players', async ({ page }) => {
-    const firstRow = page.getByRole('row').nth(1);
-    if (await firstRow.isVisible()) {
-      const positionCell = firstRow.getByRole('cell').last();
-      const positionText = await positionCell.textContent();
-
-      // Should display either a position or "-"
-      expect(positionText).toBeTruthy();
-    }
-  });
-
-  test('masks sensitive data for guest users', async ({ page }) => {
-    // Check if data is masked (contains asterisks)
-    const firstRow = page.getByRole('row').nth(1);
-    if (await firstRow.isVisible()) {
-      const nameCell = firstRow.getByRole('cell').nth(1);
-      const nameText = await nameCell.textContent();
-
-      // Either masked (***) or full name
-      expect(nameText?.length).toBeGreaterThan(0);
-    }
-  });
-});
-
-test.describe('Roster - Player Details', () => {
-  test('clicking player row navigates to profile', async ({ page }) => {
-    const firstRow = page.getByRole('row').nth(1);
-    if (await firstRow.isVisible()) {
-      await firstRow.click();
-
-      // Check if URL changed to profile page
-      const currentUrl = page.url();
-      expect(currentUrl).toBeTruthy();
-    }
-  });
-
-  test('displays verified icon for verified users', async ({ page }) => {
-    const verifiedHeader = page.getByRole('columnheader', { name: 'Verified' });
-
-    if (await verifiedHeader.isVisible()) {
-      const firstRow = page.getByRole('row').nth(1);
-      if (await firstRow.isVisible()) {
-        const verifiedIcon = firstRow.locator('svg').first();
-        await expect(verifiedIcon).toBeVisible();
-      }
-    }
-  });
-});
-
-test.describe('Roster - Deletion', () => {
-  test('displays delete button for admin/captain', async ({ page }) => {
-    const firstCheckbox = page
+  test('removes the member', async ({ page }) => {
+    await page.goto(`/roster?q=${encodeURIComponent(name)}`);
+    await memberRow(page, name)
       .getByRole('checkbox', { name: 'Select row' })
-      .first();
+      .click({ force: true });
+    await page.getByRole('button', { name: 'Delete' }).click();
 
-    if (await firstCheckbox.isVisible()) {
-      await firstCheckbox.click({ force: true });
-
-      const deleteButton = page.getByRole('button', { name: 'Delete' });
-      await expect(deleteButton).toBeVisible();
-    }
-  });
-
-  test('selects and deletes users via checkboxes', async ({ page }) => {
-    const firstCheckbox = page
-      .getByRole('checkbox', { name: 'Select row' })
-      .first();
-
-    if (await firstCheckbox.isVisible()) {
-      await firstCheckbox.click({ force: true });
-      await expect(page.getByText('1 selected')).toBeVisible();
-
-      // Note: Don't actually delete to preserve data
-      const deleteButton = page.getByRole('button', { name: 'Delete' });
-      await expect(deleteButton).toBeVisible();
-    }
-  });
-
-  test('deselects user when unchecking checkbox', async ({ page }) => {
-    const firstCheckbox = page
-      .getByRole('checkbox', { name: 'Select row' })
-      .first();
-
-    if (await firstCheckbox.isVisible()) {
-      // Select
-      await firstCheckbox.click({ force: true });
-      await expect(page.getByText('1 selected')).toBeVisible();
-
-      // Deselect
-      await firstCheckbox.click({ force: true });
-      await expect(page.getByText('1 selected')).not.toBeVisible();
-    }
-  });
-});
-
-test.describe('Roster - Export', () => {
-  test('displays export button', async ({ page }) => {
-    const exportButton = page.getByRole('button', { name: /export/i });
-    const isVisible = await exportButton.isVisible();
-
-    if (isVisible) {
-      await expect(exportButton).toBeVisible();
-    }
-  });
-
-  test('export button is clickable', async ({ page }) => {
-    const exportButton = page.getByRole('button', { name: /export/i });
-
-    if (await exportButton.isVisible()) {
-      await expect(exportButton).toBeEnabled();
-    }
-  });
-});
-
-test.describe('Roster - Integration', () => {
-  test('maintains filter state when navigating back', async ({ page }) => {
-    const searchInput = page.getByPlaceholder('Search...');
-    await searchInput.fill('test');
-    await expect(page).toHaveURL(/q=test/);
-
-    // Navigate away and back
-    await page.goto('/matches');
-    await page.goBack();
-
-    // Filter should still be applied
-    await expect(page).toHaveURL(/q=test/);
-    await expect(searchInput).toHaveValue('test');
-  });
-
-  test('displays correct count in pagination', async ({ page }) => {
-    const pagination = page.getByRole('navigation', { name: 'pagination' });
-
-    if (await pagination.isVisible()) {
-      // Should show page info
-      await expect(pagination).toBeVisible();
-    }
-  });
-
-  test('search results update in real-time', async ({ page }) => {
-    const searchInput = page.getByPlaceholder('Search...');
-
-    // Type gradually
-    await searchInput.type('player', { delay: 100 });
-
-    await expect(page).toHaveURL(/q=player/);
+    await expectToast(page, 'Successfully deleted 1 user.');
+    await expect(memberRow(page, name)).toHaveCount(0);
   });
 });
