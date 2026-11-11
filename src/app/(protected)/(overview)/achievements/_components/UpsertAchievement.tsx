@@ -27,7 +27,7 @@ import {
   INDIVIDUAL_ACHIEVEMENT_TYPES,
   YEARS_SELECTION,
 } from '@/utils/constants';
-import type { AchievementType } from '@/utils/enum';
+import { AchievementType } from '@/utils/enum';
 
 import { getDefaults } from '@/lib/zod';
 
@@ -80,19 +80,20 @@ export const UpsertAchievement = createOverlay(({ action, item, ...rest }) => {
     register,
     setValue,
     handleSubmit,
-    formState: { isValid, errors, dirtyFields },
+    formState: { isValid, errors },
   } = useForm({
     resolver: zodResolver(UpsertAchievementSchema),
-    // Title starts from the default type's label until the user edits it.
-    defaultValues: getDefaults(UpsertAchievementSchema, {
-      title: typeSelection[0]?.label,
-      ...item,
-    }),
+    defaultValues: getDefaults(UpsertAchievementSchema, item),
   });
 
   const type = watch('type');
   const league_id = watch('league_id');
   const isIndividual = isIndividualType(type as AchievementType);
+  const isCustom = type === AchievementType.CUSTOM;
+  // An empty title shows the type's label, translated for each viewer.
+  const typeLabel = typeSelection.find(
+    (option) => option.value === type,
+  )?.label;
 
   const { data: endedLeagues } = useSWRImmutable(
     ENDED_LEAGUES_KEY,
@@ -168,20 +169,7 @@ export const UpsertAchievement = createOverlay(({ action, item, ...rest }) => {
                         disabled={isPending}
                         value={field.value ? [field.value] : []}
                         onInteractOutside={field.onBlur}
-                        onValueChange={({ value }) => {
-                          field.onChange(value[0]);
-                          // The type drives the default title until edited.
-                          // value[0] always comes from the same typeSelection collection,
-                          // so find() always returns a result — the non-null assertion is safe.
-                          if (!dirtyFields.title) {
-                            setValue(
-                              'title',
-                              typeSelection.find(
-                                (option) => option.value === value[0],
-                              )!.label,
-                            );
-                          }
-                        }}
+                        onValueChange={({ value }) => field.onChange(value[0])}
                       >
                         <Select.HiddenSelect />
                         <Select.Control>
@@ -209,13 +197,14 @@ export const UpsertAchievement = createOverlay(({ action, item, ...rest }) => {
                   )}
                 />
                 <Field
-                  required
+                  required={isCustom}
                   label={t('title')}
                   invalid={!!errors.title}
                   errorText={errors.title?.message}
+                  helperText={isCustom ? '' : t('titleHelper')}
                 >
                   <Input
-                    placeholder={t('titlePlaceholder')}
+                    placeholder={isCustom ? t('titlePlaceholder') : typeLabel}
                     disabled={isPending}
                     {...register('title')}
                   />

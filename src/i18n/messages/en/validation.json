@@ -1,6 +1,7 @@
 {
   "afterClubFounded": "Be after the club was founded.",
   "awardedPlayerRequired": "Select the awarded player for an individual honor.",
+  "customTitleRequired": "Give a custom honor a title.",
   "email": "Please enter a valid email.",
   "endDateAfterStartDate": "End date must be after start date",
   "endTimeAfterStartTime": "End time must be after start time",
@@ -14,8 +15,8 @@
   "minLength": "Be at least {min} characters long.",
   "minValue": "Must be at least {min}.",
   "nonNegative": "Be a positive number.",
-  "noteTooLarge": "Note is too large.",
   "notInFuture": "Not be in the future.",
+  "noteTooLarge": "Note is too large.",
   "recipientsRequired": "Add at least one recipient.",
   "required": "This field is required.",
   "scoreRequiresCompleted": "Only a completed match can carry a score"

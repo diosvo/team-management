@@ -1,6 +1,7 @@
 {
   "afterClubFounded": "Phải sau năm thành lập CLB.",
   "awardedPlayerRequired": "Chọn cầu thủ nhận giải cho thành tích cá nhân.",
+  "customTitleRequired": "Danh hiệu loại Khác cần có tiêu đề.",
   "email": "Vui lòng nhập email hợp lệ.",
   "endDateAfterStartDate": "Ngày kết thúc phải sau ngày bắt đầu",
   "endTimeAfterStartTime": "Giờ kết thúc phải sau giờ bắt đầu",
@@ -14,8 +15,8 @@
   "minLength": "Tối thiểu {min} ký tự.",
   "minValue": "Tối thiểu là {min}.",
   "nonNegative": "Phải là số dương.",
-  "noteTooLarge": "Ghi chú quá dài.",
   "notInFuture": "Không được ở tương lai.",
+  "noteTooLarge": "Ghi chú quá dài.",
   "recipientsRequired": "Thêm ít nhất một người nhận.",
   "required": "Vui lòng nhập trường này.",
   "scoreRequiresCompleted": "Chỉ trận đã đấu mới được có tỉ số"

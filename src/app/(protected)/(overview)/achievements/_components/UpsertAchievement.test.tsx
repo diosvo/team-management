@@ -970,11 +970,13 @@ describe('UpsertAchievement', () => {
     };
   };
 
-  test('updates the default title when type is changed via the dropdown', async () => {
+  test('leaves the title empty and previews the selected type as its placeholder', async () => {
     const { user } = await open('Add', {
       achievement_id: '',
       type: AchievementType.CHAMPION,
     });
+
+    expect(screen.getByPlaceholderText('Champion')).toHaveValue('');
 
     const { content } = await openSelectAndGetContent(user, 0);
     const option = within(content!).getByRole('option', {
@@ -984,10 +986,27 @@ describe('UpsertAchievement', () => {
     fireEvent.click(option);
 
     await waitFor(() =>
-      expect(screen.queryAllByDisplayValue('Runner-up').length).toBeGreaterThan(
-        0,
-      ),
+      expect(screen.getByPlaceholderText('Runner-up')).toHaveValue(''),
     );
+    expect(
+      screen.getByText(
+        "Leave empty to use the type's name in each viewer's language.",
+      ),
+    ).toBeInTheDocument();
+  });
+
+  test('asks for a title on a custom honor', async () => {
+    await open('Add', {
+      achievement_id: '',
+      type: AchievementType.CUSTOM,
+    });
+
+    expect(screen.getByPlaceholderText('Fair Play Award')).toBeRequired();
+    expect(
+      screen.queryByText(
+        "Leave empty to use the type's name in each viewer's language.",
+      ),
+    ).not.toBeInTheDocument();
   });
 
   test('keeps a custom title when type changes after the title has been edited', async () => {

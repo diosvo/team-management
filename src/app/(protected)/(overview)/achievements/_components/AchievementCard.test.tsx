@@ -60,11 +60,17 @@ describe('AchievementCard', () => {
   test('renders the title, type icon and league period', () => {
     setup();
 
-    expect(screen.getByText(achievement.title)).toBeInTheDocument();
+    expect(screen.getByText(achievement.title as string)).toBeInTheDocument();
     expect(screen.getByRole('img', { name: 'Champion' })).toBeInTheDocument();
     expect(
       screen.getByText(`${MOCK_LEAGUE.name} • 01/01/2024 – 31/12/2024`),
     ).toBeInTheDocument();
+  });
+
+  test('falls back to the translated type label when there is no title', () => {
+    setup({ ...achievement, title: null });
+
+    expect(screen.getByText('Champion')).toBeInTheDocument();
   });
 
   test('renders a standalone caption when there is no league', () => {

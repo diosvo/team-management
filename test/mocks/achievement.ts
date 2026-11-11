@@ -25,7 +25,7 @@ export const MOCK_ACHIEVEMENT: Achievement = {
   achievement_id: 'achievement-123',
   team_id: MOCK_ACHIEVEMENT_INPUT.team_id,
   type: AchievementType.CHAMPION,
-  title: MOCK_ACHIEVEMENT_INPUT.title,
+  title: MOCK_ACHIEVEMENT_INPUT.title as string,
   year: MOCK_ACHIEVEMENT_INPUT.year,
   league_id: MOCK_ACHIEVEMENT_INPUT.league_id as string,
   player_id: null,

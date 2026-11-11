@@ -148,6 +148,13 @@
       "when": 1794068936093,
       "tag": "0020_scope_achievements_to_team",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1794405030005,
+      "tag": "0021_achievement_title_optional",
+      "breakpoints": true
     }
   ]
 }

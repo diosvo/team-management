@@ -66,7 +66,7 @@ export default function AchievementCard({
       </Box>
       <VStack flex={1} minWidth={0} alignItems="stretch">
         <Text fontWeight="semibold" lineClamp={2}>
-          {achievement.title}
+          {achievement.title ?? label}
         </Text>
         <Text textStyle="secondary" color="gray.700">
           {caption}
