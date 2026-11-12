@@ -3,13 +3,26 @@ name: 🧪 End-To-End Testing
 on:
   pull_request:
     branches: [main]
-    types: [labeled]
+    types: [labeled, unlabeled, opened, synchronize]
 
 jobs:
+  e2e-gate:
+    name: E2E Gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: ✅ Require e2e label
+        run: |
+          if [[ "${{ contains(toJson(github.event.pull_request.labels.*.name), 'e2e') }}" != "true" ]]; then
+            echo "❌ Apply the 'e2e' label to run e2e tests before merging."
+            exit 1
+          fi
+          echo "✅ e2e label detected."
+
   # ✨ Temporarily disabled to speed up development; will be enabled once a real database or alternative setup is established to prevent conflicts in production.
   e2e-tests:
+    name: E2E Tests
+    needs: e2e-gate
     timeout-minutes: 60
-    if: github.event.label.name == 'e2e'
     runs-on: ubuntu-latest
     steps:
       - name: 📥 Checkout Code
