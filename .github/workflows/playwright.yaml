@@ -3,12 +3,13 @@ name: 🧪 End-To-End Testing
 on:
   pull_request:
     branches: [main]
+    types: [labeled]
 
 jobs:
   # ✨ Temporarily disabled to speed up development; will be enabled once a real database or alternative setup is established to prevent conflicts in production.
   e2e-tests:
     timeout-minutes: 60
-    if: ${{ false }} # This condition ensures the job is always skipped
+    if: github.event.label.name == 'e2e'
     runs-on: ubuntu-latest
     steps:
       - name: 📥 Checkout Code
