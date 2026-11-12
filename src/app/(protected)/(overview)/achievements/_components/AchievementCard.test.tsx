@@ -60,7 +60,7 @@ describe('AchievementCard', () => {
   test('renders the title, type icon and league period', () => {
     setup();
 
-    expect(screen.getByText(achievement.title as string)).toBeInTheDocument();
+    expect(screen.getByText(achievement.title!)).toBeInTheDocument();
     expect(screen.getByRole('img', { name: 'Champion' })).toBeInTheDocument();
     expect(
       screen.getByText(`${MOCK_LEAGUE.name} • 01/01/2024 – 31/12/2024`),
