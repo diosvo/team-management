@@ -1,28 +1,28 @@
-import { expect, test as setup } from '@playwright/test';
-import path from 'path';
-
-import env from '@env';
+import type { Page } from '@playwright/test';
 
 import { DEFAULT_LOGIN_REDIRECT, LOGIN_PATH } from '@/routes';
-const adminFile = path.join(__dirname, '../../playwright/.auth/admin.json');
 
-setup('authenticate as admin', async ({ page }) => {
-  // Perform authentication steps
+import { SEED, SEED_PASSWORD, STORAGE_STATE } from './accounts';
+import { expect, test as setup } from './test';
+
+async function signIn(page: Page, email: string, file: string) {
   await page.goto(LOGIN_PATH);
 
-  await expect(page.getByLabel('Email')).toBeVisible();
-  await expect(page.locator('input[name="password"]')).toBeVisible();
-
-  await page.getByLabel('Email').fill(env.PW_USERNAME);
-  await page.locator('input[name="password"]').fill(env.PW_PASSWORD);
+  await page.getByLabel('Email').fill(email);
+  await page.locator('input[name="password"]').fill(SEED_PASSWORD);
   await page.getByRole('button', { name: 'Sign In' }).click();
 
-  // Wait until the page receives the session.
-  //
-  // Sometimes login flow sets cookies in the process of several redirects.
-  // Wait for the final URL to ensure that the cookies are actually set.
+  // The session cookie lands over a redirect chain; wait for the final URL.
   await page.waitForURL(DEFAULT_LOGIN_REDIRECT);
+  await expect(page.getByRole('navigation', { name: 'Main' })).toBeVisible();
 
-  // End of authentication steps.
-  await page.context().storageState({ path: adminFile });
+  await page.context().storageState({ path: file });
+}
+
+setup('authenticate as admin', async ({ page }) => {
+  await signIn(page, SEED.admin.email, STORAGE_STATE.admin);
+});
+
+setup('authenticate as player', async ({ page }) => {
+  await signIn(page, SEED.player.email, STORAGE_STATE.player);
 });

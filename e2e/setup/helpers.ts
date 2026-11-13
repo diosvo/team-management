@@ -1,4 +1,4 @@
-import { expect, type Page } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
 
 /**
  * Reusable test helpers for E2E tests
@@ -65,7 +65,7 @@ export async function testPaginationNavigation(page: Page) {
 export async function testTableHeaders(page: Page, headers: string[]) {
   for (const header of headers) {
     await expect(
-      page.getByRole('columnheader', { name: header }),
+      page.getByRole('columnheader', { name: header, exact: true }),
     ).toBeVisible();
   }
 }
@@ -300,7 +300,8 @@ export async function testEnterToSubmit(
  */
 export async function fillDate(page: Page, label: string, value: string) {
   const [year, month, day] = value.split('-');
-  const input = page.getByLabel(label);
+  // By role: the picker's "Clear selected dates" button also matches the label.
+  const input = page.getByRole('textbox', { name: label });
   await input.fill(`${day}/${month}/${year}`);
   await input.blur();
 }
@@ -369,4 +370,66 @@ export async function testEscapeToCancel(page: Page) {
     await page.waitForTimeout(300);
     await expect(dialog).not.toBeVisible();
   }
+}
+
+/**
+ * Tick options in the "Filters" drawer (checkbox groups) and apply them.
+ * Each option is the visible label of a checkbox.
+ */
+export async function applyDrawerFilters(page: Page, options: string[]) {
+  await page.getByRole('button', { name: /^Filters/ }).click();
+  const drawer = page.getByRole('dialog', { name: 'Advanced Filters' });
+  await expect(drawer).toBeVisible();
+  for (const option of options) {
+    await drawer.getByText(option, { exact: true }).click();
+  }
+  await drawer.getByRole('button', { name: 'Apply' }).click();
+  await expect(drawer).not.toBeVisible();
+}
+
+/** Clear every drawer filter with "Reset all", then apply. */
+export async function resetDrawerFilters(page: Page) {
+  await page.getByRole('button', { name: /^Filters/ }).click();
+  const drawer = page.getByRole('dialog', { name: 'Advanced Filters' });
+  await drawer.getByRole('button', { name: 'Reset all' }).click();
+  await drawer.getByRole('button', { name: 'Apply' }).click();
+  await expect(drawer).not.toBeVisible();
+}
+
+/** Wait for a toast with `message`, the outcome of a server action. */
+export async function expectToast(page: Page, message: string | RegExp) {
+  await expect(page.getByText(message).first()).toBeVisible();
+}
+
+/**
+ * Open a Chakra Select/Combobox via `trigger` and pick `option` from the open
+ * list. Inside a modal dialog the portalled list is hidden from the
+ * accessibility tree, so the query includes hidden nodes but stays scoped to
+ * the open list (the hidden native <select> has options too).
+ */
+export async function pickOption(
+  page: Page,
+  trigger: Locator,
+  option: string | RegExp,
+) {
+  await trigger.click();
+  // By visible text: some options nest a name and a caption and carry no
+  // accessible name of their own.
+  await openOptions(page)
+    .filter({
+      // A string matches the start of the option (captions may follow it).
+      hasText:
+        typeof option === 'string'
+          ? new RegExp(`^${option.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`)
+          : option,
+    })
+    .first()
+    .click();
+}
+
+/** The options of the open Chakra list, by visible text. */
+export function openOptions(page: Page) {
+  return page
+    .locator('[role="listbox"][data-state="open"]')
+    .getByRole('option', { includeHidden: true });
 }

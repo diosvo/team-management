@@ -1,35 +1,39 @@
-import { expect, test } from '@playwright/test';
+import { expect, type Page, test } from '@playwright/test';
 
 import {
+  applyDrawerFilters,
+  expectToast,
   fillDate,
-  testCheckboxFilter,
-  testCheckboxFilterReset,
-  testDeleteWithCheckbox,
-  testEmptyState,
-  testSearchWithQueryParams,
+  pickOption,
+  resetDrawerFilters,
   testTableHeaders,
 } from '../setup/helpers';
-import { DialogPOM, TablePOM } from '../setup/pom';
 
-const uniqueScore = () => `${Math.floor(Math.random() * 10)}`;
+const OPPONENT = 'CLB Bóng rổ Đà Lạt';
+const dialog = (page: Page) => page.getByRole('dialog');
 
-test.beforeEach(async ({ page }) => {
-  await page.goto('/matches');
-});
+/** An ISO day `days` from today. */
+function isoIn(days: number) {
+  const day = new Date();
+  day.setDate(day.getDate() + days);
+  return day.toISOString().slice(0, 10);
+}
 
-test.describe('Matches Page', () => {
-  test('has correct title', async ({ page }) => {
+test.describe('Matches page', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/matches');
+  });
+
+  test('has the title, stats and table', async ({ page }) => {
     await expect(page).toHaveTitle(/Matches/);
-  });
-
-  test('displays stats cards', async ({ page }) => {
-    await expect(page.getByText('Total Matches')).toBeVisible();
-    await expect(page.getByText('Win Streak')).toBeVisible();
-    await expect(page.getByText('Avg Win Rate')).toBeVisible();
-    await expect(page.getByText('Avg Points/Game')).toBeVisible();
-  });
-
-  test('renders the table with headers', async ({ page }) => {
+    for (const stat of [
+      'Total Matches',
+      'Avg Win Rate',
+      'Avg Points/Game',
+      'Win Streak',
+    ]) {
+      await expect(page.getByText(stat, { exact: true })).toBeVisible();
+    }
     await testTableHeaders(page, [
       'Opponent',
       'League',
@@ -41,303 +45,112 @@ test.describe('Matches Page', () => {
     ]);
   });
 
-  test('displays empty state when no matches found', async ({ page }) => {
-    await testEmptyState(page, 'NonExistentMatch12345', 'No matches found');
-  });
-});
-
-test.describe('Matches - Search and Filtering', () => {
-  test('filters matches by opponent name and updates query params', async ({
+  test('filters by game type, match type and status, then resets', async ({
     page,
   }) => {
-    await testSearchWithQueryParams(page, 'Arsenal', /q=Arsenal/);
+    await applyDrawerFilters(page, ['Friendly', 'Completed']);
+    await expect(page).toHaveURL(/match_type=friendly/);
+    await expect(page).toHaveURL(/status=completed/);
+    await expect(page.getByRole('cell', { name: 'Scheduled' })).toHaveCount(0);
+
+    await resetDrawerFilters(page);
+    await expect(page).not.toHaveURL(/match_type=|status=/);
+
+    await applyDrawerFilters(page, ['3x3']);
+    await expect(page).toHaveURL(/game_type=/);
   });
 
-  test('filters matches by result status', async ({ page }) => {
-    await testCheckboxFilter(page, 'Result', 'Win', /result=/);
-  });
+  test('searches by opponent', async ({ page }) => {
+    await page.getByPlaceholder(/search/i).fill('Phú Nhuận');
 
-  test('filters matches by date range', async ({ page }) => {
-    const filterSection = page.locator('text=Date').first();
-    if (await filterSection.isVisible()) {
-      await filterSection.click();
-
-      const fromDate = page.getByLabel('From');
-      if (await fromDate.isVisible()) {
-        await fromDate.fill('2026-01-01');
-
-        const applyButton = page.getByRole('button', { name: 'Apply' });
-        if (await applyButton.isVisible()) {
-          await applyButton.click();
-        }
-
-        await expect(page).toHaveURL(/from=/);
-      }
+    await expect(page).toHaveURL(/q=/);
+    const rows = page.getByRole('row', { name: /^Select row/ });
+    await expect(rows.first()).toBeVisible();
+    for (const row of await rows.all()) {
+      await expect(row).toContainText('Phú Nhuận');
     }
   });
 
-  test('clears filters when reset is clicked', async ({ page }) => {
-    await testCheckboxFilterReset(page, 'Result', 'Win', /result=/);
+  test('changes the time range', async ({ page }) => {
+    const trigger = page.getByRole('button', { name: /^Time:/ });
+    await trigger.click();
+    await page.getByRole('button', { name: 'Last year' }).click();
+
+    await expect(trigger).toHaveAccessibleName('Time: Last year');
+    await expect(page).toHaveURL(/from=\d{4}-01-01/);
   });
 
-  test('displays result badges with proper styling', async ({ page }) => {
-    const firstDataRow = page.getByRole('row').nth(1);
-    if (await firstDataRow.isVisible()) {
-      const resultBadge = firstDataRow.locator('[data-badge]');
-      await expect(resultBadge).toBeVisible();
-    }
-  });
-
-  test('combines multiple filters', async ({ page }) => {
-    const searchInput = page.getByPlaceholder('Search...');
-    await searchInput.fill('Team');
-
-    const filterSection = page.locator('text=Result').first();
-    if (await filterSection.isVisible()) {
-      await filterSection.click();
-      const winOption = page.getByRole('checkbox', { name: 'Win' });
-      if (await winOption.isVisible()) {
-        await winOption.check();
-        const applyButton = page.getByRole('button', { name: 'Apply' });
-        if (await applyButton.isVisible()) {
-          await applyButton.click();
-        }
-      }
-    }
-
-    await expect(page).toHaveURL(/q=Team/);
-    await expect(page).toHaveURL(/result=/);
+  test('opens the box score of a played match', async ({ page }) => {
+    await page.getByRole('link', { name: 'Record box score' }).first().click();
+    await expect(page).toHaveURL(/\/matches\/stats\?match=[0-9a-f-]{36}/);
   });
 });
 
-test.describe('Matches - Pagination', () => {
-  test('displays pagination controls when there are multiple pages', async ({
-    page,
-  }) => {
-    const pagination = page.getByRole('navigation', { name: 'pagination' });
-    const hasMultiplePages = await pagination.isVisible();
+test.describe.serial('Match lifecycle', () => {
+  const day = isoIn(10);
+  const listUrl = `/matches?from=${day}&to=${day}`;
+  const matchRow = (page: Page) =>
+    page.getByRole('row', { name: new RegExp(`Select row .*${OPPONENT}`) });
 
-    if (hasMultiplePages) {
-      await expect(pagination).toBeVisible();
-    }
-  });
-
-  test('navigates to next page and updates query params', async ({ page }) => {
-    await new TablePOM(page).navigateToNextPage();
-  });
-});
-
-test.describe('Add Match', () => {
-  test('opens dialog and displays form', async ({ page }) => {
+  test('schedules a friendly match', async ({ page }) => {
+    await page.goto('/matches');
     await page.getByRole('button', { name: 'Add' }).click();
+    await expect(page.getByRole('dialog', { name: 'Add match' })).toBeVisible();
 
+    await pickOption(
+      page,
+      dialog(page).getByRole('combobox', { name: 'Select opponents' }),
+      OPPONENT,
+    );
+    await fillDate(page, 'Date', day);
+    await dialog(page).getByLabel('Time').fill('19:00');
+    await pickOption(
+      page,
+      dialog(page).getByRole('combobox', { name: 'Select locations' }),
+      'Nhà thi đấu Phú Thọ',
+    );
+    // An unplayed match has no score fields.
     await expect(
-      page.getByRole('heading', { name: 'Add Match' }),
+      dialog(page).getByRole('spinbutton', { name: 'Our Score' }),
+    ).toHaveCount(0);
+    await dialog(page).getByRole('button', { name: 'Add' }).click();
+
+    await expectToast(page, 'Added match successfully');
+    await dialog(page).getByRole('button', { name: 'Close' }).click();
+
+    await page.goto(listUrl);
+    await expect(matchRow(page)).toContainText('Scheduled');
+  });
+
+  test('records the result once played', async ({ page }) => {
+    await page.goto(listUrl);
+    await matchRow(page).getByRole('cell', { name: 'Scheduled' }).click();
+    await expect(
+      page.getByRole('dialog', { name: 'Update match' }),
     ).toBeVisible();
 
-    // Check for form fields
-    await expect(page.getByLabel('Date')).toBeVisible();
-    await expect(page.getByLabel('Time')).toBeVisible();
+    await dialog(page).getByText('Completed', { exact: true }).click();
+    await dialog(page)
+      .getByRole('spinbutton', { name: 'Our Score' })
+      .fill('82');
+    await dialog(page)
+      .getByRole('spinbutton', { name: 'Their Score' })
+      .fill('71');
+    await dialog(page).getByRole('button', { name: 'Update' }).click();
+
+    await expectToast(page, 'Updated match successfully');
+    await expect(matchRow(page)).toContainText('82 - 71');
+    await expect(matchRow(page)).toContainText('Win');
   });
 
-  test('disables Submit button when form is invalid', async ({ page }) => {
-    const dialog = new DialogPOM(page);
-    await dialog.open('Add');
-    await dialog.expectSubmitDisabled('Add');
-  });
-
-  test('adds a new match with required fields', async ({ page }) => {
-    await page.getByRole('button', { name: 'Add' }).click();
-
-    // Fill required fields
-    await fillDate(page, 'Date', '2026-12-31');
-    await page.getByLabel('Time').fill('18:00');
-
-    // Select opponent team
-    const opponentSelect = page.locator('[data-testid="opponent-select"]');
-    if (await opponentSelect.isVisible()) {
-      await opponentSelect.click();
-      const firstOption = page.getByRole('option').first();
-      if (await firstOption.isVisible()) {
-        await firstOption.click();
-      }
-    }
-
-    // Fill scores
-    await page.getByLabel('Home Score').fill(uniqueScore());
-    await page.getByLabel('Away Score').fill(uniqueScore());
-
-    const submitButton = page
-      .getByRole('dialog')
-      .getByRole('button', { name: 'Add' });
-
-    if (await submitButton.isEnabled()) {
-      await submitButton.click();
-
-      // Verify success toast
-      await expect(page.getByText(/Saving match|success/i)).toBeVisible();
-    }
-  });
-
-  test('displays league selection', async ({ page }) => {
-    await page.getByRole('button', { name: 'Add' }).click();
-
-    const leagueSelect = page.locator('text=League');
-    await expect(leagueSelect).toBeVisible();
-  });
-
-  test('displays location selection', async ({ page }) => {
-    await page.getByRole('button', { name: 'Add' }).click();
-
-    const locationSelect = page.locator('text=Location');
-    await expect(locationSelect).toBeVisible();
-  });
-
-  test('closes dialog on cancel', async ({ page }) => {
-    const dialog = new DialogPOM(page);
-    await dialog.open('Add');
-    await dialog.close();
-  });
-});
-
-test.describe('Update Match', () => {
-  test('opens dialog when clicking a table row', async ({ page }) => {
-    await new TablePOM(page).clickFirstRow();
-    await expect(
-      page.getByRole('heading', { name: 'Update Match' }),
-    ).toBeVisible();
-  });
-
-  test('updates an existing match', async ({ page }) => {
-    const firstRow = page.getByRole('row').nth(1);
-    if (await firstRow.isVisible()) {
-      await firstRow.click();
-
-      // Modify the score
-      const homeScoreField = page.getByLabel('Home Score');
-      if (await homeScoreField.isVisible()) {
-        await homeScoreField.clear();
-        await homeScoreField.fill('5');
-
-        await page
-          .getByRole('dialog')
-          .getByRole('button', { name: 'Update' })
-          .click();
-
-        await expect(page.getByText(/Saving match|success/i)).toBeVisible();
-      }
-    }
-  });
-
-  test('pre-fills form with existing match data', async ({ page }) => {
-    const firstRow = page.getByRole('row').nth(1);
-    if (await firstRow.isVisible()) {
-      await firstRow.click();
-
-      const dateField = page.getByLabel('Date');
-      await expect(dateField).not.toHaveValue('');
-    }
-  });
-});
-
-test.describe('Delete Match', () => {
-  test('selects and deletes matches via checkboxes', async ({ page }) => {
-    await testDeleteWithCheckbox(page, 'E2E', /Successfully deleted.*match/i);
-  });
-
-  test('shows loading state during deletion', async ({ page }) => {
-    const searchInput = page.getByPlaceholder('Search...');
-    await searchInput.fill('E2E');
-
-    const count = await page
+  test('deletes the match', async ({ page }) => {
+    await page.goto(listUrl);
+    await matchRow(page)
       .getByRole('checkbox', { name: 'Select row' })
-      .count();
+      .click({ force: true });
+    await page.getByRole('button', { name: 'Delete' }).click();
 
-    if (count > 0) {
-      const selectAll = page.getByRole('checkbox', {
-        name: 'Select all rows',
-      });
-      await selectAll.click({ force: true });
-
-      await page.getByRole('button', { name: 'Delete' }).click();
-
-      // Should show loading toast
-      await expect(page.getByText(/Deleting matches/i)).toBeVisible();
-    }
-  });
-});
-
-test.describe('Match Details Display', () => {
-  test('displays score in correct format', async ({ page }) => {
-    const firstRow = page.getByRole('row').nth(1);
-    if (await firstRow.isVisible()) {
-      const scoreCell = firstRow
-        .getByRole('cell')
-        .filter({ hasText: /-/ })
-        .first();
-      const scoreText = await scoreCell.textContent();
-
-      // Score should be in format "X - Y"
-      expect(scoreText).toMatch(/\d+\s*-\s*\d+/);
-    }
-  });
-
-  test('displays date with day and formatted date', async ({ page }) => {
-    const firstRow = page.getByRole('row').nth(1);
-    if (await firstRow.isVisible()) {
-      const dateCell = firstRow.getByRole('cell').last();
-      const dateText = await dateCell.textContent();
-
-      // Should contain day of week and formatted date
-      expect(dateText?.length).toBeGreaterThan(0);
-    }
-  });
-
-  test('displays league link', async ({ page }) => {
-    const firstRow = page.getByRole('row').nth(1);
-    if (await firstRow.isVisible()) {
-      const leagueCell = firstRow
-        .getByRole('cell')
-        .filter({ has: page.getByRole('link') })
-        .first();
-
-      if (await leagueCell.isVisible()) {
-        const link = leagueCell.getByRole('link');
-        await expect(link).toBeVisible();
-      }
-    }
-  });
-
-  test('displays location link', async ({ page }) => {
-    const firstRow = page.getByRole('row').nth(1);
-    if (await firstRow.isVisible()) {
-      const locationLinks = firstRow.getByRole('link');
-      const count = await locationLinks.count();
-
-      // Should have at least one link (league or location)
-      expect(count).toBeGreaterThanOrEqual(0);
-    }
-  });
-});
-
-test.describe('Match Stats Integration', () => {
-  test('stats cards display numeric values', async ({ page }) => {
-    const totalMatches = page.getByText('Total Matches').locator('..');
-    const statsValue = totalMatches.locator('[data-stat-value]');
-
-    if (await statsValue.isVisible()) {
-      const value = await statsValue.textContent();
-      expect(value).toBeTruthy();
-    }
-  });
-
-  test('win streak shows positive or negative indicator', async ({ page }) => {
-    const winStreakCard = page.getByText('Win Streak').locator('..');
-    await expect(winStreakCard).toBeVisible();
-  });
-
-  test('win rate displays percentage', async ({ page }) => {
-    const winRateCard = page.getByText('Avg Win Rate').locator('..');
-    await expect(winRateCard).toBeVisible();
+    await expectToast(page, 'Successfully deleted 1 match.');
+    await expect(matchRow(page)).toHaveCount(0);
   });
 });
