@@ -7,12 +7,18 @@ import {
 } from '@/utils/constants';
 import { AchievementType } from '@/utils/enum';
 
+// A blank title is stored as null so the type's translated label shows instead.
+const blankToNull = (value: unknown) =>
+  typeof value === 'string' && value.trim() === '' ? null : value;
+
 export const UpsertAchievementSchema = z
   .object({
     type: z
       .enum(SELECTABLE_ACHIEVEMENT_TYPES)
       .default(AchievementType.CHAMPION),
-    title: z.string().min(3).max(128),
+    title: z
+      .preprocess(blankToNull, z.string().trim().min(3).max(128).nullish())
+      .transform((title) => title ?? null),
     year: z
       .int()
       .min(new Date(ESTABLISHED_DATE).getFullYear(), {
@@ -25,6 +31,10 @@ export const UpsertAchievementSchema = z
     league_id: z.uuid().nullish(),
     player_id: z.string().nullish(),
     description: z.string().max(256).nullish(),
+  })
+  .refine((data) => data.type !== AchievementType.CUSTOM || !!data.title, {
+    message: 'customTitleRequired',
+    path: ['title'],
   })
   .refine(
     (data) =>

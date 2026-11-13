@@ -1,5 +1,6 @@
 import { relations, sql } from 'drizzle-orm';
 import {
+  check,
   integer,
   pgEnum,
   pgTable,
@@ -31,7 +32,9 @@ export const AchievementTable = pgTable(
       .notNull()
       .references(() => TeamTable.team_id, { onDelete: 'cascade' }),
     type: achievementTypeEnum().notNull(),
-    title: varchar({ length: 128 }).notNull(),
+    // Only a custom honor needs its own title. Otherwise null means "show the
+    // type's label", translated at read time so it follows the UI locale.
+    title: varchar({ length: 128 }),
     year: integer().notNull(),
     // "set null" so the honor survives deletion of its league record
     league_id: uuid().references(() => LeagueTable.league_id, {
@@ -46,6 +49,10 @@ export const AchievementTable = pgTable(
     updated_at,
   },
   (table) => [
+    check(
+      'custom_achievement_has_title',
+      sql`${table.type} != 'custom' OR ${table.title} IS NOT NULL`,
+    ),
     // One honor of each type per league and team, except "custom" which may repeat
     uniqueIndex('achievement_team_league_type_idx')
       .on(table.team_id, table.league_id, table.type)
