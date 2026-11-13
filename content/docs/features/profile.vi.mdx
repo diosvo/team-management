@@ -13,7 +13,7 @@ description: Ảnh đại diện, thông tin cá nhân và trong đội; mỗi s
 - Trong Hồ sơ cá nhân (**Profile**), mỗi thành viên xem và sửa thông tin của
   chính mình.
 - Admin (`SUPER_ADMIN`) quản lý thông tin trong đội của bất kỳ thành viên nào:
-  vai trò, vị trí, trạng thái, số áo.
+  vai trò, vị trí, trạng thái, số áo, tên trên áo và size.
 - Mở từ menu tài khoản (hồ sơ của bạn) hoặc từ một dòng trong
   [Danh sách đội](/docs/vi/features/team-management/roster).
 
@@ -92,9 +92,12 @@ Personal và Team.
   </Tab>
   <Tab value="Team">
 
-    - Vai trò, vị trí, trạng thái, số áo, ngày vào đội (của lần gia nhập hiện
-      tại).
-    - Vai trò và vị trí: chỉ admin sửa. Số áo: chỉ cầu thủ mới có.
+    - Vai trò, vị trí, trạng thái, số áo, tên trên áo, size áo, size quần,
+      loại quần, ngày vào đội (của lần gia nhập hiện tại).
+    - Vai trò và vị trí: chỉ admin sửa. Thông tin áo và size: chỉ cầu thủ mới
+      có.
+    - Tên trên áo và size được điền sẵn vào
+      [form đặt áo](/docs/vi/features/team-management/roster).
     - Lưu với trạng thái `active` sẽ mutate SWR `CACHE_KEY.PLAYERS`, nên các ô
       chọn cầu thủ cập nhật theo.
 
@@ -150,6 +153,18 @@ Kiểm tra dữ liệu theo `USER_SCHEMA_VALIDATION` trong `src/schemas/utils.ts
     'player.jersey_number': {
       type: 'number',
       description: '0–99, không trùng trong đội.',
+    },
+    'player.jersey_name': {
+      type: 'string',
+      description: 'In sau lưng áo; tối đa 20 ký tự, được trùng.',
+    },
+    'player.shirt_size / player.short_size': {
+      type: 'JerseySize',
+      description: 'XS | S | M | L | XL | 2XL | 3XL | 4XL',
+    },
+    'player.short_form': {
+      type: 'ShortForm',
+      description: 'short | standard (Form ngắn / Form tiêu chuẩn).',
     },
     'player.position / coach.position': {
       type: 'PlayerPosition | CoachPosition',
@@ -216,7 +231,8 @@ dùng `withResource('profile')`.
   </Accordion>
   <Accordion title="Admin sửa hồ sơ người khác, không sửa hồ sơ mình">
 
-    - Hồ sơ người khác: sửa được Role, Position, State và Jersey Number.
+    - Hồ sơ người khác: sửa được Role, Position, State, Jersey Number, Jersey
+      Name, Shirt Size và Short Size.
     - Hồ sơ của mình: cả hai tab chỉ xem; vẫn đổi được ảnh đại diện.
 
   </Accordion>

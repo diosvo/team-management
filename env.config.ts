@@ -39,6 +39,12 @@ const envSchema = z.object({
     .describe(
       'Token with Issues read/write access on the feedback repository. Required to send in-app feedback for reporters without a GitHub account.',
     ),
+  GOOGLE_CLIENT_ID: z
+    .string()
+    .default('')
+    .describe(
+      'OAuth web client ID from Google Cloud with the Drive and Sheets APIs enabled and <origin>/google-callback as an authorized redirect URI. Enables opening the jersey form in Google Sheets.',
+    ),
   PW_USERNAME: z.string().default(''),
   PW_PASSWORD: z.string().default(''),
 });

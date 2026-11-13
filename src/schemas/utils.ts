@@ -10,7 +10,9 @@ import {
 } from '@/utils/constants';
 import {
   CoachPosition,
+  JERSEY_SIZES,
   PlayerPosition,
+  SHORT_FORMS,
   UserRole,
   UserState,
 } from '@/utils/enum';
@@ -43,6 +45,16 @@ export const PLAYER_VALIDATION = {
       z.coerce.number().min(0).max(99),
     ])
     .optional(),
+  // Printed on the back of the jersey; blank clears it
+  jersey_name: z
+    .string()
+    .trim()
+    .max(20)
+    .transform((value) => value || null)
+    .nullish(),
+  shirt_size: z.enum(JERSEY_SIZES).nullish(),
+  short_size: z.enum(JERSEY_SIZES).nullish(),
+  short_form: z.enum(SHORT_FORMS).nullish(),
   // Temporrily disabled
   // height: z.coerce.number().int().min(0).max(200).nullish(),
   // weight: z.coerce.number().int().min(0).max(100).nullish(),

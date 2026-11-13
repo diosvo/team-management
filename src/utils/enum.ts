@@ -52,6 +52,23 @@ export const PlayerPosition = createEnum([
 ] as const);
 export type PlayerPosition = enumUnion<typeof PlayerPosition>;
 
+// Universal labels, kept uppercase in the database and on the jersey form.
+export const JERSEY_SIZES = [
+  'XS',
+  'S',
+  'M',
+  'L',
+  'XL',
+  '2XL',
+  '3XL',
+  '4XL',
+] as const;
+export type JerseySize = (typeof JERSEY_SIZES)[number];
+
+// Cut of the shorts; labelled "Form ngắn" / "Form tiêu chuẩn" on the jersey form.
+export const SHORT_FORMS = ['short', 'standard'] as const;
+export type ShortForm = (typeof SHORT_FORMS)[number];
+
 export const AssetCategory = createEnum([
   'equipment',
   'training',

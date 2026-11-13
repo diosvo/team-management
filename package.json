@@ -22,6 +22,7 @@
     "better-auth": "^1.6.25",
     "drizzle-orm": "^0.45.2",
     "es-toolkit": "^1.50.0",
+    "exceljs": "4.4.0",
     "fumadocs-core": "16.14.3",
     "fumadocs-mdx": "15.2.3",
     "fumadocs-typescript": "5.4.1",

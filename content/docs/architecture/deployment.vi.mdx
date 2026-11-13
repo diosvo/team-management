@@ -112,6 +112,11 @@ gói Chromium.
       description:
         'Gói nén Brotli của binary Chromium, chỉ dùng trên production.',
     },
+    GOOGLE_CLIENT_ID: {
+      type: 'string',
+      description:
+        'OAuth web client ID có bật Drive API và Sheets API, redirect URI là `/google-callback`. Không bắt buộc: hiện nút “Mở bằng Google Sheets” (Open in Google Sheets) ở Form đặt áo.',
+    },
     GITHUB_TOKEN: {
       type: 'string',
       description: 'Quyền ghi Issues trên repo nhận Góp ý (Feedback).',

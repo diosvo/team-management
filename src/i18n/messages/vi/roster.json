@@ -13,6 +13,30 @@
     "role": "Vai trò",
     "state": "Trạng thái"
   },
+  "jerseyOrder": {
+    "checkboxesFailed": "Đã mở, nhưng cột “Đã thu tiền” chưa thành checkbox: hãy bật Google Sheets API cho ứng dụng.",
+    "createNew": "Tạo mới",
+    "existing": "Sheet năm nay đã được tạo ngày {date}. Bạn có thể mở lại, hoặc tạo sheet mới để thay thế.",
+    "exporting": "Đang xuất...",
+    "failed": "Không thể tạo file đặt áo.",
+    "openExisting": "Mở sheet",
+    "openInSheets": "Mở bằng Google Sheets",
+    "opening": "Đang mở...",
+    "otherProvider": "Khác",
+    "preparing": "Đang tạo Google Sheet…",
+    "price": "Đơn giá mặc định mỗi bộ (VND)",
+    "priceHelper": "Mỗi bộ có cùng giá này; sheet tự tính tổng theo số dòng đã điền.",
+    "protectFailed": "Đã mở, nhưng cột “Đã thu tiền” chưa được khoá: hãy bật Google Sheets API cho ứng dụng.",
+    "provider": "Nhà cung cấp đồ",
+    "providerHelper": "Bảng size của nhà cung cấp sẽ được thêm vào tab “Bảng size”.",
+    "shareFailed": "Đã mở, nhưng link chưa công khai: hãy chia sẻ sheet trong Google Sheets.",
+    "sheetFailed": "Không thể mở form bằng Google Sheets.",
+    "submit": "Tải xuống",
+    "tabBlocked": "Trình duyệt đã chặn tab mới. Hãy cho phép pop-up cho trang này rồi thử lại.",
+    "tabFailed": "Không thể tạo Google Sheet. Bạn có thể đóng tab này.",
+    "title": "Form đặt áo",
+    "trigger": "Form đặt áo"
+  },
   "metadata": {
     "description": "Xem đội hình của đội",
     "title": "Đội hình"

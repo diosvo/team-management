@@ -156,6 +156,10 @@
     "completed": "Đã hoàn thành",
     "scheduled": "Đã lên lịch"
   },
+  "shortForm": {
+    "short": "Form ngắn",
+    "standard": "Form tiêu chuẩn"
+  },
   "testDirection": {
     "higher": "Càng cao càng tốt",
     "lower": "Càng thấp càng tốt"
