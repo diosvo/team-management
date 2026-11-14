@@ -21,11 +21,11 @@ const envSchema = z.object({
     .describe(
       'Signing secret (whsec_...) of the Resend webhook endpoint. Required to record email delivery statuses.',
     ),
-  BLOB_READ_WRITE_TOKEN: z
+  UPLOAD_DIR: z
     .string()
-    .default('')
+    .default('uploads')
     .describe(
-      'Read/write token for the Vercel Blob store. Required to persist generated reports.',
+      'Directory for uploaded images and generated reports, relative to the app root. Mount it as a persistent volume in production.',
     ),
   CHROMIUM_PACK_URL: z
     .string()

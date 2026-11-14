@@ -32,7 +32,7 @@
   },
   "imageUploader": {
     "invalidType": "Chỉ chấp nhận ảnh PNG hoặc JPEG",
-    "tooLarge": "Ảnh phải nhỏ hơn 100 KB",
+    "tooLarge": "Ảnh phải nhỏ hơn 10 MB",
     "upload": "Tải ảnh lên"
   },
   "locationLink": {

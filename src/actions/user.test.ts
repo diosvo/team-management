@@ -2,7 +2,12 @@ import { ESTABLISHED_DATE } from '@/utils/constants';
 import { CoachPosition, PlayerPosition, UserRole } from '@/utils/enum';
 
 import auth from '@/lib/auth';
-import { deleteFile, getFile, uploadFile } from '@/lib/blob';
+import {
+  deleteFile,
+  getFile,
+  ImageValidationError,
+  uploadImage,
+} from '@/lib/storage';
 
 import { revalidate } from '@/actions/cache';
 import { insertCoach } from '@/db/coach';
@@ -84,9 +89,10 @@ vi.mock('@/db/player', () => ({
   isJerseyNumberTaken: vi.fn(),
 }));
 
-vi.mock('@/lib/blob', () => ({
+vi.mock('@/lib/storage', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/storage')>()),
   getFile: vi.fn(),
-  uploadFile: vi.fn(),
+  uploadImage: vi.fn(),
   deleteFile: vi.fn(),
 }));
 
@@ -466,12 +472,10 @@ describe('User Actions', () => {
 
   describe('uploadAvatar', () => {
     const file = new File(['avatar'], 'avatar.png', { type: 'image/png' });
-    const pathname = 'users/user-123/avatar-xyz.png';
+    const pathname = 'users/user-123/avatar-xyz.webp';
 
     test('uploads avatar and updates the user record', async () => {
-      vi.mocked(uploadFile).mockResolvedValue({ pathname } as Awaited<
-        ReturnType<typeof uploadFile>
-      >);
+      vi.mocked(uploadImage).mockResolvedValue({ pathname });
       vi.mocked(updateUser).mockResolvedValue({
         ...mockResult,
         command: 'UPDATE',
@@ -479,9 +483,7 @@ describe('User Actions', () => {
 
       const result = await uploadAvatar(MOCK_USER.id, null, file);
 
-      expect(uploadFile).toHaveBeenCalledWith('users/' + MOCK_USER.id, file, {
-        contentType: file.type,
-      });
+      expect(uploadImage).toHaveBeenCalledWith('users/' + MOCK_USER.id, file);
       expect(updateUser).toHaveBeenCalledWith(MOCK_USER.id, {
         image: pathname,
       });
@@ -499,7 +501,7 @@ describe('User Actions', () => {
         uploadAvatar('someone-elses-id', null, file),
       ).rejects.toThrow('FORBIDDEN');
 
-      expect(uploadFile).not.toHaveBeenCalled();
+      expect(uploadImage).not.toHaveBeenCalled();
     });
 
     test('deletes the old avatar when it is the one on record', async () => {
@@ -508,9 +510,7 @@ describe('User Actions', () => {
         ...MOCK_USER,
         image: oldPath,
       });
-      vi.mocked(uploadFile).mockResolvedValue({ pathname } as Awaited<
-        ReturnType<typeof uploadFile>
-      >);
+      vi.mocked(uploadImage).mockResolvedValue({ pathname });
       vi.mocked(updateUser).mockResolvedValue({
         ...mockResult,
         command: 'UPDATE',
@@ -521,7 +521,7 @@ describe('User Actions', () => {
       expect(deleteFile).toHaveBeenCalledWith(oldPath);
     });
 
-    test('forbids deleting a blob the user does not own', async () => {
+    test('forbids deleting a file the user does not own', async () => {
       // `users/user-123` is a prefix of another user's key, but not the record
       vi.mocked(selectUserById).mockResolvedValue({
         ...MOCK_USER,
@@ -532,12 +532,27 @@ describe('User Actions', () => {
         uploadAvatar(MOCK_USER.id, 'users/user-1234-other.png', file),
       ).rejects.toThrow();
 
-      expect(uploadFile).not.toHaveBeenCalled();
+      expect(uploadImage).not.toHaveBeenCalled();
       expect(deleteFile).not.toHaveBeenCalled();
     });
 
+    test('returns a translated error when the image is rejected', async () => {
+      vi.mocked(uploadImage).mockRejectedValue(
+        new ImageValidationError('invalidImage'),
+      );
+
+      const result = await uploadAvatar(MOCK_USER.id, null, file);
+
+      expect(updateUser).not.toHaveBeenCalled();
+      expect(getDbErrorMessage).not.toHaveBeenCalled();
+      expect(result).toEqual({
+        success: false,
+        message: 'Only PNG or JPEG images are allowed',
+      });
+    });
+
     test('returns error when upload fails', async () => {
-      vi.mocked(uploadFile).mockRejectedValue(new Error(errorMessage));
+      vi.mocked(uploadImage).mockRejectedValue(new Error(errorMessage));
       vi.mocked(getDbErrorMessage).mockReturnValue({
         message: errorMessage,
         constraint: null,

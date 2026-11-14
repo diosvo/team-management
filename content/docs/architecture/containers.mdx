@@ -22,7 +22,7 @@ Container(client, "Client islands", "React 19, Chakra UI", "Forms, tables, chart
 Container(server, "Next.js server", "Next.js 16, Node", "Pages, actions, API routes")
 Container(chromium, "Headless Chromium", "puppeteer-core", "Dashboard to PDF")
 ContainerDb(db, "PostgreSQL", "Neon, Drizzle", "22 tables")
-ContainerDb(blob, "Vercel Blob", "Private store", "Avatars, logos, PDFs")
+ContainerDb(files, "File storage", "UPLOAD_DIR volume", "Avatars, logos, PDFs")
 }
 
 Boundary(ext, "External systems", "") {
@@ -35,7 +35,7 @@ Rel(client, server, "Server actions, RSC")
 Rel(cron, server, "GET /api/reports/\*")
 Rel(server, chromium, "Renders /dashboard")
 Rel(server, db, "SQL")
-Rel(server, blob, "Files")
+Rel(server, files, "Files")
 Rel(server, resend, "Email")
 Rel(server, github, "Issues")
 
@@ -76,10 +76,10 @@ UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")
         'Local Postgres in dev, Neon in prod, same migrations. See Data model.',
       required: true,
     },
-    'Vercel Blob': {
-      type: '@vercel/blob 2',
+    'File storage': {
+      type: 'src/lib/storage · sharp',
       description:
-        'Private: users/<id>, teams/<team_id>, reports. Reports expire in 90 days (RETENTION_DAYS).',
+        'Private files under UPLOAD_DIR: users/<id>, teams/<team_id> (WebP, ≤ 512 px), reports. Reports expire in 90 days (RETENTION_DAYS).',
       required: true,
     },
   }}
@@ -110,7 +110,7 @@ loaded by `await import()` only on export.
     'GET /api/reports/download': {
       type: 'session + team',
       description:
-        'Streams a stored PDF from Blob; 403 for other teams unless SUPER_ADMIN.',
+        'Streams a stored PDF from file storage; 403 for other teams unless SUPER_ADMIN.',
       required: true,
     },
     'GET /api/reports/schedule': {
@@ -120,7 +120,7 @@ loaded by `await import()` only on export.
     },
     'GET /api/reports/retention': {
       type: 'CRON_SECRET',
-      description: 'Deletes expired report blobs and marks their rows expired.',
+      description: 'Deletes expired report files and marks their rows expired.',
       required: true,
     },
     'POST /api/webhooks/resend': {

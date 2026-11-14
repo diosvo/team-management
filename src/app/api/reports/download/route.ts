@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 
 import { ReportStatus, UserRole } from '@/utils/enum';
 
-import { getFileBytes } from '@/lib/blob';
+import { getFileBytes } from '@/lib/storage';
 
 import { verifySession } from '@/actions/auth';
 import { selectReportById } from '@/db/report';

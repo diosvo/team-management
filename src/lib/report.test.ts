@@ -1,8 +1,8 @@
 import { Interval } from '@/utils/enum';
 
 import auth from '@/lib/auth';
-import { uploadFile } from '@/lib/blob';
 import { getBrowser } from '@/lib/puppeteer';
+import { uploadFile } from '@/lib/storage';
 
 import { MOCK_REPORT_HISTORY } from '@/test/mocks/report';
 import { MOCK_TEAM } from '@/test/mocks/team';
@@ -18,7 +18,7 @@ import {
 } from './report';
 
 vi.mock('@/lib/puppeteer', () => ({ getBrowser: vi.fn() }));
-vi.mock('@/lib/blob', () => ({ uploadFile: vi.fn() }));
+vi.mock('@/lib/storage', () => ({ uploadFile: vi.fn() }));
 vi.mock('@/lib/auth', () => ({
   default: { api: { signInEmail: vi.fn() } },
 }));
@@ -203,21 +203,18 @@ describe('renderReportPdf', () => {
 });
 
 describe('storeReportPdf', () => {
-  test('uploads the buffer as a PDF', async () => {
-    const blob = { pathname: 'reports/1.pdf' };
-    vi.mocked(uploadFile).mockResolvedValue(blob as never);
+  test('stores the buffer as a PDF under reports/', async () => {
+    const stored = { pathname: 'reports/1.pdf' };
+    vi.mocked(uploadFile).mockResolvedValue(stored);
 
-    const result = await storeReportPdf(
-      'reports/1.pdf',
-      Buffer.from('%PDF-1.4'),
-    );
+    const result = await storeReportPdf(Buffer.from('%PDF-1.4'));
 
     expect(uploadFile).toHaveBeenCalledWith(
-      'reports/1.pdf',
+      'reports',
       Buffer.from('%PDF-1.4'),
-      { contentType: 'application/pdf' },
+      'pdf',
     );
-    expect(result).toBe(blob);
+    expect(result).toBe(stored);
   });
 });
 

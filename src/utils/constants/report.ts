@@ -28,6 +28,6 @@ export const SCHEDULED_INTERVAL_LABEL = new Map<string, string>(
   SCHEDULED_INTERVAL_SELECTION.map(({ label, value }) => [value, label]),
 );
 
-/** Auth-gated endpoint that streams a stored report PDF from private Blob. */
+/** Auth-gated endpoint that streams a stored report PDF from private file storage. */
 export const reportDownloadUrl = (report_id: string) =>
   `/api/reports/download?id=${report_id}`;

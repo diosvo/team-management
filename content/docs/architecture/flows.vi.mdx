@@ -114,7 +114,7 @@ sequenceDiagram
     participant E as executeSchedule
     participant DB as PostgreSQL
     participant C as Chromium
-    participant B as Vercel Blob
+    participant B as File storage
     participant M as Resend
     V->>R: Bearer CRON_SECRET (01:00 UTC)
     R->>DB: selectDueSchedulesForUpdate(20)
@@ -159,7 +159,7 @@ Chi tiết hơn về lần chạy báo cáo theo lịch.
   <Accordion title="Báo cáo cũ được dọn thế nào?">
 
     - `GET /api/reports/retention` chạy lúc 02:00 UTC.
-    - Xóa các blob đã quá `expires_at` và đánh dấu dòng tương ứng là expired.
+    - Xóa các file đã quá `expires_at` và đánh dấu dòng tương ứng là expired.
     - Xóa không được thì hôm sau thử lại.
 
   </Accordion>

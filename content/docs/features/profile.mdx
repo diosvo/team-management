@@ -61,7 +61,7 @@ UI-only flag from `getUserProfile`; disables Edit on the Personal and Team tabs.
   }}
 />
 
-- `old_path` must be equal, not a prefix: Blob keys have a random suffix.
+- `old_path` must be equal, not a prefix: legacy keys have a random suffix.
 - `users/1` would prefix-match `users/12-abc`.
 - So only the caller's current avatar is deletable.
 
@@ -72,7 +72,7 @@ UI-only flag from `getUserProfile`; disables Edit on the Personal and Team tabs.
 
     - Avatar (initials fallback), name and role.
     - Upload overlay for the owner only (`sessionUser.id === user.id`).
-    - `ImageUploader`: PNG or JPEG, up to 100 KB.
+    - `ImageUploader`: PNG or JPEG, up to 10 MB; stored as a 512 px WebP.
     - On success the session is refetched, so the header avatar updates.
 
   </Tab>
@@ -97,7 +97,7 @@ UI-only flag from `getUserProfile`; disables Edit on the Personal and Team tabs.
 
 - **Unique jersey per team.** `isJerseyNumberTaken` (excluding the edited
   member) runs before any write.
-- **Private avatar Blobs.** Under `users/<user_id>` with a random suffix.
+- **Private avatar files.** WebP under `users/<user_id>/<uuid>.webp`.
 - **Avatar reads.** `getAvatar` returns a base64 data URL, cached by
   `useUserAvatar` (SWR immutable).
 - **Join date lives on the membership.** `join_date` is read from and written
@@ -163,12 +163,12 @@ Server actions in `src/actions/user.ts`; all but `getUserProfile` use
     },
     'getAvatar(image_path)': {
       type: 'string | null',
-      description: 'Data URL of a private blob under users/.',
+      description: 'Data URL of a private file under users/.',
       required: true,
     },
     'uploadAvatar(user_id, old_path, file)': {
       type: 'Response<{ image }>',
-      description: 'Upload, update image, delete the previous blob.',
+      description: 'Upload, update image, delete the previous file.',
       required: true,
     },
     'updatePersonalInfo(user_id, values)': {
@@ -211,8 +211,8 @@ Server actions in `src/actions/user.ts`; all but `getUserProfile` use
   </Accordion>
   <Accordion title="Avatar limits and replacement">
 
-    - Over 100 KB or not PNG/JPEG: rejected client-side.
-    - Valid upload: updates the avatar, deletes the old blob, refreshes the
+    - Over 10 MB or not PNG/JPEG: rejected client-side, and again on the server.
+    - Valid upload: updates the avatar, deletes the old file, refreshes the
       session.
     - old_path not equal to the stored image: rejected, nothing deleted.
 

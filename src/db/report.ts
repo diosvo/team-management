@@ -278,7 +278,7 @@ export async function updateDeliveryStatus(
 }
 
 /**
- * @description Stored reports whose blob is past its expiry and not yet
+ * @description Stored reports whose file is past its expiry and not yet
  * cleaned up — targeted by the retention job.
  */
 export async function selectExpiredReports(now: Date) {
@@ -297,7 +297,7 @@ export async function selectExpiredReports(now: Date) {
 }
 
 /**
- * @description Mark reports expired and drop their blob references.
+ * @description Mark reports expired and drop their file references.
  */
 export async function updateExpiredReports(report_ids: Array<string>) {
   return await db

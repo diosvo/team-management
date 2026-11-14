@@ -1,15 +1,15 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
-import { deleteFile } from '@/lib/blob';
 import { isAuthorizedCron } from '@/lib/request';
+import { deleteFile } from '@/lib/storage';
 
 import { selectExpiredReports, updateExpiredReports } from '@/db/report';
 
 export const maxDuration = 60; // in seconds
 
 /**
- * Retention job: delete blobs of reports past their expiry and mark the rows
- * expired so they drop off the download list. Blob deletes run in parallel;
+ * Retention job: delete files of reports past their expiry and mark the rows
+ * expired so they drop off the download list. File deletes run in parallel;
  * rows whose delete failed are left for the next run.
  */
 export async function GET(req: NextRequest) {

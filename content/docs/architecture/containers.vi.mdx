@@ -24,7 +24,7 @@ Container(client, "Client island", "React 19, Chakra UI", "Form, bảng, biểu 
 Container(server, "Server Next.js", "Next.js 16, Node", "Trang, action, API route")
 Container(chromium, "Chromium headless", "puppeteer-core", "Xuất Dashboard ra PDF")
 ContainerDb(db, "PostgreSQL", "Neon, Drizzle", "22 bảng")
-ContainerDb(blob, "Vercel Blob", "Kho riêng tư", "Ảnh đại diện, logo, PDF")
+ContainerDb(files, "File storage", "UPLOAD_DIR volume", "Ảnh đại diện, logo, PDF")
 }
 
 Boundary(ext, "Hệ thống ngoài", "") {
@@ -37,7 +37,7 @@ Rel(client, server, "Server action, RSC")
 Rel(cron, server, "GET /api/reports/\*")
 Rel(server, chromium, "Render /dashboard")
 Rel(server, db, "SQL")
-Rel(server, blob, "Tệp")
+Rel(server, files, "Tệp")
 Rel(server, resend, "Email")
 Rel(server, github, "Issue")
 
@@ -78,10 +78,10 @@ UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")
         'Dev dùng Postgres trên máy, prod dùng Neon, chung một bộ migration. Xem Mô hình dữ liệu.',
       required: true,
     },
-    'Vercel Blob': {
-      type: '@vercel/blob 2',
+    'File storage': {
+      type: 'src/lib/storage · sharp',
       description:
-        'Private: users/<id>, teams/<team_id>, reports. Báo cáo hết hạn sau 90 ngày (RETENTION_DAYS).',
+        'File riêng tư trong UPLOAD_DIR: users/<id>, teams/<team_id> (WebP, ≤ 512 px), reports. Báo cáo hết hạn sau 90 ngày (RETENTION_DAYS).',
       required: true,
     },
   }}
@@ -113,7 +113,7 @@ chỉ tải qua `await import()` khi bạn bấm xuất.
     'GET /api/reports/download': {
       type: 'session + team',
       description:
-        'Stream PDF đã lưu từ Blob; trả 403 nếu là đội khác, trừ SUPER_ADMIN.',
+        'Stream PDF đã lưu từ kho file; trả 403 nếu là đội khác, trừ SUPER_ADMIN.',
       required: true,
     },
     'GET /api/reports/schedule': {
@@ -124,7 +124,7 @@ chỉ tải qua `await import()` khi bạn bấm xuất.
     'GET /api/reports/retention': {
       type: 'CRON_SECRET',
       description:
-        'Xóa blob báo cáo đã hết hạn và đánh dấu dòng tương ứng là expired.',
+        'Xóa file báo cáo đã hết hạn và đánh dấu dòng tương ứng là expired.',
       required: true,
     },
     'POST /api/webhooks/resend': {

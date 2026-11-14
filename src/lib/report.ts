@@ -2,20 +2,19 @@ import env from '@env';
 import type { Interval } from '@/utils/enum';
 
 import auth from '@/lib/auth';
-import { uploadFile } from '@/lib/blob';
 import { getBrowser } from '@/lib/puppeteer';
+import { uploadFile } from '@/lib/storage';
 
 import type { DateRange } from '@/types/common';
 
 /** Days a generated report stays downloadable before the retention job prunes it. */
 export const RETENTION_DAYS = 90;
 
-/** Blob expiry for a report generated now. */
+/** File expiry for a report generated now. */
 export function reportExpiresAt(): Date {
   return new Date(Date.now() + RETENTION_DAYS * 86_400_000);
 }
 
-/** Blob pathname for a report PDF, unique-suffixed on upload. */
 /** The dashboard page a report PDF is rendered from. */
 export const dashboardPath = (range: DateRange): string =>
   `/dashboard?${new URLSearchParams({ ...range })}`;
@@ -140,11 +139,9 @@ export async function renderReportPdf({
   }
 }
 
-/** Upload a report PDF to private Blob storage. */
-export async function storeReportPdf(pathname: string, buffer: Buffer) {
-  return await uploadFile(pathname, buffer, {
-    contentType: 'application/pdf',
-  });
+/** Store a report PDF under `reports/` in private file storage. */
+export async function storeReportPdf(buffer: Buffer) {
+  return await uploadFile('reports', buffer, 'pdf');
 }
 
 /**

@@ -48,7 +48,7 @@ Person(member, "Coach / Player / Guest", "Views and records team data")
 
 System_Ext(resend, "Resend", "Transactional email")
 System_Ext(github, "GitHub", "Feedback issues")
-System_Ext(vercel, "Vercel platform", "Hosting, cron, Blob")
+System_Ext(vercel, "Vercel platform", "Hosting, cron")
 
 Rel(admin, portal, "Manages teams, accounts")
 Rel(member, portal, "Signs in, records")
@@ -87,8 +87,7 @@ UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")
     },
     'Vercel platform': {
       type: 'external',
-      description:
-        'Runs the app, fires vercel.json crons, stores files in Blob.',
+      description: 'Runs the app and fires vercel.json crons.',
       required: true,
     },
   }}

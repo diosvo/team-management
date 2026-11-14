@@ -22,8 +22,8 @@ Container(chromium, "Chromium headless", "chromium-min pack", "Render báo cáo"
 Deployment_Node(cron, "Vercel Cron", "vercel.json") {
 Container(jobs, "Job báo cáo", "2 lịch hằng ngày", "schedule, retention")
 }
-Deployment_Node(store, "Vercel Blob", "Kho riêng tư") {
-ContainerDb(blob, "Blob", "@vercel/blob", "Ảnh đại diện, logo, PDF")
+Deployment_Node(store, "Persistent volume", "UPLOAD_DIR") {
+ContainerDb(files, "File storage", "node:fs, sharp", "Ảnh đại diện, logo, PDF")
 }
 }
 
@@ -34,7 +34,7 @@ ContainerDb(db, "PostgreSQL", "Drizzle migrations", "Dữ liệu app")
 Rel(client, server, "HTTPS")
 Rel(jobs, server, "GET /api/reports/\*")
 Rel(server, db, "SQL, Pool max 1")
-Rel(server, blob, "Đọc, ghi")
+Rel(server, files, "Đọc, ghi")
 Rel(server, chromium, "Chạy cho mỗi PDF")
 
 UpdateLayoutConfig($c4ShapeInRow="2", $c4BoundaryInRow="2")
@@ -102,9 +102,10 @@ gói Chromium.
       type: 'whsec_…',
       description: 'Xác minh webhook báo trạng thái gửi email từ Resend.',
     },
-    BLOB_READ_WRITE_TOKEN: {
-      type: 'string',
-      description: 'Token Vercel Blob; cần có để lưu báo cáo và hình ảnh.',
+    UPLOAD_DIR: {
+      type: 'path',
+      description:
+        'Thư mục lưu hình ảnh và báo cáo (mặc định uploads/). Gắn một volume lâu dài vào đây.',
     },
     CHROMIUM_PACK_URL: {
       type: 'url',

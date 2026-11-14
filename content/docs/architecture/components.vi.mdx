@@ -23,7 +23,7 @@ Component(actions, "Server action", "src/actions", "Kiểm tra, ghi")
 Component(routes, "Route handler", "src/app/api", "PDF, cron, webhook")
 Component(authz, "Xác thực + phân quyền", "Better Auth, can()", "verifySession, withResource")
 Component(dal, "Truy cập dữ liệu", "src/db, Drizzle", "Truy vấn theo domain")
-Component(integrations, "Tích hợp", "src/lib", "Blob, Resend, Puppeteer, GitHub")
+Component(integrations, "Tích hợp", "src/lib", "Storage, Resend, Puppeteer, GitHub")
 }
 
 Boundary(data, "Dữ liệu", "") {
@@ -117,7 +117,7 @@ UpdateLayoutConfig($c4ShapeInRow="4", $c4BoundaryInRow="1")
     Integrations: {
       type: 'src/lib/*.ts',
       description:
-        'blob, resend, puppeteer, github, report, report-schedule. Chỉ nơi này gọi dịch vụ ngoài.',
+        'storage, resend, puppeteer, github, report, report-schedule. Chỉ nơi này gọi dịch vụ ngoài.',
       required: true,
     },
   }}
@@ -218,7 +218,7 @@ chính là `/roster`.
     <File name="actions — server action + auth.ts (withAuth, withResource) + cache.ts" />
     <File name="db — truy cập dữ liệu theo domain + pg-error.ts" />
     <File name="drizzle — schema · migrations · scripts · index.ts (Pool)" />
-    <File name="lib — auth · blob · resend · puppeteer · github · report · report-schedule · nuqs · zod" />
+    <File name="lib — auth · storage · resend · puppeteer · github · report · report-schedule · nuqs · zod" />
     <File name="schemas — schema Zod cho dữ liệu nhập, theo domain" />
     <File name="components · hooks (usePermissions) · providers (Chakra, Session) · utils" />
   </Folder>

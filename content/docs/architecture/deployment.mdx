@@ -22,8 +22,8 @@ Container(chromium, "Headless Chromium", "chromium-min pack", "Report rendering"
 Deployment_Node(cron, "Vercel Cron", "vercel.json") {
 Container(jobs, "Report jobs", "2 daily schedules", "schedule, retention")
 }
-Deployment_Node(store, "Vercel Blob", "Private store") {
-ContainerDb(blob, "Blob", "@vercel/blob", "Avatars, logos, PDFs")
+Deployment_Node(store, "Persistent volume", "UPLOAD_DIR") {
+ContainerDb(files, "File storage", "node:fs, sharp", "Avatars, logos, PDFs")
 }
 }
 
@@ -34,7 +34,7 @@ ContainerDb(db, "PostgreSQL", "Drizzle migrations", "App data")
 Rel(client, server, "HTTPS")
 Rel(jobs, server, "GET /api/reports/\*")
 Rel(server, db, "SQL, Pool max 1")
-Rel(server, blob, "Read, write")
+Rel(server, files, "Read, write")
 Rel(server, chromium, "Launch per PDF")
 
 UpdateLayoutConfig($c4ShapeInRow="2", $c4BoundaryInRow="2")
@@ -99,9 +99,10 @@ UpdateLayoutConfig($c4ShapeInRow="2", $c4BoundaryInRow="2")
       type: 'whsec_…',
       description: 'Verifies Resend delivery webhooks.',
     },
-    BLOB_READ_WRITE_TOKEN: {
-      type: 'string',
-      description: 'Vercel Blob token; needed to store reports and images.',
+    UPLOAD_DIR: {
+      type: 'path',
+      description:
+        'Where images and reports are stored (default uploads/). Mount a persistent volume here.',
     },
     CHROMIUM_PACK_URL: {
       type: 'url',

@@ -9,7 +9,12 @@ import { hasPermissions } from '@/utils/permissions';
 import { ResponseFactory } from '@/utils/response';
 
 import auth from '@/lib/auth';
-import { deleteFile, getFile, uploadFile } from '@/lib/blob';
+import {
+  deleteFile,
+  getFile,
+  ImageValidationError,
+  uploadImage,
+} from '@/lib/storage';
 
 import { insertCoach } from '@/db/coach';
 import { getDbErrorMessage } from '@/db/pg-error';
@@ -146,7 +151,7 @@ export const getAvatar = profile(
   ['view'],
   async function getAvatar(_, image_path: Nullish<string>) {
     if (!image_path) return null;
-    // Avatars live under users/ only — reject probes for other private blobs
+    // Avatars live under users/ only — reject probes for other private files
     if (!image_path.startsWith('users/')) forbidden();
 
     return await getFile(image_path as string);
@@ -166,8 +171,8 @@ export const uploadAvatar = profile(
 
     const t = await getTranslations('actions.user');
 
-    // The blob we are about to delete must be the one this user currently owns.
-    // A `users/<user_id>` prefix check is not enough: blob keys carry a random
+    // The file we are about to delete must be the one this user currently owns.
+    // A `users/<user_id>` prefix check is not enough: legacy keys carry a random
     // suffix (`users/1-abc`), so `users/1` would also match `users/12-abc`.
     if (old_path) {
       const target = await selectUserById(user_id);
@@ -175,9 +180,7 @@ export const uploadAvatar = profile(
     }
 
     try {
-      const { pathname } = await uploadFile('users/' + user_id, file, {
-        contentType: file.type,
-      });
+      const { pathname } = await uploadImage('users/' + user_id, file);
 
       await updateUser(user_id, { image: pathname });
 
@@ -191,6 +194,10 @@ export const uploadAvatar = profile(
         image: pathname,
       });
     } catch (error) {
+      if (error instanceof ImageValidationError) {
+        const tUpload = await getTranslations('actions.upload');
+        return ResponseFactory.error(tUpload(error.reason));
+      }
       const { message } = getDbErrorMessage(error);
       return ResponseFactory.error(message);
     }

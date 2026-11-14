@@ -48,7 +48,7 @@ Person(member, "Coach / Player / Guest", "Xem và ghi dữ liệu đội")
 
 System_Ext(resend, "Resend", "Email hệ thống")
 System_Ext(github, "GitHub", "Issue góp ý")
-System_Ext(vercel, "Nền tảng Vercel", "Lưu trữ, cron, Blob")
+System_Ext(vercel, "Nền tảng Vercel", "Lưu trữ, cron")
 
 Rel(admin, portal, "Quản lý đội, tài khoản")
 Rel(member, portal, "Đăng nhập, ghi nhận")
@@ -88,8 +88,7 @@ UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")
     },
     'Vercel platform': {
       type: 'external',
-      description:
-        'Chạy app, gọi các cron trong vercel.json, lưu file trên Blob.',
+      description: 'Chạy app và gọi các cron trong vercel.json.',
       required: true,
     },
   }}

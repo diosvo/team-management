@@ -48,8 +48,8 @@ description: Danh sách đội đối thủ, làm đội sân nhà hoặc sân k
   <Step>
     ### Tải logo
 
-    - Chỉ có khi **Update**, vì đường dẫn blob là `teams/{team_id}`.
-    - Chọn file PNG hoặc JPEG dưới 100 KB là `uploadLogo` chạy ngay, không cần
+    - Chỉ có khi **Update**, vì đường dẫn file là `teams/{team_id}/…`.
+    - Chọn file PNG hoặc JPEG dưới 10 MB là `uploadLogo` chạy ngay, không cần
       bấm Save.
     - File khác bị chặn ngay trên trình duyệt, kèm toast báo lỗi.
 
@@ -79,12 +79,12 @@ description: Danh sách đội đối thủ, làm đội sân nhà hoặc sân k
   - Năm thành lập: số nguyên từ 2000 đến năm nay (mặc định), DB cũng có
     `CHECK`.
 - **Logo được lưu riêng tư.**
-  - `uploadFile` gọi `put` của `@vercel/blob` với `access: 'private'`,
-    `addRandomSuffix: true`.
+  - `uploadImage` kiểm tra nội dung file là PNG/JPEG, xoay ảnh theo EXIF và
+    lưu bản WebP (≤ 512 px, chất lượng 80) tại `teams/<team_id>/<uuid>.webp`.
   - Dòng dữ liệu lưu `pathname` trả về vào cột `image`.
   - `getLogo` đọc file trên server thành data URL base64; không có URL công
     khai.
-  - Blob cũ bị xóa sau khi dòng dữ liệu đã cập nhật.
+  - File cũ bị xóa sau khi dòng dữ liệu đã cập nhật.
 - **Đội đã có trận đấu thì không xóa được.**
   - `match.home_team` / `away_team` là `ON DELETE restrict`.
   - `removeTeam` đếm số trận trước và trả về thông báo dễ hiểu: "This team
@@ -109,7 +109,7 @@ description: Danh sách đội đối thủ, làm đội sân nhà hoặc sân k
 ## API
 
 - Server action trong `src/actions/team.ts`, được kiểm tra quyền bằng `withResource('teams')`.
-- Các hàm xử lý blob trong `src/lib/blob.ts`.
+- Các hàm lưu file trong `src/lib/storage/`.
 
 <TypeTable
   type={{
@@ -134,7 +134,7 @@ description: Danh sách đội đối thủ, làm đội sân nhà hoặc sân k
     'getLogo(image)': {
       type: 'string | null',
       description:
-        'Data URL base64 của blob riêng tư tại đường dẫn đó. Cần quyền view.',
+        'Data URL base64 của file riêng tư tại đường dẫn đó. Cần quyền view.',
       required: true,
     },
     'removeTeam(team_id)': {
@@ -162,7 +162,7 @@ description: Danh sách đội đối thủ, làm đội sân nhà hoặc sân k
   </Accordion>
   <Accordion title="Logo được kiểm tra trước khi tải lên">
 
-    - File PNG/JPEG dưới 100 KB sẽ thay avatar và xóa blob cũ.
+    - File PNG/JPEG dưới 10 MB sẽ thay logo và xóa file cũ.
     - File lớn hơn hoặc không phải ảnh sẽ báo lỗi bằng toast; logo giữ nguyên.
 
   </Accordion>

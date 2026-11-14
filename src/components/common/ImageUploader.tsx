@@ -11,12 +11,13 @@ import { ImageUp } from 'lucide-react';
 
 import { toaster } from '@/components/ui/toaster';
 
-const MAX_FILE_SIZE = 100_000; // 100 KB
+// Matches the server-side limit; Sharp shrinks the image after upload.
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
 type RejectionMessages = Record<'tooLarge' | 'invalidType', string>;
 
 const DEFAULT_REJECTION_MESSAGES: RejectionMessages = {
-  tooLarge: 'Image must be smaller than 100 KB',
+  tooLarge: 'Image must be smaller than 10 MB',
   invalidType: 'Only PNG or JPEG images are allowed',
 };
 

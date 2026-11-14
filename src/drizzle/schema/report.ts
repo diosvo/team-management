@@ -66,7 +66,7 @@ export const ReportScheduleTable = pgTable(
 /**
  * Generated report/run record. Uniquely keyed by `(schedule_id, scheduled_for)`
  * to prevent duplicate executions, and stores delivery/status metadata plus
- * the generated PDF blob details and expiry.
+ * the generated PDF file details and expiry.
  */
 export const ReportHistoryTable = pgTable(
   'report_history',

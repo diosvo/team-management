@@ -23,7 +23,7 @@ Component(actions, "Server actions", "src/actions", "Validate, write")
 Component(routes, "Route handlers", "src/app/api", "PDF, cron, webhook")
 Component(authz, "Auth + permissions", "Better Auth, can()", "verifySession, withResource")
 Component(dal, "Data access", "src/db, Drizzle", "Queries per domain")
-Component(integrations, "Integrations", "src/lib", "Blob, Resend, Puppeteer, GitHub")
+Component(integrations, "Integrations", "src/lib", "Storage, Resend, Puppeteer, GitHub")
 }
 
 Boundary(data, "Data", "") {
@@ -116,7 +116,7 @@ UpdateLayoutConfig($c4ShapeInRow="4", $c4BoundaryInRow="1")
     Integrations: {
       type: 'src/lib/*.ts',
       description:
-        'blob, resend, puppeteer, github, report, report-schedule. Only third-party callers.',
+        'storage, resend, puppeteer, github, report, report-schedule. Only third-party callers.',
       required: true,
     },
   }}
@@ -215,7 +215,7 @@ Route groups add no URL segment: `(protected)/(team-management)/roster` serves
     <File name="actions — server actions + auth.ts (withAuth, withResource) + cache.ts" />
     <File name="db — data access per domain + pg-error.ts" />
     <File name="drizzle — schema · migrations · scripts · index.ts (Pool)" />
-    <File name="lib — auth · blob · resend · puppeteer · github · report · report-schedule · nuqs · zod" />
+    <File name="lib — auth · storage · resend · puppeteer · github · report · report-schedule · nuqs · zod" />
     <File name="schemas — Zod inputs per domain" />
     <File name="components · hooks (usePermissions) · providers (Chakra, Session) · utils" />
   </Folder>

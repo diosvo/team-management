@@ -46,6 +46,9 @@ next-env.d.ts
 /blob-report/
 /playwright/
 
+# local file storage (UPLOAD_DIR)
+/uploads/
+
 # fumadocs-mdx generated files
 /.source/
 
