@@ -12,7 +12,7 @@ For the system design see the [Architecture docs page](content/docs/project/arch
   - [Neon](https://vercel.com/marketplace/neon) for PostgreSQL database interaction
   - [Better Auth](https://www.better-auth.com) for authentication
   - [Resend](https://resend.com/) for email confirmation
-  - [Vercel Blob](https://vercel.com/docs/vercel-blob) for file storage
+  - [Sharp](https://sharp.pixelplumbing.com/) for file storage
 - 💃 Frontend:
   - [Chakra UI](https://chakra-ui.com/) for component library
   - [Chakra UI Charts](https://chakra-ui.com/docs/charts/installation) with [Recharts](https://recharts.org/) for analytics charts

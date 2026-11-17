@@ -13,7 +13,10 @@ export function resolveStoragePath(pathname: string): string {
   const root = storageRoot();
   const target = path.resolve(root, pathname);
 
-  if (!target.startsWith(root + path.sep)) {
+  if (
+    !target.startsWith(root + path.sep) ||
+    /(^|[\\/])\.\.([\\/]|$)/.test(pathname)
+  ) {
     throw new Error(`Invalid storage path: ${pathname}`);
   }
 

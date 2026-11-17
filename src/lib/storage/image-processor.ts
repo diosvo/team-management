@@ -48,7 +48,7 @@ export async function processImage(
   try {
     const { format } = await sharp(input).metadata();
 
-    if (!ACCEPTED_FORMATS.has(format)) {
+    if (!format || !ACCEPTED_FORMATS.has(format)) {
       throw new ImageValidationError('invalidImage');
     }
 

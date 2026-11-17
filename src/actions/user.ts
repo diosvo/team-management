@@ -151,8 +151,15 @@ export const getAvatar = profile(
   ['view'],
   async function getAvatar(_, image_path: Nullish<string>) {
     if (!image_path) return null;
-    // Avatars live under users/ only — reject probes for other private files
-    if (!image_path.startsWith('users/')) forbidden();
+    // users/<user_id> only
+    // reject any path traversal attempts
+    if (
+      !image_path.startsWith('users/') ||
+      image_path.includes('..') ||
+      image_path.startsWith('/') ||
+      image_path.includes('\\')
+    )
+      forbidden();
 
     return await getFile(image_path as string);
   },
