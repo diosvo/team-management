@@ -97,6 +97,10 @@
     "noCoach": "Đội chưa có huấn luyện viên",
     "updated": "Đã cập nhật buổi tập"
   },
+  "upload": {
+    "imageTooLarge": "Ảnh phải nhỏ hơn 10 MB",
+    "invalidImage": "Chỉ chấp nhận ảnh PNG hoặc JPEG"
+  },
   "user": {
     "avatarUploaded": "Đã tải lên ảnh đại diện",
     "deleted": "Đã xóa người dùng",

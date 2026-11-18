@@ -113,7 +113,7 @@ sequenceDiagram
     participant E as executeSchedule
     participant DB as PostgreSQL
     participant C as Chromium
-    participant B as Vercel Blob
+    participant B as File storage
     participant M as Resend
     V->>R: Bearer CRON_SECRET (01:00 UTC)
     R->>DB: selectDueSchedulesForUpdate(20)
@@ -158,7 +158,7 @@ The scheduled report run, in more depth.
   <Accordion title="How are old reports cleaned up?">
 
     - `GET /api/reports/retention` runs at 02:00 UTC.
-    - Deletes blobs past `expires_at` and marks their rows expired.
+    - Deletes files past `expires_at` and marks their rows expired.
     - Failed deletes retry the next day.
 
   </Accordion>

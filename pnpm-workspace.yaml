@@ -16,9 +16,6 @@ overrides:
   "@esbuild-kit/core-utils>esbuild": ^0.25.0
   # mermaid 11 pins katex ^0.16 (GHSA-238p-pmpm-9mq7); mermaid 12 moved to ^0.18.
   "mermaid>katex": ^0.18.2
-  # @vercel/blob > @vercel/oidc > @vercel/cli-config pins zod 4.1.11 exactly
-  # (GHSA-mrhx-c7xc-m3w5).
-  "@vercel/cli-config>zod": ^4.6.7
 auditConfig:
   ignoreGhsas:
     # zod: the only remaining copy is zod 3 (no patched 3.x release), reached

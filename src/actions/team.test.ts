@@ -1,4 +1,9 @@
-import { deleteFile, getFile, uploadFile } from '@/lib/blob';
+import {
+  deleteFile,
+  getFile,
+  ImageValidationError,
+  uploadImage,
+} from '@/lib/storage';
 
 import { revalidate } from '@/actions/cache';
 import { countTeamMatches } from '@/db/match';
@@ -31,10 +36,11 @@ vi.mock('@/db/match', () => ({
   countTeamMatches: vi.fn(),
 }));
 
-vi.mock('@/lib/blob', () => ({
-  uploadFile: vi.fn(),
-  deleteFile: vi.fn(),
+vi.mock('@/lib/storage', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/storage')>()),
   getFile: vi.fn(),
+  uploadImage: vi.fn(),
+  deleteFile: vi.fn(),
 }));
 
 vi.mock('@/db/pg-error', () => ({
@@ -149,9 +155,9 @@ describe('Team Actions', () => {
     const file = new File(['logo'], 'logo.png', { type: 'image/png' });
 
     test('uploads a new logo and cleans up the previous one', async () => {
-      vi.mocked(uploadFile).mockResolvedValue({
-        pathname: 'teams/hcm-new.png',
-      } as Awaited<ReturnType<typeof uploadFile>>);
+      vi.mocked(uploadImage).mockResolvedValue({
+        pathname: 'teams/hcm-new.webp',
+      });
 
       const result = await uploadLogo(
         MOCK_AWAY_TEAM.team_id,
@@ -159,13 +165,12 @@ describe('Team Actions', () => {
         file,
       );
 
-      expect(uploadFile).toHaveBeenCalledWith(
+      expect(uploadImage).toHaveBeenCalledWith(
         `teams/${MOCK_AWAY_TEAM.team_id}`,
         file,
-        { contentType: file.type },
       );
       expect(updateTeam).toHaveBeenCalledWith(MOCK_AWAY_TEAM.team_id, {
-        image: 'teams/hcm-new.png',
+        image: 'teams/hcm-new.webp',
       });
       // The previous pathname is removed, never the freshly uploaded File.
       expect(deleteFile).toHaveBeenCalledWith(MOCK_AWAY_TEAM.image);
@@ -174,14 +179,14 @@ describe('Team Actions', () => {
       expect(result).toEqual({
         success: true,
         message: 'Uploaded logo successfully',
-        data: { image: 'teams/hcm-new.png' },
+        data: { image: 'teams/hcm-new.webp' },
       });
     });
 
     test('does not delete anything when there is no previous logo', async () => {
-      vi.mocked(uploadFile).mockResolvedValue({
-        pathname: 'teams/hcm-new.png',
-      } as Awaited<ReturnType<typeof uploadFile>>);
+      vi.mocked(uploadImage).mockResolvedValue({
+        pathname: 'teams/hcm-new.webp',
+      });
 
       const result = await uploadLogo(MOCK_AWAY_TEAM.team_id, null, file);
 
@@ -189,8 +194,22 @@ describe('Team Actions', () => {
       expect(result.success).toBe(true);
     });
 
+    test('returns a translated error when the image is too large', async () => {
+      vi.mocked(uploadImage).mockRejectedValue(
+        new ImageValidationError('imageTooLarge'),
+      );
+
+      const result = await uploadLogo(MOCK_AWAY_TEAM.team_id, null, file);
+
+      expect(updateTeam).not.toHaveBeenCalled();
+      expect(result).toEqual({
+        success: false,
+        message: 'Image must be smaller than 10 MB',
+      });
+    });
+
     test('returns an error when the upload fails', async () => {
-      vi.mocked(uploadFile).mockRejectedValue(new Error('upload failed'));
+      vi.mocked(uploadImage).mockRejectedValue(new Error('upload failed'));
       vi.mocked(getDbErrorMessage).mockReturnValueOnce({
         message: 'db error',
       } as never);

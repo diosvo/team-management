@@ -97,6 +97,10 @@
     "noCoach": "No coach assigned to the team",
     "updated": "Updated training session successfully"
   },
+  "upload": {
+    "imageTooLarge": "Image must be smaller than 10 MB",
+    "invalidImage": "Only PNG or JPEG images are allowed"
+  },
   "user": {
     "avatarUploaded": "Uploaded avatar successfully",
     "deleted": "User deleted successfully",

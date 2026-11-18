@@ -106,7 +106,7 @@ flowchart TD
     run -->|duplicate, still running| skip[Skip · already ran]
     run -->|duplicate, pending over 10 min| reclaim[Take over the stale run]
     reclaim --> pdf
-    run --> pdf[Render dashboard to PDF<br/>store in Blob]
+    run --> pdf[Render dashboard to PDF<br/>store in file storage]
     pdf --> mail[Email recipients<br/>a download link]
     mail --> ok[Mark success<br/>advance next_run_at]
     pdf -. 3 failed attempts .-> fail[Mark failed<br/>advance next_run_at<br/>notify coaches, admins, captain]
@@ -205,7 +205,7 @@ Route handlers:
     'GET /api/reports/retention': {
       type: 'cron 0 2 * * * (UTC)',
       description:
-        'Deletes Blobs past expires_at and marks their rows expired; failed deletes retry next run.',
+        'Deletes files past expires_at and marks their rows expired; failed deletes retry next run.',
       required: true,
     },
     'GET /api/reports/download?id=': {

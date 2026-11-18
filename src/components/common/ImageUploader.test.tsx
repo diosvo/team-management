@@ -95,9 +95,13 @@ describe('ImageUploader', () => {
     });
 
     test('surfaces an oversized file through the reject handler', async () => {
-      const bigFile = new File([new Uint8Array(100_001)], 'big.png', {
-        type: 'image/png',
-      });
+      const bigFile = new File(
+        [new Uint8Array(10 * 1024 * 1024 + 1)],
+        'big.png',
+        {
+          type: 'image/png',
+        },
+      );
 
       const { container, user } = setup();
 
@@ -107,7 +111,7 @@ describe('ImageUploader', () => {
         expect(toaster.create).toHaveBeenCalledWith(
           expect.objectContaining({
             type: 'error',
-            title: 'Image must be smaller than 100 KB',
+            title: 'Image must be smaller than 10 MB',
           }),
         );
       });
@@ -127,7 +131,7 @@ describe('ImageUploader', () => {
 
       expect(toaster.create).toHaveBeenCalledWith({
         type: 'error',
-        title: 'Image must be smaller than 100 KB',
+        title: 'Image must be smaller than 10 MB',
       });
     });
 

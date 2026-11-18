@@ -4,7 +4,12 @@ import { getTranslations } from 'next-intl/server';
 
 import { ResponseFactory } from '@/utils/response';
 
-import { deleteFile, getFile, uploadFile } from '@/lib/blob';
+import {
+  deleteFile,
+  getFile,
+  ImageValidationError,
+  uploadImage,
+} from '@/lib/storage';
 
 import { countTeamMatches } from '@/db/match';
 import { getDbErrorMessage } from '@/db/pg-error';
@@ -60,9 +65,7 @@ export const uploadLogo = teams(
     const t = await getTranslations('actions.team');
 
     try {
-      const { pathname } = await uploadFile('teams/' + team_id, file, {
-        contentType: file.type,
-      });
+      const { pathname } = await uploadImage('teams/' + team_id, file);
 
       await updateTeam(team_id, { image: pathname });
 
@@ -76,6 +79,10 @@ export const uploadLogo = teams(
         image: pathname,
       });
     } catch (error) {
+      if (error instanceof ImageValidationError) {
+        const tUpload = await getTranslations('actions.upload');
+        return ResponseFactory.error(tUpload(error.reason));
+      }
       const { message } = getDbErrorMessage(error);
       return ResponseFactory.error(message);
     }

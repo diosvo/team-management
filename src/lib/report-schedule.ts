@@ -179,8 +179,8 @@ export async function executeSchedule({
           period,
         });
         const filename = reportFilename(interval, period);
-        ({ pathname } = await storeReportPdf(filename, buffer));
-        // Persist immediately so even a failed run records its blob.
+        ({ pathname } = await storeReportPdf(buffer));
+        // Persist immediately so even a failed run records its file.
         await updateReportHistory(report_id, { pathname, filename });
       }
 
@@ -231,7 +231,7 @@ export async function executeSchedule({
         status: ReportStatus.FAILED,
         error: message,
         completed_at: new Date(),
-        // A stored blob must still age out through the retention job.
+        // A stored file must still age out through the retention job.
         expires_at: pathname ? reportExpiresAt() : null,
       },
       schedule_id,

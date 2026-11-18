@@ -3,10 +3,8 @@ import { useForm } from 'react-hook-form';
 import { UserState } from '@/utils/enum';
 
 import {
-  act,
   cleanup,
   expectNoA11yViolations,
-  fireEvent,
   renderWithUI,
   screen,
   waitFor,
@@ -14,36 +12,19 @@ import {
 
 import { ControlledStateSelection, StateSelection } from './StateSelection';
 
-// Unmount before the global rAF mock drops pending frames: zag clears a closed
-// layer two frames later, and a stale one swallows every later outside interaction.
+// Clean up before the global rAF mock drops pending frames.
 afterEach(async () => {
   cleanup();
   await new Promise((resolve) => setTimeout(resolve, 10));
 });
 
-/**
- * Move focus outside the open dropdown. Zag attaches its outside listeners a
- * frame after opening and defers the focus check by another, so wait one out
- * and then run frames inline to fire `onInteractOutside`.
- */
-const focusOutside = async () => {
-  await act(
-    () => new Promise((resolve) => requestAnimationFrame(() => resolve(null))),
-  );
+/** Click outside the open dropdown. */
+const clickOutside = async (click: (element: Element) => Promise<void>) => {
   const outside = document.createElement('button');
   document.body.appendChild(outside);
-  const raf = vi
-    .spyOn(window, 'requestAnimationFrame')
-    .mockImplementation((callback) => {
-      callback(performance.now());
-      return 0;
-    });
   try {
-    act(() => {
-      fireEvent(outside, new FocusEvent('focusin', { bubbles: true }));
-    });
+    await click(outside);
   } finally {
-    raf.mockRestore();
     outside.remove();
   }
 };
@@ -226,7 +207,7 @@ describe('ControlledStateSelection', () => {
     ).toBeInTheDocument();
     expect(screen.getByTestId('state-touched')).toHaveTextContent('false');
 
-    await focusOutside();
+    await clickOutside(user.click);
 
     await waitFor(() =>
       expect(screen.getByTestId('state-touched')).toHaveTextContent('true'),

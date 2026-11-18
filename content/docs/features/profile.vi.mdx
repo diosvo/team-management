@@ -66,7 +66,7 @@ Personal và Team.
   }}
 />
 
-- `old_path` phải trùng khớp hoàn toàn, không chỉ khớp phần đầu: khóa Blob có
+- `old_path` phải trùng khớp hoàn toàn, không chỉ khớp phần đầu: khóa cũ có
   hậu tố ngẫu nhiên.
 - `users/1` sẽ khớp phần đầu với `users/12-abc`.
 - Nhờ vậy, bạn chỉ xóa được đúng ảnh đại diện hiện tại của mình.
@@ -78,7 +78,7 @@ Personal và Team.
 
     - Ảnh đại diện (không có thì hiện chữ cái đầu tên), tên và vai trò.
     - Chỉ chủ hồ sơ mới thấy nút tải ảnh lên (`sessionUser.id === user.id`).
-    - `ImageUploader`: PNG hoặc JPEG, tối đa 100 KB.
+    - `ImageUploader`: PNG hoặc JPEG, tối đa 10 MB; lưu thành ảnh WebP 512 px.
     - Tải lên xong, phiên đăng nhập được tải lại nên ảnh trên header cũng đổi
       theo.
 
@@ -105,8 +105,8 @@ Personal và Team.
 
 - **Số áo không trùng trong đội.** `isJerseyNumberTaken` (không tính người
   đang được sửa) chạy trước mọi lần ghi.
-- **Ảnh đại diện là Blob riêng tư.** Lưu dưới `users/<user_id>` kèm hậu tố
-  ngẫu nhiên.
+- **Ảnh đại diện là file riêng tư.** Lưu dạng WebP tại
+  `users/<user_id>/<uuid>.webp`.
 - **Đọc ảnh đại diện.** `getAvatar` trả về data URL base64, được
   `useUserAvatar` cache lại (SWR immutable).
 - **Ngày vào đội nằm ở lần gia nhập.** `join_date` được đọc và ghi trên lần
@@ -173,12 +173,12 @@ dùng `withResource('profile')`.
     },
     'getAvatar(image_path)': {
       type: 'string | null',
-      description: 'Data URL của một blob riêng tư dưới users/.',
+      description: 'Data URL của một file riêng tư dưới users/.',
       required: true,
     },
     'uploadAvatar(user_id, old_path, file)': {
       type: 'Response<{ image }>',
-      description: 'Tải ảnh lên, cập nhật image, xóa blob cũ.',
+      description: 'Tải ảnh lên, cập nhật image, xóa file cũ.',
       required: true,
     },
     'updatePersonalInfo(user_id, values)': {
@@ -222,8 +222,8 @@ dùng `withResource('profile')`.
   </Accordion>
   <Accordion title="Giới hạn và thay ảnh đại diện">
 
-    - Trên 100 KB hoặc không phải PNG/JPEG: bị chặn ngay trên trình duyệt.
-    - Ảnh hợp lệ: cập nhật ảnh đại diện, xóa blob cũ, tải lại phiên đăng nhập.
+    - Trên 10 MB hoặc không phải PNG/JPEG: bị chặn ngay trên trình duyệt, và cả trên server.
+    - Ảnh hợp lệ: cập nhật ảnh đại diện, xóa file cũ, tải lại phiên đăng nhập.
     - old_path không trùng ảnh đang lưu: bị từ chối, không xóa gì.
 
   </Accordion>

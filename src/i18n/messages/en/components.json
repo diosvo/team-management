@@ -32,7 +32,7 @@
   },
   "imageUploader": {
     "invalidType": "Only PNG or JPEG images are allowed",
-    "tooLarge": "Image must be smaller than 100 KB",
+    "tooLarge": "Image must be smaller than 10 MB",
     "upload": "Upload image"
   },
   "locationLink": {

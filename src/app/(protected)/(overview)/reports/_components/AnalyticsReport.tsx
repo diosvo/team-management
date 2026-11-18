@@ -2,7 +2,7 @@ import EmailLayout from '@/components/common/EmailLayout';
 
 interface ReportReadyProps {
   period: string;
-  /** Present for scheduled sends (Blob link); absent for attachment emails. */
+  /** Present for scheduled sends (download link); absent for attachment emails. */
   downloadUrl?: string;
 }
 

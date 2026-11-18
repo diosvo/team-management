@@ -46,8 +46,8 @@ description: The directory of opponent teams used as home and away sides in Matc
   <Step>
     ### Upload a logo
 
-    - Only in **Update**, because the blob path is `teams/{team_id}`.
-    - A PNG or JPEG under 100 KB calls `uploadLogo` at once, apart from Save.
+    - Only in **Update**, because the file path is `teams/{team_id}/…`.
+    - A PNG or JPEG under 10 MB calls `uploadLogo` at once, apart from Save.
     - Other files are rejected client-side with a toast.
 
   </Step>
@@ -72,12 +72,12 @@ description: The directory of opponent teams used as home and away sides in Matc
   - Name 3–128 characters.
   - Email optional, valid, ≤ 128 characters, unique across teams (DB).
   - Establish year: integer 2000 to current year (default), also a `CHECK`.
-- **Logos are private blobs.**
-  - `uploadFile` calls `@vercel/blob` `put` with `access: 'private'`,
-    `addRandomSuffix: true`.
+- **Logos are private files.**
+  - `uploadImage` checks the bytes are PNG/JPEG, fixes EXIF orientation and
+    stores a WebP (≤ 512 px, quality 80) as `teams/<team_id>/<uuid>.webp`.
   - The row stores the returned `pathname` in `image`.
   - `getLogo` reads it server-side as a base64 data URL; no public URL.
-  - The previous blob is deleted after the row updates.
+  - The previous file is deleted after the row updates.
 - **Teams in a match cannot be deleted.**
   - `match.home_team` / `away_team` are `ON DELETE restrict`.
   - `removeTeam` counts those matches first and returns a plain message: "This
@@ -102,7 +102,7 @@ description: The directory of opponent teams used as home and away sides in Matc
 ## API
 
 - Server actions in `src/actions/team.ts`, gated by `withResource('teams')`.
-- Blob helpers in `src/lib/blob.ts`.
+- File storage helpers in `src/lib/storage/`.
 
 <TypeTable
   type={{
@@ -126,7 +126,7 @@ description: The directory of opponent teams used as home and away sides in Matc
     'getLogo(image)': {
       type: 'string | null',
       description:
-        'Base64 data URL of the private blob at that path. Requires view.',
+        'Base64 data URL of the private file at that path. Requires view.',
       required: true,
     },
     'removeTeam(team_id)': {
@@ -154,7 +154,7 @@ description: The directory of opponent teams used as home and away sides in Matc
   </Accordion>
   <Accordion title="Logo upload is validated">
 
-    - PNG/JPEG under 100 KB replaces the avatar and removes the old blob.
+    - PNG/JPEG under 10 MB replaces the logo and removes the old file.
     - A larger or non-image file shows an error toast; the logo is unchanged.
 
   </Accordion>

@@ -9,6 +9,10 @@ const nextConfig: NextConfig = {
   experimental: {
     authInterrupts: true,
     optimizePackageImports: ['@chakra-ui/react'],
+    serverActions: {
+      // Image uploads go through server actions: 10 MB plus multipart overhead.
+      bodySizeLimit: '11mb',
+    },
   },
   images: {
     // sm(640), md(768), lg(1024), xl(1280), 2xl(1536)
@@ -20,14 +24,6 @@ const nextConfig: NextConfig = {
     localPatterns: [
       {
         pathname: '/assets/images/**',
-        search: '',
-      },
-    ],
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'blob.vercel-storage.com',
-        pathname: '/**',
         search: '',
       },
     ],

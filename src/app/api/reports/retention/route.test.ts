@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server';
 
-import { deleteFile } from '@/lib/blob';
 import { isAuthorizedCron } from '@/lib/request';
+import { deleteFile } from '@/lib/storage';
 
 import { selectExpiredReports, updateExpiredReports } from '@/db/report';
 
@@ -11,7 +11,7 @@ vi.mock('@/db/report', () => ({
   selectExpiredReports: vi.fn(),
   updateExpiredReports: vi.fn(),
 }));
-vi.mock('@/lib/blob', () => ({ deleteFile: vi.fn() }));
+vi.mock('@/lib/storage', () => ({ deleteFile: vi.fn() }));
 vi.mock('@/lib/request', () => ({ isAuthorizedCron: vi.fn() }));
 
 const createRequest = (): NextRequest =>

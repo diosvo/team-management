@@ -111,7 +111,7 @@ flowchart TD
     run -->|trùng, đang chạy| skip[Bỏ qua · đã chạy rồi]
     run -->|trùng, pending quá 10 phút| reclaim[Nhận lại lần chạy bị treo]
     reclaim --> pdf
-    run --> pdf[Xuất Bảng tổng quan ra PDF<br/>lưu vào Blob]
+    run --> pdf[Xuất Bảng tổng quan ra PDF<br/>lưu vào kho file]
     pdf --> mail[Gửi email cho người nhận<br/>kèm link tải]
     mail --> ok[Đánh dấu success<br/>dời next_run_at]
     pdf -. 3 lần thử đều lỗi .-> fail[Đánh dấu failed<br/>dời next_run_at<br/>báo HLV, admin, đội trưởng]
@@ -214,7 +214,7 @@ Route handler:
     'GET /api/reports/retention': {
       type: 'cron 0 2 * * * (UTC)',
       description:
-        'Xóa Blob đã quá expires_at, đánh dấu dòng đó là expired; xóa lỗi thì lần sau thử lại.',
+        'Xóa file đã quá expires_at, đánh dấu dòng đó là expired; xóa lỗi thì lần sau thử lại.',
       required: true,
     },
     'GET /api/reports/download?id=': {

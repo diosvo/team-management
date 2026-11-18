@@ -2,7 +2,7 @@ import type { NextRequest } from 'next/server';
 
 import { ReportStatus, UserRole } from '@/utils/enum';
 
-import { getFileBytes } from '@/lib/blob';
+import { getFileBytes } from '@/lib/storage';
 
 import { verifySession } from '@/actions/auth';
 import { selectReportById } from '@/db/report';
@@ -14,7 +14,7 @@ import { GET } from './route';
 
 vi.mock('@/actions/auth', () => ({ verifySession: vi.fn() }));
 vi.mock('@/db/report', () => ({ selectReportById: vi.fn() }));
-vi.mock('@/lib/blob', () => ({ getFileBytes: vi.fn() }));
+vi.mock('@/lib/storage', () => ({ getFileBytes: vi.fn() }));
 
 const REPORT_ID = MOCK_REPORT_HISTORY.report_id;
 
