@@ -36,6 +36,13 @@ export const TeamTable = pgTable(
     // swapping its logo does not read as a revision of the rules.
     rule_content: text(),
     rule_updated_at: timestamp('rule_updated_at', { withTimezone: true }),
+    // The Google Sheet the team fills in for this year's uniform order, so a
+    // second export reopens it. Its own timestamp: a sheet from an earlier
+    // year no longer counts.
+    uniform_order_spreadsheet_id: text(),
+    uniform_order_updated_at: timestamp('uniform_order_updated_at', {
+      withTimezone: true,
+    }),
     created_at,
     updated_at,
   },

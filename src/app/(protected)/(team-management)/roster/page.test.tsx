@@ -8,6 +8,11 @@ vi.mock('@/actions/user', () => ({
   getRoster: vi.fn(),
 }));
 
+vi.mock('@/actions/jersey-order', () => ({
+  getJerseyOrderSheet: vi.fn(async () => null),
+  getPaymentEditors: vi.fn(async () => []),
+}));
+
 // Child components are covered by their own tests; render lightweight markers
 // here and capture the props the page wires through to them.
 const propsSpy = {

@@ -1,6 +1,6 @@
 ---
 title: Danh sách đội
-description: Danh sách thành viên của đội, admin và đội trưởng có thể mời thêm hoặc xoá người.
+description: Danh sách thành viên của đội, admin và đội trưởng có thể mời thêm, xoá người và tạo form đặt áo.
 ---
 
 <Callout title="Route /roster">
@@ -12,6 +12,7 @@ description: Danh sách thành viên của đội, admin và đội trưởng c�
 - Danh sách đội (**Roster**) là nơi duy nhất cho biết ai đang trong đội: vai
   trò, trạng thái và số áo.
 - Admin và đội trưởng quản lý thành viên ngay tại đây.
+- Admin và đội trưởng cũng tạo form đặt áo tại đây.
 - Thông tin cá nhân thì sửa trên [hồ sơ cá nhân](/docs/vi/features/profile) của
   từng người.
 
@@ -22,6 +23,8 @@ description: Danh sách thành viên của đội, admin và đội trưởng c�
 - Ai cũng xem được.
 - Đội trưởng có mọi quyền của cầu thủ (`PLAYER`), cộng thêm toàn quyền quản lý:
   mời và xoá thành viên giống hệt admin (`SUPER_ADMIN`).
+- Nút **Jersey form** chỉ hiện với admin và đội trưởng (`isAdmin ||
+isCaptain`), tách biệt với quyền `roster:create` của nút **+ Add**.
 
 ## Luồng
 
@@ -48,6 +51,30 @@ description: Danh sách thành viên của đội, admin và đội trưởng c�
 
   </Step>
   <Step>
+    ### Đặt áo
+
+    - Bấm **Jersey form** để mở hộp thoại: chọn nhà cung cấp đồ (Hoops, Versus,
+      Khác) và đơn giá mặc định mỗi bộ.
+    - **Download** tạo file `[Rovers] Đặt đồ - <năm>.xlsx` ngay trên trình duyệt.
+      - exceljs chỉ được tải khi bạn bấm.
+    - **Open in Google Sheets** mở một tab mới ngay khi bấm.
+      - Tab đăng nhập Google (quyền `drive.file`, chuyển cả trang, không pop-up).
+      - Tab chờ ở `/google-callback` trong lúc hộp thoại tải file lên.
+      - Xong thì tab chuyển thẳng tới Google Sheet mới trong Drive của bạn.
+      - Link được chia sẻ ở chế độ "ai có link đều sửa được", để cầu thủ tự
+        điền dòng của mình; nếu chia sẻ lỗi sẽ có toast cảnh báo.
+      - Trong vòng một giờ, token được dùng lại nên bỏ qua bước đăng nhập.
+    - Sheet được ghi nhớ trên đội (`team.uniform_order_spreadsheet_id`) cho
+      năm hiện tại.
+      - Lần sau, hộp thoại cho biết ngày tạo và nút **Open sheet** mở thẳng
+        sheet đó.
+      - **Create new** tạo sheet mới và thay link đã lưu; sheet cũ vẫn nằm
+        trong Drive.
+    - Chỉ hiện khi đã đặt `GOOGLE_CLIENT_ID`; xem
+      [Triển khai](/docs/vi/architecture/deployment).
+
+  </Step>
+  <Step>
     ### Xoá thành viên
 
     - Chọn nhiều dòng rồi xoá một lần.
@@ -67,8 +94,47 @@ description: Danh sách thành viên của đội, admin và đội trưởng c�
 - **Mỗi số áo chỉ một người trong đội.** `isJerseyNumberTaken` kiểm tra trong
   action chứ không phải ở DB, vì `player` chỉ liên kết với đội thông qua `user`.
   - Số áo được đặt ở tab Team trong hồ sơ; form mời không có ô số áo.
+  - Số áo chỉ có thể trùng trong file đặt áo, không bao giờ trùng trong app.
 - **Admin (`SUPER_ADMIN`) không hiện** trong danh sách.
 - **Gửi link là thấy đúng bộ lọc.** `q`, `role` và `state` là tham số trên URL.
+
+### Form đặt áo
+
+Được tạo bởi
+`src/app/(protected)/(team-management)/roster/_helpers/jersey-order.ts`.
+
+- **Các tab.**
+  - **Đội**: cầu thủ đang hoạt động, xếp theo số áo, thêm 5 dòng trống.
+  - **Ngoài đội**: 30 dòng trống cho fan và bạn bè.
+  - **Bảng size**: bảng size của nhà cung cấp.
+  - **Mẫu đồ**: để trống.
+- **Các cột.** STT, Tên, Số áo, Tên trên áo, Size áo, Size quần, Loại quần,
+  Đã thu tiền, Note.
+  - Tên, số áo, tên trên áo, hai size và Loại quần lấy từ
+    [hồ sơ cá nhân](/docs/vi/features/profile) của từng cầu thủ.
+- **Ô chọn.** Size từ XS tới 4XL; Loại quần là Form ngắn hoặc Form tiêu chuẩn.
+  - Mỗi cột dùng một vùng kiểm tra dữ liệu, nên Google Sheets hiện thành chip.
+- **Số áo trùng.** Chỉ ở tab **Đội**: số áo bị trùng sẽ tô cam nhạt cả tên lẫn
+  số.
+  - Màu tự cập nhật mỗi lần sửa: một người đổi số là dòng còn lại hết tô.
+  - Banner nhắc các bạn trao đổi với nhau rồi cập nhật sau. Tab **Ngoài đội**
+    cho phép trùng số.
+- **Đã thu tiền.** Lưu TRUE/FALSE, mặc định chưa tick; tick rồi thì ô chuyển
+  xanh.
+  - Google Sheets: checkbox thật, được thêm sau khi tải lên qua Sheets API.
+  - Google Sheets: cột bị khoá, chỉ admin và các đội trưởng của đội (cùng
+    chủ sheet) mới tick được; người khác có link chỉ xem được.
+  - File Excel không khoá theo email được, nên cột này vẫn sửa được.
+  - Excel: ô chọn TRUE/FALSE, vì exceljs không ghi được ô checkbox.
+  - Chưa bật Sheets API thì sheet vẫn mở, kèm một toast cảnh báo.
+- **Giá cố định.** Không có cột giá từng dòng. Bảng tổng ở tab **Đội** gồm Đơn
+  giá, Số bộ (số dòng có tên ở cả hai tab), Tổng tiền đồ, Đã thu (số ô đã
+  tick × đơn giá) và Còn lại.
+- **Bảng size.** Ảnh lấy từ `assets/providers/<nhà cung cấp>/`, chuyển từ WebP
+  sang PNG, mỗi ảnh có tiêu đề viết hoa phía trên.
+  - Hoops: SIZE ĐỒ, SIZE QUẦN NGẮN, SIZE QUẦN DÀI.
+  - Nhà cung cấp chưa có ảnh thì hiện một dòng ghi chú.
+- **Định dạng.** Toàn bộ dùng Arial 10; tiêu đề cột theo màu sheet của CLB.
 
 ## Dữ liệu
 
@@ -137,6 +203,22 @@ Server action trong `src/actions/user.ts`, được bảo vệ bởi
   <Accordion title="Không cho trùng số áo">
     Lưu hồ sơ với số áo đã có người dùng trong đội sẽ báo lỗi: “Jersey number
     `<n>` is already taken”.
+  </Accordion>
+  <Accordion title="Chỉ admin và đội trưởng đặt áo">
+    Nút **Jersey form** bị ẩn với mọi thành viên khác.
+  </Accordion>
+  <Accordion title="Số áo trùng được tô màu trong form">
+    Hai cầu thủ ở tab **Đội** trùng số áo thì cả hai dòng tô cam nhạt; sửa một
+    người là cả hai hết tô.
+  </Accordion>
+  <Accordion title="Xuất lần hai sẽ mở lại đúng sheet cũ">
+    Khi sheet năm nay đã có, **Open sheet** mở lại sheet đó thay vì tạo thêm;
+    **Create new** sẽ thay thế nó.
+  </Accordion>
+  <Accordion title="Google Sheets mở trong một tab">
+    **Open in Google Sheets** chỉ mở một tab và dừng ở sheet mới, cột Đã thu
+    tiền là checkbox, ai có link đều sửa được. Không pop-up, không phải bấm
+    thêm.
   </Accordion>
   <Accordion title="Thông tin cá nhân chỉ nằm trên server">
     Dữ liệu gửi xuống trang không có ngày sinh, số điện thoại hay CCCD.

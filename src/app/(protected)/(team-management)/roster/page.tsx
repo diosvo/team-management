@@ -1,6 +1,9 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
+import env from '@env';
+
+import { getJerseyOrderSheet, getPaymentEditors } from '@/actions/jersey-order';
 import { getRoster } from '@/actions/user';
 
 import RosterFilters from './_components/RosterFilters';
@@ -13,11 +16,20 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function RosterPage() {
-  const users = await getRoster();
+  const [users, jerseySheet, paymentEditors] = await Promise.all([
+    getRoster(),
+    getJerseyOrderSheet(),
+    getPaymentEditors(),
+  ]);
 
   return (
     <>
-      <RosterHeader />
+      <RosterHeader
+        users={users}
+        googleClientId={env.GOOGLE_CLIENT_ID}
+        jerseySheet={jerseySheet}
+        paymentEditors={paymentEditors}
+      />
       <RosterFilters />
       <RosterTable users={users} />
     </>

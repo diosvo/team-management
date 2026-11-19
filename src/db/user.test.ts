@@ -200,6 +200,10 @@ describe('selectRosterUsers', () => {
         player: {
           columns: {
             jersey_number: true,
+            jersey_name: true,
+            shirt_size: true,
+            short_size: true,
+            short_form: true,
             position: true,
           },
         },

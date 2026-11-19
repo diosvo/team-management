@@ -26,11 +26,15 @@
     "team": "Đội"
   },
   "team": {
+    "jerseyName": "Tên trên áo",
     "jerseyNumber": "Số áo",
     "joinDate": "Ngày gia nhập",
     "joinedDate": "Ngày gia nhập",
     "position": "Vị trí",
     "role": "Vai trò",
+    "shirtSize": "Size áo",
+    "shortForm": "Loại quần",
+    "shortSize": "Size quần",
     "state": "Trạng thái",
     "title": "Thông tin đội",
     "updating": "Đang cập nhật thông tin đội..."

@@ -108,6 +108,11 @@ UpdateLayoutConfig($c4ShapeInRow="2", $c4BoundaryInRow="2")
       type: 'url',
       description: 'Brotli pack of the Chromium binary, production only.',
     },
+    GOOGLE_CLIENT_ID: {
+      type: 'string',
+      description:
+        'OAuth web client ID with the Drive and Sheets APIs enabled and `/google-callback` as a redirect URI. Optional: shows “Open in Google Sheets” on the jersey form.',
+    },
     GITHUB_TOKEN: {
       type: 'string',
       description: 'Issues write access on the feedback repository.',

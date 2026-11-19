@@ -26,11 +26,15 @@
     "team": "Team"
   },
   "team": {
+    "jerseyName": "Jersey Name",
     "jerseyNumber": "Jersey Number",
     "joinDate": "Join Date",
     "joinedDate": "Joined Date",
     "position": "Position",
     "role": "Role",
+    "shirtSize": "Shirt Size",
+    "shortForm": "Short Type",
+    "shortSize": "Short Size",
     "state": "State",
     "title": "Team Information",
     "updating": "Updating team information..."

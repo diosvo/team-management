@@ -25,7 +25,17 @@ export type RosterUser = Pick<
   'id' | 'name' | 'email' | 'state' | 'role' | 'emailVerified'
 > &
   Partial<{
-    player: Nullish<Pick<Player, 'jersey_number' | 'position'>>;
+    player: Nullish<
+      Pick<
+        Player,
+        | 'jersey_number'
+        | 'jersey_name'
+        | 'shirt_size'
+        | 'short_size'
+        | 'short_form'
+        | 'position'
+      >
+    >;
     coach: Nullish<Pick<Coach, 'position'>>;
   }>;
 
@@ -50,6 +60,10 @@ export async function selectRosterUsers(
         player: {
           columns: {
             jersey_number: true,
+            jersey_name: true,
+            shirt_size: true,
+            short_size: true,
+            short_form: true,
             position: true,
           },
         },

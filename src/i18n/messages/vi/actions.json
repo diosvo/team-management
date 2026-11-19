@@ -24,6 +24,11 @@
     "failed": "Hiện không thể gửi góp ý. Vui lòng thử lại sau.",
     "submitted": "Cảm ơn bạn! Góp ý của bạn đã được ghi nhận với mã #{number}."
   },
+  "jerseyOrder": {
+    "invalid": "Link Google Sheet không hợp lệ.",
+    "saved": "Đã lưu sheet đặt áo.",
+    "saveFailed": "Không thể lưu sheet đặt áo."
+  },
   "league": {
     "added": "Đã thêm giải đấu",
     "deleteFailed": "Không thể xóa giải đấu",

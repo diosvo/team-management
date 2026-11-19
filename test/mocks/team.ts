@@ -10,6 +10,8 @@ export const MOCK_TEAM: Team = {
   image: 'teams/sgrovers.png',
   rule_content: 'Rule Content',
   rule_updated_at: new Date('2026-01-01'),
+  uniform_order_spreadsheet_id: null,
+  uniform_order_updated_at: null,
   created_at: new Date('2024-02-20'),
   updated_at: new Date('2024-02-20'),
 };
@@ -24,6 +26,8 @@ export const MOCK_AWAY_TEAM: Team = {
   image: 'teams/hcm.png',
   rule_content: null,
   rule_updated_at: null,
+  uniform_order_spreadsheet_id: null,
+  uniform_order_updated_at: null,
   created_at: new Date('2026-01-01'),
   updated_at: new Date('2026-01-01'),
 };

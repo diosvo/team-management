@@ -5,7 +5,14 @@ import {
   PLAYER_VALIDATION,
   USER_SCHEMA_VALIDATION,
 } from './utils';
-const { position: PlayerPosition, jersey_number } = PLAYER_VALIDATION;
+const {
+  position: PlayerPosition,
+  jersey_number,
+  jersey_name,
+  shirt_size,
+  short_size,
+  short_form,
+} = PLAYER_VALIDATION;
 const { position: CoachPosition } = COACH_VALIDATION;
 
 const {
@@ -35,7 +42,14 @@ export const EditTeamInfoSchema = z.object({
     state,
     join_date,
   }),
-  player: z.object({ jersey_number, position: PlayerPosition.nullish() }),
+  player: z.object({
+    jersey_number,
+    jersey_name,
+    shirt_size,
+    short_size,
+    short_form,
+    position: PlayerPosition.nullish(),
+  }),
   coach: z.object({ position: CoachPosition }),
 });
 

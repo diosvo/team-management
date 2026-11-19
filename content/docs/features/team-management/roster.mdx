@@ -1,6 +1,6 @@
 ---
 title: Roster
-description: The team's membership list, with invite and removal for admins and captains.
+description: The team's membership list, with invite, removal and the jersey order form for admins and captains.
 ---
 
 <Callout title="Route /roster">
@@ -11,6 +11,7 @@ description: The team's membership list, with invite and removal for admins and 
 
 - Single list of who is on the team: role, state and jersey number.
 - Admins and captains manage membership here.
+- Admins and captains also build the jersey order form here.
 - Personal details are edited on the member's [profile](/docs/features/profile).
 
 ## Access
@@ -20,6 +21,8 @@ description: The team's membership list, with invite and removal for admins and 
 - Every role can view.
 - Captains inherit PLAYER plus full management: they invite and remove like a
   SUPER_ADMIN.
+- **Jersey form** shows for SUPER_ADMIN and captains only (`isAdmin ||
+isCaptain`), separate from the `roster:create` check on **+ Add**.
 
 ## Flows
 
@@ -44,6 +47,30 @@ description: The team's membership list, with invite and removal for admins and 
 
   </Step>
   <Step>
+    ### Order jerseys
+
+    - **Jersey form** opens a dialog: uniform provider (Hoops, Versus, Others)
+      and the default price per set.
+    - **Download** builds `[Rovers] Đặt đồ - <year>.xlsx` in the browser.
+      - exceljs loads only on click.
+    - **Open in Google Sheets** opens a new tab straight from the click.
+      - The tab signs in with Google (`drive.file` scope, full-page redirect).
+      - It waits on `/google-callback` while the dialog uploads the file.
+      - It then lands on the new Google Sheet in the user's Drive.
+      - The link is shared as "anyone with the link can edit", so players fill
+        in their own rows; a warning toast says when sharing fails.
+      - Within the hour, the token is reused and sign-in is skipped.
+    - The sheet is remembered on the team
+      (`team.uniform_order_spreadsheet_id`) for the current year.
+      - Next time, the dialog shows when it was created and **Open sheet**
+        links straight to it.
+      - **Create new** makes a fresh sheet and replaces the remembered link;
+        the old one stays in Drive.
+    - Only shows when `GOOGLE_CLIENT_ID` is set; see
+      [Deployment](/docs/architecture/deployment).
+
+  </Step>
+  <Step>
     ### Remove
 
     - Select rows and delete in bulk.
@@ -63,8 +90,49 @@ description: The team's membership list, with invite and removal for admins and 
 - **Jersey numbers are unique per team.** Checked by `isJerseyNumberTaken` in
   the action, not the DB, since `player` reaches its team through `user`.
   - Set on the profile's Team tab; the invite form has no jersey number.
+  - Duplicates only exist in the jersey order spreadsheet, never in the app.
 - **SUPER_ADMIN rows are excluded** from the list.
 - **Deep-linkable state.** `q`, `role` and `state` are URL query params.
+
+### Jersey order form
+
+Built by `src/app/(protected)/(team-management)/roster/_helpers/jersey-order.ts`.
+
+- **Tabs.**
+  - **Đội**: active players sorted by number, plus 5 spare rows.
+  - **Ngoài đội**: 30 empty rows for fans and friends.
+  - **Bảng size**: the provider's size charts.
+  - **Mẫu đồ**: left empty.
+- **Columns.** STT, Tên, Số áo, Tên trên áo, Size áo, Size quần, Loại quần,
+  Đã thu tiền, Note.
+  - Name, number, jersey name, both sizes and Loại quần come from each
+    player's [profile](/docs/features/profile).
+- **Dropdowns.** Sizes XS–4XL; Loại quần is Form ngắn or Form tiêu chuẩn.
+  - Each column gets one range validation, so Google Sheets shows them as
+    chips.
+- **Duplicate numbers.** On **Đội** only, a repeated Số áo turns the name and
+  number light orange.
+  - The rule recalculates on every edit: once one player changes, the other
+    row clears.
+  - A banner asks players to agree and update later. **Ngoài đội** allows
+    repeats.
+- **Paid.** Đã thu tiền holds TRUE/FALSE, unticked by default; ticked turns
+  green.
+  - Google Sheets: real checkboxes, added after upload through the Sheets API.
+  - Google Sheets: the column is locked so only the team's super admins and
+    captains (and the owner) can tick it; anyone else with the link sees it
+    read-only.
+  - Excel downloads can't lock by email, so the column stays editable there.
+  - Excel: a TRUE/FALSE dropdown, since exceljs can't write checkbox cells.
+  - Without the Sheets API the sheet still opens, with a warning toast.
+- **Fixed price.** No price per row. A summary on **Đội** shows Đơn giá, Số
+  bộ (named rows on both tabs), Tổng tiền đồ, Đã thu (ticked × price) and
+  Còn lại.
+- **Size charts.** Images from `assets/providers/<provider>/`, re-encoded from
+  WebP to PNG, each under an uppercase title.
+  - Hoops: SIZE ĐỒ, SIZE QUẦN NGẮN, SIZE QUẦN DÀI.
+  - Providers without images get a note instead.
+- **Styling.** Arial 10 throughout; headers copy the club's sheet colours.
 
 ## Data
 
@@ -126,6 +194,22 @@ Server actions in `src/actions/user.ts`, gated by `withResource('roster')`.
   <Accordion title="A duplicate jersey number is rejected">
     Saving a member's profile with a jersey number used on the team fails:
     “Jersey number `<n>` is already taken”.
+  </Accordion>
+  <Accordion title="Only admins and captains order jerseys">
+    **Jersey form** is hidden from every other member.
+  </Accordion>
+  <Accordion title="Duplicate numbers are flagged in the form">
+    Two players on **Đội** with the same Số áo both turn light orange; fixing
+    one clears both.
+  </Accordion>
+  <Accordion title="A second export reopens the same sheet">
+    Once this year's sheet exists, **Open sheet** links to it instead of
+    creating another; **Create new** replaces it.
+  </Accordion>
+  <Accordion title="Google Sheets opens in one tab">
+    **Open in Google Sheets** opens one tab that ends on the new sheet, with
+    Đã thu tiền as checkboxes and a link anyone can edit. No pop-up and no
+    extra click.
   </Accordion>
   <Accordion title="Personal data stays server-side">
     The page payload has no date of birth, phone number or citizen ID.

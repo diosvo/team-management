@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useMemo, useState, useTransition } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useLocale, useTranslations } from 'next-intl';
 import {
   Badge,
   HStack,
   IconButton,
+  Input,
   InputGroup,
   SimpleGrid,
   Stack,
@@ -15,7 +16,15 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod';
 import { formatDistanceToNow } from 'date-fns';
 import { vi } from 'date-fns/locale';
-import { Activity, Edit, LucideClock9, Save, Shirt } from 'lucide-react';
+import {
+  Activity,
+  Edit,
+  LucideClock9,
+  Ruler,
+  Save,
+  Shirt,
+  Type,
+} from 'lucide-react';
 import { useSWRConfig } from 'swr';
 
 import { CACHE_KEY, ESTABLISHED_DATE } from '@/utils/constants';
@@ -23,6 +32,7 @@ import { formatDate } from '@/utils/datetime';
 import {
   CoachPosition,
   PlayerPosition,
+  SHORT_FORMS,
   UserRole,
   UserState,
 } from '@/utils/enum';
@@ -40,6 +50,7 @@ import {
 } from '@/components/ui/number-input';
 import { toaster } from '@/components/ui/toaster';
 import { Tooltip } from '@/components/ui/tooltip';
+import JerseySizeSelection from '@/components/user/JerseySizeSelection';
 import { RolePositionSelection } from '@/components/user/RolePositionSelection';
 import { ControlledStateSelection } from '@/components/user/StateSelection';
 import Visibility from '@/components/Visibility';
@@ -70,6 +81,7 @@ export default function TeamInfo({
     reset,
     watch,
     setValue,
+    register,
     handleSubmit,
     formState: { isDirty, isValid, errors },
   } = useForm({
@@ -81,6 +93,10 @@ export default function TeamInfo({
       },
       player: {
         jersey_number: user.player?.jersey_number,
+        jersey_name: user.player?.jersey_name,
+        shirt_size: user.player?.shirt_size,
+        short_size: user.player?.short_size,
+        short_form: user.player?.short_form,
         position: user.player?.position,
       },
       coach: {
@@ -89,6 +105,15 @@ export default function TeamInfo({
     },
     resolver: zodResolver(EditTeamInfoSchema),
   });
+
+  const shortForms = useMemo(
+    () =>
+      SHORT_FORMS.map((value) => ({
+        label: enumLabel(tEnums, 'shortForm', value),
+        value,
+      })),
+    [tEnums],
+  );
 
   const selectedRole = watch('user.role');
 
@@ -227,6 +252,37 @@ export default function TeamInfo({
                   )}
                 />
               </Field>
+              <Field
+                label={t('team.jerseyName')}
+                invalid={!!errors.player?.jersey_name}
+                errorText={errors.player?.jersey_name?.message}
+              >
+                <Input
+                  maxLength={20}
+                  autoComplete="off"
+                  disabled={isPending}
+                  {...register('player.jersey_name')}
+                />
+              </Field>
+              <JerseySizeSelection
+                control={control}
+                name="player.shirt_size"
+                label={t('team.shirtSize')}
+                disabled={isPending}
+              />
+              <JerseySizeSelection
+                control={control}
+                name="player.short_size"
+                label={t('team.shortSize')}
+                disabled={isPending}
+              />
+              <JerseySizeSelection
+                control={control}
+                name="player.short_form"
+                label={t('team.shortForm')}
+                disabled={isPending}
+                options={shortForms}
+              />
             </Visibility>
             <Field label={t('team.joinDate')}>
               <DatePickerField
@@ -260,6 +316,42 @@ export default function TeamInfo({
                   icon={Shirt}
                 >
                   {user.player?.jersey_number ?? '-'}
+                </TextField>
+              </Visibility>
+              <Visibility isVisible={isPlayer}>
+                <TextField
+                  label={t('team.jerseyName')}
+                  direction="horizontal"
+                  icon={Type}
+                >
+                  {user.player?.jersey_name || '-'}
+                </TextField>
+              </Visibility>
+              <Visibility isVisible={isPlayer}>
+                <TextField
+                  label={t('team.shirtSize')}
+                  direction="horizontal"
+                  icon={Ruler}
+                >
+                  {user.player?.shirt_size ?? '-'}
+                </TextField>
+              </Visibility>
+              <Visibility isVisible={isPlayer}>
+                <TextField
+                  label={t('team.shortSize')}
+                  direction="horizontal"
+                  icon={Ruler}
+                >
+                  {user.player?.short_size ?? '-'}
+                </TextField>
+              </Visibility>
+              <Visibility isVisible={isPlayer}>
+                <TextField
+                  label={t('team.shortForm')}
+                  direction="horizontal"
+                  icon={Ruler}
+                >
+                  {enumLabel(tEnums, 'shortForm', user.player?.short_form)}
                 </TextField>
               </Visibility>
             </SimpleGrid>

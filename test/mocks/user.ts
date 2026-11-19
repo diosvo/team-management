@@ -63,6 +63,10 @@ export const MOCK_PLAYER: Player = {
   height: 171,
   weight: 68,
   jersey_number: 9,
+  jersey_name: 'DIOS',
+  shirt_size: 'M',
+  short_size: 'L',
+  short_form: 'short',
   created_at: new Date('2026-01-01'),
   updated_at: new Date('2026-01-01'),
 };

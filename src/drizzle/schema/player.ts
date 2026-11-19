@@ -6,9 +6,15 @@ import {
   pgEnum,
   pgTable,
   text,
+  varchar,
 } from 'drizzle-orm/pg-core';
 
-import { enumValues, PlayerPosition } from '@/utils/enum';
+import {
+  enumValues,
+  JERSEY_SIZES,
+  PlayerPosition,
+  SHORT_FORMS,
+} from '@/utils/enum';
 
 import { AttendanceTable } from './attendance';
 import { LeagueTeamRosterTable } from './league';
@@ -23,6 +29,9 @@ export const playerPositionEnum = pgEnum(
   enumValues(PlayerPosition),
 );
 
+export const jerseySizeEnum = pgEnum('jersey_size', JERSEY_SIZES);
+export const shortFormEnum = pgEnum('short_form', SHORT_FORMS);
+
 export const PlayerTable = pgTable(
   'player',
   {
@@ -33,6 +42,12 @@ export const PlayerTable = pgTable(
     is_captain: boolean().default(false).notNull(),
     // `isJerseyNumberTaken` enforces it in the action layer instead.
     jersey_number: integer(),
+    // Name printed on the back of the jersey; free text, may repeat.
+    jersey_name: varchar({ length: 20 }),
+    // Prefill the jersey order form.
+    shirt_size: jerseySizeEnum(),
+    short_size: jerseySizeEnum(),
+    short_form: shortFormEnum(),
     position: playerPositionEnum().default(PlayerPosition.UNKNOWN),
     height: integer(),
     weight: integer(),

@@ -156,6 +156,10 @@
     "completed": "Completed",
     "scheduled": "Scheduled"
   },
+  "shortForm": {
+    "short": "Short fit",
+    "standard": "Standard fit"
+  },
   "testDirection": {
     "higher": "Higher is better",
     "lower": "Lower is better"

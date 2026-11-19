@@ -24,6 +24,11 @@
     "failed": "Unable to send your feedback right now. Please try again later.",
     "submitted": "Thanks! Your feedback was filed as #{number}."
   },
+  "jerseyOrder": {
+    "invalid": "Invalid Google Sheet link.",
+    "saved": "Jersey sheet saved.",
+    "saveFailed": "Could not save the jersey sheet."
+  },
   "league": {
     "added": "Added league successfully",
     "deleteFailed": "Failed to delete league",

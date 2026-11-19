@@ -13,6 +13,30 @@
     "role": "Role",
     "state": "State"
   },
+  "jerseyOrder": {
+    "checkboxesFailed": "Opened, but “Đã thu tiền” is not a checkbox yet: enable the Google Sheets API for this app.",
+    "createNew": "Create new",
+    "existing": "This year's sheet was created on {date}. Open it, or create a new one to replace it.",
+    "exporting": "Exporting...",
+    "failed": "Could not build the jersey form.",
+    "openExisting": "Open sheet",
+    "openInSheets": "Open in Google Sheets",
+    "opening": "Opening...",
+    "otherProvider": "Others",
+    "preparing": "Preparing your Google Sheet…",
+    "price": "Default price per jersey (VND)",
+    "priceHelper": "Every set costs this price; the sheet totals it from the rows filled in.",
+    "protectFailed": "Opened, but “Đã thu tiền” is not locked yet: enable the Google Sheets API for this app.",
+    "provider": "Uniform provider",
+    "providerHelper": "Their size chart is added to the “Bảng size” tab.",
+    "shareFailed": "Opened, but the link is not public yet: share the sheet from Google Sheets.",
+    "sheetFailed": "Could not open the form in Google Sheets.",
+    "submit": "Download",
+    "tabBlocked": "Your browser blocked the new tab. Allow pop-ups for this site and try again.",
+    "tabFailed": "Could not create the Google Sheet. You can close this tab.",
+    "title": "Jersey order form",
+    "trigger": "Jersey form"
+  },
   "metadata": {
     "description": "View the team roster",
     "title": "Roster"

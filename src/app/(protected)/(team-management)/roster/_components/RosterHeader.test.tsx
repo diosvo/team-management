@@ -16,6 +16,9 @@ vi.mock('@/hooks/use-permissions', () => ({
 vi.mock('./AddUser', () => ({
   default: () => <div>AddUser</div>,
 }));
+vi.mock('./JerseyOrderExport', () => ({
+  default: () => <div>JerseyOrderExport</div>,
+}));
 
 describe('RosterHeader', () => {
   const mockUsePermissions = vi.mocked(usePermissions);
@@ -27,7 +30,7 @@ describe('RosterHeader', () => {
       }),
     );
 
-    return renderWithUI(<RosterHeader />);
+    return renderWithUI(<RosterHeader users={[]} />);
   };
 
   setupTestLifecycle();
@@ -48,5 +51,12 @@ describe('RosterHeader', () => {
     setup(false);
 
     expect(screen.queryByText('AddUser')).not.toBeInTheDocument();
+  });
+
+  // The export gates itself on super admin or captain.
+  test('always mounts the jersey form export', () => {
+    setup(false);
+
+    expect(screen.getByText('JerseyOrderExport')).toBeInTheDocument();
   });
 });

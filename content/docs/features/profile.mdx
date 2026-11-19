@@ -11,7 +11,7 @@ description: A member's avatar, personal and team details, with ownership enforc
 
 - Members review and edit their own details.
 - SUPER_ADMIN manages any member's team data: role, position, state, jersey
-  number.
+  number, jersey name and sizes.
 - Reached from the account menu (own profile) or a
   [Roster](/docs/features/team-management/roster) row.
 
@@ -84,9 +84,12 @@ UI-only flag from `getUserProfile`; disables Edit on the Personal and Team tabs.
   </Tab>
   <Tab value="Team">
 
-    - Role, position, state, jersey number, join date (of the open
-      membership stint).
-    - Role and position: SUPER_ADMIN only. Jersey number: players only.
+    - Role, position, state, jersey number, jersey name, shirt and short
+      size, short type, join date (of the open membership stint).
+    - Role and position: SUPER_ADMIN only. Jersey fields and sizes: players
+      only.
+    - Jersey name and sizes prefill the
+      [jersey order form](/docs/features/team-management/roster).
     - Saving with state `active` mutates SWR `CACHE_KEY.PLAYERS`, refreshing
       player pickers.
 
@@ -141,6 +144,18 @@ Validation from `USER_SCHEMA_VALIDATION` in `src/schemas/utils.ts`:
     'player.jersey_number': {
       type: 'number',
       description: '0–99, unique per team.',
+    },
+    'player.jersey_name': {
+      type: 'string',
+      description: 'Printed on the back; up to 20 characters, may repeat.',
+    },
+    'player.shirt_size / player.short_size': {
+      type: 'JerseySize',
+      description: 'XS | S | M | L | XL | 2XL | 3XL | 4XL',
+    },
+    'player.short_form': {
+      type: 'ShortForm',
+      description: 'short | standard (Form ngắn / Form tiêu chuẩn).',
     },
     'player.position / coach.position': {
       type: 'PlayerPosition | CoachPosition',
@@ -205,7 +220,8 @@ Server actions in `src/actions/user.ts`; all but `getUserProfile` use
   </Accordion>
   <Accordion title="Admin edits others, not self">
 
-    - Another member: Role, Position, State and Jersey Number are editable.
+    - Another member: Role, Position, State, Jersey Number, Jersey Name,
+      Shirt Size and Short Size are editable.
     - Own profile: both tabs view only; the avatar can still be replaced.
 
   </Accordion>
