@@ -88,7 +88,14 @@ export default async function proxy(req: NextRequest) {
 
   if (isLoggedIn && isProtectedRoute) {
     // Full validation: Cookie cache read + Protected route
-    const session = await getCookieCache(req, { cookiePrefix: COOKIE.prefix });
+    // better-auth names the cookie after the site's scheme (`__Secure-` only
+    // over https), so read it the same way rather than by NODE_ENV: a
+    // production build served over http (the e2e server) would otherwise
+    // never find its cache and loop between /login and the dashboard.
+    const session = await getCookieCache(req, {
+      cookiePrefix: COOKIE.prefix,
+      isSecure: req.nextUrl.protocol === 'https:',
+    });
 
     if (!session) {
       // Session expired - cookie still present but cache is invalid
