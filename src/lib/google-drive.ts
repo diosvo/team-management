@@ -77,6 +77,9 @@ export function openSheetTab(clientId: string): Nullable<SheetTab> {
   );
   if (!tab) return null;
 
+  // Sever the opener manually; `noopener` can hide browser blocking.
+  tab.opener = null;
+
   const channel = new BroadcastChannel(DRIVE_CHANNEL);
   let outcome: Nullable<DriveMessage> = null;
   let onToken: Nullable<(message: DriveMessage) => void> = null;

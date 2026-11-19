@@ -10,6 +10,7 @@ import {
   createPermissionsMock,
   createToasterMock,
   expectNoA11yViolations,
+  fireEvent,
   renderWithUI,
   screen,
   setupTestLifecycle,
@@ -148,6 +149,61 @@ describe('JerseyOrderExport', () => {
     );
   });
 
+  test('downloads with the picked provider and price', async () => {
+    const { user: actor } = await openDialog();
+
+    await actor.click(
+      screen.getByRole('combobox', { name: 'Uniform provider' }),
+    );
+    await actor.click(await screen.findByRole('option', { name: 'Versus' }));
+    const price = screen.getByRole('spinbutton', {
+      name: 'Default price per jersey (VND)',
+    });
+    await actor.clear(price);
+    await actor.type(price, '400000');
+    await actor.click(screen.getByRole('button', { name: /Download/ }));
+
+    await waitFor(() =>
+      expect(mockDownload).toHaveBeenCalledWith(
+        expect.objectContaining({ provider: 'Versus', price: 400_000 }),
+      ),
+    );
+  });
+
+  test('treats a cleared price as free', async () => {
+    const { user: actor } = await openDialog();
+
+    await actor.clear(
+      screen.getByRole('spinbutton', {
+        name: 'Default price per jersey (VND)',
+      }),
+    );
+    await actor.click(screen.getByRole('button', { name: /Download/ }));
+
+    await waitFor(() =>
+      expect(mockDownload).toHaveBeenCalledWith(
+        expect.objectContaining({ price: 0 }),
+      ),
+    );
+  });
+
+  test('keeps the provider when the selection is emptied', async () => {
+    const { user: actor } = await openDialog();
+    const select = document.querySelector<HTMLSelectElement>(
+      'select[aria-hidden]',
+    )!;
+
+    select.value = '';
+    fireEvent.change(select);
+    await actor.click(screen.getByRole('button', { name: /Download/ }));
+
+    await waitFor(() =>
+      expect(mockDownload).toHaveBeenCalledWith(
+        expect.objectContaining({ provider: 'Hoops' }),
+      ),
+    );
+  });
+
   test('shows an error toast when the export fails', async () => {
     mockDownload.mockRejectedValueOnce(new Error('boom'));
     const { user: actor } = await openDialog();
@@ -277,6 +333,36 @@ describe('JerseyOrderExport', () => {
       );
       expect(tab.fail).toHaveBeenCalledWith('access_denied');
       expect(tab.open).not.toHaveBeenCalled();
+    });
+
+    test('tells the tab without a reason when the failure is not an Error', async () => {
+      mockOpen.mockRejectedValueOnce('offline');
+
+      await clickOpen();
+
+      await waitFor(() => expect(tab.fail).toHaveBeenCalledWith(undefined));
+    });
+
+    test('still opens the sheet when remembering it fails', async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      vi.mocked(saveJerseyOrderSheet).mockResolvedValueOnce({
+        success: false,
+        message: 'Database down',
+      });
+      mockOpen.mockResolvedValueOnce({
+        id: 'abc',
+        url: 'https://sheet',
+        checkboxes: true,
+        protected: true,
+        shared: true,
+      });
+
+      await clickOpen();
+
+      await waitFor(() =>
+        expect(warn).toHaveBeenCalledWith('[jersey-order]', 'Database down'),
+      );
+      expect(tab.open).toHaveBeenCalledWith('https://sheet');
     });
 
     test('still opens the sheet but warns when the link is private', async () => {

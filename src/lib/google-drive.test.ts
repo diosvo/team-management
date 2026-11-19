@@ -6,6 +6,7 @@ import {
   driveAuthUrl,
   type DriveMessage,
   GOOGLE_SHEET_MIME,
+  goToSheet,
   openSheetTab,
   protectRanges,
   resetGoogleDrive,
@@ -81,6 +82,28 @@ describe('google-drive', () => {
       channel.close();
     });
 
+    test('cuts the new tab off from this page', () => {
+      const opened = { opener: window } as unknown as Window;
+      open.mockReturnValue(opened);
+
+      openSheetTab('client');
+
+      expect(opened.opener).toBeNull();
+    });
+
+    test('rejects when Google sign-in never answers', async () => {
+      vi.useFakeTimers();
+      const tab = openSheetTab('client')!;
+      const rejected = expect(tab.token).rejects.toThrow(
+        'Google sign-in timed out',
+      );
+
+      await vi.advanceTimersByTimeAsync(5 * 60 * 1000);
+
+      await rejected;
+      vi.useRealTimers();
+    });
+
     test('rejects when the user denies access', async () => {
       const tab = openSheetTab('client')!;
       const { channel } = callbackTab();
@@ -153,6 +176,19 @@ describe('google-drive', () => {
       channel.close();
     });
 
+    test('stops answering the tab a minute after finishing', async () => {
+      vi.useFakeTimers();
+      const close = vi.spyOn(BroadcastChannel.prototype, 'close');
+      const tab = openSheetTab('client')!;
+
+      tab.open('https://sheet');
+      expect(close).not.toHaveBeenCalled();
+      await vi.advanceTimersByTimeAsync(60_000);
+
+      expect(close).toHaveBeenCalled();
+      vi.useRealTimers();
+    });
+
     test('tells the tab when the upload failed', async () => {
       const { channel, received } = callbackTab();
       const tab = openSheetTab('client')!;
@@ -167,8 +203,42 @@ describe('google-drive', () => {
     });
   });
 
+  describe('goToSheet', () => {
+    test('replaces the callback page with the sheet', () => {
+      goToSheet('#sheet');
+
+      expect(window.location.hash).toBe('#sheet');
+    });
+  });
+
   describe('uploadAsGoogleSheet', () => {
     const file = new Blob(['xlsx'], { type: 'application/xlsx' });
+
+    test('keeps the cached token when Drive fails for another reason', async () => {
+      const { channel } = callbackTab();
+      openSheetTab('client');
+      channel.postMessage({
+        state: stateOf(String(open.mock.calls[0]?.[0])),
+        type: 'token',
+        token: 'token',
+        expiresIn: 3600,
+      } satisfies DriveMessage);
+      await vi.waitFor(() => {
+        openSheetTab('client');
+        expect(String(open.mock.lastCall?.[0])).toMatch(/^\/google-callback/);
+      });
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(async () => new Response(null, { status: 500 })),
+      );
+
+      await expect(uploadAsGoogleSheet('token', file, 'Form')).rejects.toThrow(
+        '500',
+      );
+      openSheetTab('client');
+      expect(String(open.mock.lastCall?.[0])).toMatch(/^\/google-callback/);
+      channel.close();
+    });
 
     test('uploads as a Google Sheet and returns its link', async () => {
       const fetch = vi.fn(

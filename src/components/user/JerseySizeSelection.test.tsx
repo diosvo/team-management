@@ -5,6 +5,7 @@ import {
   renderWithUI,
   screen,
   setupTestLifecycle,
+  waitFor,
 } from '@/test/utilities';
 
 import JerseySizeSelection from './JerseySizeSelection';
@@ -20,15 +21,22 @@ function Harness({
   size?: Nullable<string>;
   options?: Array<{ label: string; value: string }>;
 }) {
-  const { control, watch } = useForm<Values>({ defaultValues: { size } });
+  const {
+    control,
+    watch,
+    formState: { touchedFields },
+  } = useForm<Values>({ defaultValues: { size } });
   latest = watch();
   return (
-    <JerseySizeSelection
-      control={control}
-      name="size"
-      label="Size áo"
-      options={options}
-    />
+    <>
+      <JerseySizeSelection
+        control={control}
+        name="size"
+        label="Size áo"
+        options={options}
+      />
+      <div data-testid="touched">{String(!!touchedFields.size)}</div>
+    </>
   );
 }
 
@@ -67,6 +75,31 @@ describe('JerseySizeSelection', () => {
 
     await user.click(screen.getByRole('option', { name: '2XL' }));
     expect(latest.size).toBe('2XL');
+  });
+
+  test('clears the size back to none', async () => {
+    const { user } = renderWithUI(<Harness size="XL" />);
+
+    await user.click(screen.getByRole('button', { name: 'Clear value' }));
+
+    await waitFor(() => expect(latest.size).toBeNull());
+  });
+
+  test('marks the field touched when clicking outside', async () => {
+    const { user } = renderWithUI(<Harness />);
+
+    await user.click(screen.getByRole('combobox', { name: 'Size áo' }));
+    await screen.findAllByRole('option');
+    expect(screen.getByTestId('touched')).toHaveTextContent('false');
+
+    const outside = document.createElement('button');
+    document.body.appendChild(outside);
+    await user.click(outside);
+    outside.remove();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('touched')).toHaveTextContent('true'),
+    );
   });
 
   test('offers custom options instead of sizes', async () => {

@@ -29,6 +29,12 @@ vi.mock('@/lib/google-drive', () => ({
   shareWithAnyone: vi.fn(async () => {}),
 }));
 
+// Next imports images as `StaticImageData`; Vitest as plain URLs. Mock one
+// chart the Next way so both shapes are loaded.
+vi.mock('@/assets/providers/hoops/size-chart.webp', () => ({
+  default: { src: '/next/size-chart.webp', width: 1800, height: 1000 },
+}));
+
 vi.mock('@/lib/download', () => ({
   triggerDownload: vi.fn(),
   withExtension: vi.fn((filename: string, ext: string) => `${filename}${ext}`),
@@ -140,6 +146,24 @@ describe('sortPlayers', () => {
       'Hăn',
       'Linh',
     ]);
+  });
+
+  test('returns a sorted copy without reordering the input', () => {
+    const players = [...OPTIONS.players];
+
+    const sorted = sortPlayers(players);
+
+    expect(sorted).not.toBe(players);
+    expect(players).toEqual(OPTIONS.players);
+  });
+
+  test('breaks a jersey number tie by name', () => {
+    const tied = [
+      { name: 'Vy', jersey_number: 7, jersey_name: null },
+      { name: 'An', jersey_number: 7, jersey_name: null },
+    ];
+
+    expect(sortPlayers(tied).map(({ name }) => name)).toEqual(['An', 'Vy']);
   });
 });
 
@@ -303,6 +327,13 @@ describe('loadSizeCharts', () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
+  test('returns nothing for an unknown provider', async () => {
+    const fetch = stubImagePipeline();
+
+    expect(await loadSizeCharts('Unknown')).toEqual([]);
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
   test('loads every Hoops chart as a titled PNG', async () => {
     const fetch = stubImagePipeline();
 
@@ -317,8 +348,33 @@ describe('loadSizeCharts', () => {
     expect(fetch).toHaveBeenCalledTimes(3);
   });
 
+  test('fetches imported images by their URL', async () => {
+    const fetch = stubImagePipeline();
+
+    await loadSizeCharts('Hoops');
+
+    expect(fetch).toHaveBeenCalledWith('/next/size-chart.webp');
+  });
+
   test('skips charts that fail to load', async () => {
     stubImagePipeline(async () => new Response(null, { status: 404 }));
+
+    expect(await loadSizeCharts('Hoops')).toEqual([]);
+  });
+
+  test('skips charts when the network fails', async () => {
+    stubImagePipeline(async () => {
+      throw new TypeError('Failed to fetch');
+    });
+
+    expect(await loadSizeCharts('Hoops')).toEqual([]);
+  });
+
+  test('skips charts the browser cannot encode as PNG', async () => {
+    stubImagePipeline();
+    vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation(
+      (callback) => callback(null),
+    );
 
     expect(await loadSizeCharts('Hoops')).toEqual([]);
   });

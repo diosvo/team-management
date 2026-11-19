@@ -1,4 +1,5 @@
 import { StrictMode } from 'react';
+import { renderToString } from 'react-dom/server';
 
 import {
   DRIVE_CHANNEL,
@@ -8,6 +9,7 @@ import {
 
 import {
   expectNoA11yViolations,
+  Providers,
   renderWithUI,
   screen,
   setupTestLifecycle,
@@ -121,6 +123,35 @@ describe('GoogleCallbackPage', () => {
     expect(
       await screen.findByText(/Could not create the Google Sheet/),
     ).toBeInTheDocument();
+  });
+
+  test('reads a missing expiry as already expired', async () => {
+    land('state=abc&access_token=secret');
+
+    await waitFor(() =>
+      expect(tab.received).toContainEqual({
+        state: 'abc',
+        type: 'token',
+        token: 'secret',
+        expiresIn: 0,
+      }),
+    );
+  });
+
+  test('prerenders the waiting state on the server', () => {
+    // No `window` on the server, so there is no fragment to read yet.
+    vi.stubGlobal('window', undefined);
+    try {
+      expect(
+        renderToString(
+          <Providers>
+            <GoogleCallbackPage />
+          </Providers>,
+        ),
+      ).toContain('Preparing your Google Sheet…');
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 
   test('has nothing to do when opened directly', () => {

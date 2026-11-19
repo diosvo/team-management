@@ -173,9 +173,10 @@ function dropdown(
   });
 }
 
-/** Team players by jersey number, unnumbered players last. */
+/** Team players by jersey number, unnumbered players last. Copies before
+ * sorting (no `toSorted`, which ES2022 targets lack) so the input is kept. */
 export const sortPlayers = (players: Array<JerseyOrderPlayer>) =>
-  players.toSorted(
+  [...players].sort(
     (a, b) =>
       (a.jersey_number ?? Infinity) - (b.jersey_number ?? Infinity) ||
       a.name.localeCompare(b.name, 'vi'),
