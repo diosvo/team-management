@@ -33,7 +33,7 @@ describe('SEARCH_ENTRIES', () => {
       'add-result',
       'profile',
     ]);
-    expect(sidebar).not.toContain('documents');
+    expect(sidebar).toContain('documents');
   });
 
   test('derives the message namespace and searchable flag from the sidebar', () => {

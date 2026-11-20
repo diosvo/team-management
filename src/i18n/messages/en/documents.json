@@ -1,0 +1,64 @@
+{
+  "card": {
+    "edit": "Edit",
+    "editLabel": "Edit {title}",
+    "openInDrive": "Open in Drive",
+    "openInDriveLabel": "Open {title} in Google Drive",
+    "play": "Play",
+    "playLabel": "Play {title}",
+    "preview": "Preview",
+    "previewLabel": "Preview {title}",
+    "selectDocument": "Select document"
+  },
+  "filters": {
+    "eventDate": "Event date",
+    "type": "Type"
+  },
+  "grid": {
+    "deleted": "Successfully deleted {count} document(s).",
+    "deletedPartially": "Deleted {count} document(s), but some operations failed.",
+    "empty": "No documents found",
+    "emptyHint": "Link a public Google Drive folder or file to get started."
+  },
+  "metadata": {
+    "description": "Photo albums, videos, tactics and files shared from Google Drive.",
+    "title": "Documents"
+  },
+  "preview": {
+    "allItems": "All items",
+    "emptyFolder": "This folder has no photos or videos",
+    "playItem": "Play {name}",
+    "unsupported": "Your browser can't play this video.",
+    "viewItem": "View {name}"
+  },
+  "stats": {
+    "albums": "Albums",
+    "files": "Files",
+    "tactics": "Tactics",
+    "total": "Total",
+    "unit": {
+      "album": "album",
+      "document": "document",
+      "file": "file",
+      "tactic": "tactic",
+      "video": "video"
+    },
+    "videos": "Videos"
+  },
+  "title": "Documents",
+  "upsert": {
+    "addTitle": "Add Document",
+    "eventDate": "Event date",
+    "link": "Google Drive link",
+    "linkHelper": "Share the folder or file as \"Anyone with the link\" first. Nothing is uploaded here.",
+    "note": "Note",
+    "noteHelper": "Max {max} characters.",
+    "notePlaceholder": "Comment...",
+    "saving": "Saving...",
+    "savingToast": "Saving document...",
+    "title": "Title",
+    "titlePlaceholder": "Season opener highlights",
+    "type": "Type",
+    "updateTitle": "Update Document"
+  }
+}

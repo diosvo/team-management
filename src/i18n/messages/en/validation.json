@@ -2,6 +2,7 @@
   "afterClubFounded": "Be after the club was founded.",
   "awardedPlayerRequired": "Select the awarded player for an individual honor.",
   "customTitleRequired": "Give a custom honor a title.",
+  "driveLink": "Must be a Google Drive folder or file link.",
   "email": "Please enter a valid email.",
   "endDateAfterStartDate": "End date must be after start date",
   "endTimeAfterStartTime": "End time must be after start time",

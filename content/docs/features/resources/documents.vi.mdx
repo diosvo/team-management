@@ -1,0 +1,96 @@
+---
+title: Tài liệu
+description: Album ảnh, video và tệp của đội, lấy từ link Google Drive công khai; không tải tệp lên ứng dụng.
+---
+
+<Callout title="Route /documents">
+  Nhóm **Resources** · Resource `documents` · Trạng thái **Bản nháp**
+</Callout>
+
+## Mục đích
+
+- Trang Tài liệu (**Documents**) gom album ảnh, video và tệp của đội vào một
+  chỗ, để bạn không phải hỏi lại trong nhóm chat.
+- Ứng dụng không lưu tệp. Mỗi tài liệu chỉ là một dòng thông tin (tiêu đề, link,
+  loại, ngày) trỏ tới một thư mục hoặc tệp Google Drive được chia sẻ ở chế độ
+  "Bất kỳ ai có đường liên kết".
+- Thêm link mất vài giây; link được kiểm tra ngay khi nhập.
+
+## Quyền truy cập
+
+<PermissionMatrix resource="documents" />
+
+- Cầu thủ (`PLAYER`) xem và lọc; huấn luyện viên (`COACH`) thêm và sửa; chỉ
+  admin (`SUPER_ADMIN`) được xóa.
+- Khách (`GUEST`) mở trang sẽ được chuyển tới `/forbidden`.
+
+## Chia sẻ trên Google Drive
+
+- Mở thư mục (hoặc một thư mục cha chứa mọi album) trong Drive → **Chia sẻ** →
+  **Quyền truy cập chung** → **Bất kỳ ai có đường liên kết** · **Người xem**.
+  Các tệp bên trong thừa hưởng quyền này.
+- Nếu không, người xem sẽ thấy màn hình "You need access" của Google thay vì
+  ảnh và video.
+
+## Luồng
+
+<Steps>
+  <Step>
+    ### Xem số liệu
+
+    Năm ô thống kê: **Total**, **Albums**, **Videos**, **Tactics** (chiến thuật)
+    và **Files** (tệp).
+    Bấm vào một ô sẽ lọc theo loại tương ứng; **Total** xóa hết bộ lọc.
+
+  </Step>
+  <Step>
+    ### Lọc
+
+    - Tìm theo tiêu đề và ghi chú.
+    - Lọc theo khoảng **ngày sự kiện** (cùng bộ chọn ngày với các trang khác;
+      để trống là mọi thời gian) và theo loại.
+    - Bộ lọc được lưu trên URL: `q`, `type`, `from`, `to`, `page`.
+
+  </Step>
+  <Step>
+    ### Xem trước
+
+    - **Video** và **Tactic** (video phân tích chiến thuật): bấm **Play**, video tự phát ngay trong hộp thoại (có tiếng nếu
+      trình duyệt cho phép, nếu không thì tắt tiếng).
+    - **Album**: bấm **Preview** để xem lưới ảnh và video của thư mục. Bấm một
+      ảnh để xem lớn, bấm một video để phát, **All items** để quay lại.
+    - **File** (ảnh, PDF, Docs): bấm **Preview** để mở trình xem của Drive.
+    - **Open in Drive** luôn mở link gốc trong tab mới.
+
+  </Step>
+  <Step>
+    ### Thêm hoặc cập nhật
+
+    - Bấm **+ Add**, hoặc biểu tượng bút trên thẻ để sửa.
+    - Các trường: tiêu đề, link Google Drive, loại, ngày sự kiện, ghi chú.
+    - Loại được chọn sẵn theo dạng link (thư mục → Album, tệp Drive → Video,
+      Docs/Sheets/Slides → File) và bạn vẫn đổi được.
+    - Một mục Drive chỉ được thêm một lần cho mỗi đội.
+    - **Add** giữ hộp thoại mở và xóa form; **Update** đóng hộp thoại.
+
+  </Step>
+  <Step>
+    ### Xóa
+
+    Admin chọn các thẻ rồi xóa hàng loạt. Xóa tài liệu không đụng tới tệp trên
+    Drive.
+
+  </Step>
+</Steps>
+
+## Ghi chú kỹ thuật
+
+- Album được liệt kê phía server qua Drive API (`GOOGLE_API_KEY`, đã bật
+  **Google Drive API**). Không có key, hoặc Drive từ chối thư mục, thì album
+  dùng chế độ xem thư mục nhúng của Drive (bấm video sẽ mở tab Drive).
+- Video phát bằng thẻ `<video>` qua route `/api/drive/[id]` (chỉ người đã đăng
+  nhập). Route lấy tệp từ Drive API bằng key phía server và chuyển tiếp header
+  `Range` để tua được. Nếu lỗi (thiếu key, tệp riêng tư, trình duyệt không hỗ
+  trợ codec) thì dùng trình phát nhúng của Drive.
+- `GOOGLE_CLIENT_ID` (OAuth) không dùng cho tính năng này.
+- Toàn bộ xử lý link Drive nằm trong `src/utils/drive.ts` và `src/lib/drive.ts`.

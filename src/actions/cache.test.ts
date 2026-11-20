@@ -29,6 +29,7 @@ describe('revalidate', () => {
       ['achievements', '/achievements'],
       ['assets', '/assets'],
       ['attendances', '/attendance'],
+      ['documents', '/documents'],
       ['matches', '/matches'],
       ['reports', '/reports'],
       ['roster', '/roster'],

@@ -50,6 +50,18 @@
     "assistant_coach": "Assistant Coach",
     "head_coach": "Head Coach"
   },
+  "documentType": {
+    "album": "Album",
+    "video": "Video",
+    "tactic": "Tactic",
+    "file": "File"
+  },
+  "documentTypeHint": {
+    "album": "A Drive folder of photos and videos",
+    "video": "A single video file, plays inline",
+    "tactic": "A video breakdown of a play or game plan, plays inline",
+    "file": "Any other Drive file (photo, PDF, sheet, doc)"
+  },
   "emailStatus": {
     "bounced": "Bounced",
     "canceled": "Canceled",

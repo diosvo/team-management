@@ -385,6 +385,14 @@ describe('google-drive', () => {
         '400',
       );
     });
+
+    test("includes Google's reason in the error", async () => {
+      stubSheets(new Response('Invalid email', { status: 400 }));
+
+      await expect(addCheckboxes('token', 'abc', RANGES)).rejects.toThrow(
+        'Sheets update failed (400): Invalid email',
+      );
+    });
   });
 
   describe('protectRanges', () => {
@@ -429,6 +437,138 @@ describe('google-drive', () => {
           },
         ],
       });
+    });
+
+    const RANGE = { sheet: 'Đội', column: 'H', fromRow: 3, toRow: 11 };
+
+    /** Sheets that refuses any request naming one of `invalid`. */
+    const stubProtect = (invalid: Array<string>, replies?: unknown) => {
+      const fetch = vi.fn(async (url: string, init?: RequestInit) => {
+        if (!url.includes(':batchUpdate')) {
+          return new Response(
+            JSON.stringify({
+              sheets: [{ properties: { sheetId: 7, title: 'Đội' } }],
+            }),
+          );
+        }
+        const body = init!.body as string;
+        if (invalid.some((email) => body.includes(email))) {
+          return new Response('Invalid email', { status: 400 });
+        }
+        return new Response(
+          JSON.stringify(
+            body.includes('addProtectedRange')
+              ? (replies ?? {
+                  replies: [
+                    {
+                      addProtectedRange: {
+                        protectedRange: { protectedRangeId: 9 },
+                      },
+                    },
+                  ],
+                })
+              : {},
+          ),
+        );
+      });
+      vi.stubGlobal('fetch', fetch);
+      return fetch;
+    };
+
+    const bodies = (fetch: ReturnType<typeof stubProtect>) =>
+      fetch.mock.calls
+        .slice(1)
+        .map(([, init]) => JSON.parse((init as RequestInit).body as string));
+
+    test('locks to the owner, then adds each editor Google accepts', async () => {
+      const fetch = stubProtect(['cap@example.com']);
+
+      expect(
+        await protectRanges(
+          'token',
+          'abc',
+          [RANGE],
+          ['me@gmail.com', 'cap@example.com', 'coach@gmail.com'],
+          'Đã thu tiền',
+        ),
+      ).toEqual(['cap@example.com']);
+
+      const sent = bodies(fetch);
+      expect(
+        sent[1].requests[0].addProtectedRange.protectedRange.editors,
+      ).toEqual({ users: [] });
+      expect(sent.slice(2).map((body) => body.requests[0])).toEqual([
+        {
+          updateProtectedRange: {
+            protectedRange: {
+              protectedRangeId: 9,
+              editors: { users: ['me@gmail.com'] },
+            },
+            fields: 'editors',
+          },
+        },
+        {
+          updateProtectedRange: {
+            protectedRange: {
+              protectedRangeId: 9,
+              editors: { users: ['me@gmail.com', 'cap@example.com'] },
+            },
+            fields: 'editors',
+          },
+        },
+        {
+          updateProtectedRange: {
+            protectedRange: {
+              protectedRangeId: 9,
+              editors: { users: ['me@gmail.com', 'coach@gmail.com'] },
+            },
+            fields: 'editors',
+          },
+        },
+      ]);
+    });
+
+    test('adds no editors when the reply has no protected ranges', async () => {
+      const fetch = stubProtect(['cap@example.com'], {});
+
+      expect(
+        await protectRanges('token', 'abc', [RANGE], ['cap@example.com'], ''),
+      ).toEqual([]);
+      expect(bodies(fetch)[2].requests).toEqual([]);
+    });
+
+    test('throws when locking fails without editors', async () => {
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(async (url: string) =>
+          url.includes(':batchUpdate')
+            ? new Response(null, { status: 403 })
+            : new Response(
+                JSON.stringify({
+                  sheets: [{ properties: { sheetId: 7, title: 'Đội' } }],
+                }),
+              ),
+        ),
+      );
+
+      await expect(
+        protectRanges('token', 'abc', [RANGE], [], ''),
+      ).rejects.toThrow('403');
+    });
+
+    test('skips the update when no sheet matches', async () => {
+      const fetch = stubProtect([]);
+
+      expect(
+        await protectRanges(
+          'token',
+          'abc',
+          [{ ...RANGE, sheet: 'Khác' }],
+          ['me@gmail.com'],
+          '',
+        ),
+      ).toEqual([]);
+      expect(fetch).toHaveBeenCalledTimes(1);
     });
   });
 
