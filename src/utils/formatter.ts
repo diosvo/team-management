@@ -35,3 +35,11 @@ export const normalizeName = (name: Nullish<string>): string =>
   words(deburr(name ?? '').toLowerCase())
     .sort()
     .join(' ');
+
+/**
+ * Hides all but the last 4 characters of an ID number.
+ * @example maskId('079123451219'); // '********1219'
+ */
+export function maskId(id: string): string {
+  return id.length > 4 ? `${'*'.repeat(id.length - 4)}${id.slice(-4)}` : id;
+}

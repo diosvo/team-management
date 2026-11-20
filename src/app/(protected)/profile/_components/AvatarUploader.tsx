@@ -2,22 +2,18 @@
 
 import { useTransition } from 'react';
 import { useTranslations } from 'next-intl';
-import { Stack, Text, VStack } from '@chakra-ui/react';
 
 import authClient from '@/lib/auth-client';
 
 import { uploadAvatar } from '@/actions/user';
 import ImageUploader from '@/components/common/ImageUploader';
-import { Card } from '@/components/ui/card';
 import { toaster } from '@/components/ui/toaster';
 import type { User } from '@/drizzle/schema/user';
 import { useUserAvatar } from '@/hooks/use-image';
-import { enumLabel } from '@/i18n/enums';
 import { useSessionContext } from '@/providers/session';
 
 export default function AvatarUploader({ user }: { user: User }) {
   const t = useTranslations('profile.avatar');
-  const tEnums = useTranslations('enums');
   const [isPending, startTransition] = useTransition();
 
   const { refetch } = authClient.useSession();
@@ -52,27 +48,18 @@ export default function AvatarUploader({ user }: { user: User }) {
   };
 
   return (
-    <Card title={null}>
-      <VStack gap={4}>
-        <ImageUploader
-          src={image as string}
-          fallback={user.name}
-          state={
-            isPending || isLoading
-              ? 'pending'
-              : !canUpdate
-                ? 'disabled'
-                : 'editable'
-          }
-          onChange={handleFileChange}
-        />
-        <Stack gap={0} align="center">
-          <Text fontWeight="medium">{user.name}</Text>
-          <Text color="fg.muted" textStyle="sm">
-            {enumLabel(tEnums, 'userRole', user.role)}
-          </Text>
-        </Stack>
-      </VStack>
-    </Card>
+    <ImageUploader
+      src={image as string}
+      fallback={user.name}
+      size={{ base: 20, md: 28 }}
+      state={
+        isPending || isLoading
+          ? 'pending'
+          : !canUpdate
+            ? 'disabled'
+            : 'editable'
+      }
+      onChange={handleFileChange}
+    />
   );
 }

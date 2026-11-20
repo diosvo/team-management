@@ -271,6 +271,67 @@ describe('User Actions', () => {
       resetMockAuthUser();
     });
 
+    describe('citizen ID', () => {
+      const CITIZEN_ID = '079123451219';
+      const target = {
+        ...MOCK_USER_WITH_PLAYER,
+        id: 'someone-elses-id',
+        citizen_identification: CITIZEN_ID,
+      };
+
+      afterEach(() => resetMockAuthUser());
+
+      test.each([
+        ['the member', UserRole.PLAYER, target.id, false],
+        ['an admin', UserRole.SUPER_ADMIN, MOCK_USER.id, false],
+        ['the captain', UserRole.PLAYER, MOCK_USER.id, true],
+      ])(
+        'sends the full number to %s',
+        async (_, role, viewerId, isCaptain) => {
+          setMockAuthUser({
+            ...MOCK_USER,
+            id: viewerId,
+            role,
+            is_captain: isCaptain,
+          });
+          vi.mocked(selectUserById).mockResolvedValue(target);
+
+          const { targetUser } = await getUserProfile(target.id);
+
+          expect(targetUser.citizen_identification).toBe(CITIZEN_ID);
+        },
+      );
+
+      test.each([UserRole.PLAYER, UserRole.COACH])(
+        'masks it for another %s (not captain) so it never reaches their browser',
+        async (role) => {
+          setMockAuthUser({ ...MOCK_USER, role });
+          vi.mocked(selectUserById).mockResolvedValue(target);
+
+          const { targetUser } = await getUserProfile(target.id);
+
+          expect(targetUser.citizen_identification).toBe('********1219');
+          // Nothing else on the profile changes.
+          expect(targetUser).toEqual({
+            ...target,
+            citizen_identification: '********1219',
+          });
+        },
+      );
+
+      test('leaves an unset citizen ID unset', async () => {
+        setMockAuthUser({ ...MOCK_USER, role: UserRole.PLAYER });
+        vi.mocked(selectUserById).mockResolvedValue({
+          ...target,
+          citizen_identification: null,
+        });
+
+        const { targetUser } = await getUserProfile(target.id);
+
+        expect(targetUser.citizen_identification).toBeNull();
+      });
+    });
+
     test('is view-only when a coach views someone else’s profile', async () => {
       setMockAuthUser({ ...MOCK_USER, role: UserRole.COACH });
       const otherUser = { ...MOCK_USER_WITH_COACH, id: 'someone-elses-id' };
@@ -614,6 +675,7 @@ describe('User Actions', () => {
           state: teamInfoData.user.state,
         },
         membership: { join_date: teamInfoData.user.join_date },
+        rejoin: undefined,
         player: teamInfoData.player,
         coach: undefined,
         remove: { player: false, coach: false },
@@ -647,6 +709,7 @@ describe('User Actions', () => {
           state: coachInfoData.user.state,
         },
         membership: { join_date: coachInfoData.user.join_date },
+        rejoin: undefined,
         player: undefined,
         coach: coachInfoData.coach,
         remove: { player: false, coach: false },

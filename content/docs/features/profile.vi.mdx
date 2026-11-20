@@ -28,8 +28,8 @@ description: Ảnh đại diện, thông tin cá nhân và trong đội; mỗi s
 
 ### `viewOnly`
 
-Cờ chỉ dùng cho giao diện, lấy từ `getUserProfile`; khóa nút **Edit** ở tab
-Personal và Team.
+Cờ chỉ dùng cho giao diện, lấy từ `getUserProfile`; khóa nút **Edit** ở thẻ
+Personal và Team, và hiện nhãn **View Only** trên phần đầu trang.
 
 - Cầu thủ (`PLAYER`) / huấn luyện viên (`COACH`): sửa được hồ sơ của mình, chỉ
   xem được hồ sơ người khác.
@@ -71,12 +71,25 @@ Personal và Team.
 - `users/1` sẽ khớp phần đầu với `users/12-abc`.
 - Nhờ vậy, bạn chỉ xóa được đúng ảnh đại diện hiện tại của mình.
 
-## Luồng
+## Bố cục
 
-<Tabs items={['Overview', 'Personal', 'Team']}>
-  <Tab value="Overview">
+- Một trang, không còn tab: thẻ đầu trang, rồi hai thẻ Personal và Team nằm
+  cạnh nhau từ `lg` (màn hình nhỏ hơn thì xếp chồng).
+- Trên điện thoại: ảnh nằm cạnh tên và các nhãn, nút **View performance**
+  trải hết chiều ngang bên dưới. Từ `md`, phần đầu trang nằm trên một hàng.
+- Bạn thấy mọi thông tin mà không cần bấm gì. Ô nào chưa có sẽ ghi "Chưa cung
+  cấp".
 
-    - Ảnh đại diện (không có thì hiện chữ cái đầu tên), tên và vai trò.
+<Tabs items={['Header', 'Personal', 'Team']}>
+  <Tab value="Header">
+
+    - Ảnh đại diện (không có thì hiện chữ cái đầu tên), tên, nhãn **Captain**
+      và **View Only**.
+    - Nhãn vai trò, vị trí và trạng thái.
+    - Số áo: nhãn nhỏ trên điện thoại, số lớn có chú thích từ `md`.
+    - "Đã gắn bó …" theo lần gia nhập hiện tại; ngày gia nhập nằm ở thẻ Team.
+    - **View performance** mở `/performance/<id>` trên hồ sơ cầu thủ, cho
+      admin và chính cầu thủ đó.
     - Chỉ chủ hồ sơ mới thấy nút tải ảnh lên (`sessionUser.id === user.id`).
     - `ImageUploader`: PNG hoặc JPEG, tối đa 10 MB; lưu thành ảnh WebP 512 px.
     - Tải lên xong, phiên đăng nhập được tải lại nên ảnh trên header cũng đổi
@@ -85,17 +98,30 @@ Personal và Team.
   </Tab>
   <Tab value="Personal">
 
-    - Email (chỉ xem), họ tên, ngày sinh, số điện thoại, số CCCD.
+    - Email và số điện thoại là link `mailto:` / `tel:`, ngày sinh kèm tuổi,
+      số CCCD.
+    - Số CCCD luôn hiện dạng `********1219`: chỉ 4 số cuối.
+    - Admin và đội trưởng có nút hình con mắt để xem đầy đủ. Chủ hồ sơ xem số
+      đầy đủ trong form sửa.
+    - `getUserProfile` che số ngay trên server với những người còn lại, nên số
+      đầy đủ chỉ tới tay chủ hồ sơ, admin và đội trưởng.
+    - Khi sửa: email (chỉ xem), họ tên, ngày sinh, số điện thoại, số CCCD.
     - **Save** chỉ bấm được khi bạn đã sửa gì đó và dữ liệu hợp lệ; **Cancel**
       trả về như cũ.
 
   </Tab>
   <Tab value="Team">
 
-    - Vai trò, vị trí, trạng thái, số áo, tên trên áo, size áo, size quần,
-      loại quần, ngày vào đội (của lần gia nhập hiện tại).
-    - Vai trò và vị trí: chỉ admin sửa. Thông tin áo và size: chỉ cầu thủ mới
-      có.
+    - Hiện vai trò, vị trí, trạng thái và ngày vào đội (của lần gia nhập hiện
+      tại).
+    - Vị trí ghi đầy đủ ("Tiền phong chính", "Huấn luyện viên trưởng") theo
+      message `*PositionHint`; nhãn trên phần đầu trang vẫn giữ dạng ngắn "PF".
+    - Hồ sơ cầu thủ có thêm mục Áo đấu (**Jersey**) dưới một đường kẻ có tiêu
+      đề: số áo, tên trên áo, size áo, size quần, loại quần. Hai mục mỗi hàng
+      khi thẻ đủ rộng, hẹp hơn thì mỗi hàng một mục.
+    - Các dòng theo vai trò của hồ sơ, không theo vai trò của người đang xem.
+    - Khi sửa: chỉ admin sửa được vai trò và vị trí. Mục Áo đấu hiện khi vai
+      trò đang chọn là Player.
     - Tên trên áo và size được điền sẵn vào
       [form đặt áo](/docs/vi/features/team-management/roster).
     - Lưu với trạng thái `active` sẽ mutate SWR `CACHE_KEY.PLAYERS`, nên các ô
@@ -114,6 +140,10 @@ Personal và Team.
   `useUserAvatar` cache lại (SWR immutable).
 - **Ngày vào đội nằm ở lần gia nhập.** `join_date` được đọc và ghi trên lần
   gia nhập đang mở trong `user_team`, không phải một cột của `user`.
+- **Đổi trạng thái vẫn giữ lịch sử đội.** Chuyển trạng thái sang `inactive`
+  sẽ đóng lần gia nhập đang mở với ngày rời đội là hôm nay. Chuyển một thành
+  viên chưa có lần gia nhập đang mở ra khỏi `inactive` sẽ mở lần gia nhập mới,
+  vào đội từ hôm nay.
 - **Đổi vai trò.** `updateTeamInfo` tạo hoặc cập nhật dòng `player` / `coach`
   theo vai trò _được gửi lên_ và xóa dòng của vai trò cũ.
   - Dòng user, lần gia nhập và dòng theo vai trò được ghi trong cùng một
@@ -183,7 +213,7 @@ dùng `withResource('profile')`.
     'getUserProfile(id)': {
       type: '{ targetUser: User, viewOnly: boolean }',
       description:
-        'withAuth; forbidden() với GUEST, notFound() nếu không có người đó.',
+        'withAuth; forbidden() với GUEST, notFound() nếu không có người đó. Che citizen_identification, trừ khi người gọi là chủ hồ sơ, SUPER_ADMIN hoặc đội trưởng.',
       required: true,
     },
     'getAvatar(image_path)': {
@@ -233,7 +263,7 @@ dùng `withResource('profile')`.
 
     - Hồ sơ người khác: sửa được Role, Position, State, Jersey Number, Jersey
       Name, Shirt Size và Short Size.
-    - Hồ sơ của mình: cả hai tab chỉ xem; vẫn đổi được ảnh đại diện.
+    - Hồ sơ của mình: cả hai thẻ chỉ xem; vẫn đổi được ảnh đại diện.
 
   </Accordion>
   <Accordion title="Giới hạn và thay ảnh đại diện">

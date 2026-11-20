@@ -6,6 +6,7 @@ import { isEmptyObject } from 'es-toolkit';
 
 import { toIsoDay } from '@/utils/datetime';
 import { UserState } from '@/utils/enum';
+import { maskId } from '@/utils/formatter';
 import { hasPermissions } from '@/utils/permissions';
 import { ResponseFactory } from '@/utils/response';
 
@@ -77,8 +78,20 @@ export const getUserProfile = withAuth(async (user, target_id: string) => {
   const viewOnly =
     (isAdmin && isOwnProfile) || ((isPlayer || isCoach) && !isOwnProfile);
 
+  // The full citizen ID goes to the member (to edit it) and to admins and
+  // captains (to reveal it). Everyone else gets it masked here, so the full
+  // number never reaches their browser.
+  const { citizen_identification } = targetUser;
+  const showCitizenId = isAdmin || isOwnProfile || !!user.is_captain;
+
   return {
-    targetUser,
+    targetUser:
+      showCitizenId || !citizen_identification
+        ? targetUser
+        : {
+            ...targetUser,
+            citizen_identification: maskId(citizen_identification),
+          },
     viewOnly,
   };
 });

@@ -3,6 +3,7 @@ import {
   Avatar,
   type AvatarFallbackProps,
   Box,
+  type BoxProps,
   Center,
   FileUpload,
   Skeleton,
@@ -44,12 +45,15 @@ type ImageUploaderProps = Required<{
   Partial<{
     fallback: AvatarFallbackProps['name'];
     state: 'editable' | 'disabled' | 'pending';
+    /** Avatar width and height; responsive values allowed */
+    size: BoxProps['boxSize'];
   }>;
 
 export default function ImageUploader({
   src,
   fallback,
   state = 'editable',
+  size = 32,
   onChange,
 }: ImageUploaderProps) {
   const t = useTranslations('components.imageUploader');
@@ -79,15 +83,10 @@ export default function ImageUploader({
           css={{ '&:hover .avatar-overlay': { opacity: 1 } }}
         >
           {isPending ? (
-            <Skeleton width={32} height={32} />
+            <Skeleton boxSize={size} />
           ) : (
-            <Avatar.Root
-              width={32}
-              height={32}
-              variant="outline"
-              shape="rounded"
-            >
-              <Avatar.Fallback>{fallback}</Avatar.Fallback>
+            <Avatar.Root boxSize={size} variant="outline" shape="rounded">
+              <Avatar.Fallback name={fallback} />
               <Avatar.Image src={src ?? undefined} />
             </Avatar.Root>
           )}

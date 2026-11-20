@@ -6,7 +6,6 @@ import {
   createSessionMock,
   createSWRMock,
   createToasterMock,
-  enumText,
   expectNoA11yViolations,
   renderWithUI,
   screen,
@@ -75,15 +74,17 @@ describe('AvatarUploader', () => {
     await expectNoA11yViolations(container);
   });
 
-  test('renders the user name and role', async () => {
+  test('falls back to the user’s initials without a photo', async () => {
     setup();
 
+    // Name and role now live in ProfileHeader; only the avatar remains here.
+    const initials = MOCK_USER.name
+      .split(' ')
+      .map((part) => part[0])
+      .filter((_, index, parts) => index === 0 || index === parts.length - 1)
+      .join('');
     await waitFor(() => {
-      // The name appears twice: the avatar fallback and the profile label.
-      expect(screen.getAllByText(MOCK_USER.name).length).toBeGreaterThan(0);
-      expect(
-        screen.getByText(enumText('userRole', MOCK_USER.role)),
-      ).toBeInTheDocument();
+      expect(screen.getByText(initials)).toBeInTheDocument();
     });
   });
 

@@ -25,7 +25,8 @@ description: A member's avatar, personal and team details, with ownership enforc
 
 ### `viewOnly`
 
-UI-only flag from `getUserProfile`; disables Edit on the Personal and Team tabs.
+UI-only flag from `getUserProfile`; disables Edit on the Personal and Team
+cards and shows a **View Only** badge in the header.
 
 - PLAYER / COACH: editable on their own profile, view only on another member.
 - SUPER_ADMIN: view only on their own profile, editable on another member.
@@ -65,12 +66,24 @@ UI-only flag from `getUserProfile`; disables Edit on the Personal and Team tabs.
 - `users/1` would prefix-match `users/12-abc`.
 - So only the caller's current avatar is deletable.
 
-## Flows
+## Layout
 
-<Tabs items={['Overview', 'Personal', 'Team']}>
-  <Tab value="Overview">
+- One page, no tabs: a header card, then the Personal and Team cards side by
+  side from `lg` (stacked below).
+- Phones: the photo sits beside the name and badges, and **View performance**
+  spans the card below. From `md` the header is one row.
+- Every field is in view without a click. An unset one reads "Not provided".
 
-    - Avatar (initials fallback), name and role.
+<Tabs items={['Header', 'Personal', 'Team']}>
+  <Tab value="Header">
+
+    - Avatar (initials fallback), name, **Captain** and **View Only** badges.
+    - Role, position and state badges.
+    - Jersey number: a badge on phones, a large captioned number from `md`.
+    - "Joined for …" from the open membership stint; the date itself is on
+      the Team card.
+    - **View performance** opens `/performance/<id>` on a player profile, for
+      admins and the player themselves.
     - Upload overlay for the owner only (`sessionUser.id === user.id`).
     - `ImageUploader`: PNG or JPEG, up to 10 MB; stored as a 512 px WebP.
     - On success the session is refetched, so the header avatar updates.
@@ -78,16 +91,29 @@ UI-only flag from `getUserProfile`; disables Edit on the Personal and Team tabs.
   </Tab>
   <Tab value="Personal">
 
-    - Email (read-only), full name, DOB, phone, citizen ID.
+    - Shows email and phone as `mailto:` / `tel:` links, date of birth with
+      age, citizen ID.
+    - Citizen ID always reads `********1219`: only the last 4 digits.
+    - SUPER_ADMIN and the captain get an eye toggle to show the full number.
+      The owner sees it in the edit form.
+    - `getUserProfile` masks it on the server for everyone else, so the full
+      number reaches only the owner, SUPER_ADMIN and the captain.
+    - Edit: email (read-only), full name, date of birth, phone, citizen ID.
     - Save only when dirty and valid; Cancel resets.
 
   </Tab>
   <Tab value="Team">
 
-    - Role, position, state, jersey number, jersey name, shirt and short
-      size, short type, join date (of the open membership stint).
-    - Role and position: SUPER_ADMIN only. Jersey fields and sizes: players
-      only.
+    - Shows role, position, state and join date (of the open membership
+      stint).
+    - Position is spelled out ("Power Forward", "Head Coach") from the
+      `*PositionHint` messages; the header badge keeps the short "PF".
+    - Player profiles add a **Jersey** section under a labelled rule: number,
+      jersey name, shirt and short size, short type. Two per row while the
+      card is wide enough, one per row otherwise.
+    - Rows follow the profile's role, not the viewer's.
+    - Edit: role and position are SUPER_ADMIN only. The Jersey section shows
+      while the picked role is Player.
     - Jersey name and sizes prefill the
       [jersey order form](/docs/features/team-management/roster).
     - Saving with state `active` mutates SWR `CACHE_KEY.PLAYERS`, refreshing
@@ -105,6 +131,9 @@ UI-only flag from `getUserProfile`; disables Edit on the Personal and Team tabs.
   `useUserAvatar` (SWR immutable).
 - **Join date lives on the membership.** `join_date` is read from and written
   to the member's open `user_team` stint, not a column on `user`.
+- **State changes keep the team history.** Setting state to `inactive` closes
+  the open stint with today's leave date. Setting a member with no open stint
+  back from `inactive` opens a new stint joined today.
 - **Role switching.** `updateTeamInfo` upserts the `player` / `coach` row for
   the _submitted_ role and deletes the previous role's row.
   - User, stint and role rows are written in one transaction
@@ -173,7 +202,8 @@ Server actions in `src/actions/user.ts`; all but `getUserProfile` use
   type={{
     'getUserProfile(id)': {
       type: '{ targetUser: User, viewOnly: boolean }',
-      description: 'withAuth; forbidden() for GUEST, notFound() when missing.',
+      description:
+        'withAuth; forbidden() for GUEST, notFound() when missing. Masks citizen_identification unless the caller is the owner, SUPER_ADMIN or the captain.',
       required: true,
     },
     'getAvatar(image_path)': {
@@ -222,7 +252,7 @@ Server actions in `src/actions/user.ts`; all but `getUserProfile` use
 
     - Another member: Role, Position, State, Jersey Number, Jersey Name,
       Shirt Size and Short Size are editable.
-    - Own profile: both tabs view only; the avatar can still be replaced.
+    - Own profile: both cards view only; the avatar can still be replaced.
 
   </Accordion>
   <Accordion title="Avatar limits and replacement">

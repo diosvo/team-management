@@ -1,26 +1,15 @@
 import type { User } from '@/drizzle/schema';
 import { MOCK_USER } from '@/test/mocks/user';
-import {
-  renderWithUI,
-  screen,
-  setupTestLifecycle,
-  waitFor,
-} from '@/test/utilities';
+import { renderWithUI, screen, setupTestLifecycle } from '@/test/utilities';
 
 import ProfileLayout from './ProfileLayout';
 
-// jsdom has no media queries, so drive the breakpoint value directly.
-const mockUseBreakpointValue = vi.hoisted(() => vi.fn());
-
-vi.mock('@chakra-ui/react', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@chakra-ui/react')>()),
-  useBreakpointValue: mockUseBreakpointValue,
-}));
-
 // Isolate the layout from its children; each child has its own test file.
-vi.mock('./AvatarUploader', () => ({
-  default: ({ user }: { user: User }) => (
-    <div data-testid="avatar-card">{user.name}</div>
+vi.mock('./ProfileHeader', () => ({
+  default: ({ user, viewOnly }: { user: User; viewOnly: boolean }) => (
+    <div data-testid="profile-header">
+      {user.name}:{String(viewOnly)}
+    </div>
   ),
 }));
 
@@ -39,91 +28,42 @@ vi.mock('./TeamInfo', () => ({
 describe('ProfileLayout', () => {
   setupTestLifecycle();
 
-  beforeEach(() => {
-    mockUseBreakpointValue.mockReturnValue('horizontal');
-  });
-
   const setup = (viewOnly = false) =>
     renderWithUI(<ProfileLayout user={MOCK_USER} viewOnly={viewOnly} />);
 
-  test('renders a tab for each profile section', async () => {
+  test('shows every section at once, header first, without tabs', () => {
     setup();
 
-    await waitFor(() => {
-      expect(screen.getByRole('tab', { name: 'Overview' })).toBeInTheDocument();
-      expect(screen.getByRole('tab', { name: 'Personal' })).toBeInTheDocument();
-      expect(screen.getByRole('tab', { name: 'Team' })).toBeInTheDocument();
+    const sections = [
+      screen.getByTestId('profile-header'),
+      screen.getByTestId('personal-info'),
+      screen.getByTestId('team-info'),
+    ];
+    expect(screen.queryByRole('tab')).not.toBeInTheDocument();
+    // Document order: header, then personal, then team.
+    sections.reduce((previous, next) => {
+      expect(
+        previous.compareDocumentPosition(next) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+      return next;
     });
   });
 
-  test('selects the Overview tab by default', async () => {
-    setup();
+  test.each([true, false])(
+    'forwards the user and viewOnly=%s to every section',
+    (viewOnly) => {
+      setup(viewOnly);
 
-    await waitFor(() => {
-      expect(screen.getByRole('tab', { name: 'Overview' })).toHaveAttribute(
-        'aria-selected',
-        'true',
+      expect(screen.getByTestId('profile-header')).toHaveTextContent(
+        `${MOCK_USER.name}:${viewOnly}`,
       );
-    });
-  });
-
-  test('forwards the user to the avatar card', async () => {
-    setup();
-
-    await waitFor(() => {
-      expect(screen.getByTestId('avatar-card')).toHaveTextContent(
-        MOCK_USER.name,
-      );
-    });
-  });
-
-  test('forwards the viewOnly flag to the personal and team sections', async () => {
-    setup(true);
-
-    await waitFor(() => {
       expect(screen.getByTestId('personal-info')).toHaveTextContent(
-        'personal:true',
+        `personal:${viewOnly}`,
       );
-      expect(screen.getByTestId('team-info')).toHaveTextContent('team:true');
-    });
-  });
-
-  test('activates a section when its tab is clicked', async () => {
-    const { user } = setup();
-
-    await user.click(screen.getByRole('tab', { name: 'Personal' }));
-
-    expect(screen.getByRole('tab', { name: 'Personal' })).toHaveAttribute(
-      'aria-selected',
-      'true',
-    );
-  });
-
-  test('lays the tabs out horizontally on small screens', async () => {
-    setup();
-
-    await waitFor(() => {
-      expect(screen.getByRole('tablist')).toHaveAttribute(
-        'aria-orientation',
-        'horizontal',
+      expect(screen.getByTestId('team-info')).toHaveTextContent(
+        `team:${viewOnly}`,
       );
-    });
-    expect(mockUseBreakpointValue).toHaveBeenCalledWith({
-      base: 'horizontal',
-      md: 'vertical',
-    });
-  });
-
-  test('stacks the tabs vertically from the md breakpoint up', async () => {
-    mockUseBreakpointValue.mockReturnValue('vertical');
-
-    setup();
-
-    await waitFor(() => {
-      expect(screen.getByRole('tablist')).toHaveAttribute(
-        'aria-orientation',
-        'vertical',
-      );
-    });
-  });
+    },
+  );
 });

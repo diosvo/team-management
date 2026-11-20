@@ -1,14 +1,17 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
-import { Center, Tabs, useBreakpointValue } from '@chakra-ui/react';
+import { SimpleGrid, VStack } from '@chakra-ui/react';
 
 import type { User } from '@/drizzle/schema';
 
-import AvatarUploader from './AvatarUploader';
 import PersonalInfo from './PersonalInfo';
+import ProfileHeader from './ProfileHeader';
 import TeamInfo from './TeamInfo';
 
+/**
+ * One page instead of tabs: the header carries the key facts, the two detail
+ * cards sit side by side from `lg` and stack on smaller screens.
+ */
 export default function ProfileLayout({
   user,
   viewOnly,
@@ -16,39 +19,20 @@ export default function ProfileLayout({
   user: User;
   viewOnly: boolean;
 }) {
-  const t = useTranslations('profile.tabs');
-  const orientation = useBreakpointValue<'horizontal' | 'vertical'>({
-    base: 'horizontal',
-    md: 'vertical',
-  });
-
   return (
-    <Center>
-      <Tabs.Root
-        size={orientation === 'vertical' ? 'lg' : 'sm'}
-        width={{ base: 'full', xl: '3/4' }}
-        maxWidth="5xl"
-        defaultValue="avatar"
-        orientation={orientation}
-      >
-        <Tabs.List>
-          <Tabs.Trigger value="avatar">{t('overview')}</Tabs.Trigger>
-          <Tabs.Trigger value="personal-info">{t('personal')}</Tabs.Trigger>
-          <Tabs.Trigger value="team-info">{t('team')}</Tabs.Trigger>
-        </Tabs.List>
-
-        <Tabs.Content value="avatar" flex="1">
-          <AvatarUploader user={user} />
-        </Tabs.Content>
-
-        <Tabs.Content value="personal-info" flex="1">
-          <PersonalInfo user={user} viewOnly={viewOnly} />
-        </Tabs.Content>
-
-        <Tabs.Content value="team-info" flex="1">
-          <TeamInfo user={user} viewOnly={viewOnly} />
-        </Tabs.Content>
-      </Tabs.Root>
-    </Center>
+    <VStack
+      alignItems="stretch"
+      gap={4}
+      width="full"
+      maxWidth="5xl"
+      marginInline="auto"
+    >
+      <ProfileHeader user={user} viewOnly={viewOnly} />
+      {/* Rows stretch, so side-by-side cards share the taller one's height. */}
+      <SimpleGrid columns={{ base: 1, lg: 2 }} gap={4}>
+        <PersonalInfo user={user} viewOnly={viewOnly} />
+        <TeamInfo user={user} viewOnly={viewOnly} />
+      </SimpleGrid>
+    </VStack>
   );
 }

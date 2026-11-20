@@ -2,6 +2,11 @@
   "avatar": {
     "setting": "Đang cập nhật ảnh đại diện..."
   },
+  "header": {
+    "captain": "Đội trưởng",
+    "memberFor": "Đã gắn bó {duration}",
+    "viewPerformance": "Xem phong độ"
+  },
   "lastUpdated": "Cập nhật lần cuối: {date}",
   "metadata": {
     "description": "Xem và chỉnh sửa thông tin hồ sơ của bạn.",
@@ -11,25 +16,25 @@
     "description": "Hồ sơ bạn tìm không tồn tại hoặc đã bị xóa.",
     "title": "Không tìm thấy người dùng"
   },
+  "notProvided": "Chưa cung cấp",
   "personal": {
+    "age": "{age} tuổi",
     "citizenId": "Số CCCD",
     "dob": "Ngày sinh",
     "fullname": "Họ và tên",
+    "hideCitizenId": "Ẩn số CCCD",
     "namePlaceholder": "Ẩn danh",
     "phoneNumber": "Số điện thoại",
+    "showCitizenId": "Hiện đầy đủ số CCCD",
     "title": "Thông tin cá nhân",
     "updating": "Đang cập nhật thông tin cá nhân..."
   },
-  "tabs": {
-    "overview": "Tổng quan",
-    "personal": "Cá nhân",
-    "team": "Đội"
-  },
   "team": {
+    "jersey": "Áo đấu",
     "jerseyName": "Tên trên áo",
     "jerseyNumber": "Số áo",
     "joinDate": "Ngày gia nhập",
-    "joinedDate": "Ngày gia nhập",
+    "number": "Số áo",
     "position": "Vị trí",
     "role": "Vai trò",
     "shirtSize": "Size áo",
