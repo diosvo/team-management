@@ -5,12 +5,14 @@ import { nextCookies } from 'better-auth/next-js';
 import { customSession } from 'better-auth/plugins';
 
 import env from '@env';
-import { COOKIE } from '@/utils/constants';
+import { COOKIE, PASSWORD_LINK_TTL } from '@/utils/constants';
+import { isDeliverable } from '@/utils/email';
 import { UserRole, UserState } from '@/utils/enum';
 
 import { sendEmail } from '@/lib/resend';
 
 import ResetPassword from '@/app/(auth)/_components/ResetPassword';
+import { updateLastSignIn } from '@/db/account';
 import { isCaptain } from '@/db/player';
 import db from '@/drizzle';
 import {
@@ -56,8 +58,12 @@ const options = {
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false,
+    // Invites use the same link, so the guide on /accounts quotes this value
+    resetPasswordTokenExpiresIn: PASSWORD_LINK_TTL,
     sendResetPassword: async ({ user, url }) => {
       const email = user.email;
+      // A member added without an email: answer as usual, send nothing
+      if (!isDeliverable(email)) return;
       const name = email.split('@')[0] ?? email;
 
       await sendEmail({
@@ -87,6 +93,21 @@ const options = {
   },
   advanced: {
     cookiePrefix: COOKIE.prefix,
+  },
+  // A new session means a sign-in: keep when and from which IP for /accounts
+  databaseHooks: {
+    session: {
+      create: {
+        after: async ({ userId, createdAt, ipAddress }) => {
+          try {
+            await updateLastSignIn(userId, createdAt, ipAddress);
+          } catch (error) {
+            // Never block a sign-in over bookkeeping
+            console.error('[auth] could not record the sign-in', error);
+          }
+        },
+      },
+    },
   },
   // https://better-auth.com/docs/concepts/session-management
   session: {

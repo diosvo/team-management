@@ -1,14 +1,4 @@
 {
-  "addUser": {
-    "adding": "Adding user to database...",
-    "dob": "DOB",
-    "email": "Email",
-    "fullname": "Fullname",
-    "submit": "Add",
-    "submitting": "Adding...",
-    "title": "Add to Roster",
-    "trigger": "Add"
-  },
   "filters": {
     "role": "Role",
     "state": "State"

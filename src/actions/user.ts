@@ -2,13 +2,13 @@
 
 import { forbidden, notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
+import { isEmptyObject } from 'es-toolkit';
 
-import { ESTABLISHED_DATE } from '@/utils/constants';
-import type { CoachPosition, PlayerPosition } from '@/utils/enum';
+import { toIsoDay } from '@/utils/datetime';
+import { UserState } from '@/utils/enum';
 import { hasPermissions } from '@/utils/permissions';
 import { ResponseFactory } from '@/utils/response';
 
-import auth from '@/lib/auth';
 import {
   deleteFile,
   getFile,
@@ -16,11 +16,9 @@ import {
   uploadImage,
 } from '@/lib/storage';
 
-import { insertCoach } from '@/db/coach';
 import { getDbErrorMessage } from '@/db/pg-error';
-import { insertPlayer, isJerseyNumberTaken } from '@/db/player';
+import { isJerseyNumberTaken } from '@/db/player';
 import {
-  deleteUser,
   selectActivePlayers,
   selectRegistrationPlayers,
   selectRosterUsers,
@@ -29,9 +27,7 @@ import {
   updateUser,
   updateUserTeamInfo,
 } from '@/db/user';
-import { insertMembership } from '@/db/user-team';
 import type {
-  AddUserValues,
   EditPersonalInfoValues,
   EditTeamInfoValues,
 } from '@/schemas/user';
@@ -39,7 +35,6 @@ import type {
 import { withAuth, withResource } from './auth';
 import { revalidate } from './cache';
 
-const roster = withResource('roster');
 const profile = withResource('profile');
 const registration = withResource('registration');
 
@@ -87,65 +82,6 @@ export const getUserProfile = withAuth(async (user, target_id: string) => {
     viewOnly,
   };
 });
-
-export const createUser = roster(
-  ['create'],
-  async function add({ team_id }, values: AddUserValues) {
-    // TODO: check rate limiting first
-    const t = await getTranslations('actions.user');
-
-    try {
-      // `join_date` opens the membership stint rather than sitting on the user
-      const { join_date, ...details } = values;
-      const user = {
-        ...details,
-        team_id,
-      };
-      const { isPlayer, isCoach } = hasPermissions(user.role);
-
-      const data = await auth.api.signUpEmail({
-        body: {
-          ...user,
-          password: 'TemporaryPassword123!',
-        },
-      });
-
-      await insertMembership(
-        data.user.id,
-        team_id,
-        join_date ?? ESTABLISHED_DATE,
-      );
-
-      if (isPlayer) {
-        await insertPlayer({
-          id: data.user.id,
-          position: user.position as PlayerPosition,
-        });
-      }
-
-      if (isCoach) {
-        await insertCoach({
-          id: data.user.id,
-          position: user.position as CoachPosition,
-        });
-      }
-
-      await auth.api.requestPasswordReset({
-        body: {
-          email: values.email,
-          redirectTo: '/new-password',
-        },
-      });
-
-      revalidate.roster();
-
-      return ResponseFactory.success(t('invited'));
-    } catch (error) {
-      const { message } = getDbErrorMessage(error);
-      return ResponseFactory.error(message);
-    }
-  },
-);
 
 export const getAvatar = profile(
   ['view'],
@@ -280,9 +216,30 @@ export const updateTeamInfo = profile(
       // there instead of on the user row.
       const { join_date, ...userColumns } = userData;
 
+      // Going inactive closes the open stint today; coming back opens a new
+      // one, so the team history keeps every period the member played.
+      const today = toIsoDay(new Date());
+      const leaving =
+        target.state !== UserState.INACTIVE &&
+        userData.state === UserState.INACTIVE;
+      // `join_date` is only set while a stint is open; older inactive rows may
+      // still have one, and those just carry on.
+      const returning =
+        target.state === UserState.INACTIVE &&
+        userData.state !== UserState.INACTIVE &&
+        !target.join_date;
+
+      const membership = {
+        ...(join_date && !returning && { join_date }),
+        ...(leaving && { leave_date: today }),
+      };
+
       await updateUserTeamInfo(user_id, {
         user: userColumns,
-        membership: join_date ? { join_date } : undefined,
+        membership: isEmptyObject(membership) ? undefined : membership,
+        rejoin: returning
+          ? { team_id: target.team_id, join_date: today }
+          : undefined,
         player: isPlayer ? playerData : undefined,
         coach: isCoach ? coachData : undefined,
         remove: {
@@ -297,22 +254,6 @@ export const updateTeamInfo = profile(
     } catch (error) {
       const { message } = getDbErrorMessage(error);
       return ResponseFactory.error(message);
-    }
-  },
-);
-
-export const removeUser = roster(
-  ['delete'],
-  async function remove(_, user_id: string) {
-    const t = await getTranslations('actions.user');
-    try {
-      await deleteUser(user_id);
-
-      revalidate.roster();
-
-      return ResponseFactory.success(t('deleted'));
-    } catch {
-      return ResponseFactory.error(t('deleteFailed'));
     }
   },
 );

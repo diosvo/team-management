@@ -30,7 +30,7 @@ describe('sendEmail', () => {
 
     expect(send).toHaveBeenCalledWith({
       from: 'Acme <onboarding@resend.dev>',
-      to: 'player@example.com',
+      to: ['player@example.com'],
       subject: 'SGR - Welcome',
       html: '<p>Hello</p>',
     });
@@ -45,6 +45,26 @@ describe('sendEmail', () => {
     expect(send).toHaveBeenCalledWith(
       expect.objectContaining({ to: recipients }),
     );
+  });
+
+  test('skips placeholder addresses that can never receive mail', async () => {
+    send.mockResolvedValue({ data: { id: 'email-id' }, error: null });
+
+    await sendEmail({
+      ...PAYLOAD,
+      to: ['a@example.com', 'x@no-email.invalid'],
+    });
+
+    expect(send).toHaveBeenCalledWith(
+      expect.objectContaining({ to: ['a@example.com'] }),
+    );
+  });
+
+  test('refuses to send when no recipient is deliverable', async () => {
+    await expect(
+      sendEmail({ ...PAYLOAD, to: 'x@no-email.invalid' }),
+    ).rejects.toThrow('No deliverable recipients');
+    expect(send).not.toHaveBeenCalled();
   });
 
   test('returns the Resend response', async () => {

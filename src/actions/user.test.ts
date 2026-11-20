@@ -1,7 +1,5 @@
-import { ESTABLISHED_DATE } from '@/utils/constants';
-import { CoachPosition, PlayerPosition, UserRole } from '@/utils/enum';
+import { UserRole, UserState } from '@/utils/enum';
 
-import auth from '@/lib/auth';
 import {
   deleteFile,
   getFile,
@@ -10,11 +8,9 @@ import {
 } from '@/lib/storage';
 
 import { revalidate } from '@/actions/cache';
-import { insertCoach } from '@/db/coach';
 import { getDbErrorMessage } from '@/db/pg-error';
-import { insertPlayer, isJerseyNumberTaken } from '@/db/player';
+import { isJerseyNumberTaken } from '@/db/player';
 import {
-  deleteUser,
   selectActivePlayers,
   selectRegistrationPlayers,
   selectRosterUsers,
@@ -23,9 +19,7 @@ import {
   updateUser,
   updateUserTeamInfo,
 } from '@/db/user';
-import { insertMembership } from '@/db/user-team';
 import type {
-  AddUserValues,
   EditPersonalInfoValues,
   EditTeamInfoValues,
 } from '@/schemas/user';
@@ -41,20 +35,17 @@ import {
   MOCK_COACH,
   MOCK_PLAYER,
   MOCK_USER,
-  MOCK_USER_INPUT,
   MOCK_USER_WITH_COACH,
   MOCK_USER_WITH_PLAYER,
 } from '@/test/mocks/user';
 
 import {
-  createUser,
   getActivePlayers,
   getAvatar,
   getRegistrationPlayers,
   getRoster,
   getUserProfile,
   getUsers,
-  removeUser,
   updatePersonalInfo,
   updateTeamInfo,
   uploadAvatar,
@@ -73,19 +64,9 @@ vi.mock('@/db/user', () => ({
   selectUserById: vi.fn(),
   updateUser: vi.fn(),
   updateUserTeamInfo: vi.fn(),
-  deleteUser: vi.fn(),
-}));
-
-vi.mock('@/db/user-team', () => ({
-  insertMembership: vi.fn(),
-}));
-
-vi.mock('@/db/coach', () => ({
-  insertCoach: vi.fn(),
 }));
 
 vi.mock('@/db/player', () => ({
-  insertPlayer: vi.fn(),
   isJerseyNumberTaken: vi.fn(),
 }));
 
@@ -98,25 +79,18 @@ vi.mock('@/lib/storage', async (importOriginal) => ({
 
 vi.mock('@/actions/cache', () => ({
   revalidate: {
+    accounts: vi.fn(),
     roster: vi.fn(),
     user: vi.fn(),
   },
 }));
 
-vi.mock('@/lib/auth', () => ({
-  default: {
-    api: {
-      signUpEmail: vi.fn(),
-      requestPasswordReset: vi.fn(),
-    },
-  },
+vi.mock('@/db/pg-error', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/db/pg-error')>()),
+  getDbErrorMessage: vi.fn(),
 }));
 
 describe('permissions', () => {
-  test('scopes roster-related actions to the roster resource', () => {
-    expect(mockWithResource).toHaveBeenCalledWith('roster');
-  });
-
   test('scopes user-related actions to the profile resource', () => {
     expect(mockWithResource).toHaveBeenCalledWith('profile');
   });
@@ -126,13 +100,6 @@ describe('permissions', () => {
     expect(mockWithResourceAction).toHaveBeenCalledWith(
       ['create'],
       expect.objectContaining({ name: 'registrationPlayers' }),
-    );
-  });
-
-  test('createUser requires create action', () => {
-    expect(mockWithResourceAction).toHaveBeenCalledWith(
-      ['create'],
-      expect.objectContaining({ name: 'add' }),
     );
   });
 
@@ -161,13 +128,6 @@ describe('permissions', () => {
     expect(mockWithResourceAction).toHaveBeenCalledWith(
       ['edit'],
       expect.objectContaining({ name: 'updateTeam' }),
-    );
-  });
-
-  test('removeUser requires delete action', () => {
-    expect(mockWithResourceAction).toHaveBeenCalledWith(
-      ['delete'],
-      expect.objectContaining({ name: 'remove' }),
     );
   });
 });
@@ -321,127 +281,6 @@ describe('User Actions', () => {
       expect(result.viewOnly).toBe(true);
 
       resetMockAuthUser();
-    });
-  });
-
-  describe('createUser', () => {
-    const newUser = {
-      id: 'new-user-id',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      email: MOCK_USER.email,
-      emailVerified: false,
-      name: MOCK_USER.name,
-      image: null,
-      role: UserRole.PLAYER,
-      is_captain: false,
-      state: MOCK_USER.state,
-      team_id: MOCK_TEAM.team_id,
-    };
-    const newPlayerData: AddUserValues = {
-      ...MOCK_USER_INPUT,
-      role: UserRole.PLAYER,
-      position: PlayerPosition.POINT_GUARD,
-    };
-
-    test('adds player user successfully', async () => {
-      vi.mocked(auth.api.signUpEmail).mockResolvedValue({
-        user: newUser,
-        token: null,
-      });
-      vi.mocked(insertPlayer).mockResolvedValue({
-        ...mockResult,
-        command: 'INSERT',
-      });
-      vi.mocked(auth.api.requestPasswordReset).mockResolvedValue(
-        expect.anything(),
-      );
-
-      const result = await createUser(newPlayerData);
-
-      expect(auth.api.signUpEmail).toHaveBeenCalled();
-      expect(insertPlayer).toHaveBeenCalledWith({
-        id: 'new-user-id',
-        position: newPlayerData.position,
-      });
-      expect(auth.api.requestPasswordReset).toHaveBeenCalled();
-      // The invite opens the user's first membership stint
-      expect(insertMembership).toHaveBeenCalledWith(
-        'new-user-id',
-        MOCK_TEAM.team_id,
-        newPlayerData.join_date,
-      );
-      expect(revalidate.roster).toHaveBeenCalled();
-      expect(result).toEqual({
-        success: true,
-        message: 'Sent an email with instructions',
-      });
-    });
-
-    test('opens the membership from the club founding date when join_date is omitted', async () => {
-      vi.mocked(auth.api.signUpEmail).mockResolvedValue({
-        user: newUser,
-        token: null,
-      });
-      vi.mocked(insertPlayer).mockResolvedValue({
-        ...mockResult,
-        command: 'INSERT',
-      });
-      vi.mocked(auth.api.requestPasswordReset).mockResolvedValue(
-        expect.anything(),
-      );
-
-      await createUser({ ...newPlayerData, join_date: undefined as never });
-
-      expect(insertMembership).toHaveBeenCalledWith(
-        'new-user-id',
-        MOCK_TEAM.team_id,
-        ESTABLISHED_DATE,
-      );
-    });
-
-    test('adds coach user successfully', async () => {
-      vi.mocked(auth.api.signUpEmail).mockResolvedValue({
-        user: newUser,
-        token: null,
-      });
-      vi.mocked(insertCoach).mockResolvedValue({
-        ...mockResult,
-        command: 'INSERT',
-      });
-      vi.mocked(auth.api.requestPasswordReset).mockResolvedValue(
-        expect.anything(),
-      );
-
-      const result = await createUser({
-        ...MOCK_USER_INPUT,
-        role: UserRole.COACH,
-        position: CoachPosition.HEAD_COACH,
-      });
-
-      expect(insertCoach).toHaveBeenCalledWith({
-        id: 'new-user-id',
-        position: CoachPosition.HEAD_COACH,
-      });
-      expect(revalidate.roster).toHaveBeenCalled();
-      expect(result.success).toBe(true);
-    });
-
-    test('returns error when signup fails', async () => {
-      vi.mocked(auth.api.signUpEmail).mockRejectedValue(
-        new Error(errorMessage),
-      );
-      vi.mocked(getDbErrorMessage).mockReturnValue({
-        message: errorMessage,
-        constraint: null,
-      });
-
-      const result = await createUser(newPlayerData);
-
-      expect(result).toEqual({
-        success: false,
-        message: errorMessage,
-      });
     });
   });
 
@@ -689,6 +528,80 @@ describe('User Actions', () => {
       );
     });
 
+    describe('membership stints', () => {
+      const TODAY = '2026-03-15';
+
+      beforeEach(() => {
+        asAdmin();
+        vi.useFakeTimers({ toFake: ['Date'] });
+        vi.setSystemTime(new Date(`${TODAY}T08:00:00`));
+      });
+
+      afterEach(() => {
+        vi.useRealTimers();
+      });
+
+      test('closes the open stint today when the member goes inactive', async () => {
+        await updateTeamInfo(MOCK_PLAYER.id, {
+          ...teamInfoData,
+          user: { ...teamInfoData.user, state: UserState.INACTIVE },
+        });
+
+        expect(updateUserTeamInfo).toHaveBeenCalledWith(
+          MOCK_PLAYER.id,
+          expect.objectContaining({
+            membership: {
+              join_date: teamInfoData.user.join_date,
+              leave_date: TODAY,
+            },
+            rejoin: undefined,
+          }),
+        );
+      });
+
+      test('opens a new stint today when an inactive member comes back', async () => {
+        vi.mocked(selectUserById).mockResolvedValue({
+          ...MOCK_USER_WITH_PLAYER,
+          state: UserState.INACTIVE,
+          join_date: null,
+        });
+
+        await updateTeamInfo(MOCK_PLAYER.id, {
+          ...teamInfoData,
+          user: { ...teamInfoData.user, state: UserState.ACTIVE },
+        });
+
+        // The submitted join_date belonged to the closed stint, so it is dropped
+        expect(updateUserTeamInfo).toHaveBeenCalledWith(
+          MOCK_PLAYER.id,
+          expect.objectContaining({
+            membership: undefined,
+            rejoin: { team_id: MOCK_USER.team_id, join_date: TODAY },
+          }),
+        );
+      });
+
+      test('keeps an inactive member with an open stint on that stint', async () => {
+        vi.mocked(selectUserById).mockResolvedValue({
+          ...MOCK_USER_WITH_PLAYER,
+          state: UserState.INACTIVE,
+        });
+
+        await updateTeamInfo(MOCK_PLAYER.id, {
+          ...teamInfoData,
+          user: { ...teamInfoData.user, state: UserState.ACTIVE },
+        });
+
+        expect(updateUserTeamInfo).toHaveBeenCalledWith(
+          MOCK_PLAYER.id,
+          expect.objectContaining({
+            membership: { join_date: teamInfoData.user.join_date },
+            rejoin: undefined,
+          }),
+        );
+      });
+    });
+
     test('updates team info for player successfully', async () => {
       asAdmin();
 
@@ -867,35 +780,6 @@ describe('User Actions', () => {
       expect(result).toEqual({
         success: false,
         message: errorMessage,
-      });
-    });
-  });
-
-  describe('removeUser', () => {
-    test('deletes user successfully', async () => {
-      vi.mocked(deleteUser).mockResolvedValue({
-        ...mockResult,
-        command: 'DELETE',
-      });
-
-      const result = await removeUser(MOCK_USER.id);
-
-      expect(deleteUser).toHaveBeenCalledWith(MOCK_USER.id);
-      expect(revalidate.roster).toHaveBeenCalled();
-      expect(result).toEqual({
-        success: true,
-        message: 'User deleted successfully',
-      });
-    });
-
-    test('returns error when delete fails', async () => {
-      vi.mocked(deleteUser).mockRejectedValue(new Error('Delete failed'));
-
-      const result = await removeUser(MOCK_USER.id);
-
-      expect(result).toEqual({
-        success: false,
-        message: 'Failed to delete user',
       });
     });
   });

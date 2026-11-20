@@ -121,6 +121,7 @@
   "tableState": {
     "deleting": "Đang xóa {items}...",
     "entities": {
+      "account": "{count} tài khoản",
       "asset": "{count} tài sản",
       "attendanceRecord": "{count} bản ghi điểm danh",
       "document": "{count} tài liệu",

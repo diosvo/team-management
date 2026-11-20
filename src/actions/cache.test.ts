@@ -26,6 +26,7 @@ describe('revalidate', () => {
 
   describe('Non-cached entities (revalidatePath only)', () => {
     test.each([
+      ['accounts', '/accounts'],
       ['achievements', '/achievements'],
       ['assets', '/assets'],
       ['attendances', '/attendance'],

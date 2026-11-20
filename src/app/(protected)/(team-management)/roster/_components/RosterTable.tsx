@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { Badge, HStack, Icon } from '@chakra-ui/react';
+import { Badge, HStack, Icon, Text } from '@chakra-ui/react';
 import {
   ChartSpline,
   ShieldAlert,
@@ -12,13 +12,13 @@ import {
   UserRound,
 } from 'lucide-react';
 
+import { visibleEmail } from '@/utils/email';
 import { UserRole } from '@/utils/enum';
 import { buildPredicate } from '@/utils/filters';
 import { getColor } from '@/utils/helper';
 
 import { useRosterFilters } from '@/lib/nuqs';
 
-import { removeUser } from '@/actions/user';
 import DataTable, { type Column, RowAction } from '@/components/DataTable';
 import HighlightText from '@/components/HighlightText';
 import type { RosterUser } from '@/db/user';
@@ -32,6 +32,7 @@ const mask = (cc: string, num = 4) =>
 export default function RosterTable({ users }: { users: Array<RosterUser> }) {
   const router = useRouter();
   const t = useTranslations('roster.table');
+  const tCommon = useTranslations('common');
   const tEnums = useTranslations('enums');
   const { isAdmin, isCaptain, isGuest } = usePermissions();
   const [{ q, page, state, role }, setSearchParams] = useRosterFilters();
@@ -46,15 +47,7 @@ export default function RosterTable({ users }: { users: Array<RosterUser> }) {
       }),
     [q, state, role],
   );
-  const {
-    items,
-    currentData,
-    selection,
-    setSelection,
-    totalCount,
-    isPending,
-    removeSelected,
-  } = useTableState(users, predicate, page);
+  const { currentData, totalCount } = useTableState(users, predicate, page);
 
   const columns: Array<Column<RosterUser>> = [
     ...(canManage
@@ -85,11 +78,15 @@ export default function RosterTable({ users }: { users: Array<RosterUser> }) {
     },
     {
       header: t('email'),
-      cell: (user) => (
-        <HighlightText query={q}>
-          {isGuest ? mask(user.email, -4) : user.email}
-        </HighlightText>
-      ),
+      cell: (user) => {
+        const email = visibleEmail(user.email);
+        if (!email) return <Text color="fg.muted">{tCommon('noEmail')}</Text>;
+        return (
+          <HighlightText query={q}>
+            {isGuest ? mask(email, -4) : email}
+          </HighlightText>
+        );
+      },
     },
     {
       header: t('state'),
@@ -174,14 +171,6 @@ export default function RosterTable({ users }: { users: Array<RosterUser> }) {
       onRowClick={
         isGuest ? undefined : (user) => router.replace('/profile/' + user.id)
       }
-      selection={{
-        canSelect: canManage,
-        items,
-        selection,
-        setSelection,
-        disabled: isPending,
-        onDelete: () => removeSelected(removeUser, 'user'),
-      }}
     />
   );
 }

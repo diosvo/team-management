@@ -8,6 +8,7 @@ import {
   FileText,
   Film,
   GamepadDirectional,
+  KeyRound,
   LayoutDashboard,
   type LucideIcon,
   MailSearch,
@@ -100,6 +101,7 @@ export const SIDEBAR_GROUP: Array<SidebarGroup> = [
       { icon: Swords, resource: 'teams', searchable: true },
       { icon: Trophy, resource: 'leagues', searchable: true },
       { icon: MapPinHouse, resource: 'locations', searchable: true },
+      { icon: KeyRound, resource: 'accounts', searchable: true },
     ],
   },
 ];

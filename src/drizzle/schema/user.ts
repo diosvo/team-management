@@ -43,6 +43,10 @@ export const UserTable = pgTable('user', {
   citizen_identification: varchar({ length: 12 }),
   state: userStateEnum().default(UserState.UNKNOWN).notNull(),
   role: userRoleEnum().default(UserRole.PLAYER).notNull(),
+  // Written on every sign-in (see `databaseHooks` in lib/auth). Kept on the
+  // user because sessions expire and are deleted on sign-out.
+  last_sign_in_at: timestamp({ withTimezone: true }),
+  last_sign_in_ip: text(),
 });
 
 export const UserRelations = relations(UserTable, ({ one, many }) => ({

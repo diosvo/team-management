@@ -8,7 +8,7 @@ export default async function Loading() {
   return (
     <ListPageSkeleton
       title={t('title')}
-      actions={[t('addUser.trigger')]}
+      actions={[t('jerseyOrder.trigger')]}
       toolbar={{ filters: true }}
       columns={8}
     />

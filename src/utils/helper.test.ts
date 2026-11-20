@@ -1,5 +1,6 @@
 import { ALL } from './constants';
 import {
+  AccountStatus,
   AssetCondition,
   AttendanceStatus,
   DocumentType,
@@ -25,6 +26,11 @@ describe('getColor', () => {
     { value: null, expected: 'gray' },
     { value: undefined, expected: 'gray' },
     { value: 'unrecognized_value', expected: 'black' },
+    // AccountStatus
+    { value: AccountStatus.NO_EMAIL, expected: 'gray' },
+    { value: AccountStatus.INVITED, expected: 'blue' },
+    { value: AccountStatus.LINK_EXPIRED, expected: 'orange' },
+    { value: AccountStatus.ACTIVATED, expected: 'green' },
     // UserState
     { value: UserState.ACTIVE, expected: 'green' },
     { value: UserState.TEMPORARILY_ABSENT, expected: 'orange' },

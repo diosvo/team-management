@@ -30,20 +30,46 @@ export function ButtonSkeleton({ label }: { label: string }) {
   );
 }
 
+/** Placeholder for an icon-only header button; the icon is hidden. */
+export function IconButtonSkeleton({ label }: { label: string }) {
+  return (
+    <Skeleton>
+      <IconButton variant="outline" aria-label={label}>
+        <Plus />
+      </IconButton>
+    </Skeleton>
+  );
+}
+
 type TitleSkeletonProps = {
   /** The page title is static, so it renders for real. */
   title: string;
   /** Labels of the header buttons, which wait on permissions. */
   actions?: Array<string>;
+  /** Labels of icon-only header buttons, shown before `actions`. */
+  iconActions?: Array<string>;
 };
 
 /** The page header: title on the left, actions on the right. */
-export function TitleSkeleton({ title, actions = [] }: TitleSkeletonProps) {
+export function TitleSkeleton({
+  title,
+  actions = [],
+  iconActions = [],
+}: TitleSkeletonProps) {
+  const hasActions = actions.length + iconActions.length > 0;
+
   return (
     <PageHeader title={title}>
-      {actions.length > 0
-        ? actions.map((label) => <ButtonSkeleton key={label} label={label} />)
-        : null}
+      {hasActions ? (
+        <>
+          {iconActions.map((label) => (
+            <IconButtonSkeleton key={label} label={label} />
+          ))}
+          {actions.map((label) => (
+            <ButtonSkeleton key={label} label={label} />
+          ))}
+        </>
+      ) : null}
     </PageHeader>
   );
 }
@@ -120,13 +146,18 @@ type ListPageSkeletonProps = TitleSkeletonProps &
 export default function ListPageSkeleton({
   title,
   actions,
+  iconActions,
   stats = 0,
   toolbar,
   columns,
 }: ListPageSkeletonProps) {
   return (
     <>
-      <TitleSkeleton title={title} actions={actions} />
+      <TitleSkeleton
+        title={title}
+        actions={actions}
+        iconActions={iconActions}
+      />
       {stats > 0 && <StatsSkeleton count={stats} />}
       <FiltersSkeleton {...toolbar} />
       <TableSkeleton columns={columns} />

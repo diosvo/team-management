@@ -2,6 +2,7 @@ import { and, eq, or } from 'drizzle-orm';
 
 import { UserRole } from '@/utils/enum';
 
+import { hasRealEmail } from '@/db/account';
 import db from '@/drizzle';
 import { PlayerTable } from '@/drizzle/schema/player';
 import { TeamTable } from '@/drizzle/schema/team';
@@ -67,6 +68,7 @@ export async function selectPaymentEditorEmails(
       .where(
         and(
           eq(UserTable.team_id, team_id),
+          hasRealEmail(),
           or(
             eq(UserTable.role, UserRole.SUPER_ADMIN),
             eq(PlayerTable.is_captain, true),

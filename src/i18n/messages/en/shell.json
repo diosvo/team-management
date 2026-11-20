@@ -37,6 +37,7 @@
     "description": "Saigon Rovers Basketball Club"
   },
   "nav": {
+    "accounts": "Accounts",
     "achievements": "Achievements",
     "add-result": "Add Result",
     "assets": "Assets",

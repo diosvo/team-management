@@ -512,6 +512,22 @@ describe('updateUserTeamInfo', () => {
     expect(db.update).not.toHaveBeenCalled();
   });
 
+  test('opens a new stint for a returning member inside the transaction', async () => {
+    const { tx, values } = mockTransaction();
+    const rejoin = { team_id: MOCK_USER.team_id, join_date: '2026-03-15' };
+
+    await updateUserTeamInfo(MOCK_USER.id, {
+      user: { role: UserRole.PLAYER },
+      rejoin,
+      player,
+      remove: { player: false, coach: false },
+    });
+
+    expect(tx.insert).toHaveBeenCalledWith(UserTeamTable);
+    expect(values).toHaveBeenCalledWith({ user_id: MOCK_USER.id, ...rejoin });
+    expect(tx.update).not.toHaveBeenCalledWith(UserTeamTable);
+  });
+
   test('rejects so every write rolls back when a step fails', async () => {
     const { deleteWhere } = mockTransaction();
     deleteWhere.mockRejectedValue(new Error('Delete failed'));

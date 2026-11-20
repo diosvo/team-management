@@ -12,10 +12,6 @@ vi.mock('@/hooks/use-permissions', () => ({
   default: vi.fn(),
 }));
 
-// The add-user dialog is exercised by its own test; render a marker here.
-vi.mock('./AddUser', () => ({
-  default: () => <div>AddUser</div>,
-}));
 vi.mock('./JerseyOrderExport', () => ({
   default: () => <div>JerseyOrderExport</div>,
 }));
@@ -41,16 +37,13 @@ describe('RosterHeader', () => {
     expect(screen.getByText('Team Roster')).toBeInTheDocument();
   });
 
-  test('renders the add-user control when the user can create', () => {
+  // Members are added on the Accounts page now
+  test('has no add-user control, even for admins', () => {
     setup(true);
 
-    expect(screen.getByText('AddUser')).toBeInTheDocument();
-  });
-
-  test('hides the add-user control when the user cannot create', () => {
-    setup(false);
-
-    expect(screen.queryByText('AddUser')).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /Add/ }),
+    ).not.toBeInTheDocument();
   });
 
   // The export gates itself on super admin or captain.

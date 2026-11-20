@@ -1,3 +1,5 @@
+import { deburr, words } from 'es-toolkit';
+
 /**
  * Unit label for a count: hidden at 0, pluralized words, symbols/phrases as-is.
  * @example formatValueUnit(3, 'game'); // 'games'
@@ -24,3 +26,12 @@ export function toLabel(value: string): string {
     .replace(/[-_]/g, ' ')
     .replace(/\b\w/g, (char) => char.toUpperCase());
 }
+
+/**
+ * Comparable form of a person's name: no accents (đ → d), lower case, words
+ * sorted, so "Nguyễn Văn An", "an nguyen van" and "Lê-Văn" / "Le Van" match.
+ */
+export const normalizeName = (name: Nullish<string>): string =>
+  words(deburr(name ?? '').toLowerCase())
+    .sort()
+    .join(' ');

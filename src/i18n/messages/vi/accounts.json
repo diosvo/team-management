@@ -1,0 +1,75 @@
+{
+  "addUser": {
+    "adding": "Đang thêm thành viên...",
+    "dob": "Ngày sinh",
+    "duplicateHint": "Nếu là cùng một người, hãy thêm email vào tài khoản sẵn có để giữ lại dữ liệu của họ.",
+    "duplicateTitle": "Đã có {count} người trùng tên trong danh sách",
+    "email": "Email",
+    "emailHelper": "Để trống để thêm ngay và mời sau.",
+    "fullname": "Họ tên",
+    "openExisting": "Mở",
+    "submit": "Thêm",
+    "submitting": "Đang thêm...",
+    "title": "Thêm thành viên",
+    "trigger": "Thêm"
+  },
+  "guide": {
+    "invite": "<b>{add}</b> gửi email chứa liên kết đặt mật khẩu. Ứng dụng không có trang đăng ký.",
+    "links": "Liên kết hết hạn sau {hours} giờ. Gửi lại bằng <b>{sendLink}</b>, hoặc thành viên tự đặt lại ở trang đăng nhập.",
+    "noEmail": "Chưa có email? Cứ để trống và bổ sung sau; dữ liệu vẫn nằm trong tài khoản.",
+    "profile": "Đổi vai trò hoặc trạng thái trong hồ sơ cá nhân. Thành viên đã có dữ liệu không thể xóa; hãy chuyển sang Inactive.",
+    "signOut": "<b>{signOut}</b> đăng xuất họ ngay lập tức trên mọi thiết bị.",
+    "title": "Cách đăng nhập hoạt động"
+  },
+  "metadata": {
+    "description": "Mời thành viên và quản lý việc đăng nhập.",
+    "title": "Tài khoản"
+  },
+  "stats": {
+    "activated": "Đã kích hoạt",
+    "invited": "Đã mời",
+    "link_expired": "Liên kết hết hạn",
+    "no_email": "Chưa có email",
+    "total": "Tổng số tài khoản"
+  },
+  "status": {
+    "activated": "Đã kích hoạt",
+    "invited": "Đã mời",
+    "link_expired": "Liên kết hết hạn",
+    "no_email": "Chưa có email"
+  },
+  "table": {
+    "actions": "Thao tác",
+    "added": "Ngày thêm",
+    "addEmailHint": "Thêm email để mời họ",
+    "email": "Email",
+    "empty": "Không tìm thấy tài khoản nào",
+    "ipAddress": "Địa chỉ IP",
+    "lastSignIn": "Đăng nhập gần nhất",
+    "linkExpired": "Liên kết đã hết hạn lúc {datetime}",
+    "linkExpires": "Liên kết hết hạn lúc {datetime}",
+    "linksSent": "Đã gửi liên kết đặt mật khẩu cho {count} thành viên",
+    "name": "Tên",
+    "noLink": "Chưa gửi liên kết nào",
+    "role": "Vai trò",
+    "sendingLinks": "Đang gửi liên kết đặt mật khẩu...",
+    "sendLink": "Gửi liên kết mật khẩu",
+    "sessions": "Phiên đăng nhập",
+    "signedOutCount": "Đã đăng xuất {count} thành viên khỏi mọi thiết bị",
+    "signingOut": "Đang đăng xuất...",
+    "signOut": "Đăng xuất mọi thiết bị",
+    "status": "Trạng thái",
+    "viewProfile": "Xem hồ sơ",
+    "you": "Bạn"
+  },
+  "title": "Tài khoản",
+  "update": {
+    "email": "Email",
+    "emailHint": "Từ giờ thành viên đăng nhập bằng email mới.",
+    "emailInviteHint": "Lưu email sẽ gửi cho họ liên kết đặt mật khẩu. Mọi dữ liệu đã ghi nhận vẫn thuộc tài khoản này.",
+    "name": "Họ và tên",
+    "saving": "Đang lưu...",
+    "savingToast": "Đang lưu tài khoản...",
+    "title": "Cập nhật tài khoản"
+  }
+}

@@ -212,12 +212,14 @@ export async function updateUserTeamInfo(
   values: {
     user: Partial<InsertUser>;
     membership?: Partial<Pick<UserTeam, 'join_date' | 'leave_date'>>;
+    /** Opens a new stint for a returning member (no stint is open). */
+    rejoin?: Pick<UserTeam, 'team_id' | 'join_date'>;
     player?: Omit<InsertPlayer, 'id'>;
     coach?: Omit<InsertCoach, 'id'>;
     remove: { player: boolean; coach: boolean };
   },
 ) {
-  const { user, membership, player, coach, remove } = values;
+  const { user, membership, rejoin, player, coach, remove } = values;
 
   return await db.transaction(async (tx) => {
     if (player) {
@@ -249,6 +251,10 @@ export async function updateUserTeamInfo(
             isNull(UserTeamTable.leave_date),
           ),
         );
+    }
+
+    if (rejoin) {
+      await tx.insert(UserTeamTable).values({ user_id, ...rejoin });
     }
 
     if (remove.player) {

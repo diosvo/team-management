@@ -24,6 +24,8 @@ export const USER_SCHEMA_VALIDATION = {
   name: z.string().min(6).max(128).trim().default(''),
   dob: z.iso.date().nullable().default(DEFAULT_DOB),
   email: z.email(),
+  /** Blank adds the member now; a real email can be added to invite later. */
+  optional_email: z.union([z.email(), z.literal('')]).optional(),
   phone_number: z.union([z.string().length(10).nullish(), z.literal('')]),
   citizen_identification: z.union([
     z.string().length(12).nullish(),

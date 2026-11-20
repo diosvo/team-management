@@ -1,8 +1,8 @@
 import { nth } from 'es-toolkit/compat';
 
+import { NO_EMAIL_DOMAIN } from '@/utils/constants';
 import { UserRole, UserState } from '@/utils/enum';
 
-import { removeUser } from '@/actions/user';
 import type { RosterUser } from '@/db/user';
 import usePermissions from '@/hooks/use-permissions';
 import {
@@ -15,10 +15,8 @@ import {
 } from '@/test/mocks/user';
 import {
   createPermissionsMock,
-  createToasterMock,
   enumText,
   expectNoA11yViolations,
-  mockToaster,
   mockUseQueryStates,
   renderWithUI,
   screen,
@@ -43,19 +41,12 @@ vi.mock('@/hooks/use-permissions', () => ({
   default: vi.fn(),
 }));
 
-vi.mock('@/actions/user', () => ({
-  removeUser: vi.fn(),
-}));
-
-vi.mock('@/components/ui/toaster', () => createToasterMock());
-
 const ALICE: RosterUser = MOCK_ALICE;
 const BOB: RosterUser = MOCK_BOB;
 const CAROL: RosterUser = MOCK_CAROL;
 
 describe('RosterTable', () => {
   const mockUsePermissions = vi.mocked(usePermissions);
-  const mockRemoveUser = vi.mocked(removeUser);
 
   const setup = ({
     users = [ALICE, BOB],
@@ -195,47 +186,20 @@ describe('RosterTable', () => {
     expect(mockReplace).not.toHaveBeenCalled();
   });
 
-  describe('selection', () => {
-    test('deletes the selected users and reports success', async () => {
-      mockRemoveUser.mockResolvedValue({ success: true, message: '' });
+  test('is read-only: no row selection, even for admins', () => {
+    setup({ perms: { isAdmin: true } });
 
-      const { user } = setup({ perms: { isAdmin: true } });
+    expect(screen.queryAllByRole('checkbox')).toHaveLength(0);
+  });
 
-      await user.click(
-        screen.getByRole('checkbox', { name: 'Select all rows' }),
-      );
-      await user.click(screen.getByRole('button', { name: /Delete/ }));
-
-      await waitFor(() => {
-        const ids = mockRemoveUser.mock.calls.map(([id]) => id);
-        expect(ids).toEqual(expect.arrayContaining([ALICE.id, BOB.id]));
-      });
-
-      expect(mockToaster.update).toHaveBeenCalledWith(
-        'toast-id',
-        expect.objectContaining({ type: 'success' }),
-      );
+  test('shows "No email" for a member added without one', () => {
+    setup({
+      users: [{ ...ALICE, email: `alice@${NO_EMAIL_DOMAIN}` }],
+      perms: { isAdmin: true },
     });
 
-    test('warns when some deletions fail', async () => {
-      mockRemoveUser
-        .mockResolvedValueOnce({ success: true, message: '' })
-        .mockResolvedValueOnce({ success: false, message: '' });
-
-      const { user } = setup({ perms: { isAdmin: true } });
-
-      await user.click(
-        screen.getByRole('checkbox', { name: 'Select all rows' }),
-      );
-      await user.click(screen.getByRole('button', { name: /Delete/ }));
-
-      await waitFor(() => {
-        expect(mockToaster.update).toHaveBeenCalledWith(
-          'toast-id',
-          expect.objectContaining({ type: 'warning' }),
-        );
-      });
-    });
+    expect(screen.getByText('No email')).toBeInTheDocument();
+    expect(screen.queryByText(/@no-email/)).not.toBeInTheDocument();
   });
 
   test('shows the unverified icon for a user whose email is not verified', () => {

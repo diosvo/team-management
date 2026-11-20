@@ -1,4 +1,9 @@
-import { formatValueUnit, pluralize, toLabel } from './formatter';
+import {
+  formatValueUnit,
+  normalizeName,
+  pluralize,
+  toLabel,
+} from './formatter';
 
 describe('formatValueUnit', () => {
   test('returns null when count is 0', () => {
@@ -57,5 +62,20 @@ describe('toLabel', () => {
     { value: '', expected: '' },
   ])('turns "$value" into "$expected"', ({ value, expected }) => {
     expect(toLabel(value)).toBe(expected);
+  });
+});
+
+describe('normalizeName', () => {
+  test.each([
+    ['Nguyễn Văn An', 'an nguyen van'],
+    ['an nguyen van', 'an nguyen van'],
+    ['Lê-Văn', 'le van'],
+    ['Đức', 'duc'],
+  ])('normalizes %j to %j', (name, expected) => {
+    expect(normalizeName(name)).toBe(expected);
+  });
+
+  test.each([[''], [null], [undefined]])('is empty for %j', (name) => {
+    expect(normalizeName(name)).toBe('');
   });
 });

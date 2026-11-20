@@ -4,6 +4,7 @@ import { unescape } from 'es-toolkit/string';
 
 import { ALL } from './constants';
 import {
+  AccountStatus,
   AssetCondition,
   AttendanceStatus,
   DocumentType,
@@ -17,8 +18,9 @@ import {
 } from './enum';
 
 const COLOR_MAP: Partial<Record<ColorPalette, Array<string>>> = {
-  blue: [DocumentType.ALBUM, EmailStatus.SENT],
+  blue: [AccountStatus.INVITED, DocumentType.ALBUM, EmailStatus.SENT],
   gray: [
+    AccountStatus.NO_EMAIL,
     AssetCondition.OBSOLETE,
     DocumentType.FILE,
     EmailStatus.CANCELED,
@@ -30,6 +32,7 @@ const COLOR_MAP: Partial<Record<ColorPalette, Array<string>>> = {
     UserState.UNKNOWN,
   ],
   green: [
+    AccountStatus.ACTIVATED,
     AssetCondition.GOOD,
     AttendanceStatus.ON_TIME,
     EmailStatus.CLICKED,
@@ -42,6 +45,7 @@ const COLOR_MAP: Partial<Record<ColorPalette, Array<string>>> = {
     UserState.ACTIVE,
   ],
   orange: [
+    AccountStatus.LINK_EXPIRED,
     AssetCondition.FAIR,
     AttendanceStatus.LATE,
     DocumentType.TACTIC,

@@ -1,0 +1,75 @@
+{
+  "addUser": {
+    "adding": "Adding user to database...",
+    "dob": "DOB",
+    "duplicateHint": "If it's the same person, add their email to their existing account instead, so their history stays with them.",
+    "duplicateTitle": "{count, plural, one {Someone with this name is already listed} other {# people with this name are already listed}}",
+    "email": "Email",
+    "emailHelper": "Leave blank to add them now and invite them later.",
+    "fullname": "Fullname",
+    "openExisting": "Open",
+    "submit": "Add",
+    "submitting": "Adding...",
+    "title": "Add Member",
+    "trigger": "Add"
+  },
+  "guide": {
+    "invite": "<b>{add}</b> emails a link to set a password. There's no sign-up page.",
+    "links": "Links expire after {hours, plural, one {# hour} other {# hours}}. Resend with <b>{sendLink}</b>, or members reset from the sign-in page.",
+    "noEmail": "No email yet? Leave it blank and add it later; their data stays on the account.",
+    "profile": "Change role or state on the profile. Members with history can't be deleted; set them Inactive instead.",
+    "signOut": "<b>{signOut}</b> signs them out right away, on every device.",
+    "title": "How signing in works"
+  },
+  "metadata": {
+    "description": "Invite members and manage how they sign in.",
+    "title": "Accounts"
+  },
+  "stats": {
+    "activated": "Activated",
+    "invited": "Invited",
+    "link_expired": "Link expired",
+    "no_email": "No email",
+    "total": "Total accounts"
+  },
+  "status": {
+    "activated": "Activated",
+    "invited": "Invited",
+    "link_expired": "Link expired",
+    "no_email": "No email"
+  },
+  "table": {
+    "actions": "Actions",
+    "added": "Added",
+    "addEmailHint": "Add their email to invite them",
+    "email": "Email",
+    "empty": "No accounts found",
+    "ipAddress": "IP address",
+    "lastSignIn": "Last sign-in",
+    "linkExpired": "Link expired {datetime}",
+    "linkExpires": "Link expires {datetime}",
+    "linksSent": "Sent password links to {count} members",
+    "name": "Name",
+    "noLink": "No link sent yet",
+    "role": "Role",
+    "sendingLinks": "Sending password links...",
+    "sendLink": "Send password link",
+    "sessions": "Sessions",
+    "signedOutCount": "Signed {count} members out of every device",
+    "signingOut": "Signing out...",
+    "signOut": "Sign out everywhere",
+    "status": "Status",
+    "viewProfile": "View profile",
+    "you": "You"
+  },
+  "title": "Accounts",
+  "update": {
+    "email": "Email",
+    "emailHint": "The member signs in with the new email from now on.",
+    "emailInviteHint": "Saving an email sends them a link to set a password. Everything recorded so far stays on their account.",
+    "name": "Full name",
+    "saving": "Saving...",
+    "savingToast": "Saving account...",
+    "title": "Update Account"
+  }
+}
