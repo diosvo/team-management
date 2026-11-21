@@ -14,6 +14,14 @@ const envSchema = z.object({
   DEV_URL: z.url().default('http://localhost:3000'),
   PRODUCTION_URL: z.url().default('http://localhost:3000'),
   DATABASE_URL: z.string().default(''),
+  DATABASE_POOL_MAX: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(1)
+    .describe(
+      'Postgres pool size. Keep 1 on serverless; raise it (e.g. 10) on a long-running server.',
+    ),
   RESEND_API_KEY: z.string().default(''),
   RESEND_WEBHOOK_SECRET: z
     .string()
@@ -27,11 +35,23 @@ const envSchema = z.object({
     .describe(
       'Directory for uploaded images and generated reports, relative to the app root. Mount it as a persistent volume in production.',
     ),
+  RENDER_ORIGIN: z
+    .url()
+    .optional()
+    .describe(
+      "Origin the headless browser loads app pages from for PDF reports, e.g. http://127.0.0.1:3000 on the VPS. Skips the reverse proxy, whose country filter blocks the server's own public IP. Unset: the public request origin.",
+    ),
   CHROMIUM_PACK_URL: z
     .string()
     .default('')
     .describe(
       'The URL to the Brotli pack of the Chromium executable. Required for production deployment.',
+    ),
+  CHROMIUM_PATH: z
+    .string()
+    .default('')
+    .describe(
+      'Path to a system Chromium binary, e.g. /usr/bin/chromium in the Docker image. When set, it is used instead of CHROMIUM_PACK_URL.',
     ),
   GITHUB_TOKEN: z
     .string()

@@ -16,7 +16,8 @@ export default function PageTitle({ title }: PageTitleProps) {
     >
       {title}
       <Image position="absolute" loading="lazy" alt="Squiggle" asChild>
-        <img src="/squiggle.svg" alt="Squiggle" />
+        {/* Reserve intrinsic size to prevent CLS while scaling to fit. */}
+        <img src="/squiggle.svg" alt="Squiggle" width={580} height={23} />
       </Image>
     </Heading>
   );

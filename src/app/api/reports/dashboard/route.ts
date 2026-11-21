@@ -5,7 +5,7 @@ import env from '@env';
 import { formatDateRange } from '@/utils/datetime';
 import { Status } from '@/utils/response';
 
-import { getBrowser } from '@/lib/puppeteer';
+import { browserCookies, getBrowser, renderOrigin } from '@/lib/puppeteer';
 import { dashboardPath } from '@/lib/report';
 
 import { verifySession } from '@/actions/auth';
@@ -46,7 +46,9 @@ export async function POST(req: NextRequest) {
     }
 
     const proto = req.headers.get('x-forwarded-proto') ?? 'http';
-    const url = req.headers.get('origin') ?? `${proto}://${host}`;
+    const target = renderOrigin(
+      req.headers.get('origin') ?? `${proto}://${host}`,
+    );
 
     const cookies = req.cookies.getAll();
 
@@ -54,16 +56,14 @@ export async function POST(req: NextRequest) {
     const page = await browser.newPage();
 
     // Forward auth cookies so protected routes render correctly
-    await browser.setCookie(
-      ...cookies.map((cookie) => ({ ...cookie, domain: host })),
-    );
+    await browser.setCookie(...browserCookies(cookies, target));
 
     // A4 at 96dpi is ~794px; use 1200px so Chakra's md breakpoint (768px) is active
     await page.setViewport({ width: 1200, height: 900 });
 
     // Navigate to the dashboard for the requested window — the origin alone
     // renders whatever the root serves, with a default window.
-    await page.goto(`${url}${dashboardPath(range)}`, {
+    await page.goto(`${target}${dashboardPath(range)}`, {
       waitUntil: 'networkidle0',
     });
 
@@ -147,6 +147,9 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch (error) {
+    // The client only gets a generic message in production; keep the cause
+    // in the server logs (docker compose logs app).
+    console.error('[reports/dashboard] PDF failed:', error);
     return NextResponse.json(
       {
         error: devEnv ? (error as Error).message : t('unavailable'),

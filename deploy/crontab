@@ -1,0 +1,4 @@
+# min hour dom mon dow  command   (times in UTC; ICT = UTC+7)
+0 1 * * * /deploy/call.sh /api/reports/schedule
+0 2 * * * /deploy/call.sh /api/reports/retention
+30 19 * * * /deploy/backup.sh

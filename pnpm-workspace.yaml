@@ -16,6 +16,11 @@ overrides:
   "@esbuild-kit/core-utils>esbuild": ^0.25.0
   # mermaid 11 pins katex ^0.16 (GHSA-238p-pmpm-9mq7); mermaid 12 moved to ^0.18.
   "mermaid>katex": ^0.18.2
+  # exceljs 4.4 (latest) pins uuid ^8 (GHSA-w5hq-g745-h8pq); it only
+  # calls v4(), which uuid 11 still exports for CommonJS.
+  "exceljs>uuid": ^11.1.1
+  # ESLint pulls minimatch 10 (GHSA-g3hv-75wg-m249); 11 keeps the same API.
+  "minimatch@>=7.0.0 <11.0.1": ^11.0.1
 auditConfig:
   ignoreGhsas:
     # zod: the only remaining copy is zod 3 (no patched 3.x release), reached

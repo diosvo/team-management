@@ -21,14 +21,6 @@ vi.mock('next-intl', async () => {
   };
 });
 
-vi.mock('@vercel/analytics/next', () => ({
-  Analytics: () => <div data-testid="analytics" />,
-}));
-
-vi.mock('@vercel/speed-insights/next', () => ({
-  SpeedInsights: () => <div data-testid="speed-insights" />,
-}));
-
 const setup = async (children = <div>Test Content</div>) =>
   render(await RootLayout({ children }));
 
@@ -39,34 +31,6 @@ describe('RootLayout', () => {
     await setup();
 
     expect(screen.getByText('Test Content')).toBeInTheDocument();
-  });
-
-  test('does not render Vercel plugins outside production', async () => {
-    vi.doMock('@env', () => ({ default: { NODE_ENV: 'test' } }));
-    vi.resetModules();
-    const { default: Layout } = await import('./layout');
-
-    render(await Layout({ children: <div>Test Content</div> }));
-
-    expect(screen.queryByTestId('analytics')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('speed-insights')).not.toBeInTheDocument();
-
-    vi.doUnmock('@env');
-    vi.resetModules();
-  });
-
-  test('renders Vercel plugins in production', async () => {
-    vi.doMock('@env', () => ({ default: { NODE_ENV: 'production' } }));
-    vi.resetModules();
-    const { default: Layout } = await import('./layout');
-
-    render(await Layout({ children: <div>Test Content</div> }));
-
-    expect(screen.getByTestId('analytics')).toBeInTheDocument();
-    expect(screen.getByTestId('speed-insights')).toBeInTheDocument();
-
-    vi.doUnmock('@env');
-    vi.resetModules();
   });
 });
 

@@ -17,13 +17,21 @@ import {
   storeReportPdf,
 } from './report';
 
-vi.mock('@/lib/puppeteer', () => ({ getBrowser: vi.fn() }));
+vi.mock('@/lib/puppeteer', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/puppeteer')>()),
+  getBrowser: vi.fn(),
+}));
 vi.mock('@/lib/storage', () => ({ uploadFile: vi.fn() }));
 vi.mock('@/lib/auth', () => ({
   default: { api: { signInEmail: vi.fn() } },
 }));
 vi.mock('@env', () => ({
-  default: { PW_USERNAME: 'service@example.com', PW_PASSWORD: 'secret' },
+  default: {
+    PW_USERNAME: 'service@example.com',
+    PW_PASSWORD: 'secret',
+    DEV_URL: 'http://localhost:3000',
+    PRODUCTION_URL: 'https://portal.app',
+  },
 }));
 
 describe('reportExpiresAt', () => {
@@ -98,7 +106,6 @@ describe('renderReportPdf', () => {
     const result = await renderReportPdf({
       origin: 'https://portal.app',
       path: '/dashboard?from=2026-01-01',
-      host: 'portal.app',
       cookies: [{ name: 'session', value: 'abc' }],
       period: MOCK_REPORT_HISTORY.period,
     });
@@ -107,6 +114,8 @@ describe('renderReportPdf', () => {
       name: 'session',
       value: 'abc',
       domain: 'portal.app',
+      path: '/',
+      secure: true,
     });
     expect(browser.page.goto).toHaveBeenCalledWith(
       'https://portal.app/dashboard?from=2026-01-01',
@@ -125,7 +134,6 @@ describe('renderReportPdf', () => {
     await expect(
       renderReportPdf({
         origin: 'https://portal.app',
-        host: 'portal.app',
         cookies: [],
         period: MOCK_REPORT_HISTORY.period,
       }),
@@ -140,7 +148,6 @@ describe('renderReportPdf', () => {
 
     await renderReportPdf({
       origin: 'https://portal.app',
-      host: 'portal.app',
       cookies: [],
       period: MOCK_REPORT_HISTORY.period,
     });
@@ -156,7 +163,6 @@ describe('renderReportPdf', () => {
 
     await renderReportPdf({
       origin: 'https://portal.app',
-      host: 'portal.app',
       cookies: [],
       period: MOCK_REPORT_HISTORY.period,
     });
@@ -176,7 +182,6 @@ describe('renderReportPdf', () => {
 
     const result = await renderReportPdf({
       origin: 'https://portal.app',
-      host: 'portal.app',
       cookies: [],
       period: MOCK_REPORT_HISTORY.period,
     });
@@ -193,7 +198,6 @@ describe('renderReportPdf', () => {
 
     const result = await renderReportPdf({
       origin: 'https://portal.app',
-      host: 'portal.app',
       cookies: [],
       period: MOCK_REPORT_HISTORY.period,
     });

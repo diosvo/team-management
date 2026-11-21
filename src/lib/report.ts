@@ -2,7 +2,7 @@ import env from '@env';
 import type { Interval } from '@/utils/enum';
 
 import auth from '@/lib/auth';
-import { getBrowser } from '@/lib/puppeteer';
+import { browserCookies, getBrowser, renderOrigin } from '@/lib/puppeteer';
 import { uploadFile } from '@/lib/storage';
 
 import type { DateRange } from '@/types/common';
@@ -29,8 +29,6 @@ export interface RenderOptions {
   origin: string;
   /** Path under the origin, e.g. `/dashboard?from=2026-09-01&to=2026-09-30`. */
   path?: string;
-  /** Cookie domain (request host). */
-  host: string;
   /** Session cookies forwarded to the headless browser. */
   cookies: Array<{ name: string; value: string }>;
   /** Human-readable reporting window. */
@@ -45,22 +43,22 @@ export interface RenderOptions {
 export async function renderReportPdf({
   origin,
   path,
-  host,
   cookies,
   period,
 }: RenderOptions): Promise<Buffer> {
+  const target = renderOrigin(origin);
   const browser = await getBrowser();
 
   try {
     const page = await browser.newPage();
 
-    await browser.setCookie(
-      ...cookies.map((cookie) => ({ ...cookie, domain: host })),
-    );
+    await browser.setCookie(...browserCookies(cookies, target));
 
     // 1200px keeps Chakra's md breakpoint active for the print layout.
     await page.setViewport({ width: 1200, height: 900 });
-    await page.goto(`${origin}${path ?? ''}`, { waitUntil: 'networkidle0' });
+    await page.goto(`${target}${path ?? ''}`, {
+      waitUntil: 'networkidle0',
+    });
     await page.waitForSelector('#reports-dashboard', { timeout: 3000 });
 
     // The charts stream in behind Suspense as client-only chunks, so wait for

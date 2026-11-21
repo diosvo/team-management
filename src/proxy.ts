@@ -30,6 +30,12 @@ function resolveResource(pathname: string) {
   return undefined;
 }
 
+/** Returns whether the session cache uses the secure cookie prefix. */
+function secureCookies() {
+  const baseURL = process.env.BETTER_AUTH_URL;
+  return baseURL ? baseURL.startsWith('https://') : undefined;
+}
+
 /**
  * Public docs live at `src/app/docs/[lang]`, but the default language is
  * unprefixed: `/docs/roster` is served by `/docs/en/roster`, `/docs/vi/roster`
@@ -88,7 +94,10 @@ export default async function proxy(req: NextRequest) {
 
   if (isLoggedIn && isProtectedRoute) {
     // Full validation: Cookie cache read + Protected route
-    const session = await getCookieCache(req, { cookiePrefix: COOKIE.prefix });
+    const session = await getCookieCache(req, {
+      cookiePrefix: COOKIE.prefix,
+      isSecure: secureCookies(),
+    });
 
     if (!session) {
       // Session expired - cookie still present but cache is invalid

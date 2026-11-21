@@ -1,0 +1,31 @@
+# SITE_ADDRESS = PUBLIC_SCHEME://DOMAIN (set in compose.yaml).
+# https://domain → certificate issued automatically (DNS A record must point here).
+# http://<IP>     → plain HTTP, for running on the bare IP before there is a domain.
+{$SITE_ADDRESS} {
+	encode zstd gzip
+
+	# Country filter: ALLOWED_COUNTRIES (space-separated ISO codes; default: VN).
+	# Exemptions:
+	# • Private IP ranges (cron container)
+	# • /.well-known/acme-challenge (Let’s Encrypt)
+	# • /api/webhooks (Resend)
+	# • /api/reports (CRON_SECRET)
+	@blocked {
+		not {
+			maxmind_geolocation {
+				db_path /etc/caddy/country.mmdb
+				allow_countries {$ALLOWED_COUNTRIES:VN}
+			}
+		}
+		not remote_ip private_ranges
+		not path /.well-known/acme-challenge/* /api/webhooks/* /api/reports/*
+	}
+	respond @blocked "This site is not available in your region." 403
+
+	# Image uploads: 10 MB plus multipart overhead (matches serverActions.bodySizeLimit).
+	request_body {
+		max_size 12MB
+	}
+
+	reverse_proxy app:3000
+}

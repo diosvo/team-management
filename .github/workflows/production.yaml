@@ -1,8 +1,33 @@
 name: 🚀 Production Deployment
 
+# Builds amd64 images, ships tarballs over SSH, and restarts the stack on the VPS.
+# The VPS never builds or receives source files; .env.production remains server-only.
+#
+# Repository secrets:
+#   • VPS_HOST
+#   • VPS_USER
+#   • VPS_SSH_KEY (private key whose public half is in the VPS user's
+#     ~/.ssh/authorized_keys)
+# Optional variable:
+#   • VPS_PATH (stack directory on the server, default team-portal)
+
 on:
-  push:
+  # [Trial] Deploy from pull requests into main until the VPS setup is stable.
+  # Remove once the triggers below are enabled.
+  pull_request:
     branches: [main]
+
+  # [Always] Manual redeploy or rollback from the Actions tab.
+  workflow_dispatch:
+
+  # [After stable] Deploy every merge to main.
+  # push:
+  #   branches: [main]
+
+  # [After stable] Monthly redeploy so the Caddy country database
+  # (DB-IP Lite) stays current.
+  # schedule:
+  #   - cron: '0 20 3 * *' # 03:00 ICT on the 4th
 
 permissions:
   contents: read
@@ -12,13 +37,76 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  production:
-    uses: ./.github/workflows/test-and-deploy.yaml
-    with:
-      environment: production
-      vercel-environment: production
-      # Already gated on the PR that produced this commit.
-      run-unit-test: false
-      build-args: "--prod"
-      deploy-args: "--prebuilt --prod --yes"
-    secrets: inherit
+  deploy:
+    # [Trial] Fork PRs get no secrets, so only deploy from branches in this repo.
+    # Remove together with the pull_request trigger.
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 45
+    env:
+      VPS_PATH: ${{ vars.VPS_PATH || 'team-portal' }}
+    steps:
+      # Full history: fumadocs reads `git log` for each docs page's last-updated date.
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: 🐳 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: 🔨 Build app image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          target: runner
+          tags: app:latest
+          load: true
+          cache-from: type=gha,scope=runner
+          cache-to: type=gha,mode=max,scope=runner
+
+      - name: 🔨 Build migrate image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          target: migrator
+          tags: migrate:latest
+          load: true
+          cache-from: type=gha,scope=migrator
+          cache-to: type=gha,mode=max,scope=migrator
+
+      - name: 🗓️ GeoIP month
+        id: geoip
+        run: echo "month=$(date -u +%Y-%m)" >> "$GITHUB_OUTPUT"
+
+      - name: 🔨 Build caddy image
+        uses: docker/build-push-action@v7
+        with:
+          context: deploy/caddy
+          tags: caddy-geo:latest
+          load: true
+          build-args: GEOIP_MONTH=${{ steps.geoip.outputs.month }}
+          cache-from: type=gha,scope=caddy
+          cache-to: type=gha,mode=max,scope=caddy
+
+      - name: 📦 Package images and stack files
+        # `shell: bash` adds pipefail, so a failed package is not masked by tee.
+        shell: bash
+        run: deploy/scripts/package.sh dist | tee -a "$GITHUB_STEP_SUMMARY"
+
+      # Kept briefly for a manual rollback: gh run download <run-id> -n vps-release
+      - name: 📤 Upload release
+        uses: actions/upload-artifact@v7
+        with:
+          name: vps-release
+          path: dist/
+          retention-days: 3
+          compression-level: 0
+
+      - name: 🚀 Ship and release on VPS
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+        run: deploy/scripts/ship.sh dist

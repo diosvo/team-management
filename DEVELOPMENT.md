@@ -1,8 +1,8 @@
-# Development guide
+# 🛠️ Development guide
 
 Repo conventions. For the system design, see [Architecture](content/docs/architecture/index.mdx) (`/docs/architecture`).
 
-## UI with server actions
+## 🧩 UI with server actions
 
 Reference: the player performance page, [`src/app/(protected)/performance/[id]`](<src/app/(protected)/performance/[id]/page.tsx>) with [`actions/player-performance.ts`](src/actions/player-performance.ts).
 
@@ -40,7 +40,7 @@ sequenceDiagram
 - Map DB errors with `getDbErrorMessage` (constraint names for friendly messages).
 - Tests sit next to each file (`*.test.ts(x)`).
 
-## Naming
+## 🏷️ Naming
 
 | What                   | Pattern                                                                                                                                         | Example                                                                   |
 | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
@@ -57,7 +57,7 @@ sequenceDiagram
 
 Enum suffixes (`src/utils/enum.ts`, lowercase values): `Status` = one-way lifecycle, `State` = any direction, `Condition` = quality.
 
-## Database
+## 🗄️ Database
 
 ```bash
 brew services start postgresql@18
@@ -68,7 +68,74 @@ pnpm db:migrate
 - Relations: `fields`/`references` on the side that owns the FK; omit them on the other side.
 - `'use cache'` + `cacheTag()` only for stable, low-param data with a clear `revalidateTag()` on every write.
 
-## Others
+## 🚀 Deployment (VPS)
+
+```mermaid
+flowchart LR
+  subgraph Build["Build (amd64 images)"]
+    CI["GitHub Actions<br/>production.yaml<br/>PR to main (trial) / dispatch"]
+    Mac["Mac (manual)<br/>container build + skopeo"]
+  end
+
+  CI -- "package.sh" --> Dist
+  Mac -- "save + tar" --> Dist
+  Dist["dist/<br/>images*.tar.gz<br/>bundle.tar.gz"]
+
+  Dist -- "scp (ship.sh in CI)" --> Drop["VPS ~/.deploy"]
+  Drop -- "release.sh" --> Stack
+
+  subgraph Stack["VPS ~/team-portal (docker compose)"]
+    direction TB
+    db[(db)] --> migrate --> roles[db-roles] --> app
+    app --> caddy["caddy :80/:443"]
+    caddy --> cron
+  end
+```
+
+**🔨 1. Build** (never on the VPS; it never sees the source)
+
+- Where:
+  - CI: GitHub runner, [production.yaml](.github/workflows/production.yaml) (pull requests into `main` and manual dispatch while on trial; moves to push to `main` and monthly once stable).
+  - Manual: Mac with Apple `container` + `skopeo`.
+- Images (amd64):
+  - `app`: [Dockerfile](Dockerfile) `runner` target (Next.js standalone).
+  - `migrate`: [Dockerfile](Dockerfile) `migrator` target (Drizzle migrations).
+  - `caddy-geo`: [deploy/caddy](deploy/caddy/Dockerfile) (Caddy + country filter).
+
+**📦 2. Package** into `dist/`
+
+- `images*.tar.gz`: one archive in CI, one per image by hand.
+- `bundle.tar.gz`: `compose.yaml` + `deploy/`.
+- CI: [package.sh](deploy/scripts/package.sh).
+
+**🚚 3. Ship** to `~/.deploy` on the VPS
+
+- CI: [ship.sh](deploy/scripts/ship.sh) (SSH secrets `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`).
+- Manual: `scp`.
+
+**🎬 4. Release** with [release.sh](deploy/scripts/release.sh) on the VPS
+
+- Unpacks the bundle into `~/team-portal`.
+- Loads every `images*.tar.gz`, then deletes them.
+- Points an `*.sslip.io` `DOMAIN` at the VM's current IP ([sync-domain.sh](deploy/scripts/sync-domain.sh)) and installs an `@reboot` crontab entry so it follows IP changes after a restart.
+- Runs `docker compose up -d --no-build --remove-orphans`.
+- Waits for `/login` to answer; prints logs if it doesn't.
+
+**🔢 5. Start order** ([compose.yaml](compose.yaml))
+
+- `db`: Postgres, waits until healthy.
+- `migrate`: applies migrations as the owner, then exits.
+- `db-roles`: grants the app's least-privilege login ([app-role.sql](deploy/db/app-role.sql)), then exits.
+- `app`: Next.js on :3000, runs as that login.
+- `caddy`: public :80/:443, TLS + country filter → `app`.
+- `cron`: report routes through the public domain + nightly `pg_dump` to `./backups`.
+
+**🔐 Secrets**
+
+- Only in `~/team-portal/.env.production` on the VPS.
+- Template: `deploy/.env.example`.
+
+## 📌 Others
 
 - Avatars stay on Chakra `Avatar.Image` (private blobs → base64, `next/image` gains nothing); use `next/image` for static assets.
 - Badges: `surface` + `getColor()` for semantic status, `outline` for neutral labels, `surface` + fixed color for UI accents.

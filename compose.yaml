@@ -1,0 +1,153 @@
+# Production stack for the VPS.
+# • Images: built by GitHub Actions, then loaded on the server.
+# • Deploy: docker compose up -d --no-build --remove-orphans
+# • Config: link deploy/.env.example as .env.production.
+#
+# Flow: Caddy (:80/:443) → app (:3000) → Postgres
+# • migrate: apply migrations
+# • db-roles: grant the app login role
+# • cron: run reports and nightly pg_dump to ./backups
+
+name: team-portal
+
+# Owner (POSTGRES_USER): migrations, backups, admin tools.
+x-admin-database-url: &admin-database-url postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+# Least-privilege login the app runs as (deploy/db/app-role.sql).
+x-app-database-url: &app-database-url postgres://${APP_DB_USER:-team_portal_app}:${APP_DB_PASSWORD:?set APP_DB_PASSWORD in .env.production}@db:5432/${POSTGRES_DB}
+
+services:
+  db:
+    container_name: db
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    # Reachable from the host (aaPanel, SSH tunnel), never from the internet.
+    ports:
+      - '127.0.0.1:5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    mem_limit: 1g
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  migrate:
+    container_name: migrate
+    build:
+      context: .
+      target: migrator
+    image: migrate
+    environment:
+      DATABASE_URL: *admin-database-url
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: 'no'
+
+  # Creates/updates the app's login role and grants it every table, including
+  # ones the migration just added.
+  db-roles:
+    container_name: db-roles
+    image: postgres:17-alpine
+    environment:
+      DATABASE_URL: *admin-database-url
+      APP_DB_USER: ${APP_DB_USER:-team_portal_app}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?set APP_DB_PASSWORD in .env.production}
+    volumes:
+      - ./deploy/db:/deploy-db:ro
+    entrypoint:
+      - sh
+      - -c
+      - >-
+        exec psql "$$DATABASE_URL" -v ON_ERROR_STOP=1 -q
+        -v app_user="$$APP_DB_USER" -v app_password="$$APP_DB_PASSWORD"
+        -f /deploy-db/app-role.sql
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: 'no'
+
+  app:
+    container_name: app
+    build:
+      context: .
+      target: runner
+    image: app
+    restart: unless-stopped
+    env_file: .env.production
+    environment:
+      DATABASE_URL: *app-database-url
+      DATABASE_POOL_MAX: 10
+      UPLOAD_DIR: /data/uploads
+      PRODUCTION_URL: ${PUBLIC_SCHEME:-https}://${DOMAIN}
+      BETTER_AUTH_URL: ${PUBLIC_SCHEME:-https}://${DOMAIN}
+      # Puppeteer (PDF reports) loads pages from the app itself, not through
+      # Caddy, whose country filter blocks the server's own public IP.
+      RENDER_ORIGIN: http://127.0.0.1:3000
+    volumes:
+      - uploads:/data/uploads
+    # Reaps Chromium child processes; Chromium also needs more than 64 MB of /dev/shm.
+    init: true
+    shm_size: 256mb
+    # Memory limit for the app container to prevent it from starving Postgres or the host.
+    mem_limit: 2g
+    depends_on:
+      db:
+        condition: service_healthy
+      db-roles:
+        condition: service_completed_successfully
+
+  caddy:
+    container_name: caddy
+    # Caddy + country filter (deploy/caddy/Dockerfile).
+    build:
+      context: deploy/caddy
+    image: caddy-geo
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+      - '443:443/udp'
+    environment:
+      SITE_ADDRESS: ${PUBLIC_SCHEME:-https}://${DOMAIN}
+      # Space-separated ISO country codes allowed through, e.g. "VN SG".
+      ALLOWED_COUNTRIES: ${ALLOWED_COUNTRIES:-VN}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+
+  cron:
+    container_name: cron
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      DOMAIN: ${DOMAIN}
+      PUBLIC_SCHEME: ${PUBLIC_SCHEME:-https}
+      CRON_SECRET: ${CRON_SECRET}
+      DATABASE_URL: *admin-database-url
+      BACKUP_KEEP_DAYS: ${BACKUP_KEEP_DAYS:-14}
+    volumes:
+      - ./deploy/crontab:/etc/crontabs/root:ro
+      - ./deploy/cron:/deploy:ro
+      - ./backups:/backups
+    # busybox crond does not pass the container env to jobs, so save it first.
+    entrypoint:
+      - sh
+      - -c
+      - export -p > /run/cron.env && exec crond -f -l 6
+    depends_on:
+      - caddy
+
+volumes:
+  pgdata:
+  uploads:
+  caddy_data:
+  caddy_config:

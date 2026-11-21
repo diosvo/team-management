@@ -55,3 +55,6 @@ next-env.d.ts
 # dependency audit report (scripts/audit.ts)
 /pnpm-audit.json
 /audit-summary.md
+# VPS database dumps (deploy/cron/backup.sh)
+/backups/
+dist/
