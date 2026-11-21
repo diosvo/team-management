@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # Package release artifacts into dist/
-# • Built app, migrate, and caddy-geo images
+# • Built app and caddy-geo images
 # • Compose and deploy stack files
 # • Run from repo root after building images
 set -euo pipefail
 
 OUT_DIR="${1:-dist}"
-IMAGES=(app:latest migrate:latest caddy-geo:latest)
+IMAGES=(app:latest caddy-geo:latest)
 
 mkdir -p "$OUT_DIR"
 

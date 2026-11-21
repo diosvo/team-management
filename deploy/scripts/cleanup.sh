@@ -14,13 +14,12 @@
 # • JOURNAL_MAX: journald size to keep (default: 200M)
 # • LOG_MAX_MB: container-log threshold (default: 50 MB)
 # • RELEASE_DIR: release tarballs (default: ~/.deploy)
-# • VPS_PATH: stack directory under $HOME (default: team-portal)
 set -euo pipefail
 
 JOURNAL_MAX="${JOURNAL_MAX:-200M}"
 LOG_MAX_MB="${LOG_MAX_MB:-50}"
 RELEASE_DIR="${RELEASE_DIR:-$HOME/.deploy}"
-STACK_DIR="$HOME/${VPS_PATH:-team-portal}"
+STACK_DIR="$HOME/team-portal"
 
 step() { printf '\n== %s\n' "$1"; }
 
@@ -31,7 +30,7 @@ step "Docker: images the stack doesn't use, build cache"
 docker system df
 # Not `docker image prune -a` / `container prune`: migrate and db-roles are
 # stopped containers between releases, and `up --no-build` needs every image
-# compose.yaml names (app, migrate, caddy-geo, postgres) even when unused.
+# compose.yaml names (app, caddy-geo, postgres) even when unused.
 keep="$(docker compose --project-directory "$STACK_DIR" config --images 2>/dev/null |
   sed 's/^docker\.io\/library\///' | sed '/:/!s/$/:latest/' | sort -u)"
 if [[ -z "$keep" ]]; then

@@ -5,7 +5,7 @@
 # • VPS_HOST
 # • VPS_USER
 # • VPS_SSH_KEY (private key contents)
-# • VPS_PATH (remote stack directory; default: team-portal)
+# • VPS_KNOWN_HOSTS (pinned host key lines; see production.yaml)
 #
 # SSH files use a throwaway directory, never ~/.ssh.
 set -euo pipefail
@@ -13,16 +13,31 @@ set -euo pipefail
 : "${VPS_HOST:?Missing VPS_HOST}"
 : "${VPS_USER:?Missing VPS_USER}"
 : "${VPS_SSH_KEY:?Missing VPS_SSH_KEY}"
-VPS_PATH="${VPS_PATH:-team-portal}"
+: "${VPS_KNOWN_HOSTS:?Missing VPS_KNOWN_HOSTS}"
 DIST_DIR="${1:-dist}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 ssh_dir="$(mktemp -d)"
 trap 'rm -rf "$ssh_dir"' EXIT
 
-printf '%s\n' "$VPS_SSH_KEY" > "$ssh_dir/key"
+# Secrets pasted from Windows or stored on one line carry CRLF or literal "\n".
+secret_lines() { printf '%b\n' "$1" | tr -d '\r' | sed '/^[[:space:]]*$/d'; }
+
+secret_lines "$VPS_SSH_KEY" > "$ssh_dir/key"
 chmod 600 "$ssh_dir/key"
-ssh-keyscan -T 15 "$VPS_HOST" > "$ssh_dir/known_hosts" 2>/dev/null
+if ! ssh-keygen -y -P '' -f "$ssh_dir/key" > /dev/null 2>&1; then
+  echo "VPS_SSH_KEY is not a usable private key. Paste the whole private key" >&2
+  echo "(BEGIN/END lines included, no passphrase), not the .pub file." >&2
+  exit 1
+fi
+# Process VPS_KNOWN_HOSTS to ensure it contains a host key for VPS_HOST.
+secret_lines "$VPS_KNOWN_HOSTS" |
+  awk -v host="$VPS_HOST" '$1 ~ /^(ssh-|ecdsa-|sk-)/ { $0 = host " " $1 " " $2 } { print }' \
+    > "$ssh_dir/known_hosts"
+if ! ssh-keygen -F "$VPS_HOST" -f "$ssh_dir/known_hosts" > /dev/null; then
+  echo "VPS_KNOWN_HOSTS has no host key for $VPS_HOST." >&2
+  exit 1
+fi
 
 cat > "$ssh_dir/config" <<EOF
 Host vps
@@ -41,5 +56,5 @@ echo "Uploading release to $VPS_USER@$VPS_HOST:~/.deploy"
 ssh_vps 'mkdir -p ~/.deploy'
 scp -q -F "$ssh_dir/config" "$DIST_DIR/images.tar.gz" "$DIST_DIR/bundle.tar.gz" vps:~/.deploy/
 
-echo "Releasing in ~/$VPS_PATH"
-ssh_vps "VPS_PATH='$VPS_PATH' bash -s" < "$SCRIPT_DIR/release.sh"
+echo "Releasing in ~/team-portal"
+ssh_vps "bash -s" < "$SCRIPT_DIR/release.sh"

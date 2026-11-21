@@ -98,8 +98,7 @@ flowchart LR
   - CI: GitHub runner, [production.yaml](.github/workflows/production.yaml) (pull requests into `main` and manual dispatch while on trial; moves to push to `main` and monthly once stable).
   - Manual: Mac with Apple `container` + `skopeo`.
 - Images (amd64):
-  - `app`: [Dockerfile](Dockerfile) `runner` target (Next.js standalone).
-  - `migrate`: [Dockerfile](Dockerfile) `migrator` target (Drizzle migrations).
+  - `app`: [Dockerfile](Dockerfile) `runner` target (Next.js standalone). It also carries `migrate.cjs` (the Drizzle migration script, bundled) for the `migrate` service.
   - `caddy-geo`: [deploy/caddy](deploy/caddy/Dockerfile) (Caddy + country filter).
 
 **📦 2. Package** into `dist/`
@@ -110,7 +109,7 @@ flowchart LR
 
 **🚚 3. Ship** to `~/.deploy` on the VPS
 
-- CI: [ship.sh](deploy/scripts/ship.sh) (SSH secrets `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`).
+- CI: [ship.sh](deploy/scripts/ship.sh) (SSH secrets `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`, `VPS_KNOWN_HOSTS`).
 - Manual: `scp`.
 
 **🎬 4. Release** with [release.sh](deploy/scripts/release.sh) on the VPS

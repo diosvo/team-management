@@ -8,8 +8,7 @@ name: 🚀 Production Deployment
 #   • VPS_USER
 #   • VPS_SSH_KEY (private key whose public half is in the VPS user's
 #     ~/.ssh/authorized_keys)
-# Optional variable:
-#   • VPS_PATH (stack directory on the server, default team-portal)
+#   • VPS_KNOWN_HOSTS (pinned VPS host keys from `/etc/ssh/ssh_host_*_key.pub`).
 
 on:
   # [Trial] Deploy from pull requests into main until the VPS setup is stable.
@@ -44,8 +43,6 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     timeout-minutes: 45
-    env:
-      VPS_PATH: ${{ vars.VPS_PATH || 'team-portal' }}
     steps:
       # Full history: fumadocs reads `git log` for each docs page's last-updated date.
       - name: 📥 Checkout Code
@@ -65,16 +62,6 @@ jobs:
           load: true
           cache-from: type=gha,scope=runner
           cache-to: type=gha,mode=max,scope=runner
-
-      - name: 🔨 Build migrate image
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          target: migrator
-          tags: migrate:latest
-          load: true
-          cache-from: type=gha,scope=migrator
-          cache-to: type=gha,mode=max,scope=migrator
 
       - name: 🗓️ GeoIP month
         id: geoip
@@ -109,4 +96,5 @@ jobs:
           VPS_HOST: ${{ secrets.VPS_HOST }}
           VPS_USER: ${{ secrets.VPS_USER }}
           VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
         run: deploy/scripts/ship.sh dist

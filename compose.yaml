@@ -4,7 +4,7 @@
 # • Config: link deploy/.env.example as .env.production.
 #
 # Flow: Caddy (:80/:443) → app (:3000) → Postgres
-# • migrate: apply migrations
+# • migrate: apply migrations (app image, migrate.cjs)
 # • db-roles: grant the app login role
 # • cron: run reports and nightly pg_dump to ./backups
 
@@ -38,10 +38,8 @@ services:
 
   migrate:
     container_name: migrate
-    build:
-      context: .
-      target: migrator
-    image: migrate
+    image: app
+    command: ['node', 'migrate.cjs']
     environment:
       DATABASE_URL: *admin-database-url
     depends_on:

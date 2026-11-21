@@ -6,11 +6,10 @@
 # • Run: bash ~/team-portal/deploy/scripts/release.sh
 #
 # Environment:
-# • VPS_PATH: stack directory under $HOME (default: team-portal)
 # • RELEASE_DIR: tarball directory (default: ~/.deploy)
 set -euo pipefail
 
-STACK_DIR="$HOME/${VPS_PATH:-team-portal}"
+STACK_DIR="$HOME/team-portal"
 RELEASE_DIR="${RELEASE_DIR:-$HOME/.deploy}"
 
 cd "$STACK_DIR"

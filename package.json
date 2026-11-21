@@ -66,6 +66,7 @@
     "@vitest/ui": "^4.1.12",
     "date-fns": "^4.4.0",
     "drizzle-kit": "^0.31.10",
+    "esbuild": "0.28.1",
     "eslint": "10.8.0",
     "eslint-config-next": "16.4.6",
     "eslint-config-prettier": "^10.1.8",
