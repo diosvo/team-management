@@ -5,11 +5,7 @@ import type { Metadata } from 'next';
 import { Google_Sans_Flex } from 'next/font/google';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getTranslations } from 'next-intl/server';
-import { Analytics } from '@vercel/analytics/next';
-import { SpeedInsights } from '@vercel/speed-insights/next';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
-
-import env from '@env';
 
 import { Toaster } from '@/components/ui/toaster';
 import ZodErrorMap from '@/i18n/ZodErrorMap';
@@ -17,7 +13,9 @@ import UiProvider from '@/providers/chakra';
 
 const ggSans = Google_Sans_Flex({
   display: 'swap',
-  subsets: ['latin', 'vietnamese'],
+  // Latin-only preloading avoids warnings on English pages
+  // Vietnamese glyphs load on demand.
+  subsets: ['latin'],
   adjustFontFallback: false,
   fallback: ['system-ui', 'arial'],
 });
@@ -52,13 +50,6 @@ export default async function RootLayout({ children }: PropsWithChildren) {
             </UiProvider>
           </NuqsAdapter>
         </NextIntlClientProvider>
-        {/* Vercel plugins */}
-        {env.NODE_ENV === 'production' && (
-          <>
-            <Analytics />
-            <SpeedInsights />
-          </>
-        )}
       </body>
     </html>
   );

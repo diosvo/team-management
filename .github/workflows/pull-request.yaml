@@ -1,0 +1,48 @@
+name: 🔍 Pull Request Checks
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: pull-request-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    uses: ./.github/workflows/test.yaml
+
+  report-pr:
+    needs: test
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      # Only the report script; the PR's code is not needed here.
+      - name: 📥 Checkout report script
+        uses: actions/checkout@v7
+        with:
+          sparse-checkout: deploy/scripts/pr-report.js
+          sparse-checkout-cone-mode: false
+
+      - name: 📥 Download reports
+        continue-on-error: true
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ needs.test.outputs.summary_artifact }}
+          path: .
+
+      - name: 💬 Upsert PR comment
+        uses: actions/github-script@v9
+        env:
+          TEST_RESULT: ${{ needs.test.result }}
+          MARKER: '<!-- preview-deploy-report -->'
+          TEST_FILE: ${{ needs.test.outputs.test_summary_file }}
+          AUDIT_FILE: ${{ needs.test.outputs.audit_summary_file }}
+        with:
+          script: |
+            await require('./deploy/scripts/pr-report.js')({ github, context, core });

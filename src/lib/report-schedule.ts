@@ -75,8 +75,6 @@ export interface ExecuteScheduleOptions {
   trigger: ReportTrigger;
   /** Origin used both to render the dashboard and to build the download link. */
   origin: string;
-  /** Cookie domain (request host). */
-  host: string;
   /** Session cookies forwarded to the headless browser. */
   cookies: Array<{ name: string; value: string }>;
   /**
@@ -103,7 +101,6 @@ export async function executeSchedule({
   scheduled_for,
   trigger,
   origin,
-  host,
   cookies,
   session_team_id,
 }: ExecuteScheduleOptions): Promise<ExecuteScheduleResult> {
@@ -174,7 +171,6 @@ export async function executeSchedule({
         const buffer = await renderReportPdf({
           origin,
           path: dashboardPath(range),
-          host,
           cookies,
           period,
         });

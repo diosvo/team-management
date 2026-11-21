@@ -3,6 +3,8 @@ import createNextIntlPlugin from 'next-intl/plugin';
 import { createMDX } from 'fumadocs-mdx/next';
 
 const nextConfig: NextConfig = {
+  // Self-contained server bundle for the Docker image (see Dockerfile).
+  output: 'standalone',
   devIndicators: {
     position: 'bottom-right',
   },

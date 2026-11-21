@@ -9,7 +9,8 @@ import { verifySession } from '@/actions/auth';
 
 import { POST } from './route';
 
-vi.mock('@/lib/puppeteer', () => ({
+vi.mock('@/lib/puppeteer', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/puppeteer')>()),
   getBrowser: vi.fn(),
 }));
 
@@ -18,7 +19,11 @@ vi.mock('@/actions/auth', () => ({
 }));
 
 vi.mock('@env', () => ({
-  default: { NODE_ENV: 'development' },
+  default: {
+    NODE_ENV: 'development',
+    DEV_URL: 'http://localhost:3000',
+    PRODUCTION_URL: 'http://localhost:3000',
+  },
 }));
 
 // Minimal Puppeteer page/browser doubles exposing only what the route touches.
@@ -133,7 +138,9 @@ describe('POST /api/reports/dashboard', () => {
     expect(browser.setCookie).toHaveBeenCalledWith({
       name: 'session',
       value: 'abc',
-      domain: 'localhost:3000',
+      domain: 'localhost',
+      path: '/',
+      secure: false,
     });
     expect(browser.page.goto).toHaveBeenCalledWith(
       'http://localhost:3000/dashboard?from=2026-02-01&to=2026-02-28',
@@ -200,7 +207,13 @@ describe('POST /api/reports/dashboard', () => {
   });
 
   test('hides the error message outside of development', async () => {
-    vi.doMock('@env', () => ({ default: { NODE_ENV: 'production' } }));
+    vi.doMock('@env', () => ({
+      default: {
+        NODE_ENV: 'production',
+        DEV_URL: 'http://localhost:3000',
+        PRODUCTION_URL: 'http://localhost:3000',
+      },
+    }));
     vi.resetModules();
     const { POST: postProd } = await import('./route');
     const { getBrowser: getBrowserProd } = await import('@/lib/puppeteer');

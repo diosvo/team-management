@@ -1,33 +1,8 @@
-name: 🧪 Test & Deploy
+name: 🧪 Test
 
 on:
   workflow_call:
     inputs:
-      environment:
-        description: Deployment environment label.
-        required: true
-        type: string
-      vercel-environment:
-        description: Vercel target environment.
-        required: true
-        type: string
-      run-unit-test:
-        description: >-
-          Run the unit-test job before deploying. Callers triggered by a PR
-          want this; deploys from an already-tested branch can skip it.
-        required: false
-        type: boolean
-        default: true
-      build-args:
-        description: Extra arguments for the Vercel build command.
-        required: false
-        type: string
-        default: ""
-      deploy-args:
-        description: Extra arguments for the Vercel deploy command.
-        required: false
-        type: string
-        default: "--prebuilt --yes"
       summary-artifact:
         description: Artifact name the unit-test and audit summaries share.
         required: false
@@ -43,17 +18,7 @@ on:
         required: false
         type: string
         default: audit-summary.md
-    secrets:
-      VERCEL_ORG_ID:
-        required: true
-      VERCEL_PROJECT_ID:
-        required: true
-      VERCEL_TOKEN:
-        required: true
     outputs:
-      preview_url:
-        description: Deployment URL returned by Vercel.
-        value: ${{ jobs.deploy.outputs.preview_url }}
       summary_artifact:
         description: Artifact name the summaries were uploaded under.
         value: ${{ inputs.summary-artifact }}
@@ -66,7 +31,6 @@ on:
 
 jobs:
   unit-test:
-    if: ${{ inputs.run-unit-test }}
     runs-on: ubuntu-latest
     steps:
       - name: 📥 Checkout Code
@@ -87,7 +51,7 @@ jobs:
           exit $status
 
       # `next build` only type-checks files its routes reach, so type errors in
-      # specs never fail a deploy.
+      # specs never fail a build.
       # Vitest transpiles without checking types at all.
       # This step is the only thing covering them.
       - name: 🔎 Type Check
@@ -95,7 +59,7 @@ jobs:
 
       # Report-only: Runs even when the steps above failed,
       # so the comment always carries an audit section — and never fails the
-      # job, so an audit that cannot run does not hold back the deploy.
+      # job, so an audit that cannot run does not fail the PR.
       - name: 🔍 Dependency Audit
         if: ${{ !cancelled() }}
         continue-on-error: true
@@ -118,40 +82,3 @@ jobs:
           path: |
             ${{ inputs.test-summary-file }}
             ${{ inputs.audit-summary-file }}
-
-  deploy:
-    needs: unit-test
-    if: ${{ !cancelled() && (needs.unit-test.result == 'success' || needs.unit-test.result == 'skipped') }}
-    runs-on: ubuntu-latest
-    outputs:
-      preview_url: ${{ steps.deploy.outputs.url }}
-    env:
-      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-    steps:
-      - name: 📥 Checkout Code
-        uses: actions/checkout@v7
-
-      - name: 🚚 Setup
-        uses: ./.github/actions/setup
-
-      - name: 📦 Install Vercel CLI
-        run: pnpm install --global vercel@latest
-
-      - name: 🔽 Pull Vercel Environment Information
-        run: vercel pull --yes --environment=${{ inputs.vercel-environment }} --token="$VERCEL_TOKEN"
-
-      - name: 🔨 Build
-        run: vercel build ${{ inputs.build-args }} --token="$VERCEL_TOKEN"
-
-      - name: 🚀 Deploy to Vercel
-        id: deploy
-        run: |
-          set -euo pipefail
-          output="$(vercel deploy ${{ inputs.deploy-args }} --token="$VERCEL_TOKEN")"
-          url="$(printf '%s\n' "$output" | grep -Eo 'https://[^[:space:]]+' | tail -n 1 || true)"
-          : "${url:?No deployment URL was produced by the deploy step}"
-
-          echo "url=$url" >> "$GITHUB_OUTPUT"
-          echo "Deployment URL: $url" >> "$GITHUB_STEP_SUMMARY"

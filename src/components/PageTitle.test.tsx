@@ -35,5 +35,7 @@ describe('PageTitle', () => {
     expect(image).toHaveClass('chakra-image');
     expect(image).toHaveAttribute('loading', 'lazy');
     expect(image).toHaveAttribute('src', '/squiggle.svg');
+    expect(image).toHaveAttribute('width', '580');
+    expect(image).toHaveAttribute('height', '23');
   });
 });

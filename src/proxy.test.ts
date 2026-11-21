@@ -221,6 +221,39 @@ describe('proxy middleware', () => {
         expect(redirectPath(response)).toBeNull();
       });
 
+      describe('session cache cookie name', () => {
+        afterEach(() => {
+          vi.unstubAllEnvs();
+        });
+
+        test.each([
+          ['http://34.21.209.255', false],
+          ['https://portal.example.com', true],
+        ])('reads it as Better Auth wrote it for %s', async (url, isSecure) => {
+          vi.stubEnv('BETTER_AUTH_URL', url);
+          withSessionCache(UserRole.GUEST);
+
+          await proxy(buildRequest(DEFAULT_LOGIN_REDIRECT));
+
+          expect(mockGetCookieCache).toHaveBeenCalledWith(
+            expect.anything(),
+            expect.objectContaining({ isSecure }),
+          );
+        });
+
+        test("keeps Better Auth's default without a base URL", async () => {
+          vi.stubEnv('BETTER_AUTH_URL', '');
+          withSessionCache(UserRole.GUEST);
+
+          await proxy(buildRequest(DEFAULT_LOGIN_REDIRECT));
+
+          expect(mockGetCookieCache).toHaveBeenCalledWith(
+            expect.anything(),
+            expect.objectContaining({ isSecure: undefined }),
+          );
+        });
+      });
+
       test('grants SUPER_ADMIN access to any resource', async () => {
         withSessionCache(UserRole.SUPER_ADMIN);
 

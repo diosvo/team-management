@@ -7,7 +7,7 @@ import * as schema from './schema';
 
 // Initialize the driver
 const pool = new Pool({
-  max: 1,
+  max: env.DATABASE_POOL_MAX,
   connectionString: env.DATABASE_URL,
 });
 

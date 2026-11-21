@@ -133,7 +133,6 @@ describe('executeSchedule', () => {
     scheduled_for: SCHEDULED_FOR,
     trigger: ReportTrigger.SCHEDULED,
     origin: 'https://portal.app',
-    host: 'portal.app',
     cookies: [{ name: 'session', value: 'token' }],
     session_team_id: TEAM_ID,
   };

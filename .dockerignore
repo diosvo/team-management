@@ -1,0 +1,45 @@
+# Build output and caches: rebuilt inside the image.
+.next
+.source
+.vercel
+*.tsbuildinfo
+node_modules
+**/node_modules
+
+# Secrets: .env.production lives only on the VPS.
+.env*
+!.env.example
+
+# Runtime data: Docker volumes on the VPS, never baked into the image.
+uploads
+backups
+
+# Deploy and CI: the image doesn't need its own build or release files.
+.github
+Dockerfile
+compose.yaml
+deploy
+dist
+
+# Editor and agent files.
+.DS_Store
+.claude
+.agents
+
+# Tests: they never ship, and leaving them out means `next build` doesn't
+# type-check them (pnpm typecheck still does).
+test
+e2e
+**/*.test.ts
+**/*.test.tsx
+vitest.config.mts
+vitest.d.ts
+jest-axe.d.ts
+playwright*.config.ts
+
+# Test reports.
+coverage
+test-results
+playwright
+playwright-report
+blob-report
