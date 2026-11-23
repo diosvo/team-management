@@ -55,7 +55,7 @@ sequenceDiagram
 - `upsert*` takes an empty id for create; `remove*` is the user-facing delete.
 - Enforced by `pnpm lint` via the local plugin [`eslint-rules/naming.mjs`](eslint-rules/naming.mjs): `naming/action-name`, `naming/db-name`, `naming/file-case`, `naming/no-db-alias`. Add a verb there (and here) before using a new one.
 
-Enum suffixes (`src/utils/enum.ts`, lowercase values): `Status` = one-way lifecycle, `State` = any direction, `Condition` = quality.
+Enum suffixes (`src/utils/enum.ts`, lowercase values): `Status` = one-way lifecycle, `State` = any direction, `Condition` = quality, `Type` = stored category (`DocumentType`), `Kind` = shape derived at runtime, never stored (`DriveKind`, `MediaKind`). Compare against the enum, not string literals.
 
 ## 🗄️ Database
 

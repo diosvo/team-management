@@ -5,7 +5,7 @@ description: Entities, relationships and deletion behaviour, as defined in src/d
 
 <Callout type="info" title="Source of truth">
 
-- `src/drizzle/schema/`: 14 modules, 22 tables.
+- `src/drizzle/schema/`: 15 modules, 23 tables.
 - All tables have `created_at` / `updated_at` (omitted below);
   `report_history` has only `created_at`.
 - Column types render on each feature page via `AutoTypeTable`.
@@ -32,6 +32,7 @@ erDiagram
     user ||--o{ user_team : "joined / left"
     team ||--o{ asset : "owns"
     user |o--o{ asset : "assigned_to"
+    team ||--o{ document : "links"
 `}
 />
 
@@ -196,6 +197,12 @@ omitted from the diagram.
         'Equipment; name unique per team (team_asset_name); assigned_to references user.',
       required: true,
     },
+    document: {
+      type: 'Team',
+      description:
+        'Google Drive link metadata (no file bytes); drive_id unique per team (team_document_drive_id).',
+      required: true,
+    },
     'test_type, test_result': {
       type: 'Performance',
       description: (
@@ -346,7 +353,10 @@ omitted from the diagram.
       type: 'cascade / restrict',
       description: (
         <ul>
-          <li>Cascades to users, memberships, assets, test types, sessions.</li>
+          <li>
+            Cascades to users, memberships, assets, documents, test types,
+            sessions.
+          </li>
           <li>Also league junctions, report schedules and history.</li>
           <li>
             Blocked while a match uses it as <code>home_team</code> /{' '}

@@ -30,6 +30,7 @@ description: What has shipped, what comes next, and what is deliberately out of 
   - `0017` `rule` table merged into `team.rule_content`.
   - `0018` `match.status` (scheduled, completed, cancelled), scores only on
     completed matches; `match.home_team` / `away_team` restrict team deletion.
+  - `0023` `document` table for Google Drive links (Documents page).
 - **Docs:** served at `/docs` (Vietnamese at `/docs/vi`), `llms.txt` exports,
   permission matrix generated from `ROLE_CONFIG`, C4 architecture section.
 
@@ -41,12 +42,6 @@ description: What has shipped, what comes next, and what is deliberately out of 
       type: 'quality',
       description:
         'Isolated test database, then drop if: false in playwright.yaml and fix its report path.',
-      required: true,
-    },
-    Documents: {
-      type: 'feature',
-      description:
-        'Disabled in the sidebar; needs a spec under features/resources and metadata storage.',
       required: true,
     },
   }}

@@ -6,6 +6,7 @@ import { ALL } from './constants';
 import {
   AssetCondition,
   AttendanceStatus,
+  DocumentType,
   EmailStatus,
   LeagueStatus,
   MatchResult,
@@ -16,9 +17,10 @@ import {
 } from './enum';
 
 const COLOR_MAP: Partial<Record<ColorPalette, Array<string>>> = {
-  blue: [EmailStatus.SENT],
+  blue: [DocumentType.ALBUM, EmailStatus.SENT],
   gray: [
     AssetCondition.OBSOLETE,
+    DocumentType.FILE,
     EmailStatus.CANCELED,
     EmailStatus.QUEUED,
     EmailStatus.SUPPRESSED,
@@ -42,6 +44,7 @@ const COLOR_MAP: Partial<Record<ColorPalette, Array<string>>> = {
   orange: [
     AssetCondition.FAIR,
     AttendanceStatus.LATE,
+    DocumentType.TACTIC,
     EmailStatus.DELIVERY_DELAYED,
     EmailStatus.SCHEDULED,
     LeagueStatus.UPCOMING,
@@ -49,6 +52,7 @@ const COLOR_MAP: Partial<Record<ColorPalette, Array<string>>> = {
     UserState.TEMPORARILY_ABSENT,
     SessionStatus.SCHEDULED,
   ],
+  purple: [DocumentType.VIDEO],
   red: [
     AssetCondition.POOR,
     AttendanceStatus.ABSENT,

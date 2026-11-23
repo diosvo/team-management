@@ -34,6 +34,23 @@ vi.mock('@/components/FeedbackDialog', () => ({
   default: () => <button aria-label="Suggestions + feedback + ideas" />,
 }));
 
+// Add a disabled test-only item to cover the disabled-item path.
+vi.mock('../_helpers/utils', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../_helpers/utils')>();
+  const { FileText } = await import('lucide-react');
+
+  return {
+    ...actual,
+    SIDEBAR_GROUP: [
+      ...actual.SIDEBAR_GROUP,
+      {
+        title: 'resources',
+        items: [{ icon: FileText, resource: 'profile', disabled: true }],
+      },
+    ],
+  };
+});
+
 /** Allow only the given resources through `can()` */
 const only =
   (...resources: string[]) =>
@@ -211,17 +228,17 @@ describe('Sidebar', () => {
 
   describe('disabled items', () => {
     test('renders as a disabled button instead of a link', () => {
-      setup({ can: only('documents') });
+      setup({ can: only('profile') });
 
-      expect(queryLink(/documents/i)).not.toBeInTheDocument();
+      expect(queryLink(/profile/i)).not.toBeInTheDocument();
       expect(
-        screen.getByRole('button', { name: /documents/i, hidden: true }),
+        screen.getByRole('button', { name: /profile/i, hidden: true }),
       ).toBeDisabled();
     });
 
     test('still renders when the sidebar is collapsed', () => {
       const { container } = setup({
-        can: only('documents'),
+        can: only('profile'),
         isExpanded: false,
       });
 

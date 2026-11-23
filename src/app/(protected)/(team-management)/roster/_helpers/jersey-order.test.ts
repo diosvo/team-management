@@ -25,7 +25,7 @@ import {
 vi.mock('@/lib/google-drive', () => ({
   uploadAsGoogleSheet: vi.fn(async () => ({ id: 'abc', url: 'https://sheet' })),
   addCheckboxes: vi.fn(async () => {}),
-  protectRanges: vi.fn(async () => {}),
+  protectRanges: vi.fn(async (): Promise<Array<string>> => []),
   shareWithAnyone: vi.fn(async () => {}),
 }));
 
@@ -484,6 +484,22 @@ describe('openJerseyOrderInSheets protection', () => {
       ['me@example.com'],
       'Đã thu tiền',
     );
+  });
+
+  test('stays locked when some editors are not Google accounts', async () => {
+    stubImagePipeline();
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.mocked(protectRanges).mockResolvedValueOnce(['cap@example.com']);
+
+    expect(
+      await openJerseyOrderInSheets(OPTIONS, async () => 'token', [
+        'me@gmail.com',
+        'cap@example.com',
+      ]),
+    ).toMatchObject({ protected: true });
+    expect(warn).toHaveBeenCalledWith('[jersey-order] not Google accounts:', [
+      'cap@example.com',
+    ]);
   });
 
   test('still opens the sheet and reports an unlocked column', async () => {

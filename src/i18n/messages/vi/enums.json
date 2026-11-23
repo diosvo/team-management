@@ -50,6 +50,18 @@
     "assistant_coach": "Trợ lý huấn luyện viên",
     "head_coach": "Huấn luyện viên trưởng"
   },
+  "documentType": {
+    "album": "Album",
+    "video": "Video",
+    "tactic": "Chiến thuật",
+    "file": "Tệp"
+  },
+  "documentTypeHint": {
+    "album": "Một thư mục Drive chứa ảnh và video",
+    "video": "Một tệp video, phát ngay trong ứng dụng",
+    "tactic": "Video phân tích chiến thuật, phát ngay trong ứng dụng",
+    "file": "Tệp Drive khác (ảnh, PDF, bảng tính, tài liệu)"
+  },
   "emailStatus": {
     "bounced": "Bị trả lại",
     "canceled": "Đã hủy",
