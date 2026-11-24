@@ -50,8 +50,11 @@ jobs:
         with:
           fetch-depth: 0
 
+      # Removing the builder only adds ~30s to the post step.
       - name: 🐳 Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
+        with:
+          cleanup: false
 
       - name: 🔨 Build app image
         uses: docker/build-push-action@v7

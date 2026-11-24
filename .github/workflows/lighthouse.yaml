@@ -1,0 +1,94 @@
+name: 🔦 Lighthouse
+
+# Lighthouse CI on every pull request: builds the app, serves it on the runner
+# and audits the public pages. Production is geo-filtered to Vietnam, so the
+# runner can't reach it; signed-in pages need a session, so they're left out.
+#
+# • Scores and report links: PR comment + job summary
+# • Budgets: .github/lighthouserc.json (accessibility fails the job)
+# • Optional status check: install the Lighthouse CI GitHub App and add its
+#   token as the LHCI_GITHUB_APP_TOKEN repository secret.
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: lighthouse-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  LHCI: pnpm dlx @lhci/cli@0.16.1
+  LHCI_CONFIG: .github/lighthouserc.json
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      # Full history: fumadocs reads `git log` for each docs page's last-updated date.
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: 🚚 Setup
+        uses: ./.github/actions/setup
+
+      # Same build-only placeholders as the Dockerfile; the audited pages
+      # never reach the database.
+      - name: 🔨 Build
+        env:
+          RESEND_API_KEY: re_build_placeholder
+          BETTER_AUTH_SECRET: build-placeholder-not-used-at-runtime
+          BETTER_AUTH_URL: http://localhost:3000
+        run: |
+          pnpm build
+          cp -r .next/static .next/standalone/.next/static
+          cp -r public .next/standalone/public
+
+      - name: 🔦 Run Lighthouse
+        env:
+          PORT: 3000
+          HOSTNAME: 0.0.0.0
+          BETTER_AUTH_SECRET: build-placeholder-not-used-at-runtime
+          BETTER_AUTH_URL: http://localhost:3000
+        run: $LHCI collect --config=$LHCI_CONFIG
+
+      - name: 📏 Assert budgets
+        id: assert
+        run: $LHCI assert --config=$LHCI_CONFIG
+
+      - name: 📤 Upload reports
+        if: ${{ !cancelled() }}
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+        run: |
+          $LHCI upload --config=$LHCI_CONFIG
+          $LHCI upload --target=filesystem --outputDir=.lighthouseci/reports
+
+      - name: 📊 Upload report artifact
+        if: ${{ !cancelled() }}
+        uses: ./.github/actions/upload-artifact
+        with:
+          name: lighthouse-report
+          path: .lighthouseci/reports/
+
+      - name: 💬 Report scores
+        if: ${{ !cancelled() }}
+        # Fork PRs get a read-only token; the job summary still has the scores.
+        continue-on-error: true
+        uses: actions/github-script@v9
+        env:
+          ASSERT_RESULT: ${{ steps.assert.outcome }}
+          MARKER: '<!-- lighthouse-report -->'
+          MANIFEST: .lighthouseci/reports/manifest.json
+          LINKS: .lighthouseci/links.json
+        with:
+          script: |
+            await require('./deploy/scripts/lighthouse-report.js')({ github, context, core });

@@ -4,6 +4,12 @@
 {$SITE_ADDRESS} {
 	encode zstd gzip
 
+	# Access log (JSON on stdout): docker compose logs caddy
+	log {
+		output stdout
+		format json
+	}
+
 	# Country filter: ALLOWED_COUNTRIES (space-separated ISO codes; default: VN).
 	# Exemptions:
 	# • Private IP ranges (cron container)

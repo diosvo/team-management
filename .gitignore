@@ -12,6 +12,7 @@ node_modules
 
 # testing
 /coverage
+/.lighthouseci
 
 # next.js
 /.next/
@@ -48,6 +49,7 @@ next-env.d.ts
 
 # local file storage (UPLOAD_DIR)
 /uploads/
+traffic-report.html
 
 # fumadocs-mdx generated files
 /.source/
