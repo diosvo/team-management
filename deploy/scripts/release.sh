@@ -40,8 +40,17 @@ else
   echo "::warning::crontab not found; DOMAIN won't follow IP changes after a reboot"
 fi
 
+show_failure() {
+  echo "::error::$1"
+  docker compose ps -a
+  docker compose logs --tail 80 migrate db-roles app
+  exit 1
+}
+
 # Recreates what changed; --remove-orphans drops services no longer in compose.
-docker compose up -d --no-build --remove-orphans
+# Under set -e a failed `up` (e.g. migrate exiting 1) would skip the logs.
+docker compose up -d --no-build --remove-orphans ||
+  show_failure "docker compose up failed"
 
 # Smoke test: the app answers inside its container.
 for _ in $(seq 1 30); do
@@ -55,7 +64,4 @@ for _ in $(seq 1 30); do
   sleep 2
 done
 
-echo "::error::App did not become healthy"
-docker compose ps -a
-docker compose logs --tail 80 migrate db-roles app
-exit 1
+show_failure "App did not become healthy"
