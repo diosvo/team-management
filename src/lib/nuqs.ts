@@ -30,7 +30,7 @@ import {
   SELECTABLE_USER_STATES,
 } from '@/utils/constants';
 import { thisDay, thisYear } from '@/utils/datetime';
-import { ActivityKind, enumValues } from '@/utils/enum';
+import { AccountStatus, ActivityKind, enumValues } from '@/utils/enum';
 
 import type { DateRange } from '@/types/common';
 
@@ -178,6 +178,13 @@ const performanceSearchParams = {
     [],
   ),
 };
+const accountSearchParams = {
+  ...commonParams,
+  status: parseAsArrayOf(
+    parseAsStringEnum(enumValues(AccountStatus)),
+  ).withDefault([]),
+};
+
 const performanceFilters = {
   params: performanceSearchParams,
   window: thisYear,
@@ -269,6 +276,7 @@ export const useDashboardFilters = createRangeFilters(dashboardFilters, {
   shallow: false,
 });
 export const useEmailFilters = createFilters(emailSearchParams);
+export const useAccountFilters = createFilters(accountSearchParams);
 // Client-only by default: chart selection and activity filter never hit the
 // server. The date range and the tab (only the open tab is fetched) opt into
 // `{ shallow: false }` at their call sites.

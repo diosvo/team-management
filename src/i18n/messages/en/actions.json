@@ -1,4 +1,20 @@
 {
+  "account": {
+    "addedNoEmail": "Added {name}. Add their email later to invite them.",
+    "deleted": "Account deleted successfully",
+    "deleteFailed": "Failed to delete account",
+    "emailRequired": "Enter an email: a member who has one can't go back to none.",
+    "emailTaken": "This email is already used by another account",
+    "hasHistory": "{name} has recorded history, so they can’t be deleted. Set them to Inactive on their profile instead.",
+    "invited": "Sent an email with instructions",
+    "linkFailed": "Failed to send the email",
+    "linkSent": "Sent a password link to {email}",
+    "noEmail": "{name} has no email yet. Add one to send a link.",
+    "signedOut": "Signed {name} out of every device",
+    "signOutFailed": "Failed to sign out",
+    "updated": "Updated account successfully",
+    "updatedLinkFailed": "Saved, but the email couldn't be sent. Try Send password link."
+  },
   "achievement": {
     "deleted": "Deleted achievement successfully",
     "deleteFailed": "Failed to delete achievement",
@@ -116,9 +132,6 @@
   },
   "user": {
     "avatarUploaded": "Uploaded avatar successfully",
-    "deleted": "User deleted successfully",
-    "deleteFailed": "Failed to delete user",
-    "invited": "Sent an email with instructions",
     "jerseyTaken": "Jersey number ''{number}'' is already taken",
     "personalInfoUpdated": "Updated personal information successfully",
     "teamInfoUpdated": "Updated team information successfully"

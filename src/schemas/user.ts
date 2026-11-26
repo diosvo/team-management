@@ -18,7 +18,7 @@ const { position: CoachPosition } = COACH_VALIDATION;
 const {
   name,
   dob,
-  email,
+  optional_email,
   phone_number,
   citizen_identification,
   role,
@@ -28,7 +28,7 @@ const {
 
 export const AddUserSchema = z.object({
   name,
-  email,
+  email: optional_email,
   dob,
   role,
   state,

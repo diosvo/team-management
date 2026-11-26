@@ -23,6 +23,13 @@ vi.mock('drizzle-orm', () => ({
   inArray: vi.fn((field, values) => ({ field, values, type: 'in' })),
   isNull: vi.fn((field) => ({ field, type: 'isNull' })),
   isNotNull: vi.fn((field) => ({ field, type: 'isNotNull' })),
+  like: vi.fn((field, value) => ({ field, value, type: 'like' })),
+  notLike: vi.fn((field, value) => ({ field, value, type: 'notLike' })),
+  max: vi.fn((field) => ({
+    field,
+    fn: 'max',
+    as: vi.fn((alias) => ({ field, fn: 'max', alias })),
+  })),
   gte: vi.fn((field, value) => ({ field, value, type: 'gte' })),
   lt: vi.fn((field, value) => ({ field, value, type: 'lt' })),
   lte: vi.fn((field, value) => ({ field, value, type: 'lte' })),
@@ -38,6 +45,9 @@ vi.mock('drizzle-orm', () => ({
       queryChunks: [result],
       mapWith: vi.fn(function (this: any, mapper: any) {
         return { ...this, mapper };
+      }),
+      as: vi.fn(function (this: any, alias: string) {
+        return { ...this, alias };
       }),
     };
   }),

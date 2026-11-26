@@ -18,6 +18,7 @@ export const revalidate = {
     // revalidateTag(CACHE_TAG.RULE, 'max');
   },
   // Non-cached entities (revalidatePath only)
+  accounts: () => revalidatePath('/accounts'),
   achievements: () => revalidatePath('/achievements'),
   assets: () => revalidatePath('/assets'),
   attendances: () => revalidatePath('/attendance'),

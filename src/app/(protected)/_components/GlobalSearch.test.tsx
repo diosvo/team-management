@@ -241,11 +241,12 @@ describe('GlobalSearch', () => {
         'TeamsManage and view opponent teams information.Settings',
         'LeaguesManage and view leagues information.Settings',
         'LocationsManage your location settings.Settings',
+        'AccountsInvite members and manage how they sign in.Settings',
         'TeamsSettings',
         'LeaguesSettings',
         'LocationsSettings',
+        'AccountsSettings',
         'RosterTeam Management',
-        'Training SessionsTeam Management',
       ]);
       expect(highlighted()).toBe(options()[0]);
     });

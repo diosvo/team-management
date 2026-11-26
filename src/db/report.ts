@@ -13,6 +13,7 @@ import {
 
 import { type EmailStatus, ReportStatus, UserRole } from '@/utils/enum';
 
+import { hasRealEmail } from '@/db/account';
 import db from '@/drizzle';
 import {
   type InsertReportHistory,
@@ -32,7 +33,7 @@ const DEFAULT_REPORT_ROLES = [UserRole.COACH, UserRole.SUPER_ADMIN];
 export async function selectReportRecipients(team_id: string) {
   try {
     return await db.query.UserTable.findMany({
-      where: and(eq(UserTable.team_id, team_id)),
+      where: and(eq(UserTable.team_id, team_id), hasRealEmail()),
       columns: {
         id: true,
         name: true,
@@ -60,6 +61,7 @@ export async function selectDefaultRecipientEmails(
       .where(
         and(
           eq(UserTable.team_id, team_id),
+          hasRealEmail(),
           or(
             inArray(UserTable.role, DEFAULT_REPORT_ROLES),
             eq(PlayerTable.is_captain, true),

@@ -1,4 +1,20 @@
 {
+  "account": {
+    "addedNoEmail": "Đã thêm {name}. Bổ sung email sau để mời họ.",
+    "deleted": "Đã xóa tài khoản",
+    "deleteFailed": "Không thể xóa tài khoản",
+    "emailRequired": "Hãy nhập email: thành viên đã có email thì không thể bỏ trống.",
+    "emailTaken": "Email này đã được tài khoản khác sử dụng",
+    "hasHistory": "{name} đã có dữ liệu lịch sử nên không thể xóa. Hãy chuyển sang Inactive trong hồ sơ cá nhân.",
+    "invited": "Đã gửi email hướng dẫn",
+    "linkFailed": "Không thể gửi email",
+    "linkSent": "Đã gửi liên kết đặt mật khẩu tới {email}",
+    "noEmail": "{name} chưa có email. Thêm email để gửi liên kết.",
+    "signedOut": "Đã đăng xuất {name} khỏi mọi thiết bị",
+    "signOutFailed": "Không thể đăng xuất",
+    "updated": "Đã cập nhật tài khoản",
+    "updatedLinkFailed": "Đã lưu, nhưng không gửi được email. Hãy thử Gửi liên kết mật khẩu."
+  },
   "achievement": {
     "deleted": "Đã xóa thành tích",
     "deleteFailed": "Không thể xóa thành tích",
@@ -116,9 +132,6 @@
   },
   "user": {
     "avatarUploaded": "Đã tải lên ảnh đại diện",
-    "deleted": "Đã xóa người dùng",
-    "deleteFailed": "Không thể xóa người dùng",
-    "invited": "Đã gửi email hướng dẫn",
     "jerseyTaken": "Số áo ''{number}'' đã có người sử dụng",
     "personalInfoUpdated": "Đã cập nhật thông tin cá nhân",
     "teamInfoUpdated": "Đã cập nhật thông tin đội"

@@ -1,6 +1,7 @@
 import { Resend } from 'resend';
 
 import env from '@env';
+import { isDeliverable } from '@/utils/email';
 
 export const resend = new Resend(env.RESEND_API_KEY);
 /** Shared sender identity for all transactional emails. */
@@ -22,9 +23,15 @@ export async function sendEmail({
   html,
   attachments,
 }: EmailProps) {
+  // Placeholder (`.invalid`) addresses can never receive mail
+  const recipients = [to].flat().filter(isDeliverable);
+  if (recipients.length === 0) {
+    throw new Error('No deliverable recipients');
+  }
+
   const response = await resend.emails.send({
     from: EMAIL_FROM,
-    to,
+    to: recipients,
     subject: `SGR - ${subject}`,
     html,
     attachments,

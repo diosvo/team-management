@@ -57,7 +57,8 @@ export const ROLE_CONFIG: Record<UserRole, RoleConfig> = {
 
 export const CAPTAIN_PERMISSIONS: RoleConfig = {
   'team-rule': ['edit'],
-  roster: ['create', 'edit', 'delete'],
+  // `create` saves the jersey order sheet; members are managed on Accounts
+  roster: ['create', 'edit'],
   matches: ['create', 'edit'],
   registration: ['create', 'edit'],
   'periodic-testing': [...ALL_ACTIONS],

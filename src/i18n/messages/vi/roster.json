@@ -1,14 +1,4 @@
 {
-  "addUser": {
-    "adding": "Đang thêm thành viên...",
-    "dob": "Ngày sinh",
-    "email": "Email",
-    "fullname": "Họ tên",
-    "submit": "Thêm",
-    "submitting": "Đang thêm...",
-    "title": "Thêm vào đội hình",
-    "trigger": "Thêm"
-  },
   "filters": {
     "role": "Vai trò",
     "state": "Trạng thái"

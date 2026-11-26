@@ -187,6 +187,18 @@ export const SessionStatus = createEnum([
 ] as const);
 export type SessionStatus = enumUnion<typeof SessionStatus>;
 
+/**
+ * Where a member stands with signing in, in lifecycle order; see
+ * `toAccountStatus`.
+ */
+export const AccountStatus = createEnum([
+  'no_email',
+  'invited',
+  'link_expired',
+  'activated',
+] as const);
+export type AccountStatus = enumUnion<typeof AccountStatus>;
+
 /** Lifecycle of a single report run: pending → success | failed, then expired. */
 export const ReportStatus = createEnum([
   'pending',

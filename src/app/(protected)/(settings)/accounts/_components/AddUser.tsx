@@ -1,26 +1,52 @@
 'use client';
 
-import { useRef, useTransition } from 'react';
-import { useForm } from 'react-hook-form';
+import { useMemo, useRef, useState, useTransition } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
-import { Button, Dialog, Input, Portal, SimpleGrid } from '@chakra-ui/react';
+import {
+  Badge,
+  Button,
+  Dialog,
+  HStack,
+  Input,
+  List,
+  Portal,
+  SimpleGrid,
+  Text,
+} from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Plus, UserRoundPlus } from 'lucide-react';
 
+import { visibleEmail } from '@/utils/email';
+import { normalizeName } from '@/utils/formatter';
+import { getColor } from '@/utils/helper';
+
 import { getDefaults } from '@/lib/zod';
 
-import { createUser } from '@/actions/user';
+import { createAccount } from '@/actions/account';
 import { DatePickerField } from '@/components/date-picker/DatePicker';
+import { Alert } from '@/components/ui/alert';
 import { CloseButton } from '@/components/ui/close-button';
 import { Field } from '@/components/ui/field';
 import { toaster } from '@/components/ui/toaster';
 import { RolePositionSelection } from '@/components/user/RolePositionSelection';
 import { ControlledStateSelection } from '@/components/user/StateSelection';
+import type { Account } from '@/db/account';
 import { AddUserSchema, type AddUserValues } from '@/schemas/user';
 
-export default function AddUser() {
-  const t = useTranslations('roster.addUser');
+import { UpdateAccount } from './UpdateAccount';
+
+/**
+ * Adds a member. Warns when the name matches someone already listed: inviting
+ * them means adding an email to that row, or their history ends up split
+ * across two members.
+ */
+export default function AddUser({ members }: { members: Array<Account> }) {
+  const t = useTranslations('accounts.addUser');
+  const tAccounts = useTranslations('accounts');
+  const tCommon = useTranslations('common');
   const contentRef = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   const {
@@ -36,6 +62,18 @@ export default function AddUser() {
     defaultValues: getDefaults(AddUserSchema),
   });
 
+  const name = useWatch({ control, name: 'name' });
+  const duplicates = useMemo(() => {
+    const wanted = normalizeName(name);
+    if (!wanted) return [];
+    return members.filter((member) => normalizeName(member.name) === wanted);
+  }, [members, name]);
+
+  const openExisting = (account: Account) => {
+    setOpen(false);
+    UpdateAccount.open('update-account', { account });
+  };
+
   const onSubmit = (data: AddUserValues) => {
     const id = toaster.create({
       type: 'loading',
@@ -43,7 +81,7 @@ export default function AddUser() {
     });
 
     startTransition(async () => {
-      const { success, message: title } = await createUser(data);
+      const { success, message: title } = await createAccount(data);
 
       toaster.update(id, {
         type: success ? 'success' : 'error',
@@ -55,7 +93,13 @@ export default function AddUser() {
   };
 
   return (
-    <Dialog.Root size="lg" lazyMount unmountOnExit>
+    <Dialog.Root
+      size="lg"
+      lazyMount
+      unmountOnExit
+      open={open}
+      onOpenChange={(details) => setOpen(details.open)}
+    >
       <Dialog.Trigger asChild>
         <Button>
           <UserRoundPlus />
@@ -87,8 +131,8 @@ export default function AddUser() {
                   />
                 </Field>
                 <Field
-                  required
                   label={t('email')}
+                  helperText={t('emailHelper')}
                   invalid={!!errors.email}
                   errorText={errors.email?.message}
                 >
@@ -110,6 +154,42 @@ export default function AddUser() {
                   />
                 </Field>
               </SimpleGrid>
+              {duplicates.length > 0 && (
+                <Alert
+                  status="warning"
+                  marginTop={4}
+                  title={t('duplicateTitle', { count: duplicates.length })}
+                >
+                  <Text>{t('duplicateHint')}</Text>
+                  <List.Root variant="plain" gap={2} marginTop={2}>
+                    {duplicates.map((account) => (
+                      <List.Item key={account.id}>
+                        <HStack width="full" flexWrap="wrap">
+                          <Text fontWeight="medium">{account.name}</Text>
+                          <Text color="fg.muted">
+                            {visibleEmail(account.email) ?? tCommon('noEmail')}
+                          </Text>
+                          <Badge
+                            variant="surface"
+                            borderRadius="full"
+                            colorPalette={getColor(account.status)}
+                          >
+                            {tAccounts(`status.${account.status}`)}
+                          </Badge>
+                          <Button
+                            size="xs"
+                            variant="outline"
+                            marginInlineStart="auto"
+                            onClick={() => openExisting(account)}
+                          >
+                            {t('openExisting')}
+                          </Button>
+                        </HStack>
+                      </List.Item>
+                    ))}
+                  </List.Root>
+                </Alert>
+              )}
               <SimpleGrid
                 columns={{ base: 1, md: 2 }}
                 templateColumns={{ md: '3fr 6.25fr' }}

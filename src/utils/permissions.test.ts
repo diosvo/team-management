@@ -79,7 +79,7 @@ describe('can', () => {
       isCaptain: true,
       expected: true,
     },
-    // Captain fully manages the roster (invite + remove)
+    // Captain saves the jersey order sheet; members are managed on Accounts
     {
       role: UserRole.PLAYER,
       resource: 'roster',
@@ -92,7 +92,7 @@ describe('can', () => {
       resource: 'roster',
       action: 'delete',
       isCaptain: true,
-      expected: true,
+      expected: false,
     },
     // A non-captain PLAYER cannot manage the roster
     {

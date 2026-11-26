@@ -1,3 +1,4 @@
+import accounts from './accounts.json';
 import achievements from './achievements.json';
 import actions from './actions.json';
 import assets from './assets.json';
@@ -50,6 +51,7 @@ const messages = {
   locations,
   teams,
   documents,
+  accounts,
 };
 
 export default messages;

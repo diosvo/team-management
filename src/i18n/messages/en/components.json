@@ -121,6 +121,7 @@
   "tableState": {
     "deleting": "Deleting {items}...",
     "entities": {
+      "account": "{count, plural, one {# account} other {# accounts}}",
       "asset": "{count, plural, one {# asset} other {# assets}}",
       "attendanceRecord": "{count, plural, one {# attendance record} other {# attendance records}}",
       "document": "{count, plural, one {# document} other {# documents}}",

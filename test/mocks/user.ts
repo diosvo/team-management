@@ -11,9 +11,11 @@ import type { AddUserValues } from '@/schemas/user';
 
 import { MOCK_TEAM } from './team';
 
+const MOCK_EMAIL = 'vtmn1212@gmail.com';
+
 export const MOCK_USER_INPUT: Omit<AddUserValues, 'role'> = {
   name: 'Dios Vo',
-  email: 'vtmn1212@gmail.com',
+  email: MOCK_EMAIL,
   dob: '1999-12-12',
   state: UserState.ACTIVE,
   join_date: '2024-02-20',
@@ -21,12 +23,14 @@ export const MOCK_USER_INPUT: Omit<AddUserValues, 'role'> = {
 
 export const MOCK_USER: User = {
   id: 'user-123',
-  email: MOCK_USER_INPUT.email,
+  email: MOCK_EMAIL,
   name: MOCK_USER_INPUT.name,
   emailVerified: true,
   image: null,
   createdAt: new Date('2026-01-01'),
   updatedAt: new Date('2026-01-01'),
+  last_sign_in_at: null,
+  last_sign_in_ip: null,
   team_id: MOCK_TEAM.team_id,
   dob: MOCK_USER_INPUT.dob,
   phone_number: null,

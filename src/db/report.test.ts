@@ -2,6 +2,7 @@ import { and, eq, inArray, or } from 'drizzle-orm';
 
 import { EmailStatus, ReportStatus, UserRole } from '@/utils/enum';
 
+import { hasRealEmail } from '@/db/account';
 import db from '@/drizzle';
 import { PlayerTable, UserTable } from '@/drizzle/schema';
 import {
@@ -134,7 +135,7 @@ describe('selectReportRecipients', () => {
     expect(result).toEqual(MOCK_REPORT_RECIPIENTS);
     // Verify query construction
     expect(db.query.UserTable.findMany).toHaveBeenCalledWith({
-      where: and(eq(UserTable.team_id, MOCK_TEAM.team_id)),
+      where: and(eq(UserTable.team_id, MOCK_TEAM.team_id), hasRealEmail()),
       columns: {
         id: true,
         name: true,
@@ -179,6 +180,7 @@ describe('selectDefaultRecipientEmails', () => {
     expect(mockWhere).toHaveBeenCalledWith(
       and(
         eq(UserTable.team_id, MOCK_TEAM.team_id),
+        hasRealEmail(),
         or(
           inArray(UserTable.role, DEFAULT_REPORT_ROLES),
           eq(PlayerTable.is_captain, true),

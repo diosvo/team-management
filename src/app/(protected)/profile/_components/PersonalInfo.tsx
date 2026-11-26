@@ -8,6 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Edit, Save } from 'lucide-react';
 
 import { formatDate } from '@/utils/datetime';
+import { visibleEmail } from '@/utils/email';
 
 import { getDefaults } from '@/lib/zod';
 
@@ -114,7 +115,11 @@ export default function PersonalInfo({
         {isEditing ? (
           <>
             <Field label={tCommon('email')}>
-              <Input variant="flushed" value={user.email} disabled />
+              <Input
+                variant="flushed"
+                value={visibleEmail(user.email) ?? tCommon('noEmail')}
+                disabled
+              />
             </Field>
             <Field
               required
@@ -161,7 +166,9 @@ export default function PersonalInfo({
           </>
         ) : (
           <>
-            <TextField label={tCommon('email')}>{user.email}</TextField>
+            <TextField label={tCommon('email')}>
+              {visibleEmail(user.email) ?? tCommon('noEmail')}
+            </TextField>
             <TextField label={t('personal.fullname')}>
               {user.name || '-'}
             </TextField>

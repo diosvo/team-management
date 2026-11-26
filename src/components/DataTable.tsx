@@ -4,6 +4,7 @@ import NextLink, { type LinkProps, useLinkStatus } from 'next/link';
 import { useTranslations } from 'next-intl';
 import {
   IconButton,
+  type IconButtonProps,
   Spinner,
   Table,
   type TableCellProps,
@@ -45,14 +46,17 @@ function RowActionIcon({ icon: Icon }: { icon: LucideIcon }) {
   );
 }
 
-type RowActionProps = {
-  label: string;
-  href: LinkProps['href'];
-  icon: LucideIcon;
-};
+type RowActionBaseProps = { label: string } & Omit<
+  IconButtonProps,
+  'aria-label'
+>;
 
-/** Per-row icon link for a `DataTable` column; swallows the row click. */
-export function RowAction({ label, href, icon }: RowActionProps) {
+/**
+ * Shared look of a per-row action: a small ghost icon button with a tooltip,
+ * shown on row hover. Swallows the click so the row's own `onRowClick` stays
+ * out of it.
+ */
+function RowActionBase({ label, onClick, ...props }: RowActionBaseProps) {
   return (
     <Tooltip content={label}>
       <IconButton
@@ -61,14 +65,57 @@ export function RowAction({ label, href, icon }: RowActionProps) {
         aria-label={label}
         css={ROW_ACTION_CSS}
         _hover={{ backgroundColor: 'gray.muted' }}
-        asChild
-        onClick={(event) => event.stopPropagation()}
-      >
-        <NextLink href={href}>
-          <RowActionIcon icon={icon} />
-        </NextLink>
-      </IconButton>
+        {...props}
+        onClick={(event) => {
+          event.stopPropagation();
+          onClick?.(event);
+        }}
+      />
     </Tooltip>
+  );
+}
+
+type RowActionProps = {
+  label: string;
+  href: LinkProps['href'];
+  icon: LucideIcon;
+};
+
+/** Per-row icon link: navigation, with a spinner while the route loads. */
+export function RowAction({ label, href, icon }: RowActionProps) {
+  return (
+    <RowActionBase label={label} asChild>
+      <NextLink href={href}>
+        <RowActionIcon icon={icon} />
+      </NextLink>
+    </RowActionBase>
+  );
+}
+
+type RowActionButtonProps = {
+  label: string;
+  icon: LucideIcon;
+  onClick: () => void;
+  loading?: boolean;
+} & Pick<IconButtonProps, 'colorPalette'>;
+
+/** Per-row icon button: an action that stays on the page. */
+export function RowActionButton({
+  icon: Icon,
+  onClick,
+  loading,
+  ...props
+}: RowActionButtonProps) {
+  return (
+    <RowActionBase
+      {...props}
+      loading={loading}
+      // Keeps the button visible while its action runs
+      data-pending={loading ? '' : undefined}
+      onClick={() => onClick()}
+    >
+      <Icon size={14} />
+    </RowActionBase>
   );
 }
 
@@ -108,6 +155,8 @@ type DataTableProps<T> = Required<{
     pageSize: number;
     selection: Selection<T>;
     onRowClick: (item: T) => void;
+    /** Rows that ignore `onRowClick` (e.g. the viewer's own, read-only). */
+    isRowClickable: (item: T) => boolean;
   }> &
   TableRootProps;
 
@@ -122,6 +171,7 @@ export default function DataTable<T>({
   rowId,
   onPageChange,
   onRowClick,
+  isRowClickable,
   ...rootProps
 }: DataTableProps<T>) {
   const t = useTranslations('components.dataTable');
@@ -180,14 +230,16 @@ export default function DataTable<T>({
             {currentData.length > 0 ? (
               currentData.map((item, rowIndex) => {
                 const id = rowId(item);
+                const clickable =
+                  onRowClick && (isRowClickable?.(item) ?? true);
                 return (
                   <Table.Row
                     key={id}
                     data-selected={
                       activeSelection?.selection.includes(id) ? '' : undefined
                     }
-                    _hover={{ cursor: onRowClick ? 'pointer' : 'default' }}
-                    onClick={onRowClick ? () => onRowClick(item) : undefined}
+                    _hover={{ cursor: clickable ? 'pointer' : 'default' }}
+                    onClick={clickable ? () => onRowClick(item) : undefined}
                   >
                     {activeSelection && (
                       <Table.Cell onClick={(e) => e.stopPropagation()}>

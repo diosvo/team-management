@@ -1,3 +1,4 @@
+import { NO_EMAIL_DOMAIN } from '@/utils/constants';
 import { formatDate } from '@/utils/datetime';
 
 import { updatePersonalInfo } from '@/actions/user';
@@ -25,9 +26,9 @@ describe('PersonalInfo', () => {
 
   const mockUpdatePersonalInfo = vi.mocked(updatePersonalInfo);
 
-  const setup = async (viewOnly = false) => {
+  const setup = async (viewOnly = false, user = MOCK_USER) => {
     const result = renderWithUI(
-      <PersonalInfo user={MOCK_USER} viewOnly={viewOnly} />,
+      <PersonalInfo user={user} viewOnly={viewOnly} />,
     );
 
     // The form's initial validation resolves asynchronously; flush it here so
@@ -63,6 +64,18 @@ describe('PersonalInfo', () => {
 
     // phone_number and citizen_identification are null on MOCK_USER.
     expect(screen.getAllByText('-')).toHaveLength(2);
+  });
+
+  test('shows "No email" instead of a placeholder address', async () => {
+    const noEmail = { ...MOCK_USER, email: `x@${NO_EMAIL_DOMAIN}` };
+    const { user } = await setup(false, noEmail);
+
+    expect(screen.getByText('No email')).toBeInTheDocument();
+
+    await enterEditMode(user);
+
+    expect(screen.getByDisplayValue('No email')).toBeDisabled();
+    expect(screen.queryByDisplayValue(noEmail.email)).not.toBeInTheDocument();
   });
 
   test('disables editing when viewOnly is set', async () => {

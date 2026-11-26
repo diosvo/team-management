@@ -1,3 +1,5 @@
+import { PASSWORD_LINK_TTL } from '@/utils/constants';
+
 import { sendEmail } from '@/lib/resend';
 
 import ResetPassword from '@/app/(auth)/_components/ResetPassword';
@@ -60,6 +62,7 @@ const config = auth as unknown as {
   emailAndPassword: {
     enabled: boolean;
     requireEmailVerification: boolean;
+    resetPasswordTokenExpiresIn: number;
     sendResetPassword: (input: {
       user: { email: string };
       url: string;
@@ -82,6 +85,10 @@ describe('auth config', () => {
   test('enables email/password without verification', () => {
     expect(config.emailAndPassword.enabled).toBe(true);
     expect(config.emailAndPassword.requireEmailVerification).toBe(false);
+    // Invite links are reset links; the /accounts guide quotes this TTL
+    expect(config.emailAndPassword.resetPasswordTokenExpiresIn).toBe(
+      PASSWORD_LINK_TTL,
+    );
   });
 
   describe('sendResetPassword', () => {

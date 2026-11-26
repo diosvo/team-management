@@ -27,11 +27,14 @@ import { LOGIN_PATH } from '@/routes';
 type ServerAction<T extends Array<unknown>, R> = (...args: T) => Promise<R>;
 
 /**
- * Request-scoped session lookup.
+ * Request-scoped session lookup. Reads the session table, not the signed
+ * cookie cache, so a revoked session (Accounts → Sign out everywhere) stops
+ * working on its next request instead of when the cache expires.
  */
 export const verifySession = cache(async () => {
   const session = await auth.api.getSession({
     headers: await headers(),
+    query: { disableCookieCache: true },
   });
 
   if (!session || !session.user) return null;
