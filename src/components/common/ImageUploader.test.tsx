@@ -49,7 +49,7 @@ describe('ImageUploader', () => {
       await waitFor(() => {
         expect(getFileInput(container)).toBeEnabled();
         expect(getOverlay(container)).not.toHaveAttribute('hidden');
-        expect(screen.getByText('Test User')).toBeInTheDocument();
+        expect(screen.getByText('TU')).toBeInTheDocument();
       });
     });
 
@@ -59,7 +59,7 @@ describe('ImageUploader', () => {
       await waitFor(() => {
         expect(getFileInput(container)).toBeDisabled();
         expect(getOverlay(container)).toHaveAttribute('hidden');
-        expect(screen.getByText('Test User')).toBeInTheDocument();
+        expect(screen.getByText('TU')).toBeInTheDocument();
       });
     });
 
@@ -68,16 +68,16 @@ describe('ImageUploader', () => {
 
       await waitFor(() => {
         expect(getFileInput(container)).toBeDisabled();
-        expect(screen.queryByText('Test User')).not.toBeInTheDocument();
+        expect(screen.queryByText('TU')).not.toBeInTheDocument();
         expect(container.querySelector('.chakra-skeleton')).toBeInTheDocument();
       });
     });
 
-    test('renders the fallback without a src', async () => {
+    test('renders the fallback initials without a src', async () => {
       setup({ src: undefined });
 
       await waitFor(() => {
-        expect(screen.getByText('Test User')).toBeInTheDocument();
+        expect(screen.getByText('TU')).toBeInTheDocument();
       });
     });
   });

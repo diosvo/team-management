@@ -8,7 +8,12 @@ import { PlayerPosition, UserRole, UserState } from '@/utils/enum';
 
 import { MESSAGES, Providers, renderHook } from '@/test/utilities';
 
-import { enumLabel, translateSelection, useSelection } from './enums';
+import {
+  enumFullLabel,
+  enumLabel,
+  translateSelection,
+  useSelection,
+} from './enums';
 
 const translator = (locale: 'en' | 'vi') =>
   createTranslator({ locale, messages: MESSAGES[locale], namespace: 'enums' });
@@ -33,6 +38,31 @@ describe('enumLabel', () => {
 
   test('falls back to the raw value without a message', () => {
     expect(enumLabel(translator('en'), 'userRole', 'referee')).toBe('referee');
+  });
+});
+
+describe('enumFullLabel', () => {
+  test.each([
+    ['en', 'Power Forward'],
+    ['vi', 'Tiền phong chính'],
+  ] as const)('spells out an abbreviated value in %s', (locale, label) => {
+    expect(
+      enumFullLabel(
+        translator(locale),
+        'playerPosition',
+        PlayerPosition.POWER_FORWARD,
+      ),
+    ).toBe(label);
+  });
+
+  test('falls back to the short label without a hint', () => {
+    expect(
+      enumFullLabel(translator('en'), 'playerPosition', PlayerPosition.UNKNOWN),
+    ).toBe('Unknown');
+  });
+
+  test.each([null, undefined])('shows a dash for %s', (value) => {
+    expect(enumFullLabel(translator('en'), 'playerPosition', value)).toBe('-');
   });
 });
 

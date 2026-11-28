@@ -8,7 +8,7 @@ import { createTranslator, NextIntlClientProvider } from 'next-intl';
 import { toMerged } from 'es-toolkit';
 
 import type { Locale } from '@/i18n/config';
-import { type EnumGroup, enumLabel } from '@/i18n/enums';
+import { enumFullLabel, type EnumGroup, enumLabel } from '@/i18n/enums';
 import messages from '@/i18n/messages/en';
 import viMessages from '@/i18n/messages/vi';
 import ZodErrorMap from '@/i18n/ZodErrorMap';
@@ -160,6 +160,17 @@ export const renderWithUI = (
  */
 export const enumText = (group: EnumGroup, value: Nullish<string>) =>
   enumLabel(
+    createTranslator({ locale: 'en', messages, namespace: 'enums' }),
+    group,
+    value,
+  );
+
+/**
+ * @description English full name the UI shows for an enum value,
+ * _e.g.,_ `enumFullText('playerPosition', 'power_forward')` → "Power Forward"
+ */
+export const enumFullText = (group: EnumGroup, value: Nullish<string>) =>
+  enumFullLabel(
     createTranslator({ locale: 'en', messages, namespace: 'enums' }),
     group,
     value,

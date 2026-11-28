@@ -140,7 +140,7 @@ test.describe('Roster - Jersey order form', () => {
 });
 
 test.describe('Profile - Jersey details', () => {
-  test('players edit jersey name and sizes on the Team tab', async ({
+  test('players see and edit jersey name and sizes on the Team card', async ({
     page,
   }) => {
     // First player row on the roster: the admin can edit any member.
@@ -153,10 +153,11 @@ test.describe('Profile - Jersey details', () => {
       .click();
     await page.waitForURL(/\/profile\//);
 
-    await page.getByRole('tab', { name: 'Team' }).click();
+    // No tabs: the Team card lists the kit details next to Personal.
+    const card = page.locator('form', { hasText: 'Team Information' });
+    await expect(card.getByText('Shirt Size')).toBeVisible();
 
     // Edit mode shows the inputs; cancel so nothing is saved.
-    const card = page.locator('form', { hasText: 'Team Information' });
     await card.getByRole('button', { name: 'Edit' }).click();
     await expect(card.getByText('Jersey Name')).toBeVisible();
     const shirt = card.getByRole('combobox', { name: 'Shirt Size' });

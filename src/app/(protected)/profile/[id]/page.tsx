@@ -29,7 +29,14 @@ export default async function ProfilePage({
     <>
       <PageTitle title={t('title')} />
       <ProfileLayout user={targetUser} viewOnly={viewOnly} />
-      <Text fontSize="sm" color="GrayText">
+      <Text
+        fontSize="sm"
+        color="GrayText"
+        width="full"
+        maxWidth="5xl"
+        marginInline="auto"
+        textAlign="end"
+      >
         {t('lastUpdated', { date: formatDatetime(targetUser.updatedAt) })}
       </Text>
     </>

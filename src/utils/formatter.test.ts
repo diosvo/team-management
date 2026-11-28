@@ -1,5 +1,6 @@
 import {
   formatValueUnit,
+  maskId,
   normalizeName,
   pluralize,
   toLabel,
@@ -77,5 +78,15 @@ describe('normalizeName', () => {
 
   test.each([[''], [null], [undefined]])('is empty for %j', (name) => {
     expect(normalizeName(name)).toBe('');
+  });
+});
+
+describe('maskId', () => {
+  test('keeps only the last 4 digits', () => {
+    expect(maskId('079123451219')).toBe('********1219');
+  });
+
+  test('leaves ids of 4 digits or fewer as they are', () => {
+    expect(maskId('1219')).toBe('1219');
   });
 });

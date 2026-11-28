@@ -2,45 +2,25 @@
 
 import { useMemo, useState, useTransition } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import {
-  Badge,
   HStack,
   IconButton,
   Input,
   InputGroup,
   SimpleGrid,
   Stack,
-  Text,
 } from '@chakra-ui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { formatDistanceToNow } from 'date-fns';
-import { vi } from 'date-fns/locale';
-import {
-  Activity,
-  Edit,
-  LucideClock9,
-  Ruler,
-  Save,
-  Shirt,
-  Type,
-} from 'lucide-react';
+import { Edit, Save } from 'lucide-react';
 import { useSWRConfig } from 'swr';
 
 import { CACHE_KEY, ESTABLISHED_DATE } from '@/utils/constants';
 import { formatDate } from '@/utils/datetime';
-import {
-  CoachPosition,
-  PlayerPosition,
-  SHORT_FORMS,
-  UserRole,
-  UserState,
-} from '@/utils/enum';
-import { getColor } from '@/utils/helper';
+import { SHORT_FORMS, UserRole, UserState } from '@/utils/enum';
 
 import { updateTeamInfo } from '@/actions/user';
 import { DatePickerField } from '@/components/date-picker/DatePicker';
-import TextField from '@/components/TextField';
 import { Card } from '@/components/ui/card';
 import { CloseButton } from '@/components/ui/close-button';
 import { Field } from '@/components/ui/field';
@@ -59,6 +39,13 @@ import usePermissions from '@/hooks/use-permissions';
 import { enumLabel } from '@/i18n/enums';
 import { EditTeamInfoSchema, type EditTeamInfoValues } from '@/schemas/user';
 
+import {
+  DetailItem,
+  DetailList,
+  DetailSection,
+  SectionRule,
+} from './DetailList';
+
 export default function TeamInfo({
   user,
   viewOnly,
@@ -69,8 +56,7 @@ export default function TeamInfo({
   const t = useTranslations('profile');
   const tCommon = useTranslations('common');
   const tEnums = useTranslations('enums');
-  const locale = useLocale();
-  const { isAdmin, isPlayer, isCoach } = usePermissions();
+  const { isAdmin } = usePermissions();
 
   const [isPending, startTransition] = useTransition();
   const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -116,6 +102,11 @@ export default function TeamInfo({
   );
 
   const selectedRole = watch('user.role');
+  // Read mode follows the profile's own role, never the viewer's. Edit mode
+  // follows the picked role, so an admin switching to Player gets the kit.
+  const isTargetPlayer = user.role === UserRole.PLAYER;
+  // Full name here ("Power Forward"); the header badge keeps "PF".
+  const { player } = user;
 
   const onSubmit = (data: EditTeamInfoValues) => {
     startTransition(async () => {
@@ -180,57 +171,41 @@ export default function TeamInfo({
         )
       }
     >
-      <Stack gap={3}>
-        {isEditing && isAdmin ? (
-          <RolePositionSelection
-            roleName="user.role"
-            positionName={
-              selectedRole === UserRole.COACH
-                ? 'coach.position'
-                : 'player.position'
-            }
-            control={control}
-            disabled={isPending}
-            setValue={setValue}
-          />
-        ) : (
-          <SimpleGrid columns={{ base: 1, md: 2 }}>
-            <TextField label={t('team.role')}>
-              <Badge variant="outline" borderRadius="full">
-                {enumLabel(tEnums, 'userRole', user.role)}
-              </Badge>
-            </TextField>
-            <Visibility isVisible={isPlayer || isCoach}>
-              <TextField label={t('team.position')}>
-                <Badge variant="outline" borderRadius="full">
-                  {isPlayer &&
-                    enumLabel(
-                      tEnums,
-                      'playerPosition',
-                      user.player?.position || PlayerPosition.UNKNOWN,
-                    )}
-                  {isCoach &&
-                    enumLabel(
-                      tEnums,
-                      'coachPosition',
-                      user.coach?.position || CoachPosition.UNKNOWN,
-                    )}
-                </Badge>
-              </TextField>
-            </Visibility>
-          </SimpleGrid>
-        )}
-
-        {isEditing && !viewOnly ? (
+      {isEditing ? (
+        <Stack gap={3}>
+          {isAdmin && (
+            <RolePositionSelection
+              roleName="user.role"
+              positionName={
+                selectedRole === UserRole.COACH
+                  ? 'coach.position'
+                  : 'player.position'
+              }
+              control={control}
+              disabled={isPending}
+              setValue={setValue}
+            />
+          )}
           <SimpleGrid minChildWidth="12rem" gap={4}>
             <ControlledStateSelection
               control={control}
               name="user.state"
               disabled={isPending}
             />
-            <Visibility isVisible={isAdmin || isPlayer}>
+            <Field label={t('team.joinDate')}>
+              <DatePickerField
+                control={control}
+                name="user.join_date"
+                min={ESTABLISHED_DATE}
+                disabled={isPending}
+              />
+            </Field>
+          </SimpleGrid>
+          <Visibility isVisible={selectedRole === UserRole.PLAYER}>
+            <SectionRule title={t('team.jersey')} />
+            <SimpleGrid minChildWidth="12rem" gap={4}>
               <Field
-                label={t('team.jerseyNumber')}
+                label={t('team.number')}
                 invalid={!!errors.player?.jersey_number}
                 errorText={errors.player?.jersey_number?.message}
               >
@@ -283,100 +258,36 @@ export default function TeamInfo({
                 disabled={isPending}
                 options={shortForms}
               />
-            </Visibility>
-            <Field label={t('team.joinDate')}>
-              <DatePickerField
-                control={control}
-                name="user.join_date"
-                min={ESTABLISHED_DATE}
-                disabled={isPending}
-              />
-            </Field>
-          </SimpleGrid>
-        ) : (
-          <>
-            <SimpleGrid columns={{ base: 1, md: 2 }}>
-              <TextField
-                label={t('team.state')}
-                direction="horizontal"
-                icon={Activity}
-              >
-                <Badge
-                  variant="surface"
-                  borderRadius="full"
-                  colorPalette={getColor(user.state)}
-                >
-                  {enumLabel(tEnums, 'userState', user.state)}
-                </Badge>
-              </TextField>
-              <Visibility isVisible={isPlayer}>
-                <TextField
-                  label={t('team.jerseyNumber')}
-                  direction="horizontal"
-                  icon={Shirt}
-                >
-                  {user.player?.jersey_number ?? '-'}
-                </TextField>
-              </Visibility>
-              <Visibility isVisible={isPlayer}>
-                <TextField
-                  label={t('team.jerseyName')}
-                  direction="horizontal"
-                  icon={Type}
-                >
-                  {user.player?.jersey_name || '-'}
-                </TextField>
-              </Visibility>
-              <Visibility isVisible={isPlayer}>
-                <TextField
-                  label={t('team.shirtSize')}
-                  direction="horizontal"
-                  icon={Ruler}
-                >
-                  {user.player?.shirt_size ?? '-'}
-                </TextField>
-              </Visibility>
-              <Visibility isVisible={isPlayer}>
-                <TextField
-                  label={t('team.shortSize')}
-                  direction="horizontal"
-                  icon={Ruler}
-                >
-                  {user.player?.short_size ?? '-'}
-                </TextField>
-              </Visibility>
-              <Visibility isVisible={isPlayer}>
-                <TextField
-                  label={t('team.shortForm')}
-                  direction="horizontal"
-                  icon={Ruler}
-                >
-                  {enumLabel(tEnums, 'shortForm', user.player?.short_form)}
-                </TextField>
-              </Visibility>
             </SimpleGrid>
-            {user.join_date && (
-              <TextField
-                label={t('team.joinedDate')}
-                direction="horizontal"
-                icon={LucideClock9}
-              >
-                <Text>
-                  {formatDate(user.join_date)}
-                  <Text as="span" fontSize="sm" color="GrayText" marginLeft={1}>
-                    (
-                    {formatDistanceToNow(user.join_date, {
-                      addSuffix: true,
-                      locale: locale === 'vi' ? vi : undefined,
-                    })}
-                    )
-                  </Text>
-                </Text>
-              </TextField>
-            )}
-          </>
-        )}
-      </Stack>
+          </Visibility>
+        </Stack>
+      ) : (
+        <Stack gap={4}>
+          {/* Role, position, state and jersey number live in the header. */}
+          <DetailList>
+            <DetailItem label={t('team.joinDate')}>
+              {user.join_date && formatDate(user.join_date)}
+            </DetailItem>
+          </DetailList>
+          {isTargetPlayer && (
+            <DetailSection title={t('team.jersey')}>
+              <DetailItem label={t('team.jerseyName')}>
+                {player?.jersey_name}
+              </DetailItem>
+              <DetailItem label={t('team.shirtSize')}>
+                {player?.shirt_size}
+              </DetailItem>
+              <DetailItem label={t('team.shortSize')}>
+                {player?.short_size}
+              </DetailItem>
+              <DetailItem label={t('team.shortForm')}>
+                {player?.short_form &&
+                  enumLabel(tEnums, 'shortForm', player.short_form)}
+              </DetailItem>
+            </DetailSection>
+          )}
+        </Stack>
+      )}
     </Card>
   );
 }

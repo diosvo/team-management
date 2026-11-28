@@ -25,6 +25,20 @@ export function enumLabel(
   return t.has(key) ? t(key) : String(value);
 }
 
+/**
+ * Full name of an enum value from its `<group>Hint` message, _e.g.,_
+ * `enumFullLabel(t, 'playerPosition', 'power_forward')` → "Power Forward"
+ * where `enumLabel` gives "PF". Falls back to `enumLabel` without a hint.
+ */
+export function enumFullLabel(
+  t: EnumTranslator,
+  group: EnumGroup,
+  value: Nullish<string | boolean>,
+): string {
+  const hint = `${group}Hint.${value}` as never;
+  return value != null && t.has(hint) ? t(hint) : enumLabel(t, group, value);
+}
+
 /** Translates `label`/`description` of a constant `Selection` by its values. */
 export function translateSelection<T>(
   t: EnumTranslator,
