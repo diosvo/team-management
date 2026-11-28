@@ -39,7 +39,6 @@ playwright*.config.ts
 
 # Test reports.
 coverage
-.lighthouseci
 test-results
 playwright
 playwright-report

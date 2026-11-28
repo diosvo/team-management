@@ -3,9 +3,7 @@
 #
 # Usage:
 # • bash ~/team-portal/deploy/scripts/traffic-report.sh      # HTML, last 7d
-# • bash .../traffic-report.sh 30d                           # d, h or m
-# • bash .../traffic-report.sh 7d tui                        # terminal snapshot
-# • bash .../traffic-report.sh 1h live                       # live terminal
+# • bash .../traffic-report.sh [1h|7d|30d] [html|tui|live]   # live terminal
 #
 # Attack signals:
 # • Geo Location: countries except VN are geo-filtered traffic.
@@ -20,11 +18,8 @@
 # • $1: time window (default: 7d)
 # • $2: tui or live (otherwise HTML)
 #
-# Environment:
-# • REPORT: output file (default: ~/traffic-report.html)
-#
-# Download without serving publicly:
-# • scp <user>@<host>:~/traffic-report.html .
+# Download w/o serving publicly:
+# • scp <user>@<host>:~/traffic-report.html . && code traffic-report.html
 set -euo pipefail
 
 SINCE="${1:-7d}"
@@ -36,7 +31,7 @@ if [[ "$SINCE" =~ ^([0-9]+)d$ ]]; then
 else
   DOCKER_SINCE="$SINCE"
 fi
-REPORT="${REPORT:-$HOME/traffic-report.html}"
+REPORT="$HOME/traffic-report.html"
 
 if ! command -v goaccess > /dev/null; then
   echo "GoAccess is missing: bash $(dirname "$0")/setup-monitoring.sh" >&2
