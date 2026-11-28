@@ -1,15 +1,9 @@
 import { formatDate } from '@/utils/datetime';
-import {
-  CoachPosition,
-  PlayerPosition,
-  UserRole,
-  UserState,
-} from '@/utils/enum';
+import { UserRole, UserState } from '@/utils/enum';
 
 import { updateTeamInfo } from '@/actions/user';
 import usePermissions from '@/hooks/use-permissions';
 import {
-  MOCK_COACH,
   MOCK_PLAYER,
   MOCK_USER,
   MOCK_USER_WITH_COACH,
@@ -18,7 +12,6 @@ import {
 import {
   createPermissionsMock,
   createToasterMock,
-  enumFullText,
   enumText,
   expectNoA11yViolations,
   renderWithUI,
@@ -89,49 +82,28 @@ describe('TeamInfo', () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText(enumText('userRole', MOCK_USER_WITH_PLAYER.role)),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText(enumFullText('playerPosition', MOCK_PLAYER.position)),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText(enumText('userState', MOCK_USER_WITH_PLAYER.state)),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText(`#${MOCK_PLAYER.jersey_number}`),
-      ).toBeInTheDocument();
-      expect(
         screen.getByText(formatDate(MOCK_USER_WITH_PLAYER.join_date)),
       ).toBeInTheDocument();
     });
+    // Role, position, state and jersey number live in the header.
+    for (const label of ['Role', 'Position', 'State', 'Number']) {
+      expect(screen.queryByText(label)).not.toBeInTheDocument();
+    }
+    expect(
+      screen.queryByText(`#${MOCK_PLAYER.jersey_number}`),
+    ).not.toBeInTheDocument();
     // Jersey details, which prefill the jersey order form, sit in their own
     // section under a labelled rule.
     const section = screen
       .getByRole('heading', { name: 'Jersey' })
       .closest('section')!;
-    expect(section).toHaveTextContent(`Number#${MOCK_PLAYER.jersey_number}`);
-    expect(screen.getByText(MOCK_PLAYER.jersey_name!)).toBeInTheDocument();
+    expect(section).toHaveTextContent(MOCK_PLAYER.jersey_name!);
     expect(screen.getByText(MOCK_PLAYER.shirt_size!)).toBeInTheDocument();
     expect(screen.getByText(MOCK_PLAYER.short_size!)).toBeInTheDocument();
     expect(
       screen.getByText(enumText('shortForm', MOCK_PLAYER.short_form!)),
     ).toBeInTheDocument();
     expect(screen.queryByText('Not provided')).not.toBeInTheDocument();
-  });
-
-  test('spells out the position instead of its abbreviation', async () => {
-    mockUsePermissions.mockReturnValue(
-      createPermissionsMock({ isPlayer: true }),
-    );
-
-    renderWithUI(<TeamInfo user={MOCK_USER_WITH_PLAYER} viewOnly={false} />);
-
-    // MOCK_PLAYER plays shooting_guard: "Shooting Guard", not "SG" or the raw value.
-    await waitFor(() => {
-      expect(screen.getByText('Shooting Guard')).toBeInTheDocument();
-    });
-    expect(screen.queryByText('SG')).not.toBeInTheDocument();
-    expect(screen.queryByText(/_/)).not.toBeInTheDocument();
   });
 
   test('marks every kit detail of a player without one as not provided', async () => {
@@ -156,7 +128,7 @@ describe('TeamInfo', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getAllByText('Not provided')).toHaveLength(5);
+      expect(screen.getAllByText('Not provided')).toHaveLength(4);
     });
   });
 
@@ -168,11 +140,8 @@ describe('TeamInfo', () => {
     renderWithUI(<TeamInfo user={MOCK_USER} viewOnly={false} />);
 
     await waitFor(() => {
-      expect(screen.getAllByText('Not provided')).toHaveLength(5);
+      expect(screen.getAllByText('Not provided')).toHaveLength(4);
     });
-    expect(
-      screen.getByText(enumText('playerPosition', PlayerPosition.UNKNOWN)),
-    ).toBeInTheDocument();
   });
 
   test('lists no kit details on a coach profile', async () => {
@@ -216,17 +185,12 @@ describe('TeamInfo', () => {
     expect(screen.getByRole('spinbutton')).toBeInTheDocument();
   });
 
-  test('shows a player profile’s position and jersey to an admin viewer', async () => {
+  test('shows a player profile’s kit to an admin viewer', async () => {
     // The viewer's role must not decide what the profile displays.
     setup({ isAdmin: true, isPlayer: false });
 
     await waitFor(() => {
-      expect(
-        screen.getByText(enumFullText('playerPosition', MOCK_PLAYER.position)),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText(`#${MOCK_PLAYER.jersey_number}`),
-      ).toBeInTheDocument();
+      expect(screen.getByText(MOCK_PLAYER.jersey_name!)).toBeInTheDocument();
     });
   });
 
@@ -345,41 +309,6 @@ describe('TeamInfo', () => {
     expect(mockMutate).not.toHaveBeenCalled();
   });
 
-  test('renders the coach position when the user is a coach', async () => {
-    mockUsePermissions.mockReturnValue(
-      createPermissionsMock({ isCoach: true }),
-    );
-
-    renderWithUI(
-      <TeamInfo
-        user={{ ...MOCK_USER_WITH_COACH, role: UserRole.COACH }}
-        viewOnly={false}
-      />,
-    );
-
-    await waitFor(() => {
-      expect(
-        screen.getByText(enumFullText('coachPosition', MOCK_COACH.position)),
-      ).toBeInTheDocument();
-    });
-  });
-
-  test('marks a missing jersey number as not provided', async () => {
-    const userNoJersey = {
-      ...MOCK_USER_WITH_PLAYER,
-      player: { ...MOCK_PLAYER, jersey_number: null },
-    };
-    mockUsePermissions.mockReturnValue(
-      createPermissionsMock({ isPlayer: true }),
-    );
-
-    renderWithUI(<TeamInfo user={userNoJersey} viewOnly={false} />);
-
-    await waitFor(() => {
-      expect(screen.getByText('Not provided')).toBeInTheDocument();
-    });
-  });
-
   test('marks a missing join date as not provided', async () => {
     const userNoJoinDate = { ...MOCK_USER_WITH_PLAYER, join_date: null };
     mockUsePermissions.mockReturnValue(
@@ -440,7 +369,7 @@ describe('TeamInfo', () => {
     );
   });
 
-  test('hides the default role when the user is a super admin', async () => {
+  test('lists no kit on a super admin profile', async () => {
     const superAdminUser = {
       ...MOCK_USER_WITH_PLAYER,
       role: UserRole.SUPER_ADMIN,
@@ -451,56 +380,15 @@ describe('TeamInfo', () => {
 
     renderWithUI(<TeamInfo user={superAdminUser} viewOnly={false} />);
 
-    // Admins have no position and no kit.
+    // Admins have no kit.
     await waitFor(() => {
       expect(
-        screen.getByText(enumText('userRole', UserRole.SUPER_ADMIN)),
+        screen.getByText(formatDate(MOCK_USER_WITH_PLAYER.join_date)),
       ).toBeInTheDocument();
     });
-    expect(screen.queryByText('Position')).not.toBeInTheDocument();
     expect(
       screen.queryByRole('heading', { name: 'Jersey' }),
     ).not.toBeInTheDocument();
-  });
-
-  test('shows "Unknown" position when the player has no position', async () => {
-    const userNoPosition = {
-      ...MOCK_USER_WITH_PLAYER,
-      player: { ...MOCK_PLAYER, position: null },
-    };
-    mockUsePermissions.mockReturnValue(
-      createPermissionsMock({ isPlayer: true }),
-    );
-
-    renderWithUI(<TeamInfo user={userNoPosition} viewOnly={false} />);
-
-    await waitFor(() => {
-      expect(
-        screen.getByText(enumText('playerPosition', PlayerPosition.UNKNOWN)),
-      ).toBeInTheDocument();
-    });
-  });
-
-  test('shows "Unknown" coach position when the coach has no position', async () => {
-    const coachUser = {
-      ...MOCK_USER_WITH_COACH,
-      role: UserRole.COACH,
-      coach: {
-        ...MOCK_COACH,
-        position: null as unknown as typeof MOCK_COACH.position,
-      },
-    };
-    mockUsePermissions.mockReturnValue(
-      createPermissionsMock({ isCoach: true }),
-    );
-
-    renderWithUI(<TeamInfo user={coachUser} viewOnly={false} />);
-
-    await waitFor(() => {
-      expect(
-        screen.getByText(enumText('coachPosition', CoachPosition.UNKNOWN)),
-      ).toBeInTheDocument();
-    });
   });
 
   test('shows coach positionName in admin edit mode for a coach user', async () => {

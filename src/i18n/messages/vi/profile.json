@@ -1,5 +1,8 @@
 {
   "avatar": {
+    "choose": "Chọn ảnh đại diện",
+    "options": "Tuỳ chọn ảnh đại diện",
+    "see": "Xem ảnh đại diện",
     "setting": "Đang cập nhật ảnh đại diện..."
   },
   "header": {

@@ -4,6 +4,7 @@ import type { User } from '@/drizzle/schema';
 import usePermissions from '@/hooks/use-permissions';
 import { useSessionContext } from '@/providers/session';
 import {
+  MOCK_COACH,
   MOCK_PLAYER,
   MOCK_SESSION_USER,
   MOCK_USER,
@@ -13,6 +14,7 @@ import {
 import {
   createPermissionsMock,
   createSessionMock,
+  enumFullText,
   enumText,
   expectNoA11yViolations,
   renderWithUI,
@@ -64,7 +66,7 @@ describe('ProfileHeader', () => {
     await expectNoA11yViolations(container);
   });
 
-  test('shows the name, role, position and status', () => {
+  test('shows the name, role, full position and status', () => {
     setup();
 
     expect(
@@ -74,7 +76,7 @@ describe('ProfileHeader', () => {
       screen.getByText(enumText('userRole', 'player')),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(enumText('playerPosition', MOCK_PLAYER.position)),
+      screen.getByText(enumFullText('playerPosition', MOCK_PLAYER.position)),
     ).toBeInTheDocument();
     expect(
       screen.getByText(enumText('userState', UserState.ACTIVE)),
@@ -132,7 +134,9 @@ describe('ProfileHeader', () => {
     setup({ ...MOCK_USER_WITH_COACH, role: UserRole.COACH });
 
     expect(screen.queryByText(/^#/)).not.toBeInTheDocument();
-    expect(screen.getByText('Head')).toBeInTheDocument();
+    expect(
+      screen.getByText(enumFullText('coachPosition', MOCK_COACH.position)),
+    ).toBeInTheDocument();
   });
 
   test('says how long the member has been with the team', () => {

@@ -23,7 +23,7 @@ import { getColor } from '@/utils/helper';
 import { Card } from '@/components/ui/card';
 import type { User } from '@/drizzle/schema';
 import usePermissions from '@/hooks/use-permissions';
-import { enumLabel } from '@/i18n/enums';
+import { enumFullLabel, enumLabel } from '@/i18n/enums';
 import { useSessionContext } from '@/providers/session';
 
 import AvatarUploader from './AvatarUploader';
@@ -44,7 +44,7 @@ export default function ProfileHeader({
   const { isAdmin } = usePermissions();
 
   const isPlayer = user.role === UserRole.PLAYER;
-  const position = positionLabel(tEnums, user);
+  const position = positionLabel(tEnums, user, enumFullLabel);
   const jersey = isPlayer ? user.player?.jersey_number : null;
   const hasJersey = typeof jersey === 'number';
   // The performance page is open to admins and to the player themselves.
@@ -139,7 +139,7 @@ export default function ProfileHeader({
                 </Text>
                 <Text fontSize="5xl" lineHeight={1}>
                   <Span color="fg.subtle">#</Span>
-                  <Span color="primary" fontWeight="bold">
+                  <Span color="red.500" fontWeight="bold">
                     {jersey}
                   </Span>
                 </Text>

@@ -4,7 +4,6 @@ import { useMemo, useState, useTransition } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
 import {
-  Badge,
   HStack,
   IconButton,
   Input,
@@ -19,7 +18,6 @@ import { useSWRConfig } from 'swr';
 import { CACHE_KEY, ESTABLISHED_DATE } from '@/utils/constants';
 import { formatDate } from '@/utils/datetime';
 import { SHORT_FORMS, UserRole, UserState } from '@/utils/enum';
-import { getColor } from '@/utils/helper';
 
 import { updateTeamInfo } from '@/actions/user';
 import { DatePickerField } from '@/components/date-picker/DatePicker';
@@ -38,7 +36,7 @@ import { ControlledStateSelection } from '@/components/user/StateSelection';
 import Visibility from '@/components/Visibility';
 import type { User } from '@/drizzle/schema';
 import usePermissions from '@/hooks/use-permissions';
-import { enumFullLabel, enumLabel } from '@/i18n/enums';
+import { enumLabel } from '@/i18n/enums';
 import { EditTeamInfoSchema, type EditTeamInfoValues } from '@/schemas/user';
 
 import {
@@ -47,8 +45,6 @@ import {
   DetailSection,
   SectionRule,
 } from './DetailList';
-
-import { positionLabel } from '../_helpers/position';
 
 export default function TeamInfo({
   user,
@@ -110,9 +106,7 @@ export default function TeamInfo({
   // follows the picked role, so an admin switching to Player gets the kit.
   const isTargetPlayer = user.role === UserRole.PLAYER;
   // Full name here ("Power Forward"); the header badge keeps "PF".
-  const position = positionLabel(tEnums, user, enumFullLabel);
   const { player } = user;
-  const jersey = player?.jersey_number;
 
   const onSubmit = (data: EditTeamInfoValues) => {
     startTransition(async () => {
@@ -269,32 +263,14 @@ export default function TeamInfo({
         </Stack>
       ) : (
         <Stack gap={4}>
+          {/* Role, position, state and jersey number live in the header. */}
           <DetailList>
-            <DetailItem label={t('team.role')}>
-              {enumLabel(tEnums, 'userRole', user.role)}
-            </DetailItem>
-            {position && (
-              <DetailItem label={t('team.position')}>{position}</DetailItem>
-            )}
-            <DetailItem label={t('team.state')}>
-              <Badge
-                variant="surface"
-                borderRadius="full"
-                colorPalette={getColor(user.state)}
-              >
-                {enumLabel(tEnums, 'userState', user.state)}
-              </Badge>
-            </DetailItem>
-            {/* The header already says how long ago; the date is enough here. */}
             <DetailItem label={t('team.joinDate')}>
               {user.join_date && formatDate(user.join_date)}
             </DetailItem>
           </DetailList>
           {isTargetPlayer && (
             <DetailSection title={t('team.jersey')}>
-              <DetailItem label={t('team.number')}>
-                {typeof jersey === 'number' && `#${jersey}`}
-              </DetailItem>
               <DetailItem label={t('team.jerseyName')}>
                 {player?.jersey_name}
               </DetailItem>

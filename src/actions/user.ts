@@ -2,7 +2,7 @@
 
 import { forbidden, notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
-import { isEmptyObject } from 'es-toolkit';
+import { isEmptyObject, isEqual } from 'es-toolkit';
 
 import { toIsoDay } from '@/utils/datetime';
 import { UserState } from '@/utils/enum';
@@ -74,7 +74,7 @@ export const getUserProfile = withAuth(async (user, target_id: string) => {
   // Do NOT enable button if:
   // 1. Current profile is Admin
   // 2. View only mode
-  const isOwnProfile = user.id === targetUser.id;
+  const isOwnProfile = isEqual(user.id, targetUser.id);
   const viewOnly =
     (isAdmin && isOwnProfile) || ((isPlayer || isCoach) && !isOwnProfile);
 
@@ -122,17 +122,17 @@ export const uploadAvatar = profile(
     old_path: Nullish<string>,
     file: File,
   ) {
-    // Avatars are self-service only
-    if (user.id !== user_id) forbidden();
+    // Members change their own avatar; admins can change anyone's
+    const { isAdmin } = hasPermissions(user.role);
+    if (!isAdmin && !isEqual(user.id, user_id)) forbidden();
 
     const t = await getTranslations('actions.user');
 
-    // The file we are about to delete must be the one this user currently owns.
-    // A `users/<user_id>` prefix check is not enough: legacy keys carry a random
-    // suffix (`users/1-abc`), so `users/1` would also match `users/12-abc`.
+    // Delete only an avatar currently owned by this user:
+    // - Legacy keys may have random suffixes (for example, `users/1-abc`).
     if (old_path) {
       const target = await selectUserById(user_id);
-      if (old_path !== target?.image) forbidden();
+      if (!isEqual(old_path, target?.image)) forbidden();
     }
 
     try {
@@ -168,7 +168,7 @@ export const updatePersonalInfo = profile(
     values: EditPersonalInfoValues,
   ) {
     const { isAdmin } = hasPermissions(user.role);
-    if (!isAdmin && user.id !== user_id) forbidden();
+    if (!isAdmin && !isEqual(user.id, user_id)) forbidden();
 
     const t = await getTranslations('actions.user');
 
@@ -190,7 +190,10 @@ export const updateTeamInfo = profile(
   async function updateTeam(user, user_id: string, values: EditTeamInfoValues) {
     const { isAdmin } = hasPermissions(user.role);
     // Non-admins may only edit themselves and never change their own role
-    if (!isAdmin && (user.id !== user_id || values.user.role !== user.role)) {
+    if (
+      !isAdmin &&
+      (!isEqual(user.id, user_id) || !isEqual(values.user.role, user.role))
+    ) {
       forbidden();
     }
 
@@ -223,7 +226,7 @@ export const updateTeamInfo = profile(
 
       // Switching role removes the previous role's row
       const previous = hasPermissions(target.role);
-      const switching = target.role !== userData.role;
+      const switching = !isEqual(target.role, userData.role);
 
       // `join_date` belongs to the open membership stint, so it is corrected
       // there instead of on the user row.
@@ -233,13 +236,13 @@ export const updateTeamInfo = profile(
       // one, so the team history keeps every period the member played.
       const today = toIsoDay(new Date());
       const leaving =
-        target.state !== UserState.INACTIVE &&
-        userData.state === UserState.INACTIVE;
+        !isEqual(target.state, UserState.INACTIVE) &&
+        isEqual(userData.state, UserState.INACTIVE);
       // `join_date` is only set while a stint is open; older inactive rows may
       // still have one, and those just carry on.
       const returning =
-        target.state === UserState.INACTIVE &&
-        userData.state !== UserState.INACTIVE &&
+        isEqual(target.state, UserState.INACTIVE) &&
+        !isEqual(userData.state, UserState.INACTIVE) &&
         !target.join_date;
 
       const membership = {

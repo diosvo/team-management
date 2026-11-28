@@ -48,9 +48,9 @@ cards and shows a **View Only** badge in the header.
       required: true,
     },
     uploadAvatar: {
-      type: 'self only',
+      type: 'self or admin',
       description:
-        'Every role, own user_id only. A given old_path must equal the stored image exactly.',
+        'Every role for their own user_id; SUPER_ADMIN for anyone. A given old_path must equal the stored image exactly.',
       required: true,
     },
     getAvatar: {
@@ -64,7 +64,7 @@ cards and shows a **View Only** badge in the header.
 
 - `old_path` must be equal, not a prefix: legacy keys have a random suffix.
 - `users/1` would prefix-match `users/12-abc`.
-- So only the caller's current avatar is deletable.
+- So only the target's current avatar is deletable.
 
 ## Layout
 
@@ -78,15 +78,19 @@ cards and shows a **View Only** badge in the header.
   <Tab value="Header">
 
     - Avatar (initials fallback), name, **Captain** and **View Only** badges.
-    - Role, position and state badges.
+    - Role, position and state badges. Position is spelled out ("Power
+      Forward", "Head Coach") from the `*PositionHint` messages.
     - Jersey number: a badge on phones, a large captioned number from `md`.
     - "Joined for …" from the open membership stint; the date itself is on
       the Team card.
     - **View performance** opens `/performance/<id>` on a player profile, for
       admins and the player themselves.
-    - Upload overlay for the owner only (`sessionUser.id === user.id`).
-    - `ImageUploader`: PNG or JPEG, up to 10 MB; stored as a 512 px WebP.
-    - On success the session is refetched, so the header avatar updates.
+    - Owner and admins: clicking the photo opens a menu with **See profile
+      picture** (when one is set) and **Choose profile picture**.
+    - Everyone else: clicking a set photo opens it in a preview dialog.
+    - PNG or JPEG, up to 10 MB; stored as a 512 px WebP.
+    - On the owner's own upload the session is refetched, so the header avatar
+      updates.
 
   </Tab>
   <Tab value="Personal">
@@ -104,15 +108,15 @@ cards and shows a **View Only** badge in the header.
   </Tab>
   <Tab value="Team">
 
-    - Shows role, position, state and join date (of the open membership
-      stint).
-    - Position is spelled out ("Power Forward", "Head Coach") from the
-      `*PositionHint` messages; the header badge keeps the short "PF".
-    - Player profiles add a **Jersey** section under a labelled rule: number,
-      jersey name, shirt and short size, short type. Two per row while the
+    - Shows the join date (of the open membership stint). Role, position,
+      state and jersey number are in the header only, so they are not
+      repeated here.
+    - Player profiles add a **Jersey** section under a labelled rule: jersey
+      name, shirt and short size, short type. Two per row while the
       card is wide enough, one per row otherwise.
     - Rows follow the profile's role, not the viewer's.
-    - Edit: role and position are SUPER_ADMIN only. The Jersey section shows
+    - Edit: role, position, state and jersey number come back as fields;
+      role and position are SUPER_ADMIN only. The Jersey section shows
       while the picked role is Player.
     - Jersey name and sizes prefill the
       [jersey order form](/docs/features/team-management/roster).
@@ -259,7 +263,8 @@ Server actions in `src/actions/user.ts`; all but `getUserProfile` use
 
     - Over 10 MB or not PNG/JPEG: rejected client-side, and again on the server.
     - Valid upload: updates the avatar, deletes the old file, refreshes the
-      session.
+      session when it is your own.
+    - Admins can replace any member's avatar.
     - old_path not equal to the stored image: rejected, nothing deleted.
 
   </Accordion>

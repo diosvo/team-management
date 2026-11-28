@@ -1,8 +1,10 @@
 import { uploadAvatar } from '@/actions/user';
 import { useUserAvatar } from '@/hooks/use-image';
+import usePermissions from '@/hooks/use-permissions';
 import { useSessionContext } from '@/providers/session';
 import { MOCK_SESSION_USER, MOCK_USER } from '@/test/mocks/user';
 import {
+  createPermissionsMock,
   createSessionMock,
   createSWRMock,
   createToasterMock,
@@ -23,6 +25,8 @@ vi.mock('@/hooks/use-image', () => ({
   useUserAvatar: vi.fn(),
 }));
 
+vi.mock('@/hooks/use-permissions', () => ({ default: vi.fn() }));
+
 vi.mock('@/providers/session', () => ({
   useSessionContext: vi.fn(),
 }));
@@ -39,129 +43,235 @@ vi.mock('@/components/ui/toaster', () => createToasterMock());
 
 import { toaster } from '@/components/ui/toaster';
 
+const IMAGE = 'data:image/png;base64,abc';
+
 describe('AvatarUploader', () => {
   setupTestLifecycle();
 
   const mockUploadAvatar = vi.mocked(uploadAvatar);
-  const mockUseUserAvatar = vi.mocked(useUserAvatar);
-  const mockUseSessionContext = vi.mocked(useSessionContext);
 
   const setup = ({
     isOwner = true,
+    isAdmin = false,
     image = undefined as string | undefined,
-    user = MOCK_USER,
+    isLoading = false,
   } = {}) => {
-    mockUseUserAvatar.mockReturnValue(
-      createSWRMock<Nullable<string>>({ data: image }),
+    vi.mocked(useUserAvatar).mockReturnValue(
+      createSWRMock<Nullable<string>>({ data: image, isLoading }),
     );
-    mockUseSessionContext.mockReturnValue(
+    vi.mocked(useSessionContext).mockReturnValue(
       createSessionMock({
-        user: { ...MOCK_SESSION_USER, id: isOwner ? user.id : 'someone-else' },
+        user: {
+          ...MOCK_SESSION_USER,
+          id: isOwner ? MOCK_USER.id : 'someone-else',
+        },
       }),
     );
+    vi.mocked(usePermissions).mockReturnValue(
+      createPermissionsMock({ isAdmin }),
+    );
 
-    return renderWithUI(<AvatarUploader user={user} />);
+    return renderWithUI(<AvatarUploader user={MOCK_USER} />);
   };
 
   const getFileInput = (container: HTMLElement) =>
     container.querySelector('input[type="file"]') as HTMLInputElement;
 
+  const openMenu = async (user: ReturnType<typeof setup>['user']) =>
+    user.click(screen.getByRole('button', { name: 'Profile picture options' }));
+
   const file = new File(['avatar'], 'avatar.png', { type: 'image/png' });
 
   test('should be accessible', async () => {
-    const { container } = setup();
+    const { container } = setup({ image: IMAGE });
 
     await expectNoA11yViolations(container);
   });
 
-  test('falls back to the user’s initials without a photo', async () => {
-    setup();
+  test('shows a skeleton while the avatar loads', () => {
+    setup({ isLoading: true });
 
-    // Name and role now live in ProfileHeader; only the avatar remains here.
-    const initials = MOCK_USER.name
-      .split(' ')
-      .map((part) => part[0])
-      .filter((_, index, parts) => index === 0 || index === parts.length - 1)
-      .join('');
-    await waitFor(() => {
-      expect(screen.getByText(initials)).toBeInTheDocument();
-    });
+    expect(
+      screen.queryByRole('button', { name: 'Profile picture options' }),
+    ).not.toBeInTheDocument();
   });
 
-  test('renders the avatar image resolved by the hook', async () => {
-    setup({ image: 'data:image/png;base64,abc' });
+  test('requests the avatar through the hook', () => {
+    setup({ image: IMAGE });
 
-    await waitFor(() => {
-      expect(mockUseUserAvatar).toHaveBeenCalledWith(MOCK_USER.image);
-    });
+    expect(useUserAvatar).toHaveBeenCalledWith(MOCK_USER.image);
   });
 
-  test('disables the file input for non-owners', async () => {
-    const { container } = setup({ isOwner: false });
+  describe('owner', () => {
+    test('offers both actions when there is a picture', async () => {
+      const { user } = setup({ image: IMAGE });
 
-    await waitFor(() => {
-      expect(getFileInput(container)).toBeDisabled();
-    });
-  });
+      await openMenu(user);
 
-  test('enables the file input for the profile owner', async () => {
-    const { container } = setup({ isOwner: true });
-
-    await waitFor(() => {
-      expect(getFileInput(container)).toBeEnabled();
-    });
-  });
-
-  test('uploads the avatar and refreshes the session on success', async () => {
-    const uploadedPath = 'users/user-123/avatar-xyz.png';
-    mockUploadAvatar.mockResolvedValue({
-      success: true,
-      message: 'Uploaded avatar successfully',
-      data: { image: uploadedPath },
+      expect(
+        await screen.findByRole('menuitem', { name: 'See profile picture' }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('menuitem', { name: 'Choose profile picture' }),
+      ).toBeInTheDocument();
     });
 
-    const { container, user } = setup();
+    test('only offers to choose a picture when there is none', async () => {
+      const { user } = setup();
 
-    await user.upload(getFileInput(container), file);
+      await openMenu(user);
 
-    await waitFor(() => {
-      expect(mockUploadAvatar).toHaveBeenCalledWith(
-        MOCK_USER.id,
-        MOCK_USER.image,
-        file,
+      expect(
+        await screen.findByRole('menuitem', { name: 'Choose profile picture' }),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByRole('menuitem', { name: 'See profile picture' }),
+      ).not.toBeInTheDocument();
+    });
+
+    test('opens the preview from the menu', async () => {
+      const { user } = setup({ image: IMAGE });
+
+      await openMenu(user);
+      await user.click(
+        await screen.findByRole('menuitem', { name: 'See profile picture' }),
       );
+
+      await user.keyboard('{Escape}');
+      await waitFor(() => {
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      });
     });
 
-    expect(toaster.create).toHaveBeenCalledWith(
-      expect.objectContaining({ type: 'loading' }),
-    );
-    await waitFor(() => {
-      expect(toaster.update).toHaveBeenCalledWith(
-        'toast-id',
-        expect.objectContaining({ type: 'success' }),
+    test('opens the file picker from the menu', async () => {
+      const { container, user } = setup();
+      const click = vi.spyOn(getFileInput(container), 'click');
+
+      await openMenu(user);
+      await user.click(
+        await screen.findByRole('menuitem', { name: 'Choose profile picture' }),
       );
+
+      await waitFor(() => expect(click).toHaveBeenCalled());
     });
-    expect(mockRefetch).toHaveBeenCalledWith({
-      query: { disableCookieCache: true },
+
+    test('uploads the avatar and refreshes the session on success', async () => {
+      mockUploadAvatar.mockResolvedValue({
+        success: true,
+        message: 'Uploaded avatar successfully',
+        data: { image: 'users/user-123/avatar-xyz.png' },
+      });
+
+      const { container, user } = setup();
+
+      await user.upload(getFileInput(container), file);
+
+      await waitFor(() => {
+        expect(mockUploadAvatar).toHaveBeenCalledWith(
+          MOCK_USER.id,
+          MOCK_USER.image,
+          file,
+        );
+      });
+      expect(toaster.create).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'loading' }),
+      );
+      await waitFor(() => {
+        expect(toaster.update).toHaveBeenCalledWith(
+          'toast-id',
+          expect.objectContaining({ type: 'success' }),
+        );
+      });
+      expect(mockRefetch).toHaveBeenCalledWith({
+        query: { disableCookieCache: true },
+      });
+    });
+
+    test('does not refresh the session when the upload fails', async () => {
+      mockUploadAvatar.mockResolvedValue({
+        success: false,
+        message: 'Upload failed',
+      });
+
+      const { container, user } = setup();
+
+      await user.upload(getFileInput(container), file);
+
+      await waitFor(() => {
+        expect(toaster.update).toHaveBeenCalledWith(
+          'toast-id',
+          expect.objectContaining({ type: 'error' }),
+        );
+      });
+      expect(mockRefetch).not.toHaveBeenCalled();
+    });
+
+    test('warns about a rejected file', async () => {
+      const { container, user } = setup();
+      const bigFile = new File(
+        [new Uint8Array(10 * 1024 * 1024 + 1)],
+        'big.png',
+        { type: 'image/png' },
+      );
+
+      await user.upload(getFileInput(container), bigFile);
+
+      await waitFor(() => {
+        expect(toaster.create).toHaveBeenCalledWith(
+          expect.objectContaining({
+            type: 'error',
+            title: 'Image must be smaller than 10 MB',
+          }),
+        );
+      });
+      expect(mockUploadAvatar).not.toHaveBeenCalled();
     });
   });
 
-  test('does not refresh the session when the upload fails', async () => {
-    mockUploadAvatar.mockResolvedValue({
-      success: false,
-      message: 'Upload failed',
+  describe('admin on another profile', () => {
+    test('uploads without refreshing their own session', async () => {
+      mockUploadAvatar.mockResolvedValue({
+        success: true,
+        message: 'Uploaded avatar successfully',
+        data: { image: 'users/user-123/avatar-xyz.png' },
+      });
+
+      const { container, user } = setup({ isOwner: false, isAdmin: true });
+
+      expect(
+        screen.getByRole('button', { name: 'Profile picture options' }),
+      ).toBeInTheDocument();
+
+      await user.upload(getFileInput(container), file);
+
+      await waitFor(() => {
+        expect(toaster.update).toHaveBeenCalledWith(
+          'toast-id',
+          expect.objectContaining({ type: 'success' }),
+        );
+      });
+      expect(mockRefetch).not.toHaveBeenCalled();
     });
+  });
 
-    const { container, user } = setup();
+  describe('other members', () => {
+    test('open the picture in a preview', async () => {
+      const { container, user } = setup({ isOwner: false, image: IMAGE });
 
-    await user.upload(getFileInput(container), file);
+      expect(getFileInput(container)).toBeNull();
 
-    await waitFor(() => {
-      expect(toaster.update).toHaveBeenCalledWith(
-        'toast-id',
-        expect.objectContaining({ type: 'error' }),
+      await user.click(
+        screen.getByRole('button', { name: 'See profile picture' }),
       );
+
+      const dialog = await screen.findByRole('dialog');
+      expect(dialog.querySelector('img')).toHaveAttribute('src', IMAGE);
     });
-    expect(mockRefetch).not.toHaveBeenCalled();
+
+    test('see a plain avatar when there is no picture', () => {
+      setup({ isOwner: false });
+
+      expect(screen.queryByRole('button')).not.toBeInTheDocument();
+    });
   });
 });

@@ -404,6 +404,22 @@ describe('User Actions', () => {
       expect(uploadImage).not.toHaveBeenCalled();
     });
 
+    test('allows an admin to upload another user’s avatar', async () => {
+      setMockAuthUser({ ...MOCK_USER, role: UserRole.SUPER_ADMIN });
+      vi.mocked(uploadImage).mockResolvedValue({ pathname });
+      vi.mocked(updateUser).mockResolvedValue({
+        ...mockResult,
+        command: 'UPDATE',
+      });
+
+      const result = await uploadAvatar('someone-elses-id', null, file);
+
+      expect(uploadImage).toHaveBeenCalledWith('users/someone-elses-id', file);
+      expect(result.success).toBe(true);
+
+      resetMockAuthUser();
+    });
+
     test('deletes the old avatar when it is the one on record', async () => {
       const oldPath = 'users/user-123-old-avatar.png';
       vi.mocked(selectUserById).mockResolvedValue({
