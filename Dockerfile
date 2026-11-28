@@ -1,22 +1,23 @@
 # syntax=docker/dockerfile:1
-# Production image for the VPS (Docker Compose): the Next.js standalone
-# server, plus migrate.cjs, which the compose `migrate` service runs from the
-# same image before the app starts.
+# Production VPS image:
+# • Runs Next.js standalone server.
+# • Includes migrate.cjs for the Compose migrate service.
 
 ARG NODE_VERSION=26
 
+# ---- 🧱 Base ----
 FROM node:${NODE_VERSION}-trixie-slim AS base
 ENV NEXT_TELEMETRY_DISABLED=1
-# Node 25+ no longer bundles corepack, so install pnpm directly.
-# git: fumadocs-mdx reads `git log` for each docs page's last-updated date.
-# Both sit in this layer, so lockfile changes don't reinstall them.
-RUN npm install --global pnpm@12.16.1 \
+# pnpm: Node 25+ no longer bundles Corepack.
+# git: required for fumadocs-mdx page dates.
+# Cached here to avoid reinstalling when the lockfile changes.
+RUN npm install --global pnpm@latest \
     && apt-get update \
     && apt-get install -y --no-install-recommends git \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
-# ---- Dependencies (cached until the lockfile changes) ----
+# ---- 📦 Dependencies (cached until the lockfile changes) ----
 FROM base AS deps
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 # Local link: dependency (ts-plugin-intl-definition).
@@ -24,22 +25,21 @@ COPY tools ./tools
 RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
     pnpm install --frozen-lockfile
 
-# ---- Build ----
+# ---- 🔨 Build ----
 FROM deps AS builder
 COPY . .
-# new Resend() throws without a key, and Better Auth logs errors without a
-# secret or base URL, while Next collects page data. Build-only placeholders:
-# the real values come from .env.production and compose.yaml at runtime.
+# Build-only placeholders for page collection:
+# • Resend API key
+# • Better Auth secret and base URL
+# Then bundle migrations for runtime use; pg-native is optional.
 RUN RESEND_API_KEY=re_build_placeholder \
     BETTER_AUTH_SECRET=build-placeholder-not-used-at-runtime \
     BETTER_AUTH_URL=http://localhost:3000 \
-    pnpm build
-# Migrations as one self-contained file, so the runtime image can apply them
-# without the build's node_modules. pg-native is an optional pg add-on.
-RUN pnpm exec esbuild src/drizzle/scripts/migrate.ts --bundle --platform=node \
+    pnpm build \
+    && pnpm exec esbuild src/drizzle/scripts/migrate.ts --bundle --platform=node \
     --format=cjs --external:pg-native --log-level=warning --outfile=migrate.cjs
 
-# ---- Runtime ----
+# ---- 🚀 Runtime ----
 FROM node:${NODE_VERSION}-trixie-slim AS runner
 # Chromium renders the analytics PDFs; DejaVu covers Vietnamese glyphs.
 RUN apt-get update \

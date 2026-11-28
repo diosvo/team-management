@@ -22,6 +22,8 @@ COPYFILE_DISABLE=1 tar -czf "$OUT_DIR/bundle.tar.gz" \
   deploy/caddy \
   deploy/scripts/release.sh \
   deploy/scripts/cleanup.sh \
+  deploy/scripts/setup-monitoring.sh \
+  deploy/scripts/traffic-report.sh \
   deploy/scripts/sync-domain.sh
 
 ls -lh "$OUT_DIR"
